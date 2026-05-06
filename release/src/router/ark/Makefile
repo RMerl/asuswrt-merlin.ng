@@ -13,16 +13,18 @@ ifeq ($(HND_ROUTER_BE_4916),y)
 CFLAGS  += -I$(SRCBASE)/shared/bcmwifi/include
 endif
 
-OBJS    +=  ark_db.o ark_hook.o
+OBJS    +=  ark_db.o ark_hook.o ark_migrate.o
 
 # ARK engine files to move
-# ark.ini and gloger.ini and gdm.ini are installed separately below, not here to install
+# copy gloger.ini and gdm.ini from package/*.ini directly
 ARK_FILES := app.id app.xdb aqua.ko ark.ko ark.xdb ark.xr gar.env \
 	gbusd.ini gbus.ko glog.ini \
-	gmq.conf gst.ini gtools.ko init.d/gar kmod_logger.ko mal.xdb xni.ko xpi.ko ark.ini
+	gmq.conf gst.ini gtools.ko init.d/gar kmod_logger.ko mal.xdb xni.ko xpi.ko \
+	ark.ini \
+	idp.id idp.xr
 
 SBIN_FILES := aqua arkctl arklog arklogd ark_service ark_tmctl.sh arktool garp gar.sh gbus \
-	gbusd gbusd.sh gdm gdm.sh ghs gini glog gloger gloger.sh gmdns gmq gns gping gst gst.sh gua gupnp mdns \
+	gbusd gbusd.sh gdm gdm.sh ghs gini gizmo glog gloger gloger.sh gmdns gmq gmq.sh gns gping gst gst.sh gua gupnp mdns \
 	mosquitto mosquitto_pub mosquitto_sub neigh.sh qos.sh xni
 
 LIB_FILES := libgbus.so libgtools.so libpcrecpp.so.0.0.0 libpcreposix.so.0.0.1
@@ -34,25 +36,57 @@ LIB_FILES := libgbus.so libgtools.so libpcrecpp.so.0.0.0 libpcreposix.so.0.0.1
 export ARK_INI_MOVE :=
 
 ##### TODO : add platform here #####
+ifeq ($(RTCONFIG_HND_ROUTER_BE_4916),y)
+VMLINUX_VERSION := $(shell \
+    grep -E '^(VERSION|PATCHLEVEL|SUBLEVEL) =' $(LINUXDIR)/Makefile | \
+    awk '{printf "%s.", $$3}' | sed 's/\.$$//' \
+)
+
+# $(filter PATTERN...,TEXT)
+# check if TEXT matches any PATTERN.
+# returns matched word, otherwise empty
 ifeq ($(BRCM_CHIP),6813)
-export FILE_NAME := "gar_asus_be88u_aarch64_0.0.1.27"
+ifneq (,$(filter 5.15.176 5.15.182,$(VMLINUX_VERSION)))
+export FILE_NAME := "gar_asus_bcm4916_bn98_aarch64_0.0.1.31"
+else
+export FILE_NAME := "gar_asus_be88u_aarch64_0.0.1.31"
+endif
+endif
+
+ifeq ($(BRCM_CHIP),6765)
+export FILE_NAME := "gar_asus_bcm6765_be92u_aarch64_0.0.1.31"
+endif
+ifeq ($(BRCM_CHIP),6766)
+export FILE_NAME :=
+endif
 endif
 
 ifeq ($(RTCONFIG_SOC_MT7988D),y)
 export FILE_NAME := "gar_asus_mt7988_bt8_aarch64_cortex-a53_0.0.1.27"
 endif
 ifeq ($(RTCONFIG_SOC_MT7987),y)
-export FILE_NAME := "gar_asus_mt7987_be59_aarch64_0.0.1.27"
+export FILE_NAME := "gar_asus_mt7987_be59_aarch64_0.0.1.31"
 endif
 
 # IPQ5322 kernel version or 32/64 bits
 ifeq ($(RTCONFIG_SOC_IPQ53XX),y)
-SUBLEVEL := $(shell grep '^SUBLEVEL =' $(LINUXDIR)/Makefile | awk '{print $$3}')
 ifeq ($(MUSL64),y)
-export FILE_NAME := "gar_asus_ipq5322_tuf_aarch64_cortex-a53_neon-vfpv4_0.0.1.27"
+export FILE_NAME := "gar_asus_ipq5322_tuf_aarch64_cortex-a53_neon-vfpv4_0.0.1.31"
 else
-export FILE_NAME := "gar_asus_ipq5322_bd4d5_arm_cortex-a7_neon-vfpv4_0.0.1.27"
+export FILE_NAME := "gar_asus_ipq5322_bd4d5_arm_cortex-a7_neon-vfpv4_0.0.1.31"
 endif
+endif
+
+FILE_NAME_RAW := $(subst ",,$(FILE_NAME))
+FILE_VERSION := $(lastword $(subst _, ,$(FILE_NAME_RAW)))
+
+ifeq ($(shell v="$(FILE_VERSION)"; \
+	if [ -n "$$v" ] && [ "$$(printf '%s\n%s\n' "0.0.1.31" "$$v" | sort -V | head -n1)" = "0.0.1.31" ]; then \
+		echo y; \
+	fi),y)
+export ARK_SIG_MOVE :=
+else
+export ARK_SIG_MOVE := y
 endif
 
 .PHONY: prebuild
@@ -102,8 +136,10 @@ ifeq ($(ARK_INI_MOVE), y)
 endif
 	@cp package/gloger.ini prebuild -rf
 	@cp package/gdm.ini prebuild -rf
-	@echo "[ARK] install sig"
+ifeq ($(ARK_SIG_MOVE), y)
+	@echo "[ARK] install sig from ark/sig"
 	@cp sig/* prebuild -rf
+endif
 endif
 
 ifeq ($(wildcard $(SRCBASE)/router/ark/*.c),)

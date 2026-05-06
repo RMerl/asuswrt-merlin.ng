@@ -7,24 +7,24 @@
     <style>
         /* Header Section */
         .header-section {
-            background: linear-gradient(135deg, #e8f4f86e 0%, #d8e8f56e 100%);
+            background: transparent;
             padding: 40px 0;
-            margin-bottom: 30px;
+            margin-bottom: var(--wrt-gutter-md);
             position: relative;
         }
 
         .header-title {
-            font-size: 2rem;
-            font-weight: bold;
+            font-size: var(--wrt-h1-font-size);
+            font-weight: var(--wrt-heading-font-weight);
             text-transform: uppercase;
-            margin-bottom: 15px;
+            margin-bottom: var(--wrt-gutter-sm);
             letter-spacing: 1px;
         }
 
         .header-subtitle {
-            color: var(--text-info-02-color);
-            font-size: 1rem;
-            line-height: 1.5;
+            color: var(--wrt-text-color);
+            font-size: var(--wrt-body-font-size);
+            line-height: var(--wrt-line-height-base);
         }
 
         /* Level Visual Header */
@@ -33,7 +33,7 @@
             justify-content: space-around;
             align-items: center;
             position: relative;
-            padding: 20px 0;
+            padding: var(--wrt-gutter-md) 0;
         }
 
         .level-visual-item {
@@ -86,36 +86,36 @@
             padding: 15px 20px;
             display: flex;
             align-items: center;
-            border-bottom: 1px solid #e0e6ed;
+            border-bottom: 1px solid var(--wrt-divider-color);
         }
 
         .level-number {
-            background: var(--primary-80);
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.85rem;
-            margin-right: 15px;
-            font-family: 'rog';
+            background-image: var(--gradient-color-primary);
+            color: var(--wrt-text-color);
+            padding: var(--wrt-gutter-xs) var(--wrt-gutter-sm);
+            border-radius: var(--radius-pill);
+            font-weight: var(--wrt-heading-font-weight);
+            font-size: var(--wrt-small-font-size);
+            margin-right: var(--wrt-gutter-sm);
+            font-family: var(--wrt-font-family);
         }
 
         .level-title {
-            font-size: 1.3rem;
-            font-weight: bold;
+            font-size: var(--wrt-h6-font-size);
+            font-weight: var(--wrt-heading-font-weight);
             margin: 0;
         }
 
         .level-content {
-            padding: 25px;
+            padding: var(--wrt-gutter-md);
         }
 
         /* Feature Items */
         .feature-item {
             display: flex;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 1rem;
+            gap: var(--wrt-gutter-sm);
+            margin-bottom: var(--wrt-gutter-sm);
         }
 
         .feature-icon {
@@ -150,9 +150,9 @@
 
         .feature-name span::before {
             content: '/';
-            color: var(--primary-60);
+            color: var(--wrt-brand-primary);
             margin-right: 10px;
-            font-size: 1.3rem;
+            font-size: var(--wrt-h3-font-size);
         }
 
         .feature-name > div {
@@ -201,9 +201,8 @@
 
         /* Divider */
         .divider {
-            width: 100%;
             height: 1px;
-            background: linear-gradient(90deg, #e0e6ed 0%, #e0e6ed 80%, transparent 100%);
+            background-image: var(--gradient-color-primary);
             margin: 5px 0 10px 15px;
         }
     </style>
@@ -385,16 +384,13 @@
                         </div>
                         <div class="feature-content">
                             <div class="feature-name">
-                                <span>网易UU加速器</span>
+                                <span><#UU_Accelerator#></span>
                                 <div>
                                     <a target="_blank" href="https://uu.163.com/router/" class="faq-badge">| FAQ |</a>
                                 </div>
                             </div>
                             <div class="divider"></div>
-                            <p class="feature-description">
-                                UU路由器插件为三大主机PS4、Switch、Xbox One提供加速。可实现多台主机同时加速，NAT类型All
-                                Open。畅享全球联机超快感！
-                            </p>
+                            <p class="feature-description"><#UU_Accelerator_desc#></p>
                         </div>
                         <div class="feature-settings">
                             <button class="btn btn-outline-primary"><#GO_SETTING#></button>
@@ -454,7 +450,7 @@
 
             if (uuElement) uuElement.classList.remove("d-none");
             if (uuImg) {
-                uuImg.src = "../images/uu_accelerator.png";
+                uuImg.src = "../images/UU_Logo_RGB.svg";
                 uuImg.setAttribute("onerror", "this.style.display='none'");
             }
             if (uuSettingsLink) {

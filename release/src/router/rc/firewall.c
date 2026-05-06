@@ -59,10 +59,6 @@
 #include "multi_wan.h"
 #endif
 
-#ifdef RTCONFIG_TCODE
-#include <tcode.h>
-#endif
-
 #define WEBSTRFILTER 1
 #define CONTENTFILTER 1
 
@@ -1650,7 +1646,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	if (wan_unit > WAN_UNIT_MULTISRV_BASE) return;
 #endif
 #ifdef RTCONFIG_IPV6
-#if defined(RTCONFIG_OPENVPN) || defined(RTCONFIG_WIREGUARD)
+#if defined(RTCONFIG_OPENVPN) || defined(RTCONFIG_WIREGUARD) || defined(RTCONFIG_MULTILAN_CFG)
 	if (ipv6_enabled()) {
 		eval("ip6tables", "-t", "nat", "-F");
 	}
@@ -2204,6 +2200,15 @@ _dprintf("nat_rule: start_nat_rules 1.\n");
 	}
 	else
 _dprintf("%s: nat_rule: skip nat_rules because of no PHY.\n", __func__);
+
+#ifdef RTCONFIG_IPV6
+#if defined(RTCONFIG_MULTILAN_CFG)
+	if (ipv6_enabled()) {
+		eval("ip6tables", "-t", "nat", "-A", "POSTROUTING", "-s", "fc00::/7", "-o", wan_if, "-j", "MASQUERADE");
+	}
+#endif
+#endif
+
 }
 
 #if defined(RTCONFIG_DUALWAN) || defined(RTCONFIG_MULTICAST_IPTV) // RTCONFIG_DUALWAN || RTCONFIG_MULTICAST_IPTV
@@ -2987,6 +2992,12 @@ start_default_filter(int lanunit)
 #else
 	int debug = IS_ATE_FACTORY_MODE();
 #endif
+#if defined(RTCONFIG_BCM_EXT_SWITCH_RTK) || defined(RTCONFIG_BCM_EXT_SWITCH_MXL)
+	int k;
+	char key_vlan[32], key_mask[32];
+	int vid;
+	const char *pmask;
+#endif
 
 	if (!is_routing_enabled())
 		return;
@@ -3096,6 +3107,24 @@ start_default_filter(int lanunit)
 	fprintf(fp, "-A FORWARD -i %s -o %s -j ACCEPT\n", lan_if, lan_if);
 	fprintf(fp, "-A FORWARD -i %s -o %s -j ACCEPT\n", "lo", "lo");
 
+#if defined(RTCONFIG_BCM_EXT_SWITCH_RTK) || defined(RTCONFIG_BCM_EXT_SWITCH_MXL)
+	for (k = 1; k <= 6; k++) {
+		snprintf(key_vlan, sizeof(key_vlan), "user%d_vlan", k);
+		snprintf(key_mask, sizeof(key_mask), "user%d_vlan_portmask", k);
+		vid = nvram_get_int(key_vlan);
+		pmask = nvram_safe_get(key_mask);
+
+		if (vid > 0 && pmask && *pmask) {
+			fprintf(fp, "-A INPUT -i br%d -m state --state NEW -j ACCEPT\n", vid);
+			// avoid guest <-> main
+			fprintf(fp, "-A FORWARD -i br%d -o %s -j DROP\n", vid, lan_if);
+			fprintf(fp, "-A FORWARD -i %s -o br%d -j DROP\n", lan_if, vid);
+
+			fprintf(fp, "-A FORWARD -i br%d -j ACCEPT\n", vid);
+		}
+	}
+#endif
+
 #ifdef RTCONFIG_WIFI_SON
 	if (sw_mode() != SW_MODE_REPEATER && nvram_match("wifison_ready", "1")) {
 		fprintf(fp, "-A FORWARD -i %s -o %s -j DROP\n", lan_if, BR_GUEST);
@@ -3173,6 +3202,22 @@ start_default_filter(int lanunit)
 		fprintf(fp, "-A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT\n");
 		fprintf(fp, "-A FORWARD -i %s -o %s -j ACCEPT\n", lan_if, lan_if);
 		fprintf(fp, "-A FORWARD -i %s -o %s -j ACCEPT\n", "lo", "lo");
+#if defined(RTCONFIG_BCM_EXT_SWITCH_RTK) || defined(RTCONFIG_BCM_EXT_SWITCH_MXL)
+		for (k = 1; k <= 6; k++) {
+
+			snprintf(key_vlan, sizeof(key_vlan), "user%d_vlan", k);
+			snprintf(key_mask, sizeof(key_mask), "user%d_vlan_portmask", k);
+			vid = nvram_get_int(key_vlan);
+			pmask = nvram_safe_get(key_mask);
+
+			if (vid > 0 && pmask && *pmask) {
+				fprintf(fp, "-A INPUT -i br%d -m state --state NEW -j ACCEPT\n", vid);
+				fprintf(fp, "-A FORWARD -i br%d -o %s -j DROP\n", vid, lan_if);
+				fprintf(fp, "-A FORWARD -i %s -o br%d -j DROP\n", lan_if, vid);
+				fprintf(fp, "-A FORWARD -i br%d -j ACCEPT\n", vid);
+			}
+		}
+#endif
 	}
 
 	fprintf(fp, "-A logaccept -m state --state NEW -j LOG --log-prefix \"ACCEPT \" "
@@ -4976,6 +5021,25 @@ TRACE_PT("writing Parental Control\n");
 			fprintf(fp, "-A %s -i %s -p icmp -j %s\n", "INPUT_PING", wan_if, logdrop);
 			if (strcmp(wanx_if, wan_if) && inet_addr_(wanx_ip) && dualwan_unit__nonusbif(wan_unit))
 				fprintf(fp, "-A %s -i %s -p icmp -j %s\n", "INPUT_PING", wanx_if, logdrop);
+#if defined(RTCONFIG_BCM_EXT_SWITCH_RTK) || defined(RTCONFIG_BCM_EXT_SWITCH_MXL)
+			for (int k = 1; k <= 6; k++) {
+				char key_vlan[32];
+				char key_mask[32];
+				int vid;
+				const char *pmask;
+
+				snprintf(key_vlan, sizeof(key_vlan), "user%d_vlan", k);
+				snprintf(key_mask, sizeof(key_mask), "user%d_vlan_portmask", k);
+
+				vid = nvram_get_int(key_vlan);
+				pmask = nvram_safe_get(key_mask);
+
+				if (!(vid > 0 && pmask && *pmask))
+					continue;
+
+				fprintf(fp, "-A %s -i br%d -p icmp -j ACCEPT\n", "INPUT_PING", vid);
+			}
+#endif
 		}
 
 #ifdef RTCONFIG_IPSEC

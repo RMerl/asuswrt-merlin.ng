@@ -909,28 +909,28 @@ function clickEvent(obj){
 				var eLAN_str = "<#Ethernet_wan#>".replace(/WAN/, "LAN");
 				if(obj.id.indexOf("primary") != -1){
 					if(dualwan_first_if == "wan")
-						stitle = "<#Ethernet_wan#> Status";
+						stitle = `<#AiMesh_WAN_Status#>`;
 					else if(dualwan_first_if == "lan")
-						stitle = eLAN_str+" Status";
+						stitle = eLAN_str+" <#Status_Str#>";
 					else if(dualwan_first_if == "usb"){
 						if(gobi_support)
-							stitle = "<#Mobile_title#> Status";
+							stitle = `<#Mobile_status_title#>`;
 						else
-							stitle = "<#menu5_4_4#> Status";
+							stitle = `<#HSDPAConfig_hsdpa_mode_status#>`;
 					}
 					else	
 						stitle = "<#statusTitle_Primary_WAN#>";
 				}
 				else{
 					if(dualwan_second_if == "wan")
-						stitle = "<#Ethernet_wan#> Status";
+						stitle = `<#AiMesh_WAN_Status#>`;
 					else if(dualwan_second_if == "lan")
-						stitle = eLAN_str+" Status";
+						stitle = eLAN_str+" <#Status_Str#>";
 					else if(dualwan_second_if == "usb"){
 						if(gobi_support)
-							stitle = "<#Mobile_title#> Status";
+							stitle = `<#Mobile_status_title#>`;
 						else
-							stitle = "<#menu5_4_4#> Status";
+							stitle = `<#HSDPAConfig_hsdpa_mode_status#>`;
 					}
 					else
 						stitle = "<#statusTitle_Secondary_WAN#>";
@@ -2425,6 +2425,18 @@ function showClientlistModal(){
     clientlistModal.show();
 }
 
+if (isSupport("AURA_SCHED")) {
+	let script = document.createElement('script');
+	script.type = 'text/javascript';
+	script.src = '/js/ledScheduler.js';
+	script.onload = function() {
+		window.showLedScheduler = function(parms){
+			const ledScheduler = new popupLedScheduler(parms);
+			ledScheduler.show();
+		}
+	};
+	document.head.appendChild(script);
+}
 </script>
 </head>
 
@@ -2832,7 +2844,7 @@ function showClientlistModal(){
 						</div>
 						<div style="display:table-cell">
 							<div>
-								<span id="SmartConnectName" style="font-size:14px;font-family: Verdana, Arial, Helvetica, sans-serif; display:none">Smart Connect Status: </span>
+								<span id="SmartConnectName" style="font-size:14px;font-family: Verdana, Arial, Helvetica, sans-serif; display:none"><#smart_connect_status#>: </span>
 							</div>
 							<div>
 								<strong id="SmartConnectStatus" class="index_status" style="font-size:14px; display:none"><a style="color:#FFF;text-decoration:underline;" href="/

@@ -1,7 +1,8 @@
 import {isSupport} from "./utils.module.js";
 import {AsuswrtPopupPanel, AsuswrtButton, ToggleButton} from "./component.module.js";
 
-const ui_lang = httpApi.nvramGet(["preferred_lang"]).preferred_lang;
+const _nvram = httpApi.nvramGet(["preferred_lang", "productid"]);
+const ui_lang = _nvram.preferred_lang;
 
 const htmlEnDeCode = (function () {
     let charToEntityRegex,
@@ -105,6 +106,7 @@ class Client {
             amesh_papMac: "",
             amesh_bind_mac: "",
             amesh_bind_band: "0",
+            aimesh_connect_mac: "", //record the backhaul mac address of the AP that AiMesh connected to
             sdn_idx: "0",
             ROG: false,
             uploadIcon: "NoIcon",
@@ -122,6 +124,8 @@ class Client {
             showConnectTo: true,
             displayConnectType: "",
             classConnectType: "",
+            lastConnectTs: 0,
+            mlo_links: {},
         };
 
         // 合併預設值和傳入的值
@@ -263,6 +267,56 @@ class Client {
     }
 }
 
+/**
+ * Returns the primary MLO band key for a given mlo_links object.
+ * Product-specific priority:
+ *   BQ16        : 6G1 → 5G2 → 5G1 → 2G
+ *   BQ16_PRO    : 6G1 → 5G1 → 6G2 → 2G
+ *   BT8 / BT6   : 5G2 → 5G1 → 2G
+ *   RT-BE95U    : 5G1 → 6G1 → 2G
+ *   (generic)   : 6G1 → 5G1 → 5G2 → 2G
+ * Falls back to first available band key if none of the above match.
+ * @param {Object} mloLinks  e.g. client.mlo_links
+ * @returns {string|null}    band key such as '6G1', '5G1', '5G2', or null if empty
+ */
+function getMLOPrimaryBand(mloLinks) {
+    const bands = Object.keys(mloLinks);
+    if (bands.length === 0) return null;
+
+    if (_nvram.productid === "BQ16") {
+        if (bands.includes('6G1')) return '6G1';
+        if (bands.includes('5G2')) return '5G2';
+        if (bands.includes('5G1')) return '5G1';
+        if (bands.includes('2G'))  return '2G';
+        return bands[0];
+    }
+    if (_nvram.productid === "BQ16_PRO") {
+        if (bands.includes('6G1')) return '6G1';
+        if (bands.includes('5G1')) return '5G1';
+        if (bands.includes('6G2')) return '6G2';
+        if (bands.includes('2G'))  return '2G';
+        return bands[0];
+    }
+    if (_nvram.productid === "BT8" || _nvram.productid === "BT6") {
+        if (bands.includes('5G2')) return '5G2';
+        if (bands.includes('5G1')) return '5G1';
+        if (bands.includes('2G'))  return '2G';
+        return bands[0];
+    }
+    if (_nvram.productid === "RT-BE95U") {
+        if (bands.includes('5G1')) return '5G1';
+        if (bands.includes('6G1')) return '6G1';
+        if (bands.includes('2G'))  return '2G';
+        return bands[0];
+    }
+
+    if (bands.includes('6G1'))  return '6G1';
+    if (bands.includes('5G1'))  return '5G1';
+    if (bands.includes('5G2'))  return '5G2';
+    if (bands.includes('2G'))  return '2G';
+    return bands[0];
+}
+
 export class ClientList {
     constructor() {
         this.clients = [];
@@ -284,10 +338,6 @@ export class ClientList {
         this.uploadIconFetched = false;
         this.cfg_clientlist = {};
         this.fetchDone = false;
-
-        setInterval(() => {
-            this.fetchTraffic();
-        }, 2000);
     }
 
     async init() {
@@ -335,12 +385,22 @@ export class ClientList {
             stats.wireless_band['6g2']
         ];
 
-        const iconLoadPromises = onlineClients.map(async client => {
-            await client.saveCloudAsusClientIcon();
-            await client.getUploadIcon();
-        });
+        const offlineClientsWithUploadImg = this.listOfflineClients().filter(c => c.isUserUploadImg);
+        const iconLoadPromises = [
+            ...onlineClients.map(async client => {
+                await client.saveCloudAsusClientIcon();
+                await client.getUploadIcon();
+            }),
+            ...offlineClientsWithUploadImg.map(client => client.getUploadIcon()),
+        ];
         await Promise.all(iconLoadPromises);
         this.fetchDone = true;
+    }
+
+    startTrafficFetch() {
+        setInterval(() => {
+            this.fetchTraffic();
+        }, 2000);
     }
 
     findClientByMac(mac) {
@@ -351,52 +411,11 @@ export class ClientList {
         return this.clients.find(client => client.ip === ip);
     }
 
-    async fetchClientDB(mac) {
-        const time = Math.floor(new Date().getTime() / 1000);
-        const payload = ['sta_tx', 'sta_rx', 'sta_tbyte', 'sta_rbyte', 'sta_rssi', 'data_time'];
-        await fetch(`/get_diag_content_data.cgi?ts=${time}&duration=60&point=60&db=stainfo&content=${payload.join('%3B')}&filter=sta_mac>txt>${mac}>0`)
-            .then(data => data.json())
-            .then(data => {
-                if (typeof data.contents !== 'undefined' && data.contents.length > 0) {
-                    // console.log(data.contents)
-                    return data.contents.map(content => ({
-                        sta_tx: content[0],
-                        sta_rx: content[1],
-                        sta_tbyte: content[2],
-                        sta_rbyte: content[3],
-                        sta_rssi: content[4],
-                        data_time: content[5]
-                    }))
-
-                } else {
-                    return []
-                }
-            })
-            .then(data => {
-                //sort by data_time desc
-                data.sort((a, b) => b.data_time - a.data_time);
-                if (data.length > 0) {
-                    const client = this.clients.find(client => client.mac === mac);
-                    if (client) {
-                        Object.assign(client, {
-                            db_sta_tx: data[0].sta_tx,
-                            db_sta_rx: data[0].sta_rx,
-                            db_rssi: data[0].sta_rssi,
-                            db_sta_tbyte: data[0].sta_tbyte,
-                            db_sta_rbyte: data[0].sta_rbyte
-                        });
-                        client.realtime_data = data;
-                    }
-                }
-            })
-
-    }
-
     async fetchTraffic() {
-        fetch(`/appGet.cgi?hook=bwdpi_status("traffic","","realtime","")`)
+        fetch(`/appGet.cgi?hook=dns_status("traffic","","realtime","")`)
             .then(response => response.json())
             .then(data => {
-                const traffic = data['bwdpi_status-traffic'];
+                const traffic = data['dns_status-traffic'];
                 const timestamp = new Date();
 
                 const lastTrafficMap = this.trafficData ?
@@ -494,6 +513,16 @@ export class ClientList {
         // console.log("cfg_clientlist", cfg_clientlist)
         await this.fetchUploadIconList();
 
+        function formatDateTime(date = new Date()) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}`;
+        }
+
         if (fromNetworkmapd !== undefined && Object.keys(fromNetworkmapd).length > 0 && fromNetworkmapd.maclist !== undefined) {
             for (const mac of fromNetworkmapd.maclist) {
                 const thisClient = fromNetworkmapd[mac];
@@ -549,6 +578,9 @@ export class ClientList {
                     showBlockInternet: showBlockInternet,
                     showTimeScheduling: showTimeScheduling,
                     showConnectTo: showConnectTo,
+                    lastConnectTs: parseInt(thisClient.lastConnectTs),
+                    lastAccessTime: (thisClient.lastConnectTs > 0) ? formatDateTime(new Date(thisClient.lastConnectTs * 1000)) : "",
+                    mlo_links: typeof (thisClient.mlo_links) === "undefined" ? {} : thisClient.mlo_links,
                 });
 
                 if (!this.findClientByMac(thisClient.mac)) {
@@ -568,17 +600,16 @@ export class ClientList {
                 if (isSupport("amas") && isSupport("dualband") && client.isWL == 3)
                     client.isWL = 2;
 
-                if (isSupport("stainfo")) {
-                    client.curTx = (thisClient.curTx == "") ? "" : thisClient.curTx;
-                    client.curRx = (thisClient.curRx == "") ? "" : thisClient.curRx;
-                    client.wlConnectTime = thisClient.wlConnectTime;
-                }
+                client.curTx = (thisClient.curTx == "") ? "" : thisClient.curTx;
+                client.curRx = (thisClient.curRx == "") ? "" : thisClient.curRx;
+                client.wlConnectTime = thisClient.wlConnectTime;
 
                 if (isSupport("amas")) {
                     if (typeof thisClient.amesh_isRe !== 'undefined') {
                         client.amesh_isRe = (thisClient.amesh_isRe == "1");
                         if (client.amesh_isRe && client.isOnline) { // re set amesh re device to offline
                             // client.isOnline = false;
+                            client.ssid = "";
                             if (typeof this.AiMeshTotalClientNum[thisClientMacAddr] === 'undefined') {
                                 this.AiMeshTotalClientNum[thisClientMacAddr] = 0;
                             }
@@ -586,20 +617,23 @@ export class ClientList {
                             if (typeof specific_node !== 'undefined') {
                                 client.name = specific_node.model_name;
                                 client.location = getLocation(specific_node);
-                                if (specific_node.re_path == "1" || specific_node.re_path == "16" || specific_node.re_path == "32" || specific_node.re_path == "64") {
+                                if (specific_node.re_path == "1" || specific_node.re_path == "16" || specific_node.re_path == "32" || specific_node.re_path == "64" || specific_node.re_path == "512") {
                                     //
                                 } else if (specific_node.re_path == "2") {
                                     const parentNode = cfg_clientlist.find(item => item.ap2g == specific_node.pap2g);
                                     client.parentApName = parentNode?.ui_model_name || "";
-                                    client.sdn_ssid = specific_node.pap2g_ssid;
+                                    // client.sdn_ssid = specific_node.pap2g_ssid;
+                                    client.aimesh_connect_mac = specific_node.sta2g;
                                 } else if (specific_node.re_path == "128") {
                                     const parentNode = cfg_clientlist.find(item => item.ap6g == specific_node.pap6g || item.ap6g1 == specific_node.pap6g);
                                     client.parentApName = parentNode?.ui_model_name || "";
-                                    client.sdn_ssid = specific_node.pap6g_ssid;
+                                    // client.sdn_ssid = specific_node.pap6g_ssid;
+                                    client.aimesh_connect_mac = specific_node.sta6g;
                                 } else {
                                     const parentNode = cfg_clientlist.find(item => item.ap5g == specific_node.pap5g || item.ap5g1 == specific_node.pap5g);
                                     client.parentApName = parentNode?.ui_model_name || "";
-                                    client.sdn_ssid = specific_node.pap5g_ssid;
+                                    // client.sdn_ssid = specific_node.pap5g_ssid;
+                                    client.aimesh_connect_mac = specific_node.sta5g;
                                 }
                             }
                         }
@@ -644,10 +678,6 @@ export class ClientList {
                 if (isSupport("mlo")) {
                     client.mlo = (typeof thisClient.mlo == "undefined") ? false : (thisClient.mlo == "1" ? true : false);
                 }
-
-                if (client.isOnline) {
-                    await this.fetchClientDB(client.mac);
-                }
             }
         }
 
@@ -667,16 +697,20 @@ export class ClientList {
                     let thisClientNickName = (typeof thisClient.nickName == "undefined") ? "" : (thisClient.nickName.trim() == "") ? "" : thisClient.nickName.trim();
                     thisClientNickName = htmlEnDeCode.htmlEncode(thisClientNickName);
                     const thisClientReNode = (typeof thisClient.amesh_isRe == "undefined") ? false : ((thisClient.amesh_isRe == "1"));
+                    const lastConnectTs = thisClient.conn_ts;
 
                     const client = new Client({
                         mac: thisClientMacAddr,
                         name: thisClientName,
                         nickName: thisClientNickName,
                         vendor: thisClient.vendor.trim(),
-                        is_wireless: parseInt(thisClient.is_wireless),
+                        is_wireless: parseInt(thisClient.wireless) > 0 ? 1 : 0,
+                        isWL: parseInt(thisClient.wireless),
                         from: thisClient.from,
                         ROG: (thisClient.ROG == "1"),
-                        isUserUploadImg: this.uploadIconList.some(value => value.toUpperCase().includes(thisClient.mac.replace(/\:/g, "").toUpperCase()))
+                        isUserUploadImg: this.uploadIconList.some(value => value.toUpperCase().includes(thisClient.mac.replace(/\:/g, "").toUpperCase())),
+                        lastConnectTs: lastConnectTs,
+                        lastAccessTime: lastConnectTs > 0 ? formatDateTime(new Date(lastConnectTs * 1000)) : "",
                     });
 
                     this.addClient(client);
@@ -1048,8 +1082,8 @@ export class ClientListTable {
                 sortable: false,
                 searchable: false,
                 data: 'isWL',
-                render: function (data, type, row) {
-                    if (!(isSwMode('mb') || isSwMode('ew'))) {
+                render: (data, type, row) => {
+                    if (!(this.isSwMode('mb') || this.isSwMode('ew'))) {
                         let rssi_t = 0;
                         if (data == "0")
                             rssi_t = "wired";
@@ -1057,14 +1091,12 @@ export class ClientListTable {
                             rssi_t = "wireless";
 
                         if (row.amesh_isReClient) {
-                           if (row.is_wireless) {
+                            if (row.is_wireless) {
                                 return `<div class='radio-icon radio-${rssi_t} ${row.classConnectType}'></div>`;
-                           }
-                           else{
-                              return `<div class='radio-icon radio-${rssi_t}'></div>`;
-                           }
-                        }
-                        else {
+                            } else {
+                                return `<div class='radio-icon radio-${rssi_t}'></div>`;
+                            }
+                        } else {
                             return `<div class='radio-icon radio-${rssi_t}'></div>`;
                         }
                     }
@@ -1116,22 +1148,31 @@ export class ClientListTable {
                 title: `<#AiMesh_PHY_Rate#>`, data: null, className: '',
                 render: function (data, type, row) {
                     let phyRate = "-";
-                    if (isSupport("stainfo") && !(this.isSwMode('mb') || this.isSwMode('ew'))) {
-                        if (isNaN(parseInt(row.db_sta_tx)) && isNaN(parseInt(row.db_sta_rx))) {
+                    if (!(this.isSwMode('mb') || this.isSwMode('ew'))) {
+                        if (isNaN(parseInt(row.curTx)) && isNaN(parseInt(row.curRx))) {
                             phyRate = `-`;
                         } else {
+                            let tx = row.curTx;
+                            let rx = row.curRx;
+                            if (row.isWL != 0) {
+                                const mloBand = getMLOPrimaryBand(row.mlo_links);
+                                if (mloBand) {
+                                    tx = row.mlo_links[mloBand].tx;
+                                    rx = row.mlo_links[mloBand].rx;
+                                }
+                            }
                             phyRate = `
-                                    <div class="phy-rate">
-                                        <div>
-                                            ${row.db_sta_tx}
-                                            <span>Mbps</span>
-                                        </div>
-                                        /
-                                        <div>
-                                            ${row.db_sta_rx}
-                                            <span>Mbps</span>
-                                        </div>
-                                    </div>`;
+                                <div class="phy-rate">
+                                    <div>
+                                        ${tx}
+                                        <span>Mbps</span>
+                                    </div>
+                                    /
+                                    <div>
+                                        ${rx}
+                                        <span>Mbps</span>
+                                    </div>
+                                </div>`;
                         }
                     }
                     return phyRate
@@ -1149,7 +1190,11 @@ export class ClientListTable {
                 id: 'clientIP',
                 title: `<#Client_IP#>`, data: 'ip', type: 'numeric', className: '',
                 render: function (data, type, row) {
-                    return (data === "" || typeof data === 'undefined') ? "-" : data;
+                    if (data === "" || typeof data === 'undefined') return type === 'sort' ? -1 : "-";
+                    if (type === 'sort') {
+                        return data.split('.').reduce((acc, octet) => acc * 256 + parseInt(octet, 10), 0);
+                    }
+                    return data;
                 }
             },
             {
@@ -1201,7 +1246,9 @@ export class ClientListTable {
                 data: 'rssi',
                 render: function (data, type, row) {
                     if (row.isWL != 0) {
-                        return `${data} dBm`
+                        const mloBand = getMLOPrimaryBand(row.mlo_links);
+                        if (mloBand) return `${row.mlo_links[mloBand].rssi} dbm`;
+                        return `${data} dbm`
                     } else {
                         return '-'
                     }
@@ -1219,6 +1266,20 @@ export class ClientListTable {
                         return "-";
                     } else {
                         return row.wlConnectTime;
+                    }
+                }
+            },
+            {
+                id: 'lastAccessTime',
+                title: `<#LastAccessTime#>`,
+                data: 'lastAccessTime',
+                name: 'last_access_time',
+                className: '',
+                render: function (data, type, row) {
+                    if (row.isOnline || data === "") {
+                        return "-";
+                    } else {
+                        return data;
                     }
                 }
             },
@@ -1575,7 +1636,22 @@ export class ClientListTable {
             this.clients = this.clientList.listOnlineWireClients(this.statusShow)
         }
 
+        if (!this.dataTable) {
+            return;
+        }
+
         this.dataTable?.clear().rows.add(this.clients).draw();
+
+        if (this.statusShow === 'offline') {
+            this.dataTable.column('last_access_time:name').visible(true);
+            this.dataTable.column('access_time:name').visible(false);
+        } else if (this.statusShow === 'all') {
+            this.dataTable.column('last_access_time:name').visible(true);
+            this.dataTable.column('access_time:name').visible(true);
+        } else {
+            this.dataTable.column('last_access_time:name').visible(false);
+            this.dataTable.column('access_time:name').visible(true);
+        }
 
         this.element.shadowRoot.querySelector('#interface_switch .segmented_picker_option[data-value="all"] .block_filter_name').innerText = `<#All#> (${this.clientList.listClients(0, this.statusShow).length})`
         this.element.shadowRoot.querySelector('#interface_switch .segmented_picker_option[data-value="wireless"] .block_filter_name').innerText = `<#tm_wireless#> (${this.clientList.listOnlineWirelessClients(this.statusShow).length})`
@@ -1612,12 +1688,12 @@ export class ClientInfoView {
         this.iconList = iconList;
 
         if (client.amesh_isRe) {
-            this.fetchClientDB(client.mac);
+            this.fetchClientSysInfo(client.mac);
         }
 
         const nvram_fetch = httpApi.nvramCharToAscii(["custom_clientlist", "MULTIFILTER_ALL", "MULTIFILTER_ENABLE", "MULTIFILTER_MAC", "MULTIFILTER_DEVICENAME", "MULTIFILTER_MACFILTER_DAYTIME_V2", "MULTIFILTER_MACFILTER_DAYTIME"], true)
         this.custom_clientlist = decodeURIComponent(nvram_fetch.custom_clientlist).replace(/&#62/g, ">").replace(/&#60/g, "<");
-        this.MULTIFILTER_ALL = decodeURIComponent(nvram_fetch.MULTIFILTER_ALL).replace(/&#62/g, ">").replace(/&#60/g, "<");
+        this.MULTIFILTER_ALL = nvram_fetch.MULTIFILTER_ALL;
         this.MULTIFILTER_ENABLE = decodeURIComponent(nvram_fetch.MULTIFILTER_ENABLE).replace(/&#62/g, ">").replace(/&#60/g, "<");
         this.MULTIFILTER_MAC = decodeURIComponent(nvram_fetch.MULTIFILTER_MAC).replace(/&#62/g, ">").replace(/&#60/g, "<");
         this.MULTIFILTER_DEVICENAME = decodeURIComponent(nvram_fetch.MULTIFILTER_DEVICENAME).replace(/&#62/g, ">").replace(/&#60/g, "<");
@@ -1770,11 +1846,13 @@ export class ClientInfoView {
                                     <div class="d-flex flex-column p-3 gap-2">
                                         <div class="d-flex align-items-center justify-content-evenly gap-1 fw-bold">
                                             <div class="d-flex align-items-center gap-2 fw-bold">
-                                                <i class="connect-status ${client.isOnline ? 'online' : 'offline'}"></i>${client.isOnline ? '<#Clientlist_Online#>' : '<#Clientlist_Offline#>'}
+                                                <i class="connect-status ${client.isOnline ? 'online' : 'offline'}"></i>${client.isOnline ? '<#Clientlist_Online#>' : '<#Clientlist_OffLine#>'}
                                             </div>
                                             <div class="vr"></div>
                                             <div class="d-flex align-items-center gap-2">
-                                                <div class="access-time-title"><#Access_Time#></div><div class="access-time-value">${ClientListTable.dataTable.cell(rowIndex, rowData.column('access_time:name').index()).node().innerHTML}</div>
+                                            ${client.isOnline ?
+            `<div class="access-time-title"><#Access_Time#></div><div class="access-time-value">${ClientListTable.dataTable.cell(rowIndex, rowData.column('access_time:name').index()).node().innerHTML}</div>` :
+            `<div class="access-time-title"><#LastAccessTime#></div><div class="access-time-value">${ClientListTable.dataTable.cell(rowIndex, rowData.column('last_access_time:name').index()).node().innerHTML}</div>`}
                                             </div>
                                         </div>
                                     </div>
@@ -1891,14 +1969,16 @@ export class ClientInfoView {
             },
             {title: `<#MAC_Address#>`, value: client.mac, order: 2},
             {title: `<#AiMesh_NodeLocation#>`, value: client.location, order: 3},
-            {title: `<#Connection_Type#>`, value: (() => {
-                switch (String(client.isWL)) {
-                    case "0":
-                        return `<#tm_wired#>`;
-                    default:
-                        return `<#tm_wireless#>`;
-                }
-            })(), order: 4},
+            {
+                title: `<#Connection_Type#>`, value: (() => {
+                    switch (String(client.isWL)) {
+                        case "0":
+                            return `<#tm_wired#>`;
+                        default:
+                            return `<#tm_wireless#>`;
+                    }
+                })(), order: 4
+            },
             // {title: "Hostname", value: "ASUS", order: 3},
             // {title: "Manufacturer", value: "ASUS", order: 4},
             // {title: "Model", value: "ROG Phone3", order: 5},
@@ -1926,7 +2006,11 @@ export class ClientInfoView {
             // {title: "<#Access_Time#>", value: client.displayAccessTime, order: 5},
             // {title: "Access AP", value: client.displayAccessAP, order: 6},
         );
-        const connectionStatusCard = new infoCard({type: 'table', title: `<#Clinet_Connection_status#>`, data: connectionStatus})
+        const connectionStatusCard = new infoCard({
+            type: 'table',
+            title: `<#Clinet_Connection_status#>`,
+            data: connectionStatus
+        })
 
         const clientNameInput = div.querySelector('#ClientName');
         let clientIpInput;
@@ -2120,11 +2204,8 @@ export class ClientInfoView {
                     }
                 }
 
-                payload.modified = 0;
-                payload.flag = 'background';
                 payload.action_mode = "apply";
-                payload.action_script = "saveNvram";
-                payload.action_wait = "1";
+                payload.rc_service = "saveNvram";
 
                 if (this.iconChange && typeof client.selectIcon !== 'undefined') {
                     if (client.selectIcon.source === 'custom') {
@@ -2134,6 +2215,8 @@ export class ClientInfoView {
                         payload.usericon_mac = clientMac.replace(/\:/g, "");
                         payload.custom_usericon = `${client.selectIcon.type}>${client.selectIcon.src}`;
                     }
+                } else if (client.isUserUploadImg) {
+                    payload.custom_usericon = `${client.mac.replace(/\:/g, "")}>${client.uploadIcon}`;
                 } else {
                     payload.custom_usericon = `${client.mac.replace(/\:/g, "")}>noupload`;
                 }
@@ -2169,8 +2252,7 @@ export class ClientInfoView {
                     if (dhcp_staticlist != dhcp_staticlist_ori) {
                         payload.dhcp_staticlist = dhcp_staticlist;
                         payload.dhcp_static_x = 1;
-                        payload.action_script = "restart_net_and_phy";
-                        payload.action_wait = "35";
+                        payload.rc_service = "restart_net_and_phy";
                     }
 
                     //Time Scheduling
@@ -2184,14 +2266,15 @@ export class ClientInfoView {
                         payload.MULTIFILTER_MACFILTER_DAYTIME = this.MULTIFILTER_MACFILTER_DAYTIME;
                     }
 
+                    if (timeSchedulingSwitch.getValue() || blockInternetAccessSwitch.getValue()) {
+                        if (payload.rc_service === "restart_net_and_phy") {
+                            payload.rc_service += ";restart_firewall";
+                        } else {
+                            payload.rc_service = "restart_firewall";
+                        }
+                    }
                     if (timeSchedulingSwitch.getValue()) {
                         timeSchedulingEdit.classList.add('active');
-                        payload.MULTIFILTER_ALL = "1";
-                        if (payload.action_script === "restart_net_and_phy") {
-                            payload.action_script += ";restart_firewall";
-                        } else {
-                            payload.action_script = "restart_firewall";
-                        }
                     } else {
                         timeSchedulingEdit.classList.remove('active');
                     }
@@ -2228,33 +2311,52 @@ export class ClientInfoView {
                     } else {//exist rule
                         this.MULTIFILTER_MAC.split(">").forEach(function (element, index) {
                             if (element.indexOf(client.mac) != -1) {
-                                const tmpArray = payload.MULTIFILTER_ENABLE.split(">");
-                                tmpArray[index] = 0;
-                                if (timeSchedulingSwitch.getValue())
-                                    tmpArray[index] = 1;
-                                else if (blockInternetAccessSwitch.getValue())
-                                    tmpArray[index] = 2;
-                                payload.MULTIFILTER_ENABLE = tmpArray.join(">");
+                                if (!timeSchedulingSwitch.getValue() && !blockInternetAccessSwitch.getValue()) {
+                                    // Remove entry from all MULTIFILTER arrays
+                                    const macArray = payload.MULTIFILTER_MAC.split(">");
+                                    const enableArray = payload.MULTIFILTER_ENABLE.split(">");
+                                    const devicenameArray = payload.MULTIFILTER_DEVICENAME.split(">");
+                                    const daytimeKey = isSupport("PC_SCHED_V3") ? "MULTIFILTER_MACFILTER_DAYTIME_V2" : "MULTIFILTER_MACFILTER_DAYTIME";
+                                    const daytimeArray = (payload[daytimeKey] || "").split(">");
+
+                                    macArray.splice(index, 1);
+                                    enableArray.splice(index, 1);
+                                    devicenameArray.splice(index, 1);
+                                    daytimeArray.splice(index, 1);
+
+                                    payload.MULTIFILTER_MAC = macArray.join(">");
+                                    payload.MULTIFILTER_ENABLE = enableArray.join(">");
+                                    payload.MULTIFILTER_DEVICENAME = devicenameArray.join(">");
+                                    payload[daytimeKey] = daytimeArray.join(">");
+
+                                    if (payload.rc_service === "restart_net_and_phy") {
+                                        payload.rc_service += ";restart_firewall";
+                                    } else {
+                                        payload.rc_service = "restart_firewall";
+                                    }
+                                } else {
+                                    const tmpArray = payload.MULTIFILTER_ENABLE.split(">");
+                                    if (timeSchedulingSwitch.getValue())
+                                        tmpArray[index] = 1;
+                                    else if (blockInternetAccessSwitch.getValue())
+                                        tmpArray[index] = 2;
+                                    payload.MULTIFILTER_ENABLE = tmpArray.join(">");
+                                }
                             }
                         })
                     }
+
+                    // MULTIFILTER_ALL = "1" if any active rule exists, otherwise keep original
+                    payload.MULTIFILTER_ALL = /[12]/.test(payload.MULTIFILTER_ENABLE) ? "1" : this.MULTIFILTER_ALL;
                 }
 
-                fetch('/start_apply2.htm', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: new URLSearchParams(payload)
-                }).then(response => {
-                    if (response.ok) {
-                        ClientListTable.reloadClientListData();
-                        top.document.querySelector('#loader')?.remove();
-                        top.document.querySelector('#right-panel').classList.remove('show');
-                    }
-                    // throw new Error('Network response was not ok.');
-                }).catch(error => {
-                    console.error('There has been a problem with your fetch operation:', error);
+                if (payload.rc_service && payload.rc_service.includes('restart_net_and_phy')) {
+                    showLoading(35);
+                }
+                httpApi.nvramSet(payload, () => {
+                    ClientListTable.reloadClientListData();
+                    top.document.querySelector('#loader')?.remove();
+                    top.document.querySelector('#right-panel').classList.remove('show');
                 })
             }
         }
@@ -2262,6 +2364,19 @@ export class ClientInfoView {
         div.querySelector('#ClientSettingConfirm')?.addEventListener('click', () => {
             clientSettingConfirm(this.client);
         })
+
+        // Determine connectMac and pre-fetch connect info before building charts
+        let connectMac = null;
+        if (client.isWL) {
+            connectMac = client.mac;
+            if (client.mlo) {
+                const mloBand = getMLOPrimaryBand(client.mlo_links);
+                if (mloBand) connectMac = client.mlo_links[mloBand].mac;
+            } else if (client.amesh_isRe) {
+                connectMac = client.aimesh_connect_mac;
+            }
+        }
+        const connectInfoPromise = connectMac ? this.fetchClientConnectInfo(connectMac) : Promise.resolve();
 
         const traffic_chart = div.querySelector('#traffic_chart');
 
@@ -2344,19 +2459,6 @@ export class ClientInfoView {
                 }]
             };
 
-            client.realtime_data.forEach((item, index) => {
-                const date = new Date(parseInt(item.data_time) * 1000);
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() 返回 0-11，所以加 1
-                const day = String(date.getDate()).padStart(2, '0');
-                const hours = String(date.getHours()).padStart(2, '0');
-                const minutes = String(date.getMinutes()).padStart(2, '0');
-                const seconds = String(date.getSeconds()).padStart(2, '0');
-                const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-                data.datasets[0].data.push({x: formattedDate, y: parseFloat(item.sta_tx)});
-                data.datasets[1].data.push({x: formattedDate, y: parseFloat(item.sta_rx)});
-            });
-
             const config = {
                 type: 'line',
                 data: data,
@@ -2422,12 +2524,59 @@ export class ClientInfoView {
 
             reloadChartColor(data, config);
 
-            setTimeout(() => {
-                myChart = new Chart(ctx, config);
-            }, 1000)
+            const fmtDate = (ts) => {
+                const d = new Date(parseInt(ts) * 1000);
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
+            };
+
+            setTimeout(async () => {
+                clearInterval(this._connectInfoInterval);
+                await connectInfoPromise;
+                client.realtime_data?.forEach((item) => {
+                    data.datasets[0].data.push({x: fmtDate(item.data_time), y: parseFloat(item.sta_tx)});
+                    data.datasets[1].data.push({x: fmtDate(item.data_time), y: parseFloat(item.sta_rx)});
+                });
+                this._trafficChart = myChart = new Chart(ctx, config);
+
+                if (connectMac) {
+                    this._connectInfoInterval = setInterval(async () => {
+                        if (!this.element.isConnected) {
+                            clearInterval(this._connectInfoInterval);
+                            return;
+                        }
+                        await this.fetchClientConnectInfo(connectMac);
+                        if (this._trafficChart) {
+                            this._trafficChart.data.datasets[0].data = [];
+                            this._trafficChart.data.datasets[1].data = [];
+                            this.client.realtime_data?.forEach((item) => {
+                                this._trafficChart.data.datasets[0].data.push({
+                                    x: fmtDate(item.data_time),
+                                    y: parseFloat(item.sta_tx)
+                                });
+                                this._trafficChart.data.datasets[1].data.push({
+                                    x: fmtDate(item.data_time),
+                                    y: parseFloat(item.sta_rx)
+                                });
+                            });
+                            this._trafficChart.update();
+                        }
+                        if (this._rssiChart) {
+                            this._rssiChart.data.datasets[0].data = [];
+                            this.client.realtime_data?.forEach((item) => {
+                                this._rssiChart.data.datasets[0].data.push({
+                                    x: fmtDate(item.data_time),
+                                    y: parseFloat(item.sta_rssi)
+                                });
+                            });
+                            this._rssiChart.update();
+                        }
+                    }, 30000);
+                }
+            }, 0)
         }
 
         if (client.isWL) {
+
             const rssi_chart = div.querySelector('#rssi_chart');
             if (rssi_chart) {
 
@@ -2490,18 +2639,6 @@ export class ClientInfoView {
                         fill: true
                     }]
                 };
-
-                client.realtime_data.forEach((item, index) => {
-                    const date = new Date(parseInt(item.data_time) * 1000);
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() 返回 0-11，所以加 1
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const hours = String(date.getHours()).padStart(2, '0');
-                    const minutes = String(date.getMinutes()).padStart(2, '0');
-                    const seconds = String(date.getSeconds()).padStart(2, '0');
-                    const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-                    data.datasets[0].data.push({x: formattedDate, y: parseFloat(item.sta_rssi)});
-                });
 
                 const config = {
                     type: 'line',
@@ -2568,9 +2705,15 @@ export class ClientInfoView {
 
                 reloadChartColor(data, config);
 
-                setTimeout(() => {
-                    myChart = new Chart(ctx, config);
-                }, 1000)
+                setTimeout(async () => {
+                    await connectInfoPromise;
+                    client.realtime_data?.forEach((item) => {
+                        const d = new Date(parseInt(item.data_time) * 1000);
+                        const formattedDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
+                        data.datasets[0].data.push({x: formattedDate, y: parseFloat(item.sta_rssi)});
+                    });
+                    this._rssiChart = myChart = new Chart(ctx, config);
+                }, 0)
             }
         } else {
             div.querySelector('#RssiChartCard').remove();
@@ -2722,24 +2865,43 @@ export class ClientInfoView {
 
                 reloadChartColor(data, config);
 
+                const fmtSysDate = (ts) => {
+                    const d = new Date(parseInt(ts) * 1000);
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
+                };
+
                 setTimeout(async () => {
-                    await this.fetchClientDB(client.mac);
-                    if (client.system_data?.length > 0) {
-                        client.system_data.forEach((item, index) => {
-                            const date = item.timestamp;
-                            const year = date.getFullYear();
-                            const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() 返回 0-11，所以加 1
-                            const day = String(date.getDate()).padStart(2, '0');
-                            const hours = String(date.getHours()).padStart(2, '0');
-                            const minutes = String(date.getMinutes()).padStart(2, '0');
-                            const seconds = String(date.getSeconds()).padStart(2, '0');
-                            const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-                            data.datasets[0].data.push({x: formattedDate, y: parseFloat(item.cpu_usage)});
-                            data.datasets[1].data.push({x: formattedDate, y: parseFloat(item.mem_usage)});
-                        });
-                    }
-                    myChart = new Chart(ctx, config);
-                }, 1000)
+                    clearInterval(this._sysInfoInterval);
+                    await this.fetchClientSysInfo(client.mac);
+                    this.client.system_data?.forEach((item) => {
+                        data.datasets[0].data.push({x: fmtSysDate(item.data_time), y: parseFloat(item.cpu_usage)});
+                        data.datasets[1].data.push({x: fmtSysDate(item.data_time), y: parseFloat(item.mem_usage)});
+                    });
+                    this._systemChart = myChart = new Chart(ctx, config);
+
+                    this._sysInfoInterval = setInterval(async () => {
+                        if (!this.element.isConnected) {
+                            clearInterval(this._sysInfoInterval);
+                            return;
+                        }
+                        await this.fetchClientSysInfo(client.mac);
+                        if (this._systemChart) {
+                            this._systemChart.data.datasets[0].data = [];
+                            this._systemChart.data.datasets[1].data = [];
+                            this.client.system_data?.forEach((item) => {
+                                this._systemChart.data.datasets[0].data.push({
+                                    x: fmtSysDate(item.data_time),
+                                    y: parseFloat(item.cpu_usage)
+                                });
+                                this._systemChart.data.datasets[1].data.push({
+                                    x: fmtSysDate(item.data_time),
+                                    y: parseFloat(item.mem_usage)
+                                });
+                            });
+                            this._systemChart.update();
+                        }
+                    }, 30000);
+                }, 0)
             }
         } else {
             div.querySelector('#SystemChartCard').remove();
@@ -2748,42 +2910,68 @@ export class ClientInfoView {
 
     }
 
-    async fetchClientDB(mac) {
+    async fetchClientConnectInfo(mac) {
         const time = Math.floor(new Date().getTime() / 1000);
-        const payload = ['cpu_usage', 'mem_usage'];
-        await fetch(`/get_diag_content_data.cgi?ts=${time}&duration=60&point=30&db=sys_detect&content=${payload.join('%3B')}&filter=node_mac>txt>${mac}>0`)
+        const payload = ['sta_tx', 'sta_rx', 'sta_tbyte', 'sta_rbyte', 'sta_rssi', 'data_time'];
+        await fetch(`/get_diag_content_data.cgi?ts=${time}&duration=60&point=60&db=stainfo&content=${payload.join('%3B')}&filter=sta_mac>txt>${mac}>0`)
             .then(data => data.json())
             .then(data => {
-                let currentTime = new Date();
                 if (typeof data.contents !== 'undefined' && data.contents.length > 0) {
-                    return data.contents.map((entry, index) => {
-                        const time = new Date(currentTime.getTime() - (index * 60000));
-                        return {
-                            cpu_usage: entry[0],
-                            mem_usage: entry[1],
-                            timestamp: time
-                        };
-                    });
+                    return data.contents.map(content => ({
+                        sta_tx: content[0],
+                        sta_rx: content[1],
+                        sta_tbyte: content[2],
+                        sta_rbyte: content[3],
+                        sta_rssi: content[4],
+                        data_time: content[5]
+                    }));
                 } else {
-                    return []
+                    return [];
                 }
             })
             .then(data => {
-                //sort by data_time desc
-                data.sort((a, b) => b.timestamp - a.timestamp);
                 if (data.length > 0) {
-                    const client = this.client;
-                    if (client) {
-                        Object.assign(client, {
-                            cpu_usage: data[0].cpu_usage,
-                            mem_usage: data[0].mem_usage,
-                            timestamp: data[0].timestamp
-                        });
-                        client.system_data = data;
-                    }
+                    data.sort((a, b) => b.data_time - a.data_time);
+                    Object.assign(this.client, {
+                        db_sta_tx: data[0]?.sta_tx,
+                        db_sta_rx: data[0]?.sta_rx,
+                        db_rssi: data[0]?.sta_rssi,
+                        db_sta_tbyte: data[0]?.sta_tbyte,
+                        db_sta_rbyte: data[0]?.sta_rbyte
+                    });
+                }
+                this.client.realtime_data = data;
+            });
+    }
+
+    async fetchClientSysInfo(mac) {
+        const ts = Math.floor(new Date().getTime() / 1000);
+        const payload = ['cpu_usage', 'mem_usage', 'data_time'];
+        await fetch(`/get_diag_content_data.cgi?ts=${ts}&duration=60&point=60&db=sys_detect&content=${payload.join('%3B')}&filter=node_mac>txt>${mac}>0`)
+            .then(data => data.json())
+            .then(data => {
+                if (typeof data.contents !== 'undefined' && data.contents.length > 0) {
+                    return data.contents.map((entry) => ({
+                        cpu_usage: entry[0],
+                        mem_usage: entry[1],
+                        data_time: entry[2]
+                    }));
+                } else {
+                    return [];
                 }
             })
-
+            .then(data => {
+                if (data.length > 0) {
+                    data.sort((a, b) => b.data_time - a.data_time);
+                    Object.assign(this.client, {
+                        cpu_usage: data[0].cpu_usage,
+                        mem_usage: data[0].mem_usage,
+                    });
+                    this.client.system_data = data;
+                } else {
+                    this.client.system_data = [];
+                }
+            });
     }
 
     changeIcon = async (icon) => {
@@ -2885,7 +3073,8 @@ export class ClientInfoView {
     }
 
     close() {
-        // Clean up event handlers and DOM cache before removing
+        clearInterval(this._connectInfoInterval);
+        clearInterval(this._sysInfoInterval);
         this.cleanupEventHandlers();
         this.element.remove();
         this.hide();
@@ -7940,6 +8129,39 @@ class ClinetIconFetcher {
                     "UK": "GoPro",
                     "RO": "GoPro",
                     "SL": "GoPro"
+                },
+                {
+                    "category": "electronic_product",
+                    "ui-sort": 40,
+                    "type": [
+                        "138"
+                    ],
+                    "base64": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSIjMDAwIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik02LjEzMyA5LjM3NWMtLjE5Ni0uMDQ5LS41NTYtLjA3Mi0xLjEtLjA3Mkg0djQuNzM0aC42OHYtMi4wNDRoLjIyM2MuNTkxIDAgLjk4Ni0uMDI2IDEuMjA3LS4wNzkuMzEtLjA3NC41NTgtLjIyMi43MzctLjQ0LjE4LS4yMi4yNy0uNDk5LjI3LS44MyAwLS4zMzEtLjA5My0uNjExLS4yNzctLjgzMmExLjMwMyAxLjMwMyAwIDAgMC0uNzA3LS40MzdabS0uNzczIDEuOTYtLjY4LS4wMDhWOS45N2guNzEzYy4yOTkgMCAuNTEzLjAyNS42MzguMDc0YS42NS42NSAwIDAgMSAuMzkxLjZjMCAuMTQtLjAzNS4yNjItLjEwOC4zNzRhLjYwNS42MDUgMCAwIDEtLjI5Ny4yMzhjLS4xMzQuMDUyLS4zNTYuMDc5LS42NTcuMDc5Wm0xMy42NjQtMS41MDYtLjY2LjIzNXYuNTU3aC0uNjRjLS43MzIgMC0xLjMyOC41OC0xLjMyOCAxLjI5M3YyLjEyMmguNjU4di0yLjA0N2MwLS40Ni4zMjUtLjc4NC43NDctLjgwN2guNTYzdjEuNzkzYzAgLjQzNi4wOC43MTMuMjU2Ljg5Ni4xNjMuMTguNDEuMjcyLjczNi4yNzIuMjEgMCAuMzktLjAyNy41MzItLjA4bC4xMTItLjA0LS4xMDItLjUzMi0uMTU1LjA1NGMtLjA0Ni4wMTUtLjE0LjAzMy0uMzMuMDMzLS4yMDIgMC0uMzg5LS4wNjMtLjM4OS0uNTI2di0xLjg3aC44NzN2LS41NjFoLS44NzN2LS43OTJaTTkuMTIgMTEuMTM3Yy4xNS0uMTUuMzIxLS4yNzIuNTA1LS4zNmExLjcyIDEuNzIgMCAwIDEgMS42MjQuMDYyYy4yNzcuMTU3LjQ5OC4zNzkuNjU2LjY2LjE1OC4yOC4yMzguNTczLjIzOC44NyAwIC4yOTctLjA4LjU5LS4yMzYuODdhMS42OTcgMS42OTcgMCAwIDEtLjY1NS42NiAxLjc2MiAxLjc2MiAwIDAgMS0xLjUuMTIxIDEuODEgMS44MSAwIDAgMS0uODgyLS43MyAxLjg0NCAxLjg0NCAwIDAgMS0uMTkxLS40MzggMS43NzQgMS43NzQgMCAwIDEgLjQ0LTEuNzE0Wm0uMjYyIDEuODI4Yy4wOTkuMTgyLjI0Mi4zMjcuNDI2LjQzMi4xODYuMTA2LjM4LjE1OS41NzQuMTU5YTEuMTM4IDEuMTM4IDAgMCAwIC45ODUtLjU4NCAxLjI1IDEuMjUgMCAwIDAgLjE1NS0uNjExYzAtLjIyMy0uMDUyLS40MjYtLjE1Ni0uNjA1YTEuMTEyIDEuMTEyIDAgMCAwLS40MzUtLjQyMSAxLjE1NiAxLjE1NiAwIDAgMC0uNTU1LS4xNTNjLS4xODQgMC0uMzczLjA1NC0uNTYuMTZhMS4wOTYgMS4wOTYgMCAwIDAtLjQzMS40MzUgMS4yNjMgMS4yNjMgMCAwIDAtLjE1My42MDljMCAuMjAxLjA1LjM5Ni4xNS41OFptLS44MjctMi4zNDZjLS43MzMgMC0xLjMzOC41ODUtMS4zMzggMS4yOTd2Mi4xMjJoLjY1OFYxMS45OWMwLS40NjYuMzMyLS43OTYuNzY0LS44MTEgMCAwIC4yODgtLjUyMi4yOTUtLjUzOS0uMTc3LS4wMjItLjM3OS0uMDIyLS4zNzktLjAyMlptNS4zODctMS4zMTZMMTIgMTQuMDM5aC42N2wuNTc3LTEuNDA0aDEuNjNsLjU3MSAxLjM5OWgtLjAwMmwuMDAyLjAwNWguNjU2bC0xLjkxNy00LjczNmgtLjI0NVptLjEyIDEuMzQ4LjAwMy4wMDV2LS4wMDNsLjU0NSAxLjMzMWgtMS4wOWwuMDM1LS4wODVoLS4wMDRsLjUxMi0xLjI0OFoiIGNsaXAtcnVsZT0iZXZlbm9kZCIvPjxwYXRoIGZpbGw9IiMwMDAiIGQ9Ik0yMyAxdjIySDFWMWgyMlptLTQuMTYzIDE5LjAwNkExNS41NTYgMTUuNTU2IDAgMCAxIDE2LjM1IDIxLjhoNS40NXYtMS43OTRoLTIuOTYzWk0yLjIgMjEuOGgxMS4zNDhhMTQuMzQ1IDE0LjM0NSAwIDAgMCA4LjIxNi03Ljg2MmwuMDM2LS4wOVYyLjJIMi4ydjE5LjZabTE5LjYtNS4zMmMtLjUxLjgzLTEuMDk1IDEuNjEtMS43NDYgMi4zMjdIMjEuOFYxNi40OFoiLz48L3N2Zz4=",
+                    "EN": "ProArt Device",
+                    "TW": "ProArt 設備",
+                    "CN": "ProArt 设备",
+                    "BR": "Dispositivo ProArt",
+                    "CZ": "Zařízení ProArt",
+                    "DA": "ProArt-enhed",
+                    "DE": "ProArt-Gerät",
+                    "ES": "Dispositivo ProArt",
+                    "FI": "ProArt-laite",
+                    "FR": "Appareil ProArt",
+                    "HU": "ProArt eszköz",
+                    "IT": "Dispositivo ProArt",
+                    "JP": "ProArtデバイス",
+                    "KR": "ProArt 기기",
+                    "MS": "Peranti ProArt",
+                    "NL": "ProArt-apparaat",
+                    "NO": "ProArt-enhet",
+                    "PL": "Urządzenie ProArt",
+                    "RU": "Устройство ProArt",
+                    "SV": "ProArt-enhet",
+                    "TH": "อุปกรณ์ ProArt",
+                    "TR": "ProArt Cihazı",
+                    "UK": "Пристрій ProArt",
+                    "RO": "Dispozitiv ProArt",
+                    "SL": "Naprava ProArt"
                 }
             ]
         };
@@ -7999,7 +8221,7 @@ export class IconSelectorPanel extends AsuswrtPopupPanel {
 
 
         const shadowRoot = this.shadowRoot;
-        shadowRoot.querySelector('.modal-title').innerText = 'Change Icon';
+        shadowRoot.querySelector('.modal-title').innerText = `<#Client_Icon_change#>`;
 
         const link = document.createElement('link');
         link.rel = 'stylesheet';
@@ -8019,7 +8241,7 @@ export class IconSelectorPanel extends AsuswrtPopupPanel {
         searchDiv.classList.add('search');
         searchDiv.innerHTML = `
             <div class="search-icon"><i class="icon-search"></i></div>
-            <input type="text" class="search-input" placeholder="Search">`;
+            <input type="text" class="search-input" placeholder="<#CTL_search#>">`;
         toolsDiv.appendChild(searchDiv);
 
         const addIcon = document.createElement('div');
@@ -8038,7 +8260,7 @@ export class IconSelectorPanel extends AsuswrtPopupPanel {
         uploadDiv.classList.add('custom-upload');
         uploadDiv.innerHTML = `
                 <div class="upload-icon"><i class="icon-upload"></i></div>
-                <span>Upload image</span>
+                <span><#CTL_upload_img#></span>
                 <input type="file" class="custom-upload-file" accept="image/*" />`;
         const input = uploadDiv.querySelector('.custom-upload-file');
         input.addEventListener('change', (e) => {
@@ -8090,7 +8312,7 @@ export class IconSelectorPanel extends AsuswrtPopupPanel {
         });
 
         const restoreBtn = new AsuswrtButton({
-            text: 'Restore Default',
+            text: `<#CTL_restore#>`,
             className: 'btn-secondary',
             onclick: () => {
                 ClientInfoView.resetIcon();
@@ -8099,7 +8321,7 @@ export class IconSelectorPanel extends AsuswrtPopupPanel {
         });
 
         const closeBtn = new AsuswrtButton({
-            text: 'Cancel',
+            text: `<#CTL_Cancel#>`,
             className: 'btn-secondary',
             animation: '',
             onclick: () => {
@@ -8108,7 +8330,7 @@ export class IconSelectorPanel extends AsuswrtPopupPanel {
         });
 
         const applyBtn = new AsuswrtButton({
-            text: 'Apply',
+            text: `<#CTL_apply#>`,
             className: 'btn-primary',
             animation: 'slide',
             onclick: () => {
@@ -8188,7 +8410,7 @@ export class IconSelectorPanel extends AsuswrtPopupPanel {
 const CsvExporter = {
     downloadCsv(filename, content) {
         const bom = '\uFEFF';
-        const blob = new Blob([bom + content], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob([bom + content], {type: 'text/csv;charset=utf-8;'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -8224,8 +8446,8 @@ const CsvExporter = {
                 const val = this.getValueByPath(row, rowKey);
                 return this.safeCsv(row.displayConnectType || (val == "0" ? `<#tm_wired#>` : `<#tm_wireless#>`));
             case "phyRate":
-                const tx = row.db_sta_tx || '-';
-                const rx = row.db_sta_rx || '-';
+                const tx = row.curTx || '-';
+                const rx = row.curRx || '-';
                 return (tx === '-' && rx === '-') ? this.safeCsv('-') : this.safeCsv(`${tx} Mbps / ${rx} Mbps`);
             case "realTimeTraffic":
                 return this.safeCsv(`<#InternetSpeed_Upload#> ${row.realTimeTx || 0} / <#InternetSpeed_Download#> ${row.realTimeRx || 0}`);
@@ -8244,7 +8466,7 @@ const CsvExporter = {
     },
 
     exportDataTableToCSV(dtApi, filename = 'export.csv') {
-        const rows = dtApi.rows({ search: 'applied' }).data().toArray();
+        const rows = dtApi.rows({search: 'applied'}).data().toArray();
 
         if (!rows.length) {
             alert(`<#IPConnection_VSList_Norule#>`);
@@ -8271,7 +8493,7 @@ const CsvExporter = {
         const lines = [];
         lines.push(exportArray.map(h => this.safeCsv(h.header)).join(','));
         for (const row of rows) {
-            const line = exportArray.map(({ rowKey, columnID }) =>
+            const line = exportArray.map(({rowKey, columnID}) =>
                 this.formatSpecialColumn(columnID, row, rowKey)
             ).join(',');
             lines.push(line);

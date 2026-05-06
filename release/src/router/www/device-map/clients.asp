@@ -535,7 +535,7 @@ function updateClientList(e){
 				<td>
 					<div id="tabCustom" class="tab_NW" align="center" style="display:none">
 						<span>
-							History (<b style="font-size:10px;" id="tabCustomNum">0</b>)
+							<#InternetSpeed_History#> (<b style="font-size:10px;" id="tabCustomNum">0</b>)
 						</span>
 					</div>
 					<script>

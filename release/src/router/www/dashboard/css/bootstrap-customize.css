@@ -1,37 +1,323 @@
 @charset "UTF-8";
 @import "/css/color-table.css";
 
+/* Map Bootstrap CSS variables to project color-table variables */
+/* 這份文件為管理BS覆蓋與bridge color-table variables的對應關係/20251113 Roxanne */
+
+:root, [data-asuswrt-theme="asus"] {
+  /* 1) Color system - palette (bridge to color-table) */
+  --bs-blue: var(--primary-60);
+  --bs-indigo: var(--secondary-80, #0A5EDB);
+  --bs-purple: var(--purple-60);
+  --bs-pink: var(--pink-50);
+  --bs-red: var(--red-50);
+  --bs-orange: var(--orange-60);
+  --bs-yellow: var(--yellow-50);
+  --bs-green: var(--green-60);
+  --bs-teal: var(--teal-60);
+  --bs-cyan: var(--secondary-50, #0091FF);
+  --bs-black: var(--black-alpha-100);
+  --bs-white: var(--white-alpha-100);
+
+  /* Helpers for rgba(...) usage */
+  --bs-white-rgb: var(--white-rgb);
+  --bs-black-rgb: var(--black-rgb);
+
+  /* Grayscale mapped to neutral */
+  --bs-gray-100: var(--neutral-10);
+  --bs-gray-200: var(--neutral-20);
+  --bs-gray-300: var(--neutral-30);
+  --bs-gray-400: var(--neutral-40);
+  --bs-gray-500: var(--neutral-50);
+  --bs-gray-600: var(--neutral-60);
+  --bs-gray-700: var(--neutral-70);
+  --bs-gray-800: var(--neutral-80);
+  --bs-gray-900: var(--neutral-90);
+  --bs-gray: var(--neutral-60);
+  --bs-gray-dark: var(--neutral-80);
+
+  /* 2) Brand roles */
+  --bs-primary: var(--brand-color);
+  --bs-secondary: var(--secondary-60, var(--neutral-60));
+  --bs-success: var(--green-60);
+  --bs-info: var(--teal-60);
+  --bs-warning: var(--orange-60);
+  --bs-danger: var(--red-50);
+  --bs-light: var(--white-alpha-100);
+  --bs-dark: var(--neutral-100);
+  /* Brand roles - rgb triplets (used by rgba(var(--bs-*-rgb), a)) */
+  --bs-primary-rgb: var(--primary-60-rgb);   /* #006CE1 */
+  --bs-secondary-rgb: var(--neutral-60-rgb); /* ~ neutral-60 #818181 */
+  --bs-success-rgb: var(--green-60-rgb);   /* #1A821C */
+  --bs-info-rgb: var(--teal-60-rgb);     /* #1DA5A0 */
+  --bs-warning-rgb: var(--orange-60-rgb);    /* #C74200 */
+  --bs-danger-rgb: var(--red-50-rgb);    /* #E75B4B */
+  --bs-light-rgb: var(--white-rgb);   /* #FFFFFF */
+  --bs-dark-rgb: var(--neutral-100-rgb);       /* #181818 */
+
+  /* 3) Body & text */
+  --bs-body-bg: var(--body-bg-color);
+  --bs-body-color: var(--body-text-color);
+  --bs-heading-color: var(--text-highlight-color);
+  --bs-body-bg-rgb: var(--neutral-10-rgb); /* fallback rgb for rgba() compositions */
+  --bs-body-color-rgb: var(--neutral-100-rgb); /* fallback rgb for rgba() compositions */
+  --bs-emphasis-color: var(--text-highlight-color);
+  --bs-emphasis-color-rgb: var(--black-rgb); /* fallback rgb for light mode */
+
+  /* 4) Links */
+  --bs-link-color: var(--text-hyperlink-default-color);
+  --bs-link-hover-color: var(--text-hyperlink-hover-color);
+  --bs-link-decoration: underline;
+  --bs-link-color-rgb: var(--primary-50-rgb); /* ~ var(--primary-50) */
+  --bs-link-hover-color-rgb: var(--primary-20-rgb); /* ~ var(--primary-20) */
+
+  /* 5) Borders & dividers */
+  --bs-border-width: 1px;
+  --bs-border-style: solid;
+  --bs-border-color: var(--divide-stroke-color-default);
+  --bs-border-color-translucent: var(--black-alpha-20);
+
+  /* 6) Radius (mapped to design tokens) */
+  --bs-border-radius: var(--radius-sm);
+  --bs-border-radius-sm: var(--radius-xs);
+  --bs-border-radius-lg: var(--radius-md);
+  --bs-border-radius-xl: var(--radius-lg);
+  --bs-border-radius-xxl: var(--radius-lg);
+  --bs-border-radius-2xl: var(--radius-lg);
+  --bs-border-radius-pill: var(--radius-pill);
+
+
+  /* 7) Focus & form states */
+  --bs-focus-ring-width: 0.25rem;
+  --bs-focus-ring-opacity: 1;
+  --bs-focus-ring-color: var(--primary-50-alpha-40);
+  --bs-form-valid-color: var(--green-60);
+  --bs-form-valid-border-color: var(--green-60);
+  --bs-form-invalid-color: var(--red-50);
+  --bs-form-invalid-border-color: var(--red-50);
+
+  /* 8) Shadows */
+  --bs-box-shadow-sm: var(--shadow-elevation10);
+  --bs-box-shadow: var(--shadow-elevation20);
+  --bs-box-shadow-lg: var(--shadow-elevation30);
+  --bs-box-shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.075);
+
+  /* 9) Emphasis/subtle roles */
+  --bs-secondary-color: var(--text-info-02-color);
+  --bs-secondary-bg: var(--panel-bg-color);
+  --bs-tertiary-color: var(--text-caption-color);
+  --bs-tertiary-bg: var(--card-bg-color);
+  --bs-code-color: var(--pink-50);
+  --bs-highlight-color: var(--body-text-color);
+  --bs-highlight-bg: var(--status-warning-light);
+  --bs-primary-text-emphasis: var(--primary-80, #003A7A);
+  --bs-secondary-text-emphasis: var(--neutral-80);
+  --bs-success-text-emphasis: var(--green-80);
+  --bs-info-text-emphasis: var(--teal-60);
+  --bs-warning-text-emphasis: var(--orange-60);
+  --bs-danger-text-emphasis: var(--red-60);
+  --bs-light-text-emphasis: var(--neutral-50);
+  --bs-dark-text-emphasis: var(--neutral-70);
+  --bs-primary-bg-subtle: var(--primary-20);
+  --bs-secondary-bg-subtle: var(--neutral-20);
+  --bs-success-bg-subtle: var(--green-30);
+  --bs-info-bg-subtle: var(--teal-50);
+  --bs-warning-bg-subtle: var(--yellow-10);
+  --bs-danger-bg-subtle: var(--red-10);
+  --bs-light-bg-subtle: var(--white-alpha-100);
+  --bs-dark-bg-subtle: var(--neutral-30);
+  --bs-primary-border-subtle: var(--primary-40);
+  --bs-secondary-border-subtle: var(--neutral-40);
+  --bs-success-border-subtle: var(--green-50);
+  --bs-info-border-subtle: var(--teal-50);
+  --bs-warning-border-subtle: var(--yellow-50);
+  --bs-danger-border-subtle: var(--red-50);
+  --bs-light-border-subtle: var(--neutral-20);
+  --bs-dark-border-subtle: var(--neutral-50);
+
+  /* 10) Typography */
+  --bs-font-sans-serif: var(--global-font-style, system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji");
+  --bs-font-monospace: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+  --bs-body-font-family: var(--global-font-style);
+  --bs-body-font-size: 1rem;
+  --bs-body-font-weight: 400;
+  --bs-body-line-height: 1.5;
+  --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+
+  /* 11) Layout helpers */
+  --bs-gutter-x: 1.5rem;
+  --bs-gutter-y: 0;
+  --bs-breakpoint-xs: 0;
+  --bs-breakpoint-sm: 576px;
+  --bs-breakpoint-md: 768px;
+  --bs-breakpoint-lg: 992px;
+  --bs-breakpoint-xl: 1200px;
+
+  /* 12) Buttons bridge → WRT alias tokens */
+  --bs-btn-border-radius: var(--wrt-btn-radius, var(--radius-sm));
+  --bs-btn-padding-y: var(--wrt-btn-padding-y, .5rem);
+  --bs-btn-padding-x: var(--wrt-btn-padding-x, 1rem);
+  --bs-btn-font-size: var(--wrt-btn-font-size, 1rem);
+
+  /* .btn-primary 對應 --wrt-btn-primary-* */
+  --bs-btn-bg: var(--wrt-btn-primary-bg, var(--brand-primary));
+  --bs-btn-color: var(--wrt-btn-primary-color, var(--white-alpha-100));
+  --bs-btn-border-color: var(--wrt-btn-primary-border, var(--brand-primary));
+  --bs-btn-hover-bg: var(--wrt-btn-primary-hover-bg, var(--brand-primary));
+  --bs-btn-hover-border-color: var(--wrt-btn-primary-hover-border, var(--brand-primary));
+  --bs-btn-active-bg: var(--wrt-btn-primary-active-bg, var(--brand-primary));
+  --bs-btn-active-border-color: var(--wrt-btn-primary-active-border, var(--brand-primary));
+  --bs-btn-disabled-bg: var(--wrt-btn-primary-disabled-bg, var(--neutral-50));
+  --bs-btn-disabled-border-color: var(--wrt-btn-primary-disabled-border, var(--neutral-50));
+  --bs-btn-disabled-color: var(--wrt-btn-primary-disabled-color, var(--white-alpha-100));
+  --bs-btn-focus-shadow-rgb: var(--focus-ring-rgb);
+
+  /* 13) Badges bridge → WRT alias tokens (default: neutral/ordinary message) */
+  --bs-badge-font-size: var(--wrt-badge-font-size, var(--font-size-12));
+  --bs-badge-font-weight: 500;
+  --bs-badge-color: var(--wrt-badge-neutral-color, var(--text-primary));
+  --bs-badge-bg: var(--wrt-badge-neutral-bg, rgba(var(--text-primary-rgb), 0.06));
+  --bs-badge-border-radius: var(--wrt-badge-radius, var(--radius-pill));
+  --bs-badge-padding-x: var(--wrt-badge-padding-x, .5rem);
+  --bs-badge-padding-y: var(--wrt-badge-padding-y, .125rem);
+}
+
+/* Theme brand overrides */
+[data-asuswrt-theme="rog"] {
+  /* Primary derived from primary-60 (#F02934) */
+  --bs-primary-rgb: 240,41,52;
+  /* Secondary derived from secondary-60 (#0083FF) */
+  --bs-secondary-rgb: 0,131,255;
+  /* Links from rog light overrides: default secondary-80 (#0A5EDB), hover secondary-70 (#0070EE) */
+  --bs-link-color-rgb: 10,94,219;
+  --bs-link-hover-color-rgb: 0,112,238;
+}
+
+[data-asuswrt-theme="tuf"] {
+  /* Primary derived from primary-60 (#FF9E1B) */
+  --bs-primary-rgb: 255,158,27;
+  /* Secondary derived from secondary-60 (#0083FF) */
+  --bs-secondary-rgb: 0,131,255;
+  /* Links inherit light defaults: primary-50 (#FFAA32), hover primary-40 (#FFBA55) */
+  --bs-link-color-rgb: 255,170,50;
+  --bs-link-hover-color-rgb: 255,186,85;
+}
+
+[data-asuswrt-theme="proart"] {
+  /* Primary derived from primary-60 (#9A7A59) */
+  --bs-primary-rgb: 154,122,89;
+  /* Secondary derived from secondary-60 (#0083FF) */
+  --bs-secondary-rgb: 0,131,255;
+  /* Links inherit light defaults: primary-50 (#CDAC83), hover primary-40 (#E6C59B) */
+  --bs-link-color-rgb: 205,172,131;
+  --bs-link-hover-color-rgb: 230,197,155;
+}
+
+/* Dark color overrides per theme */
+[data-asuswrt-color="dark"][data-asuswrt-theme="rog"] {
+  /* Primary moves to primary-50 (#FF3535) in dark usage */
+  --bs-primary-rgb: 255,53,53;
+  /* Secondary prefers 50 in dark contexts (#0091FF) */
+  --bs-secondary-rgb: 0,145,255;
+  /* Links: default secondary-50, hover secondary-60 */
+  --bs-link-color-rgb: 0,145,255;
+  --bs-link-hover-color-rgb: 0,131,255;
+}
+
+[data-asuswrt-color="dark"][data-asuswrt-theme="tuf"] {
+  /* Primary moves to primary-50 (#FFAA32) */
+  --bs-primary-rgb: 255,170,50;
+  /* Secondary prefers 50 in dark contexts (#0091FF) */
+  --bs-secondary-rgb: 0,145,255;
+  /* Links follow primary shades */
+  --bs-link-color-rgb: 255,170,50;
+  --bs-link-hover-color-rgb: 255,186,85; /* primary-40 */
+}
+
+[data-asuswrt-color="dark"][data-asuswrt-theme="proart"] {
+  /* Primary moves to primary-50 (#CDAC83) */
+  --bs-primary-rgb: 205,172,131;
+  /* Secondary prefers 50 in dark contexts (#0091FF) */
+  --bs-secondary-rgb: 0,145,255;
+  /* Links follow primary shades */
+  --bs-link-color-rgb: 205,172,131;
+  --bs-link-hover-color-rgb: 230,197,155; /* primary-40 */
+}
+
+
 body {
     font-family: var(--global-font-style);
     color: var(--body-text-color);
-    background-color: var(--body-bg-color);
+    background-color: var(--surface-body);
 }
 
 h1 {
     font-family: var(--page-title-font-style);
 }
-
+a {
+    color: var(--link-color);
+}
+a:hover {
+    color: var(--link-hover-color);
+}
+.border{
+    border: 1px solid var(--wrt-card-border) !important;
+}
 .progress-bar {
     background-color: var(--bg-loader-color);
 }
 
 .card-footer {
-    border-color: var(--border-divide-line-color);
+    border-color: var(--wrt-card-divider-color);
 }
 
 .form-control,
 .form-select,
 .form-date {
     color: var(--text-regular-color);
+    background-color: var(--wrt-input-bg);
+    border-color: var(--wrt-input-border);
+    border-radius: var(--wrt-input-radius);
+    padding: var(--wrt-input-padding-y) var(--wrt-input-padding-x);
+    font-size: var(--wrt-input-font-size);
+    line-height: var(--wrt-input-line-height);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 .form-control:focus {
-    color: var(--text-regular-color);
-    border-color: var(--textbox-EL10-normal-stroke-color);
+    color: var(--wrt-input-color);
+    border-color: var(--wrt-input-focus-border);
+    background-color: var(--wrt-input-focus-bg);
+    box-shadow: 0 0 0 3px var(--wrt-input-focus-ring);
+}
+.form-select::before {
+    mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23dbd7dd' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    background-color: var(--wrt-btn-primary-active-bg);
+}
+.form-select {
+    height: 38px;
+    min-width: 10rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    border-radius: var(--global-radius);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-.form-select {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23dbd7dd' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+.form-select:focus {
+    color: var(--wrt-input-color);
+    border-color: var(--wrt-input-focus-border);
+    background-color: var(--wrt-input-focus-bg);
+    box-shadow: 0 0 0 3px var(--wrt-input-focus-ring);
+}
+
+.form-select option {
+    background: var(--dropdown-bg-color);
+    box-shadow: var(--shadow-elevation20);
+    border-radius: var(--global-radius);
 }
 
 .form-check-large {
@@ -46,12 +332,18 @@ h1 {
 }
 
 .form-check-input:checked {
-    background-color: var(--primary-50);
-    border-color: var(--primary-50);
+    background-color: var(--wrt-btn-primary-active-bg);
+    border-color: var(--wrt-btn-primary-active-border);
+}
+
+/* Fallback accent color for native checkboxes without specific classes */
+input[type="checkbox"] {
+    accent-color: var(--brand-primary);
 }
 
 .table {
     color: var(--text-regular-color) !important;
+    border-color: var(--wrt-table-border-color) !important;
 }
 
 .fs-7 {
@@ -70,6 +362,7 @@ caption {
 .btn {
     border-radius: var(--global-radius);
     color: var(--primary-text-btn-normal);
+    font-size: var(--font-size-14);
 }
 
 .btn:hover {
@@ -142,14 +435,115 @@ caption {
     background-color: var(--primary-btn-normal-fill);
 }
 
-
+.table>:not(:last-child)>:last-child>* {
+    border-color: var(--wrt-table-border-color) !important;
+}
+.table-primary {
+    --bs-table-bg: var(--wrt-table-header-bg);
+    --bs-table-color: var(--wrt-table-header-color);
+    --bs-table-border-color: var(--wrt-table-header-border-color);
+    --bs-table-striped-bg: var(--wrt-table-striped-bg);
+    --bs-table-striped-color: var(--wrt-table-striped-color);
+    --bs-table-active-bg: var(--wrt-table-active-bg);
+    --bs-table-active-color: var(--wrt-table-active-color);
+    --bs-table-hover-bg: var(--wrt-table-hover-bg);
+    --bs-table-hover-color: var(--wrt-table-hover-color);
+    color: var(--wrt-text-primary);
+}
 /* Forms */
 .form-control {
+    background-color: var(--wrt-input-bg) !important;
+    color: var(--wrt-input-color) !important;
+    border-color: var(--wrt-input-border) !important;
+    padding: 0.375rem 0.75rem;
+    font-size: var(--font-size-14);
+    line-height: 1.5;
     border-radius: var(--global-radius);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 .form-control:focus {
-    box-shadow: 0px -4px 0px 0px var(--textbox-focus-stroke-color) inset;
+    border-color: var(--wrt-input-focus-border);
+    box-shadow: 0 0 0 3px var(--wrt-input-focus-ring);
+    background: var(--wrt-input-focus-bg);
+}
+
+/* Native inputs (baseline) */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([class*="edit_btn"]) {
+    background-color: var(--wrt-input-bg);
+    color: var(--wrt-input-color);
+    border: 1px solid var(--wrt-input-border);
+    border-radius: var(--global-radius);
+    padding: 0.5rem 0.75rem;
+    line-height: 1.5;
+}
+input:focus:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]) {
+    outline: 0;
+    border-color: var(--wrt-input-focus-border);
+    box-shadow: 0 0 0 3px var(--wrt-input-focus-ring);
+}
+input:disabled {
+    background-color: var(--wrt-input-disabled-bg);
+    color: var(--wrt-input-disabled-color);
+    border-color: var(--wrt-input-disabled-border);
+}
+/* Placeholder colors for inputs */
+input::placeholder { color: var(--wrt-input-placeholder); opacity: 1; }
+input::-webkit-input-placeholder { color: var(--wrt-input-placeholder); }
+input::-moz-placeholder { color: var(--wrt-input-placeholder); opacity: 1; }
+input:-ms-input-placeholder { color: var(--wrt-input-placeholder); }
+input::-ms-input-placeholder { color: var(--wrt-input-placeholder); }
+input[type="date" i]{
+    color: var(--wrt-btn-icon-active-color);
+}
+/* date input 內建日曆 icon：用 filter 調整顏色（WebKit/Blink），invert 使深色 icon 變淺以配合主題 */
+[data-asuswrt-color="dark"] input[type="date" i]::-webkit-calendar-picker-indicator{
+    opacity: 1;
+    cursor: pointer;
+    filter: invert(1); /* 淺色 icon；若為淺底主題改為 filter: none */
+}
+[data-asuswrt-color="light"] input[type="date" i]::-webkit-calendar-picker-indicator{
+    opacity: 1;
+    cursor: pointer;
+    filter: none; /* 淺色 icon；若為淺底主題改為 filter: none */
+}
+/* Native textarea */
+textarea {
+    background-color: var(--wrt-textarea-bg);
+    color: var(--wrt-textarea-color);
+    border: 1px solid var(--wrt-textarea-border);
+    border-radius: var(--wrt-textarea-radius, var(--global-radius));
+    padding: var(--wrt-textarea-padding-y, .5rem) var(--wrt-textarea-padding-x, .75rem);
+    line-height: 1.5;
+}
+textarea:focus {
+    outline: 0;
+    border-color: var(--wrt-textarea-focus-border);
+    box-shadow: 0 0 0 3px var(--wrt-textarea-focus-ring);
+}
+textarea:disabled {
+    background-color: var(--wrt-textarea-disabled-bg);
+    color: var(--wrt-textarea-disabled-color);
+    border-color: var(--wrt-textarea-disabled-border);
+}
+/* Placeholder colors for textarea */
+textarea::placeholder { color: var(--wrt-textarea-placeholder); opacity: 1; }
+textarea::-webkit-input-placeholder { color: var(--wrt-textarea-placeholder); }
+textarea::-moz-placeholder { color: var(--wrt-textarea-placeholder); opacity: 1; }
+textarea:-ms-input-placeholder { color: var(--wrt-textarea-placeholder); }
+textarea::-ms-input-placeholder { color: var(--wrt-textarea-placeholder); }
+
+/* Log textarea variant */
+.textarea--log {
+    background: var(--wrt-textarea-bg);
+    color: var(--wrt-textarea-color);
+    font-family: 'Courier New', Courier, monospace;
+    width: 97%;
+    font-size: var(--font-size-12, 0.75rem);
+    resize: none;
+    display: block;
+    line-height: 1.4;
+    white-space: pre;
 }
 
 input[type="number"]::-webkit-outer-spin-button,
@@ -160,29 +554,37 @@ input[type="number"]::-webkit-inner-spin-button {
 
 input[type="number"] {
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 /* Card */
 .card {
     border-radius: var(--global-radius);
-    background-color: var(--card-bg-color);
-    color: var(--text-regular-color);
+    background-color: var(--surface-card);
+    border: var(--border-subtle);
+    color: var(--text-primary);
+}
+.card-content {
+    padding: var(--wrt-card-content-padding-y) var(--wrt-card-content-padding-x);
+}
+[data-asuswrt-color="dark"] .shadow {
+    box-shadow: 0 0 20px 8px rgba(var(--shadow-ambient-40-rgb),0.4) !important;
 }
 
 [data-asuswrt-theme="rog"][data-asuswrt-style="tech"] .card {
     border-radius: var(--global-radius);
     background-color: transparent;
-    color: var(--text-regular-color);
+    color: var(--text-primary);
     border: none;
-    box-shadow: 10px 10px 10px -8px rgb(135 135 135 / 50%);
+    box-shadow: var(--shadow-secondary);
 }
 
 [data-asuswrt-color="dark"][data-asuswrt-theme="rog"][data-asuswrt-style="tech"] .card {
     border-radius: var(--global-radius);
     background-color: transparent;
-    color: var(--text-regular-color);
+    color: var(--text-primary);
     border: none;
-    box-shadow: 5px 5px 15px -10px rgb(255 53 53 / 60%);
+    box-shadow: var(--shadow-primary);
 }
 
 [data-asuswrt-theme="rog"][data-asuswrt-style="tech"] .card::before {
@@ -203,23 +605,39 @@ input[type="number"] {
     clip-path: polygon(0 0, 30px 0, 0 30px, 0 100%, 100% 100%, 100% 0, calc(100% - 50px) 0, calc(100% - 55px) 5px, calc(100% - 155px) 5px, calc(100% - 160px) 0);
     pointer-events: none;
     backdrop-filter: blur(10px);
-    border: 1px solid var(--white-alpha-40);
+    /* border: 1px solid var(--white-alpha-40); */
     border-radius: var(--global-radius);
 }
 
-[data-asuswrt-theme="rog"][data-asuswrt-style="tech"] .card::after {
+[data-asuswrt-theme="rog"][data-asuswrt-color="dark"][data-asuswrt-style="tech"] .card::after {
     content: '';
     position: absolute;
-    top: -2px;
-    right: -2px;
-    width: calc(100% + 4px);
-    height: calc(100% + 4px);
-    clip-path: polygon(0 0, 30px 0, 0 30px, 0 100%, 100% 100%, 100% 0, calc(100% - 55px) 0, calc(100% - 60px) 5px, calc(100% - 155px) 5px, calc(100% - 160px) 0);
+    top: -0.8px;
+    right: -0.2px;
+    width: calc(100% + 0.8px);
+    height: calc(100% + 0.8px);
+    clip-path: polygon(0 0, 30px 0, 0 30px, 0 100%, 100% 100%, 100% 0, calc(100% - 52px) 0, calc(100% - 58px) 5px, calc(100% - 155px) 5px, calc(100% - 160px) 0);
     box-shadow:
-        inset 0 -10px 20px -10px rgba(159, 222, 255, 0.8),  /* 上邊 */
-        inset 0 10px 20px -10px rgba(159, 222, 255, 0.8), /* 下邊 */
-        inset -10px 0 20px -10px rgba(159, 222, 255, 0.8),  /* 左邊 */
-        inset 10px 0 20px -10px rgba(159, 222, 255, 0.8); /* 右邊 */
+        inset 0 -10px 20px -10px rgba(123, 127, 160, 0.9),  /* 上邊 */
+        inset 0 10px 20px -10px rgba(123, 127, 160, 0.9), /* 下邊 */
+        inset -10px 0 20px -10px rgba(123, 127, 160, 0.9),  /* 左邊 */
+        inset 10px 0 20px -10px rgba(123, 127, 160, 0.9); /* 右邊 */
+    z-index: -2;
+    pointer-events: none;
+}
+[data-asuswrt-theme="rog"][data-asuswrt-color="light"][data-asuswrt-style="tech"] .card::after {
+    content: '';
+    position: absolute;
+    top: -0.8px;
+    right: -0.2px;
+    width: calc(100% + 0.8px);
+    height: calc(100% + 0.8px);
+    clip-path: polygon(0 0, 30px 0, 0 30px, 0 100%, 100% 100%, 100% 0, calc(100% - 52px) 0, calc(100% - 58px) 5px, calc(100% - 155px) 5px, calc(100% - 160px) 0);
+    box-shadow:
+        inset 0 -10px 20px -10px rgba(204, 218, 226, 0.8),  /* 上邊 */
+        inset 0 10px 20px -10px rgba(204, 218, 226, 0.8), /* 下邊 */
+        inset -10px 0 20px -10px rgba(204, 218, 226, 0.8),  /* 左邊 */
+        inset 10px 0 20px -10px rgba(204, 218, 226, 0.8); /* 右邊 */
     z-index: -2;
     pointer-events: none;
 }
@@ -233,7 +651,7 @@ input[type="number"] {
 }
 
 [data-asuswrt-color="dark"][data-asuswrt-theme="rog"][data-asuswrt-style="tech"] .card::before {
-    background: rgb(45 45 45 / 70%);
+    background: rgba(var(--surface-card-rgb), 0.85);
 }
 
 [data-asuswrt-theme="rog"][data-asuswrt-style="tech"] .card.card-bar::before {
@@ -288,7 +706,9 @@ input[type="number"] {
 [data-asuswrt-theme="rog"][data-asuswrt-style="tech"] .card-header {
     margin-left: 10px;
 }
-
+.nav-tabs {
+    border-bottom: 1px solid var(--wrt-tabs-border-color)!important;
+}
 .nav-pills .nav-link {
     border-radius: var(--global-radius);
 }
@@ -316,16 +736,74 @@ input[type="number"] {
 }
 
 .offcanvas {
-    background-color: var(--panel-bg-color);
+    background-color: var(--wrt-modal-bg);
 }
 
 .offcanvas-footer {
   position: sticky;
   bottom: 0;
-  background-color: #f8f9fa;
+  background-color: var(--wrt-modal-footer-bg);
   z-index: 10;
 }
-
+.border-top {
+    border-top: var(--wrt-modal-footer-border-color) var(--wrt-modal-footer-border-width) solid !important;
+}
+.btn-close {
+    background: none;
+    mask-image: var(--ic-close-stroke);
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    -webkit-mask-image: var(--ic-close-stroke);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+    background-color: var(--wrt-icon-default-color);
+}
 .tooltip {
     width: max-content;
 }
+
+/* ==================== Badges (Bootstrap bridge via WRT alias tokens) ==================== */
+/* Base */
+.badge {
+    border-radius: var(--wrt-badge-radius, var(--bs-badge-border-radius, var(--radius-pill)));
+    font-size: var(--wrt-badge-font-size, var(--bs-badge-font-size, var(--font-size-12)));
+    padding: var(--wrt-badge-padding-y, var(--bs-badge-padding-y, .125rem)) var(--wrt-badge-padding-x, var(--bs-badge-padding-x, .5rem));
+    line-height: 1;
+    font-weight: var(--bs-badge-font-weight, 500);
+    background-color: var(--wrt-badge-neutral-container-bg, var(--bs-badge-bg));
+    color: var(--wrt-badge-neutral-container-color, var(--bs-badge-color));
+    border: 1px solid var(--wrt-badge-neutral-container-border, transparent);
+}
+
+/* Non-conflicting: attribute-driven variants and tones */
+/* solid */
+.badge[data-variant="solid"][data-tone="primary"] { background-color: var(--wrt-badge-primary-bg); color: var(--wrt-badge-primary-color); border-color: var(--wrt-badge-primary-border, transparent); }
+.badge[data-variant="solid"][data-tone="secondary"],
+.badge[data-variant="solid"][data-tone="neutral"] { background-color: var(--wrt-badge-neutral-bg); color: var(--wrt-badge-neutral-color); border-color: var(--wrt-badge-neutral-border, transparent); }
+.badge[data-variant="solid"][data-tone="success"] { background-color: var(--wrt-badge-success-bg); color: var(--wrt-badge-success-color); border-color: var(--wrt-badge-success-border, transparent); }
+.badge[data-variant="solid"][data-tone="warning"] { background-color: var(--wrt-badge-warning-bg); color: var(--wrt-badge-warning-color); border-color: var(--wrt-badge-warning-border, transparent); }
+.badge[data-variant="solid"][data-tone="danger"],
+.badge[data-variant="solid"][data-tone="error"] { background-color: var(--wrt-badge-error-bg); color: var(--wrt-badge-error-color); border-color: var(--wrt-badge-error-border, transparent); }
+.badge[data-variant="solid"][data-tone="info"] { background-color: var(--wrt-badge-info-bg); color: var(--wrt-badge-info-color); border-color: var(--wrt-badge-info-border, transparent); }
+
+/* container */
+.badge[data-variant="container"][data-tone="primary"] { background-color: var(--wrt-badge-primary-container-bg); color: var(--wrt-badge-primary-container-color); border-color: var(--wrt-badge-primary-container-border, transparent); }
+.badge[data-variant="container"][data-tone="secondary"],
+.badge[data-variant="container"][data-tone="neutral"] { background-color: var(--wrt-badge-neutral-container-bg); color: var(--wrt-badge-neutral-container-color); border-color: var(--wrt-badge-neutral-container-border, transparent); }
+.badge[data-variant="container"][data-tone="success"] { background-color: var(--wrt-badge-success-container-bg); color: var(--wrt-badge-success-container-color); border-color: var(--wrt-badge-success-container-border, transparent); }
+.badge[data-variant="container"][data-tone="warning"] { background-color: var(--wrt-badge-warning-container-bg); color: var(--wrt-badge-warning-container-color); border-color: var(--wrt-badge-warning-container-border, transparent); }
+.badge[data-variant="container"][data-tone="danger"],
+.badge[data-variant="container"][data-tone="error"] { background-color: var(--wrt-badge-error-container-bg); color: var(--wrt-badge-error-container-color); border-color: var(--wrt-badge-error-container-border, transparent); }
+.badge[data-variant="container"][data-tone="info"] { background-color: var(--wrt-badge-info-container-bg); color: var(--wrt-badge-info-container-color); border-color: var(--wrt-badge-info-container-border, transparent); }
+
+/* outline */
+.badge[data-variant="outline"][data-tone="primary"] { background-color: transparent; color: var(--wrt-badge-primary-outline-color); border-color: var(--wrt-badge-primary-outline-border); }
+.badge[data-variant="outline"][data-tone="secondary"],
+.badge[data-variant="outline"][data-tone="neutral"] { background-color: transparent; color: var(--wrt-badge-neutral-outline-color); border-color: var(--wrt-badge-neutral-outline-border); }
+.badge[data-variant="outline"][data-tone="success"] { background-color: transparent; color: var(--wrt-badge-success-outline-color); border-color: var(--wrt-badge-success-outline-border); }
+.badge[data-variant="outline"][data-tone="warning"] { background-color: transparent; color: var(--wrt-badge-warning-outline-color); border-color: var(--wrt-badge-warning-outline-border); }
+.badge[data-variant="outline"][data-tone="danger"],
+.badge[data-variant="outline"][data-tone="error"] { background-color: transparent; color: var(--wrt-badge-error-outline-color); border-color: var(--wrt-badge-error-outline-border); }
+.badge[data-variant="outline"][data-tone="info"] { background-color: transparent; color: var(--wrt-badge-info-outline-color); border-color: var(--wrt-badge-info-outline-border); }

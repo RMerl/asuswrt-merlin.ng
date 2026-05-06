@@ -370,7 +370,6 @@ void mtwan_set_detect_routing_rule(const char *dest, const char *ifname, int add
 	if(dest && ifname)
 	{
 		mtwan_get_route_table_id(mtwan_ifunit(ifname), table, sizeof(table));
-		snprintf(cmd, sizeof(cmd), "ip rule %s iif lo to %s table %s pref %d", add? "add": "del", dest, table, IP_RULE_PREF_DET_INTERNET);
-		system(cmd);
+		safe_do_system("ip rule %s iif lo to %s table %s pref %d", add? "add": "del", dest, table, IP_RULE_PREF_DET_INTERNET);
 	}
 }

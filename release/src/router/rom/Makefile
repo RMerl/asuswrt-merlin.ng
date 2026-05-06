@@ -250,6 +250,7 @@ ifeq ($(RTCONFIG_AI_SERVICE),y)
 	cp -f webs_scripts/ssl_webs_ai_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_ai_upgrade.sh
 	install -m 0755 apps_scripts/ai_upgrade.sh $(INSTALLDIR)/usr/sbin/ai_upgrade
 	#install -m 0755 apps_scripts/ai_request.sh $(INSTALLDIR)/usr/sbin/ai_request
+	install -m 0755 apps_scripts/ha_adjust.sh $(INSTALLDIR)/usr/sbin/ha_adjust
 	install -d $(INSTALLDIR)/usr/slmqa
 ifeq ($(BUILD_NAME), GT-BE19000AI)
 	cp -f slm-data.archive $(INSTALLDIR)/usr/slmqa/slm-data.archive
@@ -514,7 +515,7 @@ ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GS-BE18000 GS-BE12000 GS7_PRO))
 	mkdir -p $(INSTALLDIR)/rom/mxl
 	install -m 0644 mxl/asus282.bin $(INSTALLDIR)/rom/mxl/mxl.bin
 endif
-ifeq ($(BUILD_NAME), GT7)
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT7 GS7_PRO_MAX))
 	mkdir -p $(INSTALLDIR)/rom/mxl
 	install -m 0644 mxl/asus252_gt7.bin $(INSTALLDIR)/rom/mxl/mxl.bin
 endif

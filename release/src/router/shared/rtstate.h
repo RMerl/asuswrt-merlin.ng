@@ -606,6 +606,7 @@ int get_ms_base_unit(int wan_unit);
 int get_ms_wan_unit(int base_wan_unit, int idx);
 int get_ms_idx_by_wan_unit(int wan_unit);
 int get_ms_num(int wan_unit);
+char* get_mswan_base_ifname(int wan_unit, char* buf, size_t len);
 #endif
 
 #endif	/* !__RTSTATE_H__ */

@@ -1126,3 +1126,84 @@
 	font-size: 14px;
 	font-weight: bolder;
 }
+[data-asuswrt-color][data-asuswrt-theme]{
+	.tutorial_guide_bg {
+		width: 100%;
+		height: 100%;
+		background: var(--wrt-overlay-bg);
+		border-radius: var(--global-radius);
+		border: 1px solid var(--wrt-modal-border-color);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		position: absolute;
+		z-index: 1000;
+	}
+
+	.tutorial_guide_bg .main_bg{
+		background: var(--wrt-modal-bg);
+		width: 50%;
+		height: 50%;
+		position: relative;
+		border-radius: var(--global-radius);
+		padding: 2rem 1rem;
+	}
+	.tutorial_guide_bg .close_icon{
+		background-image: none;
+		mask-image: var(--ic-close-stroke);
+		-webkit-mask-image: var(--ic-close-stroke);
+		mask-repeat: no-repeat;
+		-webkit-mask-repeat: no-repeat;
+		mask-position: center;
+		-webkit-mask-position: center;
+		mask-size: contain;
+		-webkit-mask-size: contain;
+		background-color: var(--wrt-btn-icon-color);
+		&:hover {
+			background-color: var(--wrt-btn-icon-hover-bg);
+		}
+		&:active {
+			background-color: var(--wrt-btn-icon-active-bg);
+		}
+	}
+	.tutorial_guide_content .start_bg{
+		width: 100%;
+	}
+	.tutorial_guide_content .start_bg .icon{
+		background-image: none;
+		background-color: var(--wrt-btn-icon-active-color);
+		mask-image: url(/images/New_ui/weekSchedule/icon_schedule.svg);
+		-webkit-mask-image: url(/images/New_ui/weekSchedule/icon_schedule.svg);
+		mask-repeat: no-repeat;
+		-webkit-mask-repeat: no-repeat;
+		mask-position: center;
+		-webkit-mask-position: center;
+		mask-size: contain;
+		-webkit-mask-size: contain;
+		width: 140px;
+		height: 140px;
+	}
+	.tutorial_guide_content .start_bg .text {
+		color: var(--wrt-btn-primary-color);
+	}
+	.tutorial_guide_content .start_bg .btn{
+		background-color: var(--wrt-btn-primary-bg);
+		color: var(--wrt-btn-primary-color);
+		border: var(--wrt-btn-primary-border);
+		padding: var(--wrt-btn-padding-y) var(--wrt-btn-padding-x);
+		border-radius: var(--global-radius);
+		cursor: pointer;
+		font-size: var(--wrt-btn-font-size);
+		font-weight: var(--wrt-btn-font-weight);
+		transition: all 0.3s ease;
+		&:hover {
+			background-color: var(--wrt-btn-primary-hover-bg);
+			color: var(--wrt-btn-primary-hover-color);
+			border: var(--wrt-btn-primary-hover-border);
+		}
+		&:active {
+			background-color: var(--wrt-btn-primary-active-bg);
+			color: var(--wrt-btn-primary-active-color);
+		}
+	}
+}

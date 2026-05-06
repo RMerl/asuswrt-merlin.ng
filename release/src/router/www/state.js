@@ -1,3 +1,7 @@
+if (!isSupport("UI4")) {
+	document.documentElement.setAttribute('data-asuswrt-color', 'dark');
+}
+
 if(window.self !== window.top) {
 	if(top.document.documentElement.getAttribute("data-asuswrt-color") !== null) {
 		document.documentElement.setAttribute("data-asuswrt-color", top.document.documentElement.getAttribute("data-asuswrt-color"));
@@ -15,9 +19,53 @@ if(window.self !== window.top) {
 	});
 }
 
-if(parent.webWrapper) document.write('<link rel="stylesheet" type="text/css" href="/css/business-white.css"></link>');
-document.write('<script type="text/javascript" src="/require/require.min.js"></script>');
-document.write('<script type="text/javascript" src="/js/support_site.js"></script>');
+var pathSegments = location.pathname.split("/").filter(Boolean);
+var isValidPath = (segment) => {
+	const excludedPaths = [
+		"aidisk", "aimesh", "calendar", "dashboard", "device-map", "js", "require", "mobile", "pages", "AURA", "LEDG", "multifuncbtn", "SDN", "VPN"
+	];
+	return !excludedPaths.includes(segment) && !segment.includes(".");
+};
+var rootPath = pathSegments.length > 0 && isValidPath(pathSegments[0]) ? `/${pathSegments[0]}` : "";
+
+function resolveWebWrapperHost(){
+	var wrapperCandidates = [window.parent, window.top];
+
+	for(var i = 0; i < wrapperCandidates.length; i++){
+		try{
+			var candidate = wrapperCandidates[i];
+			if(candidate && candidate !== window && candidate.webWrapper)
+				return candidate;
+		}
+		catch(error){
+			// Ignore cross-frame access errors and continue.
+		}
+	}
+
+	return null;
+}
+
+function callWebWrapperSetupBusinessUI(delayMs){
+	if(!webWrapperHost || typeof webWrapperHost.setupBusinessUI !== "function")
+		return;
+
+	if(typeof delayMs === "number" && delayMs > 0)
+		setTimeout(function(){ webWrapperHost.setupBusinessUI(); }, delayMs);
+	else
+		webWrapperHost.setupBusinessUI();
+}
+
+var webWrapperHost = resolveWebWrapperHost();
+var isWebWrapper = !!webWrapperHost;
+var bootstrapHeadAssets = [];
+
+if(isWebWrapper){
+	bootstrapHeadAssets.push(`<link rel="stylesheet" type="text/css" href="${rootPath}/css/business-white.css"></link>`);
+}
+
+bootstrapHeadAssets.push(`<script type="text/javascript" src="${rootPath}/require/require.min.js"></script>`);
+bootstrapHeadAssets.push(`<script type="text/javascript" src="${rootPath}/js/support_site.js"></script>`);
+document.write(bootstrapHeadAssets.join(""));
 
 var CoBrand = '<% nvram_get("CoBrand"); %>';
 var productid = '<#Web_Title2#>';
@@ -25,8 +73,20 @@ var based_modelid = '<% nvram_get("productid"); %>';
 var odmpid = '<% nvram_get("odmpid"); %>';
 var support_site_modelid = (odmpid == "")? based_modelid : odmpid;
 
-if(isSupport("TS_UI") || (based_modelid=="GS7" && CoBrand =="18"))
-	document.write('<link rel="stylesheet" type="text/css" href="/css/difference.css"></link>');
+if(isSupport("TS_UI") || (based_modelid=="GS7" && CoBrand =="18")) {
+    document.write('<link rel="stylesheet" type="text/css" href="/css/difference.css"></link>');
+}
+if (!isSupport("UI4") && isSupport("gtbooster")) {
+    let theme = 'rt';
+    if (isSupport("ROG_UI")) {
+        theme = "rog";
+    } else if (isSupport("TS_UI")) {
+        theme = "ts";
+    } else if (isSupport("TUF_UI")) {
+        theme = "tuf";
+    }
+    document.documentElement.setAttribute('data-asuswrt-theme', theme);
+}
 
 /* String splice function */
 String.prototype.splice = function( idx, rem, s ) {
@@ -335,13 +395,13 @@ var isGundam = in_territory_code("GD") || CoBrand_flag == 1;
 var isKimetsu = (CoBrand_flag == '2');
 var isEva = (CoBrand_flag == '3');
 if(isGundam){
-	document.write('<link rel="stylesheet" type="text/css" href="/css/gundam.css"></link>');
+	document.write(`<link rel="stylesheet" type="text/css" href="${rootPath}/css/gundam.css"></link>`);
 }
 else if(isKimetsu){
-	document.write('<link rel="stylesheet" type="text/css" href="/css/kimetsu.css"></link>');
+	document.write(`<link rel="stylesheet" type="text/css" href="${rootPath}/css/kimetsu.css"></link>`);
 }
 else if(isEva){
-	document.write('<link rel="stylesheet" type="text/css" href="/css/eva.css"></link>');
+	document.write(`<link rel="stylesheet" type="text/css" href="${rootPath}/css/eva.css"></link>`);
 }
 
 var is_RU_sku = (function(){
@@ -540,7 +600,7 @@ function isSupport(_ptn){
 	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
 }
 
-if(isSupport("UI4") && !parent.webWrapper){
+if(isSupport("UI4") && !isWebWrapper){
 	var noWrapper = (location.search.indexOf("noWrapper") != -1 || CoBrand == "99");
 	var rwdPageSupport = [<% get_rwd_mapping_table(); %>][0];
 	var currentPath = location.pathname.replace("/", "");
@@ -558,7 +618,8 @@ if(isSupport("UI4") && !parent.webWrapper){
 		"device-map/router_status.asp",
 		"multi_wan.html",
 		"adguard_dns.html",
-		"mlo.html"
+		"mlo.html",
+        'pages/ark_log.html'
 	];
 
 	for(var i in rwdPageSupport){whiteList.push(rwdPageSupport[i].path)}
@@ -707,7 +768,8 @@ var bwdpi_vp_support = isSupport("dpi_vp");
 var bwdpi_webFilter_support = isSupport("webs_filter");
 var bwdpi_webHistory_support = isSupport("web_history");
 var bwdpi_bwMonitor_support = isSupport("bandwidth_monitor");
-var adaptiveqos_support = isSupport("adaptive_qos");
+var ark_qoe_support = isSupport("ark_qoe");
+var adaptiveqos_support = (ark_qoe_support > 0) ? 0 : isSupport("adaptive_qos");
 var ipsec_srv_support = isSupport("ipsec_srv");
 var ipsec_cli_support = isSupport("ipsec_cli");
 //var traffic_analyzer_support = isSupport("traffic_analyzer");
@@ -817,8 +879,8 @@ var isp_customize_tool_support = isSupport('isp_customize_tool');
 var lacp_support = isSupport("lacp");
 var dashboard_support = isSupport("dashboard");
 var newsite_provisioning_support = isSupport("newsite_provisioning");
-var is_GTBE_externalswitch_series = (based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000" || based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI")? true : false;// These models have the same hardware designs (externel realtek switch).
-var GTBE_lacp_ifnames_settings = (based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI")? "eth0 eth6":"eth0 eth3";
+var is_GTBE_externalswitch_series = (based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000" || based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI"|| based_modelid == "GT-BN98_PRO")? true : false;// These models have the same hardware designs (externel realtek switch).
+var GTBE_lacp_ifnames_settings = (based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI" || based_modelid == "GT-BN98_PRO")? "eth0 eth6":"eth0 eth3";
 
 function get_bonding_ports(product_id){//return lacp bonding ports
 	let bonding_port_settings = [];
@@ -838,7 +900,7 @@ function get_bonding_ports(product_id){//return lacp bonding ports
 			let lacp_ifnames_x = httpApi.nvramGet(["lacp_ifnames_x"], true).lacp_ifnames_x;
 			if(lacp_ifnames_x == GTBE_lacp_ifnames_settings)
 				bonding_port_settings = [{"val": "0", "text": "10G WAN/LAN-1"}, {"val": "6", "text": "10G LAN-6"}];
-			else if(based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI")
+			else if(based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI" || based_modelid == "GT-BN98_PRO")
 				bonding_port_settings = [{"val": "1", "text": "2.5G WAN/LAN-1"}, {"val": "2", "text": "2.5G LAN-2"}];
 			else
 				bonding_port_settings = [{"val": "5", "text": "1G LAN-5"}, {"val": "6", "text": "10G LAN-6"}];
@@ -915,9 +977,9 @@ var wtfast_v2_support = isSupport("wtfast_v2");
 var amazon_wss_support = isSupport("amazon_wss");
 
 if(nt_center_support)
-	document.write('<script type="text/javascript" src="/client_function.js"></script>');
+	document.write(`<script type="text/javascript" src="${rootPath}/client_function.js"></script>`);
 
-var stopFlag = parent.webWrapper ? 1 : 0;
+var stopFlag = isWebWrapper ? 1 : 0;
 var gn_array_2g = <% wl_get_guestnetwork("0"); %>;
 var gn_array_5g = <% wl_get_guestnetwork("1"); %>;
 var gn_array_5g_2 = <% wl_get_guestnetwork("2"); %>;
@@ -1384,7 +1446,7 @@ function show_banner(L3){// L3 = The third Level of Menu
 							</div>
 							<div style="display:table-cell;vertical-align:middle;width:100%;text-align:center">`;
 		if (is_CN || ui_lang == "CN") {
-			banner_code += `<div style="padding-left: 30px;"><a href="${Android_app_link}" target="_blank"><div style="width:160px;font-size:24px;border:1px solid #BDBDBD;padding: 10px 4px;border-radius: 6px;margin: auto;">Android App</div></a></div>`;
+			banner_code += `<div style="padding-left: 30px;"><a href="${Android_app_link}" target="_blank" rel="noreferrer"><div style="width:160px;font-size:24px;border:1px solid #BDBDBD;padding: 10px 4px;border-radius: 6px;margin: auto;">Android App</div></a></div>`;
 		} else {
 			banner_code += `<div style="padding-left: 30px;"><a href="${Android_app_link}" target="_blank"><div style="width:160px;height:46px;background:url('images/googleplay.png') no-repeat;background-size:100%;margin:auto;"></div></a></div>`;
 		}
@@ -1699,9 +1761,9 @@ function show_menu(){
 		showMenuTree(top.Session.get("menuList." + ui_lang), top.Session.get("menuExclude"));
 
 		setTimeout(function(){
-			require(['/require/modules/menuTree.js'], function(menuTree){
-                top.Session.set("menuList." + ui_lang, menuTree.list);
-                top.Session.set("menuExclude", {
+			require([`${rootPath}/require/modules/menuTree.js`], function(menuTree){
+				top.Session.set("menuList." + ui_lang, menuTree.list);
+				top.Session.set("menuExclude", {
 					menus: menuTree.exclude.menus(),
 					tabs: menuTree.exclude.tabs()
 				});
@@ -1709,7 +1771,7 @@ function show_menu(){
 		}, 3000)
 	}
 	catch(e){
-		require(['/require/modules/menuTree.js'], function(menuTree){
+		require([`${rootPath}/require/modules/menuTree.js`], function(menuTree){
 			menuList = menuTree.list;
 
 			menuExclude = {
@@ -1720,42 +1782,44 @@ function show_menu(){
 			top.Session.set("menuList." + ui_lang, menuList);
 			top.Session.set("menuExclude", menuExclude);
 			showMenuTree(menuList, menuExclude);
-			if(parent.webWrapper) setTimeout(parent.setupBusinessUI, 100)
+			if(isWebWrapper) callWebWrapperSetupBusinessUI(100);
 		});
 	}
 
-	setTimeout(function(){
-		if (typeof httpApi === 'undefined') {
-			const httpApi_script = document.createElement('script');
-			httpApi_script.type = 'text/javascript';
-			httpApi_script.src = '/js/httpApi.js';
-			document.head.appendChild(httpApi_script);
-			httpApi_script.onload = () => {
+	window.addEventListener('load', function() {
+		setTimeout(function(){
+			if (typeof httpApi === 'undefined') {
+				const httpApi_script = document.createElement('script');
+				httpApi_script.type = 'text/javascript';
+				httpApi_script.src = `${rootPath}/js/httpApi.js`;
+				document.head.appendChild(httpApi_script);
+				httpApi_script.onload = () => {
+					append_notification();
+				}
+			}
+			else{
 				append_notification();
 			}
-		}
-		else{
-			append_notification();
-		}
 
-		function append_notification(){
-			const notification_script = document.createElement('script');
-			notification_script.type = 'text/javascript';
-			notification_script.src = '/notification.js';
-			document.head.appendChild(notification_script);
-			notification_script.onload = function(){
-				const notification_link = document.createElement('link');
-				notification_link.rel = 'stylesheet';
-				notification_link.type = 'text/css';
-				notification_link.href = '/notification.css';
-				notification_script.parentNode.insertBefore(notification_link, notification_script.nextSibling);
-				if(nt_center_support){
-					notification.update_NT_Center();
-				}
-				notification.run();
-			};
-		}
-	}, 1000);
+			function append_notification(){
+				const notification_script = document.createElement('script');
+				notification_script.type = 'text/javascript';
+				notification_script.src = `${rootPath}/notification.js`;
+				document.head.appendChild(notification_script);
+				notification_script.onload = function(){
+					const notification_link = document.createElement('link');
+					notification_link.rel = 'stylesheet';
+					notification_link.type = 'text/css';
+					notification_link.href = `${rootPath}/notification.css`;
+					notification_script.parentNode.insertBefore(notification_link, notification_script.nextSibling);
+					if(nt_center_support){
+						notification.update_NT_Center();
+					}
+					notification.run();
+				};
+			}
+		}, 1000);
+	});
 	browser_compatibility();
 
 	if(lyra_hide_support && (current_url.indexOf("Advanced_Wireless_Content")!= -1 || current_url.indexOf("Advanced_WWPS_Content")!= -1 ||
@@ -1768,7 +1832,7 @@ function show_menu(){
 		}
 	}
 
-	if(parent.webWrapper) parent.setupBusinessUI();
+	if(isWebWrapper) callWebWrapperSetupBusinessUI();
 }
 
 function create_wireless_notice(){
@@ -1826,7 +1890,7 @@ function showMenuTree(menuList, menuExclude){
 
 	var getCode = function(flag){
 		var getMenuCode = function(){
-			var menu_code = parent.webWrapper ? '<div>' : '<div style="margin-top:-172px">';
+			var menu_code = isWebWrapper ? '<div>' : '<div style="margin-top:-172px">';
 
 			if (rog_support && !isSupport("UI4"))
 				menu_code += '<div style="width:160px;height:52px;"><span><a href="https://www.asuswrt-merlin.net/" target="_blank" rel="noreferrer"><img src="images/merlin-logo.png" style="border: 0;"></a></span></div>';
@@ -1901,7 +1965,7 @@ function showMenuTree(menuList, menuExclude){
 
 		var getTabCode = function(){
 			var tab_code = "", tabCounter = 0;
-			if(parent.webWrapper) tabCounter = 1;
+			if(isWebWrapper) tabCounter = 1;
 			if(clickedItem.menu == -1) clickedItem.menu = 2;
 
 			for(var j=0; j<menuList[clickedItem.menu].tab.length; j++){
@@ -2021,7 +2085,7 @@ function showMenuTree(menuList, menuExclude){
 	document.getElementById("mainMenu").innerHTML = getCode("menus");
 	document.getElementById("tabMenu").innerHTML = getCode("tabs");
 
-	if(document.getElementById("tabMenu").innerHTML && !parent.webWrapper) {
+	if(document.getElementById("tabMenu").innerHTML && !isWebWrapper) {
 		var getStyle = function(el, prop) {
 			if(typeof getComputedStyle != 'undefined')
 				return window.getComputedStyle(el, null).getPropertyValue(prop);
@@ -2086,7 +2150,7 @@ function showMenuTree(menuList, menuExclude){
 		return strValue;
 	}
 
-	var tableHeight = parent.webWrapper ? 0 : getTableHeight();
+	var tableHeight = isWebWrapper ? 0 : getTableHeight();
 	// general page
 	if(document.getElementById("FormTitle")){
 		var CONTENT_PADDING = parseInt(getStyle(document.getElementById("FormTitle"), "padding-top")) + parseInt(getStyle(document.getElementById("FormTitle"), "padding-bottom"));
@@ -2151,7 +2215,7 @@ function reset_NM_height(){
 }
 
 function show_footer(){
-	if(parent.webWrapper){
+	if(isWebWrapper){
 		const resizeObserver = new ResizeObserver(entries => {
 			for (let entry of entries) {
 				const height = entry.target.getBoundingClientRect().height;
@@ -2271,7 +2335,7 @@ function filterFAQ(){
 function genFAQList(_str){
 	var code = '';
 	$.ajax({
-		url: '/js/faq.js',
+		url: `${rootPath}/js/faq.js`,
 		dataType: 'script',
 		error: function(xhr) {
 			setTimeout(function(){
@@ -2378,7 +2442,7 @@ var isOpera = navigator.userAgent.search("Opera") > -1;
 var isIE8 = navigator.userAgent.search("MSIE 8") > -1; 
 var isiOS = navigator.userAgent.search("iP") > -1; 
 function browser_compatibility(){
-	if(parent.webWrapper) return false;
+	if(isWebWrapper) return false;
 
 	if(isiOS){
 		var obj_inputBtn;
@@ -2445,7 +2509,7 @@ var mouseClick = function(){
 	document.getElementById("modelName_top").dispatchEvent(e);
 }
 
-const bandName = ["2G", "5G1", "5G2", "6G1", "6G2"];
+var bandName = ["2G", "5G1", "5G2", "6G1", "6G2"];
 function isSmartConnectBand(band){
 	if(band == `2g1`) band = `2G`;
 	band = band.toUpperCase();
@@ -2641,7 +2705,7 @@ function show_loading_obj(){
 	
 	code +='<table cellpadding="5" cellspacing="0" id="loadingBlock" class="loadingBlock" align="center">\n';
 	code +='<tr>\n';
-	code +='<td width="20%" height="80" align="center"><img src="/images/loading.gif"></td>\n';
+	code +=`<td width="20%" height="80" align="center"><img src="${rootPath}/images/loading.gif"></td>\n`;
 	code +='<td><span id="proceeding_main_txt" style="color:#FFFFFF;"><#Main_alert_proceeding_desc4#></span> <span id="proceeding_txt" style="color:#FFFFFF;"></span></td>\n'
 	code +='</tr>\n';
 	code +='</table>\n';
@@ -2863,7 +2927,7 @@ function refreshpage(seconds){
 	if(typeof(seconds) == "number")
 		setTimeout("refreshpage()", seconds*1000);
 	else
-		location.reload();
+		location.replace(location.href);
 }
 
 function hideLinkTag(){
@@ -2950,7 +3014,7 @@ function inputCtrl(obj, flag){
 	if(flag == 0){
 		obj.disabled = true;
 
-		if(!parent.webWrapper){
+		if(!isWebWrapper){
 			if(obj.type != "select-one" && !rog_support && !tuf_support)
 				obj.style.backgroundColor = "#CCCCCC";
 			if(obj.type == "radio" || obj.type == "checkbox")
@@ -2965,7 +3029,7 @@ function inputCtrl(obj, flag){
 	else{
 		obj.disabled = false;
 
-		if(!parent.webWrapper){
+		if(!isWebWrapper){
 			if((obj.type == "radio" || obj.type == "checkbox") && !rog_support && !tuf_support){
 				obj.style.backgroundColor = "#475A5F";
 			}
@@ -3036,9 +3100,9 @@ function updateStatus(){
 	if(stopFlag == 1 || navigator.userAgent.search("asusrouter") != -1) return false;
 	if(AUTOLOGOUT_MAX_MINUTE == 1) location = "Logout.asp"; // 0:disable auto logout, 1:trigger auto logout. 
 
-	require(['/require/modules/makeRequest.js'], function(makeRequest){
+	require([`${rootPath}/require/modules/makeRequest.js`], function(makeRequest){
 		if(AUTOLOGOUT_MAX_MINUTE != 0) AUTOLOGOUT_MAX_MINUTE--;
-		makeRequest.start('/ajax_status.xml', refreshStatus, function(){ if(error_num > 0){ error_num--; updateStatus(); }	else stopFlag = 1; });
+		makeRequest.start(`${rootPath}/ajax_status.xml`, refreshStatus, function(){ if(error_num > 0){ error_num--; updateStatus(); }	else stopFlag = 1; });
 	});
 }
 
@@ -3259,9 +3323,9 @@ function refreshStatus(xhr){
 	}
 
 	var ajaxStatusLogNew = [
-		link_internet, link_status, link_sbstatus, link_auxstatus, 
-		_wlc_state, _wlc0_state, _wlc1_state, _wlc2_state, 
-		first_link_sbstatus, first_link_auxstatus, first_link_status, 
+		link_internet, link_status, link_sbstatus, link_auxstatus,
+		_wlc_state, _wlc0_state, _wlc1_state, _wlc2_state,
+		first_link_sbstatus, first_link_auxstatus, first_link_status,
 		secondary_link_status, secondary_link_sbstatus, secondary_link_auxstatus
 	];
 
@@ -3818,7 +3882,7 @@ function refreshStatus(xhr){
 			if(document.getElementById("usb_td")) location.reload();
 		}
 
-	 	require(['/require/modules/diskList.js'], function(diskList){
+	 	require([`${rootPath}/require/modules/diskList.js`], function(diskList){
 	 		var usbDevicesList = diskList.list();
 	 		var index = 0, find_nonprinter = 0, find_storage = 0, find_modem = 0;
 
@@ -4082,7 +4146,7 @@ function refreshStatus(xhr){
 	if(window.frames["statusframe"] && (typeof window.frames["statusframe"].stopFlag != "undefined" && window.frames["statusframe"].stopFlag == 1) || stopFlag == 1){
 		return 0;
 	}
-}	
+}
 function FormActions(_Action, _ActionMode, _ActionScript, _ActionWait){
 	if(_Action != "")
 		document.form.action = _Action;
@@ -5313,101 +5377,166 @@ function showWlHintContainer(_parm){
 }
 
 function checkPolicy() {
-    const policyStatus = PolicyStatus()
-        .then(data => {
-            if (data.EULA < 1 && data.EULA_read === 0 && data.EULA_force_sign === 1) {
-                const policyModal = new PolicyUpdateModalComponent({
-                    policyStatus: data,
-                    securityUpdate: 1,
-                    websUpdate: 1,
-                });
-                policyModal.show();
-            } else if (data.EULA > 0 && (data.PP === "" || (data.PP > 0 && data.PP_read === 0 && data.PP_force_sign === 1))) {
-                const policyModal = new PolicyModalComponent({
-                    policyStatus: data,
-                    policy: 'PP',
-                    securityUpdate: 1,
-                    websUpdate: 1,
-					signPPVersion: data.ASUS_PP_support,
-                });
-                policyModal.show();
-            } else if (data.TM == 1 && data.TM_time == '') {
-                const policyModal = new PolicyModalComponent({
-                    policyStatus: data,
-                    policy: "TM"
-                });
-                policyModal.show();
-            }
+	var arkMigrationPromise;
+	if (isSupport("gtbooster") >= 2) {
+		arkMigrationPromise = fetch('/get_ark_migration_done.cgi')
+			.then(function (response) {
+				return response.json();
+			})
+			.catch(function () {
+				return {};
+			});
+	}
+
+	PolicyStatus()
+		.then(data => {
+			if (data.isFetchDone) {
+				if (data.EULA_read === 0 && data.EULA_force_sign === 1) {
+					const policyModal = new PolicyUpdateModalComponent({
+						policyStatus: data,
+						securityUpdate: 1,
+						websUpdate: 1,
+					});
+					policyModal.show();
+				} else if (data.EULA_read === 1 && data.PP_read === 0 && (data.PP === "" || (data.PP >= 0 && data.PP_force_sign === 1))) {
+					const policyModal = new PolicyModalComponent({
+						policyStatus: data,
+						policy: 'PP',
+						securityUpdate: 1,
+						websUpdate: 1,
+						signPPVersion: (data.ASUS_PP_support >= 5) ? data.ASUS_PP_support : 0,
+					});
+					policyModal.show();
+				} else if (data.TM == 1 && data.TM_time == '') {
+					const policyModal = new PolicyModalComponent({
+						policyStatus: data,
+						policy: "TM"
+					});
+					policyModal.show();
+				}
+			}
+			if (typeof arkMigrationPromise !== 'undefined') {
+				showArkMigrationNotification(arkMigrationPromise);
+			}
         });
 }
 
-if (
-	!(window.appInterface || // from Android app
-		(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.appInterface) // for iOS app
-	)
-) {
-	setTimeout(() => {
+function showArkMigrationNotification(arkMigrationPromise) {
+    arkMigrationPromise.then(function(data) {
+        if (data.ark_migration_done != 2) return;
 
-		if (typeof httpApi === 'undefined') {
-			const httpApi_script = document.createElement('script');
-			httpApi_script.src = '/js/httpApi.js';
-			document.head.appendChild(httpApi_script);
-			httpApi_script.onload = () => {
-				if (re_mode != 1) {
-					if (typeof ASUS_POLICY === 'undefined') {
-						const policy_script = document.createElement('script');
-						policy_script.src = '/js/asus_policy.js';
-						document.head.appendChild(policy_script);
-
-						policy_script.onload = () => {
-							checkPolicy();
-						}
-					} else {
-						checkPolicy();
-					}
-				}
+        const policyModal = top.document.querySelector('#policy_popup_modal');
+        if (policyModal) {
+            var observer = new MutationObserver(function() {
+                if (!top.document.querySelector('#policy_popup_modal')) {
+                    observer.disconnect();
+                    showArkMigrationNotification(Promise.resolve(data));
+                }
+            });
+            observer.observe(top.document.body, { childList: true, subtree: true });
+        } else {
+			const functionList = [`<#AiProtection_filter#> (Web)`, `<#FamilyContentBlock#> (App)`, `<#Adaptive_QoS#>`];
+			if(gameMode_support){
+				functionList.push(`<#Gear_Accelerator#> (Web)`)
+				functionList.push(`<#GB_mobile#> (App)`)
 			}
-		} else {
-			if (re_mode != 1) {
-				if (typeof ASUS_POLICY === 'undefined') {
-					const policy_script = document.createElement('script');
-					policy_script.src = '/js/asus_policy.js';
-					document.head.appendChild(policy_script);
-
-					policy_script.onload = () => {
-						checkPolicy();
-					}
-				} else {
-					checkPolicy();
-				}
-			}
-		}
-	}, 1500);
+            var notification = new NotificationModalComponent({
+                id: 'ark_migration_notification',
+                title: '<#Notice#>',
+                message: `<div class="d-flex flex-column gap-1"><div><#ArkMigrationNote_1#></div><div>[<#ArkMigrationNote#>] <#ArkMigrationNote_2#></div></div>`.replace('%@', functionList.join(' / ')),
+                closeCallback: function() {
+                    fetch('/set_ark_migration_done.cgi').catch(function() {});
+                },
+            });
+            notification.show();
+        }
+    });
 }
 
-setTimeout(() => {
-	if(
-		!(window.appInterface ||
-			(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.appInterface)
+window.addEventListener('load', function() {
+	if (
+		!(window.appInterface || // from Android app
+			(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.appInterface) // for iOS app
 		)
-	){
-		const scripts = top.document.head.getElementsByTagName('script');
-		let scriptFound = {
-			asusNotice: false,
-		};
+	) {
+		setTimeout(() => {
+			const loadPolicyScript = function() {
+				if (re_mode == 1)
+					return;
+				if (typeof ASUS_POLICY !== 'undefined') {
+					checkPolicy();
+					return;
+				}
+				if (typeof httpApi !== 'undefined' && typeof httpApi.loadScriptAsset === 'function') {
+					httpApi.loadScriptAsset(`${rootPath}/js/asus_policy.js`, {
+						cacheMode: "force-cache",
+						readyCheck: function() {
+							return typeof ASUS_POLICY !== 'undefined';
+						}
+					}).then(function() {
+						checkPolicy();
+					}).catch(function() {});
+					return;
+				}
 
-		for (let script of scripts) {
-			if (script.src.includes('js/asus_notice.js')) {
-				scriptFound.asusNotice = true;
+				const policy_script = document.createElement('script');
+				policy_script.src = `${rootPath}/js/asus_policy.js`;
+				document.head.appendChild(policy_script);
+				policy_script.onload = () => {
+					checkPolicy();
+				};
+			};
+
+			if (typeof httpApi === 'undefined') {
+				const httpApi_script = document.createElement('script');
+				httpApi_script.src = `${rootPath}/js/httpApi.js`;
+				document.head.appendChild(httpApi_script);
+				httpApi_script.onload = () => {
+					loadPolicyScript();
+				}
+			} else {
+				loadPolicyScript();
+			}
+		}, 1500);
+	}
+});
+
+window.addEventListener('load', function() {
+	setTimeout(() => {
+		if(
+			!(window.appInterface ||
+				(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.appInterface)
+			)
+		){
+			const scripts = top.document.head.getElementsByTagName('script');
+			let scriptFound = {
+				asusNotice: false,
+			};
+
+			for (let script of scripts) {
+				if (script.src.includes('js/asus_notice.js')) {
+					scriptFound.asusNotice = true;
+				}
+			}
+			if (!scriptFound.asusNotice) {
+				if (typeof httpApi !== 'undefined' && typeof httpApi.loadScriptAsset === 'function') {
+					httpApi.loadScriptAsset('/js/asus_notice.js', {
+						cacheMode: "force-cache",
+						targetDocument: top.document,
+						readyCheck: function() {
+							return typeof top.NoticePopupModalComponent !== 'undefined' || typeof NoticePopupModalComponent !== 'undefined';
+						}
+					}).catch(function() {});
+				}
+				else{
+					const asus_notice_script = document.createElement('script');
+					asus_notice_script.src = '/js/asus_notice.js';
+					top.document.head.appendChild(asus_notice_script);
+				}
 			}
 		}
-		if (!scriptFound.asusNotice) {
-			const asus_notice_script = document.createElement('script');
-			asus_notice_script.src = '/js/asus_notice.js';
-			top.document.head.appendChild(asus_notice_script);
-		}
-	}
-}, 2000)
+	}, 2000)
+});
 
 document.addEventListener('mousemove', () => {
     window.parent.postMessage('iframeMouseMove', '*');
@@ -5449,8 +5578,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			const stylesheet = styleSheets[i];
 			if (stylesheet.href) {
 				try {
-					if (!stylesheet.cssRules) {
-						throw new Error('CSS rules not accessible');
+					if (!stylesheet.cssRules || stylesheet.cssRules.length === 0) {
+						throw new Error('CSS rules not accessible or empty');
 					}
 				} catch (e) {
 					const { pathname } = new URL(stylesheet.href);
@@ -5472,5 +5601,5 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			}
 		}
-	}, (parent.webWrapper ? 1000 : 300));
+	}, (isWebWrapper ? 1000 : 300));
 });

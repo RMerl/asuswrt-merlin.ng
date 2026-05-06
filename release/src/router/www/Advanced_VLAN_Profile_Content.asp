@@ -22,7 +22,7 @@
 <script type="text/javascript" src="/detect.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script type="text/javascript" src="/SDN/sdn.js"></script>
+<script type="text/javascript" src="/SDN/sdn.js?lang=<#selected_language#>"></script>
 <style>
 	.center-align{
 		text-align:center;
@@ -246,7 +246,7 @@ function arrayRemove(arr, value) {
 	function initial(){
 		show_menu();
 		$('.button_gen').hide();
-		var vlan_switch_array = { "VLAN" : ["VLAN", "Advanced_VLAN_Switch_Content.asp"], "Profile" : ["Profile", "Advanced_VLAN_Profile_Content.asp"]};
+		var vlan_switch_array = { "VLAN" : ["VLAN", "Advanced_VLAN_Switch_Content.asp"], "Profile" : ["<#vpnc_profile#>", "Advanced_VLAN_Profile_Content.asp"]};
 		$('#divSwitchMenu').html(gen_switch_menu(vlan_switch_array, "Profile"));
 		$('#descContent').html(str_descContent);
 

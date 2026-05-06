@@ -511,16 +511,30 @@ static struct mlo_band_mapping_s mlo_band_mapping_list[] __attribute__ ((unused)
 #if defined(RTCONFIG_MLO_CONFIG_556)
 	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G}, //2556, mlo:5-1/5-2/6
 #else
+#if defined(RTCONFIG_WIFI8)
+	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G}, //2556, mlo:5-2/6
+#else
 	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G}, //2556, mlo:2/5-2/6
+#endif
 #endif
 #if defined(RTCONFIG_MLO_CONFIG_566)
 	{ WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6GL | WIFI_BAND_6GH,	WIFI_BAND_5G | WIFI_BAND_6GL | WIFI_BAND_6GH,	WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6GL}, //2566, mlo:5/6-1/6-2
 #else
+#if defined(RTCONFIG_WIFI8)
+	{ WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6GL | WIFI_BAND_6GH,	WIFI_BAND_5G | WIFI_BAND_6GL,	WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6GL}, //2566, mlo:5/6-1
+#else
 	{ WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6GL | WIFI_BAND_6GH,	WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6GL,	WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6GL}, //2566, mlo:2/5/6-1
 #endif
-	{ WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6G,					WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6G, 	WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6G}, //256, mlo:2/5/6
-	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH,					WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH, 	WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH}, //255, mlo:2/5/5-2
+#endif
+#if defined(RTCONFIG_WIFI8)
+	{ WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6G,					WIFI_BAND_5G | WIFI_BAND_6G, 	WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6G}, //256, mlo:5/6
+	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH,					WIFI_BAND_5GL | WIFI_BAND_5GH, 	WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH}, //255, mlo:5-1/5-2
 	{ WIFI_BAND_2G | WIFI_BAND_5G,									WIFI_BAND_2G | WIFI_BAND_5G, 					WIFI_BAND_2G | WIFI_BAND_5G}, //25, mlo:2/5
+#else
+	{ WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6G,					WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6G, 	WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6G}, //256, mlo:2/5/6
+	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH,					WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH, 	WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH}, //255, mlo:2/5-1/5-2
+	{ WIFI_BAND_2G | WIFI_BAND_5G,									WIFI_BAND_2G | WIFI_BAND_5G, 					WIFI_BAND_2G | WIFI_BAND_5G}, //25, mlo:2/5
+#endif
 	{ -1, 		-1}
 };
 
@@ -533,6 +547,11 @@ static struct mlo_band_mapping_s mlo_band_mapping_list[] __attribute__ ((unused)
 #define MLO_2_51_52     WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH      //1+4+8
 #define MLO_2_5         WIFI_BAND_2G | WIFI_BAND_5G                       //1+2
 
+#define MLO_52_6      	WIFI_BAND_5GH | WIFI_BAND_6G       //8+16
+#define MLO_5_61      	WIFI_BAND_5G | WIFI_BAND_6GL       //2+32
+#define MLO_5_6       	WIFI_BAND_5G | WIFI_BAND_6G        //2+16
+#define MLO_51_52     	WIFI_BAND_5GL | WIFI_BAND_5GH      //4+8
+
 #define MLO_GROUP_51_52_6	"5-1/5-2/6"
 #define MLO_GROUP_2_52_6	"2/5-2/6"
 #define MLO_GROUP_5_61_62	"5/6-1/6-2"
@@ -540,6 +559,11 @@ static struct mlo_band_mapping_s mlo_band_mapping_list[] __attribute__ ((unused)
 #define MLO_GROUP_2_5_6		"2/5/6"
 #define MLO_GROUP_2_51_52	"2/5-1/5-2"
 #define MLO_GROUP_2_5		"2/5"
+
+#define MLO_GROUP_52_6	"5-2/6"
+#define MLO_GROUP_5_61	"5/6-1"
+#define MLO_GROUP_5_6	"5/6"
+#define MLO_GROUP_51_52	"5-1/5-2"
 
 #define NotSupport 0
 #define FirstSupport 1
@@ -564,6 +588,10 @@ static struct MLO_Combination supportedCombinations[] __attribute__ ((unused))  
     {MLO_GROUP_51_52_6, MLO_51_52_6, MLO_GROUP_2_5_6,    MLO_2_5_6,   ThirdSupport},
     {MLO_GROUP_51_52_6, MLO_51_52_6, MLO_GROUP_2_51_52,  MLO_2_51_52, ThirdSupport},
     {MLO_GROUP_51_52_6, MLO_51_52_6, MLO_GROUP_2_5,      MLO_2_5,     NotSupport}, // not support
+    {MLO_GROUP_51_52_6, MLO_51_52_6, MLO_GROUP_52_6,   	MLO_52_6,  ThirdSupport},
+    {MLO_GROUP_51_52_6, MLO_51_52_6, MLO_GROUP_5_61,   	MLO_5_61,  ThirdSupport},
+    {MLO_GROUP_51_52_6, MLO_51_52_6, MLO_GROUP_5_6,    	MLO_5_6,   ThirdSupport},
+    {MLO_GROUP_51_52_6, MLO_51_52_6, MLO_GROUP_51_52,  	MLO_51_52, ThirdSupport},
 
     {MLO_GROUP_2_52_6, MLO_2_52_6, MLO_GROUP_51_52_6,   MLO_51_52_6, ThirdSupport},
     {MLO_GROUP_2_52_6, MLO_2_52_6, MLO_GROUP_2_52_6,    MLO_2_52_6,  FirstSupport},
@@ -572,6 +600,10 @@ static struct MLO_Combination supportedCombinations[] __attribute__ ((unused))  
     {MLO_GROUP_2_52_6, MLO_2_52_6, MLO_GROUP_2_5_6,     MLO_2_5_6,   SecondSupport},
     {MLO_GROUP_2_52_6, MLO_2_52_6, MLO_GROUP_2_51_52,   MLO_2_51_52, ThirdSupport},
     {MLO_GROUP_2_52_6, MLO_2_52_6, MLO_GROUP_2_5,       MLO_2_5,     ThirdSupport},
+    {MLO_GROUP_2_52_6, MLO_2_52_6, MLO_GROUP_52_6,    	MLO_52_6,  ThirdSupport},
+    {MLO_GROUP_2_52_6, MLO_2_52_6, MLO_GROUP_5_61,    	MLO_5_61,  ThirdSupport},
+    {MLO_GROUP_2_52_6, MLO_2_52_6, MLO_GROUP_5_6,     	MLO_5_6,   ThirdSupport},
+    {MLO_GROUP_2_52_6, MLO_2_52_6, MLO_GROUP_51_52,   	MLO_51_52, NotSupport}, // not support
 
     {MLO_GROUP_2_5_61, MLO_2_5_61, MLO_GROUP_51_52_6,   MLO_51_52_6, ThirdSupport},
     {MLO_GROUP_2_5_61, MLO_2_5_61, MLO_GROUP_2_52_6,    MLO_2_52_6,  SecondSupport},
@@ -580,6 +612,10 @@ static struct MLO_Combination supportedCombinations[] __attribute__ ((unused))  
     {MLO_GROUP_2_5_61, MLO_2_5_61, MLO_GROUP_2_5_6,     MLO_2_5_6,   SecondSupport},
     {MLO_GROUP_2_5_61, MLO_2_5_61, MLO_GROUP_2_51_52,   MLO_2_51_52, ThirdSupport},
     {MLO_GROUP_2_5_61, MLO_2_5_61, MLO_GROUP_2_5,       MLO_2_5,     ThirdSupport},
+    {MLO_GROUP_2_5_61, MLO_2_5_61, MLO_GROUP_52_6,    	MLO_52_6,  ThirdSupport},
+    {MLO_GROUP_2_5_61, MLO_2_5_61, MLO_GROUP_5_61,    	MLO_5_61,  ThirdSupport},
+    {MLO_GROUP_2_5_61, MLO_2_5_61, MLO_GROUP_5_6,     	MLO_5_6,   ThirdSupport},
+    {MLO_GROUP_2_5_61, MLO_2_5_61, MLO_GROUP_51_52,   	MLO_51_52, NotSupport}, // not support
 
     {MLO_GROUP_5_61_62, MLO_5_61_62, MLO_GROUP_51_52_6, MLO_51_52_6, ThirdSupport},
     {MLO_GROUP_5_61_62, MLO_5_61_62, MLO_GROUP_2_52_6,  MLO_2_52_6,  ThirdSupport},
@@ -588,6 +624,10 @@ static struct MLO_Combination supportedCombinations[] __attribute__ ((unused))  
     {MLO_GROUP_5_61_62, MLO_5_61_62, MLO_GROUP_2_5_6,   MLO_2_5_6,   ThirdSupport},
     {MLO_GROUP_5_61_62, MLO_5_61_62, MLO_GROUP_2_51_52, MLO_2_51_52, NotSupport}, // not support
     {MLO_GROUP_5_61_62, MLO_5_61_62, MLO_GROUP_2_5,     MLO_2_5,     NotSupport}, // not support
+    {MLO_GROUP_5_61_62, MLO_5_61_62, MLO_GROUP_52_6,    MLO_52_6,  ThirdSupport},
+    {MLO_GROUP_5_61_62, MLO_5_61_62, MLO_GROUP_5_61,    MLO_5_61,  ThirdSupport},
+    {MLO_GROUP_5_61_62, MLO_5_61_62, MLO_GROUP_5_6,     MLO_5_6,   ThirdSupport},
+    {MLO_GROUP_5_61_62, MLO_5_61_62, MLO_GROUP_51_52,   MLO_51_52, NotSupport}, // not support
 
     {MLO_GROUP_2_5_6, MLO_2_5_6, MLO_GROUP_51_52_6,     MLO_51_52_6, ThirdSupport},
     {MLO_GROUP_2_5_6, MLO_2_5_6, MLO_GROUP_2_52_6,      MLO_2_52_6,  SecondSupport},
@@ -596,6 +636,10 @@ static struct MLO_Combination supportedCombinations[] __attribute__ ((unused))  
     {MLO_GROUP_2_5_6, MLO_2_5_6, MLO_GROUP_2_5_6,       MLO_2_5_6,   FirstSupport},
     {MLO_GROUP_2_5_6, MLO_2_5_6, MLO_GROUP_2_51_52,     MLO_2_51_52, ThirdSupport},
     {MLO_GROUP_2_5_6, MLO_2_5_6, MLO_GROUP_2_5,         MLO_2_5,     ThirdSupport},
+    {MLO_GROUP_2_5_6, MLO_2_5_6, MLO_GROUP_52_6,    	MLO_52_6,  ThirdSupport},
+    {MLO_GROUP_2_5_6, MLO_2_5_6, MLO_GROUP_5_61,    	MLO_5_61,  ThirdSupport},
+    {MLO_GROUP_2_5_6, MLO_2_5_6, MLO_GROUP_5_6,     	MLO_5_6,   ThirdSupport},
+    {MLO_GROUP_2_5_6, MLO_2_5_6, MLO_GROUP_51_52,   	MLO_51_52, NotSupport}, // not support
 
     {MLO_GROUP_2_51_52, MLO_2_51_52, MLO_GROUP_51_52_6, MLO_51_52_6, ThirdSupport},
     {MLO_GROUP_2_51_52, MLO_2_51_52, MLO_GROUP_2_52_6,  MLO_2_52_6,  ThirdSupport},
@@ -604,6 +648,10 @@ static struct MLO_Combination supportedCombinations[] __attribute__ ((unused))  
     {MLO_GROUP_2_51_52, MLO_2_51_52, MLO_GROUP_2_5_6,   MLO_2_5_6,   ThirdSupport},
     {MLO_GROUP_2_51_52, MLO_2_51_52, MLO_GROUP_2_51_52, MLO_2_51_52, FirstSupport},
     {MLO_GROUP_2_51_52, MLO_2_51_52, MLO_GROUP_2_5,     MLO_2_5,     ThirdSupport},
+    {MLO_GROUP_2_51_52, MLO_2_51_52, MLO_GROUP_52_6,    MLO_52_6,  NotSupport}, // not support
+    {MLO_GROUP_2_51_52, MLO_2_51_52, MLO_GROUP_5_61,    MLO_5_61,  NotSupport}, // not support
+    {MLO_GROUP_2_51_52, MLO_2_51_52, MLO_GROUP_5_6,     MLO_5_6,   NotSupport}, // not support
+    {MLO_GROUP_2_51_52, MLO_2_51_52, MLO_GROUP_51_52,   MLO_51_52, ThirdSupport},
 
     {MLO_GROUP_2_5, MLO_2_5, MLO_GROUP_51_52_6, MLO_51_52_6,   NotSupport}, // not support
     {MLO_GROUP_2_5, MLO_2_5, MLO_GROUP_2_52_6,  MLO_2_52_6,    ThirdSupport},
@@ -612,6 +660,58 @@ static struct MLO_Combination supportedCombinations[] __attribute__ ((unused))  
     {MLO_GROUP_2_5, MLO_2_5, MLO_GROUP_2_5_6,   MLO_2_5_6,     ThirdSupport},
     {MLO_GROUP_2_5, MLO_2_5, MLO_GROUP_2_51_52, MLO_2_51_52,   ThirdSupport},
     {MLO_GROUP_2_5, MLO_2_5, MLO_GROUP_2_5,     MLO_2_5,       FirstSupport},
+    {MLO_GROUP_2_5, MLO_2_5, MLO_GROUP_52_6,    MLO_52_6,  NotSupport}, // not support
+    {MLO_GROUP_2_5, MLO_2_5, MLO_GROUP_5_61,    MLO_5_61,  NotSupport}, // not support
+    {MLO_GROUP_2_5, MLO_2_5, MLO_GROUP_5_6,     MLO_5_6,   NotSupport}, // not support
+    {MLO_GROUP_2_5, MLO_2_5, MLO_GROUP_51_52,   MLO_51_52, NotSupport}, // not support
+
+    {MLO_GROUP_52_6, MLO_52_6, MLO_GROUP_51_52_6, MLO_51_52_6,   ThirdSupport},
+    {MLO_GROUP_52_6, MLO_52_6, MLO_GROUP_2_52_6,  MLO_2_52_6,    ThirdSupport},
+    {MLO_GROUP_52_6, MLO_52_6, MLO_GROUP_2_5_61,  MLO_2_5_61,    ThirdSupport},
+    {MLO_GROUP_52_6, MLO_52_6, MLO_GROUP_5_61_62, MLO_5_61_62,   NotSupport}, // not support
+    {MLO_GROUP_52_6, MLO_52_6, MLO_GROUP_2_5_6,   MLO_2_5_6,     ThirdSupport},
+    {MLO_GROUP_52_6, MLO_52_6, MLO_GROUP_2_51_52, MLO_2_51_52,   NotSupport}, // not support
+    {MLO_GROUP_52_6, MLO_52_6, MLO_GROUP_2_5,     MLO_2_5,       NotSupport}, // not support
+    {MLO_GROUP_52_6, MLO_52_6, MLO_GROUP_52_6,    MLO_52_6,  FirstSupport},
+    {MLO_GROUP_52_6, MLO_52_6, MLO_GROUP_5_61,    MLO_5_61,  SecondSupport},
+    {MLO_GROUP_52_6, MLO_52_6, MLO_GROUP_5_6,     MLO_5_6,   SecondSupport},
+    {MLO_GROUP_52_6, MLO_52_6, MLO_GROUP_51_52,   MLO_51_52, NotSupport}, // not support
+
+    {MLO_GROUP_5_61, MLO_5_61, MLO_GROUP_51_52_6, MLO_51_52_6,   ThirdSupport},
+    {MLO_GROUP_5_61, MLO_5_61, MLO_GROUP_2_52_6,  MLO_2_52_6,    ThirdSupport},
+    {MLO_GROUP_5_61, MLO_5_61, MLO_GROUP_2_5_61,  MLO_2_5_61,    ThirdSupport},
+    {MLO_GROUP_5_61, MLO_5_61, MLO_GROUP_5_61_62, MLO_5_61_62,   ThirdSupport},
+    {MLO_GROUP_5_61, MLO_5_61, MLO_GROUP_2_5_6,   MLO_2_5_6,     ThirdSupport},
+    {MLO_GROUP_5_61, MLO_5_61, MLO_GROUP_2_51_52, MLO_2_51_52,   NotSupport}, // not support
+    {MLO_GROUP_5_61, MLO_5_61, MLO_GROUP_2_5,     MLO_2_5,       NotSupport}, // not support
+    {MLO_GROUP_5_61, MLO_5_61, MLO_GROUP_52_6,    MLO_52_6,  SecondSupport},
+    {MLO_GROUP_5_61, MLO_5_61, MLO_GROUP_5_61,    MLO_5_61,  FirstSupport},
+    {MLO_GROUP_5_61, MLO_5_61, MLO_GROUP_5_6,     MLO_5_6,   SecondSupport},
+    {MLO_GROUP_5_61, MLO_5_61, MLO_GROUP_51_52,   MLO_51_52, NotSupport}, // not support
+
+    {MLO_GROUP_5_6, MLO_5_6, MLO_GROUP_51_52_6, MLO_51_52_6,   ThirdSupport},
+    {MLO_GROUP_5_6, MLO_5_6, MLO_GROUP_2_52_6,  MLO_2_52_6,    ThirdSupport},
+    {MLO_GROUP_5_6, MLO_5_6, MLO_GROUP_2_5_61,  MLO_2_5_61,    ThirdSupport},
+    {MLO_GROUP_5_6, MLO_5_6, MLO_GROUP_5_61_62, MLO_5_61_62,   ThirdSupport},
+    {MLO_GROUP_5_6, MLO_5_6, MLO_GROUP_2_5_6,   MLO_2_5_6,     ThirdSupport},
+    {MLO_GROUP_5_6, MLO_5_6, MLO_GROUP_2_51_52, MLO_2_51_52,   NotSupport}, // not support
+    {MLO_GROUP_5_6, MLO_5_6, MLO_GROUP_2_5,     MLO_2_5,       NotSupport}, // not support
+    {MLO_GROUP_5_6, MLO_5_6, MLO_GROUP_52_6,    MLO_52_6,  SecondSupport},
+    {MLO_GROUP_5_6, MLO_5_6, MLO_GROUP_5_61,    MLO_5_61,  SecondSupport},
+    {MLO_GROUP_5_6, MLO_5_6, MLO_GROUP_5_6,     MLO_5_6,   FirstSupport},
+    {MLO_GROUP_5_6, MLO_5_6, MLO_GROUP_51_52,   MLO_51_52, NotSupport}, // not support
+
+    {MLO_GROUP_51_52, MLO_51_52, MLO_GROUP_51_52_6, MLO_51_52_6,   ThirdSupport},
+    {MLO_GROUP_51_52, MLO_51_52, MLO_GROUP_2_52_6,  MLO_2_52_6,    NotSupport}, // not support
+    {MLO_GROUP_51_52, MLO_51_52, MLO_GROUP_2_5_61,  MLO_2_5_61,    NotSupport}, // not support
+    {MLO_GROUP_51_52, MLO_51_52, MLO_GROUP_5_61_62, MLO_5_61_62,   NotSupport}, // not support
+    {MLO_GROUP_51_52, MLO_51_52, MLO_GROUP_2_5_6,   MLO_2_5_6,     NotSupport}, // not support
+    {MLO_GROUP_51_52, MLO_51_52, MLO_GROUP_2_51_52, MLO_2_51_52,   ThirdSupport},
+    {MLO_GROUP_51_52, MLO_51_52, MLO_GROUP_2_5,     MLO_2_5,       NotSupport}, // not support
+    {MLO_GROUP_51_52, MLO_51_52, MLO_GROUP_52_6,    MLO_52_6,  NotSupport}, // not support
+    {MLO_GROUP_51_52, MLO_51_52, MLO_GROUP_5_61,    MLO_5_61,  NotSupport}, // not support
+    {MLO_GROUP_51_52, MLO_51_52, MLO_GROUP_5_6,     MLO_5_6,   NotSupport}, // not support
+    {MLO_GROUP_51_52, MLO_51_52, MLO_GROUP_51_52,   MLO_51_52, FirstSupport},
     {"NONE", -1, "NONE", -1,    0}
 };
 
@@ -1564,6 +1664,14 @@ enum led_id {
 	LED_RGB1_BLUE,
 	LED_WHITE,
 #endif
+#if defined(BN12)
+	BT_RESET,
+	BT_DISABLE,
+	LED_RGB1_RED,
+	LED_RGB1_GREEN,
+	LED_RGB1_BLUE,
+	LED_WHITE,
+#endif
 #if defined(EBA63)
 	LED_RGB1_RED,
 	LED_RGB1_GREEN,
@@ -1598,7 +1706,7 @@ enum led_id {
 	IND_BT,
 	IND_PA,
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 	LED_GROUP1_RED,
 	LED_GROUP1_GREEN,
 	LED_GROUP1_BLUE,
@@ -1609,7 +1717,7 @@ enum led_id {
 	LED_GROUP3_RED,
 	LED_GROUP3_GREEN,
 	LED_GROUP3_BLUE,
-#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE96) && !defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE96) && !defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 	LED_GROUP4_RED,
 	LED_GROUP4_GREEN,
 	LED_GROUP4_BLUE,
@@ -1627,7 +1735,7 @@ enum led_id {
 #endif
 #endif
 #endif
-#if defined(DSL_AX82U) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(DSL_AX82U) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 	LED_WIFI,
 #endif
 #if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
@@ -1639,7 +1747,7 @@ enum led_id {
 	LED_10G_RGB_BLUE,
 	LED_10G_WHITE,
 #endif
-#if defined(RTBE96U) || defined(RTBE88U) || defined(RTBE86U)
+#if defined(RTBE96U) || defined(RTBE88U) || defined(RTBE86U) || defined(GTBN98_PRO) || defined(GTBN96X) || defined(GTBN98) || defined(GTBN96)
 	LED_10G_WHITE,
 #endif
 #if defined(BC109) || defined(BC105)
@@ -1669,8 +1777,11 @@ enum led_id {
 	LED_AR3012_RST,
 	LED_POE_ALERT,
 #endif
-#if defined(RTBE96U) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
+#if defined(RTBE96U) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GTBN98_PRO) || defined(GTBN96)
 	LED_AFC,
+#endif
+#if defined(GTBN98_PRO)
+	LED_AFC2,
 #endif
 #if defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI)
 	ES_RESET,
@@ -1796,12 +1907,12 @@ static inline int max_no_mssid(void)
 /* brcm qualband machines need to re-define this table by its own case */
 /* wl_band_id must be 0, 1, 2 for 2G, 5G-1, 5G-2 on QCA/MTK platform respectively even some band don't exist. */
 enum wl_band_id {
-#if defined(GTAXE16000) || defined(GTBE98) || defined(BQ16) || defined(EBG15) || defined(EBG19) || defined(EBG19P)
+#if defined(GTAXE16000) || defined(GTBE98) || defined(BQ16) || defined(EBG15) || defined(EBG19) || defined(EBG19P) || defined(GTBN98)
 	WL_5G_BAND = 0,
 	WL_5G_2_BAND = 1,
 	WL_6G_BAND = 2,
 	WL_2G_BAND = 3,
-#elif defined(GTBE98_PRO) || defined(BQ16_PRO)
+#elif defined(GTBE98_PRO) || defined(BQ16_PRO) || defined(GTBN98_PRO)
 	WL_5G_BAND = 0,
 	WL_5G_2_BAND = 0,
 	WL_6G_BAND = 1,
@@ -1811,7 +1922,7 @@ enum wl_band_id {
 	WL_5G_BAND = 0,
 	WL_5G_2_BAND = 1,
 	WL_2G_BAND = 2,
-#elif defined(GS7_PRO)
+#elif defined(GS7_PRO) || defined(GS7_PRO_MAX)
 	WL_5G_BAND = 1,
 	WL_5G_2_BAND = 0,
 	WL_2G_BAND = 2,
@@ -1819,7 +1930,7 @@ enum wl_band_id {
 	WL_2G_BAND = 0,
 	WL_5G_BAND = 1,
 	WL_5G_2_BAND = 2,
-#elif defined(BT10) || defined(GSBE18000) || defined(GSBE12000) || defined(GT7)
+#elif defined(BT10) || defined(GSBE18000) || defined(GSBE12000) || defined(GT7) || defined(BN12)
 	WL_5G_2_BAND = 0,
 	WL_6G_BAND = 0,
 	WL_5G_BAND = 1,
@@ -1847,16 +1958,16 @@ enum wl_band_id {
 #endif
 #endif
 	WL_60G_BAND,
-#if !defined(GTBE98_PRO) && !defined(BQ16_PRO)
+#if !defined(GTBE98_PRO) && !defined(BQ16_PRO) && !defined(GTBN98_PRO)
 	WL_6G_2_BAND,
 #endif
 	WL_NR_BANDS                             /* Maximum number of Wireless bands of all models. */
 };
 
 #if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
-#if defined(BT10) || defined(GSBE18000) || defined(GSBE12000) || defined(GT7)
+#if defined(BT10) || defined(GSBE18000) || defined(GSBE12000) || defined(GT7) || defined(BN12)
 #define WL_UNIT_6G	0
-#elif defined(GTBE98_PRO) || defined(BQ16_PRO) || defined(RTBE95U)
+#elif defined(GTBE98_PRO) || defined(BQ16_PRO) || defined(RTBE95U) || defined(GTBN98_PRO)
 #define WL_UNIT_6G	1
 #elif defined(RTCONFIG_QCA) || defined(RTCONFIG_MTK)
 #define WL_UNIT_6G	3
@@ -1877,6 +1988,13 @@ enum wl_band_id {
 #define ENVRAM_2G_DEVPATH 0
 #define ENVRAM_5G_DEVPATH 1
 #define ENVRAM_6G_DEVPATH 2
+#elif defined(BN12)
+#define WL_2G_IFNAME "wl2"
+#define WL_5G_IFNAME "wl1"
+#define WL_6G_IFNAME "wl0"
+#define ENVRAM_2G_DEVPATH 2
+#define ENVRAM_5G_DEVPATH 0
+#define ENVRAM_6G_DEVPATH 1
 #else	/* dummy configuration to avoid compile error */
 #define WL_2G_IFNAME "wl0"
 #define WL_5G_IFNAME "wl1"
@@ -2326,6 +2444,11 @@ static inline int dpsta_mode()
 	return 0;
 }
 #endif
+
+static inline int rp_mode_db()
+{
+	return ((sw_mode() == SW_MODE_AP) && (nvram_get_int("wlc_psta") == 2) && (nvram_get_int("wlc_dpsta") == 2) && nvram_get_int("mlo_mb") == 0 && nvram_match("re_mode", "0"));
+}
 
 static inline int rp_mode()
 {
@@ -3061,6 +3184,14 @@ extern int checkMloWiFi();
 #ifdef RTCONFIG_MULTILAN_MWL
 extern int is_mainFH_network(char *ifname);
 #endif
+unsigned int get_wifi_gen(void);
+
+#ifdef RTCONFIG_AMAS
+int is_power_of_two(unsigned int x);
+int compare_wifi_gen(unsigned int target_wifi);
+int is_wifi_gen_at_least(unsigned int target_gen);
+int is_wifi_gen_exact(unsigned int target_gen);
+#endif
 
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 extern int get_psta_status(int unit);
@@ -3559,7 +3690,13 @@ extern uint32_t hnd_get_phy_speed(int port, int offs, unsigned int regv, unsigne
 extern uint32_t hnd_get_phy_duplex(int port, int offs, unsigned int regv, unsigned int pmdv);
 extern uint64_t hnd_get_phy_mib(int port, int offs, char *type);
 #endif
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#ifdef RTCONFIG_MXL_826XX
+extern int mxl_mdio_read(uint8_t phy, uint8_t mmd, uint16_t reg, uint16_t *data);
+extern int mxl_mdio_write(uint8_t phy, uint8_t mmd, uint16_t reg, uint16_t data);
+extern int mxl_mdio_mod(uint8_t phy, uint8_t mmd, uint16_t reg, uint16_t mask, uint16_t data);
+extern int mxl_gphy_read(uint8_t phy, uint8_t mmd, uint16_t reg, uint16_t *data);
+extern int mxl_gphy_write(uint8_t phy, uint8_t mmd, uint16_t reg, uint16_t data);
+extern int mxl_gphy_mod(uint8_t phy, uint8_t mmd, uint16_t reg, uint16_t mask, uint16_t data);
 extern uint32_t mxl_get_phy_status(int port);
 extern uint32_t mxl_get_phy_speed(int port);
 extern uint32_t mxl_get_phy_duplex(int port);
@@ -3594,6 +3731,9 @@ extern chanspec_t select_chspec_with_band_bw(char *wif, int band, int bw, chansp
 extern void wl_list_5g_chans(int unit, int band, int war, char *buf, int len, int bw);
 #endif
 extern int wl_cap(int unit, char *cap_check);
+#if defined(WIFI8_SDK_20260204) || defined(WIFI8_SDK_20260402)
+extern int wl_cap_by_ifname(char *ifname, char *cap_check);
+#endif	/* WIFI8_SDK_20260204 WIFI8_SDK_20260402 */
 #endif
 #ifdef RTCONFIG_AMAS
 //extern char *get_pap_bssid(int unit, char bssid_str[]);
@@ -4643,8 +4783,32 @@ static inline int turbo_led_control(__attribute__ ((unused)) int onoff) { return
 static inline int boost_led_control(__attribute__ ((unused)) int onoff) { return 0; }
 #endif
 
+#if defined(RTCONFIG_LED_SCHED)
+static inline int led_sched_off(void) { return nvram_match("led_off_sched", "1"); }
+#else
+static inline int led_sched_off(void) { return 0; }
+#endif
+
+#if defined(RTCONFIG_LED_NIGHT_SCHED)
+static inline int led_night_mode_sched_on(void) { return nvram_match("single_led_night_mode_sched", "1"); }
+#else
+static inline int led_night_mode_sched_on(void) { return 0; }
+#endif
+
+#if defined(RTCONFIG_AURA_SCHED)
+static inline int aura_sched_off(void) { return nvram_match("ledg_scheme_sched", "0"); }
+#else
+static inline int aura_sched_off(void) { return 0; }
+#endif
+
+#if defined(RTCONFIG_AURA_NIGHT_SCHED)
+static inline int aura_night_mode_sched_on(void) { return nvram_match("ledg_night_mode_sched", "1"); }
+#else
+static inline int aura_night_mode_sched_on(void) { return 0; }
+#endif
+
 #if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))
-static inline int inhibit_led_on(void) { return !nvram_get_int("AllLED"); }
+static inline int inhibit_led_on(void) { return (!nvram_get_int("AllLED") || led_sched_off()); }
 #else
 static inline int inhibit_led_on(void) { return 0; }
 #endif
@@ -5146,11 +5310,12 @@ extern int is_n66u_v2();
 extern int is_ac68u_v3_series();
 extern int hw_usb_cap();
 extern int is_ssid_rev3_series();
-#ifdef RTCONFIG_TCODE
-extern unsigned int hardware_flag();
-#endif
 extern int is_dpsta_repeater();
 extern void ac68u_cofs();
+#endif
+
+#if defined(RTCONFIG_TCODE) && (defined(RTAC68U) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55))
+extern unsigned int hardware_flag();
 #endif
 
 #ifdef DSL_AX82U
@@ -5430,6 +5595,19 @@ typedef struct __amaslib_notification__t_
 #define MAX_NR_WL_BAND			8
 #endif
 
+/* the definition for wifi generation */
+#define WIFI5	(1 << 0)
+#define WIFI6	(1 << 1)
+#define WIFI7	(1 << 2)
+#define WIFI8	(1 << 3)
+
+// WiFi generation comparison result macros
+#define WIFI_GEN_LOWER      0
+#define WIFI_GEN_EQUAL      1
+#define WIFI_GEN_HIGHER     2
+#define WIFI_GEN_ERROR      -1
+#define WIFI_GEN_INVALID    -1
+
 #endif /* defined(RTCONFIG_AMAS) */
 
 #if defined(RTCONFIG_TIME_QUOTA)
@@ -5491,7 +5669,7 @@ extern void firmware_downgrade_check(uint32_t sf);
 #define ANTLED_SCHEME_RSSI              2
 #endif
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 enum {
 	LEDG_QIS_RUN = 1,
 	LEDG_QIS_FINISH
@@ -5627,18 +5805,18 @@ enum {
 
 /* which wlunit to set the corresponding rule */
 enum {
-#if defined(GTAXE16000) || defined(GTBE98) || defined(BQ16)
+#if defined(GTAXE16000) || defined(GTBE98) || defined(BQ16) || defined(GTBN98)
 	WLIF_2G	 = 3,
 	WLIF_5G1 = 0,
 	WLIF_5G2 = 1,
 	WLIF_6G	 = 2,
-#elif defined(GTBE98_PRO) || defined(BQ16_PRO)
+#elif defined(GTBE98_PRO) || defined(BQ16_PRO) || defined(GTBN98_PRO)
 	WLIF_2G	 = 3,
 	WLIF_5G1 = 0,
 	WLIF_5G2 = 0,
 	WLIF_6G	 = 1,
 	WLIF_6G2 = 2,
-#elif defined(BT10) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#elif defined(BT10) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(BN12)
 	WLIF_5G2 = 0,
 	WLIF_6G	 = 0,
 	WLIF_5G1 = 1,
@@ -5857,7 +6035,7 @@ extern char *get_ddns_macaddr(void);
 extern char *rfctime(const time_t *timep, char *ts_string, int len);
 extern void update_ntp_ts(time_t bf_time, int ntp_diff_ts);
 
-#if defined(RTCONFIG_PRESSURE_SENSOR)
+#if defined(RTCONFIG_PRESSURE_SENSOR) || defined(RTCONFIG_PRESSURE_SENSOR_CMP201)
 #define PRESSURE_LEN 		(16)
 #endif
 
@@ -5924,7 +6102,21 @@ static inline int is_airiq_eanbled() {
 #define AIBOARD_CONTROL_IP "169.254.0.2"
 #endif
 
+/* definition for wlX_nband_type */
+enum bandAttribute {
+	BAND_ATTR_2G = 0,
+	BAND_ATTR_5G = 1,
+	BAND_ATTR_5GL = 2,
+	BAND_ATTR_5GH = 3,
+	BAND_ATTR_6G = 4,
+	BAND_ATTR_6GL = 5,
+	BAND_ATTR_6GH = 6
+};
+
 extern int safe_do_system(const char *fmt, ...);
 extern int safe_fork_do_system(const char *fmt, ...);
 extern int safe_do_system_to_file(const char *outfile, int append, const char *fmt, ...);
+extern int safe_fork_do_system_to_file(const char *outfile, int append, const char *fmt, ...);
+
+extern int is_safe_app_name(const char *app_name);
 #endif	/* !__SHARED_H__ */

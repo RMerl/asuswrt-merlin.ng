@@ -216,3 +216,41 @@
  	border-collapse: collapse;
  	line-height:25px;
 }
+[data-asuswrt-theme][data-asuswrt-color]{
+	.tree_table td{
+		background-color: transparent;
+	}
+	#accountMask{
+		background-color: transparent;
+	}
+	
+	/*aidisk_table*/
+	.AiDiskTable{
+		border: 1px solid var(--wrt-table-border-color);
+		border-collapse: collapse;
+	}
+	.AiDiskTable th{
+		width:25%;
+		background-color: var(--wrt-table-header-bg);
+		/*text-align:center;*/
+	}
+	table.accountBar{
+		background-color: var(--wrt-table-bg) !important;
+		border-color: var(--wrt-table-border-color) !important;
+		padding: 0;
+		margin: 0px auto !important;
+		margin-top: 30px !important;
+		width: 100%;
+	}
+	.accountBar td{
+		background-color: var(--wrt-table-header-bg) !important;
+		color: var(--wrt-text-primary);
+		border: 0px solid var(--wrt-table-border-color) !important;
+	}
+	.FdText span{
+		vertical-align:top;
+		font-size:12px;
+		font-family: var(--global-font-style);
+		line-height:1.5;
+	}
+}

@@ -257,7 +257,7 @@ typedef struct asus_token_table asus_token_t;
 struct asus_token_table{
 	char useragent[1024];
 	char token[33];
-	char ipaddr[16];
+	char ipaddr[64];
 	char login_timestampstr[32];
 	char host[64];
 	time_t last_login_timestamp;
@@ -449,6 +449,7 @@ typedef struct uaddr {
 extern uaddr *uaddr_ston(const usockaddr *u, uaddr *uip);
 extern uaddr *uaddr_pton(const char *src, uaddr *uip);
 extern char *uaddr_ntop(const uaddr *uip, char *dst, size_t cnt);
+extern char *safe_uaddr_ntop(const uaddr *uip, char *dst, size_t cnt);
 extern unsigned int uaddr_addr(uaddr *uip);
 extern int uaddr_is_unspecified(uaddr *uip);
 extern int uaddr_is_localhost(uaddr *uip);
@@ -490,9 +491,6 @@ extern int check_AiMesh_whitelist(char *page);
 extern int ej_get_dnsprivacy_presets(int eid, webs_t wp, int argc, char_t **argv);
 #endif
 extern void __validate_apply_set_wl_var(char *nv, char *val) __attribute__((weak));
-#ifdef RTCONFIG_BWDPI
-extern int check_bwdpi_status_app_name(char *name);
-#endif
 
 /* web-*.c */
 extern int ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit);
@@ -515,7 +513,9 @@ extern unsigned int login_ip; // the logined ip
 extern unsigned int app_login_ip; // the app logined ip
 extern char cookies_buf[4096];
 extern unsigned int login_ip_tmp; /* IPv6 compat */
+extern uaddr login_uip;
 extern uaddr login_uip_tmp;
+extern uaddr app_login_uip; // the app log ip
 extern time_t login_timestamp_cache;
 extern int hook_get_json;
 extern char wl_band_list[8][8];
@@ -560,7 +560,7 @@ extern int lock_flag;
 extern int max_lock_time;
 extern int login_error_status;
 extern char cache_object[];
-extern char cache_long_object[];
+extern char no_cache[];
 extern char* ipisdomain(char* hostname, char* str);
 #ifdef RTCONFIG_AMAS
 extern char* iscap(char* str);
@@ -605,7 +605,7 @@ extern int is_captcha_match(char *catpch);
 #if defined(RTCONFIG_AURALED) \
         || defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) \
         || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) \
-        || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
+        || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI)
 extern void httpd_switch_ledg(int action);
 #endif
 #ifdef RTCONFIG_SAVE_WL_NVRAM_BOTH
@@ -666,4 +666,11 @@ extern void do_ai_board_slm_cgi(char *url, FILE *stream);
 extern void do_set_AI_board_EULA_cgi(char *url, FILE *stream);
 #endif
 extern void band_id_to_bandwidth(char *band_id, char *band, int len);
+
+#if defined(WIFI8_SDK_20251126) || defined(WIFI8_SDK_20260204) || defined(WIFI8_SDK_20260402)
+#define WL_BSS_INFO_SDK_VER wl_bss_info_v109_1_t
+#else
+#define WL_BSS_INFO_SDK_VER wl_bss_info_107_t
+#endif
+
 #endif /* _httpd_h_ */

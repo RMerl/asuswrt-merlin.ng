@@ -68,10 +68,21 @@ var helpcontent = new Array();
 (function(){
 	if(!isMobile_help()){
 		setTimeout(function(){
-			var newScript = document.createElement("script");
-			newScript.type = "text/javascript";
-			newScript.src = '/help_content.js';
-			document.getElementsByTagName("head")[0].appendChild(newScript);
+			var helpContentPath = `${rootPath}/help_content.js`;
+			if(typeof httpApi !== "undefined" && typeof httpApi.loadScriptAsset === "function"){
+				httpApi.loadScriptAsset(helpContentPath, {
+					cacheMode: "force-cache",
+					readyCheck: function(){
+						return Array.isArray(helpcontent) && helpcontent.length > 0;
+					}
+				}).catch(function(){});
+			}
+			else{
+				var newScript = document.createElement("script");
+				newScript.type = "text/javascript";
+				newScript.src = helpContentPath;
+				document.getElementsByTagName("head")[0].appendChild(newScript);
+			}
 		}, 2000);
 	}
 })();
@@ -547,7 +558,7 @@ function overHint(itemNum){
 			}
 
 			if(statusmenu != "")
-				return overlib(statusmenu, OFFSETX, -160, LEFT, DELAY, 400);
+				return showHintBox(statusmenu);
 		});
 	}
 
@@ -872,12 +883,12 @@ function overHint(itemNum){
 			if( statusmenu == "" )
 				statusmenu = "<div class='StatusHint'><#no_usb_found#></div>";
 
-			return overlib(statusmenu, OFFSETX, -160, LEFT, DELAY, 400);
+			return showHintBox(statusmenu);
 		});
 	}
 
 	if( statusmenu != "" )
-		return overlib(statusmenu, OFFSETX, -160, LEFT, DELAY, 400);
+		return showHintBox(statusmenu);
 }
 
 function show_diagTime(boottime_update){
@@ -901,6 +912,56 @@ function cancel_dblog(){
 }
 
 var referer_obj = "";
+var _hintTriggerEl = null;
+document.addEventListener('click', function(e) {
+	_hintTriggerEl = e.target;
+	// close panel when clicking outside it
+	var panel = document.getElementById('overDiv');
+	if (panel && panel.style.display === 'block' && !panel.contains(e.target))
+		nd();
+}, true);
+
+function showHintBox(content, caption) {
+	var panel = document.getElementById('overDiv') || createDivContainer();
+	var html = '';
+	if (caption) {
+		html += '<div class="hint-panel-caption">' + caption +
+			'<span class="hint-panel-close" onclick="nd()">&#x2715;</span></div>';
+	}
+	html += content;
+	panel.innerHTML = html;
+	// measure after content is set
+	panel.style.visibility = 'hidden';
+	panel.style.display = 'block';
+	panel.style.left = '0';
+	panel.style.top = '0';
+	panel.style.right = 'auto';
+
+	var el = _hintTriggerEl;
+	if (el) {
+		var rect = el.getBoundingClientRect();
+		var pw = panel.offsetWidth;
+		var ph = panel.offsetHeight;
+		var vw = window.innerWidth;
+		var vh = window.innerHeight;
+		var GAP = 8;
+
+		// prefer right of element, flip left if overflow
+		var left = rect.right + GAP;
+		if (left + pw > vw - GAP) left = rect.left - pw - GAP;
+
+		// align top with element, shift up if overflow
+		var top = rect.top;
+		if (top + ph > vh - GAP) top = vh - ph - GAP;
+
+		panel.style.left = Math.max(GAP, left) + 'px';
+		panel.style.top  = Math.max(GAP, top)  + 'px';
+	}
+
+	panel.style.visibility = 'visible';
+	return true;
+}
+
 function openHint(hint_array_id, hint_show_id, flag){
 	if(flag != undefined && flag != "")
 		referer_obj = flag;
@@ -1065,7 +1126,7 @@ function openHint(hint_array_id, hint_show_id, flag){
 					statusmenu += "<div style='margin-top:2px;' class='StatusClickHint' onclick='remove_all_disk();' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'>Eject all USB disks</div>";
 
 				_caption = "USB storage";
-				return overlib(statusmenu, OFFSETX, -160, LEFT, STICKY, CAPTION, " ", CLOSETITLE, '');
+				return showHintBox(statusmenu, _caption);
 			});
 		}
 		else if(hint_show_id == 1){
@@ -1076,7 +1137,7 @@ function openHint(hint_array_id, hint_show_id, flag){
 			_caption = "Printer";
 		}
 
-		return overlib(statusmenu, OFFSETX, -160, LEFT, STICKY, CAPTION, " ", CLOSETITLE, '');
+		return showHintBox(statusmenu, _caption);
 	}
 	else if(hint_array_id == 28){ //wan aggregation
 		statusmenu = "<div>";
@@ -1093,22 +1154,18 @@ function openHint(hint_array_id, hint_show_id, flag){
 		statusmenu += "<#WANAggregation_help_final#>";
 		statusmenu += "</div>";
 
-		return overlib(statusmenu, OFFSETX, -160, LEFT, DELAY, 400, WIDTH, 300, STICKY, CAPTION, " ");
+		return showHintBox(statusmenu);
 	}
 
-	var tag_name= document.getElementsByTagName('a');	
-	for (var i=0;i<tag_name.length;i++)
-		tag_name[i].onmouseout=nd;
-	
 	if(helpcontent == [] || helpcontent == "" || hint_array_id > helpcontent.length)
-		return overlib('<#defaultHint#>', HAUTO, VAUTO);
+		return showHintBox('<#defaultHint#>');
 	else if(hint_array_id == 0 && hint_show_id > 21 && hint_show_id < 24)
-		return overlib(helpcontent[hint_array_id][hint_show_id], FIXX, 270, FIXY, 30);
+		return showHintBox(helpcontent[hint_array_id][hint_show_id]);
 	else{
 		if(hint_show_id > helpcontent[hint_array_id].length)
-			return overlib('<#defaultHint#>', HAUTO, VAUTO);
+			return showHintBox('<#defaultHint#>');
 		else
-			return overlib(helpcontent[hint_array_id][hint_show_id], HAUTO, VAUTO);
+			return showHintBox(helpcontent[hint_array_id][hint_show_id]);
 	}
 }
 
@@ -1150,14 +1207,15 @@ registerCommands('donothing,inarray,caparray,sticky,background,noclose,caption,l
 // Settings you want everywhere are set here. All of this can also be
 // changed on your html page or through an overLIB call.
 ////////
-if (typeof ol_fgcolor=='undefined') var ol_fgcolor="#EEEEEE";
-if (typeof ol_bgcolor=='undefined') var ol_bgcolor="#CCC";
-if (typeof ol_textcolor=='undefined') var ol_textcolor="#000000";
-if (typeof ol_capcolor=='undefined') var ol_capcolor="#777";
-if (typeof ol_closecolor=='undefined') var ol_closecolor="#000000";
-if (typeof ol_textfont=='undefined') var ol_textfont="Verdana,Arial,Helvetica";
-if (typeof ol_captionfont=='undefined') var ol_captionfont="Verdana,Arial,Helvetica";
-if (typeof ol_closefont=='undefined') var ol_closefont="Verdana,Arial,Helvetica";
+/* 共用 Modal 語意（wrt-ui-alias-tokens.css），與彈出說明框視覺一致 */
+if (typeof ol_fgcolor=='undefined') var ol_fgcolor="var(--wrt-modal-border-color, #EEEEEE)";
+if (typeof ol_bgcolor=='undefined') var ol_bgcolor="var(--wrt-modal-bg, #CCC)";
+if (typeof ol_textcolor=='undefined') var ol_textcolor="var(--wrt-modal-color, #000000)";
+if (typeof ol_capcolor=='undefined') var ol_capcolor="var(--wrt-text-muted-color, #777)";
+if (typeof ol_closecolor=='undefined') var ol_closecolor="var(--wrt-modal-color, #000000)";
+if (typeof ol_textfont=='undefined') var ol_textfont="var(--wrt-font-family-base, Verdana, Arial, Helvetica, sans-serif)";
+if (typeof ol_captionfont=='undefined') var ol_captionfont="var(--wrt-font-family-base, Verdana, Arial, Helvetica, sans-serif)";
+if (typeof ol_closefont=='undefined') var ol_closefont="var(--wrt-font-family-base, Verdana, Arial, Helvetica, sans-serif)";
 if (typeof ol_textsize=='undefined') var ol_textsize="2";
 if (typeof ol_captionsize=='undefined') var ol_captionsize="1";
 if (typeof ol_closesize=='undefined') var ol_closesize="2";
@@ -1447,6 +1505,9 @@ function overlib() {
 
 // Clears popups if appropriate
 function nd(time) {
+	var panel = document.getElementById('overDiv');
+	if (panel) panel.style.display = 'none';
+
 	if(typeof overlib.isOut != "undefined")
 		overlib.isOut = true;
 
@@ -1468,7 +1529,7 @@ function nd(time) {
 
 // The Close onMouseOver function for stickies
 function cClick() {
-	if (olLoaded) {
+	if (olLoaded && over) {
 		runHook("hideObject", FREPLACE, over);
 		o3_showingsticky = 0;	
 	}	
@@ -2237,38 +2298,18 @@ function windowWidth() {
 
 // create the div container for popup content if it doesn't exist
 function createDivContainer(id,frm,zValue) {
-	id = (id || 'overDiv'), frm = (frm || o3_frame), zValue = (zValue || 500);
-	var objRef, divContainer = layerReference(id);
+	id = id || 'overDiv';
+	frm = frm || o3_frame;
+	zValue = zValue || 500;
 
-	if (divContainer == null) {
-		if (olNs4) {
-			divContainer = frm.document.layers[id] = new Layer(window.innerWidth, frm);
-			objRef = divContainer;
-		} else {
-			var body = (olIe4 ? frm.document.all.tags('BODY')[0] : frm.document.getElementsByTagName("BODY")[0]);
-			if (olIe4&&!document.getElementById) {
-				body.insertAdjacentHTML("beforeEnd",'<div id="'+id+'"></div>');
-				divContainer=layerReference(id);
-			} else {
-				divContainer = frm.document.createElement("DIV");
+	var divContainer = document.getElementById(id);
+	if (!divContainer) {
+		divContainer = frm.document.createElement('div');
 				divContainer.id = id;
-				body.appendChild(divContainer);
-			}
-			objRef = divContainer.style;
+		divContainer.className = 'hint-panel';
+		frm.document.body.appendChild(divContainer);
+		divContainer.style.zIndex = zValue;
 		}
-
-		//objRef.marginLeft = '170px';
-		objRef.position = 'absolute';
-		objRef.visibility = 'hidden';
-		objRef.zIndex = zValue;
-		if (olIe4&&!olOp) objRef.left = objRef.top = '0px';
-		else objRef.left = objRef.top =  -10000 + (!olNs4 ? 'px' : 0);
-	}
-
-	var id_name = document.getElementById('overDiv');
-	id_name.setAttribute("onclick","return nd();");
-	//id_name.setAttribute("onmouseout","setTimeout('nd();', 1000);");
-
 	return divContainer;
 }
 

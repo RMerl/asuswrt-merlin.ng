@@ -1,12 +1,19 @@
 ﻿@import "/RWD_UI/rwd_component_v4.css";
 @import "/css/color-table.css";
 @import "/css/svg-icon.css";
+@import "/css/wrt-ui-alias-tokens.css";
 
+:root{
+  /* vpn clients images */
+  --img-vpnc-get-start: url(/images/New_ui/VPN/get_start_v4-01.svg);
+  --img-vpnc-get-start-02: url(/images/New_ui/VPN/get_start_v4-02.svg);
+  --mask-vpnc-get-start-mask: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='175' height='110' fill='none' viewBox='0 0 175 110'%3e%3cpath fill='%235FA6FF' d='M154.102 74.735a15.9 15.9 0 0 1 15.152-4.152 27.638 27.638 0 0 1-15.332 4.783m5.319-18.8c-.632-4.458 1.103-9.475 4.442-12.715.109 4.418-1.757 9.39-4.442 12.714Zm-2.673 8.419a23.828 23.828 0 0 1 10.951-10.448c-1.397 5.133-5.795 9.331-10.993 10.497m-.514 1.577c2.698.076 5.43-.02 8.037-.71 2.606-.69 5.106-2.013 6.842-4.075a26.896 26.896 0 0 0-14.837 4.521m1.328-5.088c-1.37-5.123-3.628-8.666-7.651-11.537a10.652 10.652 0 0 0 7.651 11.537Zm-10.181 8.834a7.587 7.587 0 0 1 4.615-7.023c-.224 2.644-2.305 5.704-4.615 7.023Zm-1.289-4.32c-.306-4.277-3.351-8.237-7.404-9.637.933 4.28 3.411 7.843 7.404 9.637Zm1.933 7.656c-.95-1.36-2.503-2.203-4.109-2.624-1.607-.422-3.283-.456-4.937-.493a11.566 11.566 0 0 0 8.928 3.71m2.056 10.335c-6.273-1.937-12.988 1.235-15.464 7.306 5.618-1.064 11.159-3.556 15.464-7.313m6.165-3.775c-.933 2.752-.755 6.081 1.321 8.454.836-2.874.352-5.97-1.321-8.454Zm3.643-1.543a10.349 10.349 0 0 0 5.731 8.405.651.651 0 0 0 .509.084c.247-.104.274-.446.247-.717-.408-3.529-3.026-6.941-6.484-7.772m2.379-.357a8.512 8.512 0 0 0 12.43.062c-3.949-.432-8.511-.72-12.43-.062ZM58.933 34.677s-2.322 1.905-2.653 4.435c-.247 1.92-.708 9.856-.708 9.856s-1.123 3.792-.701 4.904c.422 1.111 2.246 3.238 2.246 3.238l4.196-2.413-.509-4.923.706-7.678-2.577-7.42ZM31.36 104.845l-1.606-9.538 6.417-1.693c1.288.352 2.431 1.4 3.046 2.792.614 1.392.353 3.76-.129 5.226a12.95 12.95 0 0 1 3.794.441c1.192.407 2.347 1.264 2.172 2.728l-13.694.044Z'/%3e%3cpath fill='black' d='m31.36 104.845-1.606-9.538 6.417-1.693c1.288.352 2.431 1.4 3.046 2.791.614 1.393.353 3.761-.128 5.227a12.91 12.91 0 0 1 3.793.441c1.192.406 2.362 1.311 2.19 2.772H31.36Z' opacity='.3'/%3e%3cpath fill='%235FA6FF' d='m31.36 104.845-1.606-9.538 6.417-1.693c1.288.352 2.431 1.4 3.046 2.792.614 1.392.353 3.76-.129 5.226a12.95 12.95 0 0 1 3.794.441c1.192.407 2.362 1.311 2.19 2.772H31.36Zm27.573-70.168c0 .33 3.505 15.536 3.505 15.536l-2.58 10.364s4.646 3.994 9.854 3.772c5.208-.222 11.739-4.014 11.739-4.014s-3.147-7.082-3.532-11.088c-.442-4.586-.807-15.844-.807-15.844l-7.178-1.725-6.089.205-4.912 2.794Z'/%3e%3cpath fill='%235FA6FF' d='m83.494 8.336-.165 1.55-10.971 21.12c-.837-.308-1.52 0-2.071.815l.4 2.402 6.568 4.727c.77-4.143 5.795-16.795 10.59-28.625l-4.35-1.989Zm-34.79 74.362c0 .126 2.63 19.373 2.63 19.373s3.494.29 3.973 2.774h-6.28s-3.86-11.305-5.047-12.258c-1.187-.954-3.112-1.812-3.112-1.812l1.755-.739-1.197-1.513s.56.639 1.278-.396m-19.817 5.154c-2.086.658-4.334-1.094-4.936-3.203-.603-2.11 0-4.349.765-6.392.765-2.042 1.727-4.08 1.839-6.26.128-2.507-1.025-5.133-3.18-6.425-2.154-1.29-5.281-.93-6.834 1.038-1.552 1.969-.965 5.357 1.306 6.416-.61-.337-1.25-.685-1.948-.707-.698-.022-1.46.394-1.584 1.08-.124.684.397 1.295.95 1.704.553.41 1.202.74 1.545 1.338.538.937.124 2.102-.13 3.152a9.865 9.865 0 0 0 3.704 10.254 9.904 9.904 0 0 0 10.902.6'/%3e%3cpath fill='%235FA6FF' d='M25.4 104.845h15.606c-.076-3.615-2.715-3.215-2.715-3.215h-3.598c1.974-1.114 2.547-3.943 2.547-3.943 3.766-1.008 6.777-5.465 6.777-5.465l2.94-6.054.15 2.188 1.355-2.777c1.281-4.876-2.562-12.022-2.562-12.022l3.014.084c0-1.6-1.957-1.6-3.389-1.935-1.431-.335-.903-2.185-.903-2.185s3.389.418 4.744-1.178c1.355-1.597.679-3.869.679-3.869l-4.897.59c-.677-.757-3.088-1.851-4.67-1.43-1.582.421-4.52 2.69-5.047 3.942-.529 1.252-.753 5.298-1.022 8.745-.27 3.448-2.444 5.717-4.401 7.905-1.957 2.188-4.82 3.696-6.78 6.052-.612.739-.914 2.005-1.042 3.405-.32 3.61.6 7.221 2.609 10.238l.605.924Z'/%3e%3cpath fill='%235FA6FF' d='m47.28 83.543.094 18.528s3.495.29 3.974 2.774h-6.28s-3.85-11.305-5.047-12.258c-1.197-.954-3.112-1.812-3.112-1.812l1.755-.739-1.197-1.513s.56.639 1.276-.396'/%3e%3cpath fill='white' d='m124.427 98.692 1.374 9.391c.089.562.541 1.286 1.284 1.219l10.613-1.756s.528-1.013-6.012-1.927l-1.195-7.962-6.064 1.035Zm-20.714-6.29 3.676 8.75c.214.527.202 1.382-.469 1.707l-10.002 3.958s-.975-.597 4.154-4.749l-3.085-7.431 5.726-2.235Z' opacity='.4'/%3e%3cpath fill='%235FA6FF' d='M99.106 46.42s-6.928 2.774-8.523 6.944c-.972 2.543.096 9.762.096 9.762l.906-.246 1.903 9.533 13.879 2.134 8.912-3.886-3.137-13.535 5.497-.35s-4.238-8.954-7.047-9.986c-1.234-.454-3.788-.74-6.044-.668a25.6 25.6 0 0 0-3.949.352l-2.493-.054Zm25.321 52.272 1.375 9.391c.089.562.54 1.286 1.283 1.22l10.613-1.757s.529-1.013-6.012-1.927l-1.195-7.962-6.064 1.035Zm-20.713-6.29 3.675 8.749c.215.528.202 1.383-.469 1.708l-10.001 3.957s-.975-.596 4.154-4.748l-3.085-7.431 5.726-2.235ZM32.259 81.634a7.243 7.243 0 0 1-3.135 2.006c.22.148.476.233.74.246a4.778 4.778 0 0 1-1.52.604c.72.347 1.565.31 2.25-.102a2.36 2.36 0 0 0 1.144-1.936'/%3e%3c/svg%3e");
+}
 a:link{
 	color: var(--text-hyperlink-default-color) !important;
 }
 .bg{
-	color: var(--body-text-color);
+	color: var(--text-primary);
 	width: 99% !important;
 	margin: 0 auto;
 	font-family: var(--global-font-style);
@@ -15,60 +22,144 @@ a:link{
 	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
 	background-repeat: no-repeat;
 }
-.svr_list_add_icon, .client_list_add_icon{
+.icon_eye.close {
+	--svg: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE0LjUyIDE4LjYzQzEzLjcxIDE4Ljg0IDEyLjg3IDE4Ljk0IDEyIDE4Ljk0QzguNzMgMTguOTQgNS44IDE3LjQxIDMuOCAxNC45OUMyLjQgMTMuMyAyLjQgMTAuNjkgMy44IDkuMDA5OTlDMy45NiA4LjgwOTk5IDQuMTQgOC42MTk5OSA0LjMyIDguNDI5OTkiIHN0cm9rZT0iI0I5QzVENSIgc3Ryb2tlLXdpZHRoPSIxLjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNMTcuMzk5OCAxNy40MUw2LjU4OTg0IDYuNTlDOC4xNzk4NCA1LjYxIDEwLjAxOTggNS4wNiAxMS45OTk4IDUuMDZDMTUuMjY5OCA1LjA2IDE4LjE5OTggNi41OSAyMC4xOTk4IDkuMDFDMjEuNTk5OCAxMC42OSAyMS41OTk4IDEzLjMxIDIwLjE5OTggMTQuOTlDMTkuMzk5OCAxNS45NSAxOC40NDk4IDE2Ljc3IDE3LjM5OTggMTcuNDFaIiBzdHJva2U9IiNCOUM1RDUiIHN0cm9rZS13aWR0aD0iMS4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTE0LjE4MDMgMTQuMThMOS44MjAzMSA5LjgyMDA1QzEwLjM3MDMgOS4yNjAwNSAxMS4xNTAzIDguOTIwMDQgMTIuMDAwMyA4LjkyMDA0QzEzLjcxMDMgOC45MjAwNCAxNS4wODAzIDEwLjI5IDE1LjA4MDMgMTJDMTUuMDgwMyAxMi44NSAxNC43MzAzIDEzLjYyIDE0LjE4MDMgMTQuMThaIiBzdHJva2U9IiNCOUM1RDUiIHN0cm9rZS13aWR0aD0iMS4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTIuNzUgMi43NUw2LjU5IDYuNTlMOS44MiA5LjgyTDE0LjE4IDE0LjE4TDE3LjQxIDE3LjQxTDIxLjI1IDIxLjI1IiBzdHJva2U9IiNCOUM1RDUiIHN0cm9rZS13aWR0aD0iMS4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==);
+}
+.icon_eye.open {
+	--svg: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIwLjIgMTQuOTlDMTguMiAxNy40IDE1LjI3IDE4Ljk0IDEyIDE4Ljk0QzguNzMwMDEgMTguOTQgNS44MSAxNy40MSAzLjggMTQuOTlDMi40IDEzLjMgMi40IDEwLjcgMy44IDkuMDA5OTlDNS44IDYuNTk5OTkgOC43MzAwMSA1LjA2IDEyIDUuMDZDMTUuMjcgNS4wNiAxOC4xOSA2LjU4OTk5IDIwLjIgOS4wMDk5OUMyMS42IDEwLjcgMjEuNiAxMy4zIDIwLjIgMTQuOTlaIiBzdHJva2U9IiNCOUM1RDUiIHN0cm9rZS13aWR0aD0iMS4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTIwLjIgMTQuOTlDMTguMiAxNy40IDE1LjI3IDE4Ljk0IDEyIDE4Ljk0QzguNzMwMDEgMTguOTQgNS44MSAxNy40MSAzLjggMTQuOTlDMi40IDEzLjMgMi40IDEwLjcgMy44IDkuMDA5OTlDNS44IDYuNTk5OTkgOC43MzAwMSA1LjA2IDEyIDUuMDZDMTUuMjcgNS4wNiAxOC4xOSA2LjU4OTk5IDIwLjIgOS4wMDk5OUMyMS42IDEwLjcgMjEuNiAxMy4zIDIwLjIgMTQuOTlaIiBzdHJva2U9IiNCOUM1RDUiIHN0cm9rZS13aWR0aD0iMS4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0xMS45OTk5IDE1LjA4QzEwLjI5ODkgMTUuMDggOC45MTk5MiAxMy43MDEgOC45MTk5MiAxMkM4LjkxOTkyIDEwLjI5ODkgMTAuMjk4OSA4LjkxOTk4IDExLjk5OTkgOC45MTk5OEMxMy43MDA5IDguOTE5OTggMTUuMDc5OSAxMC4yOTg5IDE1LjA3OTkgMTJDMTUuMDc5OSAxMy43MDEgMTMuNzAwOSAxNS4wOCAxMS45OTk5IDE1LjA4WiIgc3Ryb2tlPSIjQjlDNUQ1IiBzdHJva2Utd2lkdGg9IjEuMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=);
+}
+.icon_eye{
+	background-image: initial !important;
+	-webkit-mask: var(--svg) !important;
+	mask: var(--svg) !important;
+	-webkit-mask-repeat: no-repeat !important;
+	-webkit-mask-position: center !important;
+	-webkit-mask-size: contain !important;
+}
+.svr_list_add_container, .client_list_add_container{
+	position: relative;
+}
+/* 用父層 :has 啟用圓形背景，避免被子層 mask 裁切 */
+.svr_list_add_container:has(.svr_list_add_icon:hover),
+.client_list_add_container:has(.client_list_add_icon:hover),
+.acc_pwd_add_container:has(.acc_pwd_add_icon:hover){
+	background-image: radial-gradient(closest-side, var(--primary-50-alpha-20) 99%, transparent 100%);
+	background-repeat: no-repeat;
+	background-size: 24px 24px;
+	/* 圓心對齊右側 icon 中心（向內 16px） */
+	background-position: right 0px center;
+}
+.svr_list_add_icon, .client_list_add_icon, .acc_pwd_add_icon{
 	mask-image: var(--ic-add-circle-stroke);
-	background-color: var(--primary-icon-normal-color);
+	background-color: var(--wrt-btn-icon-color);
+	background-image: none;
+	position: relative;
+	display: inline-block;
+}
+.svr_list_add_icon:hover::before, .client_list_add_icon:hover::before, .acc_pwd_add_icon:hover::before{
+	opacity: 1;
+	transform: translate(-50%, -50%) scale(1);
 }
 .function_desc_container .vpnc_help_icon, 
 .get_start_container .sub_info_container .vpnc_help_icon, 
 .input_container .vpnc_help_icon{
 	mask-image: var(--ic-help-circle-stroke);
-	background-color: var(--icon-normal-color);
+	background-color: var(--wrt-icon-default-color);
+	background-image: none;
+}
+.function_desc_container .vpnc_help_icon:hover, 
+.get_start_container .sub_info_container .vpnc_help_icon, 
+.input_container .vpnc_help_icon{
+	background-color: var(--wrt-icon-primary-color);
 }
 .profile_setting_container .popup_edit_profile_container,
 .client_content_bg .client_contorl_bg{
-	background: var(--card-bg-color);
-	border-radius: var(--radius-sm);
+	background: var(--wrt-card-bg);
+	border-radius: var(--wrt-card-radius);
 }
 .profile_setting_container .get_start_container{
-	background: var(--card-bg-color);
+	background: var(--wrt-card-bg);
 	border: 0;
-	box-shadow: var(--shadow-elevation10);
-	border-radius: var(--global-radius);
+	box-shadow: var(--wrt-card-shadow);
+	border-radius: var(--wrt-card-radius);
 }
 .get_start_container .main_info_container .get_start_img {
-	background-image: var(--img-vpns-get-start);
-	background-size: contain;
+	background-image: var(--img-vpnc-get-start);
+	background-size: 100% 100%;
+	background-position: center center;
+	background-repeat: no-repeat;
+	-webkit-mask: none;
+	mask: none;
+	position: relative;
+} 
+/* token 著色層：用 mask 套形狀，色值來自 token，疊在底圖之上 }*/
+.get_start_container .main_info_container .get_start_img::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-image: linear-gradient(130deg, var(--primary-20) 0%,var(--primary-50) 70%, var(--primary-70) 100%);
+	
+	-webkit-mask-image: var(--mask-vpnc-get-start-mask);
+	-webkit-mask-repeat: no-repeat;
+	-webkit-mask-position: center center;
+	-webkit-mask-size: 100% 100%;
+	
+	mask-image: var(--mask-vpnc-get-start-mask);
+	mask-repeat: no-repeat;
+	mask-position: center center;
+	mask-size: 100% 100%;
+	pointer-events: none;
+	z-index: 1;
 }
+/* 置頂覆蓋：原 02 圖層，確保在著色層之上 */
+.get_start_container .main_info_container .get_start_img::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-image: var(--img-vpnc-get-start-02);
+	background-size: 100% 100%;
+	background-position: center center;
+	background-repeat: no-repeat;
+	pointer-events: none;
+	z-index: 2;
+}
+
 .profile_setting_container .get_start_container .main_info_container{
-	background: var(--card-bg-color);
-	border-radius: var(--global-radius) var(--global-radius) 0;
+	background: var(--wrt-card-body-bg);
+	border-radius: var(--wrt-card-radius) var(--wrt-card-radius) 0;
 	box-shadow: none;
 }
+.server_list_container{
+	width: 60%;
+}
 .server_list_container .svr_item_horizontal_line{
-	outline-color: var(--divide-stroke-color-default);
+	outline-color: transparent;
+	background-color: var(--wrt-divider-color);
+	width: 90%;
+	height: 1px;
+	margin: 0;
 }
 .profile_setting_container .get_start_container .sub_info_container {
-	border-top: 1px solid var( --divide-stroke-color-default);
+	border-top: 1px solid var( --wrt-divider-color);
 }
 .profile_setting_container {
 	width: 100%;
 	flex-grow: 1;
 	margin-top: 0.5rem;
-	box-shadow: var(--shadow-elevation10);
+	box-shadow: var(--wrt-shadow-elevation10);
 }
 .get_start_container .main_info_container .title{
-	color: var(--text-brand-color);
+	color: var(--wrt-card-title-color);
 }
 .get_start_container .main_info_container .desc{
-	color: var(--text-highlight-color);
+	color: var(--wrt-card-subtitle-color);
 	font-weight: 400;
 }
 .get_start_container .sub_info_container .title{
-	color: var(--text-subtitle-color);
+	color: var(--wrt-card-subtitle-color);
 }
 .profile_setting_title .title{
-	color: var(--page-title-color);
+	color: var(--wrt-text-color);
 	width: initial;
 	margin-right: 1.5rem;
 }
@@ -92,24 +183,56 @@ a:link{
 	letter-spacing: 1px;
 	line-height: 16px;
 	margin-right: 16px;
-	color: var(--text-info-color);
+	color: var(--wrt-text-color);
 }
 .client_list_num:before{
 	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+	background-image: none;
+	mask-image: var(--ic-device);
+	mask-repeat: no-repeat;
+	mask-position: center center;
+	mask-size: 100% 100%;
+	background-color: var(--wrt-icon-primary-color);
+}
+.svr_item_container.internet{
+	background: var(--wrt-card-bg);
+	border-radius: var(--wrt-card-radius);
+	box-shadow: none;
+}
+.svr_item_container{
+	background: var(--wrt-card-bg);
+	border-radius: var(--wrt-card-radius)!important;
+	box-shadow: var(--wrt-card-shadow)!important;
+}
+.svr_item_container.error_hint{
+	background: var(--wrt-card-bg);
+	border-radius: var(--wrt-card-radius) var(--wrt-card-radius) 0 0;
+	box-shadow: none;
 }
 .svr_item_container, .svr_item_error_hint_container{
-	background: var(--card-bg-color);
+	background: var(--wrt-card-bg);
 	margin-bottom: 10px;
-	box-shadow: var(--shadow-elevation10);
-	border: 0.5px solid var(--divide-stroke-color-default);
+	box-shadow: var(--wrt-card-shadow);
+	border: 0.5px solid var(--wrt-divider-color);
 	width: initial;
 	margin-right: 1.5rem;
-	border-radius: var(--radius-sm)
+	border-radius: 0 0 var(--wrt-card-radius) var(--wrt-card-radius);
+}
+.svr_item_container.internet.selected{
+	background: var(--card-bg-color);
+    outline: 1px solid var(--brand-color);
+    box-shadow: rgba(var(--shadow-ambient-30-rgb),0.5), rgba(var(--shadow-ambient-primary-30-rgb),0.5);
 }
 .svr_item_container.selected{
 	background: var(--card-bg-color);
     outline: 1px solid var(--brand-color);
-    box-shadow: var(--shadow-elevation20), var(--shadow-elevation10-primary-color);
+    box-shadow: rgba(var(--shadow-ambient-30-rgb),0.5), rgba(var(--shadow-ambient-primary-30-rgb),0.5);
+}
+.svr_item_text_container {
+	width: 70%;
+}
+.svr_item_switch_container {
+    width: 22%;
 }
 .svr_item_text_container:before{
 	border-right: 1px solid var(--divide-stroke-color-El10);
@@ -126,40 +249,74 @@ a:link{
 .svr_item_main_info:before{
 	background-position: -432px 0px;
 	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+	mask-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+	mask-repeat: no-repeat;
+	mask-position: center center;
+	background-color: var(--wrt-icon-primary-color);
+	background-image: none;
 }
 .svr_item_container.active .svr_item_main_info:before{
-	background-position: -432px -55px;
+	mask-position: -432px -55px;
+	background-color: var(--wrt-icon-primary-color);
 }
 .svr_item_container.error_hint.active .svr_item_main_info:before{
 	background-position: -432px -108px;
+	mask-position: -432px -108px;
+	background-color: var(--wrt-icon-primary-color);
 }
 .svr_item_container.default_wan_selected .svr_item_main_info:before{
-	background-position: -432px -162px
+	background-position: -432px -162px;
+	mask-position: -432px -162px;
+	background-color: var(--wrt-icon-primary-color);
 }
 .svr_item_container.active.default_wan_selected .svr_item_main_info:before{
-	background-position: -432px -216px
+	background-position: -432px -216px;
+	mask-position: -432px -216px;
+	background-color: var(--wrt-icon-primary-color);
+	background-image: none;
 }
 .svr_item_container.error_hint.active.default_wan_selected .svr_item_main_info:before{
-	background-position: -432px -270px
+	background-position: -432px -270px;
+	mask-position: -432px -270px;
+	background-color: var(--wrt-icon-primary-color);
+	background-image: none;
 }
 
 .svr_item_container.internet.connected .svr_item_main_info:before{
 	background-position: -486px -54px;
+	mask-position: -486px -54px;
+	background-color: var(--wrt-icon-primary-color);
+	background-image: none;
 }
 .svr_item_container.internet.disconnected .svr_item_main_info:before{
 	background-position: -486px -108px;
+	mask-position: -486px -108px;
+	background-color: var(--wrt-icon-primary-color);
+	background-image: none;
 }
 .svr_item_container.internet.standby .svr_item_main_info:before{
 	background-position: -486px 0px;
+	mask-position: -486px 0px;
+	background-color: var(--wrt-icon-primary-color);
+	background-image: none;
 }
 .svr_item_container.internet.connected.default_wan_selected .svr_item_main_info:before{
 	background-position: -486px -216px;
+	mask-position: -486px -216px;
+	background-color: var(--wrt-icon-primary-color);
+	background-image: none;
 }
 .svr_item_container.internet.disconnected.default_wan_selected .svr_item_main_info:before{
 	background-position: -486px -270px;
+	mask-position: -486px -270px;
+	background-color: var(--wrt-icon-primary-color);
+	background-image: none;
 }
 .svr_item_container.internet.standby.default_wan_selected .svr_item_main_info:before{
 	background-position: -486px -162px;
+	mask-position: -486px -162px;
+	background-color: var(--wrt-icon-primary-color);
+	background-image: none;
 }
 .svr_item_sub_info{
 	color: var(--text-info-02-color);
@@ -175,6 +332,36 @@ a:link{
 }
 .svr_item_error_hint_container > div:before{
 	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+	width: 20px;
+	height: 20px;
+	mask-image: var(--ic-alert);
+	mask-repeat: no-repeat;
+	mask-position: center center;
+	mask-size: 100% 100%;
+	background-color: var(--wrt-badge-warning-color);
+	background-image: none;
+	top: 10px;
+}
+.svr_item_error_hint_container{
+	height: 32px;
+	margin-top: -30px;
+	margin-bottom: 10px;
+	background: var(--wrt-card-bg);
+	border-radius: 0 0 var(--wrt-card-radius) var(--wrt-card-radius);
+	border-top: initial;
+	height: calc(24px + 30px);
+}
+.svr_item_error_hint_container > div{
+	color: var(--wrt-badge-warning-color);
+	margin-top: 36px;
+	font-size: 14px;
+	font-weight: 500;
+	letter-spacing: 0.1px;
+	margin-left: 4%;
+	position: relative;
+	width: 100%;
+	
+	line-height: 34px;
 }
 .svr_item_container.active .svr_item_sub_info .vpn_status, .svr_item_container.internet.connected .svr_item_sub_info {
 	color: var(--text-status-good-color);
@@ -208,19 +395,47 @@ a:link{
 	max-width: 32%;
 }
 .btn_item .btn_container{
-	border-color: var(--primary-50);
-	background-color: var(--primary-50-alpha-20);
+	border-color: var(--wrt-btn-default-border);
+	background-color: var(--wrt-btn-default-bg);
+	color: var(--wrt-btn-default-color);
+	border-radius: var(--wrt-btn-radius);
+	box-shadow: var(--wrt-btn-default-shadow);
+	transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .06s ease;
+	transform: translateY(0);
+	padding: 0 1rem !important;
+	font-size: 14px;
+	font-weight: 500;
+}
+.btn_item .btn_container:hover{
+	background-color: var(--wrt-btn-default-hover-bg);
+	color: var(--wrt-btn-default-hover-color);
+	border-color: var(--wrt-btn-default-hover-border);
+	box-shadow: var(--wrt-btn-default-hover-shadow);
+	transform: translateY(-1px);
 }
 .btn_item .btn_container .text{
-	color: var(--primary-50);
+	color: var(--wrt-btn-default-color);
+	font-weight: 500;
 }
 .btn_item .btn_container .text.import_file:before,
 .btn_item .btn_container .text.create_account:before,
 .text.create_ssk_account:before,
 .text.create_nord_account:before{
-	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
-	background-position: 0px -163px;
-	filter: brightness(0);
+	/*background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+	background-position: 0px -163px;*/
+	mask-image: var(--ic-doc-stroke);
+	mask-repeat: no-repeat;
+	mask-position: center center;
+	mask-size: 100% 100%;
+	background-color: var(--wrt-btn-icon-color);
+	background-image: none;
+}
+.profile_setting_item.nowrap.switch_item .input_container,
+.profile_setting_item.help_item .input_container,
+.profile_setting_item.acc_pwd .input_container,
+.profile_setting_item.keys_item .input_container{
+	min-width: initial;
+	max-width: initial;
 }
 .export_mode_container .desc{
 	color: rgb(24, 24, 24);
@@ -253,8 +468,8 @@ a:link{
 	font-weight: bolder;
 }
 .textInput:focus, .textareaInput:focus{
-	box-shadow: var( --shadow-elevation10-primary-color);
-	border-bottom: 1px solid var(--textbox-focus-stroke-color);
+	box-shadow: var(--wrt-input-focus-ring);
+	border-bottom: 1px solid var(--wrt-input-focus-border);
 }
 .custom_select_container:before, .profile_title_item.arrow_icon:after{
 	border-top: 1.5px solid var(--primary-icon-active-color);
@@ -277,23 +492,46 @@ a:link{
 	border-radius: var(--radius-sm);
 }
 .action_container .btn_container, .get_start_container .main_info_container .add_btn{
-	background: var(--primary-btn-normal-fill);
+	background: var(--wrt-btn-accent-primary-bg);
     border-radius: var(--radius-sm);
-    border: 1px outset transparent;
-    color: var(--primary-btn-text-color);
-    border-image: var(--primary-btn-normal-stroke);
-    border-image-slice: 2;
+	border: 1px solid var(--wrt-btn-accent-primary-border);
+	color: var(--wrt-btn-accent-primary-color);
+	background-image: none;
+	transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .06s ease;
+	transform: translateY(0);
+}
+.action_container .btn_container:hover, .get_start_container .main_info_container .add_btn:hover{
+	background: var(--wrt-btn-accent-primary-hover-bg);
+	color: var(--wrt-btn-accent-primary-hover-color);
+	border-color: var(--wrt-btn-accent-primary-hover-border);
+	background-image: linear-gradient(rgba(var(--surface-invert-rgb), .06), rgba(var(--surface-invert-rgb), .06));
+	box-shadow: 0 2px 8px var(--shadow-ambient-20, rgba(0,0,0,.15));
+	transform: translateY(-1px);
+}
+.action_container .btn_container:active, .get_start_container .main_info_container .add_btn:active{
+	background: var(--wrt-btn-accent-primary-active-bg);
+	color: var(--wrt-btn-accent-primary-active-color);
+	border-color: var(--wrt-btn-accent-primary-active-border);
+	background-image: linear-gradient(rgba(var(--surface-invert-rgb), .1), rgba(var(--surface-invert-rgb), .1));
+	box-shadow: 0 1px 4px var(--shadow-ambient-10, rgba(0,0,0,.12));
+	transform: translateY(0) scale(0.99);
+}
+.action_container .btn_container:focus-visible, .get_start_container .main_info_container .add_btn:focus-visible{
+	outline: 0;
+	box-shadow: 0 0 0 3px rgba(var(--focus-ring-rgb), .35);
 }
 .action_container .btn_container.valid_fail{
-	background: #dcdcdc;
-	border: 0;
-	color: #4d4d4d;
+	background: var(--wrt-btn-accent-neutral-disabled-bg); 
+	border: 1px solid var(--wrt-btn-accent-neutral-disabled-border);
+	color: var(--wrt-btn-accent-neutral-disabled-color);
+	pointer-events: none;
+	opacity: .7;
 }
 .action_container_hint{
 	color: var(--primary-50);
 }
 .profile_title_item{
-	color: var(--primary-50);
+	color: var(--brand-color) !important;
 }
 .profile_title_item.edit_keys_desc{
 	color: var(--text-info-color);
@@ -302,33 +540,35 @@ a:link{
 	color: var(--text-brand-color);
 }
 .feature_desc .desc{
-	color: var(--text-info-color);
+	color: var(--wrt-popover-color);
 }
 .feature_desc .desc:before{
-	border-bottom: 1px solid var(--divide-stroke-color-default);
+	border-bottom: 1px solid var(--wrt-divider-color);
 }
 .feature_desc .step_text{
-	color: rgba(24, 24, 24, 0.87);
+	color: var(--wrt-text-color);
 }
 .feature_desc .step_text:before{
-	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
-	background-color: rgb(0, 110, 255);
+	mask-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+	-webkit-mask-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+	mask-repeat: no-repeat;
+	background-color: var(--wrt-badge-neutral-color);
 }
 .del_profile .title{
-	color: rgb(24, 24, 24);
+	color: var(--wrt-text-color);
 }
 .del_profile .desc{
-	color: rgba(24, 24, 24, 0.87);
+	color: var(--wrt-text-color);
 }
 .del_profile .action_btn_container .del, .customize_alert .action_btn_container .ok{
 	background: initial;
 }
 .del_profile .action_btn_container .cancel{
-	border: 1px solid rgb(94 100 112 / 40%);
-	color: #ffffff;
+	border: 1px solid var(--wrt-btn-outline-normal-border);
+	color: var(--wrt-btn-outline-normal-color);
 }
 .customize_alert .desc{
-	color: var(--text-info-color);
+	color: var(--wrt-text-color);
 }
 .validate_hint, .vpn_type_maxi_hint, .item_hint{
 	background: var(--hint-bg-el10-warning);
@@ -340,39 +580,81 @@ a:link{
 	background: var(--card-list-EL02-item-static);
 }
 .client_list_content_container .client_container.no_data{
-	color: var(--text-no-data);
+	color: var(--wrt-text-muted-color);
 }
 .client_container .client_name{
-	color: rgb(24, 24, 24);
+	color: var(--wrt-text-color);
 }
 .client_info_container .client_ip{
-	color: rgba(24, 24, 24, 0.87);
+	color: var(--wrt-text-secondary-color);
 }
 .wan_status_container{
 	background: var(--card-list-EL02-item-static);
 	box-shadow: none;
 }
 .wan_status_container .connect_title{
-	color: rgb(0, 110, 255);
+	color: var(--wrt-text-color);
+}
+.wan_status_container .connect_title:before{
+	border-color: var(--brand-color);
 }
 .wan_connect_info_container .info_title{
 	color: var(--text-caption-color);
 }
+.wan_status_container.connected .connect_status_text{
+	color: var(--wrt-text-status-good-color);
+}
+.wan_status_container.disconnected .connect_status_text{
+	color: var(--wrt-text-status-bad-color);
+}
 .wan_connect_info_container .info_text{
 	color: var(--text-highlight-color);
 }
+
 .item_tag_container > .item_tag {
-	background: var(--neutral-badage-01-bg-color);
-	border: 1px solid var(--neutral-badage-stroke-color);
-	box-shadow: var(--shadow-elevation20);
-	color: var(--neutral-badage-01-text-color);
-	border-radius: var(--global-radius);
+	background: var(--wrt-card-bg);
+	border: 1px solid var(--wrt-badge-neutral-border);
+	box-shadow: var(--wrt-primary-shadow);
+	color: var(--wrt-badge-neutral-color);
+	border-radius: var(--wrt-badge-radius);
+	position: relative;
+	padding-left: 24px;
+}
+.svr_item_container .item_tag_container{
+	position: absolute;
+	right: 4%;
+	top: -12px;
+	font-size: 12px;
+	color: var(--wrt-badge-neutral-color);
+	height: 24px;
+	line-height: 24px;
+	display: flex;
+}
+.item_tag_container > .item_tag:before{
+	position: absolute;
+	content: "";
+	width: 14px;
+	height: 14px;
+	left: 5px;
+	top: 50%;
+	transform: translateY(-50%);
+	/* mask（含 Safari 前綴） */
+	-webkit-mask-image: var(--ic-link);
+	-webkit-mask-repeat: no-repeat;
+	-webkit-mask-position: center center;
+	-webkit-mask-size: 100% 100%;
+	mask-image: var(--ic-link);
+	mask-repeat: no-repeat;
+	mask-position: center center;
+	mask-size: 100% 100%;
+	background-color: var(--wrt-icon-primary-color);
+	background-image: none;
 }
 .svr_item_text_container .svr_type_title{
-	color: var(--text-brand-color);
+	color: var(--wrt-card-title-color);
 }
 .svr_item_text_container .svr_type_text{
-	color: var(--text-highlight-color);
+	color: var(--wrt-text-color);
 }
 .add_acc_bg .acc_num:before{
 	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
@@ -390,47 +672,49 @@ a:link{
 	color: var(--primary-50);
 }
 .client_content_bg .client_contorl_bg .contorl_btn{
-	background-color: rgb(247, 249, 252);
+	background-color: var(--wrt-btn-default-bg);
 }
 .radio_options_container .radio_container,
 .btn_options_container .btn_container{
-	color: var(--tab-nav-text-normal-color);
-	background-color: var(--tab-nav-normal-bg-fill-color);
+	color: var(--wrt-radio-label-color);
+	border: 1px solid var(--wrt-divider-color);
+	/* background-color: var(--wrt-radio-bg); */
 }
 .radio_options_container .radio_container.selected .radio_icon{
-	border-color: var(--primary-50);
+	border-color: var(--wrt-radio-checked-border);
 }
 .radio_options_container .radio_container.selected .radio_icon:before{
-	background-color: var(--primary-50);
+	background-color: var(--wrt-radio-dot-color);
 }
 .radio_options_container .radio_container .radio_icon{
-	border: 1px solid var(--tab-nav-normal-pin-fill-color);
+	border: 1px solid var(--wrt-radio-border);
 }
 .radio_options_container .radio_container.selected,
 .btn_options_container .btn_container.selected{
-	background-color: var(--tab-nav-active-bg-fill-color);
-	color: var(--tab-nav-text-active-color);
-	border: 1px solid var(--tab-nav-active-pin-fill-color);
+	background-color: var(--wrt-radio-active-bg);
+	color: var(--wrt-radio-label-color);
+	border: 1px solid var(--wrt-radio-checked-border);
 }
 .profile_setting_item .title .key_icon{
 	display: none;
 }
 .profile_title_item.edit_keys_desc{
-	color: rgb(24, 24, 24);
+	color: var(--wrt-text-color);
 }
 .client_connect_info_container .connect_client_title{
-	color: var(--primary-50);
+	color: var(--wrt-text-color);
 }
 .switch{
-	border-radius: var(--radius-lg);
+	border-radius: var(--wrt-switch-track-radius);
+	width: 45px;
 }
 .switch:before{
 	background: var(--switch-btn-off-normal-ellipse-stroke-color);
-    border-radius: var(--radius-lg);
+	border-radius: var(--radius-lg);
 }
 .switch.off{
 	background: none;
-    border: 1.5px solid var(--switch-btn-off-normal-ellipse-stroke-color);
+	border: 1.5px solid var(--switch-btn-off-normal-ellipse-stroke-color);
 }
 .switch.on{
 	background: var(--switch-btn-on-normal-fill-color);
@@ -438,9 +722,38 @@ a:link{
 }
 .switch.on:before{
 	background: var(--switch-btn-on-normal-ellipse-fill-color);
-    border-radius: var(--radius-lg);
+	border-radius: var(--radius-lg);
+	-webkit-transform: translateX(24px);
+	-ms-transform: translateX(24px);
+	transform: translateX(24px);
 }
-
+.switch.on::after,
+.switch.off::after {
+	font-family: "Roboto";
+	font-size: 11px;
+	font-weight: bold;
+	color: var(--switch-btn-on-normal-text-color);
+	transition: all 0.6s;
+	position: absolute;
+	opacity: 1;
+	height: 100%;
+	line-height: 100%;
+	display: flex;
+	align-items: center;
+}
+.switch.on::after {
+	left: 4px;
+	content: "ON";
+}
+.switch.off::after {
+	content: "OFF";
+	right: 4px;
+}
+.switch.on.hide-text::after,
+.switch.off.hide-text::after {
+	opacity: 0;
+	transition: opacity 0.6s;
+}
 @media (max-width: 992px) {
 	.profile_setting_item {
 		padding-bottom: 10px;
@@ -462,7 +775,7 @@ a:link{
 		width: 100%;
 	}
 	.svr_item_container, .svr_item_container.active, .svr_item_container.selected{
-		background: rgb(255, 255, 255);
+		background: var(--card-bg-color);
 		box-shadow: 0px 1px 2px 0px rgb(20 50 80 / 20%);
 		border: 1px solid rgb(0 0 0 / 10%);
 		margin-right: initial;

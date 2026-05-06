@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<!-- This is an automatically generated file.  Do not edit.
+   Copyright (c) 2014 Sougata Santra / Tuxera Inc.
+   Copyright (c) 2011 Erik Larsson / Tuxera Inc.
+   -->
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    table.head, table.foot { width: 100%; }
+    td.head-rtitle, td.foot-os { text-align: right; }
+    td.head-vol { text-align: center; }
+    .Nd, .Bf, .Op { display: inline; }
+    .Pa, .Ad { font-style: italic; }
+    .Ms { font-weight: bold; }
+    .Bl-diag > dt { font-weight: bold; }
+    code.Nm, .Fl, .Cm, .Ic, code.In, .Fd, .Fn, .Cd { font-weight: bold;
+      font-family: inherit; }
+  </style>
+  <title>MKFATFS(8)</title>
+</head>
+<body>
+<table class="head">
+  <tr>
+    <td class="head-ltitle">MKFATFS(8)</td>
+    <td class="head-vol">System Manager's Manual</td>
+    <td class="head-rtitle">MKFATFS(8)</td>
+  </tr>
+</table>
+<div class="manual-text">
+<section class="Sh">
+<h1 class="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h1>
+<p class="Pp">mkfatfs - create a FAT file system</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="SYNOPSIS"><a class="permalink" href="#SYNOPSIS">SYNOPSIS</a></h1>
+<p class="Pp"><b>mkfatfs</b> [<i>options</i>] <i>device</i></p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h1>
+<p class="Pp"><b>mkfatfs</b> is used to create a FAT file system on a device
+    (usually a disk or flash partition). <i>device</i> is the special file
+    corresponding to the device (e.g. <i>/dev/sdXX,</i>
+    <i>/dev/block/mmcblk1p1</i>).</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="OPTIONS"><a class="permalink" href="#OPTIONS">OPTIONS</a></h1>
+<p class="Pp">Below is a summary of all the options that <b>mkfatfs</b> accepts.
+    Nearly all options have two equivalent names. The short name is preceded by
+    <b>-</b> and the long name is preceded by <b>--</b>.</p>
+<dl class="Bl-tag">
+  <dt id="a"><a class="permalink" href="#a"><b>-a</b>, <b>--alignment</b>
+    VALUE</a></dt>
+  <dd>Align the file system structures to <b>VALUE</b> bytes.
+    <br/>
+    <b>WARNING:</b> Don't use this in production unless explictly instructed by
+      Tuxera. The default alignment is usually the appropriate one.</dd>
+  <dt id="c"><a class="permalink" href="#c"><b>-c</b>, <b>--cluster-size</b>
+    SIZE</a></dt>
+  <dd>Set the cluster size (in bytes) of the volume to <b>SIZE</b>. The default
+      is to determine optimal cluster size automatically. The legal values for
+      this field are powers of 2, such that <b>SIZE</b> does not exceed 32
+    KiB.</dd>
+  <dt id="cp"><a class="permalink" href="#cp"><b>--cp</b> CODEPAGE</a></dt>
+  <dd>Use the given code page to encode the volume label. The following code
+      pages are supported: 437, 737, 775, 850, 852, 855, 857, 860, 861, 862,
+      863, 864, 865, 866, 869, 874, 932, 936, 949, 950. The default is 437.</dd>
+  <dt id="d"><a class="permalink" href="#d"><b>-d</b> DIRECTORY</a></dt>
+  <dd>Populate file system with the contents of the given directory. Can be used
+      in the build process to create the target device's file system image.</dd>
+  <dt id="discard"><a class="permalink" href="#discard"><b>--discard</b></a></dt>
+  <dd>This option sends a 'discard' command, like TRIM, to the device which will
+      zero all data on it.</dd>
+  <dt id="f"><a class="permalink" href="#f"><b>-f</b>, <b>--force</b></a></dt>
+  <dd>Allow formatting a FAT volume for which the physical sector size cannot be
+      automatically detected (for example an image file).</dd>
+  <dt id="F"><a class="permalink" href="#F"><b>-F</b>, <b>--fat-type</b>
+    FATBITS</a></dt>
+  <dd>Set the FAT bits for the volume to <b>FATBITS</b>. The legal values for
+      this field are [12, 16, 32].</dd>
+  <dt id="i"><a class="permalink" href="#i"><b>-i</b>, <b>--volume-id</b>
+    STRING</a></dt>
+  <dd>Sets the volume ID for the volume to <b>STRING</b>, which must be in the
+      format XXXX-XXXX where X is a hexadecimal character (0-9, A-F).</dd>
+  <dt id="l"><a class="permalink" href="#l"><b>-l</b>, <b>--volume-label</b>
+    STRING</a></dt>
+  <dd>Set the volume label for the file system. The volume label can be up to 11
+      bytes long when encoded with code page specified by --cp option.</dd>
+  <dt id="r"><a class="permalink" href="#r"><b>-r</b>, <b>--rootdir-entries</b>
+    NUMBER</a></dt>
+  <dd>Set the count of 32 bytes directory entries in the root directory to
+      <b>NUMBER</b>.
+    <br/>
+    For FAT32 volumes this value is ignored and set to zero. For FAT 12/16
+      volume the default value is 512.</dd>
+  <dt id="s"><a class="permalink" href="#s"><b>-s</b>,
+    <b>--sectors-per-cluster</b> VALUE</a></dt>
+  <dd>Set the volume cluster size (in bytes) to <b>VALUE</b> *
+      <b>sector_size</b>. The default value is calculated dynamically depending
+      on FAT type (FAT 12/16/32) and the size of the volume. The legal values
+      for this field are [1, 2, 4, 8, 16, 32, 64, 128], such that <b>VALUE</b> *
+      <b>sector_size</b> does not exceed 32 KiB.</dd>
+  <dt id="S"><a class="permalink" href="#S"><b>-S</b>, <b>--sector-size</b>
+    SIZE</a></dt>
+  <dd>Set the volume sector size (in bytes) to <b>SIZE</b>. The default is to
+      detect sector size automatically. Note: This option should probably never
+      be used when formatting devices directly as most FAT drivers won't be able
+      to use a FAT volume where the volume sector size doesn't match the
+      physical sector size.</dd>
+  <dt id="sda"><a class="permalink" href="#sda"><b>--sda-relax</b></a></dt>
+  <dd>Relaxes sanity checks for <b>--sda-strict</b> and <b>--sda-whole</b> to
+      allow formatting devices that don't comply to the size specifications of
+      SD cards to be formatted according to the SD Association guidelines.
+    <p class="Pp">NOTE: This option is only a modifier to <b>--sda-strict</b>
+        and <b>--sda-whole</b> and does not do anything on its own.</p>
+  </dd>
+  <dt id="sda~2"><a class="permalink" href="#sda~2"><b>--sda-strict</b></a></dt>
+  <dd>Forces the formatted volume to adhere to SD Association
+    recommendations.</dd>
+  <dt id="sda~3"><a class="permalink" href="#sda~3"><b>--sda-whole</b></a></dt>
+  <dd>Performs a whole device formatting, including partition table, according
+      to the SD Association recommendations. This option should only be used
+      with whole devices (e.g. <i>/dev/mmcblk0</i>) and never partitions (e.g.
+      <i>/dev/mmcblk0p1</i>).</dd>
+  <dt id="secure"><a class="permalink" href="#secure"><b>--secure-discard</b></a></dt>
+  <dd>This option sends a 'secure discard' command, e.g. eMMC's secure erase, to
+      the device which will zero all data on it. The difference from the
+      <b>--discard</b> option is that this command attempts to securely erase
+      the data, guaranteeing that all internal copies of the discarded sectors
+      are also erased. If the underlying hardware does not support this mode of
+      operation, we fall back on a regular discard. This option is only
+      available on systems where this is supported.</dd>
+  <dt id="t"><a class="permalink" href="#t"><b>-t</b>, <b>--tar-archive</b>
+    TARFILE</a></dt>
+  <dd>Populate the formatted file system with the contents of the specified tar
+      archive <b>TARFILE</b>.
+    <br/>
+    It is recommended to use the <b>POSIX.1-2001/pax</b> format when creating
+      the tar archive in order to retain as much metadata as possible from the
+      source files.</dd>
+  <dt id="v"><a class="permalink" href="#v"><b>-v</b>, <b>--verbose</b></a></dt>
+  <dd>Makes <b>mkfatfs</b> emit certain status messages related to the
+      formatting process.</dd>
+</dl>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="BUGS"><a class="permalink" href="#BUGS">BUGS</a></h1>
+<p class="Pp">If you find a bug please send an email describing the problem to
+    support@tuxera.com.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="AUTHORS"><a class="permalink" href="#AUTHORS">AUTHORS</a></h1>
+<p class="Pp"><b>mkfatfs</b> was written by</p>
+<div class="Bd-indent">Erik Larsson, Tuxera Inc.
+<br/>
+Sougata Santra, Tuxera Inc.</div>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="AVAILABILITY"><a class="permalink" href="#AVAILABILITY">AVAILABILITY</a></h1>
+<p class="Pp"><b>mkfatfs</b> is part of the <b>Tuxera FATprogs</b> package.</p>
+</section>
+</div>
+<table class="foot">
+  <tr>
+    <td class="foot-date">June 2021</td>
+    <td class="foot-os">Tuxera TFATprogs 3023.2.3.12</td>
+  </tr>
+</table>
+</body>
+</html>

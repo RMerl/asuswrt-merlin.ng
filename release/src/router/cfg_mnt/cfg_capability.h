@@ -28,6 +28,10 @@ extern int cm_getCapabilityIntValue(char *mac, int capType);
 extern int cm_getAdsDsCapByUnit(int unit);
 #endif
 extern int cm_isSupportedParamByCapability(char *mac, unsigned int capability, unsigned int version);
+extern int cm_isCapSupportedByData(char *data, int capType, int capSubtype);
+#ifdef ONBOARDING_VIA_VIF
+extern int cm_checkOnboardingVifSupport(char *reMac, int bandIndex);
+#endif
 
 /* type */
 enum capabilityType {
@@ -110,6 +114,11 @@ enum capabilityType {
 #ifdef RTCONFIG_REBOOT_SCHEDULE_V2
 	REBOOT_SCHEDULE_V2 = 42,
 #endif
+	SCHED_CONTROL = 43,
+#if defined(RTCONFIG_VIF_ONBOARDING) && defined(RTCONFIG_AMAS_5G_ONBOARDING)
+	VIF_OB_BAND_INDEX = 44,
+#endif
+	WIFI_GEN = 46,
 	CAPABILITY_MAX
 };
 
@@ -168,6 +177,8 @@ enum capabilityType {
 #ifdef AFC_ENABLED
 #define AFC BIT(25)
 #endif
+
+#define ONBOARDING_5G		BIT(27)
 
 /* for LINK_AGGREGATION */
 #define LACP_ENABLE                    BIT(0)
@@ -240,6 +251,18 @@ enum capabilityType {
 /* for ONBOARDING SUPPORT */
 #define OLD_ONBOARDING		BIT(0)
 #define NEW_ONBOARDING		BIT(1)
+
+/* for SCHED_CONTROL */
+#define AURA_SCHED			BIT(0)
+#define AURA_NIGHT_SCHED	BIT(1)
+#define LED_SCHED			BIT(2)
+#define LED_NIGHT_SCHED		BIT(3)
+
+/* for SCHED_CONTROL */
+#define AURA_SCHED			BIT(0)
+#define AURA_NIGHT_SCHED	BIT(1)
+#define LED_SCHED			BIT(2)
+#define LED_NIGHT_SCHED		BIT(3)
 
 /* Capability support on role */
 #define CAP_SUPPORT		BIT(0)

@@ -1988,3 +1988,28 @@ a{
 	clip: rect(0,0,0,0);
 	border: 0;
 }
+
+.recommended-text {
+	background-color: var(--badge-info-container-bg);
+	color: var(--badge-info-outline-text);
+	border-color: var(--badge-info-outline-border);
+	font-size: var(--font-size-16, 16px);
+	border-radius: 12px;
+	border: 1px solid;
+	padding: 8px 12px;
+	display: block;
+	white-space: nowrap;
+	writing-mode: horizontal-tb;
+	word-break: normal;
+}
+.recommended-icon {
+	display: none;
+}
+@media screen and (max-width: 540px) {
+	.recommended-text{
+		display: none;
+	}
+	.recommended-icon{
+		display: block;
+	}
+}

@@ -190,7 +190,7 @@ function disable_lacp_if_conflicts_with_dualwan(){
 			disable_two_10g_option = true;
 		}
 
-		if(based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI"){
+		if(based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI" || based_modelid == "GT-BN98_PRO"){
 			if(wans_dualwan_array.indexOf("wan") != -1 && wans_extwan == "1"){//2.5G WAN/LAN-1 conflict
 				conflict_lanport_array.push("2.5G WAN/LAN-1");
 			}
@@ -407,7 +407,7 @@ function initial(){
 	$("#tabMenu").css("display", "");
 
 	if(lacp_support){
-		if(based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI"){
+		if(based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI" || based_modelid == "GT-BN98_PRO"){
 			$("#lacp_first_option").html("2.5G WAN/LAN-1 and 2.5G LAN-2");
 		}
 

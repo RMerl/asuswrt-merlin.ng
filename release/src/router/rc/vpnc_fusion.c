@@ -1651,8 +1651,7 @@ int start_vpnc_by_unit(const int unit)
 	{
 		char cmd[256] = {0};
 		_dprintf("[%s]Start to connect NordVPN(%d).\n", __FUNCTION__, prof->config.tpvpn.tpvpn_idx);
-		snprintf(cmd, sizeof(cmd), "nordvpn setconf '%s' %d %d &", prof->config.tpvpn.region, prof->config.tpvpn.tpvpn_idx, unit);
-		system(cmd);
+		safe_fork_do_system("nordvpn setconf '%s' %d %d", prof->config.tpvpn.region, prof->config.tpvpn.tpvpn_idx, unit);
 		return 0;
 	}
 #endif
@@ -1660,8 +1659,7 @@ int start_vpnc_by_unit(const int unit)
 	{
 		char cmd[256] = {0};
 		_dprintf("[%s]Start to connect HMA(%d).\n", __FUNCTION__, prof->config.tpvpn.tpvpn_idx);
-		snprintf(cmd, sizeof(cmd), "hmavpn setconf '%s' '%s' %d %d &", prof->config.tpvpn.region, prof->config.tpvpn.conntype, prof->config.tpvpn.tpvpn_idx, unit);
-		system(cmd);
+		safe_fork_do_system("hmavpn setconf '%s' '%s' %d %d", prof->config.tpvpn.region, prof->config.tpvpn.conntype, prof->config.tpvpn.tpvpn_idx, unit);
 		return 0;
 	}
 	else
@@ -2007,8 +2005,7 @@ static int _clean_routing_table(const int vpnc_id)
 	char tmp[256], tmp2[256];
 
 	// delete all rules in vpnc routing table
-	snprintf(tmp, sizeof(tmp), "ip route show table %d > /tmp/route_tmp", IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_id);
-	system(tmp);
+	safe_do_system_to_file("/tmp/route_tmp", 0, "ip route show table %d", IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_id);
 	fp = fopen("/tmp/route_tmp", "r");
 	if (fp)
 	{
@@ -2019,8 +2016,7 @@ static int _clean_routing_table(const int vpnc_id)
 			{
 				*ptr = '\0';
 			}
-			snprintf(tmp, sizeof(tmp), "ip route del %s table %d", tmp2, IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_id);
-			system(tmp);
+			safe_do_system("ip route del %s table %d", tmp2, IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_id);
 		}
 		fclose(fp);
 		unlink("/tmp/route_tmp");
@@ -2088,11 +2084,10 @@ static int _set_routing_table(const int cmd, const int vpnc_id)
 				}
 				if (!strncmp(tmp2, "default", 7) && (prof->protocol == VPNC_PROTO_PPTP || prof->protocol == VPNC_PROTO_L2TP))
 				{
-					snprintf(tmp, sizeof(tmp), "ip route add %s metric 1 table %d", tmp2, IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_id);
+					safe_do_system("ip route add %s metric 1 table %d", tmp2, IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_id);
 				}
 				else
-					snprintf(tmp, sizeof(tmp), "ip route add %s table %d", tmp2, IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_id);
-				system(tmp);
+					safe_do_system("ip route add %s table %d", tmp2, IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_id);
 			}
 			fclose(fp);
 			unlink("/tmp/route_tmp");

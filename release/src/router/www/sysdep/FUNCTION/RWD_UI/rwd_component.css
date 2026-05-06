@@ -1,4 +1,5 @@
-﻿:root{
+﻿:root,
+:host{
 	--icon-color: #B9C5D4;
 }
 .body_rwd{
@@ -403,6 +404,33 @@
 .profile_setting_item.checkboxlist{
 	min-height: 63px;
 	height: auto;
+}
+.profile_setting_item.icon_item > .title,
+.profile_setting_item.icon_item > .input_container{
+	display: flex;
+	align-items: center;
+}
+.profile_setting_item.icon_item .help_icon{
+	margin-left: 6px;
+	background-size: 110%;
+	min-width: 40px;
+	min-height: 40px;
+}
+.profile_setting_item.icon_item .help_icon{
+	min-width: 30px;
+	min-height: 30px;
+	background-size: cover;
+}
+.profile_title_item.icon_item .help_icon,
+.profile_setting_item.icon_item .title > .help_icon{
+	min-width: 24px;
+	min-height: 24px;
+	width: 24px;
+	height: 24px;
+	margin-left: 6px;
+	margin-top: 0px;
+	margin-right: 0px;
+	-webkit-mask-size: cover;
 }
 .profile_setting_two_item{
 	background-color: rgb(35, 52, 62);
@@ -811,7 +839,9 @@
 .del_profile .action_btn_container .btn{
 	width: 117px;
 	height: 38px;
-	line-height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	font-size: 14px;
 	font-weight: 500;
 	text-align: center;
@@ -830,6 +860,12 @@
 	font-size: 16px;
 	font-weight: 600;
 	height: auto;
+}
+.customize_alert .title{
+	color: #ffffff;
+	font-size: 18px;
+	font-weight: 700;
+	margin-bottom: 6px;
 }
 .del_profile .title{
 	height: 40px;
@@ -860,6 +896,10 @@
 	border: initial !important;
 	color: initial !important;
 	box-shadow: initial !important;
+}
+.customize_alert a{
+	text-decoration: underline;
+	color: #ffffff;
 }
 .textInput,
 .custom_select_container,
@@ -896,7 +936,7 @@
 	letter-spacing: 0.1px;
 }
 .textInput.padding_lock{
-	padding-left: 32px;
+	padding-left: 32px !important;
 }
 .textInput.inside_custom_select{
 	border: 0;
@@ -991,14 +1031,13 @@
 	border: none;
 }
 .custom_select_container .select_options_container div{
-	padding-left: 18px;
 	font-size: 13px;
 	word-break: break-all;
-	min-height: 40px;
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	line-height: 140%;
-	padding-right: 28px;
+	padding: 11px 28px 11px 18px;
+	flex-direction: column;
 }
 .custom_select_container .select_options_container div.selected{
 	position: relative;
@@ -1027,6 +1066,13 @@
 }
 .custom_select_container .select_options_container div.disabled{
 	color: rgba(164, 183, 195, 0.6);
+}
+.custom_select_container .select_options_container span.option_sub_text{
+	font-size: 12px;
+	min-height: 30px;
+	line-height: 130%;
+	color: rgba(164, 183, 195, 0.6);
+	margin-top: 2px;
 }
 .custom_select_container .select_options_container.container_hide,
 .custom_select_container .select_and_search_container.container_hide{

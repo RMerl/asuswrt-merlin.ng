@@ -199,6 +199,14 @@ uint32_t commands_to_flag(char *);
 #define MONITOR_RESCUE_FILE "RESCUE_MSG.md5"
 #define MONITOR_STAT_FILE "STAT_MSG.md5"
 
+#define HA_ADJUST_SBIN    "/usr/sbin/ha_adjust"
+#define HA_ADJUST_AI      "/ai/ctrl_msg/ha_adjust"
+
+#define TIME_SYNC_CONF       "/etc/systemd/timesyncd.conf"
+#define TIME_SYNC_CONF_ORIG  "/etc/systemd/timesyncd.conf.orig"
+/* This list is same as router */
+#define AI_NTP_SERVER_LIST   "pool.ntp.org 0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org time.google.com time.nist.gov"
+
 /* PROGRESS STATUS */
 #define AI_PROG_DONE "DONE"
 #define AI_PROG_PROG "PROGRESS"
@@ -217,6 +225,7 @@ uint32_t commands_to_flag(char *);
 
 /* AI Request Struct */
 #define AI_SOCK_PATH      "/var/run/ai_request_sock"
+#define AI_REQ_MAX_RETRY   3
 #define AI_REQ_MAX_SIZE   16
 #define AI_MAX_CLIENTS    16
 #define AI_REQ_BUF_SIZE   32
@@ -226,6 +235,7 @@ typedef struct Node {
 	uint32_t req_type;             // request type
 	char main_cmd[AI_REQ_BUF_SIZE];
 	char full_cmd[AI_REQ_BUF_SIZE];
+	uint32_t retry;
 	struct Node *prev;             // prev request
 	struct Node *next;             // next request
 } ai_req_node_t;
@@ -236,5 +246,6 @@ typedef struct LinkedList {
 	ai_req_node_t *tail;
 	pthread_mutex_t lock;
 } ai_req_list_t;
+
 
 #endif

@@ -469,3 +469,229 @@ input[type="text"], input[type="password"], .input_option{
     bottom: -5px;
     background-position: 0px -179px;
 }
+[data-asuswrt-color="light"]{
+	--ic-port-wan-symbol: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='7' fill='none' viewBox='0 0 8 7'%3e%3cpath fill='black' fill-rule='evenodd' d='M2.88 1.955c-.55.378-1.068.802-1.511 1.236A2.067 2.067 0 0 1 3.973.787c.186.055.357.143.52.247-.539.25-1.091.565-1.612.92ZM7.673.9C7.272.317 6.33.345 5.242.726A.243.243 0 0 0 5.2.671a2.803 2.803 0 0 0-1.03-.56 2.776 2.776 0 0 0-3.55 2.66c0 .36.074.698.198 1.012-.707.853-1.044 1.689-.655 2.26.142.205.44.449 1.06.447a.324.324 0 0 0-.004-.649c-.261 0-.448-.058-.521-.163-.14-.206.02-.682.464-1.276a2.765 2.765 0 0 0 4.987-1.35.35.35 0 0 0-.317-.384.349.349 0 0 0-.383.314 2.058 2.058 0 0 1-2.057 1.856 2.055 2.055 0 0 1-1.755-.989c.41-.433.938-.9 1.608-1.36C5.21 1.15 6.864.867 7.136 1.265c.116.17.016.546-.257.985a.324.324 0 0 0 .547.345c.556-.886.44-1.41.246-1.695Z' clip-rule='evenodd'/%3e%3c/svg%3e");
+}
+[data-asuswrt-color="dark"]{
+	--ic-port-wan-symbol: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='7' fill='none' viewBox='0 0 8 7'%3e%3cpath fill='white' fill-rule='evenodd' d='M2.88 1.955c-.55.378-1.068.802-1.511 1.236A2.067 2.067 0 0 1 3.973.787c.186.055.357.143.52.247-.539.25-1.091.565-1.612.92ZM7.673.9C7.272.317 6.33.345 5.242.726A.243.243 0 0 0 5.2.671a2.803 2.803 0 0 0-1.03-.56 2.776 2.776 0 0 0-3.55 2.66c0 .36.074.698.198 1.012-.707.853-1.044 1.689-.655 2.26.142.205.44.449 1.06.447a.324.324 0 0 0-.004-.649c-.261 0-.448-.058-.521-.163-.14-.206.02-.682.464-1.276a2.765 2.765 0 0 0 4.987-1.35.35.35 0 0 0-.317-.384.349.349 0 0 0-.383.314 2.058 2.058 0 0 1-2.057 1.856 2.055 2.055 0 0 1-1.755-.989c.41-.433.938-.9 1.608-1.36C5.21 1.15 6.864.867 7.136 1.265c.116.17.016.546-.257.985a.324.324 0 0 0 .547.345c.556-.886.44-1.41.246-1.695Z' clip-rule='evenodd'/%3e%3c/svg%3e");
+}
+[data-asuswrt-color][data-asuswrt-theme]{
+	--ic-port-lan: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='21' height='18' fill='none' viewBox='0 0 21 18'%3e%3cpath fill='%2310B981' fill-rule='evenodd' d='M17.495 15h-14V5.117h2.624V2h8.743v3.117h2.633V15ZM0 16.535C0 17.345.671 18 1.499 18h18.002C20.33 18 21 17.344 21 16.535V1.465C21 .654 20.329 0 19.501 0H1.5C.671 0 0 .656 0 1.464v15.072Z' clip-rule='evenodd'/%3e%3c/svg%3e");
+	--ic-port-usb: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='21' height='18' fill='none' viewBox='0 0 21 18'%3e%3cg id='Group'%3e%3cpath id='Union' fill='%2310B981' d='M19.501 0C20.3286 0 20.9999 0.65593 21 1.46387V16.5361C20.9999 17.3441 20.3286 18 19.501 18H1.49902C0.671335 18 7.60499e-05 17.3441 0 16.5361V1.46387C7.60499e-05 0.65593 0.671335 0 1.49902 0H19.501ZM3.72461 3.21387C3.37332 3.21391 3.08811 3.4988 3.08789 3.85059V14.1494C3.08811 14.5012 3.37332 14.7861 3.72461 14.7861H17.2754C17.6267 14.7861 17.9119 14.5012 17.9121 14.1494V3.85059C17.9119 3.49878 17.6267 3.21387 17.2754 3.21387H3.72461ZM12.6357 6.44336C12.9322 6.50456 13.1692 6.77223 13.2285 7.08105C13.2878 7.45102 13.0903 7.8223 12.7344 7.94531C12.3982 8.06931 12.0022 7.92473 11.8242 7.59473C11.7847 7.51298 11.7452 7.49318 11.6465 7.49316H10.0244C9.98492 7.49319 9.94555 7.51319 9.92578 7.53418C9.49065 7.96617 9.07478 8.41908 8.63965 8.87207L8.62012 8.8916H15.2129V8.15137C15.7072 8.50133 16.1823 8.8307 16.6768 9.18066C16.1823 9.53066 15.7073 9.85996 15.2129 10.21V9.46875H10.0645C10.0841 9.4887 10.0838 9.50971 10.1035 9.50977C10.5188 9.96265 10.9538 10.3948 11.3691 10.8477C11.4086 10.8887 11.4488 10.9102 11.4883 10.9102H13.1895V10.4355H14.7119V12.001H13.209V11.5068H11.2705C11.231 11.5068 11.1918 11.4858 11.1523 11.4658C10.5393 10.8269 9.92581 10.1892 9.29297 9.53125C9.2732 9.51025 9.23292 9.48926 9.19336 9.48926H6.95898C6.7809 10.1071 6.20681 10.354 5.75195 10.251C5.29725 10.1479 4.94151 9.716 4.94141 9.24219C4.94141 8.70725 5.25783 8.27543 5.73242 8.15137C6.16756 8.04837 6.76095 8.23409 6.97852 8.91309H7.78906C7.80875 8.91309 7.84829 8.89199 7.86816 8.87207C8.24396 8.48107 8.62054 8.08975 8.97656 7.71875C9.21381 7.47184 9.451 7.20392 9.70801 6.95703C9.72779 6.93703 9.7876 6.91602 9.82715 6.91602H11.6855C11.7646 6.91602 11.8044 6.89594 11.8242 6.83398C11.9824 6.52498 12.2995 6.38136 12.6357 6.44336Z'/%3e%3c/g%3e%3c/svg%3e");
+
+	.port_status_bg > div{
+		gap: 1.25rem 0;
+	}
+	.port_status_bg .port_icon{
+		mask-image: url(/images/New_ui/amesh/port_status.svg);
+		mask-size: 100px;
+		mask-repeat: no-repeat;
+		mask-position: center;
+		width: 30px;
+		height: 26px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		border-radius: 2px;
+		position: relative;
+		background-image: none;
+	}
+	.port_status_bg .port_icon.poe_port:after{
+		position: absolute;
+		content: "";
+		width: 10px;
+		height: 10px;
+		right: -8px;
+		border-radius: 50%;
+		background-clip: padding-box;
+		top: -8px;
+		border: 3px solid #4D595D;
+	}
+	.port_status_bg .port_icon.poe_port.poe_en:after{
+		background-color: #6DD400;
+	}
+	.port_status_bg .port_icon.poe_port.poe_dis:after{
+		background-color: #999999;
+	}
+	/* LAN 埠已連線：僅 LAN 圖示，不疊加 WAN */
+	.port_status_bg .port_icon.conn{
+		mask-image: var(--ic-port-lan);
+		mask-size: contain;
+		mask-repeat: no-repeat;
+		mask-position: center;
+		background-color: #10b880;
+	}
+	.port_status_bg .port_icon.warn{
+		mask-image: var(--ic-port-lan);
+		mask-size: contain;
+		mask-repeat: no-repeat;
+		mask-position: center;
+		background-color: var(--status-warning);
+		background-image: none;
+	}
+	/* LAN 埠未插線：僅 LAN 圖示，不疊加 WAN */
+	.port_status_bg .port_icon.unplug{
+		mask-image: var(--ic-port-lan);
+		mask-size: contain;
+		mask-repeat: no-repeat;
+		mask-position: center;
+		background-color: var(--chart-color-unplug);
+	}
+	.port_status_bg .port_icon.USB.conn{
+		mask-image: var(--ic-port-usb);
+		mask-size: contain;
+		mask-repeat: no-repeat;
+		mask-position: center;
+		background-color: #10b880;
+	}
+	.port_status_bg .port_icon.USB.unplug{
+		mask-image: var(--ic-port-usb);
+		mask-size: contain;
+		mask-repeat: no-repeat;
+		mask-position: center;
+		background-color: var(--chart-color-unplug);
+	}
+	.port_status_bg .port_icon.MoCa{
+		background-size: 92px;
+	}
+	.port_status_bg .port_icon.MoCa.conn{
+		background-position: 0px -378px;
+	}
+	.port_status_bg .port_icon.MoCa.warn{
+		background-position: 0px -416px;
+	}
+	.port_status_bg .port_icon.MoCa.unplug{
+		background-position: 0px -340px;
+	}
+	/* WAN 埠：取消父層 mask 避免裁切 .wan_icon，改由 ::before 畫 LAN 底圖 */
+	.port_status_bg .port_icon:has(.wan_icon){
+		mask-image: none;
+		-webkit-mask-image: none;
+		background: none;
+	}
+	.port_status_bg .port_icon:has(.wan_icon)::before{
+		content: "";
+		position: absolute;
+		inset: 0;
+		display: block;
+		mask-image: var(--ic-port-lan);
+		-webkit-mask-image: var(--ic-port-lan);
+		mask-size: contain;
+		-webkit-mask-size: contain;
+		mask-repeat: no-repeat;
+		-webkit-mask-repeat: no-repeat;
+		mask-position: center;
+		-webkit-mask-position: center;
+		background-color: var(--chart-color-unplug);
+		height: 100%;
+		width: 100%;
+		background-image: none;
+	}
+	/* WAN 埠狀態色：與 .conn / .unplug / .warn 一致，改由 ::before 顯示 */
+	.port_status_bg .port_icon:has(.wan_icon).conn::before{
+		background-color: #10b880;
+	}
+	.port_status_bg .port_icon:has(.wan_icon).unplug::before{
+		background-color: var(--chart-color-unplug);
+	}
+	.port_status_bg .port_icon:has(.wan_icon).warn::before{
+		background-color: var(--chart-color-warn, var(--chart-color-unplug));
+	}
+	/* WAN 埠中央圖示：獨立於父層 mask，置中顯示 */
+	.port_status_bg .port_icon .wan_icon{
+		position: relative;
+		z-index: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
+		background-image: var(--ic-port-wan-symbol);
+		background-size: 8px 7px;
+		background-repeat: no-repeat;
+		background-position: center;
+	}
+	.port_status_bg .port_icon .lan_idx{
+		font-size: 13px;
+		margin-top: 0px;
+	}
+	.port_status_bg .port_text{
+		text-align: center;
+		line-height: 140%;
+		font-size: 11px;
+		width: 85%;
+		color: var(--text-primary);
+	}
+	.port_status_icon_desc{
+		display: none;
+	}
+	.port_status_icon_desc > div{
+		width: 90%;
+		position: relative;
+	}
+	.port_status_icon_desc > div:before, .port_status_notice_item:before{
+		position: absolute;
+		content: "";
+		width: 12px;
+		height: 12px;
+		left: -15px;
+		top: 4px;
+	}
+	.port_status_icon_desc > div.conn:before{
+		background-color: #25C100;
+	}
+	.port_status_icon_desc > div.warn:before, .port_status_notice_item.warn:before{
+		background-color: #ECC000;
+	}
+	.port_status_icon_desc > div.unplug:before{
+		background-color: #D7D7D7;
+	}
+	.port_status_icon_desc > div.poe_en:after,
+	.port_status_icon_desc > div.poe_dis:after{
+		position: absolute;
+		content: "";
+		width: 7px;
+		height: 7px;
+		left: -11px;
+		border-radius: 50%;
+		background-clip: padding-box;
+		top: 1px;
+		border: 2px solid #4D595D;
+	}
+	.port_status_icon_desc > div.conn.poe_en:after{
+		background-color: #6DD400;
+	}
+	.port_status_icon_desc > div.conn.poe_dis:after{
+		background-color: #999999;
+	}
+	.port_status_notice_icon{
+		background-image: url(/images/New_ui/amesh/bind_notice.png);
+		cursor: pointer;
+		background-repeat: no-repeat;
+		width: 22px;
+		height: 22px;
+		position: absolute;
+		background-size: contain;
+		top: -4px;
+		margin-left: 8px;
+		display: none;
+	}
+	.port_status_notice_item{
+		position: relative;
+		margin-left: 24px;
+		margin-bottom: 3px;
+	}
+	/* port 右下角角標（訊息/狀態 icon）：非 WAN 用 ::before，WAN 因 ::before 已作 LAN 底圖改用 ::after */
+	.port_status_bg .label_W_bg .port_icon:not(:has(.wan_icon)):before,
+	.port_status_bg .label_W_bg .port_icon:has(.wan_icon):after{
+		position: absolute;
+		content: "";
+		width: 16px;
+		height: 16px;
+		background-image: url(/images/New_ui/amesh/port_status.svg);
+		background-size: 70px;
+		right: -5px;
+		bottom: -5px;
+		background-position: 0px -179px;
+	}
+}

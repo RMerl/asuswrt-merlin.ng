@@ -125,7 +125,9 @@
 .status_info .conn_type.LAN{
 	background-color: #006CE1;
 }
-.status_info .conn_type.WiFi7{
+.status_info .conn_type.WiFi6,
+.status_info .conn_type.WiFi7,
+.status_info .conn_type.WiFi8{
 	background-color: #000;
 }
 .profile_setting.Get_Start{
@@ -339,7 +341,7 @@
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_mlo.svg);
 }
 .feature_desc_container .title{
-	color: #006CE1;
+	color: #006CE1 !important;
 }
 .feature_desc_container .desc{
 	color: #4D4D4D;

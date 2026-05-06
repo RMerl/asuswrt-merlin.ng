@@ -218,7 +218,7 @@ function drawData(poly, data, mode, color)
 	poly.setAttribute('points', pt);
 }
 function getTrafficUnit(){
-	return window.localStorage.getItem("ASUS_TrafficMonitor_unit") || 1;
+	return 1;
 }
 function updateSVG(rxData, txData, maxValue, mode, rxColor, txColor, intv, maxLen, dataD, avgSamp, clock)
 {

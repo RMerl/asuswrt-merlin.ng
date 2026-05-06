@@ -694,7 +694,7 @@ struct RWD_MAPPING_TABLE rwd_mapping_t[] =
 	|| defined(RTCONFIG_BCMLEDG) \
 	|| defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) \
 	|| defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) \
-	|| defined(GS7) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GTBE96_AI)
+	|| defined(GS7) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI) || defined(GTBN98_PRO) || defined(GTBN96X) || defined(GTBN98) || defined(GTBN96)
 	{"AuraRGB", "light_effect/light_effect.html", "<rt><gt>light_effect/light_effect_rog.css<white>light_effect/light_effect_white.css"},
 	{"AuraRGB_preview", "light_effect/light_effect_pre.html", "<rt>"},
 #endif
@@ -724,6 +724,15 @@ struct RWD_MAPPING_TABLE rwd_mapping_t[] =
     {"AiProtection_DPI_CC", "index.html?page=aiprotection&view=dpi_cc", "<white>css/business-white.css"},
 #endif
 #endif
+#else
+#ifdef RTCONFIG_GTBOOSTER
+    {"AiProtection_ARK_MALS", "pages/aiprotection_info.html?view=ark_mals", "<white>css/business-white.css"},
+    {"AiProtection_ARK_ADBLOCK", "pages/aiprotection_info.html?view=ark_adblock", "<white>css/business-white.css"},
+    {"AiProtection_ARK_TRACKER", "pages/aiprotection_info.html?view=ark_tracker", "<white>css/business-white.css"},
+#endif
+#endif
+#ifdef RTCONFIG_UI4
+    {"WiFi Insight", "pages/wifi_insight.html", "<white>css/bootstrap.min.css"},
 #endif
 #ifdef RTCONFIG_SW_BTN
 	{"MultiFuncBtn", "multifuncbtn/mfb.html", "<rt><white>multifuncbtn/mfb_WHITE.css"},
@@ -1183,6 +1192,7 @@ struct REPLACE_PRODUCTID_S replace_productid_t[] =
 	{"TUF_3600_V2", "TUF GAMING 小旋风 V2 WiFi7", "CN"},
 	{"GS-BE7200X", "ROG 魔盒 X", "CN"},
 	{"GT-BE96_AI", "ROG 八爪鱼7 AI", "CN"},
+	{"GS7_Pro_Max", "ROG 魔盒 Pro Max", "CN"},
 	{NULL, NULL, NULL}
 };
 

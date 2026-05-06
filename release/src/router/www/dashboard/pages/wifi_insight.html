@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html data-asuswrt-color="light" data-asuswrt-theme="rog">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,  user-scalable=no"/>
+    <link rel="stylesheet" href="../css/architecture.css"/>
+    <link rel="stylesheet" href="../css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="../css/bootstrap-customize.css"/>
+    <link rel="stylesheet" href="../datatables/datatables.min.css">
+    <link rel="stylesheet" href="../css/wrt-ui-alias-tokens.css"/>
+    <link rel="stylesheet" href="../datatables/datatables.asuswrt.css">
+    <link rel="stylesheet" href="../css/daterangepicker.css"/>
+    <link rel="stylesheet" href="../css/svg-icon.css"/>
+    <script type="text/javascript" src="../js/jquery.js"></script>
+    <script type="text/javascript" src="../js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="../datatables/datatables.min.js"></script>
+    <script type="text/javascript" src="../js/chart.min.js"></script>
+    <script type="text/javascript" src="../js/chartjs-adapter-date-fns.js"></script>
+    <script type="text/javascript" src="../js/moment.min.js"></script>
+    <script type="text/javascript" src="../js/daterangepicker.js"></script>
+    <script type="text/javascript" src="../js/httpApi.js"></script>
+    <script type="text/javascript" src="../js/asus.js"></script>
+</head>
+<body>
+<div class="row">
+    <div class="col-12 mb-3" id="WiFiInterferenceView"></div>
+</div>
+
+<script type="module">
+    let theme = (function () {
+        if (isSupport("rog"))
+            return "rog";
+        else if (isSupport("tuf"))
+            return "tuf";
+        else if (isSupport("BUSINESS"))
+            return "business";
+        else if (isSupport("proart"))
+            return "proart";
+        else
+            return "asus";
+    })();
+
+    if (isSupport("UI4")) {
+        const _nvram_basic = httpApi.nvramGet(["productid", "odmpid"]);
+        let productId = _nvram_basic.productid || "";
+        let odmpid = _nvram_basic.odmpid || "";
+        document.querySelector("html").setAttribute("data-asuswrt-theme", theme);
+        if (productId === "GT-BE19000AI" || productId === "GT-BE96_AI" || theme === "business" || odmpid.startsWith("ZenWiFi")) {
+            document.querySelector("html").setAttribute("data-asuswrt-color", "light");
+        } else {
+            document.querySelector("html").setAttribute("data-asuswrt-color", "dark");
+        }
+    }
+
+    import {WiFiInterferenceChart} from '/js/dashboard.module.js';
+
+
+    const wifiInterferenceChart = new WiFiInterferenceChart(system.labelMac);
+    const wifiInterferenceView = document.querySelector('#WiFiInterferenceView');
+    if (wifiInterferenceView) {
+        wifiInterferenceChart.init()
+            .then(() => {
+                wifiInterferenceView.append(wifiInterferenceChart.render());
+            })
+            .catch(error => {
+                console.error('Failed to initialize WiFi interference chart:', error);
+                const errorElement = document.createElement('div');
+                errorElement.className = 'chart-error';
+                errorElement.textContent = 'Failed to load WiFi interference chart';
+                wifiInterferenceView.append(errorElement);
+            });
+    }
+</script>
+</body>
+</html>

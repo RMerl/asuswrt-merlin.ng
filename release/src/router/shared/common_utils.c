@@ -279,6 +279,54 @@ dm_unregister_app_restart_info(int pid)
 	}
 }
 
+#if defined(WIFI8_SDK_20251126) || defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20260204) || defined(WIFI8_SDK_20260402)
+/*
+ * Checking for process_cmd numbers in /proc
+ * @param	process_name	process name
+ * @return	process instance_count
+ */
+int
+proc_get_instance_count(char *process_name)
+{
+	DIR *dir;
+	struct dirent *next;
+	int cmp = 0;
+	int process_cmd_count = 0;
+
+	if ((dir = opendir("/proc")) == NULL) {
+		perror("Cannot open /proc");
+		return -1;
+	}
+
+	while ((next = readdir(dir)) != NULL) {
+		FILE *fp;
+		char filename[256];
+		char buffer[256];
+
+		/* If it isn't a number, we don't want it */
+		if (!isdigit(*next->d_name))
+			continue;
+		if (snprintf(filename, sizeof(filename), "/proc/%s/comm", next->d_name) < 0) {
+			filename[sizeof(filename) - 1] = '\0';
+		}
+		fp = fopen(filename, "r");
+		if (!fp) {
+			continue;
+		}
+		buffer[0] = '\0';
+		fgets(buffer, 256, fp);
+		fclose(fp);
+
+		if (!(cmp = strncmp(process_name, buffer, strlen(process_name)))) {
+			process_cmd_count ++;
+		}
+	}
+
+	closedir(dir);
+	return process_cmd_count;
+}
+#endif
+
 #if defined(RTCONFIG_HND_ROUTER_BE_4916)
 /*
  * restore stdout and stderr from saved file pointers in pSOE and clear the entries in pSOE

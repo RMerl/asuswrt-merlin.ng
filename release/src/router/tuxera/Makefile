@@ -78,9 +78,11 @@ SRCFILE = broadcom_arm_ax_$(BCM_CHIP)_src-rt-5.04axhnd.675x
 else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),EBG19P EBG15))
 SRCFILE = broadcom_arm_ax_62118G
 else ifeq ($(RTCONFIG_HND_ROUTER_BE_4916),y)
-ifeq ($(ASUSWRT_BRCM_SDK_VERSION),$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126 WIFI7_SDK_20250122))
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126 WIFI7_SDK_20250122 WIFI7_SDK_20250506 WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402)))
 ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-BE58U TUF-BE3600 RT-BE92U RT-BE95U))
 SRCFILE = broadcom_arm_be_6764l
+else ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7 GS7_PRO_MAX))
+SRCFILE = broadcom_arm_be_6766_alt
 else
 SRCFILE = broadcom_arm_be_$(BCM_CHIP)
 endif
@@ -119,6 +121,24 @@ DSTDIR = $(INSTALLDIR)/lib/modules/2.6.22.19/kernel/fs
 endif # RTCONFIG_BCMARM
 endif
 
+ifeq ($(RTCONFIG_HND_ROUTER_BE_4916),y)
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506))
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-BE58U TUF-BE3600))
+SRCFILE = broadcom_arm_be_6764l_5.15.167
+else
+SRCFILE = broadcom_arm_be_$(BCM_CHIP)_5.15.167
+endif
+DSTDIR := $(INSTALLDIR)/lib/modules/5.15.167/kernel/fs
+endif
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126))
+SRCFILE = broadcom_arm_bn_$(BCM_CHIP)_5.15.176
+DSTDIR := $(INSTALLDIR)/lib/modules/5.15.176/kernel/fs
+endif
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20260204 WIFI8_SDK_20260402))
+SRCFILE = broadcom_arm_bn_$(BCM_CHIP)_5.15.182
+DSTDIR := $(INSTALLDIR)/lib/modules/5.15.182/kernel/fs
+endif
+endif
 #ifeq ($(BUILD_NAME),DSL-AC68U)
 #SRCFILE = broadcom_arm_dsl_ac68u
 #DSTDIR = $(INSTALLDIR)/lib/modules/2.6.36.4brcmarm/kernel/fs
@@ -138,6 +158,12 @@ install:
 	@echo "[tuxera] Installing...from $(SRCFILE)"
 	@install -d $(DSTDIR)
 	@install -d $(INSTALLDIR)/usr/sbin
+ifneq (,$(or \
+	$(filter WIFI7_SDK_20250506 WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402,$(ASUSWRT_BRCM_SDK_VERSION)), \
+	$(filter RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7 GS7_PRO_MAX,$(BUILD_NAME)) \
+))
+	@cp -f $(SRCFILE)/tfs-linux/kernel-module/tfs_linux.ko $(DSTDIR)
+endif
 ifeq ($(RTCONFIG_TUXERA_SMBD),y)
 	@cp -f $(SRCFILE)/smb/kernel-module/tsmb.ko $(DSTDIR)
 	install -D $(SRCFILE)/smb/bin/tsmb-server $(INSTALLDIR)/usr/sbin/tsmb-server

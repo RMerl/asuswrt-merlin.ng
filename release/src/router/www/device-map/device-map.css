@@ -105,30 +105,28 @@ body {
 	margin: 0 auto;
 	width: 50px;
 	height: 50px;
-	background-color: #596E74;
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;
 	border-radius: 10px;
-	box-shadow: 0px 0px 0px 1px #3E4243;
 	background-repeat:no-repeat;
 	cursor:pointer;
 	background-size: 90%;
 	background-position: 50%;
 }
 .clientIcon:hover{
-	background-color: #7B949B;
+	background-color: unset;
 }
 .clientIcon.clicked, .clientIcon_clicked{
-	background-color: #7B949B;
+	background-color: unset;
 }
 .clientIcon_no_hover, .vendorIcon_no_hover{
 	width: 85px;
 	height: 85px;
-	background-color: #596E74;
+	background-color: unset;
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;
 	border-radius: 10px;
-	box-shadow: 0px 0px 0px 1px #3E4243;
+	box-shadow: 0px 0px 0px 1px #CCC!important;
 	cursor:pointer;
 }
 .vendorIcon {
@@ -372,7 +370,7 @@ i[class^='vendor-icon'], i[class*=' vendor-icon']{
 	height: 100%;
 	width: 100%;
 	display: block;
-	background-color: #FFFFFF;
+	background-color: var(--wrt-btn-icon-active-color, #000000);
 }
 
 .type36{
@@ -561,12 +559,11 @@ i.vendor-icon.d-link{
 }
 
 .clientBg{
+    width: 100%;
+    background-image: unset;
+    border-bottom: 1px solid #CCC;
 	font-family:monospace, Courier New, Courier;
-	width:293px;
 	height:85px;
-	background-image:url('/images/New_ui/networkmap/bg.png');
-	background-repeat:no-repeat;
-	cursor: pointer;
 }
 .interface_container{
 	display: flex;
@@ -610,7 +607,7 @@ i.vendor-icon.d-link{
 	background-image:url('/images/New_ui/amesh/radio_gn_4.svg');
 }
 .band_block {
-	background-color: #06CCDE;
+	background-color: unset;
 	height: 11px;
 	width: 28px;
 	border-radius: 2px;
@@ -654,11 +651,6 @@ i.vendor-icon.d-link{
 	width: 28px;
 	background-image:url('/images/New_ui/networkmap/power.png') !important;
 }
-.radio_moca{
-	height: 28px;
-	width: 28px;
-	background-image:url('/images/New_ui/networkmap/moca.png') !important;
-}
 .clientlist_content{
 	position: absolute;
 	-webkit-border-radius: 5px;
@@ -666,9 +658,7 @@ i.vendor-icon.d-link{
 	border-radius: 5px;
 	z-index: 200;
 	background-color:#2B373B;
-	margin-left: 80px;
-	margin-top: -320px;
-	width:575px;
+	width:495px;
 	height:auto;
 	box-shadow: 3px 3px 10px #000;
 	display:block;
@@ -721,7 +711,7 @@ i.vendor-icon.d-link{
 }
 .client_input_text_disabled {
 	background:#475a5f;
-	width:290px;
+	width:275px;
 	height:15px;
 	padding:5px 0px 5px 5px;
 	margin-left:2px;
@@ -773,8 +763,7 @@ i.vendor-icon.d-link{
 	border-radius: 10px;
 	position: relative;
 	margin-top: 1px;
-	background-color: #596E74;
-	box-shadow: 0px 0px 0px 1px #3E4243;
+	box-shadow: 0px 0px 0px 1px #CCC!important
 }
 .imgUserIcon_card{
 	cursor: pointer;
@@ -935,7 +924,7 @@ i.vendor-icon.d-link{
 	border-radius: 10px;
 }
 .card_client_name_text{
-	font-family: Lucida Console;
+	unfold_less.svg
 	font-size: 14px;
 	font-weight: bolder;
 	color: #FFFFFF;
@@ -1014,7 +1003,7 @@ i.vendor-icon.d-link{
 	padding: 1px;
 	border-radius: 8px;
 	display:none;
-	transform: translate3d(0px, 28px, 0px);
+	transform: translate3d(0px, 38px, 0px);
 	will-change: transform;
 }
 .clientlist_dropdown div {
@@ -1052,58 +1041,39 @@ i.vendor-icon.d-link{
 .nav {
 	display:none;
 	float: left;
-	width: 99%;
+	width: 150% !important;
 	margin-bottom: 30px;
 }
 .nav ul{
 	margin: 0;
 	padding: 0;
-	border-top:solid 2px #666;
+	border-top: unset;
 }
 .nav li{
 	font-family:Arial;
 	position: relative;
 	float: left;
 	color: #FFF;
+	border: 1px solid #CCC;
 	list-style: none;
-	background: #4d595d;
+	background: #FFF;
 	cursor:pointer;
 	width: 100%;
 }
 .nav li:hover{
-	background-color: #77A5C6;
+	background-color: #FFF !important;
 }
 .nav li a {
 	display: block;
 	padding: 6px;
-	color: #FFF;
-	border-bottom:solid 1px #666;
+	color: #000 !important;
+	border-bottom: unset !important;
 	text-decoration: none;
-	cursor:pointer;
-}
-
-.phone_as_modem{
-	position: absolute;
-	width: 792px;
-	height: auto;
-	z-index: 210;
-	border-radius: 15px;
-	font-size: 12px;
-	left: 25%;
-	top: 15%;
-	justify-content: center;
-	background-color: #444444;
-}
-
-.phone_as_modem_top{
-	color: #FFFFFF;
-	font-weight: bold;
-	font-size: 1.83em;
-	display: flex;
-	justify-content: space-between;
-	margin-top: 32px;
-	margin-left: 15px;
+	font-weight: bolder;
+} 
+.nav li a:hover{
+	color: #006ce1 !important;
 }
 .hintColor{
-	color: #FFCC00;
+	color: #FF0000 !important;
 }

@@ -32,9 +32,8 @@
 		var webWrapper = true;
 
 		$("#settingsWindow")
-			.attr({src: "/VPN/vpnc.html?current_theme=" + theme})
+			.attr({src: `${rootPath}/VPN/vpnc.html?current_theme=${theme}`})
 			.on("load", function(){
-				$("#settingsWindow").contents().find("body").hide().css({"visibility":"visible"}).fadeIn();
                 const sendThemeColorMessage = () => {
                     const theme = top.document.documentElement.getAttribute("data-asuswrt-theme");
                     const color = top.document.documentElement.getAttribute("data-asuswrt-color");

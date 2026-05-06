@@ -1306,12 +1306,11 @@ void time_zone_x_mapping(void)
 	if(pzlist) {
 		for (idx = 0; pzlist[idx].tz_name; idx++) {
 			if (nvram_match("time_zone", pzlist[idx].tz_name)) {
-				snprintf(cmd, sizeof(cmd), "ln -s %s%s %s",
+				unlink(LOCALTIME_FILE);
+				safe_do_system("ln -s \"%s%s\" \"%s\"",
 						ZONEINFO_PATH,
 						pzlist[idx].timezone,
 						LOCALTIME_FILE);
-				unlink(LOCALTIME_FILE);
-				system(cmd);
 #ifdef RTCONFIG_AI_SERVICE
 				if(!strcmp("America/Saint-Pierre-et-Miquelon", pzlist[idx].timezone))
 					nvram_set("ai_timezone", "America/Miquelon");
@@ -1743,8 +1742,8 @@ void conntrack_check(int action)
 		//_dprintf("%s conntrack_check, action=[%d][START], pid=[%d]\n", t_str, CONNTRACK_START, pid);
 		if (pid < 1) {
 			snprintf(cmd, sizeof(cmd), "conntrack -E -p tcp -v %s &", NF_CONNTRACK_FILE);
+			safe_fork_do_system("conntrack -E -p tcp -v %s", NF_CONNTRACK_FILE);
 			_dprintf("cmd=[%s]\n", cmd);
-			system(cmd);
 			conntrack_times = 0;
 		}
 		break;
@@ -1753,8 +1752,8 @@ void conntrack_check(int action)
 		//_dprintf("%s conntrack_check, action=[%d][STOP], pid=[%d]\n", t_str, CONNTRACK_STOP, pid);
 		if (pid >= 1) {
 			snprintf(cmd, sizeof(cmd), "kill -SIGTERM %d", pid);
+			safe_do_system("kill -SIGTERM %d", pid);
 			_dprintf("cmd=[%s]\n", cmd);
-			system(cmd);
 			conntrack_times = 0;
 		}
 		break;
@@ -1767,8 +1766,8 @@ void conntrack_check(int action)
 
 		if (pid >= 1) {
 			snprintf(cmd, sizeof(cmd), "kill -SIGUSR1 %d", pid);
+			safe_do_system("kill -SIGUSR1 %d", pid);
 			_dprintf("cmd=[%s]\n", cmd);
-			system(cmd);
 			conntrack_times = 0;
 		}
 		break;
@@ -1840,10 +1839,8 @@ void collect_debuglog(int type)
 
 	if (type & DEBUGLOG_KLOG) {
 		strlcpy(path, "/tmp/klog.txt", sizeof(path));
-		snprintf(cmd, sizeof(cmd), "dmesg -r > %s", path);
-		system(cmd);
-		snprintf(cmd, sizeof(cmd), "tar zcf %s %s", DEBUGLOG_KLOG_PATH, path);
-		system(cmd);
+		safe_do_system_to_file(path, 0, "dmesg -r");
+		safe_do_system("tar zcf %s %s", DEBUGLOG_KLOG_PATH, path);
 		unlink(path);
 	}
 	if (type & DEBUGLOG_CORE) {

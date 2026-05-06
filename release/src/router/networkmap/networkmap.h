@@ -83,6 +83,7 @@ enum
 #define USERAGENT           "Asuswrt/networkmap"
 #define NMP_VC_FILE_LOCK    "nmpvc"
 
+#define APGINFO_PATH                 "/tmp/apg_info/"
 #define CFG_FILE_LOCK                "cfg_mnt"
 #define ALLWEVENT_FILE_LOCK          "allwevent"
 #define ALLWCLIENT_LIST_JSON_PATH    "/tmp/allwclientlist.json"
@@ -93,7 +94,6 @@ enum
 #define BRCTL_TABLE_PATH             "/tmp/nmp_brctl_table"
 #define NMP_CLIENT_LIST             "/tmp/nmp_client_list"
 
-#define ASUS_DEVICE_JSON_FILE        "/tmp/asus_device.json"
 
 #ifdef RTCONFIG_IPV6
 #define IP6_TABLE_PATH               "/tmp/nmp_ip6_table"
@@ -226,6 +226,28 @@ enum
 #define IS_ALLWCLIENTLIST   0
 #endif
 
+#ifdef RTCONFIG_MLO
+typedef enum {
+	MLO_BAND_2G = 0,
+	MLO_BAND_5G,
+	MLO_BAND_5G1,
+	MLO_BAND_6G,
+	MLO_BAND_6G1,
+	MLO_BAND_MAX
+} mlo_band_t;
+
+typedef struct {
+	unsigned char	is_valid;
+	mlo_band_t		band;
+	unsigned char	mac_addr[6];
+	double			tx_rate;
+	double			rx_rate;
+	int				rssi;
+	unsigned char	mlo;
+	uint64_t		conn_time;
+} mlo_link_info_t;
+#endif
+
 //Device service info data structure
 typedef struct {
 	unsigned char	ip_addr[MAX_NR_CLIENT_LIST][4];
@@ -270,6 +292,7 @@ typedef struct {
 	char			mlo_6G_mac[MAX_NR_CLIENT_LIST][18];
 	char			mlo_6G1_mac[MAX_NR_CLIENT_LIST][18];
 	char			mlo_all_mac[MAX_NR_CLIENT_LIST][MLO_ALL_MAC_LEN];
+	mlo_link_info_t mlo_links[MAX_NR_CLIENT_LIST][MLO_BAND_MAX];
 #endif
 	unsigned char	is_wireless[MAX_NR_CLIENT_LIST];
 	int        		conn_ts[MAX_NR_CLIENT_LIST];		// connect  timestamp
@@ -280,6 +303,7 @@ typedef struct {
 	time_t		tstamp[MAX_NR_CLIENT_LIST];
 #endif
 	char		pap_mac[MAX_NR_CLIENT_LIST][18];
+	char		is_re[MAX_NR_CLIENT_LIST][2];
 	char		guest_network[MAX_NR_CLIENT_LIST][4];
 	char		ssid[MAX_NR_CLIENT_LIST][32];
 	char 		txrate[MAX_NR_CLIENT_LIST][7];
@@ -290,7 +314,7 @@ typedef struct {
 	char 		type_src[MAX_NR_CLIENT_LIST][30];
 	char 		online_src[MAX_NR_CLIENT_LIST][30];
 	char 		wireless_src[MAX_NR_CLIENT_LIST][30];
-	unsigned int 	rssi[MAX_NR_CLIENT_LIST];
+	int 		rssi[MAX_NR_CLIENT_LIST];
 	char 		conn_time[MAX_NR_CLIENT_LIST][12];
 	char 		wireless_auth[MAX_NR_CLIENT_LIST][32];
 #if defined(RTCONFIG_FBWIFI) || defined(RTCONFIG_CAPTIVE_PORTAL)
@@ -325,10 +349,17 @@ typedef struct
 	unsigned char	dest_ipaddr[4];
 } ARP_HEADER;
 
-int FindHostname(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int i);
-int FindDevice(unsigned char *pIP, unsigned char *pMac, int replaceMac);
-void find_wireless_device(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int offline);
-void rc_diag_stainfo(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int i, char *mlo_mac);
+//amas_bhctrl connection status
+#define ETH 		0x01  	//ethernet
+#define WL_2G 		0x02  	//2G
+#define WL_5G 		0x04	//5G
+#define WL_5G_1 	0x08	//5G-1
+#define ETH_2		0x10	//ethernet_2
+#define ETH_3		0x20	//ethernet_3
+#define ETH_4		0x40	//ethernet_4
+#define WL_6G		0x80	//6G
+#define WL_6G_1 	0x100	//6G-1
+#define WL_MLO		0x200	//MLO
 
 void type_filter(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int x, unsigned char type, unsigned char base, int isDev, const char *type_src);
 int isBaseType(int type);
@@ -345,7 +376,7 @@ void get_subnet_ifname(const int subnet_idx, char * subnet_ifname, int ifname_le
 void get_ip_from_arp_table(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i, const char *subnet);
 int get_sdn_type(const int sdn_idx, char *sdn_type, int sdn_type_len, unsigned char *vlan_id, int *apg_idx);
 int get_vlan_id(const int vlan_idx);
-int get_sdn_idx_form_apg(const char *papMac, const char *ifname, const int ifname_type);
+int get_sdn_idx_form_apg_new(const char *papMac, const char *ifname, const char *prefix);
 #endif
 
 int get_brctl_macs(char * mac);
@@ -368,8 +399,6 @@ void check_clients_from_ip_cmd(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_ta
 void check_dhcp_ip_online(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const char *mac, const char *ip_addr);
 
 int get_client_list();
-
-int check_asus_device(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const int i);
 
 void network_ip_scan();
 

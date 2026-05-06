@@ -1,5 +1,6 @@
 @charset "UTF-8";
 @import "/css/color-table.css";
+@import "/css/wrt-ui-alias-tokens.css";
 
 @font-face {
     font-family: Roboto;
@@ -31,10 +32,10 @@ body {
 }
 
 .ipMethodTag {
-    background-color: var(--color-primary);
+    background-color: var(--wrt-badge-primary-container-bg);
     font-size: 12px;
     padding: 4px;
-    color: #FFF;
+    color: var(--wrt-badge-primary-container-color);
 }
 
 .viewclientlist_clientName_edit:hover {
@@ -72,40 +73,39 @@ body {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
-    padding: 2px;
-    background-color: var(--switch-menu-bg-color);
-    border-radius: var(--global-radius);
+    padding: var(--wrt-segment-padding-y) var(--wrt-segment-padding-x);
+    background-color: var(--wrt-segment-fill-bg);
+    border-radius: var(--wrt-segment-radius);
     width: 100%;
 }
 
 .segmented_picker_option {
-    font-size: 14px;
-    height: 28px;
+    font-size: var(--wrt-segment-item-font-size);
+    height: var(--wrt-segment-height);
     display: flex;
     flex-grow: 1;
     align-items: center;
     justify-content: center;
     width: 50%;
     cursor: pointer;
-    color: var(--switch-menu-option-text-color);
+    color: var(--wrt-segment-fill-color);
 
 }
 
 .segmented_picker_option.active {
-    background: var(--switch-menu-option-selected-bg-color);
-    color: var(--switch-menu-option-selected-text-color);
-    border-radius: var(--global-radius);
-    box-shadow: var(--shadow-elevation10);
+    background: var(--wrt-segment-fill-selected-bg);
+    color: var(--wrt-segment-fill-selected-color);
+    border-radius: var(--wrt-segment-item-radius);
 }
 
 .card.client_list {
-    border: 1px solid var(--divide-stroke-color-default);
-    border-radius: var(--radius-sm);
+    border: var(--wrt-card-border-width) solid var(--wrt-card-border);
+    border-radius: var(--wrt-card-radius);
 }
 
 .card.client_list .card-header {
     border: 0;
-    border-bottom: 1px solid var(--divide-stroke-color-El10);
+    border-bottom: var(--wrt-card-divider-thickness) solid var(--wrt-card-divider-color);
     cursor: pointer;
 }
 
@@ -206,19 +206,19 @@ body {
 } */
 
 .clientlist_viewlist .card.client_list .table-header th > div::before {
-    background-color: #0051A8;
+    background-color: var(--brand-primary);
 }
 
 .clientlist_viewlist.RT .card.client_list .table-header th > div::before {
-    background-color: #99CAFF;
+    background-color: var(--brand-primary);
 }
 
 .clientlist_viewlist.ROG .card.client_list .table-header th > div::before {
-    background-color: #ED6F74;
+    background-color: var(--brand-primary);
 }
 
 .clientlist_viewlist.TUF .card.client_list .table-header th > div::before {
-    background-color: #FFCE85;
+    background-color: var(--brand-primary);
 }
 
 .card.client_list .list_table tr:last-child {
@@ -227,7 +227,7 @@ body {
 
 .card.client_list .list_table tr {
     height: 40px;
-    border-bottom: 1px solid var(--divide-stroke-color-El10);
+    border-bottom: var(--wrt-table-border-width) solid var(--wrt-table-row-border-color);
 }
 
 .card.client_list .list_table td {
@@ -375,7 +375,7 @@ body {
 }
 
 .client_info .client_info_bottom .client_info_icon_more:hover {
-    background-color: #000000;
+    background-color: var(--surface-hover);
 }
 
 .client_info .client_info_bottom .client_info_icon_more {
@@ -403,13 +403,13 @@ body {
 
 .client_info_detail_block .client_info_detail_title {
     box-sizing: border-box;
-    border: 1px solid #006CE1;
+    border: 1px solid var(--brand-primary);
     border-radius: 4px;
     padding: 0px 5px;;
 }
 
 .client_info_more {
-    border: 1px solid #f5f5f530;
+    border: 1px solid var(--wrt-card-divider-color);
     margin: 0;
     display: flex;
     flex-direction: row;
@@ -424,7 +424,7 @@ body {
     height: 24px;
     content: "\d7";
     font-size: 24px;
-    color: #000;
+    color: var(--text-primary);
     text-align: center;
 }
 
@@ -454,7 +454,7 @@ body {
     align-self: stretch;
     width: 1px;
     min-height: 1em;
-    background-color: var(--switch-menu-option-stroke-color);
+    background-color: var(--wrt-divider-color);
 }
 
 #status_switch .content {
@@ -463,23 +463,29 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    border-radius: var(--global-radius);
-    border: 1px solid var(--switch-menu-option-stroke-color);
-    height: 32px;
-    padding: 0 10px;
-    color: var(--switch-menu-option-text-color);
+    border-radius: var(--wrt-segment-radius);
+    border: 1px solid var(--wrt-segment-outline-border);
+    height: var(--wrt-segment-height);
+    padding: 0 var(--wrt-segment-item-padding-x);
+    background: var(--wrt-segment-outline-bg);
+    color: var(--wrt-segment-outline-color);
 }
 
 #status_switch .content .option {
     cursor: pointer;
+    color: var(--wrt-segment-outline-color);
 }
 
 #status_switch .content .option.active {
-    color: var(--switch-menu-option-selected-text-primary-color);
+    /* background: var(--wrt-segment-outline-selected-bg); */
+    color: var(--wrt-segment-outline-selected-color);
+    /* border-color: var(--wrt-segment-outline-selected-border); */
 }
 
 #status_switch .content .vr {
     align-self: auto;
+    width: 1px;
+    background-color: var(--wrt-segment-divider-color);
 }
 
 @media screen and (min-width: 460px) {
@@ -580,11 +586,11 @@ body {
 }
 
 .bg-active {
-    background-color: #10B981;
+    background-color: var(--wrt-badge-success-bg);
 }
 
 .bg-block {
-    background-color: #FF0000 !important;
+    background-color: var(--wrt-badge-error-bg) !important;
 }
 
 .card {
@@ -858,7 +864,7 @@ body {
 }
 
 .clientlist_viewlist .card.client_list table > thead {
-    background: #F5F5F5;
+    background: var(--wrt-table-header-bg);
 }
 
 .clientlist_viewlist.RT .card.client_list table > thead {
@@ -896,7 +902,7 @@ body {
 }
 
 .clientlist_viewlist.RT .arrow_icon {
-    background-color: #fff;
+    background-color: var(--icon-normal-color);
 }
 
 .clientlist_viewlist.ROG .arrow_icon {
@@ -917,21 +923,21 @@ body {
 
 .clientlist_viewlist .btn-export {
     width: fit-content;
-    background: #007bff;
-    border: 0;
-    color: #FFF;
+    background: var(--wrt-btn-primary-bg);
+    border: 1px solid var(--wrt-btn-primary-border);
+    color: var(--wrt-btn-primary-color);
     padding: 12px 44px;
     border-radius: 10px;
     cursor: pointer;
 }
 
 .clientlist_viewlist .btn-export:disabled {
-    color: #fff;
-    background: #007bff;
+    color: var(--wrt-btn-primary-disabled-color);
+    background: var(--wrt-btn-primary-disabled-bg);
 }
 
 .clientlist_viewlist .btn-export:hover {
-    background: #0069d9;
+    background: var(--wrt-btn-primary-hover-bg);
 }
 
 .clientlist_viewlist.RT .btn-export {
@@ -982,13 +988,13 @@ body {
 .clientlist_viewlist.RT .client_info .client_info_bottom .client_info_icon_more:hover,
 .clientlist_viewlist.ROG .client_info .client_info_bottom .client_info_icon_more:hover,
 .clientlist_viewlist.TUF .client_info .client_info_bottom .client_info_icon_more:hover {
-    background-color: #FFFFFF;
+    background-color: var(--white-alpha-100);
 }
 
 .clientlist_viewlist.RT .client_info_more_close:after,
 .clientlist_viewlist.ROG .client_info_more_close:after,
 .clientlist_viewlist.TUF .client_info_more_close:after {
-    color: #FFFFFF;
+    color: var(--white-alpha-100);
 }
 
 #clientlist_viewlist_block {
@@ -1013,7 +1019,7 @@ body {
 .clientlist_viewlist.RT .radio-icon.radio-wired,
 .clientlist_viewlist.ROG .radio-icon.radio-wired,
 .clientlist_viewlist.TUF .radio-icon.radio-wired {
-    background-color: #FFF;
+    background-color: var(--white-alpha-100);
 }
 
 .radio-icon.radio-wireless {
@@ -1060,7 +1066,7 @@ body {
 .clientlist_viewlist.RT .radio-icon.radio-wireless,
 .clientlist_viewlist.ROG .radio-icon.radio-wireless,
 .clientlist_viewlist.TUF .radio-icon.radio-wireless {
-    background-color: #FFF;
+    background-color: var(--white-alpha-100);
 }
 
 .interface_container .client-status {
@@ -1073,7 +1079,7 @@ body {
     --radio-wireless-svg: url("data:image/svg+xml,%3Csvg width='26' height='18' viewBox='0 0 26 18' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M26 0h-5v18h5V0zM14 4h5v14h-5V4zm-2 4H7v10h5V8zm-7 4H0v6h5v-6z' fill='%23737373'/%3E%3C/svg%3E");
     height: 26px;
     width: 32px;
-    background-color: #737373;
+    background-color: var(--neutral-60);
     mask-image: var(--radio-wireless-svg);
     -webkit-mask-image: var(--radio-wireless-svg);
     mask-repeat: no-repeat;
@@ -1119,7 +1125,7 @@ body {
 }
 
 .clientlist_viewlist.RT .radio-icon {
-    background: #B3B3B3;
+    background: var(--neutral-50);
 }
 
 .clientlist_viewlist.RT .radio-icon.radio-1 {
@@ -1158,7 +1164,7 @@ body {
 
 .clientlist_viewlist.ROG .radio-icon,
 .clientlist_viewlist.TUF .radio-icon {
-    background: #999;
+    background: var(--neutral-60);
 }
 
 .clientlist_viewlist.ROG .radio-icon.radio-1,
@@ -1204,7 +1210,7 @@ body {
     height: 10px;
     width: 32px;
     border-radius: 1px;
-    color: #FFF;
+    color: var(--white-alpha-100);
     font-size: 8px;
     font-weight: 500;
     line-height: 10px;
@@ -1219,7 +1225,7 @@ body {
 .ROG .interface_container .band_block,
 .TUF .interface_container .band_block {
     background-color: #00D5FF;
-    color: #000;
+    color: var(--text-primary);
 }
 
 .ROG .bg-active,
@@ -1253,29 +1259,30 @@ body {
 }
 
 html::-webkit-scrollbar {
-    width: 10px;
+    width: var(--wrt-scrollbar-width);
+    height: var(--wrt-scrollbar-height);
 }
 
 html::-webkit-scrollbar-thumb {
-    background-color: #7775;
-    border-radius: 20px;
+    background-color: var(--wrt-scrollbar-thumb-color);
+    border-radius: var(--wrt-scrollbar-radius);
 }
 
 html::-webkit-scrollbar-thumb:hover {
-    background-color: #7777;
+    background-color: var(--wrt-scrollbar-thumb-hover-color);
 }
 
 html::-webkit-scrollbar-track:hover {
-    background-color: #5555;
+    background-color: var(--wrt-scrollbar-track-hover-color);
 }
 
 .client-info-header {
     display: flex;
     align-items: center;
     padding: 16px;
-    border-bottom: 1px solid var(--panel-stroke-color);
+    border-bottom: 1px solid var(--wrt-card-divider-color);
     height: 49px;
-    background-color: var(--panel-header-color);
+    /* background-color: var(--panel-header-color); */
     border-radius: var(--global-radius) 0 0 0;
 }
 
@@ -1298,12 +1305,12 @@ html::-webkit-scrollbar-track:hover {
 }
 
 .client-info-header .close > svg > path {
-    stroke: var(--icon-normal-color);
+    stroke: var(--icon-default);
 }
 
 .client-info-nav {
     height: 60px;
-    background-color: var(--tab-nav-active-el10-bg-fill-color);
+    background-color: var(--wrt-nav-tabs-link-active-bg);
 }
 
 .client-info-body {
@@ -1332,12 +1339,14 @@ html::-webkit-scrollbar-track:hover {
     cursor: pointer;
     justify-content: flex-start;
     flex: 1;
+    border-bottom: 2px solid var(--wrt-nav-tabs-border-color);
 }
 
 .info-nav-tabs > a {
     text-decoration: none;
     -webkit-text-decoration-skip: objects;
-    color: var(--tab-nav-text-normal-color);
+    color: var(--wrt-nav-tabs-link-color);
+    
 }
 
 .info-nav-tabs > a > .icon {
@@ -1345,16 +1354,16 @@ html::-webkit-scrollbar-track:hover {
 }
 
 .info-nav-item.active {
-    border-bottom: 2px solid var(--tab-nav-active-pin-fill-color);
-    color: var(--tab-nav-text-active-color);
+    border-bottom: 2px solid var(--wrt-nav-tabs-link-active-border-color);
+    color: var(--wrt-nav-tabs-link-active-color);
 }
 
 .info-nav-item.active i {
-    background-color: var(--tab-nav-icon-active-color);
+    background-color: var(--wrt-nav-tabs-link-active-icon-color);
 }
 
 .info-nav-item i {
-    background-color: var(--tab-nav-icon-normal-color);
+    background-color: var(--wrt-nav-tabs-link-icon-color);
 }
 
 .client_icon > div > i {
@@ -1449,7 +1458,7 @@ i.connect-status.online {
 }
 
 i.connect-status.offline {
-    background-color: var(--client-onffline-icon-color);
+    background-color: var(--client-offline-icon-color);
 }
 
 .info-card {
@@ -1458,7 +1467,7 @@ i.connect-status.offline {
     flex-direction: column;
     justify-content: space-between;
     border-radius: var(--radius-sm);
-    background-color: var(--panel-card-EL10-fill-color);
+    background-color: var(--wrt-card-surface-1-bg);
 }
 
 .info-card .info-card-container {
@@ -1479,7 +1488,7 @@ i.connect-status.offline {
 
 .info-card-body .key {
     font-size: 14px;
-    color: var(--text-info-color);
+    color: var(--wrt-card-body-color);
     line-height: 150%;
 }
 
@@ -1492,8 +1501,8 @@ i.connect-status.offline {
     font-size: 12px;
     font-weight: 500;
     border-radius: var(--global-radius);
-    border: 1px solid var(--text-brand-color);
-    color: var(--text-brand-color);
+    border: 1px solid var(--brand-primary);
+    color: var(--brand-primary);
     padding: 4px;
 }
 
@@ -1517,7 +1526,7 @@ i.connect-status.offline {
     align-self: stretch;
     width: 100%;
     height: 1px;
-    background-color: var(--panel-stroke-color);
+    background-color: var(--wrt-card-divider-color);
 }
 
 .info-card-body .field .title {
@@ -1579,7 +1588,7 @@ i.connect-status.offline {
 
 .status-block {
     width: 90px;
-    border: 1px solid #CCCCCC;
+    border: 1px solid var(--border-subtle);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1624,7 +1633,7 @@ i.connect-status.offline {
 
 .icon {
     display: block;
-    background-color: #4D4D4D;
+    background-color: var(--icon-normal-color);
     width: 24px;
     height: 28px;
     mask-size: cover;
@@ -1654,9 +1663,9 @@ i.connect-status.offline {
 }
 
 .form-control {
-    border: 1px solid var(--textbox-EL10-normal-stroke-color);
-    background-color: var(--textbox-EL10-normal-fill-color);
-    color: var(--text-input-color);
+    border: 1px solid var(--wrt-input-border);
+    background-color: var(--wrt-input-bg);
+    color: var(--wrt-input-color);
     padding: .375rem .675rem !important;
     font-size: 0.75rem !important;
     font-weight: 400 !important;
@@ -1664,34 +1673,30 @@ i.connect-status.offline {
     border-radius: var(--global-radius) !important;
 }
 
-[data-asuswrt-color="dark"] .form-control {
-    border: 1px solid var(--textbox-EL10-normal-stroke-color);
-    background-color: var(--textbox-EL10-focus-fill-color) !important;
-}
 
 .form-control:focus {
-    border: 1px solid var(--textbox-EL10-normal-stroke-color);
-    color: var(--text-input-color);
-    box-shadow: 0px -4px 0px 0px var(--textbox-focus-stroke-color) inset;
-    background-color: var(--textbox-EL10-focus-fill-color) !important;
+    border: 1px solid var(--wrt-input-border);
+    color: var(--wrt-input-color);
+    box-shadow: 0px -4px 0px 0px var(--wrt-input-focus-border) inset;
+    background-color: var(--wrt-input-focus-bg) !important;
 }
 
 .client-info-body::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: var(--wrt-scrollbar-width);
+    height: var(--wrt-scrollbar-height);
 }
 
 .client-info-body::-webkit-scrollbar-thumb {
-    background-color: #7775;
-    border-radius: 20px;
+    background-color: var(--wrt-scrollbar-thumb-color);
+    border-radius: var(--wrt-scrollbar-radius);
 }
 
 .client-info-body::-webkit-scrollbar-thumb:hover {
-    background-color: #7777;
+    background-color: var(--wrt-scrollbar-thumb-hover-color);
 }
 
 .client-info-body::-webkit-scrollbar-track:hover {
-    background-color: #5555;
+    background-color: var(--wrt-scrollbar-track-hover-color);
 }
 
 .client-filter-header {
@@ -1747,16 +1752,16 @@ i.connect-status.offline {
 .info-filter-tabs > a {
     text-decoration: none;
     -webkit-text-decoration-skip: objects;
-    color: #000;
+    color: var(--text-primary);
 }
 
 .info-filter-item.active {
-    border-bottom: 4px solid var(--primary-50);
-    color: var(--primary-50);
+    border-bottom: 4px solid var(--brand-color);
+    color: var(--brand-color);
 }
 
 .info-filter-item.active i {
-    background-color: var(--primary-50);
+    background-color: var(--icon-active-color);
 }
 
 .info-card-header {
@@ -1921,21 +1926,21 @@ input[type="range" i] {
 }
 
 #filter_body::-webkit-scrollbar, #column_body::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: var(--wrt-scrollbar-width);
+    height: var(--wrt-scrollbar-height);
 }
 
 #filter_body::-webkit-scrollbar-thumb, #column_body::-webkit-scrollbar-thumb {
-    background-color: #7775;
-    border-radius: 20px;
+    background-color: var(--wrt-scrollbar-thumb-color);
+    border-radius: var(--wrt-scrollbar-radius);
 }
 
 #filter_body::-webkit-scrollbar-thumb:hover, #column_body::-webkit-scrollbar-thumb:hover {
-    background-color: #7777;
+    background-color: var(--wrt-scrollbar-thumb-hover-color);
 }
 
 #filter_body::-webkit-scrollbar-track:hover, #column_body::-webkit-scrollbar-track:hover {
-    background-color: #5555;
+    background-color: var(--wrt-scrollbar-track-hover-color);
 }
 
 i.filter_icon, i.search_icon, i.icon-export-file {
@@ -1998,7 +2003,7 @@ div.dt-container.dt-empty-footer .dt-scroll-body {
 
 .tool-bar .search {
     border-radius: var(--global-radius);
-    background-color: var(--textbox-EL10-normal-fill-color);
+    background-color: var(--wrt-input-bg);
     padding: 8px 16px;
     display: flex;
     align-items: center;
@@ -2060,25 +2065,25 @@ i.icon-search {
     overflow-x: hidden;
     overflow-y: auto;
     padding: var(--gutter-sm) var(--gutter-sm) 0px;
-    background-color: var(--popup-card-EL10-fill-color);
+    background-color: var(--wrt-card-surface-1-bg);
 }
 
 .icon-selector::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: var(--wrt-scrollbar-width);
+    height: var(--wrt-scrollbar-height);
 }
 
 .icon-selector::-webkit-scrollbar-thumb {
-    background-color: #7775;
-    border-radius: 20px;
+    background-color: var(--wrt-scrollbar-thumb-color);
+    border-radius: var(--wrt-scrollbar-radius);
 }
 
 .icon-selector::-webkit-scrollbar-thumb:hover {
-    background-color: #7777;
+    background-color: var(--wrt-scrollbar-thumb-hover-color);
 }
 
 .icon-selector::-webkit-scrollbar-track:hover {
-    background-color: #5555;
+    background-color: var(--wrt-scrollbar-track-hover-color);
 }
 
 .icon-selector .category-title {
@@ -2120,12 +2125,12 @@ i.icon-search {
 }
 
 .icon-selector .client-device:hover {
-    border: 1px solid var(--primary-btn-normal-stroke);
+    border: 1px solid var(--brand-primary);
 }
 
 .icon-selector .client-device.selected {
-    border: 1px solid var(--primary-btn-normal-stroke);
-    background-color: var(--secondary-btn-hover-fill);
+    border: 1px solid var(--brand-primary);
+    background-color: var(--surface-subtle);
 }
 
 .icon-selector .client-device-icon i {
@@ -2191,7 +2196,7 @@ i.connect-status.online {
 }
 
 i.connect-status.offline {
-    background-color: var(--client-onffline-icon-color);
+    background-color: var(--client-offline-icon-color);
 }
 
 th.mobile {

@@ -24,20 +24,45 @@
         <script type="text/javascript" src="./js/asus_policy.js?v=5&lang=<#selected_language#>"></script>
 		<script type="text/javascript" src="./md5.js"></script>
 		<script>
-			if (isSupport("rog")) {
-				document.documentElement.setAttribute('data-asuswrt-theme', 'rog');
-			} else if (isSupport("tuf")) {
-				document.documentElement.setAttribute('data-asuswrt-theme', 'tuf');
-			} else if (isSupport("business")) {
-				document.documentElement.setAttribute('data-asuswrt-theme', 'business');
-			} else {
-				document.documentElement.setAttribute('data-asuswrt-theme', 'asus');
-			}
+			let theme = (function () {
+				if (isSupport("rog"))
+					return "rog";
+				else if (isSupport("tuf"))
+					return "tuf";
+				else if (isSupport("BUSINESS"))
+					return "business";
+				else if (isSupport("proart"))
+					return "proart";
+				else
+					return "asus";
+			})();
 
-			if (isSupport("UI4") || isSupport("business")) {
-				document.documentElement.setAttribute('data-asuswrt-color', 'light');
+			let asuswrt_style = (function () {
+				if (isSupport("YEAR20"))
+					return "20th";
+				else
+					return "";
+			})();
+
+			if (isSupport("UI4")) {
+				const _nvram_basic = httpApi.nvramGet(["productid", "odmpid"]);
+				let productId = _nvram_basic.productid || "";
+				let odmpid = _nvram_basic.odmpid || "";
+				document.querySelector("html").setAttribute("data-asuswrt-theme", theme);
+				if (productId === "GT-BE19000AI" || productId === "GT-BE96_AI" || theme === "business" || odmpid.startsWith("ZenWiFi")) {
+					document.querySelector("html").setAttribute("data-asuswrt-color", "light");
+				} else {
+					document.querySelector("html").setAttribute("data-asuswrt-color", "dark");
+				}
+				if (asuswrt_style) {
+					document.querySelector("html").setAttribute("data-asuswrt-style", asuswrt_style);
+				}
 			} else {
-				document.documentElement.setAttribute('data-asuswrt-color', 'dark');
+				document.querySelector("html").setAttribute("data-asuswrt-theme", theme);
+				document.querySelector("html").setAttribute("data-asuswrt-color", "dark");
+				if (asuswrt_style) {
+					document.querySelector("html").setAttribute("data-asuswrt-style", asuswrt_style);
+				}
 			}
 
 			let urlParameter = new URLSearchParams(window.location.search);
@@ -88,7 +113,8 @@
 						"wl_ifnames",
 						"wlnband_list", 
 						"wl_version", 
-						"productid", 
+						"productid",
+						"odmpid",
 						"rc_support", 
 						"x_Setting", 
 						"preferred_lang", 
@@ -118,7 +144,7 @@
 					systemVariable.historyPage = [];
 					systemVariable.restart_wan_if = false;//flag used to record excution of "restart_wan_if"
 
-					if (isSupport("UI4") && isSupport("rog")) {
+					if (isSupport("UI4")) {
 						$('<script />', { type : 'text/javascript', src : "./js/qrcode/jquery.qrcode.min.js"}).appendTo('head');
 						$("#welcome").load("/mobile/pages/welcome_rog.html");
 						document.querySelector("#welcome").classList.remove("qisBackgroundIndex");
@@ -127,7 +153,7 @@
 						document.querySelectorAll(".icon_logo").forEach(function(logo) {
 							const modelNameDiv = document.createElement("div");
 							modelNameDiv.classList.add("qis-modal-title");
-							modelNameDiv.textContent = initNvram.productid;
+							modelNameDiv.textContent = initNvram.odmpid !== "" ? initNvram.odmpid : initNvram.productid;
 							logo.parentNode.className = "d-flex align-items-center gap-2";
 							logo.parentNode.append(modelNameDiv);
 						});
@@ -272,11 +298,11 @@
 						set_cfg_pause();
 					}
 
-                    const policyStatus = PolicyStatus()
+                    PolicyStatus()
                         .then(data => {
-                            if (data.EULA < 1 && data.EULA_read === 0 && data.EULA_force_sign === 1) {
+                            if (data.EULA_read === 0 && data.EULA_force_sign === 1) {
                                 goTo.EULA();
-                            } else if (data.EULA > 0 && (data.PP === "" || (data.PP > 0 && data.PP_read === 0 && data.PP_force_sign === 1))) {
+                            } else if (data.EULA_read === 1 && data.PP_read === 0 && (data.PP === "" || (data.PP >= 0 && data.PP_force_sign === 1))) {
                                 goTo.PP();
                             } else {
                                 switch (urlParameter.get("flag") || "") {

@@ -2,7 +2,7 @@
 .page-title {
     font-size: 24px;
     font-weight: bold;
-    color: var(--page-title-color);
+    color: var(--wrt-title-color);
     padding-left: 24px;
 }
 .card-header {
@@ -11,10 +11,10 @@
     text-transform: uppercase;
     background-color: transparent;
     border-bottom: none;
-    color: var(--text-brand-color);
+    color: var(--wrt-card-title-color);
 }
 .chart-client-value {
-    color: var(--text-caption-color);
+    color: var(--wrt-card-text-color);
     font-size: 16px;
     font-weight: 400;
     height: 28px;
@@ -24,9 +24,9 @@
     display: flex;
     width: 100%;
     flex-direction: column;
-    background: #f6f6f6;
-    padding: 1rem;
-    gap: 16px;
+    background: var(--wrt-card-content-emphasis-bg);
+    padding: var(--wrt-card-content-padding-y) var(--wrt-card-content-padding-x);
+    gap: var(--wrt-card-section-gap-y);
 }
 
 @media (min-width: 768px) {

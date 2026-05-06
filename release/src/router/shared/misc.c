@@ -3596,7 +3596,7 @@ void logmessage_normal(char *logheader, char *fmt, ...){
   strlcpy(logheader2, logheader, sizeof (logheader2));
   replace_char(logheader2, ' ', '_');
   openlog(logheader2, 0, 0);
-  syslog(level, buf);
+  syslog(level, "%s", buf);
   closelog();
   va_end(args);
 }
@@ -3799,7 +3799,12 @@ int is_psta(int unit)
 	if (sw_mode() == SW_MODE_ROUTER) {
 		foreach (word, nvram_safe_get("wl_ifnames"), next) {
 			snprintf(tmp, sizeof(tmp), "wl%d_nband", idx);
-			if (nvram_get_int(tmp) == WLC_BAND_2G
+			if (
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+				(unit == nvram_get_int("wps_band_x"))
+#else
+				nvram_get_int(tmp) == WLC_BAND_2G
+#endif
 			    && unit == idx
 			    && !nvram_get_int("x_Setting")
 			    && nvram_get_int("amesh_wps_enr"))
@@ -7655,7 +7660,7 @@ int guest_mark_calc(int guest_mark)
 	return mark;
 }
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 int switch_ledg(int action)
 {
 	switch(action) {

@@ -181,6 +181,7 @@
             background: rgba(255, 255, 255, 0.40);
             box-shadow: 0 0 14px 0 rgba(0, 0, 0, 0.05);
             backdrop-filter: blur(17px);
+            height: 100%;
         }
 
         .safe-item .safe-description {
@@ -232,7 +233,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            height: 200px;
+            height: 90%;
         }
 
         .safe-label {
@@ -465,7 +466,7 @@
                             </div>
                             <div class="d-flex flex-column gap-2">
                                 <div class="card-description">
-									<#Setting_ai_router_assist_desc#>
+                                    <#Setting_ai_router_assist_desc#>
                                 </div>
                             </div>
                         </div>
@@ -516,7 +517,7 @@
                     </div>
                     <div class="d-flex flex-column gap-2">
                         <div class="card-description">
-							<#Setting_ai_router_assist_desc#>
+                            <#Setting_ai_router_assist_desc#>
                         </div>
                     </div>
                 </div>
@@ -541,9 +542,9 @@
     <div class="col-12 col-xl-7 mb-3">
         <div class="card card-bar-2 h-100">
             <div class="card-body p-4">
-                <div class="safe-title">Advertisement Blocking</div>
+                <div class="safe-title"><#AiProtection_AdvertisementBlocking#></div>
                 <div class="d-flex flex-column">
-                    <div class="card-description">Triple level content filter</div>
+                    <div class="card-description"><#AiProtection_AdvertisementBlocking_filter#></div>
                     <div class="card-inner-content">
 
                         <div class="safe-item">
@@ -552,7 +553,7 @@
                                 <div class="safe-title">AiProtection</div>
                                 <div class="safe-content">
                                     <p class="safe-description">
-                                        Blocks ads and trackers with one click.
+                                        <#AiProtection_AdvertisementBlocking_trigger#>
                                     </p>
                                     <div class="safe-item-background-image"><img
                                             src="../images/aiboard/aiboard-aiprotection.png"
@@ -568,14 +569,13 @@
                         </div>
                         <div class="safe-item">
                             <div class="card-body">
-                                <div class="safe-label">Edge server</div>
+                                <div class="safe-label"><#AiProtection_AdvertisementBlocking_edserv#></div>
                                 <h3 class="safe-title">AdGuard Home<i data-faq="AI_FAQ_AdguardHome" role="icon"
-                                                                    class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
+                                                                      class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
                                 </h3>
                                 <div class="safe-content">
                                     <p class="safe-description">
-                                        A self-hosted edge server on router. Provides detailed network insights,
-                                        advanced control, and enhanced home privacy.
+                                        <#AiProtection_AdvertisementBlocking_edserv_desc#>
                                     </p>
                                     <div class="safe-item-background-image"><img
                                             src="../images/aiboard/aiboard-adguard-home.svg">
@@ -593,18 +593,20 @@
                                         <img src="images/InternetScan.gif"/>
                                     </div>
                                 </div>
-                                <button class="btn btn-outline-primary app-open-btn disabled" data-app="adguard"><#CTL_open#></button>
+                                <button class="btn btn-outline-primary app-open-btn disabled" data-app="adguard">
+                                    <#CTL_open#>
+                                </button>
                             </div>
                         </div>
                         <div class="safe-item">
                             <div class="card-body">
-                                <div class="safe-label">Cloud server</div>
+                                <div class="safe-label"><#AiProtection_AdvertisementBlocking_cloudserv#></div>
                                 <h3 class="safe-title">AdGuard DNS<i data-faq="AI_FAQ_AdguardDNS" role="icon"
-                                                                   class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
+                                                                     class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
                                 </h3>
                                 <div class="safe-content">
                                     <p class="safe-description">
-                                        Extends protection across multiple sites via the cloud.
+                                        <#AiProtection_AdvertisementBlocking_cloudserv_desc#>
                                     </p>
                                     <div class="safe-item-background-image"><img
                                             src="../images/aiboard/aiboard-adguard.svg">
@@ -612,7 +614,9 @@
                                 </div>
                             </div>
                             <div class="card-footer d-flex align-items-center justify-content-end">
-                                <button class="btn btn-outline-primary" onclick="pageRedirect('parentalcontrol', 'adGuard_DNS')"><#CTL_open#></button>
+                                <button class="btn btn-outline-primary"
+                                        onclick="pageRedirect('parentalcontrol', 'adGuard_DNS')"><#CTL_open#>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -622,250 +626,320 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-12 col-md-4 h-100 mb-3">
-
-        <div class="block-title"><#Setting_ai_dk_Management#></div>
-
-        <!-- Portainer -->
-        <div id="card_portainer" class="card card-bar pt-2" style="height:400px;">
-            <div class="card-body p-4">
-                <div class="app-title"><#Setting_ai_dk_Ctrl_Deploy#> <i data-faq="AI_FAQ_portainer" role="icon"
-                                                           class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
-                </div>
-                <div class="app-content">
-                    <p class="card-description"><#Setting_ai_desc_Ctrl_Deploy#></p>
-                    <div class="brand-icon">
-                        <div class="d-flex gap-1 align-items-center">
-                            <object type="image/svg+xml" data="../images/aiboard/logo-docker.svg" role="img"
-                                    style="width:auto; height:48px; vertical-align:middle;"></object>
-                            &
-                            <object type="image/svg+xml" data="../images/aiboard/logo-portainer.svg" role="img"
-                                    style="width:auto; height:48px; vertical-align:middle;"></object>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card-footer d-flex align-items-center justify-content-between">
-                <div class="setting-side">
-                    <div id="enable_portainer_btn" class="toggle-button with-text">
-                        <div class="toggle-button-handle"></div>
-                    </div>
-                    <button class="btn btn-outline-primary app-install-btn d-none disabled" data-app="portainer">
-                        <#Excute#>
-                    </button>
-                    <div class="d-flex align-items-center gap-1 message" data-app="portainer">
-                        <span class="setting-info"></span>
-                        <img src="images/InternetScan.gif"/>
-                    </div>
-                </div>
-                <div class="d-flex">
-                    <button class="btn btn-outline-primary app-open-btn disabled" data-app="portainer"><#CTL_open#></button>
-                    <div class="more-action btn-group dropup d-none">
-                        <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                            <i role="icon" class="d-block icon-size-18 icon-more-horiz"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a id="reset_portainer_btn" class="dropdown-item" href="#"><#CTL_restore#></a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 col-md-8 h-100 mb-3">
-        <div class="block-title"><#Setting_ai_dk_Apps#></div>
-        <div class="card card-bar p-2 d-flex justify-content-center docker-container-div">
-            <div class="row gap-2 gap-sm-0">
-                <!-- HA -->
-                <div class="col-12 col-sm-6">
-                    <div class="safe-item">
-                        <div class="card-body">
-                            <div class="app-title"><#Setting_ai_dk_HA#> <i data-faq="AI_FAQ_HA" role="icon"
-                                                                     class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
-                            </div>
-                            <div class="app-content">
-                                <p class="card-description">
-                                    <#Setting_ai_desc_HA#>
-                                </p>
-                                <div class="brand-icon">
-                                    <object type="image/svg+xml" data="../images/aiboard/logo-home-assistant.svg"
-                                            role="img"
-                                            style="width:auto; height:48px; vertical-align:middle;"></object>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card-footer d-flex align-items-center justify-content-between">
-                            <div class="setting-side">
-                                <button class="btn btn-outline-primary app-install-btn d-none disabled"
-                                        data-app="homeassistant">
-                                    <#Excute#>
-                                </button>
-                                <div class="d-flex align-items-center gap-1 message" data-app="homeassistant">
-                                    <span class="setting-info"></span>
-                                    <img src="images/InternetScan.gif"/>
-                                </div>
-                            </div>
-                            <button class="btn btn-outline-primary app-open-btn disabled" data-app="homeassistant"><#CTL_open#></button>
-                        </div>
-                    </div>
-                </div>
-                <!-- FRIGATE -->
-                <div class="col-12 col-sm-6">
-                    <div class="safe-item">
-                        <div class="card-body">
-                            <div class="app-title">FRIGATE <i data-faq="AI_FAQ_Frigate" role="icon"
-                                                              class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
-                            </div>
-                            <div class="app-content">
-                                <p class="card-description">
-                                    <#Setting_ai_desc_frigate#>
-                                    <#Setting_ai_note_frigate#>
-                                    <span>
-                                    <br><#Setting_ai_faq_frigate#>
-                                    </span>
-                                </p>
-                                <div class="brand-icon">
-                                    <object type="image/svg+xml" data="../images/aiboard/logo-frigate.svg"
-                                            role="img"
-                                            style="width:auto; height:48px; vertical-align:middle;"></object>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card-footer d-flex align-items-center justify-content-between">
-                            <div class="setting-side">
-                                <button class="btn btn-outline-primary app-install-btn d-none disabled"
-                                        data-app="frigate"><#Excute#>
-                                </button>
-                                <div class="d-flex align-items-center gap-1 message" data-app="frigate">
-                                    <span class="setting-info"></span>
-                                    <img src="images/InternetScan.gif"/>
-                                </div>
-                            </div>
-                            <button class="btn btn-outline-primary app-open-btn disabled" data-app="frigate"><#CTL_open#></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="row">
-    <div class="col-12 mb-3">
+    <div class="col-12 col-xl-8 h-100 mb-3">
         <div class="row">
             <div class="col-12">
-                <div class="block-title"><#Setting_ai_board#></div>
-                <div class="card card-bar">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-12 col-lg-8">
-                                <div class="border pt-2 mb-3">
-                                    <h5 class="card-header d-flex align-items-center justify-content-between">
-                                        <!-- Change the AI Board login password, host name, and IP address settings.-->
-                                        <#diskUtility_information#>
-                                    </h5>
-                                    <div class="card-body">
-                                        <!-- Hostname -->
-                                        <section class="mb-3">
-                                            <div class="setting-row">
-                                                <label class="setting-label"
-                                                       for="ai_hostname"><#LANHostConfig_x_DDNSHostNames_itemname#></label>
-                                                <div class="setting-side">
-                                                    <input id="ai_hostname" class="input form-control" disabled
-                                                           type="text"
-                                                           value=""
-                                                           maxlength="32"
-                                                           onKeyPress="return validator.isString(this, event);"
-                                                           style="width:100%;max-width:320px;"
-                                                           autocorrect="off" autocapitalize="off">
-                                                    <div id="ai_hostname_postfix" class="setting-info">.local</div>
-                                                </div>
-                                            </div>
-                                        </section>
+                <div class="block-title"><#Setting_ai_dk_Management#></div>
+            </div>
+            <div class="col-12">
+                <div class="row h-100 gap-3 gap-lg-0">
+                    <div class="col-12 col-lg-6">
+                        <!-- dPanel -->
+                        <div id="card_dpanel" class="card card-bar pt-2" style="height:450px;">
+                            <div class="card-body p-4">
+                                <div class="app-title">DPanel <i data-faq="AI_FAQ_dpanel" role="icon"
+                                                                 class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
+                                </div>
+                                <div class="app-content">
+                                    <p class="card-description">
+                                        <#Setting_ai_dpanel_desc#>
+                                    </p>
+                                    <div class="brand-icon">
+                                        <div class="d-flex gap-1 align-items-center">
+                                            <img src="../images/aiboard/logo-dpanel-light.png" role="img"
+                                                 style="width:auto; height:48px; vertical-align:middle;">
+                                        </div>
                                     </div>
-                                    <div class="card-footer text-end d-none">
-                                        <button type="button" id="applyBtn" class="btn btn-primary"><#CTL_apply#>
+                                </div>
+                            </div>
+
+                            <div class="card-footer d-flex align-items-center justify-content-between">
+                                <div class="setting-side">
+                                    <div id="enable_dpanel_btn" class="toggle-button with-text">
+                                        <div class="toggle-button-handle"></div>
+                                    </div>
+                                    <button class="btn btn-outline-primary app-install-btn d-none disabled"
+                                            data-app="dpanel">
+                                        <#Excute#>
+                                    </button>
+                                    <div class="d-flex align-items-center gap-1 message" data-app="dpanel">
+                                        <span class="setting-info"></span>
+                                        <img src="images/InternetScan.gif"/>
+                                    </div>
+                                    <div>Powered by DPanel</div>
+                                </div>
+                                <div class="d-flex">
+                                    <button class="btn btn-outline-primary app-open-btn disabled" data-app="dpanel">
+                                        <#CTL_open#>
+                                    </button>
+                                    <div class="more-action btn-group dropup">
+                                        <button type="button" class="btn btn-light dropdown-toggle"
+                                                data-bs-toggle="dropdown"
+                                                aria-expanded="false">
+                                            <i role="icon" class="d-block icon-size-18 icon-more-horiz"></i>
                                         </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a id="reset_dpanel_btn" class="dropdown-item"
+                                                   href="#"><#CTL_restore#></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6">
+                        <!-- Portainer -->
+                        <div id="card_portainer" class="card card-bar pt-2" style="height:450px;">
+                            <div class="card-body p-4">
+                                <div class="app-title"><#Setting_ai_dk_Ctrl_Deploy#> <i data-faq="AI_FAQ_portainer"
+                                                                                        role="icon"
+                                                                                        class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
+                                </div>
+                                <div class="app-content">
+                                    <p class="card-description"><#Setting_ai_desc_Ctrl_Deploy#></p>
+                                    <div class="brand-icon">
+                                        <div class="d-flex gap-1 align-items-center">
+                                            <object type="image/svg+xml" data="../images/aiboard/logo-docker.svg"
+                                                    role="img"
+                                                    style="width:auto; height:48px; vertical-align:middle;"></object>
+                                            &
+                                            <object type="image/svg+xml" data="../images/aiboard/logo-portainer.svg"
+                                                    role="img"
+                                                    style="width:auto; height:48px; vertical-align:middle;"></object>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card-footer d-flex align-items-center justify-content-between">
+                                <div class="setting-side">
+                                    <div id="enable_portainer_btn" class="toggle-button with-text">
+                                        <div class="toggle-button-handle"></div>
+                                    </div>
+                                    <button class="btn btn-outline-primary app-install-btn d-none disabled"
+                                            data-app="portainer">
+                                        <#Excute#>
+                                    </button>
+                                    <div class="d-flex align-items-center gap-1 message" data-app="portainer">
+                                        <span class="setting-info"></span>
+                                        <img src="images/InternetScan.gif"/>
+                                    </div>
+                                </div>
+                                <div class="d-flex">
+                                    <button class="btn btn-outline-primary app-open-btn disabled" data-app="portainer">
+                                        <#CTL_open#>
+                                    </button>
+                                    <div class="more-action btn-group dropup">
+                                        <button type="button" class="btn btn-light dropdown-toggle"
+                                                data-bs-toggle="dropdown"
+                                                aria-expanded="false">
+                                            <i role="icon" class="d-block icon-size-18 icon-more-horiz"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a id="reset_portainer_btn" class="dropdown-item"
+                                                   href="#"><#CTL_restore#></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 h-100 mb-3">
+                <div class="block-title"><#Setting_ai_dk_Apps#></div>
+                <div class="card card-bar p-2 d-flex justify-content-center docker-container-div">
+                    <div class="row gap-2 gap-sm-0">
+                        <!-- HA -->
+                        <div class="col-12 col-sm-6">
+                            <div class="safe-item">
+                                <div class="card-body">
+                                    <div class="app-title"><#Setting_ai_dk_HA#> <i data-faq="AI_FAQ_HA" role="icon"
+                                                                                   class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
+                                    </div>
+                                    <div class="app-content">
+                                        <p class="card-description">
+                                            <#Setting_ai_desc_HA#>
+                                        </p>
+                                        <div class="brand-icon">
+                                            <object type="image/svg+xml"
+                                                    data="../images/aiboard/logo-home-assistant.svg"
+                                                    role="img"
+                                                    style="width:auto; height:48px; vertical-align:middle;"></object>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <section class="border pt-2">
-                                    <h5 class="card-header d-flex align-items-center justify-content-between">
-                                        <#menu5_6_3#>
-                                    </h5>
-                                    <div class="card-body">
-                                        <div class="setting-row">
-                                            <label class="setting-label" for="currentFwVer"><#Setting_ai_board_fw_ver#></label>
-                                            <div class="setting-side">
-                                                <div id="currentFwVer" class="setting-info"></div>
-                                            </div>
-                                        </div>
-                                        <div class="setting-row">
-                                            <label class="setting-label"
-                                                   for="checkBtn"><#AiMesh_Check_Update#></label>
-                                            <div class="setting-side">
-                                                <button id="checkBtn" class="btn btn-outline-primary btn-main">
-                                                    <#AiMesh_Check_Update#>
-                                                </button>
-                                                <button id="upgradeBtn" class="btn btn-outline-primary btn-main"
-                                                        style="display:none;">
-                                                    <#CTL_upgrade#>
-                                                </button>
-                                                <div id="check_states">
-                                                    <span id="update_states"></span>
-                                                    <img id="update_scan" style="display:none;"
-                                                         src="images/InternetScan.gif"/>
-                                                </div>
-                                            </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <div class="setting-side">
+                                        <button class="btn btn-outline-primary app-install-btn d-none disabled"
+                                                data-app="homeassistant">
+                                            <#Excute#>
+                                        </button>
+                                        <div class="d-flex align-items-center gap-1 message" data-app="homeassistant">
+                                            <span class="setting-info"></span>
+                                            <img src="images/InternetScan.gif"/>
                                         </div>
                                     </div>
-                                </section>
-                            </div>
-                            <div id="card_rescuesetting" class="col-12 col-lg-4 mt-3 mt-lg-0">
-                                <section class="border pt-2 mb-3 h-100">
-                                    <h5 class="card-header"><#BTN_REBOOT#></h5>
-                                    <div class="card-body">
-                                        <div class="row px-2">
-                                            <div id="tab-section-aiboard"
-                                                 class="qoe-container container tab-content">
-                                                <div class="row justify-content-center">
-                                                    <div class="col-12">
-                                                        <!-- Restore setting -->
-                                                        <section class="mb-3">
-                                                            <div class="setting-row setting-rescue d-none">
-                                                                <label class="setting-label" for="rescueBtn"><#Setting_factorydefault_itemname#></label>
-                                                                <div class="setting-side setting-side-col">
-                                                                    <button id="rescueBtn"
-                                                                            class="btn btn-outline-primary btn-main"
-                                                                            style="display:block;">
-                                                                        <#CTL_restore#>
-                                                                    </button>
-                                                                    <span style="color:rgb(0, 108, 225);font-size:14px; display:block;margin-top:8px;"><#Setting_ai_rescue_note#></span>
-                                                                </div>
-                                                            </div>
-                                                            <div class="setting-row" style="margin-top:40px;">
-                                                                <label class="setting-label"
-                                                                       for="rebootBtn"><#BTN_REBOOT#></label>
-                                                                <div class="setting-side">
-                                                                    <button id="rebootBtn"
-                                                                            class="btn btn-outline-primary btn-main">
-                                                                        <#BTN_REBOOT#>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </section>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section>
+                                    <button class="btn btn-outline-primary app-open-btn disabled"
+                                            data-app="homeassistant">
+                                        <#CTL_open#>
+                                    </button>
+                                </div>
                             </div>
                         </div>
+                        <!-- FRIGATE -->
+                        <div class="col-12 col-sm-6">
+                            <div class="safe-item">
+                                <div class="card-body">
+                                    <div class="app-title">FRIGATE <i data-faq="AI_FAQ_Frigate" role="icon"
+                                                                      class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
+                                    </div>
+                                    <div class="app-content">
+                                        <p class="card-description">
+                                            <#Setting_ai_desc_frigate#>
+                                            <#Setting_ai_note_frigate#>
+                                            <span>
+                                    <br><#Setting_ai_faq_frigate#>
+                                    </span>
+                                        </p>
+                                        <div class="brand-icon">
+                                            <object type="image/svg+xml" data="../images/aiboard/logo-frigate.svg"
+                                                    role="img"
+                                                    style="width:auto; height:48px; vertical-align:middle;"></object>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <div class="setting-side">
+                                        <button class="btn btn-outline-primary app-install-btn d-none disabled"
+                                                data-app="frigate"><#Excute#>
+                                        </button>
+                                        <div class="d-flex align-items-center gap-1 message" data-app="frigate">
+                                            <span class="setting-info"></span>
+                                            <img src="images/InternetScan.gif"/>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-outline-primary app-open-btn disabled" data-app="frigate">
+                                        <#CTL_open#>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-4">
+        <div class="block-title"><#Setting_ai_board#></div>
+        <div class="card card-bar">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="border pt-2 mb-3">
+                            <h5 class="card-header d-flex align-items-center justify-content-between">
+                                <!-- Change the AI Board login password, host name, and IP address settings.-->
+                                <#diskUtility_information#>
+                            </h5>
+                            <div class="card-body">
+                                <!-- Hostname -->
+                                <section class="mb-3">
+                                    <div class="setting-row">
+                                        <label class="setting-label"
+                                               for="ai_hostname"><#LANHostConfig_x_DDNSHostNames_itemname#></label>
+                                        <div class="setting-side">
+                                            <input id="ai_hostname" class="input form-control" disabled
+                                                   type="text"
+                                                   value=""
+                                                   maxlength="32"
+                                                   onKeyPress="return validator.isString(this, event);"
+                                                   style="width:100%;max-width:320px;"
+                                                   autocorrect="off" autocapitalize="off">
+                                            <div id="ai_hostname_postfix" class="setting-info">.local</div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                            <div class="card-footer text-end d-none">
+                                <button type="button" id="applyBtn" class="btn btn-primary"><#CTL_apply#>
+                                </button>
+                            </div>
+                        </div>
+                        <section class="border pt-2 mb-3">
+                            <h5 class="card-header d-flex align-items-center justify-content-between">
+                                <#menu5_6_3#>
+                            </h5>
+                            <div class="card-body">
+                                <div class="setting-row">
+                                    <label class="setting-label" for="currentFwVer"><#Setting_ai_board_fw_ver#></label>
+                                    <div class="setting-side">
+                                        <div id="currentFwVer" class="setting-info"></div>
+                                    </div>
+                                </div>
+                                <div class="setting-row">
+                                    <label class="setting-label"
+                                           for="checkBtn"><#AiMesh_Check_Update#></label>
+                                    <div class="setting-side">
+                                        <button id="checkBtn" class="btn btn-outline-primary btn-main">
+                                            <#AiMesh_Check_Update#>
+                                        </button>
+                                        <button id="upgradeBtn" class="btn btn-outline-primary btn-main"
+                                                style="display:none;">
+                                            <#CTL_upgrade#>
+                                        </button>
+                                        <div id="check_states">
+                                            <span id="update_states"></span>
+                                            <img id="update_scan" style="display:none;"
+                                                 src="images/InternetScan.gif"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <section id="card_rescuesetting" class="border pt-2">
+                            <h5 class="card-header"><#Setting_upload_itemname#></h5>
+                            <div class="card-body">
+                                <div class="row px-2">
+                                    <div id="tab-section-aiboard"
+                                         class="qoe-container container tab-content">
+                                        <div class="row justify-content-center">
+                                            <div class="col-12">
+                                                <!-- Restore setting -->
+                                                <section class="mb-3">
+                                                    <div class="setting-row setting-rescue">
+                                                        <label class="setting-label" for="rescueBtn"><#Setting_factorydefault_itemname#></label>
+                                                        <div class="setting-side setting-side-col">
+                                                            <button id="rescueBtn"
+                                                                    class="btn btn-outline-primary btn-main"
+                                                                    style="display:block;">
+                                                                <#CTL_restore#>
+                                                            </button>
+                                                            <span style="color:rgb(0, 108, 225);font-size:14px; display:block;margin-top:8px;"><#Setting_ai_rescue_note#></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="setting-row">
+                                                        <label class="setting-label"
+                                                               for="rebootBtn"><#BTN_REBOOT#></label>
+                                                        <div class="setting-side">
+                                                            <button id="rebootBtn"
+                                                                    class="btn btn-outline-primary btn-main">
+                                                                <#BTN_REBOOT#>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </section>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
                     </div>
                 </div>
             </div>
@@ -888,6 +962,10 @@
 
     const lang = system.language.currentLang;
     const is_BE96_AI = (httpApi.nvramGet(["productid"]).productid == "GT-BE96_AI");
+    const _init_nvram = await httpApi.nvramGet(["ai_fw_path", "territory_code"], true);
+    const ai_fw_path_str = _init_nvram.ai_fw_path;
+    const territory_code = _init_nvram.territory_code;
+    const isCnSku = territory_code.search("CN") !== -1
     const faqBtns = document.querySelectorAll('i.ai-faq-btn');
     faqBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -944,6 +1022,7 @@
         open() {
             const ai_hostname_str = httpApi.nvramGet(["ai_hostname"]).ai_hostname;
             const urlMap = {
+                'formal-dpanel-asus': `http://${ai_hostname_str}.local:8807`,
                 'formal-portainer-asus': `https://${ai_hostname_str}.local:9443`,
                 'homeassistant-asus': `http://${ai_hostname_str}.local:8123`,
                 'adguard-asus': `http://${ai_hostname_str}.local:3000`,
@@ -971,6 +1050,12 @@
 
             let postObject = {};
             switch (this.appName) {
+                case "dpanel":
+                    postObject.ai_app_name = "start_dpanel";
+                    postObject.action_mode = "apply";
+                    postObject.rc_service = "start_ai_request app";
+                    break;
+
                 case "portainer":
                     postObject.ai_app_name = "start_portainer";
                     postObject.action_mode = "apply";
@@ -1024,49 +1109,84 @@
         }
 
         install() {
-            // PolicyStatus()
-            //     .then(data => {
-            //         httpApi.log('aiboard_eula_status', JSON.stringify(data));
-            //         if (data.AIBOARD_EULA < 1 || data.AIBOARD_EULA_read == 0) {
-            //             const policyModal = new PolicyModalComponent({
-            //                 policy: "AIBOARD_EULA",
-            //                 modalSize: "modal-lg",
-            //                 agreeBtnText: "<#Acknowledge#>",
-            //                 disagreeBtnText: "<#CTL_Decline#>",
-            //                 agreeCallback: () => {
-            //                     if (this.installed) {
-            //                         console.warn(`${this.appName} is already installed.`);
-            //                         return;
-            //                     }
-            //                     console.log(`Installing ${this.displayName}...`);
-            //                     this.applyInstall();
-            //                     this.status = 'installing';
-            //                     document.querySelectorAll('.app-install-btn').forEach(btn => {
-            //                         btn.classList.add('disabled');
-            //                     })
-            //                 }
-            //             });
-            //
-            //             policyModal.show();
-            //         } else {
-            //             console.log(`Installing ${this.displayName}...`);
-            //             this.applyInstall();
-            //             this.status = 'installing';
-            //             document.querySelectorAll('.app-install-btn').forEach(btn => {
-            //                 btn.classList.add('disabled');
-            //             })
-            //         }
-            //     });
-            console.log(`Installing ${this.displayName}...`);
-            this.applyInstall();
-            this.status = 'installing';
-            document.querySelectorAll('.app-install-btn').forEach(btn => {
-                btn.classList.add('disabled');
-            })
+            PolicyStatus()
+                .then(data => {
+                    httpApi.log('aiboard_eula_status', JSON.stringify(data));
+                    if (data.AIBOARD_EULA < 1 || data.AIBOARD_EULA_read == 0) {
+                        const policyModal = new PolicyModalComponent({
+                            policy: "AIBOARD_EULA",
+                            modalSize: "modal-lg",
+                            agreeBtnText: "<#I_Understand_And_Continue#>",
+                            disagreeBtnText: "<#Dismiss#>",
+                            agreeCallback: () => {
+                                if (this.installed) {
+                                    console.warn(`${this.appName} is already installed.`);
+                                    return;
+                                }
+                                console.log(`Installing ${this.displayName}...`);
+                                this.applyInstall();
+                                this.status = 'installing';
+                                document.querySelectorAll('.app-install-btn').forEach(btn => {
+                                    btn.classList.add('disabled');
+                                })
+                                document.querySelectorAll('.btn-main').forEach(btn => {
+                                    btn.classList.add('disabled');
+                                })
+                            }
+                        });
+
+                        policyModal.show();
+                    } else {
+                        console.log(`Installing ${this.displayName}...`);
+                        this.applyInstall();
+                        this.status = 'installing';
+                        document.querySelectorAll('.app-install-btn').forEach(btn => {
+                            btn.classList.add('disabled');
+                        })
+                        document.querySelectorAll('.btn-main').forEach(btn => {
+                            btn.classList.add('disabled');
+                        })
+                    }
+                });
+
         }
 
         toggleEnable() {
             if (!this.enableBtn) return;
+
+            // Special handling for DPanel
+            if (this.name === 'formal-dpanel-asus') {
+                let postObject = {};
+                let hasActive = this.enableBtn.classList.contains("active");
+                if (hasActive) {
+                    this.enableBtn.classList.remove("active");
+                    postObject.ai_app_name = "stop_dpanel";
+                    postObject.action_mode = "apply";
+                    postObject.rc_service = "start_ai_request app";
+                } else {
+                    this.enableBtn.classList.add("active");
+                    postObject.ai_app_name = "start_dpanel";
+                    postObject.action_mode = "apply";
+                    postObject.rc_service = "start_ai_request app";
+                }
+
+                let applyTime = (postObject.ai_app_name == "stop_dpanel") ? 30 : 40;
+                httpApi.nvramSet(postObject, function () {
+                    showLoading(applyTime);
+
+                    setTimeout(function () {
+                        let queryPost = {};
+                        queryPost.action_mode = "apply";
+                        queryPost.rc_service = "start_ai_request query";
+                        httpApi.nvramSet(queryPost);
+                    }, (applyTime - 5) * 1000);
+
+                    setTimeout(function () {
+                        location.reload();
+                    }, applyTime * 1000);
+                });
+                return;
+            }
 
             // Special handling for Portainer
             if (this.name === 'formal-portainer-asus') {
@@ -1323,6 +1443,10 @@
     }
 
     const container_list = {
+        dpanel: {
+            name: 'formal-dpanel-asus',
+            displayName: 'DPanel',
+        },
         portainer: {
             name: 'formal-portainer-asus',
             displayName: 'Portainer',
@@ -1344,6 +1468,11 @@
             displayName: 'slm'
         }
     };
+
+    if (!isCnSku) {
+        delete container_list['dpanel'];
+        delete container_list['slm-cn-asus'];
+    }
 
     window.container_list = container_list;
 
@@ -1372,6 +1501,11 @@
                 }
             }
 
+            let enableBtn = undefined;
+            if (key === 'dpanel' || key === 'portainer') {
+                enableBtn = document.getElementById(key === 'dpanel' ? "enable_dpanel_btn" : "enable_portainer_btn");
+            }
+
             config.container = new AppContainer({
                 name: config.name,
                 appName: key,
@@ -1380,14 +1514,9 @@
                 installed: installed,
                 openBtn: document.querySelector(`.app-open-btn[data-app='${key}']`),
                 installBtn: document.querySelector(`.app-install-btn[data-app='${key}']`),
-                enableBtn: key === 'portainer' ? document.getElementById("enable_portainer_btn") : undefined,
+                enableBtn: enableBtn,
                 messageDiv: document.querySelector(`.message[data-app='${key}']`)
             });
-
-            //remove .more-action by model 
-            if (!is_BE96_AI){
-               document.querySelector('#card_portainer .more-action').classList.remove('d-none');
-            }
 
             config.container.init();
             if (!installed) {
@@ -1402,33 +1531,33 @@
             config.container && config.container.status !== 'not_installed'
         );
 
-        // if (hasInstalledContainer) {
-        //     PolicyStatus()
-        //         .then(data => {
-        //             httpApi.log('aiboard_eula_status', JSON.stringify(data));
-        //             if (data.AIBOARD_EULA < 1 || data.AIBOARD_EULA_read == 0) {
-        //                 const policyModal = new PolicyModalComponent({
-        //                     policy: "AIBOARD_EULA",
-        //                     modalSize: "modal-lg",
-        //                     agreeBtnText: "<#Acknowledge#>",
-        //                     disagreeBtnText: "<#CTL_Decline#>",
-        //                     showDisagreeBtn: false,
-        //                     agreeCallback: () => {
-        //                         let applyObj = {
-        //                             AIBOARD_EULA: "1",
-        //                         };
-        //                         httpApi.nvramSet(applyObj, function () {
-        //                             hideLoading();
-        //                         });
-        //                     },
-        //                     disagreeCallback: () => {
-        //
-        //                     }
-        //                 });
-        //                 policyModal.show();
-        //             }
-        //         });
-        // }
+        if (hasInstalledContainer) {
+            PolicyStatus()
+                .then(data => {
+                    httpApi.log('aiboard_eula_status', JSON.stringify(data));
+                    if (data.AIBOARD_EULA < 1 || data.AIBOARD_EULA_read == 0) {
+                        const policyModal = new PolicyModalComponent({
+                            policy: "AIBOARD_EULA",
+                            modalSize: "modal-lg",
+                            agreeBtnText: "<#I_Understand_And_Continue#>",
+                            disagreeBtnText: "<#Dismiss#>",
+                            showDisagreeBtn: false,
+                            agreeCallback: () => {
+                                let applyObj = {
+                                    AIBOARD_EULA: "1",
+                                };
+                                httpApi.nvramSet(applyObj, function () {
+                                    hideLoading();
+                                });
+                            },
+                            disagreeCallback: () => {
+
+                            }
+                        });
+                        policyModal.show();
+                    }
+                });
+        }
     });
 
     // Global variables
@@ -1497,16 +1626,14 @@
     let rescueReturn_init = httpApi.get_aiboard_upgrade_status();
     let rescue_status_init = rescueReturn_init.retStatus;     //DOWNLOAD, PROGRESS|RUN, SUCCESS, DONE ; DOWNLOAD, LOAD, VERIFY, SUCCESS, DOCKER_DONE; failed
     let rescue_err_code_init = rescueReturn_init.retErrCode;
-    const _init_nvram = await httpApi.nvramGet(["ai_fw_path", "territory_code"], true);
-    const ai_fw_path_str = _init_nvram.ai_fw_path;
-    const territory_code = _init_nvram.territory_code;
-    const isCnSku = territory_code.search("CN") !== -1
     if (isCnSku) {
         document.getElementById("first-block").remove();
         document.getElementById("first-block-cn").classList.remove('d-none');
     } else {
         document.getElementById("first-block-cn").remove();
         document.getElementById("first-block").classList.remove('d-none');
+        document.getElementById("card_dpanel").parentElement.remove();
+        document.getElementById("card_portainer").parentElement.classList.remove('col-lg-6');
     }
 
     const getAiboardInfoData = async () => {
@@ -1649,8 +1776,34 @@
         });
     }
 
+    function reset_dpanel() {
+        let postObject = {};
+        postObject.ai_app_name = "reset_dpanel";
+        postObject.action_mode = "apply";
+        postObject.rc_service = "start_ai_request app";
+
+        let resetTime = 40;
+        httpApi.nvramSet(postObject, function () {
+            showLoading(resetTime);
+
+            setTimeout(function () {
+                let queryPost = {};
+                queryPost.action_mode = "apply";
+                queryPost.rc_service = "start_ai_request query";
+                httpApi.nvramSet(queryPost);
+            }, (resetTime - 5) * 1000);
+
+            setTimeout(function () {
+                location.reload();
+            }, resetTime * 1000);
+        });
+    }
+
     // reset_portainer_btn click event
     document.getElementById("reset_portainer_btn").addEventListener('click', () => reset_portainer());
+    if (isCnSku) {
+        document.getElementById("reset_dpanel_btn").addEventListener('click', () => reset_dpanel());
+    }
 
 
     // checkBtn click event
@@ -1697,17 +1850,11 @@
         });
     }
 
-    //Hide rescueBtn by model
-    //if (!is_BE96_AI){
-        document.querySelector('#card_rescuesetting .card-header').textContent = `<#Setting_upload_itemname#>`;
-        document.querySelector('#card_rescuesetting .setting-rescue').classList.remove('d-none');
-    //}
-
     // rescueBtn click event
     const rescueBtn = document.getElementById("rescueBtn");
     rescueBtn.addEventListener("click", function () {
         if (confirm(
-`<#Setting_rescue_ai_Note0#>
+            `<#Setting_rescue_ai_Note0#>
 
 <#Setting_rescue_ai_Note1#>
     • <#Setting_rescue_ai_Note1_1#>
@@ -1746,7 +1893,7 @@
     // rebootBtn click event
     const rebootBtn = document.getElementById("rebootBtn");
     rebootBtn.addEventListener("click", function () {
-        if(confirm(`<#Main_content_ai_reboot#>`)){
+        if (confirm(`<#Main_content_ai_reboot#>`)) {
             applyReboot();
         }
     });
@@ -1779,12 +1926,12 @@
     if (isCnSku) {
         const qaDatasTemp = [
             {
-                question: `ROG 八爪魚 7 AI (GT-BE96 AI) 路由器华硕旗舰 WiFi 7 AI 游戏路由器的主要硬件和软件特性有哪些？`,
-                answer: `ROG 八爪魚 7 AI (GT-BE96 AI) 配备四核 2.6GHz CPU，四核 Synaptics SL1680 CPU，7.9 TOPs NPU，4GB DDR4 内存，32GB eMMC 闪存；支持三频 WiFi 7，最高速率 19Gbps，支持多 VLAN，内嵌 Docker，AI 加速，适合高性能、智能家居和游戏场景。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。`
+                question: `ROG 八爪鱼 7 AI (GT-BE96 AI) 路由器华硕旗舰 WiFi 7 AI 游戏路由器的主要硬件和软件特性有哪些？`,
+                answer: `ROG 八爪鱼 7 AI (GT-BE96 AI) 配备四核 2.6GHz CPU，四核 Synaptics SL1680 CPU，7.9 TOPs NPU，4GB DDR4 内存，32GB eMMC 闪存；支持三频 WiFi 7，最高速率 19Gbps，支持多 VLAN，内嵌 Docker，AI 加速，适合高性能、智能家居和游戏场景。详情请参考：[ROG 八爪鱼 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪鱼 7 AI (GT-BE96 AI)/)。`
             },
             {
-                question: `ROG 八爪魚 7 AI (GT-BE96 AI) 路由器的内存和存储规格是什么？`,
-                answer: `ROG 八爪魚 7 AI (GT-BE96 AI) 配备四核 2.6GHz CPU，四核 Synaptics SL1680 CPU，7.9 TOPs NPU，4GB DDR4 内存，32GB eMMC 闪存；支持三频 WiFi 7，最高速率 19Gbps，支持多 VLAN，内嵌 Docker，AI 加速，适合高性能、智能家居和游戏场景。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。`
+                question: `ROG 八爪鱼 7 AI (GT-BE96 AI) 路由器的内存和存储规格是什么？`,
+                answer: `ROG 八爪鱼 7 AI (GT-BE96 AI) 配备四核 2.6GHz CPU，四核 Synaptics SL1680 CPU，7.9 TOPs NPU，4GB DDR4 内存，32GB eMMC 闪存；支持三频 WiFi 7，最高速率 19Gbps，支持多 VLAN，内嵌 Docker，AI 加速，适合高性能、智能家居和游戏场景。详情请参考：[ROG 八爪鱼 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪鱼 7 AI (GT-BE96 AI)/)。`
             },
             {
                 question: `路由器助手可以做什么？`,
@@ -1792,23 +1939,23 @@
             },
             {
                 question: `什么是 Adaptive QoE？AI 流量分析和动态带宽分配如何提升网络性能？`,
-                answer: `Adaptive QoE 通过 AI 流量分析识别和分类游戏、视频、远程办公流量，动态分配带宽，优先关键任务，降低延迟和丢包，自动调整优化策略，适合高流量家庭、游戏玩家和远程办公场景。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。`
+                answer: `Adaptive QoE 通过 AI 流量分析识别和分类游戏、视频、远程办公流量，动态分配带宽，优先关键任务，降低延迟和丢包，自动调整优化策略，适合高流量家庭、游戏玩家和远程办公场景。详情请参考：[ROG 八爪鱼 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪鱼 7 AI (GT-BE96 AI)/)。`
             },
             {
                 question: `路由器中的 WiFi Insight 智能信道切换功能有什么好处？`,
-                answer: `WiFi Insight 智能信道切换会持续监控并记录所有频段的信道变化，分析干扰源、设备连接和网络质量，主动推荐最佳信道设置，避免拥堵和干扰，提升多设备、智能家居和高流量场景下的 WiFi 稳定性和速度。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。`
+                answer: `WiFi Insight 智能信道切换会持续监控并记录所有频段的信道变化，分析干扰源、设备连接和网络质量，主动推荐最佳信道设置，避免拥堵和干扰，提升多设备、智能家居和高流量场景下的 WiFi 稳定性和速度。详情请参考：[ROG 八爪鱼 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪鱼 7 AI (GT-BE96 AI)/)。`
             },
             {
-                question: `ROG 八爪魚 7 AI (GT-BE96 AI) 路由器有哪些节能硬件和软件特性？`,
-                answer: `ROG 八爪魚 7 AI (GT-BE96 AI) 采用高效电源管理芯片、低功耗元件和智能散热，支持智能无线功率调节、定时 WiFi、LED(灯)、USB 操作，AI 驱动动态节能，适合长期智能家居和多设备场景。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。`
+                question: `ROG 八爪鱼 7 AI (GT-BE96 AI) 路由器有哪些节能硬件和软件特性？`,
+                answer: `ROG 八爪鱼 7 AI (GT-BE96 AI) 采用高效电源管理芯片、低功耗元件和智能散热，支持智能无线功率调节、定时 WiFi、LED(灯)、USB 操作，AI 驱动动态节能，适合长期智能家居和多设备场景。详情请参考：[ROG 八爪鱼 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪鱼 7 AI (GT-BE96 AI)/)。`
             },
             {
                 question: `AiMesh 是什么？`,
                 answer: `AiMesh 是 ASUS 路由器的 Mesh 组网功能，可用多台 ASUS 路由器扩展 WiFi 覆盖。至少需两台兼容路由器，主路由器先联网，副路由器放在需要扩展的位置，按 AiMesh 按钮自动搜索主路由，按提示完成设置。AiMesh 支持无缝漫游和更优性能。`
             },
             {
-                question: `ROG 八爪魚 7 AI (GT-BE96 AI) 路由器的以太网端口和配置是什么？`,
-                answer: `ROG八爪魚 路由器配备 1 个 10G WAN/LAN 口，1 个 10G 游戏 LAN 口，1 个 2.5G WAN/LAN 口，3 个 2.5G LAN 口，1 个 1G LAN 口。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。`
+                question: `ROG 八爪鱼 7 AI (GT-BE96 AI) 路由器的以太网端口和配置是什么？`,
+                answer: `ROG 八爪鱼 路由器配备 1 个 10G WAN/LAN 口，1 个 10G 游戏 LAN 口，1 个 2.5G WAN/LAN 口，3 个 2.5G LAN 口，1 个 1G LAN 口。详情请参考：[ROG 八爪鱼 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪鱼 7 AI (GT-BE96 AI)/)。`
             },
             {
                 question: `如何通过 Web GUI 设置 IoT 网络？`,

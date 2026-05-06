@@ -910,7 +910,7 @@ function export_cert(_mode) {
 				<tr>
 					<td valign="top" >
 						<div id="ipsec_view_log_panel" class="ipsec_view_log_panel" style="padding:15px;">
-							<textarea cols="63" rows="44" wrap="off" readonly="readonly" id="textarea" style="width:99%; font-family:'Courier New', Courier, mono; font-size:11px;background:#475A5F;color:#FFFFFF;resize:none;"><% nvram_dump("ipsec.log",""); %></textarea>
+							<textarea class="textarea--log" cols="63" rows="44" wrap="off" readonly="readonly" id="textarea"><% nvram_dump("ipsec.log",""); %></textarea>
 							<div style='text-align:center;margin-top:15px;'>
 								<input class="button_gen" onclick="cancel_viewLog();" type="button" value="<#CTL_Cancel#>"/>
 								<input class="button_gen" onclick="clear_viewLog();" type="button" value="<#CTL_clear#>"/>

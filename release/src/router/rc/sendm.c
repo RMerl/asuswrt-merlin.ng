@@ -9,6 +9,9 @@
 #include <unistd.h>
 #include <syslog.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <errno.h>
 
 #define SEND_CONTENT	"/tmp/send.tmp"
 #define EMAIL_CONF	"/tmp/email.conf"
@@ -52,8 +55,27 @@ int sendm_main(int argc, char **argv)
 	}
 	fclose(fp);
 
-	memset(cmd_buf, 0, sizeof(cmd_buf));
-	sprintf(cmd_buf, "cat %s | email -c %s -s '%s' '%s'", SEND_CONTENT, EMAIL_CONF, ns, to_mail);
+	/* Use fork+execvp to avoid command injection via ns/to_mail.
+	 * Redirect stdin from SEND_CONTENT so email reads the body directly. */
+	{
+		int fd = open(SEND_CONTENT, O_RDONLY);
+		if (fd < 0) return -1;
 
-	return system(cmd_buf);
+		pid_t pid = fork();
+		if (pid < 0) { close(fd); return -1; }
+
+		if (pid == 0) {
+			/* child: redirect stdin from SEND_CONTENT */
+			dup2(fd, STDIN_FILENO);
+			close(fd);
+			char *argv_exec[] = { "email", "-c", EMAIL_CONF, "-s", ns, (char *)to_mail, NULL };
+			execvp("email", argv_exec);
+			_exit(errno);
+		}
+
+		close(fd);
+		int status = 0;
+		waitpid(pid, &status, 0);
+		return WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+	}
 }

@@ -216,3 +216,15 @@
  	border-collapse: collapse;
  	line-height:25px;
 }
+[data-asuswrt-theme][data-asuswrt-color]{
+	.tree_table td{
+		background-color: transparent;
+	}
+	#accountMask{
+		background-color: transparent;
+	}
+	.accountBar td{
+		background-color: var(--wrt-table-header-bg);
+		color: var(--wrt-text-primary);
+	}
+}

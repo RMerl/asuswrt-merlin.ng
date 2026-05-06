@@ -1,33 +1,26 @@
 <div id="workarea" class="row">
     <style>
-        :root {
-            --color-start: #005eff; /* radar-fill */
-            --color-end: #08faff; /* radar-fill */
-            --color-stroke-start: #4E91FB; /* radar-stroke */
-            --color-stroke-end: #6DF6FA; /* radar-stroke */
-            --slider-fill-start: #4E91FB; /* filled area */
-            --slider-fill-end: #6DF6FA; /* filled area */
-            --slider-track: #e5e7eb; /* unfilled area */
-            --slider-thumb: #dc2626; /* drag handle */
+        :root, [data-asuswrt-color="light"] {
+
+            --color-stroke-start: var(--gradient-accent-end); /* radar-stroke */
+            --color-stroke-end: var(--gradient-accent-start); /* radar-stroke */
+            --slider-fill-start: var(--gradient-accent-end); /* filled area */
+            --slider-fill-end: var(--gradient-accent-start);
+            --slider-track: var(--border-default); /* unfilled area */
+            --slider-thumb: var(--brand-primary); /* drag handle */
             --progress: 50%;
 
             /* Bandwidth row specific semantic tokens */
-            --bandwidth-row-bg: rgba(255, 255, 255, 0.4); /* white-alpha40 */
-            --bandwidth-row-border: var(--neutral-30, #fff);
-            --bandwidth-cell-divider: var(--cell-stroke);
             --bandwidth-divider-gap: 16px;
             --toggle-radius: 14px;
             --toggle-thumb-radius: 50%;
-            --tab-navigation-active-text: var(--black-alpha-100);
+            --tab-navigation-active-text: var(--text-primary);
             --tab-navigation-active-primary: var(--primary-60, #C00);
             --radius-none: 0;
             --tab-navigation-bg-color: var(--body-bg-color, #ededed);
             --tab-navigation-hover-bg: var(--black-alpha-3);
-            --tab-navigation-text-color: var(--black-alpha-100);
-            --setting-row-bg: var(--bandwidth-row-bg, #fff);
-            --table-row-text-color: var(--body-text-color);
-            --setting-row-border: var(--bandwidth-row-border);
-            --cell-divider-border: var(--bandwidth-row-border);
+            --tab-navigation-text-color: rgba(var(--text-primary-rgb),0.8);
+            --setting-row-bg: var(--surface-card);
             --divide-stroke-color-default: var(--white-alpha-60);
             --divider-strong: var(--white-alpha-100);
             --divider-weak: var(--black-alpha-3);
@@ -35,21 +28,77 @@
         }
 
         [data-asuswrt-color="dark"] {
-            --tab-navigation-bg-color: var(--body-bg-color, #181818);
+            --color-stroke-start: var(--gradient-accent-end); /* radar-stroke */
+            --color-stroke-end: var(--gradient-accent-start); /* radar-stroke */
+            --slider-fill-start: var(--gradient-accent-end); /* filled area */
+            --slider-fill-end: var(--gradient-accent-start);
+            --slider-track: rgba(var(--surface-invert-rgb),0.4); /* unfilled area */
+            --slider-thumb: var(--brand-primary); /* drag handle */
+            --progress: 50%;
+
+            --tab-navigation-bg-color: var(--body-bg-color);
             --tab-navigation-active-text: var(--white-alpha-100);
-            --tab-navigation-active-primary: var(--primary-50, #F00);
+            --tab-navigation-active-primary: var(--primary-50);
             --tab-navigation-hover-bg: var(--white-alpha-5);
             --tab-navigation-text-color: var(--white-alpha-100);
-            --setting-row-bg: rgba(24, 24, 24, 0.4);
-            --bandwidth-row-bg: rgba(24, 24, 24, 0.4);
-            --table-row-text-color: var(--white-alpha-100);
-            --bandwidth-row-border: var(--neutral-90, #333);
-            --setting-row-border: var(--bandwidth-row-border);
-            --cell-divider-border: var(--bandwidth-row-border);
-            --divide-stroke-color-default: var(--white-alpha-10);
+            --setting-row-bg: rgba(var(--surface-card-rgb),0.8);
+            --divide-stroke-color-default: var(--divider-default);
             --divider-strong: var(--white-alpha-10);
             --divider-weak: var(--white-alpha-5);
-            --divider-default: var(--neutral-90);
+            --divider-default: var(--border-default);
+        }
+        [data-asuswrt-theme="asus"], [data-asuswrt-theme="business"]{
+            --bg-image-qoe: none;
+            --qoe-setting-div-svg: var(--black-alpha-3);
+            --qoe-chart-div-svg: none;
+            --qoe-function-div-svg: none;
+            --function-btn-img: none;
+            --color-start:  #155fff; /* radar-fill */
+            --color-end: #6deeff; /* radar-fill */
+        }
+        [data-asuswrt-theme="rog"]{
+            --color-start:  #155fff; /* radar-fill */
+            --color-end: #fb62f6; /* radar-fill */
+
+        }
+        [data-asuswrt-color="light"][data-asuswrt-theme="rog"], [data-asuswrt-color="light"][data-asuswrt-theme="tuf"] {
+            --bg-image-qoe: url(images/New_ui/login_ui4_bg.webp);
+            --qoe-setting-div-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='366' height='399' preserveAspectRatio='none' viewBox='0 0 366 399' fill='none'%3E%3CforeignObject x='.4' y='.4' width='365.199' height='398.2'%3E%3Cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(5px);height:100%25;width:100%25' clip-path='url(%23bgblur_0_6491_12189_clip_path)'/%3E%3C/foreignObject%3E%3Cg filter='url(%23filter0_d_6491_12189)' data-figma-bg-blur-radius='10'%3E%3Cpath d='M19 380V53.029L56.837 19H347v361H19z' fill='url(%23paint0_linear_6491_12189)'/%3E%3Cpath d='M19 380V53.029L56.837 19H347v361H19z' stroke='%23fff' stroke-width='1.2'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_d_6491_12189' x='.4' y='.4' width='365.199' height='398.2' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset/%3E%3CfeGaussianBlur stdDeviation='9'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix values='0 0 0 0 0.625056 0 0 0 0 0.868769 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='BackgroundImageFix' result='effect1_dropShadow_6491_12189'/%3E%3CfeBlend in='SourceGraphic' in2='effect1_dropShadow_6491_12189' result='shape'/%3E%3C/filter%3E%3CclipPath id='bgblur_0_6491_12189_clip_path' transform='translate(-.4 -.4)'%3E%3Cpath d='M19 380V53.029L56.837 19H347v361H19z'/%3E%3C/clipPath%3E%3ClinearGradient id='paint0_linear_6491_12189' x1='299.826' y1='434' x2='299.826' y2='3.5' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='.184' stop-color='%23fff' stop-opacity='.3'/%3E%3Cstop offset='.565' stop-color='%23fff'/%3E%3Cstop offset='.932' stop-color='%23fff' stop-opacity='.3'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E");
+            --qoe-chart-div-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='485' height='400' preserveAspectRatio='none' viewBox='0 0 485 400' fill='none'%3E%3CforeignObject x='.5' y='.5' width='484.5' height='399.169'%3E%3Cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(3.5px);height:100%25;width:100%25' clip-path='url(%23bgblur_0_6507_12109_clip_path)'/%3E%3C/foreignObject%3E%3Cg filter='url(%23filter0_d_6507_12109)' data-figma-bg-blur-radius='7'%3E%3Cpath d='M19 321.669v46.669h82l21.5 12.831h320l24-19v-148l-15-10.5v-136.5l15-13.733V19H19v302.669z' fill='url(%23paint0_linear_6507_12109)'/%3E%3Cpath d='M19 321.669v46.669h82l21.5 12.831h320l24-19v-148l-15-10.5v-136.5l15-13.733V19H19v302.669z' stroke='%23fff'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_d_6507_12109' x='.5' y='.5' width='484.5' height='399.169' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset/%3E%3CfeGaussianBlur stdDeviation='9'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix values='0 0 0 0 0.699801 0 0 0 0 0.89493 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='BackgroundImageFix' result='effect1_dropShadow_6507_12109'/%3E%3CfeBlend in='SourceGraphic' in2='effect1_dropShadow_6507_12109' result='shape'/%3E%3C/filter%3E%3CclipPath id='bgblur_0_6507_12109_clip_path' transform='translate(-.5 -.5)'%3E%3Cpath d='M19 321.669v46.669h82l21.5 12.831h320l24-19v-148l-15-10.5v-136.5l15-13.733V19H19v302.669z'/%3E%3C/clipPath%3E%3ClinearGradient id='paint0_linear_6507_12109' x1='-47.939' y1='304.191' x2='485.714' y2='304.191' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='.184' stop-color='%23fff' stop-opacity='.3'/%3E%3Cstop offset='.565' stop-color='%23fff'/%3E%3Cstop offset='.932' stop-color='%23fff' stop-opacity='.3'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E");
+            --qoe-function-div-svg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='341' height='364' preserveAspectRatio='none' fill='none' viewBox='0 0 341 364'%3e%3cg id='Group'%3e%3cforeignObject width='340.701' height='363.2' x='3.57628e-07' y='-5.96046e-07'%3e%3cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(5px)%3bclip-path:url(%23bgblur_0_7624_146559_clip_path)%3bheight:100%25%3bwidth:100%25'/%3e%3c/foreignObject%3e%3cg id='Vector 2783' data-figma-bg-blur-radius='10' filter='url(%23filter0_d_7624_146559)'%3e%3cpath fill='url(%23paint0_linear_7624_146559)' d='M301.6 18.6L322.101 37.6V344.6H31.1013V332.411L40.2897 326.236V166.95L18.6 151.963V30.1L31.1013 20.6L288.426 18.6H301.6Z'/%3e%3cpath stroke='white' stroke-width='1.2' d='M301.6 18.6L322.101 37.6V344.6H31.1013V332.411L40.2897 326.236V166.95L18.6 151.963V30.1L31.1013 20.6L288.426 18.6H301.6Z'/%3e%3c/g%3e%3c/g%3e%3cdefs%3e%3cfilter id='filter0_d_7624_146559' width='340.701' height='363.2' x='3.57628e-07' y='-5.96046e-07' color-interpolation-filters='sRGB' filterUnits='userSpaceOnUse'%3e%3cfeFlood flood-opacity='0' result='BackgroundImageFix'/%3e%3cfeColorMatrix in='SourceAlpha' result='hardAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0'/%3e%3cfeOffset/%3e%3cfeGaussianBlur stdDeviation='9'/%3e%3cfeComposite in2='hardAlpha' operator='out'/%3e%3cfeColorMatrix type='matrix' values='0 0 0 0 0.625056 0 0 0 0 0.868769 0 0 0 0 1 0 0 0 1 0'/%3e%3cfeBlend in2='BackgroundImageFix' mode='normal' result='effect1_dropShadow_7624_146559'/%3e%3cfeBlend in='SourceGraphic' in2='effect1_dropShadow_7624_146559' mode='normal' result='shape'/%3e%3c/filter%3e%3cclipPath id='bgblur_0_7624_146559_clip_path' transform='translate(-3.57628e-07 5.96046e-07)'%3e%3cpath d='M301.6 18.6L322.101 37.6V344.6H31.1013V332.411L40.2897 326.236V166.95L18.6 151.963V30.1L31.1013 20.6L288.426 18.6H301.6Z'/%3e%3c/clipPath%3e%3clinearGradient id='paint0_linear_7624_146559' x1='278.451' x2='278.451' y1='-30.1645' y2='358.597' gradientUnits='userSpaceOnUse'%3e%3cstop offset='0.183936' stop-color='white' stop-opacity='0.3'/%3e%3cstop offset='0.564676' stop-color='white'/%3e%3cstop offset='0.931818' stop-color='white' stop-opacity='0.3'/%3e%3c/linearGradient%3e%3c/defs%3e%3c/svg%3e");
+            --function-btn-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='270' height='65' preserveAspectRatio='none' viewBox='0 0 270 65' fill='none'%3E%3CforeignObject x='.5' y='.046' width='269' height='64.454'%3E%3Cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(2.5px);height:100%25;width:100%25' clip-path='url(%23bgblur_0_6507_12100_clip_path)'/%3E%3C/foreignObject%3E%3Cg filter='url(%23filter0_di_6507_12100)' data-figma-bg-blur-radius='5' shape-rendering='crispEdges'%3E%3Cpath d='M252.5 50l6.5-5.983V7l-6.5 4.5h-174l-6-4.5H11v43h241.5z' fill='%23fff' fill-opacity='.8'/%3E%3Cpath d='M252.5 50l6.5-5.983V7l-6.5 4.5h-174l-6-4.5H11v43h241.5z' stroke='%23fff'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_di_6507_12100' x='.5' y='.046' width='269' height='64.454' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset dy='4'/%3E%3CfeGaussianBlur stdDeviation='5'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix values='0 0 0 0 0.683293 0 0 0 0 0.889153 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='BackgroundImageFix' result='effect1_dropShadow_6507_12100'/%3E%3CfeBlend in='SourceGraphic' in2='effect1_dropShadow_6507_12100' result='shape'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset/%3E%3CfeGaussianBlur stdDeviation='2'/%3E%3CfeComposite in2='hardAlpha' operator='arithmetic' k2='-1' k3='1'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='shape' result='effect2_innerShadow_6507_12100'/%3E%3C/filter%3E%3CclipPath id='bgblur_0_6507_12100_clip_path' transform='translate(-.5 -.046)'%3E%3Cpath d='M252.5 50l6.5-5.983V7l-6.5 4.5h-174l-6-4.5H11v43h241.5z'/%3E%3C/clipPath%3E%3C/defs%3E%3C/svg%3E");
+            --qoe-corner-svg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='122' height='134' fill='none' viewBox='0 0 122 134'%3e%3cg id='Group'%3e%3cforeignObject width='117.27' height='123.865' x='4.42859' y='10.135'%3e%3cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(9px)%3bclip-path:url(%23bgblur_0_7626_158055_clip_path)%3bheight:100%25%3bwidth:100%25'/%3e%3c/foreignObject%3e%3cg id='Inner Polygon' data-figma-bg-blur-radius='18' filter='url(%23filter0_di_7626_158055)'%3e%3cpath fill='white' fill-opacity='0.1' d='M97.6983 31.335L97.6983 35.2258C97.6983 36.3459 97.6983 36.906 97.4803 37.3338C97.2886 37.7101 96.9826 38.0161 96.6063 38.2078C96.1785 38.4258 95.6185 38.4258 94.4984 38.4258L94.4983 38.4258L59.6014 38.4258L59.6013 38.4258C59.1926 38.4258 58.9883 38.4258 58.7926 38.4653C58.6189 38.5003 58.4506 38.5583 58.2922 38.6377C58.1136 38.7271 57.9526 38.853 57.6307 39.1046L57.6306 39.1047L39.1016 53.5884C38.6503 53.9411 38.4247 54.1175 38.2622 54.338C38.1183 54.5333 38.0111 54.7532 37.9458 54.9869C37.8722 55.2508 37.8722 55.5371 37.8723 56.1098L37.8758 94.7997C37.8759 95.9199 37.876 96.48 37.658 96.9079C37.4662 97.2842 37.1603 97.5902 36.7839 97.782C36.3561 98 35.796 98 34.6758 98L31.6362 98C30.5162 98 29.9562 98 29.5284 97.7821C29.1521 97.5903 28.8462 97.2844 28.6544 96.9082C28.4364 96.4804 28.4363 95.9204 28.4362 94.8005L28.4286 42.5644V42.5643C28.4285 42.0381 28.4285 41.7749 28.4916 41.5296C28.5476 41.3121 28.6398 41.1055 28.7644 40.9187C28.905 40.7078 29.1009 40.5322 29.4928 40.181L42.0216 28.952C42.3588 28.6498 42.5273 28.4987 42.7193 28.391C42.8895 28.2954 43.0728 28.2253 43.2633 28.1828C43.4782 28.135 43.7046 28.135 44.1573 28.135L94.4983 28.135C95.6184 28.135 96.1785 28.135 96.6063 28.3529C96.9826 28.5447 97.2886 28.8507 97.4803 29.227C97.6983 29.6548 97.6983 30.2149 97.6983 31.335Z' shape-rendering='crispEdges'/%3e%3cpath stroke='white' d='M96.3793 37.763C96.6616 37.6192 96.8915 37.3892 97.0353 37.107C97.1024 36.9753 97.148 36.8012 97.1727 36.4986C97.1979 36.1902 97.1983 35.7941 97.1983 35.226V31.3355C97.1983 30.7672 97.1979 30.3699 97.1727 30.0615C97.148 29.7593 97.1017 29.5854 97.0346 29.4538C96.8908 29.1717 96.6615 28.9423 96.3793 28.7985C96.2477 28.7314 96.074 28.6851 95.7716 28.6604C95.4632 28.6352 95.0666 28.6355 94.4983 28.6355L44.1577 28.6348C43.683 28.6348 43.5205 28.6376 43.3718 28.6707C43.2292 28.7025 43.0919 28.7553 42.9644 28.8268C42.8316 28.9013 42.7087 29.0073 42.3554 29.324L29.8263 40.5534C29.4154 40.9217 29.2779 41.0505 29.1807 41.1963C29.0873 41.3364 29.0176 41.4911 28.9756 41.6542C28.9537 41.7391 28.9419 41.8288 28.9355 41.9663L28.9286 42.5643L28.9355 94.8004C28.9356 95.3686 28.9372 95.7647 28.9625 96.0731C28.9872 96.3756 29.0328 96.5498 29.0999 96.6814C29.2437 96.9635 29.4731 97.193 29.7552 97.3367C29.8869 97.4038 30.061 97.4494 30.3636 97.4742C30.6719 97.4993 31.068 97.4997 31.6362 97.4997H34.676C35.2441 97.4997 35.6402 97.4993 35.9486 97.4742C36.2512 97.4494 36.4253 97.4038 36.557 97.3367C36.8392 97.1929 37.0692 96.963 37.213 96.6807C37.28 96.5491 37.3257 96.3747 37.3504 96.0724C37.3755 95.764 37.376 95.3678 37.3759 94.7997L37.3725 56.1098C37.3724 55.5653 37.368 55.1976 37.4643 54.8523C37.5459 54.5603 37.6801 54.2851 37.86 54.0409C38.0726 53.7526 38.3648 53.5295 38.7936 53.1944L57.3227 38.7104C57.629 38.471 57.8345 38.3074 58.0678 38.1904C58.2657 38.0913 58.4764 38.0188 58.6934 37.975C58.9426 37.9247 59.1983 37.9266 59.5704 37.9266L59.5787 37.9253L59.6015 37.926H94.4983C95.0664 37.926 95.4626 37.9256 95.771 37.9004C96.0733 37.8757 96.2477 37.83 96.3793 37.763Z' shape-rendering='crispEdges'/%3e%3c/g%3e%3c/g%3e%3cdefs%3e%3cfilter id='filter0_di_7626_158055' width='117.27' height='123.865' x='4.42859' y='10.135' color-interpolation-filters='sRGB' filterUnits='userSpaceOnUse'%3e%3cfeFlood flood-opacity='0' result='BackgroundImageFix'/%3e%3cfeColorMatrix in='SourceAlpha' result='hardAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0'/%3e%3cfeOffset dy='12'/%3e%3cfeGaussianBlur stdDeviation='12'/%3e%3cfeComposite in2='hardAlpha' operator='out'/%3e%3cfeColorMatrix type='matrix' values='0 0 0 0 0.456731 0 0 0 0 0.963782 0 0 0 0 1 0 0 0 1 0'/%3e%3cfeBlend in2='BackgroundImageFix' mode='multiply' result='effect1_dropShadow_7626_158055'/%3e%3cfeBlend in='SourceGraphic' in2='effect1_dropShadow_7626_158055' mode='normal' result='shape'/%3e%3cfeColorMatrix in='SourceAlpha' result='hardAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0'/%3e%3cfeOffset/%3e%3cfeGaussianBlur stdDeviation='4'/%3e%3cfeComposite in2='hardAlpha' k2='-1' k3='1' operator='arithmetic'/%3e%3cfeColorMatrix type='matrix' values='0 0 0 0 0.972549 0 0 0 0 0.972549 0 0 0 0 0.972549 0 0 0 0.1 0'/%3e%3cfeBlend in2='shape' mode='normal' result='effect2_innerShadow_7626_158055'/%3e%3c/filter%3e%3cclipPath id='bgblur_0_7626_158055_clip_path' transform='translate(-4.42859 -10.135)'%3e%3cpath d='M97.6983 31.335L97.6983 35.2258C97.6983 36.3459 97.6983 36.906 97.4803 37.3338C97.2886 37.7101 96.9826 38.0161 96.6063 38.2078C96.1785 38.4258 95.6185 38.4258 94.4984 38.4258L94.4983 38.4258L59.6014 38.4258L59.6013 38.4258C59.1926 38.4258 58.9883 38.4258 58.7926 38.4653C58.6189 38.5003 58.4506 38.5583 58.2922 38.6377C58.1136 38.7271 57.9526 38.853 57.6307 39.1046L57.6306 39.1047L39.1016 53.5884C38.6503 53.9411 38.4247 54.1175 38.2622 54.338C38.1183 54.5333 38.0111 54.7532 37.9458 54.9869C37.8722 55.2508 37.8722 55.5371 37.8723 56.1098L37.8758 94.7997C37.8759 95.9199 37.876 96.48 37.658 96.9079C37.4662 97.2842 37.1603 97.5902 36.7839 97.782C36.3561 98 35.796 98 34.6758 98L31.6362 98C30.5162 98 29.9562 98 29.5284 97.7821C29.1521 97.5903 28.8462 97.2844 28.6544 96.9082C28.4364 96.4804 28.4363 95.9204 28.4362 94.8005L28.4286 42.5644V42.5643C28.4285 42.0381 28.4285 41.7749 28.4916 41.5296C28.5476 41.3121 28.6398 41.1055 28.7644 40.9187C28.905 40.7078 29.1009 40.5322 29.4928 40.181L42.0216 28.952C42.3588 28.6498 42.5273 28.4987 42.7193 28.391C42.8895 28.2954 43.0728 28.2253 43.2633 28.1828C43.4782 28.135 43.7046 28.135 44.1573 28.135L94.4983 28.135C95.6184 28.135 96.1785 28.135 96.6063 28.3529C96.9826 28.5447 97.2886 28.8507 97.4803 29.227C97.6983 29.6548 97.6983 30.2149 97.6983 31.335Z'/%3e%3c/clipPath%3e%3c/defs%3e%3c/svg%3e");
+            --qoe-main-div: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1169' height='487' viewBox='0 0 1169 487' preserveAspectRatio='none'  fill='none'%3E%3Cg filter='url(%23filter0_d_6491_12013)' shape-rendering='crispEdges'%3E%3Cpath d='M60.291 58.906L9 93.066v334.129l65.677 45.443H1106.19l53.01-37.922V41.982L1091.8 5H603.891l-80.169 53.906H60.292z' fill='%23E7ECEC' fill-opacity='.3'/%3E%3Cpath d='M505.188 41.668H84.859L137.012 5h422.053l-53.877 36.668z' fill='%23E7ECEC' fill-opacity='.3'/%3E%3Cpath d='M1110.77 5.43h17.24l27.24 15.086V34.74m.75 408.328v15.517l-15.52 15.085h-18.1M121.065 5H69.774L9 54.998v51.291m0-13.222l51.291-34.161h463.431L603.891 5H1091.8l67.4 36.982v392.734l-53.01 37.922H74.677L9 427.195V93.067zm75.86-51.399h420.328L559.065 5H137.012L84.859 41.668z' stroke='%23fff' stroke-width='1.2'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_d_6491_12013' x='0' y='0' width='1168.2' height='486.67' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset dy='4'/%3E%3CfeGaussianBlur stdDeviation='4'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix values='0 0 0 0 0.662109 0 0 0 0 0.971842 0 0 0 0 1 0 0 0 0.55 0'/%3E%3CfeBlend in2='BackgroundImageFix' result='effect1_dropShadow_6491_12013'/%3E%3CfeBlend in='SourceGraphic' in2='effect1_dropShadow_6491_12013' result='shape'/%3E%3C/filter%3E%3C/defs%3E%3C/svg%3E");
+            --qoe-main-div-2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1125' height='446' viewBox='0 0 1125 446' fill='none'%3E%3Cpath d='M45.442 58.143L.655 87.068v314.86l64.09 42.998h859.574l14.655-8.474h72.406l12.5 8.474h51.88l48.12-30.71V37.242l-68.29-36.07H588.975l-83.26 56.97H45.442z' fill='%23F5F9FA' fill-opacity='.2' filter='url(%23filter0_i_6491_12015)'/%3E%3Cpath d='M45.442 58.143L.655 87.068v314.86l64.09 42.998h859.574l14.655-8.474h72.406l12.5 8.474h51.88l48.12-30.71V37.242l-68.29-36.07H588.975l-83.26 56.97H45.442z' stroke='%23ECF6F9'/%3E%3Cdefs%3E%3Cfilter id='filter0_i_6491_12015' x='.155' y='.672' width='1124.23' height='444.754' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeBlend in='SourceGraphic' in2='BackgroundImageFix' result='shape'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset/%3E%3CfeGaussianBlur stdDeviation='12'/%3E%3CfeComposite in2='hardAlpha' operator='arithmetic' k2='-1' k3='1'/%3E%3CfeColorMatrix values='0 0 0 0 0.737286 0 0 0 0 0.943079 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='shape' result='effect1_innerShadow_6491_12015'/%3E%3C/filter%3E%3C/defs%3E%3C/svg%3E");
+        }
+        [data-asuswrt-color="dark"][data-asuswrt-theme="rog"],[data-asuswrt-color="dark"][data-asuswrt-theme="tuf"] {
+            --qoe-setting-div-svg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='366' height='399' preserveAspectRatio='none' fill='none' viewBox='0 0 366 399'%3e%3cg id='Group'%3e%3cforeignObject width='365.2' height='398.2' x='3.57628e-07' y='0'%3e%3cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(7px)%3bclip-path:url(%23bgblur_0_7617_146535_clip_path)%3bheight:100%25%3bwidth:100%25'/%3e%3c/foreignObject%3e%3cg id='Vector 2795' data-figma-bg-blur-radius='14' filter='url(%23filter0_d_7617_146535)'%3e%3cpath fill='black' fill-opacity='0.2' d='M18.6 379.6V309.653V52.6294L56.4365 18.6H323.828H346.6V352.6V379.6H252.521H236.03H18.6Z' shape-rendering='crispEdges'/%3e%3cpath stroke='white' stroke-opacity='0.3' stroke-width='1.2' d='M18.6 379.6V309.653V52.6294L56.4365 18.6H323.828H346.6V352.6V379.6H252.521H236.03H18.6Z' shape-rendering='crispEdges'/%3e%3c/g%3e%3c/g%3e%3cdefs%3e%3cfilter id='filter0_d_7617_146535' width='365.2' height='398.2' x='3.57628e-07' y='0' color-interpolation-filters='sRGB' filterUnits='userSpaceOnUse'%3e%3cfeFlood flood-opacity='0' result='BackgroundImageFix'/%3e%3cfeColorMatrix in='SourceAlpha' result='hardAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0'/%3e%3cfeOffset/%3e%3cfeGaussianBlur stdDeviation='9'/%3e%3cfeComposite in2='hardAlpha' operator='out'/%3e%3cfeColorMatrix type='matrix' values='0 0 0 0 0.0683998 0 0 0 0 0.507164 0 0 0 0 0.976187 0 0 0 1 0'/%3e%3cfeBlend in2='BackgroundImageFix' mode='normal' result='effect1_dropShadow_7617_146535'/%3e%3cfeBlend in='SourceGraphic' in2='effect1_dropShadow_7617_146535' mode='normal' result='shape'/%3e%3c/filter%3e%3cclipPath id='bgblur_0_7617_146535_clip_path' transform='translate(-3.57628e-07 0)'%3e%3cpath d='M18.6 379.6V309.653V52.6294L56.4365 18.6H323.828H346.6V352.6V379.6H252.521H236.03H18.6Z'/%3e%3c/clipPath%3e%3c/defs%3e%3c/svg%3e");
+            --qoe-chart-div-svg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='486' height='401' preserveAspectRatio='none' fill='none' viewBox='0 0 486 401'%3e%3cg id='Group'%3e%3cforeignObject width='485.5' height='400.169' x='-2.38419e-07' y='9.53674e-07'%3e%3cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(7px)%3bclip-path:url(%23bgblur_0_7619_146555_clip_path)%3bheight:100%25%3bwidth:100%25'/%3e%3c/foreignObject%3e%3cg id='Inner Polygon' data-figma-bg-blur-radius='14' filter='url(%23filter0_d_7619_146555)'%3e%3cpath fill='black' fill-opacity='0.2' d='M19 321.669L19 368.338L101 368.338L122.5 381.169L415.5 381.169L442.5 381.169L466.5 362.169L466.5 214.169L451.5 203.669L451.5 67.1692L466.5 53.4355L466.5 19L19 19L19 58.6692L19 87.1692L19 276.121L19 321.669Z' shape-rendering='crispEdges'/%3e%3cpath stroke='white' stroke-opacity='0.3' d='M442.674 381.669L442.811 381.562L466.811 362.562L467 362.411L467 213.909L466.787 213.76L452 203.409L452 67.3897L466.838 53.8047L467 53.6553L467 18.5L18.5 18.5L18.5 368.838L100.861 368.838L122.244 381.599L122.362 381.669L442.674 381.669Z' shape-rendering='crispEdges'/%3e%3c/g%3e%3c/g%3e%3cdefs%3e%3cfilter id='filter0_d_7619_146555' width='485.5' height='400.169' x='-2.38419e-07' y='9.53674e-07' color-interpolation-filters='sRGB' filterUnits='userSpaceOnUse'%3e%3cfeFlood flood-opacity='0' result='BackgroundImageFix'/%3e%3cfeColorMatrix in='SourceAlpha' result='hardAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0'/%3e%3cfeOffset/%3e%3cfeGaussianBlur stdDeviation='9'/%3e%3cfeComposite in2='hardAlpha' operator='out'/%3e%3cfeColorMatrix type='matrix' values='0 0 0 0 0.220239 0 0 0 0 0.417202 0 0 0 0 0.712646 0 0 0 1 0'/%3e%3cfeBlend in2='BackgroundImageFix' mode='normal' result='effect1_dropShadow_7619_146555'/%3e%3cfeBlend in='SourceGraphic' in2='effect1_dropShadow_7619_146555' mode='normal' result='shape'/%3e%3c/filter%3e%3cclipPath id='bgblur_0_7619_146555_clip_path' transform='translate(2.38419e-07 -9.53674e-07)'%3e%3cpath d='M19 321.669L19 368.338L101 368.338L122.5 381.169L415.5 381.169L442.5 381.169L466.5 362.169L466.5 214.169L451.5 203.669L451.5 67.1692L466.5 53.4355L466.5 19L19 19L19 58.6692L19 87.1692L19 276.121L19 321.669Z'/%3e%3c/clipPath%3e%3c/defs%3e%3c/svg%3e") ;
+            --qoe-function-div-svg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='340' height='362' preserveAspectRatio='none' fill='none' viewBox='0 0 340 362'%3e%3cg id='Group'%3e%3cforeignObject width='339.501' height='362' x='0' y='0'%3e%3cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(7px)%3bclip-path:url(%23bgblur_0_7624_146567_clip_path)%3bheight:100%25%3bwidth:100%25'/%3e%3c/foreignObject%3e%3cg id='Vector 2783' data-figma-bg-blur-radius='14' filter='url(%23filter0_d_7624_146567)'%3e%3cpath fill='black' fill-opacity='0.2' d='M301 18L321.501 37V344H30.5013V331.811L39.6897 325.636V166.35L18 151.363V29.5L30.5013 20L287.826 18H301Z' shape-rendering='crispEdges'/%3e%3cpath stroke='white' stroke-opacity='0.3' d='M40.1895 166.087L39.9736 165.938L18.5 151.1V29.748L30.6709 20.498L287.83 18.5H300.804L321.001 37.2188V343.5H31.001V332.078L39.9688 326.051L40.1895 325.902V166.087Z' shape-rendering='crispEdges'/%3e%3c/g%3e%3c/g%3e%3cdefs%3e%3cfilter id='filter0_d_7624_146567' width='339.501' height='362' x='0' y='0' color-interpolation-filters='sRGB' filterUnits='userSpaceOnUse'%3e%3cfeFlood flood-opacity='0' result='BackgroundImageFix'/%3e%3cfeColorMatrix in='SourceAlpha' result='hardAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0'/%3e%3cfeOffset/%3e%3cfeGaussianBlur stdDeviation='9'/%3e%3cfeComposite in2='hardAlpha' operator='out'/%3e%3cfeColorMatrix type='matrix' values='0 0 0 0 0.220239 0 0 0 0 0.417202 0 0 0 0 0.712646 0 0 0 1 0'/%3e%3cfeBlend in2='BackgroundImageFix' mode='normal' result='effect1_dropShadow_7624_146567'/%3e%3cfeBlend in='SourceGraphic' in2='effect1_dropShadow_7624_146567' mode='normal' result='shape'/%3e%3c/filter%3e%3cclipPath id='bgblur_0_7624_146567_clip_path' transform='translate(0 0)'%3e%3cpath d='M301 18L321.501 37V344H30.5013V331.811L39.6897 325.636V166.35L18 151.363V29.5L30.5013 20L287.826 18H301Z'/%3e%3c/clipPath%3e%3c/defs%3e%3c/svg%3e");
+            --function-btn-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='272' height='67' preserveAspectRatio='none' fill='none' viewBox='0 0 272 67'%3e%3cg id='Group'%3e%3cg id='Vector 2788' filter='url(%23filter0_d_7624_146569)'%3e%3cpath fill='url(%23paint0_linear_7624_146569)' d='M253.5 55L260 49.0165V12L253.5 16.5H79.5L73.5 12H12V55H253.5Z' shape-rendering='crispEdges'/%3e%3cpath fill='url(%23paint1_linear_7624_146569)' fill-opacity='0.2' d='M253.5 55L260 49.0165V12L253.5 16.5H79.5L73.5 12H12V55H253.5Z' shape-rendering='crispEdges'/%3e%3cpath stroke='url(%23paint2_linear_7624_146569)' stroke-width='0.8' d='M253.345 54.5996L259.6 48.8428V12.7646L253.728 16.8291L253.625 16.9004H79.3662L79.2598 16.8203L73.3662 12.4004H12.4004V54.5996H253.345Z' shape-rendering='crispEdges'/%3e%3cpath stroke='white' stroke-opacity='0.3' stroke-width='0.8' d='M253.345 54.5996L259.6 48.8428V12.7646L253.728 16.8291L253.625 16.9004H79.3662L79.2598 16.8203L73.3662 12.4004H12.4004V54.5996H253.345Z' shape-rendering='crispEdges' style='mix-blend-mode:overlay'/%3e%3c/g%3e%3c/g%3e%3cdefs%3e%3cfilter id='filter0_d_7624_146569' width='272' height='67' x='0' y='0' color-interpolation-filters='sRGB' filterUnits='userSpaceOnUse'%3e%3cfeFlood flood-opacity='0' result='BackgroundImageFix'/%3e%3cfeColorMatrix in='SourceAlpha' result='hardAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0'/%3e%3cfeOffset/%3e%3cfeGaussianBlur stdDeviation='6'/%3e%3cfeComposite in2='hardAlpha' operator='out'/%3e%3cfeColorMatrix type='matrix' values='0 0 0 0 0.342904 0 0 0 0 0.526891 0 0 0 0 1 0 0 0 1 0'/%3e%3cfeBlend in2='BackgroundImageFix' mode='normal' result='effect1_dropShadow_7624_146569'/%3e%3cfeBlend in='SourceGraphic' in2='effect1_dropShadow_7624_146569' mode='normal' result='shape'/%3e%3c/filter%3e%3clinearGradient id='paint0_linear_7624_146569' x1='269' x2='-2.29725' y1='15.9753' y2='15.9753' gradientUnits='userSpaceOnUse'%3e%3cstop offset='0.151652'/%3e%3cstop offset='0.488661' stop-color='%23326BFF' stop-opacity='0.5'/%3e%3cstop offset='0.834621'/%3e%3c/linearGradient%3e%3clinearGradient id='paint1_linear_7624_146569' x1='204.868' x2='197.211' y1='55.0003' y2='-0.919726' gradientUnits='userSpaceOnUse'%3e%3cstop offset='0.136841' stop-color='white' stop-opacity='0.6'/%3e%3cstop offset='0.503951' stop-color='white'/%3e%3cstop offset='0.953172' stop-color='white' stop-opacity='0.6'/%3e%3c/linearGradient%3e%3clinearGradient id='paint2_linear_7624_146569' x1='11.5539' x2='275.764' y1='12.0001' y2='41.7799' gradientUnits='userSpaceOnUse'%3e%3cstop stop-color='%230A5EDB'/%3e%3cstop offset='1' stop-color='%23DB0A2C'/%3e%3c/linearGradient%3e%3c/defs%3e%3c/svg%3e");
+            --qoe-corner-svg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='103' height='103' fill='none' viewBox='0 0 103 103'%3e%3cg id='Group'%3e%3cforeignObject width='97.2699' height='97.8651' x='14.4284' y='14.135'%3e%3cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(7px)%3bclip-path:url(%23bgblur_0_7626_152313_clip_path)%3bheight:100%25%3bwidth:100%25'/%3e%3c/foreignObject%3e%3cpath id='Inner Polygon' fill='black' fill-opacity='0.2' stroke='url(%23paint0_linear_7626_152313)' d='M97.1983 28.6355H43.1253L28.9286 41.3586L28.9355 97.5004H37.3753L37.3725 54.5492L37.3718 54.3054L37.5645 54.1556L58.1914 38.0323L58.3267 37.926H97.1983V28.6355Z' data-figma-bg-blur-radius='14'/%3e%3c/g%3e%3cdefs%3e%3cclipPath id='bgblur_0_7626_152313_clip_path' transform='translate(-14.4284 -14.135)'%3e%3cpath d='M97.1983 28.6355H43.1253L28.9286 41.3586L28.9355 97.5004H37.3753L37.3725 54.5492L37.3718 54.3054L37.5645 54.1556L58.1914 38.0323L58.3267 37.926H97.1983V28.6355Z'/%3e%3c/clipPath%3e%3clinearGradient id='paint0_linear_7626_152313' x1='68.0621' x2='34.7817' y1='68.0621' y2='34.7817' gradientUnits='userSpaceOnUse'%3e%3cstop stop-color='%23006EFF'/%3e%3cstop offset='0.499583' stop-color='%2364EBFF'/%3e%3cstop offset='1' stop-color='%23006CE1'/%3e%3c/linearGradient%3e%3c/defs%3e%3c/svg%3e");
+            --bg-image-qoe: url(images/New_ui/login_ui4_bg_dark.webp);
+            --qoe-main-div: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='1167' height='486' fill='none' viewBox='0 0 1167 486'%3e%3cg id='Group'%3e%3cg id='Group 33026'%3e%3cforeignObject width='1131.23' height='451.754' x='19.0895' y='16.8306'%3e%3cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(2px)%3bclip-path:url(%23bgblur_0_7743_16031_clip_path)%3bheight:100%25%3bwidth:100%25'/%3e%3c/foreignObject%3e%3cg id='Vector 2789_____0_2_MKEMWGAONU' data-figma-bg-blur-radius='4' filter='url(%23filter0_i_7743_16031)'%3e%3cpath fill='black' fill-opacity='0.31' d='M67.8761 77.8015L23.0895 106.727L23.0895 421.587L87.1785 464.585H946.753L961.408 456.111H1033.82L1046.32 464.585L1098.19 464.585L1146.31 433.875V56.9008L1078.03 20.8306L611.409 20.8306L528.15 77.8015L67.8761 77.8015Z'/%3e%3cpath fill='url(%23paint0_linear_7743_16031)' d='M67.8761 77.8015L23.0895 106.727L23.0895 421.587L87.1785 464.585H946.753L961.408 456.111H1033.82L1046.32 464.585L1098.19 464.585L1146.31 433.875V56.9008L1078.03 20.8306L611.409 20.8306L528.15 77.8015L67.8761 77.8015Z'/%3e%3cg clip-path='url(%23paint1_diamond_7743_16031_clip_path)' data-figma-skip-parse='true'%3e%3cg transform='matrix(0 0.206039 -0.689792 0 603.797 257.936)'%3e%3cpath fill='url(%23paint1_diamond_7743_16031)' d='M0 0H1155.64V843.308H0z' opacity='1' shape-rendering='crispEdges'/%3e%3cpath fill='url(%23paint1_diamond_7743_16031)' d='M0 0H1155.64V843.308H0z' opacity='1' shape-rendering='crispEdges' transform='scale(1 -1)'/%3e%3cpath fill='url(%23paint1_diamond_7743_16031)' d='M0 0H1155.64V843.308H0z' opacity='1' shape-rendering='crispEdges' transform='scale(-1 1)'/%3e%3cpath fill='url(%23paint1_diamond_7743_16031)' d='M0 0H1155.64V843.308H0z' opacity='1' shape-rendering='crispEdges' transform='scale(-1)'/%3e%3c/g%3e%3c/g%3e%3cpath d='M67.8761 77.8015L23.0895 106.727L23.0895 421.587L87.1785 464.585H946.753L961.408 456.111H1033.82L1046.32 464.585L1098.19 464.585L1146.31 433.875V56.9008L1078.03 20.8306L611.409 20.8306L528.15 77.8015L67.8761 77.8015Z' data-figma-gradient-fill='%7b%26quot%3btype%26quot%3b:%26quot%3bGRADIENT_DIAMOND%26quot%3b%2c%26quot%3bstops%26quot%3b:%5b%7b%26quot%3bcolor%26quot%3b:%7b%26quot%3br%26quot%3b:0.50816929340362549%2c%26quot%3bg%26quot%3b:0.79507052898406982%2c%26quot%3bb%26quot%3b:1.0%2c%26quot%3ba%26quot%3b:1.0%7d%2c%26quot%3bposition%26quot%3b:0.29691600799560547%7d%2c%7b%26quot%3bcolor%26quot%3b:%7b%26quot%3br%26quot%3b:0.0026433281600475311%2c%26quot%3bg%26quot%3b:0.57697051763534546%2c%26quot%3bb%26quot%3b:0.82311069965362549%2c%26quot%3ba%26quot%3b:0.40000000596046448%7d%2c%26quot%3bposition%26quot%3b:0.73821067810058594%7d%2c%7b%26quot%3bcolor%26quot%3b:%7b%26quot%3br%26quot%3b:0.0%2c%26quot%3bg%26quot%3b:0.29189422726631165%2c%26quot%3bb%26quot%3b:0.67666393518447876%2c%26quot%3ba%26quot%3b:0.10000000149011612%7d%2c%26quot%3bposition%26quot%3b:1.0%7d%5d%2c%26quot%3bstopsVar%26quot%3b:%5b%7b%26quot%3bcolor%26quot%3b:%7b%26quot%3br%26quot%3b:0.50816929340362549%2c%26quot%3bg%26quot%3b:0.79507052898406982%2c%26quot%3bb%26quot%3b:1.0%2c%26quot%3ba%26quot%3b:1.0%7d%2c%26quot%3bposition%26quot%3b:0.29691600799560547%7d%2c%7b%26quot%3bcolor%26quot%3b:%7b%26quot%3br%26quot%3b:0.0026433281600475311%2c%26quot%3bg%26quot%3b:0.57697051763534546%2c%26quot%3bb%26quot%3b:0.82311069965362549%2c%26quot%3ba%26quot%3b:0.40000000596046448%7d%2c%26quot%3bposition%26quot%3b:0.73821067810058594%7d%2c%7b%26quot%3bcolor%26quot%3b:%7b%26quot%3br%26quot%3b:0.0%2c%26quot%3bg%26quot%3b:0.29189422726631165%2c%26quot%3bb%26quot%3b:0.67666393518447876%2c%26quot%3ba%26quot%3b:0.10000000149011612%7d%2c%26quot%3bposition%26quot%3b:1.0%7d%5d%2c%26quot%3btransform%26quot%3b:%7b%26quot%3bm00%26quot%3b:9.8699759303044754e-13%2c%26quot%3bm01%26quot%3b:-1379.5845947265625%2c%26quot%3bm02%26quot%3b:1293.5889892578125%2c%26quot%3bm10%26quot%3b:412.07720947265625%2c%26quot%3bm11%26quot%3b:-1.0366931271765800e-11%2c%26quot%3bm12%26quot%3b:51.897636413574219%7d%2c%26quot%3bopacity%26quot%3b:1.0%2c%26quot%3bblendMode%26quot%3b:%26quot%3bNORMAL%26quot%3b%2c%26quot%3bvisible%26quot%3b:true%7d'/%3e%3c/g%3e%3cg id='Vector_____0_3_WGYPCBDBJS' filter='url(%23filter1_d_7743_16031)'%3e%3cpath fill='black' fill-opacity='0.5' d='M59.6911 62.3057L8.4 96.4668L8.4 430.595L74.0768 476.038L1105.59 476.038L1158.6 438.116V45.3818L1091.2 8.4L603.291 8.4L523.122 62.3057L59.6911 62.3057Z' shape-rendering='crispEdges'/%3e%3cpath fill='black' fill-opacity='0.5' d='M504.588 45.0684L84.2591 45.0684L136.412 8.4L558.465 8.4L504.588 45.0684Z' shape-rendering='crispEdges'/%3e%3cpath stroke='white' stroke-width='0.8' d='M1110.17 8.83072L1127.41 8.83072L1154.65 23.9163V38.1399M1155.4 446.468V461.985L1139.88 477.07H1121.78M120.465 8.4L69.1735 8.4L8.4 58.398L8.4 109.689M8.4 96.4668L59.6911 62.3057L523.122 62.3057L603.291 8.4L1091.2 8.4L1158.6 45.3818V438.116L1105.59 476.038L74.0768 476.038L8.4 430.595L8.4 96.4668ZM84.2591 45.0684L504.588 45.0684L558.465 8.4L136.412 8.4L84.2591 45.0684Z' shape-rendering='crispEdges'/%3e%3cpath stroke='url(%23paint2_linear_7743_16031)' stroke-width='0.8' d='M1110.17 8.83072L1127.41 8.83072L1154.65 23.9163V38.1399M1155.4 446.468V461.985L1139.88 477.07H1121.78M120.465 8.4L69.1735 8.4L8.4 58.398L8.4 109.689M8.4 96.4668L59.6911 62.3057L523.122 62.3057L603.291 8.4L1091.2 8.4L1158.6 45.3818V438.116L1105.59 476.038L74.0768 476.038L8.4 430.595L8.4 96.4668ZM84.2591 45.0684L504.588 45.0684L558.465 8.4L136.412 8.4L84.2591 45.0684Z' shape-rendering='crispEdges'/%3e%3c/g%3e%3c/g%3e%3c/g%3e%3cdefs%3e%3cfilter id='filter0_i_7743_16031' width='1131.23' height='451.754' x='19.0895' y='16.8306' color-interpolation-filters='sRGB' filterUnits='userSpaceOnUse'%3e%3cfeFlood flood-opacity='0' result='BackgroundImageFix'/%3e%3cfeBlend in='SourceGraphic' in2='BackgroundImageFix' mode='normal' result='shape'/%3e%3cfeColorMatrix in='SourceAlpha' result='hardAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0'/%3e%3cfeOffset dy='4'/%3e%3cfeGaussianBlur stdDeviation='12'/%3e%3cfeComposite in2='hardAlpha' k2='-1' k3='1' operator='arithmetic'/%3e%3cfeColorMatrix type='matrix' values='0 0 0 0 0.0942946 0 0 0 0 1 0 0 0 0 0.96981 0 0 0 0.35 0'/%3e%3cfeBlend in2='shape' mode='normal' result='effect1_innerShadow_7743_16031'/%3e%3c/filter%3e%3cclipPath id='bgblur_0_7743_16031_clip_path' transform='translate(-19.0895 -16.8306)'%3e%3cpath d='M67.8761 77.8015L23.0895 106.727L23.0895 421.587L87.1785 464.585H946.753L961.408 456.111H1033.82L1046.32 464.585L1098.19 464.585L1146.31 433.875V56.9008L1078.03 20.8306L611.409 20.8306L528.15 77.8015L67.8761 77.8015Z'/%3e%3c/clipPath%3e%3cclipPath id='paint1_diamond_7743_16031_clip_path'%3e%3cpath d='M67.8761 77.8015L23.0895 106.727L23.0895 421.587L87.1785 464.585H946.753L961.408 456.111H1033.82L1046.32 464.585L1098.19 464.585L1146.31 433.875V56.9008L1078.03 20.8306L611.409 20.8306L528.15 77.8015L67.8761 77.8015Z'/%3e%3c/clipPath%3e%3cfilter id='filter1_d_7743_16031' width='1167' height='485.47' x='-3.8743e-07' y='-3.8743e-07' color-interpolation-filters='sRGB' filterUnits='userSpaceOnUse'%3e%3cfeFlood flood-opacity='0' result='BackgroundImageFix'/%3e%3cfeColorMatrix in='SourceAlpha' result='hardAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0'/%3e%3cfeOffset/%3e%3cfeGaussianBlur stdDeviation='4'/%3e%3cfeComposite in2='hardAlpha' operator='out'/%3e%3cfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0.423529 0 0 0 0 0.882353 0 0 0 1 0'/%3e%3cfeBlend in2='BackgroundImageFix' mode='normal' result='effect1_dropShadow_7743_16031'/%3e%3cfeBlend in='SourceGraphic' in2='effect1_dropShadow_7743_16031' mode='normal' result='shape'/%3e%3c/filter%3e%3clinearGradient id='paint0_linear_7743_16031' x1='679.641' x2='679.641' y1='-97.0753' y2='531.756' gradientUnits='userSpaceOnUse'%3e%3cstop stop-color='%231D1842'/%3e%3cstop offset='0.350491' stop-opacity='0'/%3e%3cstop offset='0.686566' stop-color='%23191D52' stop-opacity='0.47015'/%3e%3cstop offset='0.828752' stop-color='%230C0E27' stop-opacity='0.22302'/%3e%3cstop offset='0.975402' stop-color='%236C6C6C' stop-opacity='0'/%3e%3c/linearGradient%3e%3clinearGradient id='paint1_diamond_7743_16031' x1='0' x2='500' y1='0' y2='500' gradientUnits='userSpaceOnUse'%3e%3cstop offset='0.296916' stop-color='%2382CBFF'/%3e%3cstop offset='0.738211' stop-color='%230193D2' stop-opacity='0.4'/%3e%3cstop offset='1' stop-color='%23004AAD' stop-opacity='0.1'/%3e%3c/linearGradient%3e%3clinearGradient id='paint2_linear_7743_16031' x1='8.4' x2='1158.6' y1='242.735' y2='242.735' gradientUnits='userSpaceOnUse'%3e%3cstop stop-color='%233863FF' stop-opacity='0.7'/%3e%3cstop offset='0.657813' stop-color='%2306FFFB' stop-opacity='0.4'/%3e%3cstop offset='1' stop-color='%23993498' stop-opacity='0.7'/%3e%3c/linearGradient%3e%3c/defs%3e%3c/svg%3e");
+            --qoe-main-div-2: none;
+        }
+        [data-asuswrt-theme="tuf"]{
+            --color-start:  #2950ec; /* radar-fill */
+            --color-end: #9bffcd; /* radar-fill */
+        }
+
+        [data-asuswrt-theme="proart"]{
+            --qoe-setting-div-svg: none;
+            --qoe-chart-div-svg: none;
+            --qoe-function-div-svg: none;
+            --function-btn-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='272' height='67' fill='none' viewBox='0 0 272 67'%3e%3cg id='Group'%3e%3cg id='Vector 2788' filter='url(%23filter0_d_7720_15971)'%3e%3cpath fill='url(%23paint0_linear_7720_15971)' fill-opacity='0.2' d='M260 51V49.0165V16C260 13.7909 258.209 12 256 12H79.5H73.5H16C13.7909 12 12 13.7909 12 16V51C12 53.2091 13.7909 55 16 55H256C258.209 55 260 53.2091 260 51Z' shape-rendering='crispEdges'/%3e%3cpath stroke='url(%23paint1_linear_7720_15971)' stroke-width='0.8' d='M16 54.5996H256C257.988 54.5996 259.6 52.9882 259.6 51V16C259.6 14.0118 257.988 12.4004 256 12.4004H16C14.0118 12.4004 12.4004 14.0118 12.4004 16V51C12.4004 52.9882 14.0118 54.5996 16 54.5996Z' shape-rendering='crispEdges'/%3e%3c/g%3e%3c/g%3e%3cdefs%3e%3cfilter id='filter0_d_7720_15971' width='272' height='67' x='0' y='0' color-interpolation-filters='sRGB' filterUnits='userSpaceOnUse'%3e%3cfeFlood flood-opacity='0' result='BackgroundImageFix'/%3e%3cfeColorMatrix in='SourceAlpha' result='hardAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0'/%3e%3cfeOffset/%3e%3cfeGaussianBlur stdDeviation='6'/%3e%3cfeComposite in2='hardAlpha' operator='out'/%3e%3cfeColorMatrix type='matrix' values='0 0 0 0 0.34549 0 0 0 0 0.442031 0 0 0 0 0.690279 0 0 0 1 0'/%3e%3cfeBlend in2='BackgroundImageFix' mode='normal' result='effect1_dropShadow_7720_15971'/%3e%3cfeBlend in='SourceGraphic' in2='effect1_dropShadow_7720_15971' mode='normal' result='shape'/%3e%3c/filter%3e%3clinearGradient id='paint0_linear_7720_15971' x1='254.5' x2='226.523' y1='19.9343' y2='-56.2622' gradientUnits='userSpaceOnUse'%3e%3cstop offset='0.136841' stop-color='white' stop-opacity='0.6'/%3e%3cstop offset='0.503951' stop-color='white'/%3e%3cstop offset='0.953172' stop-color='white' stop-opacity='0.6'/%3e%3c/linearGradient%3e%3clinearGradient id='paint1_linear_7720_15971' x1='136' x2='136' y1='55' y2='12' gradientUnits='userSpaceOnUse'%3e%3cstop stop-color='%23FADEBD'/%3e%3cstop offset='1' stop-color='%23CDAC83'/%3e%3c/linearGradient%3e%3c/defs%3e%3c/svg%3e");
+            --color-start:  #CDA882; /* radar-fill */
+            --color-end: #847eec; /* radar-fill */
+        }
+        [data-asuswrt-color="dark"][data-asuswrt-theme="proart"]{
+            --bg-image-qoe: url(images/New_ui/login_bg_proart_dark.webp);
+        }
+        [data-asuswrt-color="light"][data-asuswrt-theme="proart"]{
+            --bg-image-qoe: url(images/New_ui/login_bg_proart_light.webp);
         }
 
         #tab-section-aiqoe {
@@ -59,18 +108,17 @@
         }
 
         .background-container {
-            background: url(images/New_ui/login_ui4_bg.png) no-repeat center;
+            background: var(--bg-image-qoe) no-repeat center;
             inset: 0;
             z-index: -1;
             overflow: hidden;
             pointer-events: none;
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -48%) scale(0.9);
-            width: 200%;
-            height: 200%;
+            top: -110px;
+            height: 100vh;
+            background-size: 125%;
         }
+
 
         /* qoe-icons */
 
@@ -82,11 +130,11 @@
             -webkit-mask-size: contain;
             width: 24px;
             height: 24px;
-            background-color: #000000;
+            background-color: var(--icon-default);
         }
 
         i.ic-qoe-aibalance {
-            --svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMiIgaGVpZ2h0PSIyMiIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDIyIDIyIj48ZyBjbGlwLXBhdGg9InVybCgjYSkiPjxjaXJjbGUgY3g9IjExIiBjeT0iMTEiIHI9IjEwLjQiIHN0cm9rZT0iIzI2MjYyNiIgc3Ryb2tlLXdpZHRoPSIxLjIiLz48cGF0aCBmaWxsPSIjMjYyNjI2IiBkPSJtMTcuODg3IDkuMzU2LjUyLjE5Mi0uNTIuMTkzYS44NzUuODc1IDAgMCAwLS41MTcuNTE2bC0uMTkyLjUyLS4xOTMtLjUyYS44NzUuODc1IDAgMCAwLS41MTYtLjUxNmwtLjUyLS4xOTMuNTItLjE5MmEuODc0Ljg3NCAwIDAgMCAuNTE2LS41MTdsLjE5My0uNTIuMTkyLjUyYy4wODkuMjQuMjc4LjQyOC41MTcuNTE3Wk0xNS45MDMgNi41NGwxLjAyNC4zNzktMS4wMjQuMzc5YTEuNzIgMS43MiAwIDAgMC0xLjAxNiAxLjAxNmwtLjM3OSAxLjAyNC0uMzc5LTEuMDI0YTEuNzIgMS43MiAwIDAgMC0xLjAxNi0xLjAxNmwtMS4wMjQtLjM3OSAxLjAyNC0uMzc5YTEuNzIgMS43MiAwIDAgMCAxLjAxNi0xLjAxNmwuMzgtMS4wMjQuMzc4IDEuMDI0Yy4xNzQuNDcuNTQ2Ljg0MiAxLjAxNiAxLjAxNloiLz48cGF0aCBmaWxsPSIjMTgxODE4IiBkPSJNNy4zODIgNy40MjhoMi4xM2wzLjM4MiA4LjY1N2gtMi4wMDVsLS43NTEtMS45NzlINi43NTZsLS43NTIgMS45NzlINGwzLjM4Mi04LjY1N1ptMi4xMyA1LjAwOS0xLjA0LTIuODQ1aC0uMDVsLTEuMDQgMi44NDVoMi4xM1ptNC4yNTUtMi40MTJoMS42OTF2Ni4wNmgtMS42OXYtNi4wNloiLz48L2c+PGRlZnM+PGNsaXBQYXRoIGlkPSJhIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMCAwaDIydjIySDB6Ii8+PC9jbGlwUGF0aD48L2RlZnM+PC9zdmc+");
+            --svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMiIgaGVpZ2h0PSIyMiIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDIyIDIyIj48ZyBjbGlwLXBhdGg9InVybCgjYSkiPjxjaXJjbGUgY3g9IjExIiBjeT0iMTEiIHI9IjEwLjQiIHN0cm9rZT0iIzI2MjYyNiIgc3Ryb2tlLXdpZHRoPSIxLjIiLz48cGF0aCBmaWxsPSIjMjYyNjI2IiBkPSJtMTcuODg3IDkuMzU2LjUyLjE5Mi0uNTIuMTkzYS44NzUuODc1IDAgMCAwLS41MTcuNTE2bC0uMTkyLjUyLS4xOTMtLjUyYS44NzUuODc1IDAgMCAwLS41MTYtLjUxNmwtLjUyLS4xOTMuNTItLjE5MmEuODc0Ljg3NCAwIDAgMCAuNTE2LS41MTdsLjE5My0uNTIuMTkyLjUyYy4wODkuMjQuMjc4LjQyOC41MTcuNTE3Wk0xNS45MDMgNi41NGwxLjAyNC4zNzktMS4wMjQuMzc5YTEuNzIgMS43MiAwIDAgMC0xLjAxNiAxLjAxNmw0LjYzNi00LjYzNmwtLjM3OS0xLjAyNC0uMzc5LTEuMDI0YTEuNzIgMS43MiAwIDAgMC0xLjAxNi0xLjAxNmwtMS4wMjQtLjM3OSAxLjAyNC0uMzc5YTEuNzIgMS43MiAwIDAgMCAxLjAxNi0xLjAxNmwuMzgtMS4wMjQuMzc4IDEuMDI0Yy4xNzQuNDcuNTQ2Ljg0MiAxLjAxNiAxLjAxNloiLz48cGF0aCBmaWxsPSIjMTgxODE4IiBkPSJNNy4zODIgNy40MjhoMi4xM2wzLjM4MiA4LjY1N2gtMi4wMDVsLS43NTEtMS45NzlINi43NTZsLS43NTIgMS45NzlINGwzLjM4Mi04LjY1N1ptMi4xMyA1LjAwOS0xLjA0LTIuODQ1aC0uMDVsLTEuMDQgMi44NDVoMi4xM1ptNC4yNTUtMi40MTJoMS42OTF2Ni4wNmgtMS42OXYtNi4wNloiLz48L2c+PGRlZnM+PGNsaXBQYXRoIGlkPSJhIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMCAwaDIydjIySDB6Ii8+PC9jbGlwUGF0aD48L2RlZnM+PC9zdmc+");
         }
 
         i.ic-qoe-streaming {
@@ -104,6 +152,7 @@
         i.ic-qoe-office {
             --svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBzdHJva2U9IiMyNjI2MjYiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLXdpZHRoPSIxLjIiIGNsaXAtcGF0aD0idXJsKCNhKSI+PHBhdGggZD0ibS42NjcgOS45MTYgOC43OS02LjUwM2EyLjE4OCAyLjE4OCAwIDAgMSAyLjU2IDBsOC43OTEgNi41MDNtLTE2LjM1OCAwdjguMDQ1YzAgLjc3Mi41NTYgMS4zMjMgMS4zMzUgMS4zMjNoNC44OTdtMTEuNTcyLTUuNTExaC04Ljc5YS40NDMuNDQzIDAgMCAwLS40NDYuNDQxdjYuMDYyYzAgLjI0My4yLjQ0LjQ0NS40NGg4Ljc5MWEuNDQzLjQ0MyAwIDAgMCAuNDQ1LS40NHYtNi4wNjJhLjQ0Mi40NDIgMCAwIDAtLjQ0NS0uNDRaIi8+PHBhdGggZD0iTTE5LjM2MSAxMS43OWgtMy4wMDVhLjQ0My40NDMgMCAwIDAtLjQ0NS40NHYxLjEwM2MwIC4yNDMuMi40NC40NDYuNDRoMy4wMDRhLjQ0My40NDMgMCAwIDAgLjQ0NS0uNDRWMTIuMjNjMC0uMjQ0LS4yLS40NDEtLjQ0NS0uNDQxWiIvPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZD0iTTE5LjAyOCAxNS44NjdIMTYuNThhLjMzMi4zMzIgMCAwIDAtLjMzNC4zMzF2MS4yMTJjMCAuMTgzLjE1LjMzMS4zMzQuMzMxaDIuNDQ4YS4zMzIuMzMyIDAgMCAwIC4zMzQtLjMzdi0xLjIxM2MwLS4xODMtLjE1LS4zMy0uMzM0LS4zM1oiLz48cGF0aCBkPSJNMTMuMTMgMTYuNzVoMy4wMDRtMy4yMjcgMGgzLjIyNyIvPjwvZz48ZGVmcz48Y2xpcFBhdGggaWQ9ImEiPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0wIDBoMjR2MjRIMHoiLz48L2NsaXBQYXRoPjwvZGVmcz48L3N2Zz4=");
         }
+         /* qoe-icons */
 
         .qoe-container > .row {
             flex-direction: column-reverse;
@@ -124,55 +173,26 @@
             flex-direction: column;
             width: 100%;
             align-items: center;
+            margin-left: 1.5rem;
         }
 
         .info-panel {
-            padding: 1rem;
-            width: 90%;
+            padding: 0 1.5rem;
+            /*width: 90%;*/
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            /*gap: 16px;*/
             z-index: 7;
         }
 
         .info-panel h2 {
             margin-top: 0;
         }
+        [data-asuswrt-theme="rog"] .animate-border {
+            outline: none;
+        }
 
         /* pentagon area animation */
-
-        .svg-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-
-        .svg-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .svg-container svg {
-            width: 100%;
-            height: 100%;
-        }
-
-        .svg-layer svg {
-            animation: none;
-            transform-origin: center center;
-        }
-
-        .svg-layer svg.animate {
-            animation: fadeIn 1s ease-out forwards;
-        }
 
         @keyframes fadeIn {
             0% {
@@ -193,11 +213,11 @@
 
         /* button animation effects */
         .mode-button {
-            height: 60px;
+            /*height: 60px;*/
             position: relative;
-            padding: 8px 24px;
+            padding: 16px;
             font-size: 14px;
-            color: #000;
+            color: var(--text-primary);
             border: none;
             border-radius: var(--global-radius);
             cursor: pointer;
@@ -205,13 +225,14 @@
             align-items: center;
             justify-content: flex-start;
             overflow: hidden;
-            width: 273px;
+            width: 100%;
+            border-bottom: 1px solid var(--bg-chart-color-2);
         }
 
-        .button-container .split-line {
+        .split-line {
             height: 1px;
-            width: 85%;
-            background-color: #ccc;
+            width: 90%;
+            background-image: var(--gradient-color-primary);
         }
 
         .mode-button .function-btn-img {
@@ -227,22 +248,22 @@
             z-index: 6;
         }
 
-        .mode-button.active .function-btn-img {
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='270' height='65' viewBox='0 0 270 65' fill='none'%3E%3CforeignObject x='.5' y='.046' width='269' height='64.454'%3E%3Cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(2.5px);height:100%25;width:100%25' clip-path='url(%23bgblur_0_6507_12100_clip_path)'/%3E%3C/foreignObject%3E%3Cg filter='url(%23filter0_di_6507_12100)' data-figma-bg-blur-radius='5' shape-rendering='crispEdges'%3E%3Cpath d='M252.5 50l6.5-5.983V7l-6.5 4.5h-174l-6-4.5H11v43h241.5z' fill='%23fff' fill-opacity='.8'/%3E%3Cpath d='M252.5 50l6.5-5.983V7l-6.5 4.5h-174l-6-4.5H11v43h241.5z' stroke='%23fff'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_di_6507_12100' x='.5' y='.046' width='269' height='64.454' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset dy='4'/%3E%3CfeGaussianBlur stdDeviation='5'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix values='0 0 0 0 0.683293 0 0 0 0 0.889153 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='BackgroundImageFix' result='effect1_dropShadow_6507_12100'/%3E%3CfeBlend in='SourceGraphic' in2='effect1_dropShadow_6507_12100' result='shape'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset/%3E%3CfeGaussianBlur stdDeviation='2'/%3E%3CfeComposite in2='hardAlpha' operator='arithmetic' k2='-1' k3='1'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='shape' result='effect2_innerShadow_6507_12100'/%3E%3C/filter%3E%3CclipPath id='bgblur_0_6507_12100_clip_path' transform='translate(-.5 -.046)'%3E%3Cpath d='M252.5 50l6.5-5.983V7l-6.5 4.5h-174l-6-4.5H11v43h241.5z'/%3E%3C/clipPath%3E%3C/defs%3E%3C/svg%3E") no-repeat center center;
-            background-size: contain;
+        [data-asuswrt-theme="rog"] .mode-button.active .function-btn-img {
+            background: var(--function-btn-img) no-repeat 0 0;
+            background-size: 100% 100%;
             display: block;
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -43%) scale(1);
-            width: 270px;
+            top: 0;
+            left: 0;
+            transform: none;
+            width: 100%;
             height: 65px;
             z-index: 5;
             font-size: 14px;
             justify-content: flex-start;
         }
 
-        .mode-button.active .function-btn-img-bar {
+        [data-asuswrt-theme="rog"] .mode-button.active .function-btn-img-bar {
             background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='239' height='25' viewBox='0 0 239 25' fill='none'%3E%3Cg clip-path='url(%23clip0_6504_11970)'%3E%3Cpath d='M234 12H5' stroke='url(%23paint0_linear_6504_11970)' stroke-width='12' filter='url(%23filter0_f_6504_11970)'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_f_6504_11970' x='.922' y='2' width='237.156' height='20' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeBlend in='SourceGraphic' in2='BackgroundImageFix' result='shape'/%3E%3CfeGaussianBlur stdDeviation='2' result='effect1_foregroundBlur_6504_11970'/%3E%3C/filter%3E%3ClinearGradient id='paint0_linear_6504_11970' x1='266.34' y1='-3644100' x2='37.807' y2='-3644100' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='.068' stop-color='%230630FF'/%3E%3Cstop offset='.387' stop-color='%2375BFFF'/%3E%3Cstop offset='1' stop-color='%2375F1FF'/%3E%3C/linearGradient%3E%3CclipPath id='clip0_6504_11970'%3E%3Cpath fill='%23fff' transform='translate(0 .5)' d='M0 0h239v24H0z'/%3E%3C/clipPath%3E%3C/defs%3E%3C/svg%3E") no-repeat center center;
             background-size: contain;
             display: block;
@@ -324,6 +345,7 @@
             flex-direction: column;
             align-items: center;
             width: 100%;
+            margin-top: var(--wrt-gutter-xs);
         }
 
         .setting-controller {
@@ -337,6 +359,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             gap: 16px;
             width: 300px;
         }
@@ -348,32 +371,35 @@
             justify-content: center;
             height: 100%;
             width: 270px;
-            margin-top: 40px;
+            margin-top: var(--wrt-gutter-lg);
         }
 
         .switch-div {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 16px;
+            padding: var(--wrt-gutter-sm) var(--wrt-gutter-md);
             width: 100%;
+            margin-top: var(--wrt-gutter-md);
         }
 
         .switch-div-bw {
             display: flex;
-            background-color: rgba(255, 255, 255, 0.6);
+            background-color: var(--surface-card);
             align-items: center;
             justify-content: space-between;
-            border: 1px solid #fff;
-            padding: 10px 16px;
+            border: 1px solid var(--border-default);
+            padding: var(--wrt-gutter-sm) var(--wrt-gutter-md);
             width: 100%;
+            border-radius: var(--global-radius);
         }
 
         .slider-and-btn {
             display: flex;
             align-items: center;
             flex-direction: column;
-            gap: 24px;
+            gap: var(--wrt-gutter-md);
+            margin: var(--wrt-gutter-md) 0;
         }
 
         .tuning-controller {
@@ -386,7 +412,7 @@
 
 
         .switch-div-title {
-            font-size: 16px;
+            font-size: var(--font-size-16);
             font-weight: bold;
             font-style: italic;
             z-index: 10;
@@ -405,7 +431,7 @@
             width: 360px;
             height: 360px;
             z-index: 7;
-            font-size: 0.75rem;
+            font-size: var(--font-size-body-03);
         }
 
         .pentagon-container .icon {
@@ -418,16 +444,7 @@
             width: max-content;
         }
 
-        .pentagon-container .icon::before {
-            content: "";
-            display: inline-block;
-            background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDE2IDE2Ij48ZyBpZD0iR3JvdXAiPjxnIGlkPSJhY19jb21tb25fYXJyb3cgbGVmdF9kIj48cGF0aCBpZD0ibGluZV9uX19fX18wXzBfRFdDSEZVT0hPTyIgZmlsbD0iI0ZGMTkyOSIgZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMS45MTE1OCA0LjkxMjgxTDcuNjQ2MzQgMTEuNzk0NUwxMy4zODExIDQuOTEyODFMMS45MTE1OCA0LjkxMjgxWiIgY2xpcC1ydWxlPSJldmVub2RkIiBvcGFjaXR5PSIwLjEiLz48cGF0aCBpZD0iVW5pb25fX19fXzBfMV9UU1JRVVpZUFBVIiBmaWxsPSIjRkYxOTI5IiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik01LjMwODA5IDUuNTVMMy4yODE1NSA1LjU1TDcuNjUyNzEgMTAuODAwNUwxMi4wMjM5IDUuNTVMOS45ODQ1OSA1LjU1TDcuNjQ2MzQgOC4zNTM2Nkw1LjMwODA5IDUuNTVaTTcuNjQ2MzQgMTEuNzk0NUwxLjkxNzk2IDQuOTEyODFMMTMuMzgxMSA0LjkxMjgxTDcuNjQ2MzQgMTEuNzk0NVoiIGNsaXAtcnVsZT0iZXZlbm9kZCIvPjwvZz48L2c+PC9zdmc+") no-repeat center center;
-            background-size: contain;
-            position: absolute;
-            transform: translate(-50%, -50%) scale(1);
-            width: 15px;
-            height: 15px;
-        }
+
 
         .pentagon-container .icon1 {
             top: 0%;
@@ -542,7 +559,7 @@
             margin-top: 0.25rem;
             padding: 0 4px;
             font-size: 0.675rem;
-            color: #6b7280; /* text-gray-500 */
+            color: var(--text-subtitle-color); /* text-gray-500 */
             width: 100%;
         }
 
@@ -551,7 +568,7 @@
             width: 2ch;
         }
 
-        @media (min-width: 768px) {
+        @media (min-width: 769px) {
             .qoe-container > .row {
                 flex-direction: row;
             }
@@ -559,42 +576,54 @@
 
         .tab-navigation {
             box-sizing: border-box;
-            border-bottom: 1px solid var(--divider-strong);
+            border-bottom: var(--wrt-nav-tabs-border-width) solid var(--wrt-nav-tabs-border-color);
+            border-radius: var(--wrt-nav-tabs-border-radius);
             display: flex;
             align-items: center;
             background: var(--tab-navigation-bg-color);
-            font-size: 1.2rem;
+            font-size: var(--wrt-nav-tabs-link-font-size);
             font-family: inherit;
-            font-weight: 500;
+            font-weight: var(--wrt-nav-tabs-link-font-weight);
             letter-spacing: 0.01em;
             position: relative;
         }
 
         .tab-navigation__item {
             min-width: 180px;
-            padding-left: 32px;
-            padding-right: 32px;
-            line-height: 40px;
+            padding: var(--wrt-nav-tabs-link-padding-top) var(--wrt-nav-tabs-link-padding-x) var(--wrt-nav-tabs-link-padding-bottom);
             display: flex;
             align-items: center;
             justify-content: center;
             background: none;
             border: none;
-            font-size: inherit;
+            font-size: var(--wrt-nav-tabs-link-font-size);
             font-family: inherit;
-            color: var(--tab-navigation-text-color);
+            color: var(--wrt-nav-tabs-link-color);
             cursor: pointer;
-            border-bottom: 4px solid transparent;
-            transition: color 0.2s, border-color 0.2s;
-            font-weight: 400;
+            border-bottom: var(--wrt-nav-tabs-link-border-bottom-width) solid transparent;
+            transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+            font-weight: var(--wrt-nav-tabs-link-font-weight);
             outline: none;
         }
 
+        .tab-navigation__item:hover {
+            background: var(--wrt-nav-tabs-link-hover-bgc);
+            border-color: var(--wrt-nav-tabs-link-hover-border-color);
+            color: var(--wrt-nav-tabs-link-active-color);
+        }
+
+        .tab-navigation__item:disabled,
+        .tab-navigation__item[aria-disabled="true"] {
+            color: var(--wrt-nav-link-disabled-color);
+            cursor: not-allowed;
+        }
+
         .tab-navigation__item.active {
-            color: var(--tab-navigation-active-text);
-            font-weight: 700;
-            border-bottom: 4px solid var(--tab-navigation-active-primary);
-            border-radius: var(--radius-none) !important;
+            color: var(--wrt-nav-tabs-link-active-color);
+            font-weight: var(--wrt-nav-tabs-link-font-weight);
+            background: var(--wrt-nav-tabs-link-active-bg);
+            border-bottom-color: var(--wrt-nav-tabs-link-active-border-color);
+            border-radius: 0 !important;
         }
 
         .tab-navigation__divider {
@@ -632,8 +661,10 @@
         .setting-row {
             padding: 0.5rem 0;
             align-items: center;
+            margin: 0;
             background: var(--setting-row-bg);
             border: 1px solid var(--divider-strong);
+            border-radius: var(--wrt-table-radius);
         }
 
 
@@ -669,24 +700,24 @@
         .bandwidth-table {
             width: 100%;
             border-radius: 8px;
-            background: var(--table-row-bg-color);
+            background: var(--wrt-table-bg);
             overflow: hidden;
             margin-bottom: var(--space-lg);
-            color: var(--body-text-color);
+            color: var(--wrt-table-color);
         }
 
         .bandwidth-header-row {
-            background: var(--body-bg-color);
-            color: var(--table-header-text-color);
+            background: var(--wrt-table-header-bg);
+            color: var(--wrt-table-header-color);
             font-weight: bold;
         }
 
         .bandwidth-row {
-            color: var(--table-row-text-color);
-            background: var(--bandwidth-row-bg);
+            color: var(--wrt-table-color);
+            background: var(--wrt-table-bg);
             align-items: center;
-            border-bottom: 1px solid var(--cell-stroke);
-            border: 1px solid var(--divider-default);
+            border-bottom: var(--wrt-table-border-width) solid var(--wrt-table-row-border-color);
+            border: var(--wrt-table-border-width) solid var(--wrt-table-border-color);
         }
 
         .bandwidth-cell {
@@ -788,8 +819,8 @@
         }
 
         .bandwidth-nodata-row {
-            background: var(--table-row-bg-color);
-            color: var(--neutral-60);
+            background: var(--wrt-table-bg);
+            color: var(--wrt-table-caption-color);
         }
 
         .icon-static {
@@ -809,8 +840,8 @@
             --svg: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBpZD0iR3JvdXAiPjxnIGlkPSJhZGRfY2lyY2xlX291dGxpbmUgMSI+PHBhdGggaWQ9IlZlY3Rvcl9fX19fMF8wX05MUUhGRllHRE4iIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjMDA2Q0UxIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41IiBkPSJNMTIgMjEuMjVDNi44OTEzNyAyMS4yNSAyLjc1IDE3LjEwODYgMi43NSAxMkMyLjc1IDYuODkxMzcgNi44OTEzNyAyLjc1IDEyIDIuNzVDMTcuMTA4NiAyLjc1IDIxLjI1IDYuODkxMzcgMjEuMjUgMTJDMjEuMjUgMTcuMTA4NiAxNy4xMDg2IDIxLjI1IDEyIDIxLjI1WiIgY2xpcC1ydWxlPSJldmVub2RkIi8+PHBhdGggaWQ9IlZlY3Rvcl9fX19fMF8xX1RBVE1HVlpFU0MiIHN0cm9rZT0iIzAwNkNFMSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuNSIgZD0iTTEyIDhWMTYiLz48cGF0aCBpZD0iVmVjdG9yX19fX18wXzJfQ0hTVVNQQkxJUyIgc3Ryb2tlPSIjMDA2Q0UxIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41IiBkPSJNOCAxMkgxNiIvPjwvZz48L2c+PC9zdmc+');
         }
 
-        .qoe-main-div {
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1169' height='487' viewBox='0 0 1169 487' fill='none'%3E%3Cg filter='url(%23filter0_d_6491_12013)' shape-rendering='crispEdges'%3E%3Cpath d='M60.291 58.906L9 93.066v334.129l65.677 45.443H1106.19l53.01-37.922V41.982L1091.8 5H603.891l-80.169 53.906H60.292z' fill='%23E7ECEC' fill-opacity='.3'/%3E%3Cpath d='M505.188 41.668H84.859L137.012 5h422.053l-53.877 36.668z' fill='%23E7ECEC' fill-opacity='.3'/%3E%3Cpath d='M1110.77 5.43h17.24l27.24 15.086V34.74m.75 408.328v15.517l-15.52 15.085h-18.1M121.065 5H69.774L9 54.998v51.291m0-13.222l51.291-34.161h463.431L603.891 5H1091.8l67.4 36.982v392.734l-53.01 37.922H74.677L9 427.195V93.067zm75.86-51.399h420.328L559.065 5H137.012L84.859 41.668z' stroke='%23fff' stroke-width='2'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_d_6491_12013' x='0' y='0' width='1168.2' height='486.67' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset dy='4'/%3E%3CfeGaussianBlur stdDeviation='4'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix values='0 0 0 0 0.662109 0 0 0 0 0.971842 0 0 0 0 1 0 0 0 0.55 0'/%3E%3CfeBlend in2='BackgroundImageFix' result='effect1_dropShadow_6491_12013'/%3E%3CfeBlend in='SourceGraphic' in2='effect1_dropShadow_6491_12013' result='shape'/%3E%3C/filter%3E%3C/defs%3E%3C/svg%3E") no-repeat center center;
+       [data-asuswrt-theme="rog"] .qoe-main-div {
+            background: var(--qoe-main-div) center center no-repeat;
             background-size: contain;
             display: flex;
             align-items: center;
@@ -818,15 +849,15 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) scale(1.2);
+            transform: translate(-50%, -50%) scale(1.25);
             width: 1150px;
             height: 468px;
             z-index: 1;
             transition: background-position 0.1s ease-out;
         }
 
-        .qoe-main-div-2 {
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1125' height='446' viewBox='0 0 1125 446' fill='none'%3E%3Cpath d='M45.442 58.143L.655 87.068v314.86l64.09 42.998h859.574l14.655-8.474h72.406l12.5 8.474h51.88l48.12-30.71V37.242l-68.29-36.07H588.975l-83.26 56.97H45.442z' fill='%23F5F9FA' fill-opacity='.2' filter='url(%23filter0_i_6491_12015)'/%3E%3Cpath d='M45.442 58.143L.655 87.068v314.86l64.09 42.998h859.574l14.655-8.474h72.406l12.5 8.474h51.88l48.12-30.71V37.242l-68.29-36.07H588.975l-83.26 56.97H45.442z' stroke='%23ECF6F9'/%3E%3Cdefs%3E%3Cfilter id='filter0_i_6491_12015' x='.155' y='.672' width='1124.23' height='444.754' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeBlend in='SourceGraphic' in2='BackgroundImageFix' result='shape'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset/%3E%3CfeGaussianBlur stdDeviation='12'/%3E%3CfeComposite in2='hardAlpha' operator='arithmetic' k2='-1' k3='1'/%3E%3CfeColorMatrix values='0 0 0 0 0.737286 0 0 0 0 0.943079 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='shape' result='effect1_innerShadow_6491_12015'/%3E%3C/filter%3E%3C/defs%3E%3C/svg%3E") no-repeat center center;
+        [data-asuswrt-theme="rog"] .qoe-main-div-2 {
+            background: var(--qoe-main-div-2) center center no-repeat;
             background-size: contain;
             display: flex;
             align-items: center;
@@ -839,6 +870,13 @@
             height: 446px;
             z-index: 2;
         }
+        /* ≤768：取消這兩個背景元素 */
+        @media (max-width: 767.98px) {
+            .qoe-main-div,
+            .qoe-main-div-2 {
+                display: none !important;
+            }
+        }
 
         .qoe-setting-div-center {
             z-index: 4;
@@ -846,9 +884,147 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100%;
+            min-height: 540px; /* 確保有高度，避免絕對定位內容使欄位高度為 0 而與其他欄交疊 */
             transition: transform 0.3s ease;
         }
+
+        /* 三容器間的自適應間距：最大 32px，最小 12px，隨視窗縮小而縮減 */
+        .qoe-grid {
+            --qoe-gap: clamp(12px, 2.5vw, 32px);
+            --bs-gutter-x: var(--qoe-gap);
+            --bs-gutter-y: var(--qoe-gap);
+        }
+        /* 移除最外側欄位的外邊半 gutter，避免左右白縫 */
+        .qoe-grid > [class*="col-"]:first-child { padding-left: 0; }
+        .qoe-grid > [class*="col-"]:last-child { padding-right: 0; }
+
+        /* ≥1920：限制閱讀寬度與間距，避免三卡片過度拉散 */
+        @media (min-width: 1920px) {
+            .qoe-container .container {
+                max-width: 1600px;
+                margin-left: auto;
+                margin-right: auto;
+                padding-left: var(--wrt-gutter-xl);
+                padding-right: var(--wrt-gutter-xl);
+            }
+            .qoe-grid {
+                --qoe-gap: var(--wrt-gutter-lg);
+                --bs-gutter-x: var(--qoe-gap);
+                --bs-gutter-y: var(--qoe-gap);
+            }
+        }
+
+        /* 自適應控制變數 */
+        :root {
+            --qoe-card-padding: clamp(12px, 2vw, 24px);
+            --qoe-left-min: 320px;
+            --qoe-right-min: 300px;
+            --qoe-center-max: 540px; /* 中卡片最大寬度（以你的需求固定） */
+            --qoe-center-width: 540px; /* 以絕對值控制中卡片寬度（預設） */
+        }
+
+        /* ≥1400 寬度：依序分配寬度：中(最多) > 左(次之) > 右(最小) */
+        @media (min-width: 1400px) {
+            .qoe-chart-div-svg { max-width: var(--qoe-chart-max, 720px); }
+            .qoe-setting-div-svg { max-width: var(--qoe-left-max, 560px); }
+            .qoe-function-div-svg { max-width: var(--qoe-right-max, 360px); }
+        }
+        /* 1200-1399：維持比例但整體略縮 */
+        @media (min-width: 1200px) and (max-width: 1399.98px) {
+            .qoe-chart-div-svg { max-width: var(--qoe-chart-max-md, 640px); }
+            .qoe-setting-div-svg { max-width: var(--qoe-left-max-md, 520px); }
+            .qoe-function-div-svg { max-width: var(--qoe-right-max-md, 320px); }
+            /* 版面同 1199：左卡片在上，中+右並排在下，優先縮右卡 */
+            .qoe-col-1 { flex: 0 0 100%; max-width: 100%; margin-bottom: var(--wrt-gutter-md); }
+            .qoe-cr-group {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: stretch;
+                gap: var(--wrt-gutter-md);
+            }
+            .qoe-cr-group > .col-12 { flex: 0 0 auto; width: auto; } /* 覆蓋 col-12: width:100% */
+            .qoe-cr-group > .col-12:first-child { flex: 0 0 var(--qoe-center-width); max-width: var(--qoe-center-width); }
+            .qoe-cr-group > .col-12:last-child { flex: 1 1 var(--qoe-right-min); min-width: var(--qoe-right-min); }
+        }
+        /* 1199 以下：左卡片縮短高度且撐滿欄寬（由寬推高） */
+        @media (min-width: 992px) and (max-width: 1199.98px) {
+            .qoe-setting-div-svg {
+                /*aspect-ratio: 16 / 9;   /* 可依需求微調比例以縮短高度 */
+                min-height: 0;
+                width: 100%;
+            }
+        }
+        /* 992-1199：左在上、下方中+右並排；中維持寬度、右可縮到 200px */
+        /* 992-1199：優先維持中間，左右再縮 */
+        @media (min-width: 992px) and (max-width: 1199.98px) {
+            .qoe-chart-div-svg { max-width: var(--qoe-chart-max-sm, 560px); }
+            /*.qoe-setting-div-svg { max-width: var(--qoe-left-max-sm, 440px); }*/
+            .qoe-function-div-svg { max-width: var(--qoe-right-max-sm, 280px); }
+            .qoe-cr-group {
+                display: flex;
+                align-items: stretch;
+                gap: var(--wrt-gutter-md); /* 縮小中卡與右卡的間距 */
+            }
+            .qoe-cr-group > .col-12 {
+                flex: 0 0 auto;
+                width: auto; /* 覆蓋 col-12 的 width:100% */
+            }
+            /* 中欄固定以中心卡片寬度為主 */
+            .qoe-cr-group > .col-12:first-child {
+                flex: 0 0 var(--qoe-center-width);
+                max-width: var(--qoe-center-width);
+            }
+            /* 右欄最小 200px，可伸縮 */
+            .qoe-cr-group > .col-12:last-child {
+                flex: 1 1 200px;
+                min-width: 200px;
+            }
+        }
+        /* 768-991：左在上、下方中+右並排；中維持寬度、右可縮到 200px */
+        @media (min-width: 769px) and (max-width: 991.98px) {
+            .qoe-chart-div-svg { max-width: var(--qoe-chart-max-xs, 520px); }
+            .qoe-setting-div-svg { max-width: var(--qoe-left-max-xs, 400px); }
+            .qoe-function-div-svg { max-width: var(--qoe-right-max-xs, 260px); }
+            .qoe-cr-group {
+                display: flex;
+                align-items: stretch;
+                gap: var(--wrt-gutter-sm); /* 手機橫向或小平板再微縮間距 */
+            }
+            .qoe-cr-group > .col-12 {
+                flex: 0 0 auto;
+                width: auto; /* 覆蓋 col-12 的 width:100% */
+            }
+            .qoe-cr-group > .col-12:first-child {
+                flex: 0 0 var(--qoe-center-width);
+                max-width: var(--qoe-center-width);
+            }
+            .qoe-cr-group > .col-12:last-child {
+                flex: 1 1 200px;
+                min-width: 200px;
+            }
+        }
+        /* 單點 768px：沿用 769 版面，為避免換行，中心卡寬減 1px */
+        @media (width: 768px) {
+            .qoe-cr-group {
+                display: flex;
+                flex-wrap: nowrap;
+                align-items: stretch;
+                gap: var(--wrt-gutter-sm);
+            }
+            .qoe-cr-group > .col-12 {
+                flex: 0 0 auto;
+                width: auto;
+            }
+            .qoe-cr-group > .col-12:first-child {
+                flex: 0 0 calc(var(--qoe-center-width) - 1px);
+                max-width: calc(var(--qoe-center-width) - 1px);
+            }
+            .qoe-cr-group > .col-12:last-child {
+                flex: 1 1 calc(200px - 1px);
+                min-width: calc(200px - 1px);
+            }
+        }
+
 
         .qoe-setting-div-left, .qoe-setting-div-right {
             z-index: 3;
@@ -857,33 +1033,123 @@
             align-items: center;
             justify-content: center;
             height: 100%;
+            overflow: hidden; /* 左右欄也裁切內部裝飾，避免跨欄 */
             transition: transform 0.3s ease;
         }
 
-        .qoe-setting-div-svg {
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='366' height='399' viewBox='0 0 366 399' fill='none'%3E%3CforeignObject x='.4' y='.4' width='365.199' height='398.2'%3E%3Cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(5px);height:100%25;width:100%25' clip-path='url(%23bgblur_0_6491_12189_clip_path)'/%3E%3C/foreignObject%3E%3Cg filter='url(%23filter0_d_6491_12189)' data-figma-bg-blur-radius='10'%3E%3Cpath d='M19 380V53.029L56.837 19H347v361H19z' fill='url(%23paint0_linear_6491_12189)'/%3E%3Cpath d='M19 380V53.029L56.837 19H347v361H19z' stroke='%23fff' stroke-width='1.2'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_d_6491_12189' x='.4' y='.4' width='365.199' height='398.2' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset/%3E%3CfeGaussianBlur stdDeviation='9'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix values='0 0 0 0 0.625056 0 0 0 0 0.868769 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='BackgroundImageFix' result='effect1_dropShadow_6491_12189'/%3E%3CfeBlend in='SourceGraphic' in2='effect1_dropShadow_6491_12189' result='shape'/%3E%3C/filter%3E%3CclipPath id='bgblur_0_6491_12189_clip_path' transform='translate(-.4 -.4)'%3E%3Cpath d='M19 380V53.029L56.837 19H347v361H19z'/%3E%3C/clipPath%3E%3ClinearGradient id='paint0_linear_6491_12189' x1='299.826' y1='434' x2='299.826' y2='3.5' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='.184' stop-color='%23fff' stop-opacity='.3'/%3E%3Cstop offset='.565' stop-color='%23fff'/%3E%3Cstop offset='.932' stop-color='%23fff' stop-opacity='.3'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E") no-repeat center center;
-            background-size: contain;
+       .qoe-setting-div-svg {
+            background-image: linear-gradient(to bottom, rgba(var(--surface-card-rgb),0.8) , rgba(var(--surface-card-rgb),0.9)) ;
+            position: relative;
+            width: 90%;
+            min-height: 400px;
+            padding: 0.5rem;
+            margin: 0 auto;
+            box-sizing: border-box;
+            border-radius: var(--global-radius);
+            /*border: 1px solid var(--border-default);*/
+            box-shadow: 0 0 0px 1px var(--shadow-ambient-primary-20), 0 0 10px 1px rgba(var(--shadow-ambient-primary-40-rgb),0.7);
+        }
+        [data-asuswrt-theme="rog"] .qoe-setting-div-svg{
+            background: var(--qoe-setting-div-svg)  no-repeat center / 100% 100%;
+            padding: var(--qoe-card-padding);
+            border: none;
+            width: 100%;
+            box-shadow: none;
+        }
+        /* ≤1199px：以寬推高，縮短高度並撐滿容器寬度 */
+        @media (max-width: 1199.98px) {
+            .qoe-setting-div-svg {
+                width: 100%;
+                max-width: none;
+                min-height: 0;
+                /* 不使用等比放大，改採用 clamp 讓寬撐滿、同時限制高度縮短 */
+                /*height: clamp(220px, 28vw, 320px);*/
+                background-size: 100% 100%;
+            }
+        }
+        .qoe-setting-div-svg::before{
+            content: '';
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(1);
-            width: 366px;
-            height: 399px;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            /* 建議套在 .qoe-setting-div-svg::before 上 */
+            clip-path: polygon(
+                        5.19% 95.24%,              /* (19,380) */
+                        5.19% 13.30%,              /* (19,53.029) */
+                        56.837px 4.76%,            /* (56.837,19) */
+                        calc(100% - 19px) 4.76%,   /* (347,19) */
+                        calc(100% - 19px) 95.24%   /* (347,380) */
+                        );
+            pointer-events: none;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--white-alpha-40);
+            border-radius: var(--global-radius);
+            background: rgba(var(--black-rgb),0.0001);
         }
 
         .qoe-chart-div-svg {
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='485' height='400' viewBox='0 0 485 400' fill='none'%3E%3CforeignObject x='.5' y='.5' width='484.5' height='399.169'%3E%3Cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(3.5px);height:100%25;width:100%25' clip-path='url(%23bgblur_0_6507_12109_clip_path)'/%3E%3C/foreignObject%3E%3Cg filter='url(%23filter0_d_6507_12109)' data-figma-bg-blur-radius='7'%3E%3Cpath d='M19 321.669v46.669h82l21.5 12.831h320l24-19v-148l-15-10.5v-136.5l15-13.733V19H19v302.669z' fill='url(%23paint0_linear_6507_12109)'/%3E%3Cpath d='M19 321.669v46.669h82l21.5 12.831h320l24-19v-148l-15-10.5v-136.5l15-13.733V19H19v302.669z' stroke='%23fff'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_d_6507_12109' x='.5' y='.5' width='484.5' height='399.169' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset/%3E%3CfeGaussianBlur stdDeviation='9'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix values='0 0 0 0 0.699801 0 0 0 0 0.89493 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='BackgroundImageFix' result='effect1_dropShadow_6507_12109'/%3E%3CfeBlend in='SourceGraphic' in2='effect1_dropShadow_6507_12109' result='shape'/%3E%3C/filter%3E%3CclipPath id='bgblur_0_6507_12109_clip_path' transform='translate(-.5 -.5)'%3E%3Cpath d='M19 321.669v46.669h82l21.5 12.831h320l24-19v-148l-15-10.5v-136.5l15-13.733V19H19v302.669z'/%3E%3C/clipPath%3E%3ClinearGradient id='paint0_linear_6507_12109' x1='-47.939' y1='304.191' x2='485.714' y2='304.191' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='.184' stop-color='%23fff' stop-opacity='.3'/%3E%3Cstop offset='.565' stop-color='%23fff'/%3E%3Cstop offset='.932' stop-color='%23fff' stop-opacity='.3'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E") no-repeat center center;
-            background-size: contain;
-            position: absolute;
-            top: 50%;
+            background-image: linear-gradient(to bottom, rgba(var(--surface-card-rgb),0.8) , rgba(var(--surface-card-rgb),0.9)) ;
+            position: absolute;      /* 中午穩定版：置中並限制最大寬 */
+            width: var(--qoe-center-width, 540px); /* 使用絕對值變數，配合斷點調整 */
+            min-height: 400px;
+            padding: 0;
+            margin-left: 0;
+            margin-right: 0;
             left: 50%;
-            transform: translate(-50%, -50%) scale(1.1);
-            width: 447px;
-            height: 362px;
+            transform: translateX(-50%);
+            /*border: 1px solid var(--border-default);*/
+            border-radius: var(--global-radius);
+            box-shadow: 0 0 0px 1px var(--shadow-ambient-primary-20), 0 0 10px 1px rgba(var(--shadow-ambient-primary-40-rgb),0.7);
+        }
+        [data-asuswrt-theme="rog"] .qoe-chart-div-svg{
+            background: var(--qoe-chart-div-svg) no-repeat center / 100% 100%;
+            border: none;
+            padding: 2rem;
+            box-shadow: none;
         }
 
+        .qoe-chart-div-svg::before{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 99.5%;
+            height: 99.5%;
+            /* 建議套在 .qoe-chart-div-svg::before / ::after 上 */
+            clip-path: polygon(
+                        3.92% 4.75%,                      /* (19,19) */
+                        calc(100% - 18.5px) 4.75%,        /* (466.5,19) */
+                        calc(100% - 18.5px) 13.36%,       /* (466.5,53.436) */
+                        calc(100% - 33.5px) 16.79%,       /* (451.5,67.169) */
+                        calc(100% - 33.5px) 50.92%,       /* (451.5,203.669) */
+                        calc(100% - 18.5px) 53.54%,       /* (466.5,214.169) */
+                        calc(100% - 18.5px) 90.54%,       /* (466.5,362.169) */
+                        calc(100% - 42.5px) 95.29%,       /* (442.5,381.169) */
+                        25.26% 95.29%,                    /* (122.5,381.169) */
+                        20.82% 92.08%,                    /* (101,368.338) */
+                        3.92% 92.08%,                     /* (19,368.338) */
+                        3.92% 80.42%,                     /* (19,321.669) */
+                        3.92% 69.03%,                     /* (19,276.121) */
+                        3.92% 21.79%,                     /* (19,87.1692) */
+                        3.92% 14.67%                      /* (19,58.6692) */
+                        );
+            z-index: 1;
+            pointer-events: none;
+            /* near-transparent fill provides alpha for drop-shadow to trace the path */
+            background: rgba(255,255,255,0.001);
+            filter:
+                drop-shadow(0 0 0 1px var(--border-subtle));
+            backdrop-filter: blur(10px);
+        }
+
+
         .qoe-chart-corner-lt-svg, .qoe-chart-corner-rb-svg {
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='119' height='119' viewBox='0 0 119 119' fill='%23F8F8F8'%3E%3CforeignObject x='.929' y='-5.287' width='117.27' height='123.865'%3E%3Cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(9px);height:100%25;width:100%25' clip-path='url(%23bgblur_0_6507_12113_clip_path)'/%3E%3C/foreignObject%3E%3Cg filter='url(%23filter0_di_6507_12113)' data-figma-bg-blur-radius='18' shape-rendering='crispEdges'%3E%3Cpath d='M94.198 15.913v3.891c0 1.12 0 1.68-.218 2.108a2 2 0 0 1-.874.874c-.428.218-.988.218-2.108.218H56.101c-.408 0-.613 0-.809.04a2.002 2.002 0 0 0-.5.172c-.178.09-.34.215-.661.467L35.6 38.166c-.45.353-.676.53-.839.75a2.002 2.002 0 0 0-.316.65c-.074.263-.074.55-.074 1.122l.004 38.69c0 1.12 0 1.68-.218 2.108a2 2 0 0 1-.874.874c-.428.218-.988.218-2.108.218h-3.04c-1.12 0-1.68 0-2.108-.218a2 2 0 0 1-.874-.874c-.218-.428-.218-.987-.218-2.107l-.008-52.237c0-.526 0-.789.063-1.034a2 2 0 0 1 .273-.611c.14-.211.337-.387.729-.738L38.522 13.53c.337-.302.505-.453.697-.56.17-.097.354-.167.544-.209.215-.048.442-.048.894-.048h50.341c1.12 0 1.68 0 2.108.218a2 2 0 0 1 .874.874c.218.428.218.988.218 2.108z' fill='%23fff' fill-opacity='.1'/%3E%3Cpath d='M92.88 22.341c.281-.144.511-.374.655-.656.067-.132.113-.306.138-.608.025-.309.025-.705.025-1.273v-3.89c0-.569 0-.966-.025-1.274-.025-.303-.071-.476-.139-.608a1.5 1.5 0 0 0-.655-.655c-.131-.068-.305-.114-.608-.139-.308-.025-.704-.024-1.273-.024l-50.34-.001c-.475 0-.638.003-.786.036a1.5 1.5 0 0 0-.408.156c-.133.075-.255.18-.609.497l-12.529 11.23c-.41.368-.548.497-.645.642a1.5 1.5 0 0 0-.206.458 1.478 1.478 0 0 0-.04.312l-.006.598.006 52.237c0 .568.002.964.027 1.272.025.303.07.477.138.609a1.5 1.5 0 0 0 .655.655c.132.067.306.113.608.137.309.025.705.026 1.273.026h3.04c.568 0 .964 0 1.273-.026.302-.024.476-.07.608-.137.282-.144.512-.374.656-.656.067-.132.113-.306.137-.609.025-.308.026-.704.026-1.272l-.004-38.69c0-.544-.004-.912.092-1.258.082-.292.216-.567.396-.81.212-.29.505-.512.934-.847l18.529-14.485c.306-.239.511-.402.745-.52.198-.099.408-.171.625-.215.25-.05.505-.048.877-.048l.009-.002.022.001h34.897c.568 0 .965 0 1.273-.026.302-.024.477-.07.608-.137z' stroke='%23fff'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_di_6507_12113' x='.929' y='-5.287' width='117.27' height='123.865' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset dy='12'/%3E%3CfeGaussianBlur stdDeviation='12'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix values='0 0 0 0 0.456731 0 0 0 0 0.963782 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend mode='multiply' in2='BackgroundImageFix' result='effect1_dropShadow_6507_12113'/%3E%3CfeBlend in='SourceGraphic' in2='effect1_dropShadow_6507_12113' result='shape'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset/%3E%3CfeGaussianBlur stdDeviation='4'/%3E%3CfeComposite in2='hardAlpha' operator='arithmetic' k2='-1' k3='1'/%3E%3CfeColorMatrix values='0 0 0 0 0.972549 0 0 0 0 0.972549 0 0 0 0 0.972549 0 0 0 0.1 0'/%3E%3CfeBlend in2='shape' result='effect2_innerShadow_6507_12113'/%3E%3C/filter%3E%3CclipPath id='bgblur_0_6507_12113_clip_path' transform='translate(-.929 5.287)'%3E%3Cpath d='M94.198 15.913v3.891c0 1.12 0 1.68-.218 2.108a2 2 0 0 1-.874.874c-.428.218-.988.218-2.108.218H56.101c-.408 0-.613 0-.809.04a2.002 2.002 0 0 0-.5.172c-.178.09-.34.215-.661.467L35.6 38.166c-.45.353-.676.53-.839.75a2.002 2.002 0 0 0-.316.65c-.074.263-.074.55-.074 1.122l.004 38.69c0 1.12 0 1.68-.218 2.108a2 2 0 0 1-.874.874c-.428.218-.988.218-2.108.218h-3.04c-1.12 0-1.68 0-2.108-.218a2 2 0 0 1-.874-.874c-.218-.428-.218-.987-.218-2.107l-.008-52.237c0-.526 0-.789.063-1.034a2 2 0 0 1 .273-.611c.14-.211.337-.387.729-.738L38.522 13.53c.337-.302.505-.453.697-.56.17-.097.354-.167.544-.209.215-.048.442-.048.894-.048h50.341c1.12 0 1.68 0 2.108.218a2 2 0 0 1 .874.874c.218.428.218.988.218 2.108z'/%3E%3C/clipPath%3E%3C/defs%3E%3C/svg%3E") no-repeat center center;
+            background: var(--qoe-corner-svg) no-repeat center center;
             background-size: contain;
             z-index: 5;
             position: absolute;
@@ -894,38 +1160,161 @@
             transition: transform 0.3s ease;
         }
 
+        /* 提升右欄層級，避免在 3 欄時被中欄裝飾覆蓋 */
+        .qoe-setting-div-right { z-index: 6; }
+
         .qoe-chart-corner-lt-svg {
-            transform: translate(-252px, -199px) scale(1);
+            transform: translate(-273px, -246px) scale(1);
         }
 
+        /* 左/右卡片 padding 隨視窗縮小變薄，避免吃掉內容空間 */
+        .qoe-setting-div-right .qoe-function-div-svg {
+            padding: var(--qoe-card-padding);
+            box-sizing: border-box;
+        }
+        /* 右卡背景也用 padding-block 撐高，讓素材跟著增長 */
+        .qoe-setting-div-right .qoe-function-div-svg {
+            padding-top: calc(var(--qoe-card-padding) + var(--wrt-gutter-md));
+            padding-bottom: calc(var(--qoe-card-padding) + var(--wrt-gutter-md));
+        }
+        /* 左卡片：恢復外層 padding，由外層掌控內容貼合背景 */
+        [data-asuswrt-theme="rog"] .qoe-setting-div-left .qoe-setting-div-svg {
+            padding: var(--qoe-card-padding);
+        }
+        /* 讓背景容器本身用 padding-block 撐高，背景素材也會一起增長 */
+
+        .qoe-setting-div-left .qoe-setting-div-svg {
+            padding-top: calc(var(--qoe-card-padding) + var(--wrt-gutter-md));
+            padding-bottom: calc(var(--qoe-card-padding) + var(--wrt-gutter-md));
+        }
+        .qoe-setting-div-left .qoe-setting-controller-left {
+            padding: 0;
+            box-sizing: border-box;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        /* 右側按鈕群：可換行，避免溢出 */
+        .qoe-setting-div-right .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 12px;
+            align-items: center;
+            justify-content: flex-start;
+            max-width: 100%;
+            margin-left: 0;
+        }
+        @media (max-width: 767.98px) {
+            /* 解除所有.button-container上的wrap衝突 */
+            .button-container,
+            .qoe-setting-div-right .button-container {
+                flex-wrap: nowrap !important;
+            }
+        }
+        .qoe-setting-div-right .button-container > * {
+            min-width: 0;
+            max-width: 100%;
+        }
+
+        /* ≥1400：三欄並排，但限制左右的最小寬度，優先保中欄 */
+        @media (min-width: 1400px) {
+            .qoe-setting-div-left { min-width: var(--qoe-left-min); }
+            .qoe-setting-div-right { min-width: var(--qoe-right-min); }
+        }
+
+        /* ≤991.98：全部垂直，同時進一步降低卡片 padding 上限 */
+        @media (max-width: 991.98px) {
+            :root { --qoe-card-padding: clamp(10px, 2vw, 16px); }
+        }
+
+        /* 斷點：用絕對值變數調整中卡片實際寬度（避免百分比造成不穩定） */
+        @media (min-width: 1400px) {
+            :root { --qoe-center-width: 540px; }
+        }
+        @media (min-width: 1200px) and (max-width: 1399.98px) {
+            :root { --qoe-center-width: 520px; }
+        }
+        @media (min-width: 992px) and (max-width: 1199.98px) {
+            :root { --qoe-center-width: 480px; }
+        }
+        @media (min-width: 768px) and (max-width: 991.98px) {
+            :root { --qoe-center-width: 440px; }
+        }
         .qoe-chart-corner-rb-svg {
-            transform: translate(-134px, -81px) scale(1);
+            transform: translate(-163px, -134px) scale(1);
             rotate: 180deg;
         }
 
         .qoe-setting-div-center:hover .qoe-chart-corner-lt-svg {
-            transform: translate(-260px, -207px) scale(1)
+            transform: translate(-258px, -219px) scale(1)
         }
 
         .qoe-setting-div-center:hover .qoe-chart-corner-rb-svg {
-            transform: translate(-142px, -89px) scale(1);
+            transform: translate(-141px, -101px) scale(1);
         }
 
         .qoe-function-div-svg {
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='342' height='364' viewBox='0 0 342 364' fill='none'%3E%3CforeignObject x='.4' y='.4' width='340.702' height='363.2'%3E%3Cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(5px);height:100%25;width:100%25' clip-path='url(%23bgblur_0_6491_11811_clip_path)'/%3E%3C/foreignObject%3E%3Cg filter='url(%23filter0_d_6491_11811)' data-figma-bg-blur-radius='10'%3E%3Cpath d='M302 19l20.501 19v307h-291v-12.189l9.189-6.175V167.35L19 152.363V30.5L31.501 21l257.325-2H302z' fill='url(%23paint0_linear_6491_11811)'/%3E%3Cpath d='M302 19l20.501 19v307h-291v-12.189l9.189-6.175V167.35L19 152.363V30.5L31.501 21l257.325-2H302z' stroke='%23fff' stroke-width='1.2'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_d_6491_11811' x='.4' y='.4' width='340.702' height='363.2' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset/%3E%3CfeGaussianBlur stdDeviation='9'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix values='0 0 0 0 0.625056 0 0 0 0 0.868769 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='BackgroundImageFix' result='effect1_dropShadow_6491_11811'/%3E%3CfeBlend in='SourceGraphic' in2='effect1_dropShadow_6491_11811' result='shape'/%3E%3C/filter%3E%3CclipPath id='bgblur_0_6491_11811_clip_path' transform='translate(-.4 -.4)'%3E%3Cpath d='M302 19l20.501 19v307h-291v-12.189l9.189-6.175V167.35L19 152.363V30.5L31.501 21l257.325-2H302z'/%3E%3C/clipPath%3E%3ClinearGradient id='paint0_linear_6491_11811' x1='278.851' y1='-29.765' x2='278.851' y2='358.997' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='.184' stop-color='%23fff' stop-opacity='.8'/%3E%3Cstop offset='.565' stop-color='%23fff'/%3E%3Cstop offset='.932' stop-color='%23fff' stop-opacity='.6'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E") no-repeat center center;
-            background-size: contain;
+            background-image: linear-gradient(to bottom, rgba(var(--surface-card-rgb),0.8) , rgba(var(--surface-card-rgb),0.9)) ;
+            width: 300px;
             position: absolute;
-            top: 50%;
+            top: 53%;
             left: 50%;
-            transform: translate(-50%, -43%) scale(1.1);
-            width: 342px;
+            transform: translate(-50%, -50%) scale(1);
+            max-width: none;
             height: 364px;
             z-index: 0;
+            /*border: 1px solid var(--border-default);*/
+            border-radius: var(--global-radius);
+            box-shadow: 0 0 0px 1px var(--shadow-ambient-primary-20), 0 0 10px 1px rgba(var(--shadow-ambient-primary-40-rgb),0.7);
+        }
+        [data-asuswrt-theme="rog"] .qoe-function-div-svg{
+            background: var(--qoe-function-div-svg) no-repeat center / 100% 100%;
+            border: none;
+            transform: translate(-50%, -43%) scale(1.1);
+            width: 100%;
+            top: 50%;
+            box-shadow: none;
+        }
+        .qoe-function-div-svg::before{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 99.5%;
+            height: 99.5%;
+            clip-path: polygon(
+                calc(100% - 38.4px) 5.11%,
+                calc(100% - 17.9px) 10.33%,
+                calc(100% - 18.9px) 94.73%,
+                33.1013px 94.73%,
+                33.1013px 92.35%,
+                41.2897px 90.61%,
+                41.2897px 45.86%,
+                19.6px 41.77%,
+                19.6px 8.27%,
+                31.1013px 5.66%,
+                calc(100% - 52.574px) 5.11%
+            );
+            background: rgba(255,255,255,0.001);
+            pointer-events: none;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            filter: drop-shadow(0 0 0 1px var(--border-subtle));
         }
 
         #modeTitle {
             font-style: italic;
-            font-weight: 600;
+            font-weight: var(--font-weight-semibold, 600);
+            font-size: var(--font-size-16, 1rem);
+            margin-bottom: var(--wrt-gutter-xxs);
+        }
+        @media (max-width: 1400px) {
+            .qoe-setting-div-center {
+                min-height: 340px;
+            }
+
         }
 
         @media (max-width: 1200px) {
@@ -934,10 +1323,7 @@
             }
 
             .qoe-main-div-2 {
-                background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='877' height='650' viewBox='0 0 877 650' fill='none'%3E%3Cpath d='M49.669 68.791L1.407 103.21v494.621l69.062 51.164 590.893.005 15.792-10.083h78.029L768.653 649h55.898l51.856-36.543V43.926L802.822 1.005 624.597 1l-89.719 67.791H49.668z' fill='%23F5F9FA' fill-opacity='.2' filter='url(%23filter0_i_6650_12659)'/%3E%3Cpath d='M49.669 68.791L1.407 103.21v494.621l69.062 51.164 590.893.005 15.792-10.083h78.029L768.653 649h55.898l51.856-36.543V43.926L802.822 1.005 624.597 1l-89.719 67.791H49.668z' stroke='%23ECF6F9'/%3E%3Cdefs%3E%3Cfilter id='filter0_i_6650_12659' x='.907' y='.5' width='876' height='649' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeBlend in='SourceGraphic' in2='BackgroundImageFix' result='shape'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset/%3E%3CfeGaussianBlur stdDeviation='12'/%3E%3CfeComposite in2='hardAlpha' operator='arithmetic' k2='-1' k3='1'/%3E%3CfeColorMatrix values='0 0 0 0 0.737286 0 0 0 0 0.943079 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='shape' result='effect1_innerShadow_6650_12659'/%3E%3C/filter%3E%3C/defs%3E%3C/svg%3E") no-repeat center center;
-                width: 877px;
-                height: 650px;
-                transform: translate(-50%, -56%) scale(1.05);
+                display: none;
             }
 
             .qoe-col-1 {
@@ -945,8 +1331,8 @@
             }
 
             .qoe-setting-controller-left {
-                flex-direction: row;
-                width: 80%;
+                /*flex-direction: row;*/
+                width: 100%;
             }
 
             .qoe-setting-controller-right {
@@ -954,8 +1340,8 @@
             }
 
             .switch-div {
-                flex-direction: column;
-                width: 20%;
+                flex-direction: row;
+                /*width: 20%;*/
             }
 
             .slider-and-btn {
@@ -970,14 +1356,6 @@
             #applyBtn {
                 width: 30%;
             }
-
-            .qoe-setting-div-svg {
-                background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='838' height='210' viewBox='0 0 838 210' fill='none'%3E%3CforeignObject x='.4' y='.4' width='837.199' height='209.2'%3E%3Cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(5px);height:100%25;width:100%25' clip-path='url(%23bgblur_0_6491_12109_clip_path)'/%3E%3C/foreignObject%3E%3Cg filter='url(%23filter0_d_6491_12109)' data-figma-bg-blur-radius='10'%3E%3Cpath d='M19 190.997V53.254L56.837 19l739.391.003H819V191l-582.57-.003H19z' fill='url(%23paint0_linear_6491_12109)'/%3E%3Cpath d='M19 110.588v80.409h233.921-16.491L819 191V19.003h-22.772L56.837 19 19 53.254v57.334z' stroke='%23fff' stroke-width='1.2'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_d_6491_12109' x='.4' y='.4' width='837.199' height='209.2' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset/%3E%3CfeGaussianBlur stdDeviation='9'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix values='0 0 0 0 0.625056 0 0 0 0 0.868769 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='BackgroundImageFix' result='effect1_dropShadow_6491_12109'/%3E%3CfeBlend in='SourceGraphic' in2='effect1_dropShadow_6491_12109' result='shape'/%3E%3C/filter%3E%3CclipPath id='bgblur_0_6491_12109_clip_path' transform='translate(-.4 -.4)'%3E%3Cpath d='M19 190.997V53.254L56.837 19l739.391.003H819V191l-582.57-.003H19z'/%3E%3C/clipPath%3E%3ClinearGradient id='paint0_linear_6491_12109' x1='299.826' y1='436.74' x2='299.826' y2='3.398' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='.184' stop-color='%23fff' stop-opacity='.3'/%3E%3Cstop offset='.565' stop-color='%23fff'/%3E%3Cstop offset='.932' stop-color='%23fff' stop-opacity='.3'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E") no-repeat center center;
-                width: 838px;
-                height: 210px;
-                transform: translate(-50%, -50%) scale(0.95);
-            }
-
 
             .qoe-function-div-svg {
                 transform: translate(-52%, -43%) scale(1.1);
@@ -1008,10 +1386,10 @@
 
         @media (max-width: 992px) {
             .qoe-setting-div-svg {
-                background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='741' height='228' viewBox='0 0 741 228' fill='none'%3E%3CforeignObject x='.4' y='.4' width='740.199' height='227.2'%3E%3Cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(5px);height:100%25;width:100%25' clip-path='url(%23bgblur_0_6491_12350_clip_path)'/%3E%3C/foreignObject%3E%3Cg filter='url(%23filter0_d_6491_12350)' data-figma-bg-blur-radius='10'%3E%3Cpath d='M19 208.996V53.254L46.837 19l652.391.003H722V209l-485.57-.004H19z' fill='url(%23paint0_linear_6491_12350)'/%3E%3Cpath d='M19 208.996V53.254L46.837 19l652.391.003H722V209l-485.57-.004H19z' stroke='%23fff' stroke-width='1.2'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_d_6491_12350' x='.4' y='.4' width='740.199' height='227.2' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset/%3E%3CfeGaussianBlur stdDeviation='9'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix values='0 0 0 0 0.625056 0 0 0 0 0.868769 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='BackgroundImageFix' result='effect1_dropShadow_6491_12350'/%3E%3CfeBlend in='SourceGraphic' in2='effect1_dropShadow_6491_12350' result='shape'/%3E%3C/filter%3E%3CclipPath id='bgblur_0_6491_12350_clip_path' transform='translate(-.4 -.4)'%3E%3Cpath d='M19 208.996V53.254L46.837 19l652.391.003H722V209l-485.57-.004H19z'/%3E%3C/clipPath%3E%3ClinearGradient id='paint0_linear_6491_12350' x1='299.826' y1='436.74' x2='299.826' y2='3.398' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='.184' stop-color='%23fff' stop-opacity='.3'/%3E%3Cstop offset='.565' stop-color='%23fff'/%3E%3Cstop offset='.932' stop-color='%23fff' stop-opacity='.3'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E") no-repeat center center;
-                width: 741px;
-                height: 228px;
-                transform: translate(-50%, -50%) scale(0.95);
+                width: 100%;
+                max-width: none;
+                /*height: clamp(210px, 26vw, 300px);*/
+                transform: none;
             }
 
             .qoe-main-div {
@@ -1021,26 +1399,47 @@
             .qoe-main-div-2 {
                 display: none;
             }
+
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 767.98px) {
+
             .qoe-setting-div-svg {
-                background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='577' height='269' viewBox='0 0 577 269' fill='none'%3E%3CforeignObject x='.4' y='.4' width='575.7' height='267.7'%3E%3Cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(5px);height:100%25;width:100%25' clip-path='url(%23bgblur_0_6491_12270_clip_path)'/%3E%3C/foreignObject%3E%3Cg filter='url(%23filter0_d_6491_12270)' data-figma-bg-blur-radius='10'%3E%3Cpath d='M19 249.496V53.254L46.837 19l487.891.003H557.5V249.5l-321.07-.004H19z' fill='url(%23paint0_linear_6491_12270)'/%3E%3Cpath d='M19 249.496V53.254L46.837 19l487.891.003H557.5V249.5l-321.07-.004H19z' stroke='%23fff' stroke-width='1.2'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_d_6491_12270' x='.4' y='.4' width='575.7' height='267.7' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset/%3E%3CfeGaussianBlur stdDeviation='9'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix values='0 0 0 0 0.625056 0 0 0 0 0.868769 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='BackgroundImageFix' result='effect1_dropShadow_6491_12270'/%3E%3CfeBlend in='SourceGraphic' in2='effect1_dropShadow_6491_12270' result='shape'/%3E%3C/filter%3E%3CclipPath id='bgblur_0_6491_12270_clip_path' transform='translate(-.4 -.4)'%3E%3Cpath d='M19 249.496V53.254L46.837 19l487.891.003H557.5V249.5l-321.07-.004H19z'/%3E%3C/clipPath%3E%3ClinearGradient id='paint0_linear_6491_12270' x1='299.826' y1='436.74' x2='299.826' y2='3.398' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='.184' stop-color='%23fff' stop-opacity='.3'/%3E%3Cstop offset='.565' stop-color='%23fff'/%3E%3Cstop offset='.932' stop-color='%23fff' stop-opacity='.3'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E") no-repeat center center;
-                width: 538px;
-                height: 230px;
+                width: 100%;
+                max-width: none;
+                height: auto;              /* 讓高度隨內容撐開，避免裁切 */
+                min-height: 240px;         /* 避免過矮影響視覺 */
+                transform: none;
+            }
+            /* 調整卡片間距：使用較小 gutter 與移除欄內側 padding */
+            .qoe-grid { --bs-gutter-y: var(--wrt-gutter-sm); }
+            .qoe-grid > [class*="col-"] { padding-left: 0; padding-right: 0; }
+            /* 左卡片內：三塊垂直排列且滿寬 */
+            .qoe-setting-controller-left { flex-direction: column; width: 100%; }
+            .qoe-setting-controller-left .switch-div,
+            .qoe-setting-controller-left .info-panel,
+            .qoe-setting-controller-left .split-line {
+                width: 100%;
+                max-width: 100%;
             }
 
+            /* 右卡片：移除背景素材，讓內容自適應撐滿 */
             .qoe-function-div-svg {
-                background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='577' height='137' viewBox='0 0 577 137' fill='none'%3E%3CforeignObject x='.901' y='.225' width='575.699' height='136.55'%3E%3Cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(5px);height:100%25;width:100%25' clip-path='url(%23bgblur_0_6507_12104_clip_path)'/%3E%3C/foreignObject%3E%3Cg filter='url(%23filter0_d_6507_12104)' data-figma-bg-blur-radius='10'%3E%3Cpath d='M537.5 18.825l20.501 19v80.35H41.191L19.5 103.188V30.325l12.501-9.5 492.324-2H537.5z' fill='url(%23paint0_linear_6507_12104)'/%3E%3Cpath d='M537.5 18.825l20.501 19v80.35H41.191L19.5 103.188V30.325l12.501-9.5 492.324-2H537.5z' stroke='%23fff' stroke-width='1.2'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_d_6507_12104' x='.901' y='.225' width='575.699' height='136.55' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset/%3E%3CfeGaussianBlur stdDeviation='9'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix values='0 0 0 0 0.625056 0 0 0 0 0.868769 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='BackgroundImageFix' result='effect1_dropShadow_6507_12104'/%3E%3CfeBlend in='SourceGraphic' in2='effect1_dropShadow_6507_12104' result='shape'/%3E%3C/filter%3E%3CclipPath id='bgblur_0_6507_12104_clip_path' transform='translate(-.901 -.225)'%3E%3Cpath d='M537.5 18.825l20.501 19v80.35H41.191L19.5 103.188V30.325l12.501-9.5 492.324-2H537.5z'/%3E%3C/clipPath%3E%3ClinearGradient id='paint0_linear_6507_12104' x1='279.352' y1='-29.939' x2='279.352' y2='358.822' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='.184' stop-color='%23fff' stop-opacity='.3'/%3E%3Cstop offset='.565' stop-color='%23fff'/%3E%3Cstop offset='.932' stop-color='%23fff' stop-opacity='.3'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E") no-repeat center center;
-                width: 577px;
-                height: 137px;
+                background: none !important;
+                width: 100%;
+                max-width: none;
+                height: auto;
+                transform: none;
+                padding: var(--qoe-card-padding);
             }
 
             .button-container {
                 margin-top: 30px;
-                flex-direction: row;
-                justify-content: space-around;
                 margin-bottom: 10px;
+                display: flex;
+                flex-direction: row;            /* 水平排列 */             /* 可自動換行 */
+                gap: var(--wrt-gutter-sm);
+                justify-content: stretch;       /* 撐滿寬度 */
                 align-items: center;
             }
 
@@ -1049,15 +1448,19 @@
             }
 
             .qoe-setting-controller-right {
-                width: 500px;
+                width: 100%;                    /* 讓右卡控制區撐滿容器寬度 */
             }
 
             .mode-button {
-                flex-direction: column;
-                width: 110px;
-                height: 110px;
-                padding: 0;
+                display: flex;
+                flex-direction: column;         /* icon + 文字垂直 */
+                align-items: center;
                 justify-content: center;
+                padding: var(--wrt-gutter-sm);
+                width: auto;
+                height: auto;
+                flex: 1 1 calc(50% - var(--wrt-gutter-sm)); /* 平分容器寬度（兩欄） */
+                max-width: calc(50% - var(--wrt-gutter-sm));
             }
 
             .mode-button.active .function-btn-img {
@@ -1069,7 +1472,7 @@
             .button-container .split-line {
                 height: 90px;
                 width: 1px;
-                background-color: #ccc;
+                background-color: var(--border-subtle);
             }
 
             .slider-and-btn {
@@ -1095,25 +1498,21 @@
         }
 
         @media (max-width: 576px) {
-            #tab-section-aiqoe {
-                height: 910px;
-            }
-
             .qoe-setting-div-svg {
-                background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='381' height='344' viewBox='0 0 381 344' fill='none'%3E%3CforeignObject x='.4' y='.4' width='380.199' height='343.2'%3E%3Cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(5px);height:100%25;width:100%25' clip-path='url(%23bgblur_0_6491_12430_clip_path)'/%3E%3C/foreignObject%3E%3Cg filter='url(%23filter0_d_6491_12430)' data-figma-bg-blur-radius='10'%3E%3Cpath d='M19 324.997V53.254L46.837 19l292.391.004H362V325c-60.452 0-102.118-.003-125.57-.003H19z' fill='url(%23paint0_linear_6491_12430)'/%3E%3Cpath d='M19 324.997V53.254L46.837 19l292.391.004H362V325c-60.452 0-102.118-.003-125.57-.003H19z' stroke='%23fff' stroke-width='1.2'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_d_6491_12430' x='.4' y='.4' width='380.199' height='343.2' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset/%3E%3CfeGaussianBlur stdDeviation='9'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix values='0 0 0 0 0.625056 0 0 0 0 0.868769 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='BackgroundImageFix' result='effect1_dropShadow_6491_12430'/%3E%3CfeBlend in='SourceGraphic' in2='effect1_dropShadow_6491_12430' result='shape'/%3E%3C/filter%3E%3CclipPath id='bgblur_0_6491_12430_clip_path' transform='translate(-.4 -.4)'%3E%3Cpath d='M19 324.997V53.254L46.837 19l292.391.004H362V325c-60.452 0-102.118-.003-125.57-.003H19z'/%3E%3C/clipPath%3E%3ClinearGradient id='paint0_linear_6491_12430' x1='299.826' y1='436.74' x2='299.826' y2='3.398' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='.184' stop-color='%23fff' stop-opacity='.3'/%3E%3Cstop offset='.565' stop-color='%23fff'/%3E%3Cstop offset='.932' stop-color='%23fff' stop-opacity='.3'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E") no-repeat center center;
-                width: 381px;
-                height: 344px;
+                width: 100%;
+                max-width: none;
+                height: auto;              /* 小手機也讓高度跟內容走 */
+                min-height: 220px;
             }
 
             .qoe-chart-div-svg {
-                background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='399' height='330' viewBox='0 0 399 330' fill='none'%3E%3CforeignObject x='.844' y='.574' width='397.614' height='328.851'%3E%3Cdiv xmlns='http://www.w3.org/1999/xhtml' style='backdrop-filter:blur(3.5px);height:100%25;width:100%25' clip-path='url(%23bgblur_0_6542_20730_clip_path)'/%3E%3C/foreignObject%3E%3Cg filter='url(%23filter0_d_6542_20730)' data-figma-bg-blur-radius='7'%3E%3Cpath d='M19.344 262.978v37.608h66.079l17.325 10.339h257.87l19.34-15.311V176.35l-12.088-8.462V57.891l12.088-11.067v-27.75H19.344v243.904z' fill='url(%23paint0_linear_6542_20730)'/%3E%3Cpath d='M19.344 262.978v37.608h66.079l17.325 10.339h257.87l19.34-15.311V176.35l-12.088-8.462V57.891l12.088-11.067v-27.75H19.344v243.904z' stroke='%23fff'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='filter0_d_6542_20730' x='.844' y='.574' width='397.614' height='328.851' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset/%3E%3CfeGaussianBlur stdDeviation='9'/%3E%3CfeComposite in2='hardAlpha' operator='out'/%3E%3CfeColorMatrix values='0 0 0 0 0.699801 0 0 0 0 0.89493 0 0 0 0 1 0 0 0 1 0'/%3E%3CfeBlend in2='BackgroundImageFix' result='effect1_dropShadow_6542_20730'/%3E%3CfeBlend in='SourceGraphic' in2='effect1_dropShadow_6542_20730' result='shape'/%3E%3C/filter%3E%3CclipPath id='bgblur_0_6542_20730_clip_path' transform='translate(-.844 -.574)'%3E%3Cpath d='M19.344 262.978v37.608h66.079l17.325 10.339h257.87l19.34-15.311V176.35l-12.088-8.462V57.891l12.088-11.067v-27.75H19.344v243.904z'/%3E%3C/clipPath%3E%3ClinearGradient id='paint0_linear_6542_20730' x1='-34.599' y1='248.893' x2='395.441' y2='248.893' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='.184' stop-color='%23fff' stop-opacity='.3'/%3E%3Cstop offset='.565' stop-color='%23fff'/%3E%3Cstop offset='.932' stop-color='%23fff' stop-opacity='.3'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E") no-repeat center center;
                 width: 399px;
                 height: 330px;
             }
 
             .qoe-setting-controller-left {
                 flex-direction: column;
-                width: 60%;
+                width: 100%;
             }
 
             .switch-div {
@@ -1142,7 +1541,9 @@
             }
 
             .mode-button .mode-button-text {
-                display: none;
+                display: inline-block;
+                font-size: var(--wrt-small-font-size);
+                line-height: 1.2;
             }
 
             .qoe-setting-controller-right {
@@ -1154,8 +1555,15 @@
             }
         }
 
-        .ai-faq-btn {
-            cursor: pointer;
+        /* ≤1199：左側控制區內的 switch/info/split-line 垂直排列且滿寬，隨容器縮放 */
+        @media (max-width: 1199.98px) {
+            .qoe-setting-controller-left { flex-direction: column; }
+            .qoe-setting-controller-left .switch-div,
+            .qoe-setting-controller-left .info-panel,
+            .qoe-setting-controller-left .split-line {
+                width: 90%;
+                max-width: 100%;
+            }
         }
 
     </style>
@@ -1163,8 +1571,8 @@
     <div class="row p-0 m-0">
         <nav class="tab-navigation p-0">
             <button class="tab-navigation__item active" data-tab="aiqoe"><#Adaptive_QoE#></button>
-            <span class="tab-navigation__divider"></span>
-            <button class="tab-navigation__item" data-tab="bandwidth"><#Bandwidth_Limiter#></button>
+            <span id="bandwidth-tab-divider" class="tab-navigation__divider" style="display:none;"></span>
+            <button id="bandwidth-tab-btn" class="tab-navigation__item" data-tab="bandwidth" style="display:none;"><#Bandwidth_Limiter#></button>
             <span class="tab-navigation__divider"></span>
             <button class="tab-navigation__item" data-tab="cake">Cake</button>
         </nav>
@@ -1175,11 +1583,11 @@
             <div class="qoe-main-div"></div>
             <div class="qoe-main-div-2"></div>
             <div class="container">
-                <div class="row">
-                    <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-4 qoe-col-1">
+                <div class="row qoe-grid">
+                    <div class="col-12 col-xxl-4 qoe-col-1">
                         <div class="qoe-setting-div-left">
-                            <div class="qoe-setting-div-svg"></div>
-                            <div class="qoe-setting-controller-left">
+
+                            <div class="qoe-setting-div-svg qoe-setting-controller-left">
                                 <div class="switch-div">
                                     <div class="switch-div-title"><#AiQoE_Switch#>
                                     </div>
@@ -1189,6 +1597,7 @@
                                         <div class="toggle-button-handle"></div>
                                     </div>
                                 </div>
+                                <div class="split-line"></div>
                                 <div class="info-panel animate-border">
                                     <div id="modeTitle"></div>
                                     <div id="modeDescription"></div>
@@ -1226,36 +1635,38 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-sm-12 col-md-7 col-lg-7 col-xl-4">
-                        <div class="qoe-setting-div-center">
-                            <div class="qoe-chart-div-svg"></div>
-                            <div class="qoe-chart-corner-lt-svg"></div>
-                            <div class="qoe-chart-corner-rb-svg"></div>
-                            <div class="radar-info">
-                                <div id="chartContainer">
-                                    <div class="pentagon-container">
-                                        <div class="icon icon1">
-                                            <#AiQoE_Bandwidth#>
-                                        </div>
-                                        <div class="icon icon2">
-                                            <#AiQoE_Game#>
-                                        </div>
-                                        <div class="icon icon3">
-                                            <#AiQoE_File#>
-                                        </div>
-                                        <div class="icon icon4">
-                                            <#AiQoE_Multimedia#>
-                                        </div>
-                                        <div class="icon icon5">
-                                            <#AiQoE_RealTime#>
-                                        </div>
-                                    </div>
-                                    <canvas id="radarChart"></canvas>
-                                    <!-- pentagon area animation - background animation -->
-                                    <svg id="radarAnimate" xmlns="http://www.w3.org/2000/svg"
-                                         xmlns:xlink="http://www.w3.org/1999/xlink"
-                                         viewBox="0 0 480 480" shape-rendering="geometricPrecision"
-                                         text-rendering="geometricPrecision">
+                    <div class="col-12 col-xxl-8">
+                        <div class="row qoe-cr-group">
+                            <div class="col-12 col-xl-7 col-xxl-7">
+                                <div class="qoe-setting-div-center">
+                                    <div class="qoe-chart-div-svg">
+                                        <div class="qoe-chart-corner-lt-svg"></div>
+                                        <div class="qoe-chart-corner-rb-svg"></div>
+                                        <div class="radar-info">
+                                            <div id="chartContainer">
+                                                <div class="pentagon-container">
+                                                    <div class="icon icon1">
+                                                        <#AiQoE_Bandwidth#>
+                                                    </div>
+                                                    <div class="icon icon2">
+                                                        <#AiQoE_Game#>
+                                                    </div>
+                                                    <div class="icon icon3">
+                                                        <#AiQoE_File#>
+                                                    </div>
+                                                    <div class="icon icon4">
+                                                        <#AiQoE_Multimedia#>
+                                                    </div>
+                                                    <div class="icon icon5">
+                                                        <#AiQoE_RealTime#>
+                                                    </div>
+                                                </div>
+                                                <canvas id="radarChart"></canvas>
+                                                <!-- pentagon area animation - background animation -->
+                                                <svg id="radarAnimate" xmlns="http://www.w3.org/2000/svg"
+                                                     xmlns:xlink="http://www.w3.org/1999/xlink"
+                                                     viewBox="0 0 480 480" shape-rendering="geometricPrecision"
+                                                     text-rendering="geometricPrecision">
                                         <style>
                                             #en8jyOASaeh2 {
                                                 animation: en8jyOASaeh2__m 2500ms linear 1 normal forwards;
@@ -1323,19 +1734,19 @@
 
                                             @keyframes en8jyOASaeh2-stroke-0__c {
                                                 0% {
-                                                    stop-color: #00fff8;
+                                                    stop-color: var(--gradient-accent-start);
                                                 }
                                                 15% {
-                                                    stop-color: #00fff8;
+                                                    stop-color: var(--gradient-accent-start);
                                                 }
                                                 35% {
-                                                    stop-color: #00fff8;
+                                                    stop-color: var(--gradient-accent-start);
                                                 }
                                                 65% {
-                                                    stop-color: #08f;
+                                                    stop-color: var(--gradient-accent-end);
                                                 }
                                                 100% {
-                                                    stop-color: #08f;
+                                                    stop-color: var(--gradient-accent-end);
                                                 }
                                             }
 
@@ -1345,19 +1756,19 @@
 
                                             @keyframes en8jyOASaeh2-stroke-1__c {
                                                 0% {
-                                                    stop-color: #84a3ff;
+                                                    stop-color: var(--gradient-accent-end);
                                                 }
                                                 15% {
-                                                    stop-color: #84a3ff;
+                                                    stop-color: var(--gradient-accent-end);
                                                 }
                                                 35% {
-                                                    stop-color: #3e8cff;
+                                                    stop-color: var(--gradient-accent-end);
                                                 }
                                                 65% {
-                                                    stop-color: #00fff8;
+                                                    stop-color: var(--gradient-accent-start);
                                                 }
                                                 100% {
-                                                    stop-color: #00fff8;
+                                                    stop-color: var(--gradient-accent-start);
                                                 }
                                             }
 
@@ -1450,16 +1861,11 @@
 
                                             @keyframes en8jyOASaeh3-stroke-g1-0__c {
                                                 0% {
-                                                    stop-color: #00fff8;
+                                                    stop-color: var(--gradient-accent-start);
                                                 }
-                                                50% {
-                                                    stop-color: #00fff8;
-                                                }
-                                                80% {
-                                                    stop-color: #08f;
-                                                }
+
                                                 100% {
-                                                    stop-color: #08f;
+                                                    stop-color: var(--gradient-accent-end);
                                                 }
                                             }
 
@@ -1469,16 +1875,16 @@
 
                                             @keyframes en8jyOASaeh3-stroke-g1-1__c {
                                                 0% {
-                                                    stop-color: #0067ff;
+                                                    stop-color: var(--gradient-accent-end);
                                                 }
                                                 50% {
-                                                    stop-color: #0067ff;
+                                                    stop-color: var(--gradient-accent-end);
                                                 }
                                                 80% {
-                                                    stop-color: #00fff8;
+                                                    stop-color: var(--gradient-accent-start);
                                                 }
                                                 100% {
-                                                    stop-color: #00fff8;
+                                                    stop-color: var(--gradient-accent-start);
                                                 }
                                             }
                                         </style>
@@ -1553,16 +1959,19 @@
                                                   stroke="url(#en8jyOASaeh3-stroke)" stroke-width="0.2"
                                                   stroke-opacity="0.5"/>
                                         </g>
-                                    </svg>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-sm-12 col-md-5 col-lg-5 col-xl-4">
-                        <div class="qoe-setting-div-right">
-                            <div class="qoe-function-div-svg"></div>
-                            <div class="qoe-setting-controller-right">
-                                <div class="button-container"></div>
+                            <div class="col-12 col-xl-5 col-xxl-5">
+                                <div class="qoe-setting-div-right">
+                                    <div class="qoe-function-div-svg"></div>
+                                    <div class="qoe-setting-controller-right">
+                                        <div class="button-container"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1571,8 +1980,8 @@
         </div>
     </div>
 
-    <div id="tab-section-bandwidth" class="container tab-content pt-5" style="display: none;">
-        <div class="row">
+    <div id="tab-section-bandwidth" class="tab-content pt-5" style="display: none;">
+        <div class="container">
             <div class="setting-controller col-md-12 col-lg-4 mb-5">
                 <div class="switch-div-bw">
                     <div class="switch-div-title"><#BwLimiter_Switch#></div>
@@ -1584,7 +1993,7 @@
             <div id="bandwidth-setting-container" class="col-12 d-none">
                 <div class="col-12">
                     <div id="bandwidth-edit-row">
-                        <div class="row setting-row px-4 gap-sm-2 gap-lg-0">
+                        <div class="row setting-row gap-sm-2 gap-lg-0">
                             <div class="col-12 col-sm-12 col-lg-4">
                                 <div class="custom-select-wrapper"></div>
                             </div>
@@ -1728,6 +2137,11 @@
                 }, 50);
             }
         }
+    }
+
+    if (isSupport("ark_limiter")) {
+        document.getElementById("bandwidth-tab-btn").style.display = "";
+        document.getElementById("bandwidth-tab-divider").style.display = "";
     }
 
     document.querySelectorAll("button.tab-navigation__item").forEach(button => {
@@ -1909,8 +2323,8 @@
             document.querySelector('.button-container').append(btn);
             if (m.splitLine) {
                 const splitLine = document.createElement('div');
-                splitLine.className = 'split-line';
-                document.querySelector('.button-container').append(splitLine);
+                //splitLine.className = 'split-line';
+                //document.querySelector('.button-container').append(splitLine);
             }
         })
 
@@ -1978,13 +2392,29 @@
         Chart.register({
             id: 'centerLinesPlugin',
             afterDatasetsDraw(chart) {
-                const {ctx, chartArea, scales} = chart;
+                const {ctx, scales} = chart;
                 const r = scales.r;
                 const numberOfPoints = 5;
 
+                // The dashboard can tear down or resize this chart while navigating away.
+                // Guard against partial chart state so the plugin does not throw during redraw.
+                if (
+                    !ctx ||
+                    !r ||
+                    typeof r.xCenter !== "number" ||
+                    typeof r.yCenter !== "number" ||
+                    typeof r.drawingArea !== "number" ||
+                    !isFinite(r.xCenter) ||
+                    !isFinite(r.yCenter) ||
+                    !isFinite(r.drawingArea) ||
+                    r.drawingArea <= 0
+                ) {
+                    return;
+                }
+
                 ctx.save();
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)'; // dashed line color
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'; // dashed line color
+                ctx.lineWidth = 1;
                 ctx.setLineDash([5, 5]); // dashed line style [line length, gap length]
 
                 for (let i = 0; i < numberOfPoints; i++) {
@@ -2061,8 +2491,28 @@
 
         // get CSS variable values
         const style = getComputedStyle(document.documentElement);
-        const colorStart = style.getPropertyValue('--color-start').trim();
-        const colorEnd = style.getPropertyValue('--color-end').trim();
+        const colorStart = style.getPropertyValue('--color-start').trim() || '#005eff';
+        const colorEnd = style.getPropertyValue('--color-end').trim() || '#08faff';
+        // QoE radar dataset 1 variables with fallback
+        const radarBorderColor = (style.getPropertyValue('--qoe-radar-border-color').trim()) || '#ffffff';
+        const radarBackgroundColor = (style.getPropertyValue('--qoe-radar-background-color').trim()) || 'rgba(255, 255, 255, 0.1)';
+        const radarBorderWidth = parseInt((style.getPropertyValue('--qoe-radar-border-width').trim()) || '2', 10);
+        const radarPointBackgroundColor = (style.getPropertyValue('--qoe-radar-point-background-color').trim()) || '#fff';
+        const radarPointBorderColor = (style.getPropertyValue('--qoe-radar-point-border-color').trim()) || '#fff';
+        // dataset 2 variables with fallback
+        const radarLayer2BorderColor = (style.getPropertyValue('--qoe-radar-layer2-border-color').trim()) || '#ffffff';
+        const radarLayer2BackgroundColor = (style.getPropertyValue('--qoe-radar-layer2-background-color').trim()) || 'rgba(255, 255, 255, 0.15)';
+        const radarLayer2BorderWidth = parseInt((style.getPropertyValue('--qoe-radar-layer2-border-width').trim()) || '2', 10);
+        const radarLayer2PointBackgroundColor = (style.getPropertyValue('--qoe-radar-layer2-point-background-color').trim()) || '#fff';
+        const radarLayer2PointBorderColor = (style.getPropertyValue('--qoe-radar-layer2-point-border-color').trim()) || '#fff';
+        // dataset 3 variables with fallback
+        const radarLayer3BorderColor = (style.getPropertyValue('--qoe-radar-layer3-border-color').trim()) || '#ffffff';
+        const radarLayer3BorderWidth = parseInt((style.getPropertyValue('--qoe-radar-layer3-border-width').trim()) || '2', 10);
+        const radarLayer3PointBackgroundColor = (style.getPropertyValue('--qoe-radar-layer3-point-background-color').trim()) || '#fff';
+        const radarLayer3PointBorderColor = (style.getPropertyValue('--qoe-radar-layer3-point-border-color').trim()) || '#f5f5f5';
+        const radarLayer3PointBorderWidth = parseInt((style.getPropertyValue('--qoe-radar-layer3-point-border-width').trim()) || '1', 10);
+        const radarLayer3PointRadius = parseInt((style.getPropertyValue('--qoe-radar-layer3-point-radius').trim()) || '3', 10);
+        const radarLayer3PointHoverRadius = parseInt((style.getPropertyValue('--qoe-radar-layer3-point-hover-radius').trim()) || '5', 10);
 
         // create center radial gradient
         const gradient = ctx.createLinearGradient(
@@ -2070,7 +2520,7 @@
             240, 240
         );
         gradient.addColorStop(0, colorStart); // center color
-        gradient.addColorStop(0.5, '#c3fff5'); // center color
+        //gradient.addColorStop(0.5, '#c3fff5'); // center color
         gradient.addColorStop(1, colorEnd);   // outer color
 
         let radarChart = new Chart(ctx, {
@@ -2083,11 +2533,11 @@
                         data: thisMode.nodeFormula(thisMode.value).map(data => {
                             return data * 0.6;
                         }),
-                        borderColor: '#ffffff',
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#fff',
+                        borderColor: radarBorderColor,
+                        backgroundColor: radarBackgroundColor,
+                        borderWidth: radarBorderWidth,
+                        pointBackgroundColor: radarPointBackgroundColor,
+                        pointBorderColor: radarPointBorderColor,
                         pointBorderWidth: 0,
                         pointRadius: 0,
                         pointHoverRadius: 0,
@@ -2099,11 +2549,11 @@
                         data: thisMode.nodeFormula(thisMode.value).map(data => {
                             return data * 0.8;
                         }),
-                        borderColor: '#ffffff',
-                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#fff',
+                        borderColor: radarLayer2BorderColor,
+                        backgroundColor: radarLayer2BackgroundColor,
+                        borderWidth: radarLayer2BorderWidth,
+                        pointBackgroundColor: radarLayer2PointBackgroundColor,
+                        pointBorderColor: radarLayer2PointBorderColor,
                         pointBorderWidth: 0,
                         pointRadius: 0,
                         pointHoverRadius: 0,
@@ -2113,14 +2563,14 @@
                     {
                         label: '',
                         data: thisMode.nodeFormula(thisMode.value),
-                        borderColor: '#ffffff',
+                        borderColor: radarLayer3BorderColor,
                         backgroundColor: gradient,
-                        borderWidth: 2,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#f5f5f5',
-                        pointBorderWidth: 1,
-                        pointRadius: 3,
-                        pointHoverRadius: 5
+                        borderWidth: radarLayer3BorderWidth,
+                        pointBackgroundColor: radarLayer3PointBackgroundColor,
+                        pointBorderColor: radarLayer3PointBorderColor,
+                        pointBorderWidth: radarLayer3PointBorderWidth,
+                        pointRadius: radarLayer3PointRadius,
+                        pointHoverRadius: radarLayer3PointHoverRadius
                     },]
             },
             options: {
@@ -2237,7 +2687,7 @@
 
         const lang = system.language.currentLang;
         const openFaq = (faqKey) => {
-            const faqUrl = `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang=${lang}&kw=&num=206`;
+            const faqUrl = `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang=${lang}&kw=&num=${faqKey}`;
             window.open(faqUrl, '_blank');
         };
         const faqBtns = document.querySelectorAll('i.ai-faq-btn');
@@ -2245,7 +2695,12 @@
             btn.addEventListener('click', () => {
                 const faqKey = btn.getAttribute('data-faq');
                 if (faqKey) {
-                    openFaq(faqKey);
+                    if(faqKey==`AI_FAQ_QOE`){
+                        openFaq(206);
+                    }
+                    else{
+                        openFaq(faqKey);
+                    }
                 }
             });
         })
@@ -2335,6 +2790,7 @@
             <link rel="stylesheet" href="/css/bootstrap.min.css">
             <link rel="stylesheet" href="/css/bootstrap-customize.css">
             <link rel="stylesheet" href="/datatables/datatables.min.css">
+            <link rel="stylesheet" href="/datatables/datatables.asuswrt.css">
             <style>
                 .icon-static {
                   width: 1em;
@@ -2374,7 +2830,7 @@
 
                 .client-info {
                     font-size: 0.9em;
-                    color: #666;
+                    color: var(--text-secondary);
                 }
             </style>
             <div>
@@ -2529,12 +2985,12 @@
             await clientList.init();
         }
         const deviceSelector = new ClientSelector({
-            data: window.clientList.listAllClients().filter(item => !item.name.toLowerCase().includes('aiboard')),
+            data: window.clientList.listAllClients().filter(item => !item.name.toLowerCase().includes('aiboard') && !item.amesh_isRe),
             // onSelect: (device) => {
             //     console.log('Selected device:', device);
             // }
         });
-        deviceSelector.render('.custom-select-wrapper');
+        document.querySelector('.custom-select-wrapper').appendChild(deviceSelector.render());
 
         const getBandwidthLimiterNvramData = async () => {
             const data = await httpApi.nvramGet(["ark_limiter_enable"], true);
@@ -2649,8 +3105,8 @@
             let client = null;
             const device = deviceSelector.getValue();
             if (!device) {
-                if (isIPv4(deviceSelector.getInputValue()) || isIPv4CIDR(deviceSelector.getInputValue())) {
-                    target = deviceSelector.getInputValue();
+                if (isIPv4(deviceSelector.getInputValue().value) || isIPv4CIDR(deviceSelector.getInputValue().value)) {
+                    target = deviceSelector.getInputValue().value;
                 } else {
                     alert(`<#BwLimiter_select_device#>`);
                     return;

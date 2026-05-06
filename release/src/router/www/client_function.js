@@ -652,7 +652,7 @@ function getUploadIcon(clientMac) {
 	var result = "NoIcon";
 	if(isSupport("usericon")){
 		$.ajax({
-			url: '/appGet.cgi?hook=get_upload_icon()&clientmac=' + clientMac,
+			url: `${rootPath}/appGet.cgi?hook=get_upload_icon()&clientmac=${clientMac}`,
 			dataType: 'json',
 			async: false,
 			success: function(response){
@@ -696,33 +696,22 @@ function getUploadIcon(clientMac) {
 
 function getUploadIconCount() {
 	var count = 0;
+
 	if(isSupport("usericon")){
-		$.ajax({
-			url: '/appGet.cgi?hook=get_upload_icon_count_list()',
-			dataType: 'json',
-			async: false,
-			success: function(response){
-				count = parseInt(response.get_upload_icon_count_list.upload_icon_count);
-				if(isNaN(count)) count = 0;
-			}
-		});
+		var upload_icon_count = httpApi.hookGet("get_upload_icon_count_list").upload_icon_count;
+		count = parseInt(upload_icon_count);
+		if(isNaN(count)) count = 0;
 	}
-	return count
+
+	return count;
 }
 
 function getUploadIconList() {
 	var list = "";
 	if(isSupport("usericon")){
-		$.ajax({
-			url: '/appGet.cgi?hook=get_upload_icon_count_list()',
-			dataType: 'json',
-			async: false,
-			success: function(response){
-				list = response.get_upload_icon_count_list.upload_icon_list;
-			}
-		});
+		list = httpApi.hookGet("get_upload_icon_count_list").upload_icon_list;
 	}
-	return list
+	return list;
 }
 
 function getVendorIconClassName(vendorName) {
@@ -1242,8 +1231,8 @@ function popClientListEditTable(event) {
 		});
 
 		const specific_sdn = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx.toString() === clientInfo.sdn_idx.toString());
-		const subnet_idx = specific_sdn && specific_sdn.sdn_rl.subnet_idx !== "0" && specific_sdn.sdn_rl.subnet_idx !== "" 
-			? specific_sdn.sdn_rl.subnet_idx 
+		const subnet_idx = specific_sdn && specific_sdn.sdn_rl.subnet_idx !== "0" && specific_sdn.sdn_rl.subnet_idx !== ""
+			? specific_sdn.sdn_rl.subnet_idx
 			: "0";
 		const isMainNetwork = subnet_idx === "0";
 		const manually_dhcp_list = isMainNetwork
@@ -1553,8 +1542,8 @@ function card_confirm(event) {
 					}
 
 					const manually_dhcp_list = (()=>{
-						const subnet_idx = specific_sdn && specific_sdn.sdn_rl.subnet_idx !== "0" && specific_sdn.sdn_rl.subnet_idx !== "" 
-							? specific_sdn.sdn_rl.subnet_idx 
+						const subnet_idx = specific_sdn && specific_sdn.sdn_rl.subnet_idx !== "0" && specific_sdn.sdn_rl.subnet_idx !== ""
+							? specific_sdn.sdn_rl.subnet_idx
 							: "0";
 						return subnet_idx === "0"
 							? card_client_variable.manual_dhcp_list
@@ -1881,7 +1870,7 @@ function card_confirm(event) {
 			else {
 				var updateClientListObj = function () {
 					$.ajax({
-						url: '/update_clients.asp',
+						url: `${rootPath}/update_clients.asp`,
 						dataType: 'script',
 						error: function(xhr) {
 							setTimeout("updateClientListObj();", 1000);
@@ -2821,7 +2810,7 @@ function exportClientListLog() {
 	switch (clienlistViewMode) {
 		case "All" :
 			var all_list_merge_offline = [];
-			
+
 			for(let i = 0; i < clientList.length; i += 1) {
 				all_list_merge_offline.push([
 					clientList[clientList[i]].internetState,
@@ -3635,7 +3624,7 @@ function showHideContent(objnmae, thisObj) {
 var updateClientListView_timer = null;
 function updateClientListView(){
 	$.ajax({
-		url: '/update_clients.asp',
+		url: `${rootPath}/update_clients.asp`,
 		dataType: 'script', 
 		error: function(xhr) {
 			setTimeout("updateClientListView();", 1000);

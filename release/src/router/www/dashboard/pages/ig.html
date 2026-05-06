@@ -7,6 +7,7 @@
 		<link rel="stylesheet" href="/css/bootstrap.min.css" />
 		<link rel="stylesheet" href="/css/architecture.css" />
 		<link rel="stylesheet" href="/css/color-table.css" />
+        <link rel="stylesheet" href="/css/wrt-ui-alias-tokens.css" />
 		<link rel="stylesheet" href="/datatables/datatables.min.css">
 		<link rel="stylesheet" href="/datatables/datatables.asuswrt.css">
 		<link rel="stylesheet" href="/form_style.css">
@@ -73,10 +74,10 @@
 		}
 		.popup_container .popup_title_container > .close_btn {
 			background-color: transparent;
-			border: 2px solid RGB(var(--color-icon-default));
+			border: 2px solid var(--wrt-btn-icon-color);
 			font-size: 20px;
 			line-height: 20px;
-			color: RGB(var(--color-icon-default));
+			color: var(--wrt-btn-icon-color);
 		}
 		.w-30 {
 			width: 30% !important;
@@ -86,25 +87,25 @@
 			padding: .5rem .5rem;
 		}
 		.alert-danger {
-			background-color: #FFF1E8;
-			border: 0.5px solid #c74200;
-			color: #181818;
+			background-color: var(--wrt-badge-warning-bg);
+			border: 0.5px solid var(--wrt-badge-warning-border);
+			color:var(--wrt-badge-warning-color);
 			font-weight: bolder;
 		}
 	</style>
 	<body>
 		<div class="row rwd-page-container">
-			<div class="col-12 mb-3 fs-6">
+			<div class="col-12 mb-3 fs-7">
 				<div class="card pt-2 h-100">
 					<div class="card-body">
-						<div class="fs-6 d-flex align-items-start justify-content-start gap-2">
+						<div class="fs-7 d-flex align-items-start justify-content-start gap-2">
 							<span role="heading" aria-level="1"><#Instant_Guard_desc#></span>
 							<span id="showFeatureDesc" class="icon-help-container" role="button" tabindex="0" aria-label="<#NewFeatureAbout#>">
 								<i class="icon-help icon-size-24" role="icon" aria-hidden="true" style="display: inline-block;"></i>
 							</span>
 						</div>
 						<hr>
-						<div class="d-flex align-items-center mb-3 fs-6">
+						<div class="d-flex align-items-center mb-3 fs-7">
 							<div class="w-30">
 								<span><#Instant_Guard_title#></span>
 							</div>
@@ -113,7 +114,7 @@
 							</div>
 						</div>
 						<div id="ig_enable_section">
-							<div class="d-flex align-items-center mb-3 fs-6">
+							<div class="d-flex align-items-center mb-3 fs-7">
 								<div class="w-30">
 									<span><#WLANAuthentication11a_ExAuthDBIPAddr_itemname#></span>
 								</div>
@@ -121,7 +122,7 @@
 									<span id="ig_server_address" class="text-break">--</span>
 								</div>
 							</div>
-							<div class="d-flex align-items-center mb-3 fs-6">
+							<div class="d-flex align-items-center mb-3 fs-7">
 								<div class="w-30">
 									<span><#vpn_access#></span>
 								</div>
@@ -142,14 +143,14 @@
 								The access setting will be applied to both IPSec VPN and Instant Guard.
 							</div>
 							<hr>
-							<div class="mb-3 fs-6"><#PPPConnection_x_WANLink_itemname#></div>
+							<div class="mb-3 fs-7"><#PPPConnection_x_WANLink_itemname#></div>
 							<div class="col-12">
 								<div id="connStatusContainer" style="width: 100%">
 									<table id="connStatusTable"></table>
 								</div>
 							</div>
 							<hr>
-							<div class="mb-3 fs-6">
+							<div class="mb-3 fs-7">
 								<label for="textarea" class="form-label"><#System_Log#></label>
 								<textarea
 									class="form-control"

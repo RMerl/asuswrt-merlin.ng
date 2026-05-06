@@ -953,58 +953,67 @@ void rc_ipsec_cert_import(char *asus_cert, char *ipsec_cli_cert,
                           char *ipsec_cli_key, char *pks12)
 {
     char *p_file = NULL;
-    char cmd[SZ_BUF], tmp[SZ_MIN];
+    char tmp[SZ_MIN];
     if(NULL != asus_cert){
-        memset(cmd, 0, sizeof(char) * SZ_BUF);
-        sprintf(&cmd[0], "cp -r %s /tmp/etc/ipsec.d/cacerts/", asus_cert);
-        system(cmd);
+        safe_do_system("cp -r \"%s\" /tmp/etc/ipsec.d/cacerts/", asus_cert);
     }
     if(NULL != ipsec_cli_cert){
-        memset(cmd, 0, sizeof(char) * SZ_BUF);
-        sprintf(&cmd[0], "cp -r %s /tmp/etc/ipsec.d/certs/", ipsec_cli_cert);
-        system(cmd);
+        safe_do_system("cp -r \"%s\" /tmp/etc/ipsec.d/certs/", ipsec_cli_cert);
     }
     if(NULL != ipsec_cli_key){
-        memset(cmd, 0, sizeof(char) * SZ_BUF);
-        sprintf(&cmd[0], "cp -r %s /tmp/etc/ipsec.d/private/", ipsec_cli_key);
-        system(cmd);
+        safe_do_system("cp -r \"%s\" /tmp/etc/ipsec.d/private/", ipsec_cli_key);
     }
     if(NULL != pks12){
-        if(NULL != nvram_safe_get("ca_manage_profile")){
+        const char *profile = nvram_safe_get("ca_manage_profile");
+        if(NULL != profile){
             DBG(("pks12:%s", pks12));
             p_file = &tmp[0];
             memset(p_file, '\0', sizeof(char) * SZ_MIN);
-            strncpy(p_file, pks12, strlen(pks12) - 4); /*4 : strlen(p12)*/
-            sprintf(cmd, "echo %s > "FILE_PATH_CA_ETC"%s.pwd", 
-                    nvram_safe_get("ca_manage_profile"), p_file);
-            system(cmd);
-            memset(cmd, 0, sizeof(char) * SZ_BUF);
-            sprintf(&cmd[0], "openssl pkcs12 -in %s%s -clcerts -out "
-                             "/tmp/etc/ipsec.d/certs/%s.pem -password pass:%s", 
-                             FILE_PATH_CA_ETC, pks12, p_file, 
-                             nvram_safe_get("ca_manage_profile"));
-            DBG((cmd));
-            system(cmd);
-            memset(cmd, 0, sizeof(char) * SZ_BUF);
-            sprintf(&cmd[0], "openssl pkcs12 -in %s%s -cacerts -out "
-                             "/tmp/etc/ipsec.d/cacerts/%s.pem"
-                             " -password pass:%s",
-                             FILE_PATH_CA_ETC, pks12, p_file,
-                             nvram_safe_get("ca_manage_profile"));
-            DBG((cmd));
-            system(cmd);
-            memset(cmd, 0, sizeof(char) * SZ_BUF);
-            sprintf(&cmd[0], "openssl pkcs12 -in %s%s -out "
-                    "/tmp/etc/ipsec.d/certs/%s.pem -nodes -password pass:%s",
-                     FILE_PATH_CA_ETC, pks12, p_file,
-                     nvram_safe_get("ca_manage_profile"));
-            DBG((cmd));
-            system(cmd);
+            {
+                size_t pks12_len = strlen(pks12);
+                /* guard: underflow (<=4) and overflow into SZ_MIN buffer (>=SZ_MIN+4) */
+                if (pks12_len <= 4 || (pks12_len - 4) >= SZ_MIN) {
+                    DBG(("pks12 invalid length: %s\n", pks12));
+                    return;
+                }
+                /* strip last 4 chars (.p12/.pfx), always NUL-terminated */
+                snprintf(p_file, SZ_MIN, "%.*s", (int)(pks12_len - 4), pks12);
+            }
+            /* write password directly to file, avoiding shell interpretation */
+            {
+                char pwd_path[SZ_MIN + sizeof(FILE_PATH_CA_ETC) + 4];
+                snprintf(pwd_path, sizeof(pwd_path), FILE_PATH_CA_ETC"%s.pwd", p_file);
+                FILE *_f = fopen(pwd_path, "w");
+                if (_f) { fprintf(_f, "%s\n", profile); fclose(_f); }
+            }
+            /* pass password as separate argv element to avoid shell metachar issues */
+            {
+                char in_path[SZ_BUF], out_path[SZ_BUF], pass_arg[SZ_BUF];
+                snprintf(in_path,   sizeof(in_path),   "%s%s",                  FILE_PATH_CA_ETC, pks12);
+                snprintf(out_path,  sizeof(out_path),  "/tmp/etc/ipsec.d/certs/%s.pem",     p_file);
+                snprintf(pass_arg,  sizeof(pass_arg),  "pass:%s",               profile);
+                char *argv_clcerts[] = {"openssl", "pkcs12", "-in", in_path, "-clcerts",
+                                        "-out", out_path, "-password", pass_arg, NULL};
+                DBG(("openssl pkcs12 -in %s -clcerts -out %s -password pass:***\n", in_path, out_path));
+                _eval(argv_clcerts, NULL, 0, NULL);
+
+                snprintf(out_path, sizeof(out_path), "/tmp/etc/ipsec.d/cacerts/%s.pem", p_file);
+                char *argv_cacerts[] = {"openssl", "pkcs12", "-in", in_path, "-cacerts",
+                                        "-out", out_path, "-password", pass_arg, NULL};
+                DBG(("openssl pkcs12 -in %s -cacerts -out %s -password pass:***\n", in_path, out_path));
+                _eval(argv_cacerts, NULL, 0, NULL);
+
+                snprintf(out_path, sizeof(out_path), "/tmp/etc/ipsec.d/certs/%s.pem", p_file);
+                char *argv_nodes[] = {"openssl", "pkcs12", "-in", in_path, "-out", out_path,
+                                      "-nodes", "-password", pass_arg, NULL};
+                DBG(("openssl pkcs12 -in %s -out %s -nodes -password pass:***\n", in_path, out_path));
+                _eval(argv_nodes, NULL, 0, NULL);
+            }
         }
     }
     return;
 }
-
+#if 0
 void rc_ipsec_ca_export(char *verify_pwd)
 {
     char cmd[SZ_BUF];
@@ -1018,7 +1027,7 @@ void rc_ipsec_ca_export(char *verify_pwd)
     }
     return;
 }
-
+#endif
 void rc_ipsec_gen_cert(int skip_checking)
 {
     FILE *fp = NULL;
@@ -2471,13 +2480,10 @@ void add_upnp_port(int type)
 	snprintf(target.extPort, sizeof(target.extPort), "%d", nvram_get_int("ipsec_isakmp_ext_port"));
 	snprintf(target.intPort, sizeof(target.intPort), "%d", nvram_get_int("ipsec_isakmp_port"));
 
-	snprintf(cmd, sizeof(cmd), "miniupnpc-new -m %s -i -a %s %d %d %s %s", wan_ifname, wan_ipaddr, nvram_get_int("ipsec_isakmp_port"), nvram_get_int("ipsec_isakmp_ext_port"), protocol, duration);
-	system(cmd);
-	snprintf(cmd, sizeof(cmd), "miniupnpc-new -m %s -i -a %s %d %d %s %s", wan_ifname, wan_ipaddr, nvram_get_int("ipsec_nat_t_port"), nvram_get_int("ipsec_nat_t_ext_port"), protocol, duration);
-	system(cmd);
+	safe_do_system("miniupnpc-new -m %s -i -a %s %d %d %s %s", wan_ifname, wan_ipaddr, nvram_get_int("ipsec_isakmp_port"), nvram_get_int("ipsec_isakmp_ext_port"), protocol, duration);
+	safe_do_system("miniupnpc-new -m %s -i -a %s %d %d %s %s", wan_ifname, wan_ipaddr, nvram_get_int("ipsec_nat_t_port"), nvram_get_int("ipsec_nat_t_ext_port"), protocol, duration);
 
-	snprintf(cmd, sizeof(cmd), "miniupnpc-new -m eth0 -i -f %s", UPNPC_OUTPUT_FILE);
-	system(cmd);
+	safe_do_system("miniupnpc-new -m eth0 -i -f %s", UPNPC_OUTPUT_FILE);
 
 	r = scan_upnpclist(UPNPC_OUTPUT_FILE, target, NULL, 0);
 	if(r == 1)
@@ -3169,9 +3175,8 @@ static void _ipsec_updown_host_net_cli(int unit)
 				fp = fopen("/tmp/route_tmp", "r");
 				if(fp) {
 					while(fgets(buf, sizeof(buf), fp)) {
-						snprintf(cmd, sizeof(cmd), "ip route add %s table %s ", trim_r(buf), table_str);
+						safe_do_system("ip route add %s table %s ", trim_r(buf), table_str);
 						//_dprintf("[%s]\n", cmd);
-						system(cmd);
 					}
 					fclose(fp);
 				}
@@ -3282,26 +3287,43 @@ static void _get_my_ip_by_subnet(const char* subnet, char *ip, size_t len, int v
 	}
 
 	if (v6) {
-		snprintf(buf, sizeof(buf), "ip -6 route show table local | grep %s | awk '{print $2}' > /tmp/ipsec_my_subnet", network);
-		system(buf);
-		fp = fopen("/tmp/ipsec_my_subnet", "r");
+		fp = popen("ip -6 route show table local", "r");
 		if (fp) {
-			while (fgets(ip, len, fp)) {
+			while (fgets(buf, sizeof(buf), fp)) {
+				if (!strstr(buf, network)) continue;
+				/* extract 2nd whitespace token */
+				char *tok = strtok(buf, " \t");
+				if (tok) tok = strtok(NULL, " \t\n");
+				if (!tok) continue;
+				strlcpy(ip, tok, len);
 				trimNL(ip);
 				if (*(ip + strlen(ip) - 1) == ':')
 					continue;
 				else
 					break;
 			}
-			fclose(fp);
+			pclose(fp);
 		}
 	}
 	else {
-		snprintf(buf, sizeof(buf), "ip -4 route show table local | grep %s | awk '{print $10}' > /tmp/ipsec_my_subnet", network);
-		system(buf);
-		f_read_string("/tmp/ipsec_my_subnet", ip, len);
-		trimNL(ip);
-		trimWS(ip);
+		fp = popen("ip -4 route show table local", "r");
+		if (fp) {
+			while (fgets(buf, sizeof(buf), fp)) {
+				if (!strstr(buf, network)) continue;
+				/* extract 10th whitespace token */
+				char *tok = strtok(buf, " \t");
+				int i;
+				for (i = 1; i < 10 && tok; i++)
+					tok = strtok(NULL, " \t\n");
+				if (tok) {
+					strlcpy(ip, tok, len);
+					trimNL(ip);
+					trimWS(ip);
+					break;
+				}
+			}
+			pclose(fp);
+		}
 	}
 }
 

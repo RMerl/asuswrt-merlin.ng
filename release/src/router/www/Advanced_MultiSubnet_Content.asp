@@ -1086,7 +1086,7 @@ function pullLANIPList(obj){
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
 				  	<thead>
 				  		<tr>
-							<td colspan="3" id="GWStatic"><#LANHostConfig_ManualDHCPList_groupitemdesc#>&nbsp;(<#List_limit#>&nbsp;<span id="max_staticIp_num" style="color:#FFF;">8</span>)</td>
+							<td colspan="3" id="GWStatic"><#LANHostConfig_ManualDHCPList_groupitemdesc#>&nbsp;(<#List_limit#>&nbsp;<span id="max_staticIp_num" style="color:var(--text-primary, #FFF)">8</span>)</td>
 				  		</tr>
 				  	</thead>
 

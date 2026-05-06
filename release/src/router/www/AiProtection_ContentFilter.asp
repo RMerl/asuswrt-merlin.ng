@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html>
+<html data-asuswrt-theme="rt">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -22,6 +22,9 @@
     <script type="text/javascript" src="client_function.js"></script>
     <script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=5"></script>
     <style>
+        @import url('/css/color-table.css');
+        @import url('/css/wrt-ui-alias-tokens.css');
+        
         * {
             box-sizing: content-box;
         }
@@ -50,6 +53,11 @@
 
         .click {
             background: #8E8E8E;
+        }
+
+        .client-mac {
+            color: var(--ark-iam-client-mac-color, #666);
+            font-size: 12px;
         }
     </style>
 </head>
@@ -141,8 +149,7 @@
                                                 <div id="mainTable" style="margin-top:10px;"></div>
                                                 <div id="ctrlBtn" class="apply_gen"
                                                      style="text-align:center;margin-top:20px;">
-                                                    <input class="button_gen" type="button" onclick="applyRule();"
-                                                           value="<#CTL_apply#>">
+                                                    <input class="button_gen" type="button" value="<#CTL_apply#>">
                                                 </div>
                                             </td>
                                         </tr>
@@ -161,10 +168,20 @@
 
 <div id="footer"></div>
 
-<script>
+<script type="module">
+
+    import {ClientSelector} from "/js/component.module.js";
+    import {ClientList} from '/js/clientlist.module.js';
 
     if (!isSupport("ark_iam")) {
         window.location.href = "AiProtection_WebProtector.asp";
+    }
+
+    // 創建 ClientSelector 實例
+    const clientListModule = new ClientList();
+    if (!top.window.clientListModule) {
+        top.window.clientListModule = clientListModule;
+        await clientListModule.init();
     }
 
     let ark_iam_app_list_array = [];
@@ -503,10 +520,11 @@
             const {name, language = {}} = node;
             const enName = language.EN;
             const langName = language[this.#lang];
+            const isApp = typeof node.app_id !== 'undefined';
             return this.#lang === "EN"
                 ? enName || name
                 : langName
-                    ? `${langName}(${enName || name})`
+                    ? isApp ? `${langName}(${enName || name})` : langName
                     : enName || name;
         }
 
@@ -541,9 +559,9 @@
             .tree-item { margin: 5px 0; }
             .tree-content { display: flex; align-items: center; padding: 8px 12px; border-radius: 4px; cursor: pointer; transition: background-color 0.2s; }
             .main-category > .tree-content { background-color: #f7f7f7; font-weight: bold; font-size: 16px; }
-            .category > .tree-content { background-color: #f7f7f7; margin-left: 20px; font-weight: 500; }
-            .app > .tree-content { margin-left: 40px; background-color: #f7f7f7; }
-            .tree-content:hover { background-color: #f0f0f0; }
+            .category > .tree-content { background-color: var(--ark-iam-tree-second-bg-color, #f7f7f7); margin-left: 20px; font-weight: 500; }
+            .app > .tree-content { margin-left: 40px; background-color: var(--ark-iam-tree-second-bg-color, #f7f7f7); }
+            .tree-content:hover { background-color: var(--ark-iam-tree-hover-bg-color, #f0f0f0); }
             .expand-icon { width: 16px; height: 16px; margin-right: 8px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; font-size: 10px; pointer-events: none; }
             .expand-icon.expanded { transform: rotate(90deg); }
             .expand-icon.no-children { visibility: hidden; }
@@ -669,26 +687,6 @@
         }
     }
 
-    function pullLANIPList(obj) {
-        var element = document.getElementById('ClientList_Block_PC');
-        var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
-        if (isMenuopen == 0) {
-            obj.src = "/images/unfold_less.svg"
-            element.style.display = 'block';
-            document.querySelector("#webProtectClient").focus();
-        } else
-            hideClients_Block();
-    }
-
-    function hideClients_Block() {
-        document.getElementById("pull_arrow").src = "/images/unfold_more.svg";
-        document.getElementById('ClientList_Block_PC').style.display = 'none';
-    }
-
-    function setClientIP(macaddr) {
-        document.querySelector("#webProtectClient").value = macaddr;
-        hideClients_Block();
-    }
 
     function deleteRow_main(obj) {
         const item_index = obj.parentNode.parentNode.rowIndex;
@@ -702,38 +700,55 @@
         document.getElementById(obj.parentNode.parentNode.parentNode.parentNode.id).deleteRow(item_index);
     }
 
-    function check_macaddr(obj, flag) { //control hint of input mac address
-        if (flag == 1) {
-            var childsel = document.createElement("div");
-            childsel.setAttribute("id", "check_mac");
-            childsel.style.color = "#FFCC00";
-            obj.parentNode.appendChild(childsel);
-            document.getElementById("check_mac").innerHTML = "<#LANHostConfig_ManualDHCPMacaddr_itemdesc#>";
-            document.getElementById("check_mac").style.display = "";
-            return false;
-        } else if (flag == 2) {
-            var childsel = document.createElement("div");
-            childsel.setAttribute("id", "check_mac");
-            childsel.style.color = "#FFCC00";
-            obj.parentNode.appendChild(childsel);
-            document.getElementById("check_mac").innerHTML = "<#IPConnection_x_illegal_mac#>";
-            document.getElementById("check_mac").style.display = "";
-            return false;
-        } else {
-            document.getElementById("check_mac") ? document.getElementById("check_mac").style.display = "none" : true;
-            return true;
-        }
-    }
 
     function addRow_main(obj) {
         const new_rule = new ContentFilterRule()
         const enable_checkbox = $(obj.parentNode).siblings()[0].children[0];
         new_rule.enable = enable_checkbox.checked ? true : false;
 
-        const targetClient = document.querySelector("#webProtectClient");
+        // 使用 ClientSelector API
+        if (!mainTableBuilder || !mainTableBuilder.clientSelector) {
+            console.error('ClientSelector not initialized');
+            return false;
+        }
 
-        if (ark_iam_rulelist.find(item => item.target === targetClient.value.toUpperCase())) {
-            alert("已經有這個裝置的規則，請先刪除再新增。");
+        const selectedDevice = mainTableBuilder.clientSelector.getValue();
+        let target = "";
+        let clientInfo = null;
+        if (!selectedDevice) {
+            const inputValue = mainTableBuilder.clientSelector.getInputValue().value;
+            if (!inputValue || inputValue.trim() === "") {
+                alert("<#JS_fieldblank#>");
+                return false;
+            }
+            // 驗證 MAC 地址格式
+
+            const macPattern = /^[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}$/;
+            const ipv4Pattern = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            const addressValid = macPattern.test(inputValue) || ipv4Pattern.test(inputValue);
+
+            if (!addressValid) {
+                alert(`<#AiProtection_select_device#>`);
+                return false;
+            }
+            target = inputValue.toUpperCase();
+        } else {
+            if(selectedDevice.type==="ip"){
+                target = selectedDevice.ip;
+                clientInfo = clientListModule.findClientByIp(target);
+            }else{
+                target = selectedDevice.mac.toUpperCase();
+                clientInfo = clientListModule.findClientByMac(target);
+            }
+        }
+
+        const exists = ark_iam_rulelist.some(item =>
+            clientInfo !== null
+                ? item.clientInfo === clientInfo
+                : item.target === target
+        );
+        if (exists) {
+            alert(`<#AiProtection_rule_exist#>`);
             return false;
         }
 
@@ -741,18 +756,6 @@
         //check max limit of rule list
         if (ark_iam_rulelist.length >= upper) {
             alert("<#JS_itemlimit1#> " + upper + " <#JS_itemlimit2#>");
-            targetClient.focus();
-            targetClient.select();
-            return false;
-        }
-
-        if (targetClient.value == "") {
-            alert("<#JS_fieldblank#>");
-            targetClient.focus();
-            return false;
-        } else if (!check_macaddr(targetClient, check_hwaddr_flag(targetClient, 'inner'))) {
-            targetClient.focus();
-            targetClient.select();
             return false;
         }
 
@@ -761,8 +764,7 @@
             return false;
         }
 
-
-        new_rule.target = document.querySelector("#webProtectClient").value.toUpperCase()
+        new_rule.target = target;
         new_rule.apps = settingChecklist.getSelectedAppId();
         new_rule.category = settingChecklist.getSelectedCategoryId();
         const hierarchicalChecklist = new HierarchicalChecklist(ark_app_list, window.ui_lang);
@@ -770,58 +772,205 @@
         hierarchicalChecklist.setSelectedCategoryId(new_rule.category);
         hierarchicalChecklist.moreBtn.querySelector(".item-name").innerHTML = `<b><#More_Apps#> (${new_rule.apps.length} <#Selected#>) ></b>`;
         new_rule.checklist = hierarchicalChecklist;
+        new_rule.clientInfo = clientInfo;
 
         ark_iam_rulelist.push(new_rule);
-        document.querySelector("#webProtectClient").value = "";
+        mainTableBuilder.clientSelector.reset();
         settingChecklist.clearSelection();
         genRulesRow(ark_iam_rulelist);
     }
 
-    function genMain_table() {
-        let code = "";
-        const clientListEventData = [];
-        code += '<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="mainTable_table">';
-        code += '<thead><tr>';
-        code += '<td colspan="5"><#ConnectedClient#>&nbsp;(<#List_limit#>&nbsp;' + MaxRule_bwdpi_wrs + ')</td>';
-        code += '</tr></thead>';
-        code += '<tbody>';
-        code += '<tr>';
-        code += '<th width="5%" height="30px" title="<#select_all#>">';
-        code += '<input id="selAll" type="checkbox" onclick="selectAll(this);" value="">';
-        code += '</th>';
-        code += '<th width="40%"><#Client_Name#> (<#PPPConnection_x_MacAddressForISP_itemname#>)</th>';
-        code += '<th width="40%"><#AiProtection_filter_category#></th>';
-        code += '<th width="10%"><#list_add_delete#></th>';
-        code += '</tr>';
-        code += '<tr id="main_element">';
-        code += '<td style="border-bottom:2px solid #000;" title="<#WLANConfig11b_WirelessCtrl_button1name#>/<#btn_disable#>">';
-        code += '<input type="checkbox" checked="">';
-        code += '</td>';
-        code += '<td style="border-bottom:2px solid #000;">';
-        code += '<div style="display: flex; justify-content: center">';
-        code += '<div class="clientlist_dropdown_main">';
-        code += '<input type="text" maxlength="17" class="input_20_table" id="webProtectClient" name="PC_devicename" onkeypress="return validator.isHWAddr(this,event)" onclick="hideClients_Block();" placeholder="ex: <% nvram_get("lan_hwaddr"); %>" autocorrect="off" autocapitalize="off">';
-        code += '<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_client#>">';
-        code += '<div id="ClientList_Block_PC" class="clientlist_dropdown"></div>';
-        code += '</div>';
-        code += '</div>';
-        code += '</td>';
-        code += '<td style="border-bottom:2px solid #000;text-align:left;">';
-        code += '<div id="tree-container"></div>'
-        code += '</td>';
-        code += '<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onclick="addRow_main(this)" value=""></td>';
-        code += '</tr>';
-        code += '</tbody>';
-        code += '</table>';
-        document.getElementById('mainTable').innerHTML = code;
-        for (var i = 0; i < clientListEventData.length; i += 1) {
-            var clientIconID = "clientIcon_" + clientListEventData[i].mac.replace(/\:/g, "");
-            var clientIconObj = $("#mainTable").children("#mainTable_table").find("#" + clientIconID + "")[0];
-            var paramData = JSON.parse(JSON.stringify(clientListEventData[i]));
-            paramData["obj"] = clientIconObj;
-            $("#mainTable").children("#mainTable_table").find("#" + clientIconID + "").click(paramData, popClientListEditTable);
+    /**
+     * MainTableBuilder 類 - 使用 DOM API 構建主表格
+     */
+    class MainTableBuilder {
+        #table;
+        #thead;
+        #tbody;
+        #clientListEventData = [];
+        clientSelector; // 公開的 clientSelector 屬性
+
+        constructor() {
+            this.#initTable();
         }
-        showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');
+
+        #initTable() {
+            this.#table = document.createElement('table');
+            this.#table.width = "100%";
+            this.#table.border = "1";
+            this.#table.cellSpacing = "0";
+            this.#table.cellPadding = "4";
+            this.#table.align = "center";
+            this.#table.className = "FormTable_table";
+            this.#table.id = "mainTable_table";
+        }
+
+        #createTableHeader() {
+            this.#thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            const headerCell = document.createElement('td');
+            headerCell.colSpan = 5;
+            headerCell.innerHTML = `<#ConnectedClient#>&nbsp;(<#List_limit#>&nbsp;${MaxRule_bwdpi_wrs})`;
+            headerRow.appendChild(headerCell);
+            this.#thead.appendChild(headerRow);
+            return this;
+        }
+
+        #createColumnHeaders() {
+            const headerRow = document.createElement('tr');
+
+            // 選擇欄
+            const selectAllTh = document.createElement('th');
+            selectAllTh.width = "5%";
+            selectAllTh.style.height = "30px";
+            selectAllTh.title = "<#select_all#>";
+            const selectAllCheckbox = document.createElement('input');
+            selectAllCheckbox.id = "selAll";
+            selectAllCheckbox.type = "checkbox";
+            selectAllCheckbox.onclick = function() { selectAll(this); };
+            selectAllCheckbox.value = "";
+            selectAllTh.appendChild(selectAllCheckbox);
+            headerRow.appendChild(selectAllTh);
+
+            // 客戶端名稱欄
+            const clientNameTh = document.createElement('th');
+            clientNameTh.width = "40%";
+            clientNameTh.innerHTML = '<#Client_Name#>';
+            headerRow.appendChild(clientNameTh);
+
+            // 過濾類別欄
+            const categoryTh = document.createElement('th');
+            categoryTh.width = "40%";
+            categoryTh.innerHTML = '<#AiProtection_filter_category#>';
+            headerRow.appendChild(categoryTh);
+
+            // 新增/刪除欄
+            const actionTh = document.createElement('th');
+            actionTh.width = "10%";
+            actionTh.innerHTML = '<#list_add_delete#>';
+            headerRow.appendChild(actionTh);
+
+            this.#tbody.appendChild(headerRow);
+            return this;
+        }
+
+        #createInputRow() {
+            const inputRow = document.createElement('tr');
+            inputRow.id = "main_element";
+
+            // 啟用核取方塊欄
+            const enableCell = this.#createCell({
+                style: "border-bottom:2px solid #000;",
+                title: "<#WLANConfig11b_WirelessCtrl_button1name#>/<#btn_disable#>"
+            });
+            const enableCheckbox = document.createElement('input');
+            enableCheckbox.type = "checkbox";
+            enableCheckbox.checked = true;
+            enableCell.appendChild(enableCheckbox);
+            inputRow.appendChild(enableCell);
+
+            // 客戶端選擇欄
+            const clientCell = this.#createCell({ style: "border-bottom:2px solid #000;" });
+            clientCell.appendChild(this.#createClientSelector());
+            inputRow.appendChild(clientCell);
+
+            // 類別樹狀選擇欄
+            const categoryCell = this.#createCell({
+                style: "border-bottom:2px solid #000;text-align:left;"
+            });
+            const treeContainer = document.createElement('div');
+            treeContainer.id = "tree-container";
+            categoryCell.appendChild(treeContainer);
+            inputRow.appendChild(categoryCell);
+
+            // 新增按鈕欄
+            const addCell = this.#createCell({ style: "border-bottom:2px solid #000;" });
+            const addBtn = document.createElement('input');
+            addBtn.className = "add_btn";
+            addBtn.type = "button";
+            addBtn.onclick = function() { addRow_main(this); };
+            addBtn.value = "";
+            addCell.appendChild(addBtn);
+            inputRow.appendChild(addCell);
+
+            this.#tbody.appendChild(inputRow);
+            return this;
+        }
+
+        #createCell(attributes = {}) {
+            const cell = document.createElement('td');
+            Object.entries(attributes).forEach(([key, value]) => {
+                if (key === 'style') {
+                    cell.style.cssText = value;
+                } else {
+                    cell[key] = value;
+                }
+            });
+            return cell;
+        }
+
+        #createClientSelector() {
+            const wrapper = document.createElement('div');
+            wrapper.className = "web-protect-client-selector-wrapper";
+            wrapper.style.display = "flex";
+            wrapper.style.justifyContent = "center";
+
+
+            if (clientListModule) {
+                this.clientSelector = new ClientSelector({
+                    data: clientListModule.listAllClients().filter(item => !item.name.toLowerCase().includes('aiboard') && !item.amesh_isRe)
+                });
+                wrapper.appendChild(this.clientSelector.render());
+            } else {
+                console.error('ClientList not initialized');
+            }
+
+            return wrapper;
+        }
+
+        build() {
+            this.#tbody = document.createElement('tbody');
+            this.#createTableHeader();
+            this.#createColumnHeaders();
+            this.#createInputRow();
+
+            this.#table.appendChild(this.#thead);
+            this.#table.appendChild(this.#tbody);
+
+            return this.#table;
+        }
+
+        render(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) {
+                console.error(`Container with id '${containerId}' not found`);
+                return;
+            }
+            container.innerHTML = '';
+            container.appendChild(this.build());
+            this.#attachEvents();
+        }
+
+        #attachEvents() {
+            // 處理客戶端列表事件（如果需要）
+            this.#clientListEventData.forEach((eventData) => {
+                const clientIconID = "clientIcon_" + eventData.mac.replace(/:/g, "");
+                const clientIconObj = document.getElementById(clientIconID);
+                if (clientIconObj) {
+                    const paramData = { ...eventData, obj: clientIconObj };
+                    clientIconObj.addEventListener('click', (e) => popClientListEditTable(e, paramData));
+                }
+            });
+        }
+    }
+
+    // 全局變量用於存儲 MainTableBuilder 實例
+    let mainTableBuilder;
+
+    function genMain_table() {
+        mainTableBuilder = new MainTableBuilder();
+        mainTableBuilder.render('mainTable');
+        return mainTableBuilder;
     }
 
     function selectAll(target) {
@@ -872,7 +1021,7 @@
                 let clientName, clientIP, deviceType, deviceVendor;
                 let clientMac = rule.target.toUpperCase();
                 let clientIconID = "clientIcon_" + clientMac.replace(/\:/g, "");
-                let clientObj = clientList[clientMac];
+                let clientObj = rule.clientInfo;
                 if (clientObj) {
                     clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
                     clientIP = clientObj.ip;
@@ -884,6 +1033,7 @@
                     deviceType = 0;
                     deviceVendor = "";
                 }
+                const selectType = rule.type=="ip" ? " (IP)" : rule.type==="mac" ? " (MAC)" : "";
 
                 cell1.title = `<#WLANConfig11b_WirelessCtrl_button1name#>/<#btn_disable#>`;
                 cell1.innerHTML = `<input type="checkbox" ${(rule.enable) ? "checked" : ""}>`
@@ -898,7 +1048,7 @@
                     clientInfoDiv.innerHTML = '<div id="' + clientIconID + '" class="clientIcon" style="margin: 0"><i class="type0"></i></div>';
                     const clientNameDiv = document.createElement('div');
                     clientNameDiv.style = "display: flex; flex-direction: column; justify-content: center; align-items: flex-start; margin-left: 10px;";
-                    clientNameDiv.innerHTML = `<div style="font-weight: bold;">${clientName}</div><div style="font-size: 12px; color: #666;">${clientMac}</div>`;
+                    clientNameDiv.innerHTML = `<div style="font-weight: bold;">${clientName}${selectType}</div><div class="client-mac">${clientMac}</div>`;
                     clientInfoDiv.appendChild(clientNameDiv);
                     cell2.appendChild(clientInfoDiv);
                 } else {
@@ -907,7 +1057,7 @@
                         userIconBase64 = getUploadIcon(clientMac.replace(/\:/g, ""));
                     }
                     if (userIconBase64 != "NoIcon") {
-                        if (clientList[clientMac].isUserUplaodImg) {
+                        if (clientListModule.findClientByMac(clientMac).isUserUplaodImg) {
                             code += '<div id="' + clientIconID + '" class="clientIcon" style="margin: 0"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
                         } else {
                             code += '<div id="' + clientIconID + '" class="clientIcon" style="margin: 0"><i class="type" style="--svg:url(' + userIconBase64 + ')"></i></div>';
@@ -924,7 +1074,7 @@
                     }
                     const clientNameDiv = document.createElement('div');
                     clientNameDiv.style = "display: flex; flex-direction: column; justify-content: center; align-items: flex-start; margin-left: 10px;";
-                    clientNameDiv.innerHTML = `<div style="font-weight: bold;">${clientName}</div><div style="font-size: 12px; color: #666;">${clientMac}</div>`;
+                    clientNameDiv.innerHTML = `<div style="font-weight: bold;">${clientName}${selectType}</div><div class="client-mac">${clientMac}</div>`;
 
                     clientInfoDiv.innerHTML = code;
                     clientInfoDiv.appendChild(clientNameDiv);
@@ -936,15 +1086,14 @@
                 checklist.appendChild(rule.checklist.render())
                 rule.checklist.moreBtn.querySelector(".item-name").innerHTML = `<b><#More_Apps#> (${rule.apps.length} <#Selected#>) ></b>`;
                 cell3.appendChild(checklist);
-                cell4.innerHTML = `<input class="remove_btn" type="button" data-mac="${clientMac}" onclick="deleteRow_main(this);">`
-
-                // if (validator.mac_addr(clientMac))
-                //     clientListEventData.push({
-                //         "mac": clientMac,
-                //         "name": clientName,
-                //         "ip": clientIP,
-                //         "callBack": "WebProtector"
-                //     });
+                // 刪除按鈕欄
+                const deleteBtn = document.createElement('input');
+                deleteBtn.className = "remove_btn";
+                deleteBtn.type = "button";
+                deleteBtn.onclick = function() { deleteRow_main(this); };
+                deleteBtn.value = "";
+                deleteBtn.dataset.mac = clientMac;
+                cell4.appendChild(deleteBtn);
             }
         }
 
@@ -1165,57 +1314,61 @@
             const style = document.createElement('style');
             style.textContent = `
             @import url('/css/color-table.css');
+            .categories-container::-webkit-scrollbar, .category-apps::-webkit-scrollbar { width: 6px; height: 6px; }
+            .categories-container::-webkit-scrollbar-thumb, .category-apps::-webkit-scrollbar-thumb { background-color: #7775; border-radius: 20px; }
+            .categories-container::-webkit-scrollbar-thumb:hover, .category-apps::-webkit-scrollbar-thumb:hover { background-color: #7777; }
+            .categories-container::-webkit-scrollbar-track:hover, .category-apps::-webkit-scrollbar-track:hover { background-color: #5555; }
             :host { --item-height: ${this.#itemHeight}px; }
-            .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; background: var(--mask-popup-bg-color, rgba(0,0,0,0.5)); display: none; align-items: center; justify-content: center; }
-            .modal { width: 90%; max-width: 1000px; max-height: 90vh; background: var(--popup-bg-color, #fff); border-radius: var(--global-radius, 8px); box-shadow: var(--shadow-elevation40, 0 8px 24px rgba(0,0,0,0.2)); display: flex; flex-direction: column; }
+            .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; background: var(--wrt-modal-backdrop-bg); display: none; align-items: center; justify-content: center; }
+            .modal { width: 90%; max-width: 1000px; max-height: 90vh; background: var(--wrt-modal-bg); border-radius: var(--wrt-radius-sm); box-shadow: var(--wrt-shadow-elevation40); display: flex; flex-direction: column; }
             .modal-content { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-            .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border-color, #e0e0e0); }
-            .modal-title { font-size: 18px; font-weight: 600; color: var(--body-text-color, #333); }
-            .modal-close { cursor: pointer; font-size: 24px; color: #666; padding: 4px; border-radius: var(--global-radius, 8px); transition: background-color 0.2s; border: none; background: transparent; }
-            .modal-close:hover { background-color: var(--hover-color, #f0f0f0); }
+            .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--wrt-divider-color); }
+            .modal-title { font-size: 18px; font-weight: 600; color: var(--wrt-text-color); }
+            .modal-close { cursor: pointer; font-size: 24px; color: var(--wrt-text-muted-color); padding: 4px; border-radius: var(--global-radius, 8px); transition: background-color 0.2s; border: none; background: transparent; }
+            .modal-close:hover { background-color: var(--ark-iam-tree-hover-bg-color, #f0f0f0); }
             .modal-body { flex: 1; padding: 20px; overflow: hidden; display: flex; flex-direction: column; }
             .search-container { margin-bottom: 20px; }
             .search-input-wrapper { position: relative; display: flex; align-items: center; }
-            .search-input { width: 100%; padding: 12px 40px 12px 12px; border: 1px solid var(--textbox-normal-stroke-color, #ccc); background: var(--textbox-bg-color, #fff); border-radius: var(--global-radius, 8px); font-size: 14px; box-sizing: border-box; transition: all 0.2s ease; }
-            .search-input:focus { outline: none; border: 1px solid var(--textbox-EL10-normal-stroke-color, #007bff); color: var(--text-input-color, #333); box-shadow: 0px -4px 0px 0px var(--textbox-focus-stroke-color, #007bff) inset; background-color: var(--textbox-EL10-focus-fill-color, #fff) !important; }
+            .search-input { width: 100%; padding: 12px 40px 12px 12px; border: 1px solid var(--wrt-input-border); background: var(--wrt-input-bg); border-radius: var(--wrt-radius-sm); font-size: 14px; box-sizing: border-box; transition: all 0.2s ease; }
+            .search-input:focus { outline: none; border: 1px solid var(--wrt-input-focus-border); color: var(--wrt-input-color); box-shadow: 0px -4px 0px 0px var(--wrt-input-focus-border) inset; background-color: var(--wrt-input-focus-bg) !important; }
             .search-clear-btn { position: absolute; right: 8px; background: none; border: none; font-size: 16px; color: #666; cursor: pointer; padding: 4px; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s, opacity 0.2s, transform 0.2s; opacity: 0; transform: scale(0.7); pointer-events: none; }
             .search-clear-btn.visible { opacity: 1; transform: scale(1); pointer-events: auto; }
-            .search-clear-btn:hover { background-color: var(--hover-color, #f0f0f0); color: #333; }
+            .search-clear-btn:hover { background-color: var(--ark-iam-tree-hover-bg-color, #f0f0f0); color: #333; }
             .app-lists-container { display: flex; gap: 20px; flex: 1; overflow: hidden; }
             .app-list-section { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
             .app-list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-            .app-list-header h3 { margin: 0; color: var(--body-text-color, #333); font-size: 16px; font-weight: 600; }
+            .app-list-header h3 { margin: 0; color: var(--wrt-text-color); font-size: 16px; font-weight: 600; }
             .list-actions { display: flex; gap: 8px; }
-            .list-action-btn { background: none; border: none; color: var(--primary-60, #007bff); font-size: 13px; cursor: pointer; padding: 4px 6px; border-radius: var(--global-radius, 8px); transition: background-color 0.2s; }
-            .list-action-btn:hover { background-color: var(--hover-color, #f0f0f0); }
-            .categories-container { flex: 1; overflow-y: auto; border: 1px solid var(--textbox-normal-stroke-color, #ccc); border-radius: var(--global-radius, 8px); background: #fff; }
+            .list-action-btn { background: none; border: none; color: var(--ark-iam-list-action-btn-text-color, #007bff); font-size: 13px; cursor: pointer; padding: 4px 6px; border-radius: var(--global-radius, 8px); transition: background-color 0.2s; }
+            .list-action-btn:hover { background-color: var(--ark-iam-tree-hover-bg-color, #f0f0f0); }
+            .categories-container { flex: 1; overflow-y: auto; border: 1px solid var(--textbox-normal-stroke-color, #ccc); border-radius: var(--global-radius, 8px); background: var(--ark-iam-categories-container-bg-color, #fff); }
             .category-section { border-bottom: 1px solid var(--textbox-normal-stroke-color, #ccc); }
             .category-section:last-child { border-bottom: none; }
-            .category-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--neutral-20, #f7f7f7); cursor: pointer; font-weight: 600; color: var(--body-text-color, #333); transition: background-color 0.2s; }
-            .category-header:hover { background: #e9ecef; }
+            .category-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--wrt-btn-group-bg); cursor: pointer; font-weight: 600; color: var(--wrt-text-color); transition: background-color 0.2s; }
+            .category-header:hover { background: var(--wrt-btn-default-hover-bg); }
             .category-header-controls { display: flex; align-items: center; gap: 12px; }
-            .category-action-btn { background: none; border: 1px solid var(--border-color, #ccc); color: var(--body-text-color, #555); padding: 2px 8px; font-size: 12px; font-weight: normal; border-radius: var(--global-radius, 8px); cursor: pointer; transition: all 0.2s; }
-            .category-action-btn:hover { background-color: var(--hover-color, #f0f0f0); border-color: #999; color: #000; }
-            .category-toggle { font-size: 12px; transition: transform 0.2s; }
+            .category-action-btn { background: none; border: 1px solid var(--wrt-btn-default-border); color: var(--wrt-btn-default-color); padding: 2px 8px; font-size: 12px; font-weight: normal; border-radius: var(--global-radius, 8px); cursor: pointer; transition: all 0.2s; }
+            .category-action-btn:hover { background-color: var(--wrt-btn-default-hover-bg); border-color: var(--wrt-btn-default-border); color: var(--wrt-btn-default-color); }
+            .category-toggle { font-size: 12px; transition: transform 0.2s; color: var(--wrt-btn-icon-active-color); }
             .category-toggle.collapsed { transform: rotate(-90deg); }
             .category-apps { position: relative; overflow-y: auto; will-change: scroll-position; }
             .virtual-scroll-content { position: relative; width: 100%; overflow: hidden; }
             .category-apps.collapsed { display: none; }
-            .app-item, .selected-app-item { padding: 10px 16px; gap: 5px; border-bottom: 1px solid #f1f3f4; cursor: pointer; transition: background-color 0.2s; font-size: 14px; display: flex; align-items: center; height: var(--item-height); box-sizing: border-box; }
+            .app-item, .selected-app-item { padding: 10px 16px; gap: 5px; border-bottom: 1px solid var(--wrt-divider-color); cursor: pointer; transition: background-color 0.2s; font-size: 14px; display: flex; align-items: center; height: var(--item-height); box-sizing: border-box; }
             .app-item:last-child, .selected-app-item:last-child { border-bottom: none; }
-            .app-item:hover { background-color: var(--neutral-10, #f0f0f0); }
-            .selected-app-item { background-color: var(--primary-10, #e3f2fd); }
-            .selected-app-item:hover { background-color: var(--primary-20, #bbdefb); }
-            .selected-category-header { background: var(--neutral-20, #f7f7f7); border-bottom: 1px solid var(--border-color, #e0e0e0); }
+            .app-item:hover { background-color: var(--wrt-btn-default-hover-bg); }
+            .selected-app-item { background-color: var(--wrt-btn-group-active-bg); }
+            .selected-app-item:hover { background-color: var(--wrt-btn-default-hover-bg); }
+            .selected-category-header { background: var(--wrt-btn-group-bg); border-bottom: 1px solid var(--wrt-divider-color); }
             .selected-category-apps.collapsed { display: none; }
-            .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 20px; border-top: 1px solid var(--border-color, #e0e0e0); }
-            .cancel-button, .submit-button { padding: 10px 20px; border: none; border-radius: var(--global-radius, 8px); cursor: pointer; font-size: 14px; transition: background-color 0.2s; }
-            .cancel-button { background: #f8f9fa; color: #666; border: 1px solid var(--border-color, #ccc); }
-            .cancel-button:hover { background: #e9ecef; }
-            .submit-button { background: var(--primary-60, #007bff); color: white; }
-            .submit-button:hover { background: var(--primary-70, #0056b3); }
-            .empty-state { text-align: center; padding: 40px 20px; color: #666; font-style: italic; }
-            .category-count { font-size: 12px; color: #666; font-weight: normal; }
+            .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 20px; border-top: 1px solid var(--wrt-divider-color); }
+            .cancel-button, .submit-button { padding: 10px 20px; border: none; border-radius: var(--wrt-radius-sm); cursor: pointer; font-size: 14px; transition: background-color 0.2s; }
+            .cancel-button { background: var(--wrt-btn-default-bg); color: var(--wrt-btn-default-color); border: 1px solid var(--wrt-divider-color); }
+            .cancel-button:hover { background: var(--wrt-btn-default-hover-bg); }
+            .submit-button { background: var(--wrt-btn-primary-bg); color: white; }
+            .submit-button:hover { background: var(--wrt-btn-primary-hover-bg); }
+            .empty-state { text-align: center; padding: 40px 20px; color: var(--ark-iam-empty-state-color, #666); font-style: italic; }
+            .category-count { font-size: 12px; color: var(--brand-primary); font-weight: normal; }
             i.icon { width: 16px; height: 16px; display: inline-block; background-color: black; -webkit-mask-size: cover; -webkit-mask-position: center; -webkit-mask-repeat: no-repeat; mask-size: cover; mask-position: center; mask-repeat: no-repeat; }
             i.icon.icon-add { background-color: var(--primary-60, #007bff); --svg: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48cGF0aCBkPSJNMTIgNXYxNE01IDEyaDE0Ii8+PC9zdmc+'); -webkit-mask-image: var(--svg); mask-image:  var(--svg); }
             i.icon.icon-remove { background-color: var(--neutral-60, #000000); --svg: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48cGF0aCBkPSJNNSAxMmgxNCIvPjwvc3ZnPg=='); -webkit-mask-image: var(--svg); mask-image:  var(--svg); }
@@ -1506,12 +1659,23 @@
      * @returns {Array<object>} A flat array of app objects.
      */
     function parseDataForModal(data, lang) {
-        const mainCategoryMap = new Map(data.main_category.map(cat => [cat._id, cat.name]));
+        const getLocalizedName = (item, showEnSuffix = true) => {
+            const {name, language = {}} = item;
+            const enName = language.EN;
+            const langName = language[lang];
+            return lang === "EN"
+                ? enName || name
+                : langName
+                    ? showEnSuffix ? `${langName}(${enName || name})` : langName
+                    : enName || name;
+        };
+
+        const mainCategoryMap = new Map(data.main_category.map(cat => [cat._id, getLocalizedName(cat, false)]));
 
         const subCategoryMap = new Map();
         data.category.forEach(subCat => {
             const mainCatName = mainCategoryMap.get(subCat.main_category_id) || 'Unknown';
-            const fullCategoryName = `${mainCatName} / ${subCat.name}`;
+            const fullCategoryName = `${mainCatName} / ${getLocalizedName(subCat, false)}`;
 
             // Handle cases where one sub-category has multiple IDs (e.g., "4,5,6,7")
             const ids = subCat._id.split(',');
@@ -1522,16 +1686,7 @@
 
         const initialApps = data.app_list.map(app => ({
             id: app.app_id,
-            name: (() => {
-                const {name, language = {}} = app;
-                const enName = language.EN;
-                const langName = language[lang];
-                return lang === "EN"
-                    ? enName || name
-                    : langName
-                        ? `${langName}(${enName || name})`
-                        : enName || name;
-            })(),
+            name: getLocalizedName(app),
             category: subCategoryMap.get(app.category_id) || 'Other',
             originalData: app
         }));
@@ -1549,7 +1704,6 @@
             modalSize: 'modal-xl',
             initialApps: processedApps,
             onSelect: (selectedApps, target) => {
-                // console.log('已選擇的 APP:', selectedApps);
                 target.moreBtn.querySelector(".item-name").innerHTML = `<b><#More_Apps#> (${selectedApps.length} <#Selected#>) ></b>`;
                 const appIds = selectedApps.map(app => app.id);
                 target.setSelectedAppId(appIds);
@@ -1605,6 +1759,10 @@
         }
     }
 
+    document.querySelector('.button_gen').addEventListener('click', () => {
+        applyRule();
+    });
+
     async function initial() {
         getSettingsData()
             .then(data => {
@@ -1646,7 +1804,6 @@
                 ark_iam_rulelist = ark_iam_app_list_array.map(item => {
                     const [enable, target, apps] = item.split(">");
                     const app_ids = apps.split(",").filter(app => app.trim() !== "");
-
                     const hierarchicalChecklist = new HierarchicalChecklist(ark_app_list, data.preferred_lang);
                     return new ContentFilterRule({
                         enable: enable === "1",
@@ -1655,7 +1812,6 @@
                         checklist: hierarchicalChecklist
                     });
                 });
-
 
                 const ct_list = ark_iam_ct_list_array.map(item => {
                     const [enable, target, ...categories] = item.split(">");
@@ -1696,9 +1852,23 @@
                 ct_list.forEach(ct => {
                     const find_rule = ark_iam_rulelist.find(r => r.target === ct.target);
                     if (!find_rule) {
+
+                        const macPattern = /^[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}$/;
+                        const ipv4Pattern = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+                        let clientInfo = null;
+                        let type = null;
+                        if(macPattern.test(ct.target)){
+                            clientInfo = clientListModule.findClientByMac(ct.target);
+                            type = "mac";
+                        }else if(ipv4Pattern.test(ct.target)){
+                            clientInfo = clientListModule.findClientByIp(ct.target);
+                            type = "ip";
+                        }
                         const rule = new ContentFilterRule({
                             enable: ct.enable,
                             target: ct.target,
+                            clientInfo: clientInfo,
+                            type: type,
                             apps: [],
                             category: ct.category,
                             checklist: new HierarchicalChecklist(ark_app_list, data.preferred_lang)
@@ -1721,7 +1891,6 @@
                 document.querySelector('#tree-container').appendChild(settingChecklist.render());
                 genRulesRow(ark_iam_rulelist);
                 initializeModal(ark_app_list, data.preferred_lang);
-                showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');
             })
             .catch(error => console.error('Error', error));
     }

@@ -7,7 +7,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title><#Web_Title#> -Security Update Notification</title>
+<title><#Web_Title#> - <#Notification_security_update#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <script type="text/javascript" src="/js/jquery.js"></script>
@@ -53,9 +53,9 @@
 						<tr bgcolor="#4D595D">
 							<td valign="top">
 								<div>&nbsp;</div>
-								<div class="formfonttitle">Security Update Notification</div>
+								<div class="formfonttitle"><#Notification_security_update#></div>
 								<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-								<div class="formfontdesc">Monitor this log to stay informed about system security changes that may affect your network.</div>
+								<div class="formfontdesc"><#Notification_security_desc#></div>
 								<div style="margin-top:8px">   
 									<textarea class="textarea_ssh_table" style="width:99%; font-family:'Courier New', Courier, mono; font-size:13px;" cols="63" rows="25" readonly="readonly" wrap=off><% nvram_dump("security_recored.log",""); %></textarea>
 								</div>

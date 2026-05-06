@@ -98,7 +98,7 @@ function applyRescue(){
 
 function restoreRule(_flag){
 	var alert_string = "<#Setting_factorydefault_hint1#>";
-	if($('#restoreInit').prop("checked") && (bwdpi_support || isSupport("dpi_mals") || isSupport("dpi_cc") || isSupport("dpi_vp")))
+	if($('#restoreInit').prop("checked"))
 		alert_string = "<#Setting_initialize_hint1#>";
 
 	if(lan_ipaddr != '<% nvram_default_get("lan_ipaddr"); %>')
@@ -107,7 +107,7 @@ function restoreRule(_flag){
 	alert_string += "<#Setting_factorydefault_hint2#>";
 	if(confirm(alert_string)){
 		document.form.action1.blur();
-		if($('#restoreInit').prop("checked") && (bwdpi_support || isSupport("dpi_mals") || isSupport("dpi_cc") || isSupport("dpi_vp")))
+		if($('#restoreInit').prop("checked"))
 			document.restoreform.action_mode.value = "restore_erase";
 		else
 			document.restoreform.action_mode.value = "Restore";

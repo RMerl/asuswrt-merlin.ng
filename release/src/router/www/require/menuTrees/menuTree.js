@@ -91,6 +91,7 @@ define(function(){
 					{url: "ParentalControl.asp", tabName: "<#Time_Scheduling#>"},
 					{url: "YandexDNS.asp", tabName: "<#YandexDNS#>"},
 					{url: "adGuard_DNS.asp", tabName: "AdGuard"},
+					{url: "Ark_WebHistory_Content.asp", tabName: "<#Adaptive_History#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -99,7 +100,7 @@ define(function(){
 				index: "menu_BandwidthMonitor", 
 				tab: [
 					{url: "AdaptiveQoS_Bandwidth_Monitor.asp", tabName: "<#Bandwidth_monitor#>"},
-					{url: "QoS_EZQoS.asp", tabName: "<#menu5_3_2#>"},
+					{url: "QoS_EZQoS.asp", tabName: "<#Adaptive_QoS#>"},
 					{url: "QoS_Stats.asp", tabName: "Classification"},
 					{url: "AdaptiveQoS_WebHistory.asp", tabName: "<#Adaptive_History#>"},
 					{url: "AdaptiveQoS_ROG.asp", tabName: "<table style='margin-top:-7px;'><tr><td><img src='/images/ROG_Logo.png' style='border:0px;width:32px;'></td><td>ROG First</td></tr></table>"}, 
@@ -111,10 +112,10 @@ define(function(){
 				] 
 			},		
 			{
-				menuName: "网易UU加速器",
+				menuName: "<#UU_Accelerator#>",
 				index: "menu_UU", 
 				tab: [
-					{url: "UUAccelerator.asp", tabName: "网易UU加速器"},
+					{url: "UUAccelerator.asp", tabName: "<#UU_Accelerator#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -341,7 +342,7 @@ define(function(){
 					{url: "Main_IPTStatus_Content.asp", tabName: "<#menu5_7_5#>"},
 					{url: "Main_AdslStatus_Content.asp", tabName: "<#menu_dsl_log#>"},
 					{url: "Main_ConnStatus_Content.asp", tabName: "<#Connections#>"},
-					{url: "Main_Security_Change_Notification.asp", tabName: "Security Update Notification"},
+					{url: "Main_Security_Change_Notification.asp", tabName: "<#Notification_security_update#>"},
 					/* {url: "###Main_ConnStatus_Content.asp", tabName: "Captive Portal Connection Log"}, */
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
@@ -381,14 +382,6 @@ define(function(){
 				if(!dashboard_support){
 					retArray.push("menu_NewDashboard");
 				}
-				
-				if(!isSupport("adaptive_qos") && !isSupport("bandwidth_monitor") && !isSupport("dns_dpi")){	
-					for(i=0; i<menuTree.list.length; i++){
-						if(menuTree.list[i].menuName == '<#Adaptive_QoS#>'){
-							menuTree.list[i].menuName = '<#menu5_3_2#>';
-						}
-					}
-				}
 
 				if(!isSupport("dpi_mals") && !isSupport("dpi_cc") && !isSupport("dpi_vp")){
 					retArray.push("menu_AiProtection");
@@ -421,8 +414,7 @@ define(function(){
 				if(!newsite_provisioning_support){
 					retArray.push("menu_SiteManager");
 				}
-				
-				
+
 				if(!pptpd_support){
 					retArray.push("Advanced_VPN_PPTP.asp");
 				}
@@ -943,13 +935,20 @@ define(function(){
 					retArray.push("DNSFilter.asp");
 				}
 
-				if (isSupport("gtbooster")) {
-					if (isSupport("ark_iam")) {
-						retArray.push("AiProtection_WebProtector.asp");
-					} else {
-						retArray.push("AiProtection_ContentFilter.asp");
-					}
-				}
+                if(isSupport("ark_qoe")){
+                    for (i = 0; i < menuTree.list.length; i++) {
+                        if (menuTree.list[i].menuName == '<#Adaptive_QoS#>') {
+                            menuTree.list[i].menuName = '<#Adaptive_QoE#>';
+                        }
+                    }
+                    replaceTabNameByUrl("menu_BandwidthMonitor", "QoS_EZQoS.asp", "<#Adaptive_QoE#>");
+                }
+
+                if (isSupport("ark_iam")) {
+                    retArray.push("AiProtection_WebProtector.asp");
+                } else {
+                    retArray.push("AiProtection_ContentFilter.asp");
+                }
 
 				/* System Status Changed */
 				// --

@@ -347,7 +347,7 @@ function restart_needed_time(reload_sec){
 <% asus_nvram_commit(); %>
 
 <div style="margin-top:8px">
-	<textarea cols="63" rows="27" wrap="off" readonly="readonly" id="textarea" style="width:99%; font-family:'Courier New', Courier, mono; font-size:11px;background:#475A5F;color:#FFFFFF;"><% apps_fsck_log(); %></textarea>
+	<textarea class="textarea--log" cols="63" rows="27" wrap="off" readonly="readonly" id="textarea"><% apps_fsck_log(); %></textarea>
 </div>
 </body>
 </html>

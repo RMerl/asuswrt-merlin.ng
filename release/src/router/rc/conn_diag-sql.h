@@ -112,6 +112,7 @@ struct stainfo {
 	char conn_if[16];
 	int conn_if_idx;
 	int conn_if_vidx;
+	int rssi;
 	//time_t last_update;
 	struct stainfo *next;
 };
@@ -163,6 +164,7 @@ enum {
 	DB_PORT_STATUS_POE_CHANGE,
 	DB_ACSD_EVENT,
 	DB_AIRIQ_EVENT,
+	DB_CISCAN_EVENT,
 	DB_MAX
 };
 

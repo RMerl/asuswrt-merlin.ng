@@ -56,8 +56,20 @@
         font-size: 0.875rem;
     }
 
-    a, .feature-desc {
+    .router-scan-desc {
+        font-size: 12px;
+    }
+
+    .formfontdesc {
         font-size: 14px;
+    }
+
+    .feature-title{
+        font-size: 14px;
+    }
+
+    a, .feature-desc {
+        font-size: 12px;
         color: #FC0;
         height: auto;
         padding-top: 5px;
@@ -161,6 +173,10 @@
         animation: slideUp 0.3s ease-out;
     }
 
+    h5.card-header{
+        font-size: 14px;
+    }
+
     .card-header-float {
         background: var(--modal-header-bg-color, #1a73e8);
         color: #fff;
@@ -168,6 +184,14 @@
         font-size: 1.25rem;
         font-weight: 600;
         border-bottom: none;
+    }
+
+    .card-data-title {
+        font-size: 14px;
+    }
+
+    .card-data-text {
+        font-size: 12px;
     }
 
     .card-body-float {
@@ -425,6 +449,10 @@
         padding: 10px;
     }
 
+    .nav-link {
+        font-size: 14px;
+    }
+
     @media (max-width: 768px) {
         .router-scan-modal {
             width: 95%;
@@ -445,24 +473,24 @@
             <div id="content_title" class="formfonttitle"><#AiProtection_title#>
             </div>
             <div class="split-line my-2"></div>
-            <div class="d-flex flex-row justify-content-evenly align-items-center gap-2 mb-3">
-                <img id="guest_image" src="/images/New_ui/HomeProtection.png">
+            <div class="d-flex flex-row align-items-center gap-2 mb-3">
                 <div class="d-flex flex-column">
                     <div class="formfontdesc">
                         <#AiProtection_scan_desc#>
                     </div>
                     <a id="faq" style="text-decoration:underline;"
                        href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang=EN&kw=&num=139" target="_blank"><#AiProtection_title#> FAQ</a>
-                    <img id="scenario_img"
-                         src="/images/New_ui/Home_Protection_Scenario_white.svg">
                 </div>
+            </div>
+            <div class="d-flex justify-content-evenly mb-3">
+                <div class="aiProtection-scenario" role="img" aria-label="aiProtection scenario"></div>
             </div>
         </div>
         <div class="col-12 col-md-6 mb-3">
             <div class="card pt-2 h-100" id="router_scan_trigger">
                 <div class="card-header d-flex align-items-center"><div class="icon icon-search text-primary icon-size-28"></div><#AiProtection_scan#></div>
                 <div class="card-body d-flex flex-row justify-content-between align-items-center">
-                    <div><#AiProtection_scan_desc#></div>
+                    <div class="router-scan-desc"><#AiProtection_scan_desc#></div>
                     <button type="button" class="btn btn-primary" onclick="openRouterScanModal()">
                         <#CTL_scan#>
                     </button>
@@ -678,7 +706,8 @@
                             </div>
                             <button
                                 type="button"
-                                class="btn btn-sm mx-3 router-scan-button button-danger">
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${defaultNamePasswd ? "button-danger" : "button-safe"}">
                                 ${
             defaultNamePasswd
                 ? "<a href='/Advanced_System_Content.asp' target='_blank'><#checkbox_No#></a>"

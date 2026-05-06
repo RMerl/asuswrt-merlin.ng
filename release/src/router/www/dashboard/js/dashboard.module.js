@@ -1,14 +1,20 @@
+import {isSupport} from "./utils.module.js";
+
 export class WiFiInterferenceChart {
     constructor(mac) {
         this.interferenceEnabled = false;
         this.wifiStatus = [];
         this.chartData = [];
         this.interferenceData = [];
+        this.interferenceCiscanData = [];
         this.dfsData = [];
         this.sysData = [];
         this.chart = null;
         this.txopChartInstance = null;
         this.mac = mac;
+
+        this.airiq_support = isSupport("airiq") === 1;
+        this.ciscan_monitor_support = isSupport("ciscan_monitor") === 1;
 
         this.nowTime = new Date();
         this.chartStartTime = new Date(this.nowTime - 1 * 60 * 60 * 1000);
@@ -226,7 +232,7 @@ export class WiFiInterferenceChart {
         div.innerHTML = this.getTemplate();
         this.element = div;
 
-		// Add FAQ link event
+        // Add FAQ link event
         const lang = system.language.currentLang;
         const faqBtns = this.element.querySelectorAll('i.ai-faq-btn');
         faqBtns.forEach(btn => {
@@ -316,28 +322,63 @@ export class WiFiInterferenceChart {
                     flex-direction: row;
                     align-items: flex-start;
                     padding: 2px;
-                    background-color: var(--switch-menu-bg-color);
-                    border-radius: var(--global-radius);
+                    background-color: var(--wrt-segment-fill-bg);
+                    border-radius: var(--wrt-segment-radius);
+                    border: 1px solid var(--wrt-segment-fill-border);
                     width: 100%;
                 }
                 
                 .wifi-channel-panel .segmented_picker_option {
                     font-size: 0.75rem;
                     height: 28px;
+                    min-width: 100px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     flex: 1;
                     cursor: pointer;
-                    color: var(--switch-menu-option-text-color);
-                
+                    color: var(--wrt-segment-fill-color);
+                    padding: 0 12px;
+                    border-radius: var(--wrt-segment-item-radius);
+                    margin: 0 2px;
+                    transition: all 0.2s ease;
+
                 }
                 
                 .wifi-channel-panel .segmented_picker_option.active {
-                    background: var(--switch-menu-option-selected-bg-color);
-                    color: var(--switch-menu-option-selected-text-color);
-                    border-radius: var(--global-radius);
+                    background: var(--wrt-segment-fill-active-bg);
+                    color: var(--wrt-segment-fill-active-color);
+                    border-radius: var(--wrt-segment-item-radius);
                     box-shadow: var(--shadow-elevation10);
+                }
+                
+                .wifi-channel-panel .card-body {
+                    background-color: var(--wrt-card-content-emphasis-bg);
+                    position: relative;
+                }
+
+                .wifi-channel-panel .card-body-overlay {
+                    position: absolute;
+                    inset: 0;
+                    z-index: 10;
+                    background: var(--wrt-card-content-emphasis-bg);
+                    display: none;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: inherit;
+                    backdrop-filter: blur(3px);
+                }
+
+                .wifi-channel-panel .card-body-overlay-msg {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 14px 20px;
+                    background: #fff3cd;
+                    border: 1px solid #ffc107;
+                    border-radius: var(--global-radius);
+                    color: #856404;
+                    max-width: 420px;
                 }
                 
                 .wifi-channel-panel .channel_plan {
@@ -364,7 +405,7 @@ export class WiFiInterferenceChart {
                     font-size: 13px;
                     line-height: 32px;
                     letter-spacing: 0px;
-                    color: var(--neutral-gray-7020, rgba(102, 102, 102, 1));
+                    color: var(--text-secondary-color);
                 }
                 
                 .wifi-channel-panel .timeline {
@@ -377,39 +418,39 @@ export class WiFiInterferenceChart {
                 }
                 
                 .wifi-channel-panel .timeline .dfs{
-                    border: 1px solid var(--neutral-30);
-                    background-color: var(--neutral-20);
+                    border: 1px solid var(--wrt-card-surface-1-border);
+                    background-color: var(--wrt-card-surface-1-bg);
                     width: fit-content;
                     padding: 5px 10px;
-                    border-radius: 8px;
+                    border-radius: var(--wrt-card-radius);
                 }
                 
                 .wifi-channel-panel .timeline .info{
-                    border: 1px solid #ffecb5;
-                    background-color: #fff3cd;
+                    border: 1px solid var(--wrt-badge-info-border);
+                    background-color: var(--wrt-badge-info-bg);
                     width: fit-content;
                     padding: 5px 10px;
-                    border-radius: 8px;
+                    border-radius: var(--wrt-card-radius);
                 }
                 
                 .wifi-channel-panel .entry {
                     position: relative;
                     margin-bottom: 16px;
-                    border-radius: 8px;
+                    border-radius: var(--wrt-card-radius);
                     padding: 12px 16px;
-                    background: rgba(255, 255, 255, 0.8);
-                    border: 1px solid rgba(0, 0, 0, 0.08);
+                    background: var(--wrt-card-surface-1-bg);
+                    border: 1px solid var(--wrt-card-surface-1-border);
                     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
                     transition: all 0.2s ease;
                 }
                 
                 .wifi-channel-panel .entry.now {
-                    background: var(--primary-blue-1040, rgba(236, 245, 255, 1));
-                    border: 1px solid var(--primary-blue-5000, rgba(36, 141, 255, 1));
+                    background: var(--surface-active);
+                    border: 1px solid var(--wrt-badge-primary-border);
                 }
                 
                 .wifi-channel-panel .entry.now .time {
-                    color: var(--body-text-color);
+                    color: var(--wrt-card-text-color);
                 }
                 
                 .wifi-channel-panel .entry::before {
@@ -455,10 +496,11 @@ export class WiFiInterferenceChart {
                     position: absolute;
                     top: 8px;
                     right: 12px;
-                    background: #2196f3;
-                    color: white;
+                    background: var(--wrt-badge-success-bg);
+                    color: var(--wrt-badge-success-color);
+                    border: 1px solid var(--wrt-badge-success-border);
                     padding: 4px 8px;
-                    border-radius: 12px;
+                    border-radius: var(--wrt-badge-radius);
                     font-size: 12px;
                     font-weight: 500;
                 }
@@ -473,7 +515,7 @@ export class WiFiInterferenceChart {
                     display: inline-block;
                     margin-top: 4px;
                     padding: 2px 6px;
-                    background-color: #e0e0e0;
+                    background-color: var(--wrt-card-surface-1-bg);
                     border-radius: 4px;
                     font-size: 0.8em;
                 }
@@ -485,7 +527,7 @@ export class WiFiInterferenceChart {
                     -webkit-mask-image: var(--arrow-icon);
                     width: 24px;
                     height: 24px;
-                    background-color: var(--primary-50);
+                    background-color: var(--brand-primary);
                 }
                 
                 @media (max-width: 992px) {
@@ -534,17 +576,17 @@ export class WiFiInterferenceChart {
                     height: 32px;
                     justify-content: center;
                     align-items: center;
-                    background: #f8f9fa;
-                    border: 1px solid #dee2e6;
+                    background: var(--wrt-btn-default-bg);
+                    border: 1px solid var(--wrt-btn-default-border);
                     border-radius: 50%;
                     cursor: pointer;
                     font-size: 16px;
-                    color: #495057;
+                    color: var(--wrt-btn-default-color);
                     transition: all 0.2s ease;
                 }
                 .wifi-channel-panel .range-options-btn:hover {
-                    background: #e9ecef;
-                    border-color: #adb5bd;
+                    background: var(--wrt-btn-default-hover-bg);
+                    border-color: var(--wrt-btn-default-hover-border);
                 }
                 .wifi-channel-panel .more-icon {
                     font-weight: bold;
@@ -554,11 +596,11 @@ export class WiFiInterferenceChart {
                     position: absolute;
                     top: 100%;
                     right: 0;
-                    background: white;
-                    border: 1px solid #dee2e6;
-                    border-radius: 8px;
+                    background: var(--wrt-modal-bg);
+                    border: 1px solid var(--wrt-modal-border);
+                    border-radius: var(--wrt-modal-radius);
                     min-width: 300px;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    box-shadow: var(--shadow-elevation10);
                     z-index: 1000;
                     margin-top: 4px;
                 }
@@ -567,9 +609,9 @@ export class WiFiInterferenceChart {
                     justify-content: space-between;
                     align-items: center;
                     padding: 12px 16px;
-                    border-bottom: 1px solid #dee2e6;
+                    border-bottom: 1px solid var(--wrt-modal-border);
                     font-weight: 600;
-                    background: #f8f9fa;
+                    background: var(--wrt-modal-bg);
                     border-radius: 8px 8px 0 0;
                 }
                 .wifi-channel-panel .popup-close {
@@ -577,7 +619,7 @@ export class WiFiInterferenceChart {
                     border: none;
                     font-size: 20px;
                     cursor: pointer;
-                    color: #6c757d;
+                    color: var(--wrt-modal-text-color);
                     padding: 0;
                     width: 24px;
                     height: 24px;
@@ -586,7 +628,7 @@ export class WiFiInterferenceChart {
                     justify-content: center;
                 }
                 .wifi-channel-panel .popup-close:hover {
-                    color: #495057;
+                    color: var(--wrt-card-text-color);
                 }
                 .wifi-channel-panel .popup-body {
                     padding: 16px;
@@ -603,7 +645,7 @@ export class WiFiInterferenceChart {
                 .wifi-channel-panel .option-group label {
                     margin-bottom: 0;
                     font-weight: 500;
-                    color: #495057;
+                    color: var(--wrt-card-text-color);
                 }
                 .wifi-channel-panel .option-group i.icon-time {
                     display: block;
@@ -612,16 +654,16 @@ export class WiFiInterferenceChart {
                     -webkit-mask-image: var(--svg-icon);
                     width: 24px;
                     height: 24px;
-                    background-color: var(--body-text-color);
+                    background-color: var(--brand-primary);
                 }
                 
                 .wifi-channel-panel .interference-status-text {
-                    border: 1px solid #28a745;
+                    border: 1px solid rgba(var(--status-on-rgb),0.3);
                     padding: 4px 8px;
-                    border-radius: 4px;
-                    background: linear-gradient(90deg, #d4edda 0%, #c3e6cb 50%, #d4edda 100%);
+                    border-radius: var(--wrt-badge-radius);
+                    background: linear-gradient(90deg,rgba(var(--status-on-rgb),0.1) 0%, rgba(var(--status-on-rgb),0.5) 50%, rgba(var(--status-on-rgb),0.1) 100%);
                     background-size: 200% 100%;
-                    color: #155724;
+                    color: var(--status-on);
                     font-size: 12px;
                     font-weight: 500;
                     position: relative;
@@ -635,7 +677,7 @@ export class WiFiInterferenceChart {
                     left: -100%;
                     width: 100%;
                     height: 100%;
-                    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+                    background: linear-gradient(90deg, transparent, rgba(var(--surface-invert-rgb),0.4), transparent);
                     animation: interferenceShine 2s ease-in-out infinite;
                 }
                 
@@ -720,7 +762,7 @@ export class WiFiInterferenceChart {
                     width: 100%;
                     height: 8px;
                     border-radius: 8px;
-                    border: 1px solid var(--neutral-40);
+                    border: 1px solid var(--wrt-divider-color);
                     margin: 4px 0;
                 }
                 
@@ -779,7 +821,7 @@ export class WiFiInterferenceChart {
                 }
                 
                 .legend-btn {
-                    color: var(--primary-text-btn-disable);
+                    color: var(--wrt-btn-accent-neutral-color);
                     display: flex;
                     height: 32px;
                     padding: 6px 16px;
@@ -787,14 +829,15 @@ export class WiFiInterferenceChart {
                     align-items: center;
                     gap: 8px;
                     border-radius: 2px;
-                    border: 1px solid var(--neutral-50, #999);
+                    background: var(--wrt-btn-accent-neutral-bg);
+                    border: 1px solid var(--wrt-btn-accent-neutral-border);
                     cursor: pointer;
                     user-select: none;
                     min-width: 100px;
                 }
                 
                 .legend-btn:hover {
-                    background-color: var(--primary-10);
+                    background-color: var(--wrt-btn-accent-neutral-hover-bg);
                 }
                 
                 .legend-btn > *{
@@ -802,18 +845,19 @@ export class WiFiInterferenceChart {
                 }
                 
                 .legend-btn.active {
-                    color: var(--primary-text-btn-normal);
-                    border: 1px solid var(--primary-30, #666);
+                    color: var(--wrt-btn-accent-neutral-color);
+                    border: 1px solid var(--wrt-btn-accent-neutral-border);
                 }
                 
                 .legend-btn.active:hover {
-                    background-color: var(--primary-20);
+                    background-color: var(--wrt-btn-accent-neutral-hover-bg);
                 }
                 
                 .legend-btn.active::before {
                     display: block;
                     content: '✓';
                     font-size: 16px;
+                    color: var(--text-primary);
                 }
 
                 .ai-faq-btn {
@@ -829,7 +873,7 @@ export class WiFiInterferenceChart {
                         <div class="segmented_picker"></div>
                     </div>
                     <div class="d-flex align-items-center gap-1">
-                        <div id="interferenceStatusText" class="interference-status-text d-none" >
+                        <div id="interferenceStatusText" class="interference-status-text d-none ${!this.airiq_support && !this.ciscan_monitor_support ? 'd-none' : ''}" >
                             <span class="status-dot"></span>
                             Interference detecting...
                         </div>
@@ -856,7 +900,7 @@ export class WiFiInterferenceChart {
                                         </div>
                                     </div>
                                 </div>
-                                <div class="option-group">
+                                <div class="option-group ${!this.airiq_support && !this.ciscan_monitor_support ? 'd-none' : ''}">
                                     <label><#Wifi_Detect_Interference#></label>
                                     <div id="interference_toggle" role="button" tabindex="1" class="toggle-button with-text ${this.interferenceEnabled ? 'active' : ''}">
                                         <div class="toggle-button-handle"></div>
@@ -873,7 +917,13 @@ export class WiFiInterferenceChart {
                     </div>
                     </div>
                 </div>
-                <div class="card-body p-0 ps-2 pe-2" style="background: rgba(239, 239, 239, 0.4);">
+                <div class="card-body p-0 ps-2 pe-2">
+                    <div id="router-time-warning" class="card-body-overlay">
+                        <div class="card-body-overlay-msg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" style="flex-shrink:0"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/></svg>
+                            <span>The router time differs from your device time by more than 6 hours. Please update the router time.</span>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col-12 col-lg-3">
                             <div class="channel_plan">
@@ -894,12 +944,12 @@ export class WiFiInterferenceChart {
                                     <canvas id="txop_chart"></canvas>
                                 </div>
                                 <div class="col-12 px-3 py-2">
-                                    <div id="bar-chart-title" class="channel_chart_title"><#Wifi_specscan_Interference#></div>
+                                    <div id="bar-chart-title" class="channel_chart_title">${!this.airiq_support && !this.ciscan_monitor_support ? `<#Channel_In_Use#>` : `<#Wifi_specscan_Interference#>`}</div>
                                 </div>
                                 <div class="col-12 px-3">
                                     <div class="row">
                                         <div class="col-12 col-lg-4 d-flex align-items-center mb-1">
-                                            <div class="d-flex gap-2 align-items-center w-100" id="interference_info">
+                                            <div class="d-flex gap-2 align-items-center w-100 ${!this.airiq_support && !this.ciscan_monitor_support ? `d-none` : ``}" id="interference_info">
                                                 <span class="h-100"><#Wifi_Interference#></span>
                                                 <div class="d-flex align-items-center" style="width: inherit">
                                                     <div class="range-form">
@@ -921,13 +971,6 @@ export class WiFiInterferenceChart {
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div class="d-flex align-items-center d-none" id="channel_chart_info">
-                                                <span class="h-100">
-                                                    <div class="alert alert-info p-1 m-0" role="alert">
-                                                      <#Wifi_specscan_hint#>
-                                                    </div>
-                                                </span>
                                             </div>
                                         </div>
                                         <div class="col-12 col-lg-8 d-flex align-items-center justify-content-center justify-content-lg-end gap-2 mb-1" id="interference_legend">
@@ -956,16 +999,6 @@ export class WiFiInterferenceChart {
                 }
                 item.classList.add('active');
                 this.showBand = item.dataset.value;
-
-                if (this.showBand.startsWith("6G")) {
-                    this.getCachedElement("#channel_chart_info").classList.remove("d-none");
-                    this.getCachedElement("#interference_info").classList.add("d-none");
-                    this.getCachedElement("#bar-chart-title").innerText = `<#Channel_In_Use#>`;
-                } else {
-                    this.getCachedElement("#channel_chart_info").classList.add("d-none");
-                    this.getCachedElement("#interference_info").classList.remove("d-none");
-                    this.getCachedElement("#bar-chart-title").innerText = `<#Wifi_specscan_Interference#>`;
-                }
 
                 const titleElement = this.getCachedElement(".channel_plan_title");
                 const freqElement = this.getCachedElement(".channel_plan_freq");
@@ -1036,6 +1069,7 @@ export class WiFiInterferenceChart {
                 }
                 httpApi.nvramSet({
                     "airiq_enable": this.interferenceEnabled ? "1" : "0",
+                    "ciscan_enable": this.interferenceEnabled ? "1" : "0",
                     "action_mode": "apply",
                 });
             });
@@ -1063,6 +1097,7 @@ export class WiFiInterferenceChart {
                 }
             });
         }
+
     }
 
     // Update time range based on selection
@@ -1161,8 +1196,7 @@ export class WiFiInterferenceChart {
             chartInfoDiv.appendChild(dfsLegendButton);
         }
 
-        if (!this.showBand.startsWith("6G")) {
-
+        if (this.airiq_support || this.ciscan_monitor_support) {
             const otherWifiLegendButton = this.createLegendButton({
                 id: 'otherwifi-legend-btn',
                 label: `<#OtherWifi_Interference#>`,
@@ -1188,7 +1222,6 @@ export class WiFiInterferenceChart {
                 }
             });
             chartInfoDiv.appendChild(nonWifiLegendButton);
-
         }
     }
 
@@ -1230,26 +1263,23 @@ export class WiFiInterferenceChart {
         });
 
         chartInfoDiv.appendChild(otherWifiLegendButton);
-        if (!this.showBand.startsWith("6G")) {
-            const nonWifiLegendButton = this.createLegendButton({
-                id: 'nonwifi-legend-btn',
-                label: `<#NonWifi_Interference#>`,
-                checked: this.txopChartInstance.data.datasets.find(dataset => dataset.label === `<#NonWifi_Interference#>`)?.hidden === false,
-                icon: true,
-                fill: 'rgba(245,176,124, 0.1)',
-                border: '1px solid #f5b07c',
-                onChange: (checked) => {
-                    this.txopChartInstance.data.datasets.forEach(dataset => {
-                        if (dataset.label === `<#NonWifi_Interference#>`) {
-                            dataset.hidden = !checked;
-                        }
-                    });
-                    this.txopChartInstance.update();
-                }
-            });
-            chartInfoDiv.appendChild(nonWifiLegendButton);
-
-        }
+        const nonWifiLegendButton = this.createLegendButton({
+            id: 'nonwifi-legend-btn',
+            label: `<#NonWifi_Interference#>`,
+            checked: this.txopChartInstance.data.datasets.find(dataset => dataset.label === `<#NonWifi_Interference#>`)?.hidden === false,
+            icon: true,
+            fill: 'rgba(245,176,124, 0.1)',
+            border: '1px solid #f5b07c',
+            onChange: (checked) => {
+                this.txopChartInstance.data.datasets.forEach(dataset => {
+                    if (dataset.label === `<#NonWifi_Interference#>`) {
+                        dataset.hidden = !checked;
+                    }
+                });
+                this.txopChartInstance.update();
+            }
+        });
+        chartInfoDiv.appendChild(nonWifiLegendButton);
 
         const txopLegendButton = this.createLegendButton({
             id: 'txop-legend-btn',
@@ -1540,6 +1570,7 @@ export class WiFiInterferenceChart {
             await this.fetchChannelData(this.mac);
             await this.genChart();
             this.isInitialized = true;
+            this.checkRouterTimeDrift();
 
             // Start auto refresh if enabled
             if (this.autoRefresh) {
@@ -1576,6 +1607,18 @@ export class WiFiInterferenceChart {
     // 隱藏loading狀態
     hideLoadingState() {
         // loading會被chart渲染覆蓋，無需特別處理
+    }
+
+    // Check if router time drifts >= 6 hours from browser time and show warning
+    checkRouterTimeDrift() {
+        const warningEl = this.getCachedElement('#router-time-warning');
+        if (!warningEl) return;
+
+        const routerTs = typeof system !== 'undefined' && system.time && system.time.timestamp;
+        if (!routerTs) return;
+
+        const diffSec = Math.abs(routerTs - Date.now()) / 1000;
+        warningEl.style.display = diffSec >= 6 * 3600 ? 'flex' : '';
     }
 
     // Show error message
@@ -1748,7 +1791,6 @@ export class WiFiInterferenceChart {
         }
 
         const self = this;
-        const interferenceData = this.interferenceData;
         const barData = this.barData;
         const dfsChartData = this.dfsChartData;
         const showBand = this.showBand;
@@ -1775,7 +1817,9 @@ export class WiFiInterferenceChart {
 
         // Create new mousemove handler
         const mousemoveHandler = (event) => {
-            if (!this.chartInstance || !this.chartInstance.ctx || !this.chartInstance.scales) {
+            // Chart created on detached canvas won't have scales until ResizeObserver fires.
+            // Silently skip until both x and y scales are fully initialized.
+            if (!this.chartInstance?.ctx || !this.chartInstance?.scales?.x || !this.chartInstance?.scales?.y) {
                 return;
             }
 
@@ -1811,7 +1855,7 @@ export class WiFiInterferenceChart {
             const yScale = scales.y;
 
             // 確保 scales 和它們的方法存在
-            if (!xScale || !yScale || typeof xScale.getPixelForValue !== 'function' || typeof yScale.getPixelForValue !== 'function') {
+            if (typeof xScale.getPixelForValue !== 'function' || typeof yScale.getPixelForValue !== 'function') {
                 console.error('Chart scales are not properly initialized');
                 return;
             }
@@ -1820,6 +1864,17 @@ export class WiFiInterferenceChart {
 
             let found = false;
             if (this.rectanglePlugin?.legendStates?.interferenceState !== 0) {
+                let interferenceData = [];
+                if (this.airiq_support) {
+                    interferenceData = this.interferenceData;
+                } else if (this.ciscan_monitor_support) {
+                    interferenceData = this.interferenceCiscanData;
+                }
+                if (showBand.startsWith("6G")) {
+                    if (this.ciscan_monitor_support) {
+                        interferenceData = this.interferenceCiscanData;
+                    }
+                }
                 if (Array.isArray(interferenceData)) {
                     for (const d of interferenceData) {
                         if (self.chartStartTime < d.timeStart) {
@@ -2022,6 +2077,10 @@ export class WiFiInterferenceChart {
         const self = this;
 
         const style = getComputedStyle(document.documentElement);
+        const gridRectangleFill = (() => {
+            const v = style.getPropertyValue('--grid-rectangle-rgb').trim();
+            return v || 'rgba(204, 204, 204, 0.2)';
+        })();
         const wifiInsightColor =
             {
                 'verygood': style.getPropertyValue('--color-chart-wifi-interference-verygood').trim(),
@@ -2056,8 +2115,18 @@ export class WiFiInterferenceChart {
 
         const chartData = this.chartData.filter(d => d.band.startsWith(this.showBand) || this.showBand.startsWith(d.band));
         const dfsData = this.dfsData.filter(d => d.band.startsWith(this.showBand) || this.showBand.startsWith(d.band));
-        const interferenceData = this.interferenceData;
         const showBand = this.showBand;
+        let interferenceData = [];
+        if (this.airiq_support) {
+            interferenceData = this.interferenceData;
+        } else if (this.ciscan_monitor_support) {
+            interferenceData = this.interferenceCiscanData;
+        }
+        if (showBand.startsWith("6G")) {
+            if (this.ciscan_monitor_support) {
+                interferenceData = this.interferenceCiscanData;
+            }
+        }
         const getChannelFrequencyRange = this.getChannelFrequencyRange;
 
         const wifi_inter_chart = this.getCachedElement('#wifi_inter_chart');
@@ -2214,14 +2283,12 @@ export class WiFiInterferenceChart {
                             ? "6G"
                             : "";
 
-                if (band != "6G") {
-                    for (const d of interferenceData) {
-                        if (d.timeEnd >= channel_start_time && d.timeEnd <= channel_end_time) {
-                            for (const ch of d.channels[band]) {
-                                if (String(ch.channel) === channel) {
-                                    for (const item of ch.items) {
-                                        airtime_data.push(item);
-                                    }
+                for (const d of interferenceData) {
+                    if (d.timeEnd >= channel_start_time && d.timeEnd <= channel_end_time) {
+                        for (const ch of d.channels[band]) {
+                            if (String(ch.channel) === channel) {
+                                for (const item of ch.items) {
+                                    airtime_data.push(item);
                                 }
                             }
                         }
@@ -2304,11 +2371,7 @@ export class WiFiInterferenceChart {
                         const yCenter = yScale.getPixelForValue(yOffsets[key]?.center);
                         const barHeight = yOffsets[key]?.height || 4;
                         ctx.save();
-                        if (showBand.includes("6G")) {
-                            ctx.fillStyle = 'rgba(220, 220, 220, 0.5)';
-                        } else {
-                            ctx.fillStyle = 'rgba(220, 220, 220, 0.1)';
-                        }
+                        ctx.fillStyle = gridRectangleFill;
                         ctx.fillRect(bgXStart - 4, yCenter - (barHeight / 2) * unitHeight + 2, bgXEnd - bgXStart, barHeight * unitHeight - 4);
                         ctx.restore();
 
@@ -2337,6 +2400,8 @@ export class WiFiInterferenceChart {
                                 band = '2G';
                             } else if (band.startsWith('5G')) {
                                 band = '5G';
+                            } else if (band.startsWith('6G')) {
+                                band = '6G';
                             }
                             if (d.channels?.[band] != null) {
                                 const channelData = d.channels[band];
@@ -2979,7 +3044,7 @@ export class WiFiInterferenceChart {
             }
 
             const event_desc_array = [];
-            d.event.split(',').forEach((e, i) => {
+            (d.event || '').split(',').forEach((e, i) => {
                 let event = '';
                 switch (e) {
                     case 'HTTPD_CH_AUTO':
@@ -3067,6 +3132,8 @@ export class WiFiInterferenceChart {
         }
         const rawTxopData = this.wifiStatus[wifiStatusBand]?.txop_changes || [];
 
+        let durationMinutes = 2;
+
         const txopData = (() => {
             const validData = rawTxopData.map(item => {
                 // Convert timestamp string back to Date object
@@ -3085,7 +3152,7 @@ export class WiFiInterferenceChart {
                 if (i > 0) {
                     const timeDiff = validData[i].x.getTime() - validData[i - 1].x.getTime();
                     // If gap is more than 120 seconds (2 minutes), insert null to break the line
-                    if (timeDiff > 120000) {
+                    if (timeDiff > durationMinutes * 60 * 1000) {
                         result.push({x: new Date(validData[i - 1].x.getTime() + 60000), y: null});
                     }
                 }
@@ -3112,7 +3179,7 @@ export class WiFiInterferenceChart {
                 if (i > 0) {
                     const timeDiff = validData[i].x.getTime() - validData[i - 1].x.getTime();
                     // If gap is more than 120 seconds (2 minutes), insert null to break the line
-                    if (timeDiff > 120000) {
+                    if (timeDiff > durationMinutes * 60 * 1000) {
                         result.push({x: new Date(validData[i - 1].x.getTime() + 60000), y: null});
                     }
                 }
@@ -3139,7 +3206,7 @@ export class WiFiInterferenceChart {
                 if (i > 0) {
                     const timeDiff = validData[i].x.getTime() - validData[i - 1].x.getTime();
                     // If gap is more than 120 seconds (2 minutes), insert null to break the line
-                    if (timeDiff > 120000) {
+                    if (timeDiff > durationMinutes * 60 * 1000) {
                         result.push({x: new Date(validData[i - 1].x.getTime() + 60000), y: null});
                     }
                 }
@@ -3162,13 +3229,17 @@ export class WiFiInterferenceChart {
         }
 
         const ctx = txop_chart.getContext('2d');
+        const gridColor = (() => {
+            const v = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid-rgb').trim();
+            return v ? `rgba(${v}, 0.30)` : 'rgba(139,139,139,.5)';
+        })();
 
         this.txopChartInstance = new Chart(ctx, {
             type: 'line',
             data: {
                 datasets: [{
                     label: `<#OtherWifi_Interference#>`,
-                    data: this.showBand.startsWith('6G') ? obssData : wifiData,
+                    data: obssData,
                     borderColor: '#ee3a3e',
                     backgroundColor: 'rgba(238,58,62,0.1)',
                     borderWidth: 1,
@@ -3259,7 +3330,10 @@ export class WiFiInterferenceChart {
                             }
                         },
                         min: this.chartStartTime,
-                        max: this.chartEndTime
+                        max: this.chartEndTime,
+                        grid: {
+                            color: gridColor
+                        },
                     },
                     'stacked-y': {
                         stacked: true,
@@ -3271,7 +3345,7 @@ export class WiFiInterferenceChart {
                         },
                         grid: {
                             display: true,
-                            color: 'rgba(0, 0, 0, 0.05)'
+                            color: gridColor
                         },
                         ticks: {
                             display: true,
@@ -3378,7 +3452,7 @@ export class WiFiInterferenceChart {
 
         const fetchConnectData = async () => {
             let allProcessedData = []; // 儲存所有取得的資料
-            const payload = ['node_type', 'band', 'old_control_chan', 'old_center_chan', 'old_bw', 'new_control_chan', 'new_center_chan', 'new_bw', 'old_rclass', 'new_rclass', 'data_time', 'event'];
+            const payload = ['node_type', 'band', 'old_control_chan', 'old_center_chan', 'old_bw', 'new_control_chan', 'new_center_chan', 'new_bw', 'old_rclass', 'new_rclass', 'data_time'];
             const fetchData = async (timeStamp) => {
                 const queryParams = {
                     db: "channel_change",
@@ -3398,7 +3472,12 @@ export class WiFiInterferenceChart {
                     if (!text.trim()) {
                         return {contents: []};
                     }
-                    return JSON.parse(text);
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.warn('Invalid JSON response:', text);
+                        return {contents: []};
+                    }
                 } catch (error) {
                     console.warn('Error fetching channel data:', error);
                     return {contents: []};
@@ -3446,7 +3525,7 @@ export class WiFiInterferenceChart {
                         'old_rclass': entry[8],
                         'new_rclass': entry[9],
                         'data_time': new Date(Number(entry[10]) * 1000),
-                        'event': entry[11],
+                        'event': entry[11] || "",
                     };
                 });
 
@@ -3574,7 +3653,7 @@ export class WiFiInterferenceChart {
             return [];
         };
 
-        const wifiDetectPayload = ['node_type', 'band', 'radio_status', 'txop', 'ifname', 'data_time', 'obss'];
+        const wifiDetectPayload = ['node_type', 'band', 'radio_status', 'txop', 'ifname', 'data_time', 'obss', 'is_mainfh'];
         const wifiDetectQueryParams = {
             db: "wifi_detect",
             starttime: nowTimestamp - 60 * 60 * 24,
@@ -3584,18 +3663,20 @@ export class WiFiInterferenceChart {
         };
         const wifiDetectQueryString = new URLSearchParams(wifiDetectQueryParams).toString();
         const fetchWifiStatusData = fetch(`/get_diag_raw_data.cgi?${wifiDetectQueryString}`)
-            .then(data => data.json())
+            .then(res => res.text())
+            .then(text => { try { return JSON.parse(text); } catch(e) { console.warn('Invalid JSON (wifiDetect):', text); return {contents: []}; } })
             .then(data => {
                 if (typeof data.contents !== 'undefined' && data.contents.length > 0) {
                     return data.contents.map((entry, index) => {
                         return {
-                            'node_type': entry[0],
-                            'band': entry[1],
-                            'radio_status': entry[2],
-                            'txop': entry[3],
-                            'ifname': entry[4],
-                            'data_time': new Date(Number(entry[5]) * 1000),
-                            'obss': entry[6],
+                            'node_type': entry[wifiDetectPayload.indexOf('node_type')],
+                            'band': entry[wifiDetectPayload.indexOf('band')],
+                            'radio_status': entry[wifiDetectPayload.indexOf('radio_status')],
+                            'txop': entry[wifiDetectPayload.indexOf('txop')],
+                            'ifname': entry[wifiDetectPayload.indexOf('ifname')],
+                            'data_time': new Date(Number(entry[wifiDetectPayload.indexOf('data_time')]) * 1000),
+                            'obss': entry[wifiDetectPayload.indexOf('obss')],
+                            'is_mainfh': entry[wifiDetectPayload.indexOf('is_mainfh')] === "1",
                         };
                     });
                 } else {
@@ -3604,11 +3685,20 @@ export class WiFiInterferenceChart {
             })
             .then(data => {
                 if (data.length === 0) return data;
-
                 const groupedByBand = {};
-                const filteredData = data.filter(item => {
-                    return item.ifname.startsWith("wl")
-                })
+
+                const bands = [...new Set(data.map(item => item.band))];
+                const filteredData = [];
+                for (const band of bands) {
+                    const bandData = data.filter(item => item.band === band);
+                    const matched = bandData.filter(item => item.is_mainfh);
+                    if (matched.length > 0) {
+                        filteredData.push(...matched);
+                    } else {
+                        // fallback：該 band 沒有 is_mainfh 的資料，取 ifname 無 . 後綴的 base interface
+                        filteredData.push(...bandData.filter(item => !item.ifname.includes('.')));
+                    }
+                }
 
                 // 按頻段分組
                 for (const entry of filteredData) {
@@ -3675,12 +3765,85 @@ export class WiFiInterferenceChart {
             })
 
 
-        const interferencePayload = ['event_time', 'channel', 'wlan_util', 'nonwlan_util', 'total_util', 'interferer_type', 'interferer_util'];
-        const fetchInterferenceData = async () => {
+        const groupBySampling = (data, samplingMs) => {
+            const grouped = data.reduce((acc, item) => {
+                const time = item.event_time;
+                const samplingKey = Math.floor(time.getTime() / samplingMs) * samplingMs;
+
+                if (!acc[samplingKey]) {
+                    acc[samplingKey] = [];
+                }
+                acc[samplingKey].push(item);
+                return acc;
+            }, {});
+
+            return Object.entries(grouped).map(([samplingKey, items]) => {
+                const bandGroups = items.reduce((bandAcc, item) => {
+                    const band = item.band || 'Unknown';
+                    if (!bandAcc[band]) {
+                        bandAcc[band] = [];
+                    }
+                    bandAcc[band].push(item);
+                    return bandAcc;
+                }, {});
+
+                const channelsByBand = {};
+                Object.entries(bandGroups).forEach(([band, bandItems]) => {
+                    const channelGroups = bandItems.reduce((channelAcc, item) => {
+                        const channel = item.channel;
+                        if (!channelAcc[channel]) {
+                            channelAcc[channel] = [];
+                        }
+                        channelAcc[channel].push(item);
+                        return channelAcc;
+                    }, {});
+
+                    channelsByBand[band] = Object.entries(channelGroups).map(([channel, channelItems]) => {
+                        const wlanUtilValues = channelItems.map(item => parseFloat(item.wlan_util)).filter(val => !isNaN(val));
+                        const nonwlanUtilValues = channelItems.map(item => parseFloat(item.nonwlan_util)).filter(val => !isNaN(val));
+                        const totalUtilValues = channelItems.map(item => parseFloat(item.total_util)).filter(val => !isNaN(val));
+                        const interfererTypes = channelItems.map(item => item.interferer_type).filter(type => type !== "-1");
+                        const interfererUtils = channelItems.map(item => item.interferer_util).filter(type => type !== "-1");
+
+                        return {
+                            channel: channel,
+                            band: band,
+                            first_wlan_util: wlanUtilValues.length > 0 ? wlanUtilValues[0] : 0,
+                            first_nonwlan_util: nonwlanUtilValues.length > 0 ? nonwlanUtilValues[0] : 0,
+                            first_total_util: totalUtilValues.length > 0 ? totalUtilValues[0] : 0,
+                            interferer_type: interfererTypes,
+                            interferer_utils: interfererUtils,
+                            items: channelItems,
+                            count: channelItems.length
+                        };
+                    }).sort((a, b) => parseInt(a.channel) - parseInt(b.channel));
+                });
+
+                if (!channelsByBand['2G']) channelsByBand['2G'] = [];
+                if (!channelsByBand['5G']) channelsByBand['5G'] = [];
+                if (!channelsByBand['6G']) channelsByBand['6G'] = [];
+
+                return {
+                    timeStart: new Date(parseInt(samplingKey)),
+                    timeEnd: new Date(parseInt(samplingKey) + samplingMs),
+                    channels: channelsByBand,
+                    total_count: items.length
+                };
+            }).sort((a, b) => a.timeStart - b.timeStart);
+        };
+
+        const fetchInterferenceDataGeneric = async (dbType) => {
+            const isAiriq = dbType === 'airiq';
+            const sampling = isAiriq ? 60 : 60 * 3;
             const allInterferenceData = [];
-            const sampling = 60;
+
+            const basePayload = ['event_time', 'channel', 'wlan_util', 'nonwlan_util', 'total_util'];
+            const interferencePayload = isAiriq
+                ? [...basePayload, 'interferer_type', 'interferer_util']
+                : [...basePayload, 'band'];
+
             const interferenceQueryParams = {
-                db: "airiq_event",
+                db: `${dbType}_event`,
                 ts: nowTimestamp,
                 duration: sampling,
                 point: 60 * 24,
@@ -3694,107 +3857,40 @@ export class WiFiInterferenceChart {
 
             try {
                 const response = await fetch(url);
-                const data = await response.json();
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch(e) {
+                    console.warn(`Invalid JSON (${dbType}):`, text);
+                    data = {contents: []};
+                }
 
                 if (data.contents && data.contents.length > 0) {
                     const processedData = data.contents.map(entry => ({
-                        event_time: new Date(entry[0] * 1000), // 轉成 Date
-                        channel: entry[1],
-                        wlan_util: entry[2],
-                        nonwlan_util: entry[3],
-                        total_util: entry[4],
-                        interferer_type: entry[5],
-                        interferer_util: entry[6],
+                        event_time: new Date(entry[interferencePayload.indexOf("event_time")] * 1000),
+                        channel: entry[interferencePayload.indexOf("channel")],
+                        wlan_util: entry[interferencePayload.indexOf("wlan_util")],
+                        nonwlan_util: entry[interferencePayload.indexOf("nonwlan_util")],
+                        total_util: entry[interferencePayload.indexOf("total_util")],
+                        interferer_type: entry[interferencePayload.indexOf("interferer_type")] || "-1",
+                        interferer_util: entry[interferencePayload.indexOf("interferer_util")] || "-1",
+                        band: entry[interferencePayload.indexOf("band")] ?
+                            entry[interferencePayload.indexOf("band")] :
+                            entry[interferencePayload.indexOf("channel")] <= 14 ? '2G' :
+                                (entry[interferencePayload.indexOf("channel")] >= 32 ? '5G' : 'Unknown'),
                     }));
-
                     allInterferenceData.push(...processedData);
                 }
             } catch (err) {
                 console.error("fetch error:", err);
             }
 
-            // 按採樣時間群組資料的函數
-            function groupBySampling(data, samplingMs) { // 預設1分鐘
-                const grouped = data.reduce((acc, item) => {
-                    const time = item.event_time;
-
-                    // 直接使用毫秒數進行採樣分組
-                    const samplingKey = Math.floor(time.getTime() / samplingMs) * samplingMs;
-
-                    if (!acc[samplingKey]) {
-                        acc[samplingKey] = [];
-                    }
-                    acc[samplingKey].push(item);
-                    return acc;
-                }, {});
-
-                // 計算每個採樣時間每個頻道的最大值
-                return Object.entries(grouped).map(([samplingKey, items]) => {
-                    // 按頻道分組
-                    const channelGroups = items.reduce((channelAcc, item) => {
-                        const channel = item.channel;
-                        if (!channelAcc[channel]) {
-                            channelAcc[channel] = [];
-                        }
-                        channelAcc[channel].push(item);
-                        return channelAcc;
-                    }, {});
-
-                    // 計算每個頻道的最大值並包含該頻道的所有項目
-                    const channelMaxValues = Object.entries(channelGroups).map(([channel, channelItems]) => {
-                        const wlanUtilValues = channelItems.map(item => parseFloat(item.wlan_util)).filter(val => !isNaN(val));
-                        const nonwlanUtilValues = channelItems.map(item => parseFloat(item.nonwlan_util)).filter(val => !isNaN(val));
-                        const totalUtilValues = channelItems.map(item => parseFloat(item.total_util)).filter(val => !isNaN(val));
-                        const interfererTypes = channelItems.map(item => item.interferer_type).filter(type => type !== "-1");
-                        const interfererUtils = channelItems.map(item => item.interferer_util).filter(type => type !== "-1");
-
-                        // 判斷頻段
-                        const channelNum = parseInt(channel);
-                        const band = channelNum <= 14 ? '2G' : (channelNum >= 32 ? '5G' : 'Unknown');
-
-                        return {
-                            channel: channel,
-                            band: band,
-                            first_wlan_util: wlanUtilValues.length > 0 ? wlanUtilValues[0] : 0,
-                            first_nonwlan_util: nonwlanUtilValues.length > 0 ? nonwlanUtilValues[0] : 0,
-                            first_total_util: totalUtilValues.length > 0 ? totalUtilValues[0] : 0,
-                            interferer_type: interfererTypes,
-                            interferer_utils: interfererUtils,
-                            items: channelItems,
-                            count: channelItems.length
-                        };
-                    }).sort((a, b) => a.channel - b.channel); // 按頻道號排序
-
-                    // 按頻段分組
-                    const channelsByBand = channelMaxValues.reduce((bandAcc, channelData) => {
-                        const band = channelData.band;
-                        if (!bandAcc[band]) {
-                            bandAcc[band] = [];
-                        }
-                        bandAcc[band].push(channelData);
-                        return bandAcc;
-                    }, {});
-
-                    if (!channelsByBand['2G']) {
-                        channelsByBand['2G'] = [];
-                    }
-                    if (!channelsByBand['5G']) {
-                        channelsByBand['5G'] = [];
-                    }
-
-                    return {
-                        timeStart: new Date(parseInt(samplingKey)),
-                        timeEnd: new Date(parseInt(samplingKey) + samplingMs), // 加採樣間隔
-                        channels: channelsByBand,
-                        total_count: items.length
-                    };
-                }).sort((a, b) => a.timeStart - b.timeStart); // 按時間順序排序
-            }
-
-            // 資料齊全後進行分組處理
             return groupBySampling(allInterferenceData, sampling * 1000);
-        }
+        };
 
+        const fetchInterferenceData = () => fetchInterferenceDataGeneric('airiq');
+        const fetchInterferenceCiscanData = () => fetchInterferenceDataGeneric('ciscan');
 
         const dfsPayload = ['node_type', 'dfs_info', 'data_time'];
         const dfsQueryParams = {
@@ -3806,7 +3902,8 @@ export class WiFiInterferenceChart {
         };
         const dfsQueryString = new URLSearchParams(dfsQueryParams).toString();
         const fetchDfsData = fetch(`/get_diag_raw_data.cgi?${dfsQueryString}`)
-            .then(data => data.json())
+            .then(res => res.text())
+            .then(text => { try { return JSON.parse(text); } catch(e) { console.warn('Invalid JSON (dfs):', text); return {contents: []}; } })
             .then(data => {
                 if (typeof data.contents !== 'undefined' && data.contents.length > 0) {
                     return data.contents.map((entry, index) => {
@@ -3866,7 +3963,8 @@ export class WiFiInterferenceChart {
         };
         const sysQueryString = new URLSearchParams(sysQueryParams).toString();
         const fetchSysData = fetch(`/get_diag_raw_data.cgi?${sysQueryString}`)
-            .then(data => data.json())
+            .then(res => res.text())
+            .then(text => { try { return JSON.parse(text); } catch(e) { console.warn('Invalid JSON (sys):', text); return {contents: []}; } })
             .then(data => {
                 if (typeof data.contents !== 'undefined' && data.contents.length > 0) {
                     return data.contents.map((entry, index) => {
@@ -3882,21 +3980,29 @@ export class WiFiInterferenceChart {
             })
 
         const _nvram = async () => {
-            const data = await httpApi.nvramGet(["airiq_enable"], true);
+            const data = await httpApi.nvramGet(["airiq_enable", "ciscan_enable"], true);
             return {
-                airiq_enable: data.airiq_enable || "0",
+                airiq_enable: data.airiq_enable === "1",
+                ciscan_enable: data.ciscan_enable === "1",
             }
         }
 
 
-        // await Promise.all([fetchConnectData, fetchWifiStatusData, fetchInterferenceData, fetchDfsData, _nvram()]).then(values => {
-        await Promise.all([fetchConnectData(), fetchWifiStatusData, fetchInterferenceData(), fetchDfsData, fetchSysData, _nvram()]).then(values => {
-            const [chartData, wifiStatus, interferenceData, dfsData, sysData, _nvram] = values;
+        await Promise.all([
+            fetchConnectData(),
+            fetchWifiStatusData,
+            fetchDfsData,
+            fetchSysData,
+            _nvram(),
+            this.airiq_support ? fetchInterferenceData() : Promise.resolve(undefined),
+            this.ciscan_monitor_support ? fetchInterferenceCiscanData() : Promise.resolve(undefined),
+        ]).then(values => {
+            const [chartData, wifiStatus, dfsData, sysData, _nvram, interferenceData = [], interferenceCiscanData = []] = values;
 
             this.dfsData = dfsData;
             this.sysData = sysData;
 
-            this.interferenceEnabled = _nvram.airiq_enable === "1";
+            this.interferenceEnabled = (this.airiq_support || this.ciscan_monitor_support) && _nvram.airiq_enable && _nvram.ciscan_enable;
             if (this.interferenceEnabled) {
                 this.getCachedElement("#interference_toggle").classList.add("active");
                 this.getCachedElement("#interferenceStatusText").classList.add("d-md-inline")
@@ -3961,6 +4067,7 @@ export class WiFiInterferenceChart {
             }
             this.chartData = result;
             this.interferenceData = interferenceData;
+            this.interferenceCiscanData = interferenceCiscanData;
         });
     }
 

@@ -19,6 +19,67 @@ if(typeof stringSafeGet != "function"){
 		return str.replace(new RegExp("&#39;", 'g'), "'");
 	}
 }
+
+if (typeof htmlEnDeCode === 'undefined') {
+	var htmlEnDeCode = (function() {
+		let charToEntityRegex,
+			entityToCharRegex,
+			charToEntity,
+			entityToChar;
+
+		function resetCharacterEntities() {
+			charToEntity = {};
+			entityToChar = {};
+			// add the default set
+			addCharacterEntities({
+				'&amp;'	 :   '&',
+				'&gt;'	  :   '>',
+				'&lt;'	  :   '<',
+				'&quot;'	:   '"',
+				'&#39;'	 :   "'"
+			});
+		}
+
+		function addCharacterEntities(newEntities) {
+			let charKeys = [],
+				entityKeys = [],
+				key, echar;
+			for (key in newEntities) {
+				echar = newEntities[key];
+				entityToChar[key] = echar;
+				charToEntity[echar] = key;
+				charKeys.push(echar);
+				entityKeys.push(key);
+			}
+			charToEntityRegex = new RegExp('(' + charKeys.join('|') + ')', 'g');
+			entityToCharRegex = new RegExp('(' + entityKeys.join('|') + '|&#[0-9]{1,5};' + ')', 'g');
+		}
+
+		function htmlEncode(value){
+			let htmlEncodeReplaceFn = function(match, capture) {
+				return charToEntity[capture];
+			};
+
+			return (!value) ? value : String(value).replace(charToEntityRegex, htmlEncodeReplaceFn);
+		}
+
+		function htmlDecode(value) {
+			let htmlDecodeReplaceFn = function(match, capture) {
+				return (capture in entityToChar) ? entityToChar[capture] : String.fromCharCode(parseInt(capture.substr(2), 10));
+			};
+
+			return (!value) ? value : String(value).replace(entityToCharRegex, htmlDecodeReplaceFn);
+		}
+
+		resetCharacterEntities();
+
+		return {
+			htmlEncode: htmlEncode,
+			htmlDecode: htmlDecode
+		};
+	})();
+}
+
 var ip_RegExp = {
 	"IPv4" : "^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$",
 	"IPv4_CIDR" : "^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$",
@@ -35,7 +96,7 @@ jQuery.fn.show_validate_hint = function(hintStr){
 
 		resize_iframe_height();
 }
-function Get_Component_Customize_Alert(_text){
+function Get_Component_Customize_Alert(_text, instance = null) {
 	var $popup_content_container = $("<div>").addClass("popup_content_container");
 
 	var $customize_alert = $("<div>").addClass("customize_alert");
@@ -49,12 +110,16 @@ function Get_Component_Customize_Alert(_text){
 	$ok.unbind("click").click(function(e){
 		e = e || event;
 		e.stopPropagation();
-		close_popup_customize_alert();
+		if (instance) {
+			instance._close_popup_customize_alert();
+		} else {
+			close_popup_customize_alert();
+		}
 	});
 
 	return $popup_content_container;
 }
-function Get_Component_Customize_Confirm(_text){
+function Get_Component_Customize_Confirm(_text, instance = null) {
 	let $popup_content_container = $("<div>").addClass("popup_content_container");
 
 	let $customize_confirm = $("<div>").addClass("customize_alert confirm").appendTo($popup_content_container);
@@ -64,14 +129,22 @@ function Get_Component_Customize_Confirm(_text){
 		.unbind("click").click(function(e){
 			e = e || event;
 			e.stopPropagation();
-			close_popup_customize_alert();
+			if (instance) {
+				instance._close_popup_customize_alert();
+			} else {
+				close_popup_customize_alert();
+			}
 		}).appendTo($action_btn_container);
 
 	$("<div>").attr({"data-btn":"cancel"}).addClass("cancel btn").html("<#CTL_Cancel#>")
 		.unbind("click").click(function(e){
 			e = e || event;
 			e.stopPropagation();
-			close_popup_customize_alert();
+			if (instance) {
+				instance._close_popup_customize_alert();
+			} else {
+				close_popup_customize_alert();
+			}
 		}).appendTo($action_btn_container);
 
 	return $popup_content_container;
@@ -515,8 +588,15 @@ function Get_Component_Custom_Select(_parm){
 		e.stopPropagation();
 		if(_parm.options.length == 0)
 			return;
-		if($(this).attr("temp_disable") == "disabled")
+		if($(this).attr("temp_disable") == "disabled"){
+			if(_parm.onDisabledClick && typeof _parm.onDisabledClick === "function"){
+				_parm.onDisabledClick({
+					event: e,
+					element: $(this)
+				});
+			}
 			return;
+		}
 		$(this).toggleClass("arrow_up");
 		$(this).children(".select_options_container").toggleClass("container_hide");
 	});
@@ -553,8 +633,16 @@ function Get_Component_Custom_Select(_parm){
 				.unbind("click").click(function(e){
 					e = e || event;
 					e.stopPropagation();
-					if($(this).attr("data-disabled") == "true")
+					if($(this).attr("data-disabled") == "true"){
+						if(_parm.onOptionDisabledClick && typeof _parm.onOptionDisabledClick === "function"){
+							_parm.onOptionDisabledClick({
+								event: e,
+								element: $(this),
+								option: item
+							});
+						}
 						return false;
+					}
 					var option_value = $(this).attr("value");
 					$(this).closest(".select_options_container").toggleClass("container_hide");
 
@@ -573,6 +661,11 @@ function Get_Component_Custom_Select(_parm){
 					}
 				})
 				.appendTo($select_options_container);
+
+		if(item.sub_text != undefined)
+			$("<span>").addClass("option_sub_text")
+				.html(htmlEnDeCode.htmlEncode(item.sub_text))
+				.appendTo($option);
 
 		if(item.value == specific_option.value)
 			$option.addClass("selected");
@@ -807,11 +900,18 @@ function Get_Component_Switch(_parm){
 		e.stopPropagation();
 		if($(this).attr("temp_disable") == "disabled")
 			return;
-		$(this).toggleClass("off on");
+		$(this).addClass("hide-text");
+		setTimeout(function(){
+			$(this).toggleClass("off on");
+		}.bind(this), 300);
+		setTimeout(function(){
+			$(this).removeClass("hide-text");
+		}.bind(this), 500);
 	}).appendTo($input_container);
 
-	if(_parm.set_value != undefined && (_parm.set_value == "on" || _parm.set_value == "off"))
-		$switch_icon.removeClass("off on").addClass(_parm.set_value);
+	if(_parm.set_value != undefined && (_parm.set_value == "on" || _parm.set_value == "off")) {
+		$switch_icon.removeClass("off on hide-text").addClass(_parm.set_value);
+	}
 
 	return $container;
 }
@@ -1049,9 +1149,11 @@ function set_value_Custom_Select(_obj, _id, _value){
 	var $items = $(_obj).find("#" + _id + ", #select_" + _id + "");
 	var $text = $items.eq(0);
 	var $select = $items.eq(1);
-	var selected_text = $select.children().removeClass("selected").filter("[value='" + _value + "']").addClass("selected").html();
-	if(selected_text == undefined){//error handle, select first option.
-		selected_text = $select.children().removeClass("selected").filter(":first").addClass("selected").html();
+	var selected_option = $select.children("[value]").removeClass("selected").filter("[value='" + _value + "']").addClass("selected");
+	var selected_text = selected_option.clone().children(".option_sub_text").remove().end().text();
+	if(selected_text == undefined || selected_text === ""){//error handle, select first option.
+		var first_option = $select.children("[value]").removeClass("selected").filter(":first").addClass("selected");
+		selected_text = first_option.clone().children(".option_sub_text").remove().end().text();
 	}
 	$text.html(htmlEnDeCode.htmlEncode(selected_text));
 }
@@ -1179,7 +1281,11 @@ function close_popup_customize_alert(){
 function adjust_popup_container_top(_obj, _offsetHeight){
 	const getScrollTop = () => {
 		if(isSupport("UI4")){
-			return top.document.querySelector("article.main-content").scrollTop;
+			const mainContent = top.document.querySelector("article.main-content");
+			if (!mainContent) {
+				return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+			}
+			return mainContent.scrollTop;
 		}
 		else if (top.webWrapper) {
 			return top.window.pageYOffset || top.document.documentElement.scrollTop || top.document.body.scrollTop || 0

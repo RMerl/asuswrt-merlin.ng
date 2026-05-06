@@ -1361,6 +1361,39 @@
 	-ms-transform: translateX(16px);
 	transform: translateX(16px);
 }
+.manage_switch_led .schedule-wrapper,
+.manage_switch_led_night_mode .schedule-wrapper {
+	position: absolute;
+	right: 60px;
+	top: 0;
+}
+.manage_switch_led .schedule-wrapper:before,
+.manage_switch_led_night_mode .schedule-wrapper:before {
+	position: absolute;
+	content: "";
+	height: 80%;
+	border-right: 1px solid #FFF;
+	right: -10px;
+	top: 10%;
+}
+.manage_switch_led .schedule,
+.manage_switch_led_night_mode .schedule{
+	--svg: url('/images/New_ui/icon-time.svg');
+	cursor: pointer;
+	height: 24px;
+	width: 24px;
+	-webkit-mask-image: var(--svg);
+	mask-image: var(--svg);
+	-webkit-mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	-webkit-mask-size: contain;
+	display:inline-block;
+	background-color: #666666;
+}
+.manage_switch_led .schedule.active,
+.manage_switch_led_night_mode .schedule.active{
+	background-color: #FFF;
+}
 .manage_switch_led, .manage_remove_node, .manage_slider_led, .manage_reboot_node, .manage_switch_led_night_mode{
 	height: 56px !important
 }
@@ -3882,4 +3915,7 @@
 .tx_power_container > div:last-child > .txp_text{
 	right: 0;
 	width: auto;
+}
+.category_block {
+	display: none;
 }

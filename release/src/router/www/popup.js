@@ -106,7 +106,7 @@ class AsusLoaderComponent {
 				z-index: 2000;
 				backdrop-filter: blur(3px);
 				-webkit-backdrop-filter: blur(3px);
-				background-color: rgba(255, 255, 255, 0.6);
+				background-color: var(--loader-mask-bg, rgba(255, 255, 255, 0.6));
 			}
 		
 			.modal {
@@ -253,7 +253,7 @@ class AsusLoaderComponent {
 			.gg-spinner::before {
 				animation: spinner 1s cubic-bezier(.6, 0, .4, 1) infinite;
 				border: 3px solid transparent;
-				border-top-color: #007bff
+				border-top-color: var(--brand-color, #007bff);
 			}
 		
 			.gg-spinner::after {
@@ -347,6 +347,9 @@ class AsusLoaderComponent {
 				backdrop-filter: blur(3px);
 				-webkit-backdrop-filter: blur(3px);
 				background-color: rgba(255, 255, 255, 0.6);
+			}
+			[data-asuswrt-color][data-asuswrt-theme] .popup_bg {
+				background-color: var(--wrt-overlay-bg);
 			}
 		
 			.modal {
@@ -548,8 +551,8 @@ class AsusLoaderComponent {
 				<h3 id="loader_title"><#Setting_live_ai_title#></h3>
 			    <div class="stage-bar">
 			      <span id="step_start"><#fw_downloading#></span>
-			      <span id="step_docker">Installing</span>
-			      <span id="step_done">Done & Reboot AI Board</span>
+			      <span id="step_docker"><#Setting_live_ai_install#></span>
+			      <span id="step_done"><#Setting_live_ai_done#></span>
 			    </div>
 
 			    <div class="progress-info" id="proceeding_step"><#Setting_prog_ai_currStep#></div>
@@ -580,7 +583,7 @@ class AsusLoaderComponent {
 			    </div>
 
 			    <div class="progress-info" id="proceeding_step"><#Setting_prog_ai_currStep#></div>
-			    <div class="progress-notice" id="proceeding_notice" style="display:none;">This process may take several minutes.</div>
+			    <div class="progress-notice" id="proceeding_notice" style="display:none;"><#Setting_prog_ai_serveralTime#></div>
 			    <div class="progress-bar">
 			      <div class="progress-fill" id="progressFill"></div>
 			    </div>
@@ -598,7 +601,7 @@ class AsusLoaderComponent {
 			${style}
 			<div id="loader" class="popup_bg d-flex flex-column align-items-center justify-content-center gap-2">
 				<div id="loading_block1" class="modal-dialog modal-content d-flex flex-column align-items-center justify-content-center gap-2">
-					<div id="proceeding_main_txt" class="notice_title">Please wait...</div>
+					<div id="proceeding_main_txt" class="notice_title"><#QIS_autoMAC_desc2#></div>
 					<div id="proceeding_txt" class="text-white"></div>
 					<div id="proceeding_img" class="progress progress-striped active">
 						<div id="proceeding_img_text" class="progress-bar progress-bar-info" style="width: 0%"></div>
@@ -629,7 +632,6 @@ class AsusLoaderComponent {
 			top.document.body.appendChild(this.element);
 		}
 		if(flag=="rescue"){
-			
 			const interval = setInterval(() => {
 				if (this.rescueFailed) {
 					this.aiboard_query();
@@ -785,7 +787,7 @@ class AsusLoaderComponent {
 				self.liveupdateFailed = true;
 			  }
 			  else if(data.ai_prog_status.includes("DONE")) {
-			  	proceeding_step.textContent = `Live update completed.`;
+			  	proceeding_step.textContent = `<#Setting_live_ai_complete#>`;
 			  	stages[0].classList.add('active');
 			  	self.shadowRoot.getElementById('step_start').classList.add('active');
 				stages[1].classList.add('active');
@@ -833,16 +835,16 @@ class AsusLoaderComponent {
     update_rescue_status() {
     	const self = this;
     	$.getJSON("/get_aisom_upgrade_info.cgi", function(data) {
-            console.log(data);
+            //console.log(data);
               const percent = data.ai_prog_current_percent;
+              const stepText_prepare = `${data.ai_prog_current_image} (${data.ai_prog_current_step}/${data.ai_prog_total_steps})`;
               const stepText = `${data.ai_prog_current_image} (${data.ai_prog_current_step}/${data.ai_prog_total_steps})`;
-
               const proceeding_step = self.shadowRoot.getElementById('proceeding_step');
               const progressFill = self.shadowRoot.getElementById('progressFill');
               const percentInfo = self.shadowRoot.getElementById('percentInfo');
               const notice_div = self.shadowRoot.getElementById('notice');
+              percentInfo.textContent = percent + '%';
               progressFill.style.width = percent + '%';
-              percentInfo.textContent = percent + '%'
 
 
               // Stage progress
@@ -854,7 +856,7 @@ class AsusLoaderComponent {
               if (data.ai_prog_status === "START") {
 
               	self.rescueStart = true;
-              	proceeding_step.textContent = `<#Setting_prog_ai_currStep#> <#Setting_rescue_ai_enter#>`;
+              	proceeding_step.textContent = `<#Setting_prog_ai_currStep#> <#Setting_rescue_ai_enter_new#> ` + stepText_prepare;
               	//proceeding_notice.style.display = "";
 			  } 
 			  else if (data.ai_prog_status.includes("DOWNLOAD") && data.ai_prog_current_image.includes("aisom_reset")) {
@@ -895,7 +897,7 @@ class AsusLoaderComponent {
 				self.rescueFailed = true;
 			  }
 			  else if(data.ai_prog_status.includes("DOCKER_DONE")) {
-			  	proceeding_step.textContent = `AI Board rescue completed.`;
+			  	proceeding_step.textContent = `<#Setting_rescue_ai_complete#>`;
 			  	//proceeding_notice.style.display = "none";
 			  	progressFill.style.visibility = "hidden";
               	percentInfo.style.visibility = "hidden";
@@ -928,7 +930,6 @@ class AsusLoaderComponent {
 				stages[4].classList.add('active');
 				self.shadowRoot.getElementById('step_done').classList.add('active');
 			  }
-
 
               // 檢查點顯示
               const checkpoints = [

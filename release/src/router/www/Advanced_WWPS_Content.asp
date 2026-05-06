@@ -339,7 +339,7 @@ function resetWPS(){
 	showLoading(sec);
 	FormActions("apply.cgi", "wps_reset", "", sec.toString());
 	document.form.submit();
-	setTimeout('location.reload();', sec * 1000);
+	setTimeout('location.replace(location.href);', sec * 1000);
 }
 
 function resetTimer()

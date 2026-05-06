@@ -208,17 +208,6 @@ const support_DHCP_Content = (()=>{
 })();
 
 var multi_model_icon_array = "";
-$.getJSON("https://nw-dlcdnet.asus.com/plugin/js/extend_model_icon.json", {_: new Date().getTime()},
-	function(data){
-		multi_model_icon_array = data;
-		var specific_node_data = aimesh_data.cfg_clientlist.filter(function(item, index, _array){
-			return (item.mac == current_click_mac);
-		})[0];
-		if(specific_node_data != undefined){
-			set_change_model_icon(specific_node_data);
-		}
-	}
-);
 var aimesh_node_client_upload_icon = new Array();
 var cloudRouterIconCheckCache = new Array();
 function control_category_block(_category){
@@ -2978,7 +2967,7 @@ function network_set_fronthaul_info(_node_info){
 			if(_ap_info.is_dwb){
 				_obj.find("#bh_info").show();
 				_obj.find("#fh_info").hide();
-				const dwb_hint = `* ${band_text} <#AiMesh_backhaul_band_5GHz-2_desc1#> ${(isReNode) ? "" : `<#AiMesh_backhaul_band_5GHz-2_desc2#>`}`;
+				const dwb_hint = (`* <#AiMesh_backhaul_band_5GHz-2_desc11#> ${(isReNode) ? "" : `<#AiMesh_backhaul_band_5GHz-2_desc2#>`}`).replace("%@", band_text);
 				_obj.find("#bh_info #dwb_hint").html(dwb_hint);
 				_obj.find("#bh_info #dwb_hint").find(".faq-link").removeAttr("onclick").click(function(e){
 					e = e || event;
@@ -3525,7 +3514,7 @@ function display_manage_block(){
 									$("#aimesh_hint_msg").empty().show()
 										.append(popup_hint_api.get_component_text())
 										.append(popup_hint_api.get_component_action());
-									let hintText = led_night_mode_control.support ? `<#AiMesh_System_LED_NM_Hint#>` : `The main switch System LED control will also be toggled.`;/* untranslated */
+									let hintText = led_night_mode_control.support ? `<#AiMesh_System_LED_NM_Hint#>` : `<#AiMesh_System_LED_Hint#>`;
 									hintText += `<br><#Setting_factorydefault_hint2#>`;
 									$("#aimesh_hint_msg .hint_text").html(hintText);
 									$("#aimesh_hint_msg #action_canacl").show().unbind("click").click(function(e) {
@@ -4167,7 +4156,7 @@ function display_manage_block(){
 					$("#aimesh_hint_msg").empty().show()
 						.append(popup_hint_api.get_component_text())
 						.append(popup_hint_api.get_component_action());
-					let hintText = led_night_mode_control.support ? `<#AiMesh_System_LED_NM_Hint#>` : `The main switch System LED control will also be toggled.`;/* untranslated */
+					let hintText = led_night_mode_control.support ? `<#AiMesh_System_LED_NM_Hint#>` : `<#AiMesh_System_LED_Hint#>`;
 					hintText += `<br><#Setting_factorydefault_hint2#>`;
 					$("#aimesh_hint_msg .hint_text").html(hintText);
 					$("#aimesh_hint_msg #action_canacl").show().unbind("click").click(function(e) {
@@ -5402,28 +5391,30 @@ function set_change_model_icon(_node_info){
 	}
 }
 function update_model_icon(_node_info){
-	var model_name = _node_info.model_name;
-	var tcode = _node_info.tcode;
-	var cobrand = httpApi.aimesh_get_misc_info(_node_info).cobrand;
-	var icon_model_name = "";
-	if(_node_info.icon_model_name != undefined && _node_info.icon_model_name != "")
-		icon_model_name = _node_info.icon_model_name;
+	setTimeout(function(){
+		var model_name = _node_info.model_name;
+		var tcode = _node_info.tcode;
+		var cobrand = httpApi.aimesh_get_misc_info(_node_info).cobrand;
+		var icon_model_name = "";
+		if(_node_info.icon_model_name != undefined && _node_info.icon_model_name != "")
+			icon_model_name = _node_info.icon_model_name;
 
-	var model_info = {"model_name": model_name, "tcode": tcode, "cobrand": cobrand, "icon_model_name": icon_model_name};
-	var cloudModelName = httpApi.transformCloudModelName(model_info);
-	model_info.cloudModelName = cloudModelName;
+		var model_info = {"model_name": model_name, "tcode": tcode, "cobrand": cobrand, "icon_model_name": icon_model_name};
+		var cloudModelName = httpApi.transformCloudModelName(model_info);
+		model_info.cloudModelName = cloudModelName;
 
-	if(cloudRouterIconCheckCache[cloudModelName] == undefined)
-		cloudRouterIconCheckCache[cloudModelName] = false;
+		if(cloudRouterIconCheckCache[cloudModelName] == undefined)
+			cloudRouterIconCheckCache[cloudModelName] = false;
 
-	if(cloudRouterIconCheckCache[cloudModelName])
-		cloud_router_icon_set(cloudRouterIconCheckCache[cloudModelName]);
-	else{
-		cloud_router_icon_set("");
-		setTimeout(function(){cloud_router_icon_get(model_info);}, 1000);
-	}
+		if(cloudRouterIconCheckCache[cloudModelName])
+			cloud_router_icon_set(cloudRouterIconCheckCache[cloudModelName]);
+		else{
+			cloud_router_icon_set("");
+			setTimeout(function(){cloud_router_icon_get(model_info);}, 1000);
+		}
 
-	set_change_model_icon(_node_info);
+		set_change_model_icon(_node_info);
+	}, 0);
 }
 var transform_band_index = function(_bandNum){
 	return "15";
@@ -5873,11 +5864,13 @@ function initial_AiMesh(){
 						httpApi.checkCloudModelIcon(
 							model_info,
 							function(src){
-								cloudRouterIconCheckCache[model_info.cloud_model_name] = src;
-								$node_icon.addClass('cloud_product_icon');
-								let $product_icon_cntr = $('<div>').addClass('product_icon_container').appendTo($node_icon);
-								$('<div>').addClass('product_icon').css({'background-image': 'url(' + src + ')'}).appendTo($product_icon_cntr);
-								update_optimize_status();
+								setTimeout(function(){
+									cloudRouterIconCheckCache[model_info.cloud_model_name] = src;
+									$node_icon.addClass('cloud_product_icon');
+									let $product_icon_cntr = $('<div>').addClass('product_icon_container').appendTo($node_icon);
+									$('<div>').addClass('product_icon').css({'background-image': 'url(' + src + ')'}).appendTo($product_icon_cntr);
+									update_optimize_status();
+								}, 0);
 							}
 						);
 					}
@@ -6057,7 +6050,7 @@ function initial_AiMesh(){
 		const faq_text = `
 			<#AiMesh_Topology_FAQ#>
 			<br>
-			For instructions on setting up the AiMesh system, please refer to this <a id='connect_line_info_faq'>FAQ</a>.
+			<#AiMesh_Topology_inst_FAQ#>.
 		`;
 		$faq.html(faq_text);
 		$connect_line_info_bg.append($faq);
@@ -6076,7 +6069,7 @@ function initial_AiMesh(){
 			})
 			$("#aimesh_hint_msg .hint_text #connect_line_info_faq").attr({
 				"href": faq_href3,
-				"aria-label": `For instructions on setting up the AiMesh system, please refer to this FAQ.`
+				"aria-label": `<#AiMesh_Topology_inst_FAQ_old#>`
 			});
 		});
 		$("#aimesh_hint_msg #action_canacl").hide();
@@ -6120,6 +6113,18 @@ function initial_AiMesh(){
 			}
 		})
 	}
+
+	$.getJSON("https://nw-dlcdnet.asus.com/plugin/js/extend_model_icon.json", {_: new Date().getTime()},
+		function(data){
+			multi_model_icon_array = data;
+			var specific_node_data = aimesh_data.cfg_clientlist.filter(function(item, index, _array){
+				return (item.mac == current_click_mac);
+			})[0];
+			if(specific_node_data != undefined){
+				set_change_model_icon(specific_node_data);
+			}
+		}
+	);
 }
 var pop_win;
 function add_node(){
@@ -6713,7 +6718,7 @@ $(document).ready(initial_AiMesh);
 				<span class="location_hint"></span>
 			</div>
 		</div>
-		<div class="item_bg signal">
+		<div class="item_bg signal" style="display: none;">
 			<div class="signal_hint_text">
 				<#AiMesh_Conn_Quality#><span class="bubble_icon warn_red signal_icon"></span>
 			</div>
@@ -6750,7 +6755,7 @@ $(document).ready(initial_AiMesh);
 	</div>
 
 	<div id="client_block" class="category_block client_info_block">
-		<div id="newOB_info" class="card_block_bg">
+		<div id="newOB_info" class="card_block_bg" style="display: none;">
 			<div class="newOB_container">
 				<div class="newOB_title_bg">
 					<span>AiMesh Support Device</span><!-- untranslated -->

@@ -8,8 +8,14 @@
 
 //#define PJ_THREAD_ALLOCATE_STACK 1
 #ifdef ROUTER
+#include <pthread.h>
 #define PJ_THREAD_SET_STACK_SIZE 1
+#ifdef PTHREAD_STACK_MIN
+#define PJ_THREAD_DEFAULT_STACK_SIZE \
+    ((0xa240 < PTHREAD_STACK_MIN) ? PTHREAD_STACK_MIN : 0xa240)
+#else
 #define PJ_THREAD_DEFAULT_STACK_SIZE 0xa240
+#endif //#ifdef PTHREAD_STACK_MIN
 #endif
 
 //#define HTTP_DEBUG 1

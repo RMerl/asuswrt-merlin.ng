@@ -1,20 +1,27 @@
 @import "/css/color-table.css";
+@import "/css/wrt-ui-alias-tokens.css";
 
 .schedule_ui{
-	color: var(--body-text-color);
+	color: var(--wrt-text-color);
 }
-.schedule_header_container .add_icon,
-.schedule_header_container .add_icon:hover{
+.schedule_header_container .btn_icon_bg{
 	width: 30px;
 	height: 30px;
-	background-color: #FFFFFF;
-	border: 1px solid var(--card-list-EL02-item-static-stroke);
-	box-shadow: 0px 2px 4px rgb(0 0 0 / 10%), 0px 0px 1px rgb(0 0 0 / 5%);
-	border-radius: 8px;
-	background-image: url(/images/New_ui/weekSchedule/white_theme/Content/add_circle_outline.svg);
-	background-size: 18px;
+	background-color: var(--wrt-btn-outline-primary-bg);
+	border: 1px solid var(--wrt-btn-outline-primary-border);
+	border-radius: var(--wrt-btn-radius);
+}
+.schedule_header_container .add_icon{
+	mask-image: url(/images/New_ui/weekSchedule/white_theme/Content/add_circle_outline.svg);
+	-webkit-mask-image: url(/images/New_ui/weekSchedule/white_theme/Content/add_circle_outline.svg);
+	mask-repeat: no-repeat;
+	-webkit-mask-repeat: no-repeat;
+	mask-position: center;
+	-webkit-mask-position: center;
+	mask-size: contain;
+	-webkit-mask-size: contain;
+	background-color: var(--wrt-btn-icon-color);
 	background-position: 50%;
-	right: 60px;
 }
 .schedule_header_container .collapse_icon{
 	border: 1px solid var(--card-list-EL02-item-static-stroke);
@@ -58,36 +65,50 @@
 	color: var(--text-highlight-color)
 }
 .schedule_timeset_container{
-	background: var(--panel-bg-color);
-	border: 1px solid var(--card-list-EL02-item-static-stroke);
+	background: var(--wrt-card-surface-1-bg);
+	border: 1px solid var(--wrt-divider-color);
 }
 .schedule_timeset_container .timeset_container,
 .schedule_timeset_container .weekdayset_container{
-	background: var(--card-list-EL01-item-static);
+	background: var(--wrt-card-surface-1-bg);
 }
 .schedule_timeset_container .valid_hint_component,
 .accesstime_container .valid_hint_component{
-	color: #FF0000;
+	color: var(--wrt-badge-warning-color);
 }
 .schedule_timeset_container .timeset_container .hr_mins_container:not(:first-child):before{
-	border-top: 1px solid #DCDCDC;
+	border-top: 1px solid var(--wrt-divider-color);
 }
 .schedule_timeset_container .weekdayset_container > .title{
-	color: var(--primary-50);
+	color: var(--wrt-text-color);
 }
 .sche_action_container > div.sche_btn_save{
-	border: 1px solid var(--primary-50);
-	background: var(--primary-50);
+	border: 1px solid var(--wrt-btn-primary-border);
+	background: var(--wrt-btn-primary-bg);
+	border-radius: var(--wrt-btn-radius);
+	transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+	&:hover{
+		background: var(--wrt-btn-primary-hover-bg);
+		border: 1px solid var(--wrt-btn-primary-hover-border);
+	}
 }
 .sche_action_container > div.sche_btn_cancel{
-	border: 1px solid #B3B3B3;
-	color: #4D4D4D;
+	border: 1px solid var(--wrt-btn-default-border);
+	border-radius: var(--wrt-btn-radius);
+	color: var(--wrt-btn-default-color);
+	background: var(--wrt-btn-default-bg);
+	transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+	&:hover{
+		background: var(--wrt-btn-default-hover-bg);
+		border: 1px solid var(--wrt-btn-default-hover-border);
+	}
 }
 .schedule_timeset_container > .sche_btn_container{
-	background: var(--primary-50);
+	background: var(--wrt-btn-primary-bg);
+	border-radius: var(--wrt-btn-radius);
 }
 .hr_mins_container .hr_mins_title{
-	color: var(--text-brand-color);
+	color: var(--wrt-btn-primary-color);
 }
 .combination_input_select{
 	background: var(--textbox-bg-color);
@@ -106,99 +127,124 @@
 	border-right: 1.5px solid var(--primary-icon-normal-color);
 }
 .combination_input_select .combi_sel_list{
-	background: #FFFFFF;
+	background: var(--wrt-dropdown-bg);
+}
+.combination_input_select .combi_sel_list::-webkit-scrollbar{
+	width: var(--wrt-scrollbar-width);
+	height: var(--wrt-scrollbar-height);
 }
 .combination_input_select .combi_sel_list::-webkit-scrollbar-track{
-	border: 4px solid #FFFFFF;
-	background-color: #DCDCDC;
-	border-radius: 6px;
+	border: 4px solid var(--wrt-scrollbar-track-hover-color);
+	background-color: var(--wrt-scrollbar-track-hover-color);
+	border-radius: var(--wrt-scrollbar-radius);
 }
 .combination_input_select .combi_sel_list::-webkit-scrollbar-thumb{
-	background-color: #CCCCCC;
-	border: 2px solid #FFFFFF;
+	background-color: var(--wrt-scrollbar-thumb-color);
+	border: 2px solid var(--wrt-scrollbar-track-hover-color);
+	border-radius: var(--wrt-scrollbar-radius);
+}
+.combination_input_select .combi_sel_list::-webkit-scrollbar-thumb:hover{
+	background-color: var(--wrt-scrollbar-thumb-hover-color);
 }
 .combination_input_select .combi_sel_option{
-	color: #4D4D4D;
+	color: var(--wrt-dropdown-item-color);
 }
 .combination_input_select .combi_sel_option:hover{
-	background: rgba(0, 133, 255, 0.1);
+	background: var(--wrt-dropdown-item-hover-bg);
 }
 .all_day_component .cb_icon.clicked{
-	background-color: var(--primary-50);
-	border: 1px solid var(--primary-50);
+	background-color: var(--wrt-btn-primary-bg);
+	border: 1px solid var(--wrt-btn-primary-border);
 }
 .all_day_component .cb_text{
-	color: #4D4D4D;
+	color: var(--wrt-text-color);
 }
 .weekdayset_component > div{
-	color: #262626;
+	color: var(--wrt-btn-default-color);
+	background: var(--wrt-btn-default-hover-bg);
+	transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+	&:hover{
+		background: var(--wrt-btn-outline-primary-hover-bg);
+		color: var(--wrt-btn-outline-primary-hover-color);
+	}
 }
 .weekdayset_component > div.clicked{
-	background: var(--primary-50);
-	color: #FFFFFF;
+	background: var(--wrt-btn-primary-bg);
+	color: var(--wrt-btn-primary-color);
 }
 .add_new_component{
-	background: #FFFFFF;
-	border: 1px solid var(--primary-50);
+	background: var(--wrt-btn-outline-primary-bg);
+	border: 1px solid var(--wrt-btn-outline-primary-border);
+	transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+	&:hover{
+		background: var(--wrt-btn-outline-primary-hover-bg);
+		color: var(--wrt-btn-outline-primary-hover-color);
+	}
 }
 .add_new_component:hover{
-	box-shadow: 0 0 0 1px var(--primary-50-alpha-40);
+	box-shadow: 0 0 0 1px var(--wrt-btn-outline-primary-hover-border);
 }
 .add_new_component > .add_new_text{
-	color: #181818;
+	color: var(--wrt-text-color);
 }
 .add_new_component > .add_new_text:before{
-	background-color: var(--primary-50);
+	background-color: var(--wrt-btn-outline-primary-bg);
 }
 .icon_switch.off{
-	background: #666666;
+	background: var(--wrt-switch-track-bg-off);
 }
 .icon_switch:before{
-	background: #FFFFFF;
+	background: var(--wrt-switch-thumb-bg-off);
 }
 .icon_radio.clicked{
-	border-color: var(--primary-50) !important;
+	border-color: var(--wrt-radio-checked-border) !important;
 }
 .icon_radio.clicked:before{
-	background-color: var(--primary-50);
+	background-color: var(--wrt-radio-dot-color);
 }
 .icon_trash{
-	background-color: var(--icon-normal-color);
+	background-color: var(--wrt-btn-icon-color);
 }
 .accesstime_container{
-	background: rgb(255, 255, 255);
-	border: 1px solid rgba(127, 143, 164, 0.4);
+	background: var(--wrt-card-surface-2-bg);
+	border: 1px solid var(--wrt-divider-color);
 }
 .quickset_component > div{
-	border: 1px solid #9CA3AF;
-	color: #262626;
-	background: initial;
+	border: 1px solid var(--wrt-btn-default-border);
+	color: var(--wrt-text-color);
+	background: var(--wrt-btn-default-bg);
+	transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+	&:hover{
+		background: var(--wrt-btn-default-hover-bg);
+		color: var(--wrt-btn-default-hover-color);
+		border-color: var(--wrt-btn-default-hover-border);
+	}
 }
 .quickset_component > div.clicked{
-	background: var(--primary-50);
-	border: 1px solid var(--primary-50);
-	color: rgb(255, 255, 255) !important;
+	background: var(--wrt-btn-primary-bg);
+	border: 1px solid var(--wrt-btn-primary-border);
+	color: var(--wrt-btn-primary-color) !important;
 }
 .quickset_component > div.custom{
-	color: var(--primary-50);
+	color: var(--wrt-text-color);
 }
 .radio_options_container{
-	background: rgb(255, 255, 255);
-	border: 1px solid rgba(127, 143, 164, 0.4);
+	background: var(--wrt-card-surface-2-bg);
+	border: 1px solid var(--wrt-card-border);
 }
 .radio_options_container .radio_container{
-	color: #666666;
+	color: var(--wrt-radio-label-color);
 }
 .radio_options_container .radio_container.clicked{
-	color: var(--primary-50);
+	color: var(--wrt-radio-dot-color);
 }
 .accesstime_container .timeset_container{
-	background: rgb(255, 255, 255);
+	background: var(--wrt-card-surface-2-bg);
 	border: initial;
-	border-top: 1px solid rgba(127, 143, 164, 0.4);
+	border-top: 1px solid var(--wrt-divider-color);
 	border-top-right-radius: initial;
 	border-top-left-radius: initial;
 }
 .warning_desc{
-	color: #FF0000;
+	color: var(--wrt-badge-warning-color);
 }

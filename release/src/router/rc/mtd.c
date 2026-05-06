@@ -877,8 +877,7 @@ mtd_erase(const char *mtd)
 			perror(mtd);
 			close(mtd_fd);
 #ifdef RTAC87U
-						sprintf(erase_err, "logger -t ATE mtd_erase failed: [%d]", errno);
-						system(erase_err);
+						safe_do_system("logger -t ATE mtd_erase failed: [%d]", errno);
 #endif
 			return errno;
 		}
@@ -886,8 +885,7 @@ mtd_erase(const char *mtd)
 
 	close(mtd_fd);
 #ifdef RTAC87U
-	sprintf(erase_err, "logger -t ATE mtd_erase OK:[%d]", errno);
-	system(erase_err);
+	safe_do_system("logger -t ATE mtd_erase OK:[%d]", errno);
 #endif
 	return 0;
 }
@@ -1188,7 +1186,11 @@ fail:
 #endif
 
 #ifdef HND_ROUTER
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126) || defined(WIFI8_SDK_20260204) || defined(WIFI8_SDK_20260402)
+#include <bcm_flashutil.h>
+#else
 #include <bcm_hwdefs.h>
+#endif /* defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126) || defined(WIFI8_SDK_20260204) || defined(WIFI8_SDK_20260402) */
 
 #define TEMP_KERNEL_NVRM_FILE "/var/.temp.kernel.nvram"
 #define PRE_COMMIT_KERNEL_NVRM_FILE "/var/.kernel_nvram.setting.prec"

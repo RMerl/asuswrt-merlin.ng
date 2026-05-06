@@ -27,7 +27,19 @@ function initial(){
 	show_menu();
 	document.getElementById("nt_action_webapp").checked = ('<% nvram_get("nc_web_app_enable"); %>' == "1");
 	document.getElementById("nt_action_email").checked = ('<% nvram_get("nc_mail_enable"); %>' == "1");
-	show_nt_event_list(nt_current_page, sort);
+	waitForNTDB(function(){ show_nt_event_list(nt_current_page, sort); });
+}
+
+// notification.js (which defines NTDB_info) is appended by state.js ~1s after
+// window.load. Body onload can fire earlier, so poll briefly before rendering.
+function waitForNTDB(callback, retries){
+	retries = retries || 0;
+	if (typeof NTDB_info !== 'undefined' && NTDB_info && typeof NTDB_info.get_nt_db !== 'undefined') {
+		callback();
+		return;
+	}
+	if (retries >= 50) return;  // ~5s budget, then give up silently
+	setTimeout(function(){ waitForNTDB(callback, retries + 1); }, 100);
 }
 
 function applyRule(){

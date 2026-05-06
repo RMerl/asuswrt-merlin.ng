@@ -152,13 +152,13 @@
             // Detail Information of Specified App
             // queryData("app", "youtube", "detail", duration.length, time.currentTimestamp);
 
-            var labelColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-title-color")}`;
+            var labelColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color")}`;
             var chartColor = [
-                `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--circle-chart-color-1")}`,
-                `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--circle-chart-color-2")}`,
-                `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--circle-chart-color-3")}`,
-                `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--circle-chart-color-4")}`,
-                `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--circle-chart-color-5")}`,
+                `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-circle-1")}`,
+                `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-circle-2")}`,
+                `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-circle-3")}`,
+                `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-circle-4")}`,
+                `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-circle-5")}`,
             ];
             // render Top5 clients
             var ctxTop5Client = document.getElementById("top5_client_chart");
@@ -370,6 +370,16 @@
 
             var ctxLineChartClient = document.getElementById("client_line_chart");
             var lineChartClientInstantce = "";
+
+            var ulLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-1");
+            var ulLineBgColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--bg-chart-color-1");
+            var dlLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-2");
+            var dlLineBgColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--bg-chart-color-2");
+            var gridColor = (() => {
+                    const v = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid-rgb').trim();
+                    return v ? `rgba(${v}, 0.30)` : 'rgba(139,139,139,.5)';
+                })();
+
             function renderLineChartClient() {
                 let trafficArray = statData["all"].period;
                 const dataLineChartClient = {
@@ -429,9 +439,9 @@
                             {
                                 label: "UL",
                                 data: upArray,
-                                backgroundColor: [`${chartColor[0]}`],
+                                backgroundColor: [`${ulLineBgColor}`],
                                 borderWidth: 1,
-                                borderColor: `${chartColor[0]}`,
+                                borderColor: `${ulLineColor}`,
                                 fill: true,
                                 order: 0,
                                 tooltipTitle: timeArray,
@@ -439,9 +449,9 @@
                             {
                                 label: "DL",
                                 data: downArray,
-                                backgroundColor: [`${chartColor[1]}`],
+                                backgroundColor: [`${dlLineBgColor}`],
                                 borderWidth: 1,
-                                borderColor: `${chartColor[1]}`,
+                                borderColor: `${dlLineColor}`,
                                 fill: true,
                                 order: 2,
                                 tooltipTitle: timeArray,
@@ -457,6 +467,7 @@
                         plugins: {
                             legend: {
                                 display: false,
+                                color: labelColor,
                             },
                             tooltip: {
                                 callbacks: {
@@ -491,10 +502,16 @@
                                     beginAtZero: true,
                                     count: 5,
                                 },
+                                grid: {
+                                    color: gridColor
+                                },
                             },
                             x: {
                                 ticks: {
                                     color: labelColor,
+                                },
+                                grid: {
+                                    color: gridColor
                                 },
                             },
                         },
@@ -695,9 +712,9 @@
                             {
                                 label: "UL",
                                 data: upArray,
-                                backgroundColor: [`${chartColor[0]}`],
+                                backgroundColor: [`${ulLineBgColor}`],
                                 borderWidth: 1,
-                                borderColor: `${chartColor[0]}`,
+                                borderColor: `${ulLineColor}`,
                                 fill: true,
                                 order: 0,
                                 tooltipTitle: timeArray,
@@ -705,9 +722,9 @@
                             {
                                 label: "DL",
                                 data: downArray,
-                                backgroundColor: [`${chartColor[1]}`],
+                                backgroundColor: [`${dlLineBgColor}`],
                                 borderWidth: 1,
-                                borderColor: `${chartColor[1]}`,
+                                borderColor: `${dlLineColor}`,
                                 fill: true,
                                 order: 2,
                                 tooltipTitle: timeArray,
@@ -757,10 +774,16 @@
                                     beginAtZero: true,
                                     count: 5,
                                 },
+                                grid: {
+                                    color: gridColor
+                                },
                             },
                             x: {
                                 ticks: {
                                     color: labelColor,
+                                },
+                                grid: {
+                                    color: gridColor
                                 },
                             },
                         },
@@ -931,9 +954,7 @@
         <div class="d-flex align-items-center mb-2">
             <div class="d-sm-flex align-items-center ms-2">
                 <div class="card-data-title notDisplayInMobile"><#CTL_Activate#></div>
-                <div class="form-check form-switch ms-2">
-                    <input class="form-check-input form-switch-large" type="checkbox" id="enableStatistic" />
-                </div>
+                <div id="enableStatistic" class="ms-2"></div>
             </div>
 
             <div class="d-flex align-items-center ms-2">
@@ -951,24 +972,25 @@
             </div>
         </div>
 
-        <script>
+        <script type="module">
+            import { ToggleButton } from "../js/component.module.js";
+
             var { bwdpi_db_enable, dns_dpi_trf_analysis } = httpApi.nvramGet(["bwdpi_db_enable", "dns_dpi_trf_analysis"]);
             var checked = bwdpi_db_enable === "1" || dns_dpi_trf_analysis === "1";
             var nvramObj = httpApi.nvramGet(["ctf_disable", "ctf_fa_mode"]);
 
-            document.getElementById("enableStatistic").checked = checked;
-            document.getElementById("enableStatistic").addEventListener("click", function () {
+            const toggleBtn = new ToggleButton(checked, false, { label: 'Enable Statistic' });
+            toggleBtn.setOnChange(function (active) {
                 if ((policy_status.TM == 0 || policy_status.TM_time == "") && !isSupport("dns_dpi")) {
                     showTMEula();
                 } else {
-                    let statisticEnable = this.checked;
                     let obj = { action_mode: "apply", rc_service: "restart_dnsqd;restart_firewall" };
-                    if (statisticEnable) {
-                        obj.bwdpi_db_enable = "1";
-                        obj.dns_dpi_trf_analysis = "1";
+                    const statisticValue = active ? "1" : "0";
+
+                    if (isSupport("dns_dpi") === 3) {   //3: compatible hooks 2: ej_dns_status hook
+                        obj.dns_dpi_trf_analysis = statisticValue;
                     } else {
-                        obj.bwdpi_db_enable = "0";
-                        obj.dns_dpi_trf_analysis = "0";
+                        obj.bwdpi_db_enable = statisticValue;
                     }
 
                     httpApi.nvramSet(obj, function () {
@@ -978,6 +1000,7 @@
                     });
                 }
             });
+            document.getElementById("enableStatistic").appendChild(toggleBtn.render());
 
             function showTMEula() {
                 const policyModal = new PolicyModalComponent({
@@ -1006,7 +1029,7 @@
                         });
                     },
                     disagreeCallback: () => {
-                        document.getElementById("enableStatistic").checked = false;
+                        toggleBtn.disable();
                     },
                 });
                 policyModal.show();
@@ -1090,12 +1113,12 @@
                         <div class="table-responsive" style="height: 400px">
                             <table class="table">
                                 <thead class="table-primary" style="position: sticky; top: 0">
-                                    <th><#traffic_analysis_appname#></th>
+                                    <th><#Client_Name#></th>
                                     <th><#option_upload#></th>
                                     <th><#option_download#></th>
                                     <th><#Total#></th>
                                 </thead>
-                                <tbody id="client_detail_apps_table"></tbody>
+                                <tbody id="app_detail_clients_table"></tbody>
                             </table>
                         </div>
                     </div>
@@ -1148,12 +1171,12 @@
                         <div class="table-responsive" style="height: 400px">
                             <table class="table">
                                 <thead class="table-primary" style="position: sticky; top: 0">
-                                    <th><#Client_Name#></th>
+                                    <th><#traffic_analysis_appname#></th>
                                     <th><#option_upload#></th>
                                     <th><#option_download#></th>
                                     <th><#Total#></th>
                                 </thead>
-                                <tbody id="app_detail_clients_table"></tbody>
+                                <tbody id="client_detail_apps_table"></tbody>
                             </table>
                         </div>
                     </div>

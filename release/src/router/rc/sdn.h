@@ -53,5 +53,9 @@ int write_sdnlan_resolv_dnsmasq_ipv6(FILE* fp);
 void update_sdn_mtwan_iptables(const MTLAN_T *pmtl, int v6);
 #endif
 #endif
+#ifdef RTCONFIG_IPV6
+int get_sdn_wan6_unit(const MTLAN_T *pmtl, int* share_subnet);
+int write_dnsmasq_conf_sdn_ra_dhcp6_range(FILE* fp, const MTLAN_T *pmtl);
+#endif
 
 #endif

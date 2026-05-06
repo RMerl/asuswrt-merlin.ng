@@ -8,17 +8,13 @@
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
 <title><#Network_Tools#> - Netstat</title>
-<link rel="stylesheet" type="text/css" href="index_style.css">
+<link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
-<link rel="stylesheet" type="text/css" href="device-map/device-map.css">
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
-<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
-<script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script>
 
@@ -27,7 +23,6 @@ var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
 function init(){
 	show_menu();
-	showDropdownClientList('setClientIP', 'ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');
 }
 
 var netoolApi = {
@@ -53,7 +48,7 @@ var netoolApi = {
 				if(data.search("XU6J03M6") == -1){
 					setTimeout(function(){
 						netoolApi.check(fileName);
-					}, 500);
+					}, 500);				
 				}
 				else{
 					$("#loadingIcon").hide();
@@ -70,52 +65,11 @@ var netoolApi = {
 }
 
 function hideCNT(obj){
-	if (obj.value == 6) {		// Netstat
-		document.getElementById("netstat_td").style.display="";
-		document.getElementById("netstat_nat_td").style.display="none";
-		document.getElementById("ipfilter_tr").style.display="none";
-	} else if (obj.value == 7) {	// Netstat-nat
-		document.getElementById("netstat_td").style.display="none";
-		document.getElementById("netstat_nat_td").style.display="";
-		document.getElementById("ipfilter_tr").style.display="";
-	}
-	return true;
+	return false;
 }
-
-function hideClients_Block(evt){
-	if(typeof(evt) != "undefined"){
-		if(!evt.srcElement)
-			evt.srcElement = evt.target; // for Firefox
-
-		if(evt.srcElement.id == "pull_arrow" || evt.srcElement.id == "ClientList_Block"){
-			return;
-		}
-	}
-
-	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
-	document.getElementById('ClientList_Block_PC').style.display='none';
-}
-
-function pullLANIPList(obj){
-	var element = document.getElementById('ClientList_Block_PC');
-	var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
-	if(isMenuopen == 0){
-		obj.src = "/images/arrow-top.gif"
-		element.style.display = 'block';
-	}
-	else
-		hideClients_Block();
-}
-
-function setClientIP(ipaddr){
-	document.form.srchost.value = ipaddr;
-	hideClients_Block();
-}
-
-
 </script>
 </head>
-<body onload="init();">
+<body onload="init();" class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
@@ -124,7 +78,6 @@ function setClientIP(ipaddr){
 <input type="hidden" name="next_page" value="Main_Netstat_Content.asp">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
-<input type="hidden" name="action_mode" value="">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
@@ -141,7 +94,6 @@ function setClientIP(ipaddr){
 						<table width="760px" border="0" cellpadding="5" cellspacing="0" bordercolor="#6b8fa3"  class="FormTitle" id="FormTitle">		
 							<tr>
 								<td bgcolor="#4D595D" colspan="3" valign="top">
-									<div>&nbsp;</div>
 								<div class="container">
 
 									<div>&nbsp;</div>
@@ -155,13 +107,12 @@ function setClientIP(ipaddr){
 											<td>
 												<select id="cmdMethod" class="input_option" name="cmdMethod" onchange="hideCNT(this);">
 													<option value="6" selected>Netstat</option>
-													<option value="7">Netstat-NAT</option>
-												</select>
-											</td>
-										</tr>
+ 												</select>
+											</td>										
+										</tr>										
 										<tr>
 											<th width="20%"><#NetworkTools_option#></th>
-											<td id="netstat_td">
+											<td>
 												<input type="checkbox" class="options" value="00000001"><#sockets_listening#>
 												<br>
 												<input type="checkbox" class="options" value="00000010"><#sockets_all#>
@@ -177,35 +128,7 @@ function setClientIP(ipaddr){
 												<input type="checkbox" class="options" value="10000000"><#Display_routingtable#>
 												<br>
 												<input type="checkbox" class="options" value="00000100"><#sockets_not_resolve_names#>
-											</td>
-											<td id="netstat_nat_td" style="display:none;">
-												<input type="checkbox" class="options" value="00000010">Strip header
-												<br>
-												<input type="checkbox" class="options" value="00000100">Extend hostname
-												<br>
-												<input type="checkbox" class="options" value="00001000">Show SNAT
-												<br>
-												<input type="checkbox" class="options" value="00010000">Show DNAT
-												<br>
-												<input type="checkbox" class="options" value="00100000">Show only NAT to router itself
-												<br>
-												<input type="checkbox" class="options" value="01000000">Show only NAT to clients
-												<br>
-												<input type="checkbox" class="options" value="10000000">Show router NAT info
-												<br>
-												<input type="checkbox" class="options" value="00000001"><#sockets_not_resolve_names#>
-											</td>
-										</tr>
-										<tr id="ipfilter_tr" style="display:none;">
-											<th width="20%">IP filters</th>
-											<td>
-												<label>Source:</label>
-												<input type="text" id="srchost" class="input_15_table" maxlength="15" name="srchost" onKeyPress="return validator.isIPAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off">
-												<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;margin-right:40px;" onclick="pullLANIPList(this);" title="<#select_device_name#>">
-												<label style="margin-left:60px;">Destination:</label>
-												<input type="text" id="dsthost" class="input_15_table" maxlength="15" name="dsthost" onKeyPress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">
-												<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-left:2px;"></div>
-											</td>
+											</td>			
 										</tr>
 									</table>
 
@@ -221,14 +144,12 @@ function setClientIP(ipaddr){
 												$("#textarea").val("");
 												netoolApi.start({
 													"type": $("#cmdMethod").val(),
-													"netst": "0x00" + parseInt(options, 2).toString(16),
-													"srchost": document.form.srchost.value,
-													"dsthost": document.form.dsthost.value,
+													"netst": "0x00" + parseInt(options, 2).toString(16)
 												})
 											})
 										</script>
 
-										<img id="loadingIcon" style="display:none;" src="/images/InternetScan.gif">
+										<img id="loadingIcon" style="display:none;" src="/images/InternetScan.gif"></span>
 									</div>
 
 									<div style="margin-top:8px" id="logArea">
@@ -252,6 +173,7 @@ function setClientIP(ipaddr){
 </form>
 
 <div id="footer"></div>
+</body>
 <script type="text/javascript">
 <!--[if !IE]>-->
 	(function($){
@@ -260,5 +182,4 @@ function setClientIP(ipaddr){
 	})(jQuery);
 <!--<![endif]-->
 </script>
-</body>
 </html>

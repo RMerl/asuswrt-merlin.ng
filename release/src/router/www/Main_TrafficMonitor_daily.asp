@@ -351,7 +351,7 @@ function drawChart(){
 							<table width="730"  border="1" align="left" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" >
 							<thead>
 								<tr>
-									<td colspan="2" id="TriggerList" style="text-align:left;"><#Last30days#> <span style="color:#FFF;background-color:transparent;" id='last-dates'></span></td>
+									<td colspan="2" id="TriggerList" style="text-align:left;"><#Last30days#> <span style="color:var(--text-primary, #FFF);background-color:transparent;" id='last-dates'></span></td>
 								</tr>
 							</thead>
 							<tbody>

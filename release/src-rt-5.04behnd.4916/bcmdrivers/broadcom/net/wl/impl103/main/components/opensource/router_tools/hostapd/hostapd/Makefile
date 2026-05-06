@@ -2,6 +2,7 @@ ALL=hostapd hostapd_cli sae_pk_gen
 override CONFIG_FILE = .config
 
 include ../src/build.rules
+include $(TOP)/.config
 
 ifdef LIBS
 # If LIBS is set with some global build system defaults, clone those for
@@ -28,7 +29,7 @@ CFLAGS += -I$(TOP)/openssl/include
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lm -lssl -lpthread
 LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP)/shared -lshared
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
+ifeq ($(RTCONFIG_MXL_826XX),y)
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 

@@ -2,6 +2,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel="stylesheet" type="text/css" href="/js/weekSchedule/schedule_ui.css">
+<link rel="stylesheet" type="text/css" href="/pwdmeter.css">
+<link rel="stylesheet" type="text/css" href="/other.css">
+<link rel="stylesheet" type="text/css" href="/form_style.css">
+<link rel="stylesheet" type="text/css" href="/index_style.css">
+<link rel="stylesheet" type="text/css" href="/device-map/device-map.css">
 <link rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component.css">
 <link rel="stylesheet" type="text/css" href="/SDN/sdn.css">
 <link rel="stylesheet" type="text/css" href="/SDN/mlo.css">
@@ -12,8 +18,13 @@
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/RWD_UI/rwd_component.js"></script>
-<script type="text/javascript" src="/SDN/sdn.js"></script>
+<script type="text/javascript" src="/SDN/sdn.js?lang=<#selected_language#>"></script>
 <script type="text/javascript" src="/SDN/mlo.js"></script>
+<script type="text/javascript" src="/validator.js" defer></script>
+<script type="text/javascript" src="/popup.js" defer></script>
+<script type="text/javascript" src="/js/weekSchedule/schedule_ui.js" defer></script>
+<script type="text/javascript" src="/form.js" defer></script>
+<script type="text/javascript" src="/client_function.js" defer></script>
 </head>
 <style>
 .sdn_popup_bg #loadingBlock {
@@ -36,7 +47,13 @@ var getUrlParameter = function getUrlParameter(param){
 	}
 	return "";
 };
-var theme = getUrlParameter("current_theme").toUpperCase();
+function getSafeTheme(paramName, allowedValues = ['WHITE', 'ROG', 'TUF', '']) {
+	let rawValue = getUrlParameter(paramName);
+	if (!rawValue) return "";
+	let safePrefix = rawValue.toUpperCase().match(/^[A-Z0-9_]*/)[0];
+	return allowedValues.includes(safePrefix) ? safePrefix : "";
+}
+var theme = getSafeTheme("current_theme", ['WHITE', 'ROG', 'GT', 'TUF', '']).toUpperCase();
 if(theme == "GT") theme = "ROG";
 var app_control = {
 	"type": (function(){
@@ -58,10 +75,16 @@ var app_control = {
 	})()
 }
 $('link[group="extend_css"]').remove();
-if(theme == "WHITE" || theme == "ROG" || theme == "TUF"){
-	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_' + theme + '.css">');
-	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/SDN/sdn_' + theme + '.css">');
-	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/SDN/mlo_' + theme + '.css">');
+if(theme == "WHITE" || theme == "ROG" || theme == "TUF" || theme == "PROART"){
+	if(isSupport("UI4")) {
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_v4.css">');
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/SDN/sdn_v4.css">');
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/SDN/mlo_v4.css">');
+	} else {
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_' + theme + '.css">');
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/SDN/sdn_' + theme + '.css">');
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/SDN/mlo_' + theme + '.css">');
+	}
 }
 function initial(){
 	postMessageToApp({"web_ready": "1", "web_init": "0"});
@@ -388,19 +411,6 @@ function initial(){
 		if(theme == "WHITE" || theme == "ROG"){
 			$('link').first().before('<link rel="stylesheet" type="text/css" href="/js/weekSchedule/schedule_ui_' + theme + '.css">');
 		}
-		$('link').first().before('<link rel="stylesheet" type="text/css" href="/js/weekSchedule/schedule_ui.css">');
-		$('link').first().before('<link rel="stylesheet" type="text/css" href="/pwdmeter.css">');
-		$('link').first().before('<link rel="stylesheet" type="text/css" href="/other.css">');
-		$('link').first().before('<link rel="stylesheet" type="text/css" href="/form_style.css">');
-		$('link').first().before('<link rel="stylesheet" type="text/css" href="/index_style.css">');
-		$('link').first().before('<link rel="stylesheet" type="text/css" href="/device-map/device-map.css">');
-
-		$('<script />', { type : 'text/javascript', src : "/validator.js"}).appendTo('head');
-		$('<script />', { type : 'text/javascript', src : "/popup.js"}).appendTo('head');
-		$('<script />', { type : 'text/javascript', src : "/js/weekSchedule/schedule_ui.js"}).appendTo('head');
-		$('<script />', { type : 'text/javascript', src : "/form.js"}).appendTo('head');
-		$('<script />', { type : 'text/javascript', src : "/client_function.js"}).appendTo('head');
-		$('<script />', { type : 'text/javascript', src : "/js/qrcode/jquery.qrcode.min.js"}).appendTo('head');
 		if(!is_Web_iframe)
 			showLoading = showLoading_RWD;//overwrite function
 		else{
@@ -487,7 +497,7 @@ function initial(){
 	}
 }
 </script>
-<body class="body_rwd">
+<body class="body_rw mlo-body">
 <div id="Loading" class="popup_bg" style="visibility: hidden;"></div>
 <div class="hidden_mask popup_element"></div>
 <div class="popup_container popup_element"></div>

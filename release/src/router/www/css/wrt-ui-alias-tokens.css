@@ -1,0 +1,1460 @@
+/* wrt-ui-alias-tokens.css
+   說明：
+   - 本檔定義「UI 元件語意別名」(--wrt-*)，值全部引用 color-table.css 的 Mode Core Tokens
+   - 目的：統一元件語意（仿 MDB 的語意模型）但不引入 MDB，本檔不寫死色值
+   - 使用：框架/元件樣式只讀取 --wrt-* 變數，Theme/Light/Dark 替換交給 color-table.css
+*/
+
+/* ==================== Typography (align MDB semantics) ==================== */
+:root {
+  /* base */
+  --wrt-font-family-base: var(--global-font-style);
+  --wrt-font-size-base: var(--font-size-16, 1rem);
+  --wrt-line-height-base: var(--line-height-base, 1.5);
+  --wrt-text-color: var(--text-primary);
+  --wrt-text-muted-color: var(--text-muted);
+  --wrt-link-color: var(--link-color);
+  --wrt-link-hover-color: var(--link-hover-color);
+
+  /* headings */
+  --wrt-heading-font-family: var(--global-font-style);
+  --wrt-heading-font-weight: var(--font-weight-semibold, 600);
+  --wrt-heading-line-height: var(--heading-line-height, 1.2);
+  --wrt-h1-font-size: var(--font-size-h1, 2.5rem);
+  --wrt-h2-font-size: var(--font-size-h2, 2rem);
+  --wrt-h3-font-size: var(--font-size-h3, 1.75rem);
+  --wrt-h4-font-size: var(--font-size-h4, 1.5rem);
+  --wrt-h5-font-size: var(--font-size-h5, 1.25rem);
+  --wrt-h6-font-size: var(--font-size-h6, 1rem);
+  --wrt-heading-margin-top: 0;
+  --wrt-heading-margin-bottom: .5rem;
+
+  /* utilities */
+  --wrt-lead-font-size: var(--font-size-lead, 1.25rem);
+  --wrt-lead-font-weight: var(--font-weight-light, 300);
+  --wrt-small-font-size: var(--font-size-12, .875rem);
+  --wrt-mark-bg: var(--primary-20);
+  --wrt-mark-color: var(--brand-primary);
+  --wrt-blockquote-font-size: var(--font-size-16, 1rem);
+  --wrt-blockquote-border-color: var(--border-subtle);
+}
+
+:root, [data-asuswrt-color="light"] {
+
+  /* font size */
+  --font-size-title-01: var(--font-size-36);
+  --font-size-title-02: var(--font-size-30);
+  --font-size-title-03: var(--font-size-24);
+  --font-size-title-04: var(--font-size-20);
+  --font-size-subtitle-01: var(--font-size-18);
+  --font-size-subtitle-02: var(--font-size-16);
+  --font-size-subtitle-03: var(--font-size-14);
+  --font-size-subtitle-04: var(--font-size-13);
+  --font-size-body-01: var(--font-size-14); /*default*/
+  --font-size-body-02: var(--font-size-13);
+  --font-size-body-03: var(--font-size-12);
+  --font-size-btn-01: var(--font-size-14);
+  --font-size-btn-02: var(--font-size-13);
+  --font-size-btn-03: var(--font-size-12);
+  --font-size-caption-01: var(--font-size-12);
+  --font-size-caption-02: var(--font-size-12);
+  --font-size-info-03: var(--font-size-12);
+
+  /* ==================== Gutters (global spacing scale) ==================== */
+  /* base scale */
+  --wrt-gutter-xxs: .25rem;  /* 4px  */
+  --wrt-gutter-xs:  .5rem;   /* 8px  */
+  --wrt-gutter-sm:  .75rem;  /* 12px */
+  --wrt-gutter-md:  1rem;    /* 16px */
+  --wrt-gutter-lg:  1.25rem; /* 20px */
+  --wrt-gutter-xl:  1.5rem;  /* 24px */
+  --wrt-gutter-xxl: 2rem;    /* 32px */
+  --wrt-gutter-xxxl:2.5rem;  /* 40px */
+  /* axes defaults */
+  --wrt-gutter-x: var(--wrt-gutter-xl);
+  --wrt-gutter-y: var(--wrt-gutter-xl);
+  /* breakpoint suggestions (override where needed) */
+  --wrt-gutter-x-sm: var(--wrt-gutter-sm);
+  --wrt-gutter-x-md: var(--wrt-gutter-md);
+  --wrt-gutter-x-lg: var(--wrt-gutter-lg);
+  --wrt-gutter-x-xl: var(--wrt-gutter-xl);
+  --wrt-gutter-x-xxl: var(--wrt-gutter-xxl);
+  --wrt-gutter-y-sm: var(--wrt-gutter-sm);
+  --wrt-gutter-y-md: var(--wrt-gutter-md);
+  --wrt-gutter-y-lg: var(--wrt-gutter-lg);
+  --wrt-gutter-y-xl: var(--wrt-gutter-xl);
+  --wrt-gutter-y-xxl: var(--wrt-gutter-xxl);
+
+  /* ==================== Switch (Toggle) ==================== */
+  /* 幾何尺寸（可由元件容器覆寫以配合實際高度與密度） */
+  --wrt-switch-height: 20px; 
+  --wrt-switch-width: 40px; /* 軌道外徑高度 */
+  --wrt-switch-padding: 3px;                 /* 軌道內縮（左右/上下同值） */
+  --wrt-switch-radius: var(--radius-pill);
+  --wrt-switch-thumb-size: calc(             /* 拇指直徑=軌道內徑 */
+    var(--wrt-switch-height) - var(--wrt-switch-padding) * 2
+  );
+  --wrt-switch-track-radius: var(--radius-pill);
+  --wrt-switch-thumb-radius: var(--radius-pill);
+  /* 顏色語意（對齊 MDB 概念，引用 Core Tokens） */
+  --wrt-switch-track-bg-off: transparent;
+  --wrt-switch-track-border-off: var(--neutral-50);
+  --wrt-switch-track-bg-on: var(--brand-primary);
+  --wrt-switch-track-border-on: var(--brand-primary);
+  --wrt-switch-thumb-bg-off: var(--neutral-50);
+  --wrt-switch-thumb-bg-on: var(--white-alpha-100);
+  --wrt-switch-label-color-off: var(--neutral-60);
+  --wrt-switch-label-color-on: var(--white-alpha-100);
+  /* 動畫 */
+  --wrt-switch-transition-duration: .3s;
+  --wrt-switch-transition-timing-function: ease;
+  /* 兼容舊變數（非 --wrt-*）供現有樣式引用，不建議新用 */
+  --switch-bg-color: var(--wrt-switch-track-bg-off);
+  --switch-btn-on-normal-fill-color: var(--wrt-switch-track-bg-on);
+  --switch-btn-on-normal-ellipse-stroke-color: var(--wrt-switch-track-border-on);
+  --switch-btn-on-normal-ellipse-fill-color: var(--wrt-switch-thumb-bg-on);
+  --switch-btn-on-normal-text-color: var(--wrt-switch-label-color-on);
+  --switch-btn-off-normal-ellipse-stroke-color: var(--wrt-switch-track-border-off);
+  --toggle-btn-off-normal-stroke-color: var(--wrt-switch-thumb-bg-off);
+
+  /* ==================== Buttons ==================== */
+  --wrt-btn-radius: var(--btn-radius-sm);
+  --wrt-btn-padding-y: .5rem;
+  --wrt-btn-padding-x: 1rem;
+  --wrt-btn-font-size: var(--font-size-14);
+
+  /* primary */
+  --wrt-btn-primary-bg: var(--primary-btn-normal-fill);
+  --wrt-btn-primary-color: var(--primary-btn-text-color);
+  --wrt-btn-primary-border: var(--primary-btn-normal-fill);
+  --wrt-btn-primary-hover-bg: var(--primary-btn-hover-fill);
+  --wrt-btn-primary-hover-border: var(--primary-btn-hover-fill);
+  --wrt-btn-primary-hover-color: var(--primary-btn-text-color);
+  --wrt-btn-primary-active-bg: var(--primary-btn-active-fill);
+  --wrt-btn-primary-active-border: var(--primary-btn-active-fill);
+  --wrt-btn-primary-disabled-bg: var(--primary-btn-disable-fill);
+  --wrt-btn-primary-disabled-border: var(--primary-btn-disable-fill);
+  --wrt-btn-primary-disabled-color: var(--primary-btn-disable-text-color);
+  --wrt-btn-primary-focus-ring: rgba(var(--focus-ring-rgb), .35);
+
+  /* outline-primary */
+  --wrt-btn-outline-primary-color: var(--brand-primary);
+  --wrt-btn-outline-primary-border: var(--brand-primary);
+  --wrt-btn-outline-primary-bg: transparent;
+  --wrt-btn-outline-primary-hover-bg: rgba(var(--brand-primary-rgb), .08);
+  --wrt-btn-outline-primary-hover-color: var(--primary-btn-text-color);
+  --wrt-btn-outline-primary-hover-border: var(--brand-primary);
+  --wrt-btn-outline-primary-active-bg: rgba(var(--brand-primary-rgb), .12);
+  --wrt-btn-outline-primary-active-color: var(--primary-btn-text-color);
+  --wrt-btn-outline-primary-active-border: var(--brand-primary);
+  --wrt-btn-outline-primary-disabled-bg: transparent;
+  --wrt-btn-outline-primary-disabled-color: var(--neutral-60);
+  --wrt-btn-outline-primary-disabled-border: var(--border-subtle);
+
+  /* btn-icon */
+  --wrt-btn-icon-color: var(--icon-default);
+  --wrt-btn-icon-hover-color: var(--icon-hover);
+  --wrt-btn-icon-active-color: var(--icon-active);
+  --wrt-btn-icon-disabled-color: var(--icon-muted);
+  /* static-icon (informational, non-interactive) */
+  --wrt-static-icon-color: var(--icon-static-color);
+  --wrt-static-icon-muted-color: var(--icon-muted);
+  /* semantic tones — align with .wrt-badge[data-tone] container text */
+  --wrt-static-icon-primary-color: var(--wrt-badge-primary-container-color);
+  --wrt-static-icon-neutral-color: var(--wrt-badge-neutral-container-color);
+  --wrt-static-icon-success-color: var(--wrt-badge-success-container-color);
+  --wrt-static-icon-warning-color: var(--wrt-badge-warning-container-color);
+  --wrt-static-icon-error-color: var(--wrt-badge-error-container-color);
+  --wrt-static-icon-info-color: var(--wrt-badge-info-container-color);
+  /* 與 btn-fill 對齊的互動容器背景 */
+  --wrt-btn-icon-hover-bg: var(--wrt-btn-accent-neutral-hover-bg);
+  --wrt-btn-icon-active-bg: var(--wrt-btn-accent-neutral-active-bg);
+  --wrt-btn-icon-focus-ring: rgba(var(--focus-ring-rgb), .35);
+  --wrt-btn-icon-focus-border: var(--focus-ring);
+
+  /* btn-text */
+  --wrt-btn-text-color: var(--text-primary);
+  --wrt-btn-text-hover-color: var(--text-secondary);
+  --wrt-btn-text-active-color: var(--text-primary);
+  --wrt-btn-text-disabled-color: var(--text-secondary);
+  /* 與 btn-fill 對齊的互動容器背景 */
+  --wrt-btn-text-hover-bg: var(--wrt-btn-accent-neutral-hover-bg);
+  --wrt-btn-text-active-bg: var(--wrt-btn-accent-neutral-active-bg);
+  --wrt-btn-text-focus-ring: rgba(var(--focus-ring-rgb), .35);
+  --wrt-btn-text-focus-border: var(--focus-ring);
+
+  /* link */
+  --wrt-btn-link-color: var(--link-color);
+  --wrt-btn-link-hover-color: var(--link-hover-color);
+
+  /* ==================== Buttons - Semantic Tiers (by priority & usage) ==================== */
+  /*
+    說明（分級使用原則）：
+    - default（最常用，頻率最高）: outline-neutral，作為頁面一般動作。可多個。
+    - emphasis（一级強調）: outline-primary，吸引注意但不搶主流程。可多個。
+    - accent-neutral / accent-primary（二级強調）: fill，建議全頁 1~2 個以內。
+    - hero（最強調）: fill-gradient-color-primary，整頁唯一 CTA。全頁僅能 1 個。
+  */
+  /* default → outline-neutral */
+  --wrt-btn-default-bg: var(--secondary-btn-normal-fill);
+  --wrt-btn-default-color: var(--text-secondary);
+  --wrt-btn-default-border: rgba(var(--border-invert-rgb),0.5);
+  --wrt-btn-default-hover-bg: var(--secondary-btn-hover-fill);
+  --wrt-btn-default-hover-color: var(--text-primary);
+  --wrt-btn-default-hover-border: rgba(var(--border-invert-rgb),0.7);
+  --wrt-btn-default-active-bg: var(--surface-active);
+  --wrt-btn-default-active-color: var(--text-primary);
+  --wrt-btn-default-active-border: var(--brand-primary);
+  --wrt-btn-default-disabled-bg: var(--surface-active);
+  --wrt-btn-default-disabled-color: rgba(var(--text-secondary-rgb),0.5);
+  --wrt-btn-default-disabled-border: rgba(var(--border-invert-rgb),0.5);
+  --wrt-btn-default-shadow: var(--shadow-ambient-10);
+  --wrt-btn-default-hover-shadow: var(--shadow-ambient-20);
+
+  /* emphasis（一级強調）→ outline-primary */
+  --wrt-btn-emphasis-bg: transparent;
+  --wrt-btn-emphasis-color: var(--outline-secondary-btn-text-color);
+  --wrt-btn-emphasis-border: var(--outline-secondary-btn-stroke);
+  --wrt-btn-emphasis-hover-bg: var(--outline-secondary-btn-hover-fill);
+  --wrt-btn-emphasis-hover-color: var(--outline-secondary-btn-hover-text-color);
+  --wrt-btn-emphasis-hover-border: var(--outline-secondary-btn-hover-stroke);
+  --wrt-btn-emphasis-active-bg: var(--outline-secondary-btn-hover-fill);
+  --wrt-btn-emphasis-active-color: var(--outline-secondary-btn-hover-text-color);
+  --wrt-btn-emphasis-active-border: var(--outline-secondary-btn-hover-stroke);
+  --wrt-btn-emphasis-disabled-bg: transparent;
+  --wrt-btn-emphasis-disabled-color: var(--secondary-btn-disable-text-color);
+  --wrt-btn-emphasis-disabled-border: var(--secondary-btn-disable-stroke);
+
+  /* accent-neutral（二级強調）→ fill-neutral */
+  --wrt-btn-accent-neutral-bg: rgba(var(--surface-invert-rgb),0.08);
+  --wrt-btn-accent-neutral-color: var(--text-primary);
+  --wrt-btn-accent-neutral-border: rgba(var(--border-strong-rgb),0.8);
+  --wrt-btn-accent-neutral-hover-bg: rgba(var(--surface-invert-rgb),0.05);
+  --wrt-btn-accent-neutral-hover-color: var(--text-primary);
+  --wrt-btn-accent-neutral-hover-border: rgba(var(--border-strong-rgb),0.8);
+  --wrt-btn-accent-neutral-active-bg: rgba(var(--surface-invert-rgb),0.1);
+  --wrt-btn-accent-neutral-active-color: var(--text-primary);
+  --wrt-btn-accent-neutral-active-border: rgba(var(--border-strong-rgb),0.8);
+  --wrt-btn-accent-neutral-disabled-bg: rgba(var(--surface-invert-rgb),0.05);
+  --wrt-btn-accent-neutral-disabled-color: var(--text-secondary);
+  --wrt-btn-accent-neutral-disabled-border: rgba(var(--border-strong-rgb),0.6);
+
+  /* accent-primary（二级強調）→ fill-primary */
+  --wrt-btn-accent-primary-bg: var(--primary-btn-normal-fill);
+  --wrt-btn-accent-primary-color: var(--primary-btn-text-color);
+  --wrt-btn-accent-primary-border: var(--primary-btn-normal-stroke);
+  --wrt-btn-accent-primary-hover-bg: var(--primary-btn-hover-fill);
+  --wrt-btn-accent-primary-hover-color: var(--primary-btn-text-color);
+  --wrt-btn-accent-primary-hover-border: var(--primary-btn-normal-stroke);
+  --wrt-btn-accent-primary-active-bg: var(--primary-btn-active-fill);
+  --wrt-btn-accent-primary-active-color: var(--primary-btn-text-color);
+  --wrt-btn-accent-primary-active-border: var(--primary-btn-normal-stroke);
+  --wrt-btn-accent-primary-disabled-bg: var(--primary-btn-disable-fill);
+  --wrt-btn-accent-primary-disabled-color: var(--primary-btn-disable-text-color);
+  --wrt-btn-accent-primary-disabled-border: var(--border-subtle);
+
+  /* hero（最強調）→ fill-gradient-color-primary（頁面唯一 CTA） */
+  --wrt-btn-hero-bg: var(--gradient-color-primary);
+  --wrt-btn-hero-color: var(--primary-btn-text-color);
+  --wrt-btn-hero-border: transparent;
+  --wrt-btn-hero-hover-bg: var(--gradient-color-primary);
+  --wrt-btn-hero-hover-color: var(--primary-btn-text-color);
+  --wrt-btn-hero-hover-border: transparent;
+  --wrt-btn-hero-active-bg: var(--gradient-color-primary);
+  --wrt-btn-hero-active-color: var(--primary-btn-text-color);
+  --wrt-btn-hero-active-border: transparent;
+  --wrt-btn-hero-disabled-bg: var(--primary-btn-disable-fill);
+  --wrt-btn-hero-disabled-color: var(--primary-btn-disable-text-color);
+  --wrt-btn-hero-disabled-border: var(--border-subtle);
+  /* 可選：secondary/success/info/warning/danger 視需求再補
+     例如：
+     --wrt-btn-success-bg: var(--status-quality-good);
+     --wrt-btn-warning-bg: var(--status-warning);
+     --wrt-btn-danger-bg: var(--status-msg-strong);
+  */
+
+  /* ==================== Button Reference Styles (variant/tone/state) ==================== */
+  .wrt-btn {
+    --_bg: transparent;
+    --_color: inherit;
+    --_border: transparent;
+    --_hover-bg: var(--_bg);
+    --_hover-color: var(--_color);
+    --_hover-border: var(--_border);
+    --_active-bg: var(--_bg);
+    --_active-color: var(--_color);
+    --_active-border: var(--_border);
+    --_disabled-bg: var(--_bg);
+    --_disabled-color: var(--_color);
+    --_disabled-border: var(--_border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: var(--wrt-btn-padding-y) var(--wrt-btn-padding-x);
+    border-radius: var(--wrt-btn-radius);
+    border: 1px solid var(--_border);
+    background: var(--_bg);
+    color: var(--_color);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+  /* 使用權重分級（建議用法） */
+  .wrt-btn[data-tier="default"] {
+    --_bg: var(--wrt-btn-default-bg);
+    --_color: var(--wrt-btn-default-color);
+    --_border: var(--wrt-btn-default-border);
+    --_hover-bg: var(--wrt-btn-default-hover-bg);
+    --_hover-color: var(--wrt-btn-default-hover-color);
+    --_hover-border: var(--wrt-btn-default-hover-border);
+    --_active-bg: var(--wrt-btn-default-active-bg);
+    --_active-color: var(--wrt-btn-default-active-color);
+    --_active-border: var(--wrt-btn-default-active-border);
+    --_disabled-bg: var(--wrt-btn-default-disabled-bg);
+    --_disabled-color: var(--wrt-btn-default-disabled-color);
+    --_disabled-border: var(--wrt-btn-default-disabled-border);
+  }
+  .wrt-btn[data-tier="emphasis"] {
+    --_bg: var(--wrt-btn-emphasis-bg);
+    --_color: var(--wrt-btn-emphasis-color);
+    --_border: var(--wrt-btn-emphasis-border);
+    --_hover-bg: var(--wrt-btn-emphasis-hover-bg);
+    --_hover-color: var(--wrt-btn-emphasis-hover-color);
+    --_hover-border: var(--wrt-btn-emphasis-hover-border);
+    --_active-bg: var(--wrt-btn-emphasis-active-bg);
+    --_active-color: var(--wrt-btn-emphasis-active-color);
+    --_active-border: var(--wrt-btn-emphasis-active-border);
+    --_disabled-bg: var(--wrt-btn-emphasis-disabled-bg);
+    --_disabled-color: var(--wrt-btn-emphasis-disabled-color);
+    --_disabled-border: var(--wrt-btn-emphasis-disabled-border);
+  }
+  .wrt-btn[data-tier="accent-neutral"] {
+    --_bg: var(--wrt-btn-accent-neutral-bg);
+    --_color: var(--wrt-btn-accent-neutral-color);
+    --_border: var(--wrt-btn-accent-neutral-border);
+    --_hover-bg: var(--wrt-btn-accent-neutral-hover-bg);
+    --_hover-color: var(--wrt-btn-accent-neutral-hover-color);
+    --_hover-border: var(--wrt-btn-accent-neutral-hover-border);
+    --_active-bg: var(--wrt-btn-accent-neutral-active-bg);
+    --_active-color: var(--wrt-btn-accent-neutral-active-color);
+    --_active-border: var(--wrt-btn-accent-neutral-active-border);
+    --_disabled-bg: var(--wrt-btn-accent-neutral-disabled-bg);
+    --_disabled-color: var(--wrt-btn-accent-neutral-disabled-color);
+    --_disabled-border: var(--wrt-btn-accent-neutral-disabled-border);
+  }
+  .wrt-btn[data-tier="accent-primary"] {
+    --_bg: var(--wrt-btn-accent-primary-bg);
+    --_color: var(--wrt-btn-accent-primary-color);
+    --_border: var(--wrt-btn-accent-primary-border);
+    --_hover-bg: var(--wrt-btn-accent-primary-hover-bg);
+    --_hover-color: var(--wrt-btn-accent-primary-hover-color);
+    --_hover-border: var(--wrt-btn-accent-primary-hover-border);
+    --_active-bg: var(--wrt-btn-accent-primary-active-bg);
+    --_active-color: var(--wrt-btn-accent-primary-active-color);
+    --_active-border: var(--wrt-btn-accent-primary-active-border);
+    --_disabled-bg: var(--wrt-btn-accent-primary-disabled-bg);
+    --_disabled-color: var(--wrt-btn-accent-primary-disabled-color);
+    --_disabled-border: var(--wrt-btn-accent-primary-disabled-border);
+  }
+  .wrt-btn[data-tier="hero"] {
+    --_bg: var(--wrt-btn-hero-bg);
+    --_color: var(--wrt-btn-hero-color);
+    --_border: var(--wrt-btn-hero-border);
+    --_hover-bg: var(--wrt-btn-hero-hover-bg);
+    --_hover-color: var(--wrt-btn-hero-hover-color);
+    --_hover-border: var(--wrt-btn-hero-hover-border);
+    --_active-bg: var(--wrt-btn-hero-active-bg);
+    --_active-color: var(--wrt-btn-hero-active-color);
+    --_active-border: var(--wrt-btn-hero-active-border);
+    --_disabled-bg: var(--wrt-btn-hero-disabled-bg);
+    --_disabled-color: var(--wrt-btn-hero-disabled-color);
+    --_disabled-border: var(--wrt-btn-hero-disabled-border);
+  }
+  /* text variant（僅變更字色；容器背景沿用 fill-neutral 的互動感） */
+  .wrt-btn[data-variant="text"] {
+    --_bg: transparent;
+    --_color: var(--wrt-btn-text-color);
+    --_border: transparent;
+    --_hover-bg: var(--wrt-btn-text-hover-bg);
+    --_hover-color: var(--wrt-btn-text-hover-color);
+    --_active-bg: var(--wrt-btn-text-active-bg);
+    --_active-color: var(--wrt-btn-text-active-color);
+    --_disabled-bg: transparent;
+    --_disabled-color: var(--wrt-btn-text-disabled-color);
+    --_disabled-border: transparent;
+  }
+  /* icon variant（僅變更圖示色；容器背景沿用 fill-neutral 的互動感） */
+  .wrt-btn[data-variant="icon"] {
+    --_bg: transparent;
+    --_color: var(--wrt-btn-icon-color);
+    --_border: transparent;
+    --_hover-bg: var(--wrt-btn-icon-hover-bg);
+    --_hover-color: var(--wrt-btn-icon-hover-color);
+    --_active-bg: var(--wrt-btn-icon-active-bg);
+    --_active-color: var(--wrt-btn-icon-active-color);
+    --_disabled-bg: transparent;
+    --_disabled-color: var(--wrt-btn-icon-disabled-color);
+    --_disabled-border: transparent;
+    padding: var(--wrt-btn-padding-y);
+    aspect-ratio: 1 / 1;
+  }
+  /* states */
+  .wrt-btn[data-state="default"] {
+    background: var(--_bg);
+    color: var(--_color);
+    border-color: var(--_border);
+  }
+  .wrt-btn[data-state="hover"] {
+    background: var(--_hover-bg);
+    color: var(--_hover-color);
+    border-color: var(--_hover-border, var(--_border));
+  }
+  .wrt-btn[data-state="active"] {
+    background: var(--_active-bg);
+    color: var(--_active-color);
+    border-color: var(--_active-border, var(--_border));
+  }
+  .wrt-btn[disabled],
+  .wrt-btn[data-state="disabled"] {
+    background: var(--_disabled-bg);
+    color: var(--_disabled-color);
+    border-color: var(--_disabled-border, var(--_border));
+    pointer-events: none;
+    opacity: .7;
+  }
+
+  /* ==================== Segmented (單選模式切換/篩選組) ==================== */
+  /* 用途：模式切換或單選選項切換（優先使用 Segmented，不使用 Button Group 或泛稱 toggle button） */
+  /* 容器度量 */
+  --wrt-segment-radius: var(--radius-sm);           /* 外框圓角 */
+  --wrt-segment-gap-x: .25rem;                      /* 項目間水平間距（用分隔或黏合亦可覆寫） */
+  --wrt-segment-gap-y: 0;                           /* 項目間垂直間距 */
+  --wrt-segment-padding-y: .25rem;                  /* 容器內距（多數情況可為 0） */
+  --wrt-segment-padding-x: .25rem;
+  --wrt-segment-height: 32px;                       /* 項目建議高度 */
+  --wrt-segment-item-radius: var(--radius-sm);      /* 項目圓角（與容器黏合時可調） */
+  --wrt-segment-item-padding-x: .75rem;             /* 項目左右內距 */
+  --wrt-segment-item-font-size: var(--font-size-12);
+  /* 分隔（選用） */
+  --wrt-segment-divider-color: var(--border-subtle);
+  --wrt-segment-divider-width: 1px;
+  /* Fill 變體（bg-fill：填色底，用於主流程/高權重切換） */
+  --wrt-segment-fill-bg: var(--surface-panel);                /* 項目預設底 */
+  --wrt-segment-fill-color: var(--text-primary);              /* 項目預設字色 */
+  --wrt-segment-fill-border: var(--border-subtle);            /* 項目預設邊界 */
+  --wrt-segment-fill-hover-bg: var(--surface-hover);          /* hover 底 */
+  --wrt-segment-fill-hover-color: var(--wrt-segment-fill-color);
+  --wrt-segment-fill-hover-border: var(--wrt-segment-fill-border);
+  --wrt-segment-fill-active-bg: var(--surface-active);        /* active 底（按下瞬間） */
+  --wrt-segment-fill-active-color: var(--wrt-segment-fill-color);
+  --wrt-segment-fill-active-border: var(--brand-primary);
+  --wrt-segment-fill-selected-bg: var(--surface-active);          /* 已選底（彩度低，與主題協調） */
+  --wrt-segment-fill-selected-color: var(--brand-primary);    /* 已選字色 */
+  --wrt-segment-fill-selected-border: var(--brand-primary);
+  --wrt-segment-fill-disabled-bg: var(--surface-subtle);      /* 停用底 */
+  --wrt-segment-fill-disabled-color: var(--text-muted-color);
+  --wrt-segment-fill-disabled-border: var(--border-subtle);
+  /* Outline 變體（僅框線：次要/輕權重的切換，適合工具列上層或次重要） */
+  --wrt-segment-outline-bg: transparent;                      /* 預設透明 */
+  --wrt-segment-outline-color: var(--text-secondary);         /* 預設字色 */
+  --wrt-segment-outline-border: var(--border-default);         /* 預設框線 */
+  --wrt-segment-outline-hover-bg: var(--surface-hover);       /* hover 背景 */
+  --wrt-segment-outline-hover-color: var(--text-primary);
+  --wrt-segment-outline-hover-border: var(--wrt-segment-outline-border);
+  --wrt-segment-outline-active-bg: var(--surface-active);     /* active 背景 */
+  --wrt-segment-outline-active-color: var(--text-primary);
+  --wrt-segment-outline-active-border: var(--wrt-segment-outline-border);
+  --wrt-segment-outline-selected-bg: var(--primary-20);       /* 已選背景（可維持低彩度） */
+  --wrt-segment-outline-selected-color: var(--brand-primary); /* 已選字色（品牌） */
+  --wrt-segment-outline-selected-border: var(--brand-primary);
+  --wrt-segment-outline-disabled-bg: transparent;             /* 停用 */
+  --wrt-segment-outline-disabled-color: var(--neutral-60);
+  --wrt-segment-outline-disabled-border: var(--border-subtle);
+
+  /* ==================== Toggle Button（多選狀態按鈕/類 chip） ==================== */
+  /* 用途：可多選的狀態鈕，不互斥；與 Segmented 不同（Segmented 是單選） */
+  --wrt-toggle-btn-radius: var(--radius-pill);
+  --wrt-toggle-btn-font-size: var(--font-size-12);
+  --wrt-toggle-btn-padding-y: .25rem;
+  --wrt-toggle-btn-padding-x: .75rem;
+  /* fill 風格 */
+  --wrt-toggle-btn-fill-bg: var(--surface-panel);
+  --wrt-toggle-btn-fill-color: var(--text-primary);
+  --wrt-toggle-btn-fill-border: var(--border-subtle);
+  --wrt-toggle-btn-fill-hover-bg: var(--surface-hover);
+  --wrt-toggle-btn-fill-active-bg: var(--surface-active);
+  --wrt-toggle-btn-fill-selected-bg: var(--primary-20);
+  --wrt-toggle-btn-fill-selected-color: var(--brand-primary);
+  --wrt-toggle-btn-fill-selected-border: var(--primary-30, var(--brand-primary));
+  --wrt-toggle-btn-fill-disabled-bg: var(--surface-subtle);
+  --wrt-toggle-btn-fill-disabled-color: var(--neutral-60);
+  --wrt-toggle-btn-fill-disabled-border: var(--border-subtle);
+  /* outline 風格 */
+  --wrt-toggle-btn-outline-bg: transparent;
+  --wrt-toggle-btn-outline-color: var(--text-secondary);
+  --wrt-toggle-btn-outline-border: var(--border-subtle);
+  --wrt-toggle-btn-outline-hover-bg: var(--surface-hover);
+  --wrt-toggle-btn-outline-active-bg: var(--surface-active);
+  --wrt-toggle-btn-outline-selected-bg: var(--primary-20);
+  --wrt-toggle-btn-outline-selected-color: var(--brand-primary);
+  --wrt-toggle-btn-outline-selected-border: var(--brand-primary);
+  --wrt-toggle-btn-outline-disabled-bg: transparent;
+  --wrt-toggle-btn-outline-disabled-color: var(--neutral-60);
+  --wrt-toggle-btn-outline-disabled-border: var(--border-subtle);
+
+  /* ==================== Button Group（工具列動作群組：非狀態切換） ==================== */
+  /* 用途：聚合多個動作按鈕的容器，控制間距/分隔/圓角黏合，按鈕本身沿用 --wrt-btn-* */
+  --wrt-btn-group-gap-x: .25rem;                        /* 群組內水平間距（若採無間距黏合可設 0） */
+  --wrt-btn-group-gap-y: 0;                             /* 群組內垂直間距 */
+  --wrt-btn-group-divider-color: var(--border-subtle);  /* 分隔線（選用） */
+  --wrt-btn-group-divider-width: 1px;
+  --wrt-btn-group-bg: transparent;                      /* 群組容器底 */
+  --wrt-btn-group-radius: var(--radius-sm);             /* 群組外框圓角（黏合時使用） */
+  --wrt-btn-group-item-radius-first: var(--radius-sm);  /* 黏合時首個按鈕圓角 */
+  --wrt-btn-group-item-radius-last: var(--radius-sm);   /* 黏合時最後按鈕圓角 */
+  --wrt-btn-group-item-radius-middle: 0;                /* 黏合時中間按鈕圓角 */
+  --wrt-btn-group-padding-y: 0;                         /* 容器內距（多採 0） */
+  --wrt-btn-group-padding-x: 0;
+  --wrt-btn-group-color: var(--text-primary);
+
+  /* ==================== Sidenav ==================== */
+  --wrt-sidenav-bg: var(--surface-body);
+  --wrt-sidenav-color: var(--text-primary);
+  --wrt-sidenav-border: var(--border-subtle);
+  --wrt-sidenav-hover-bg: var(--surface-hover);
+  --wrt-sidenav-active-bg: var(--surface-active);
+  --wrt-sidenav-active-indicator-bg: var(--brand-primary);
+  /* link/text */
+  --wrt-sidenav-link-color: var(--text-primary);
+  --wrt-sidenav-link-hover-color: var(--brand-primary);
+  --wrt-sidenav-link-active-color: var(--brand-primary);
+  /* icons */
+  --wrt-sidenav-icon-color: var(--icon-active);
+  --wrt-sidenav-icon-hover-color: var(--brand-primary);
+  --wrt-sidenav-icon-active-color: var(--gradient-color-primary);
+  --wrt-sidenav-shadow: var(--shadow-ambient-20);
+  --wrt-sidenav-width-collapsed: 80px;     /* 桌面收合 */
+  --wrt-sidenav-width-expanded: 300px;     /* 桌面展開 */
+  --wrt-sidenav-width-reduced: 240px;      /* 大型但略縮寬 */
+  --wrt-sidenav-max-height-open: calc(100dvh - 56px); /* 手機展開（下拉） */
+
+  /* ==================== Cards ==================== */
+  --wrt-card-bg: var(--surface-card);
+  --wrt-card-border: var(--border-subtle);
+  --wrt-card-shadow: var(--shadow-ambient-10);
+  --wrt-card-title-color: var(--brand-primary);
+  --wrt-card-text-color: var(--text-primary);
+  /* structure & metrics */
+  --wrt-card-radius: var(--radius-md, var(--radius-sm));
+  --wrt-card-border-width: 1px;
+  --wrt-card-padding-y: 1rem;
+  --wrt-card-padding-x: 1rem;
+  --wrt-card-gap-y: .5rem;
+  --wrt-card-gap-x: .5rem;
+  /* header */
+  --wrt-card-header-bg: var(--wrt-card-bg); /* 卡片標頭背景（標題/副標題容器） */
+  --wrt-card-header-color: var(--wrt-card-title-color); /* 標頭主要文字色（標題） */
+  --wrt-card-header-subtitle-color: var(--text-secondary); /* 標頭次要文字色（副標題/描述） */
+  --wrt-card-header-border-color: var(--border-subtle); /* 標頭下邊界顏色（需要分隔時啟用） */
+  --wrt-card-header-border-width: 0px; /* 標頭下邊界粗細（0 代表不顯示） */
+  --wrt-card-header-padding-y: .75rem; /* 標頭上下內距 */
+  --wrt-card-header-padding-x: 1rem; /* 標頭左右內距 */
+  --wrt-card-title-font-size: var(--font-size-16); /* 標題字級（語意：Title） */
+  --wrt-card-subtitle-font-size: var(--font-size-12); /* 副標題字級（語意：Caption/Meta） */
+  /* body */
+  --wrt-card-body-bg: var(--wrt-card-bg); /* 主內容背景（建議配合 content surfaces 使用） */
+  --wrt-card-body-color: var(--wrt-card-text-color); /* 主內容文字顏色 */
+  --wrt-card-body-padding-y: 1rem; /* 主內容上下內距（外層） */
+  --wrt-card-body-padding-x: 1rem; /* 主內容左右內距（外層） */
+  /* content surfaces for info hierarchy */
+  --wrt-card-surface-0-bg: var(--wrt-card-bg); /* 層級0：一般內容（預設） */
+  --wrt-card-surface-1-bg: rgba(var(--surface-invert-rgb),0.03); /* 層級1：輕度強調（群組/段落底） */
+  --wrt-card-surface-2-bg: rgba(var(--surface-invert-rgb),0.05); /* 層級2：明顯對比（摘要/重點段） */
+  --wrt-card-surface-3-bg: rgba(var(--surface-invert-rgb),0.1); /* 層級3：最強中性底（警示/結果區） */
+  --wrt-card-surface-0-border: var(--border-subtle); /* 0階邊界色 */
+  --wrt-card-surface-1-border: var(--border-subtle); /* 1階邊界色 */
+  --wrt-card-surface-2-border: var(--border-subtle); /* 2階邊界色（較強） */
+  --wrt-card-surface-3-border: var(--border-strong); /* 3階邊界色（最強） */
+  /* content sections */
+  --wrt-card-content-bg: var(--wrt-card-surface-0-bg); /* 標準內容底色 */
+  --wrt-card-content-emphasis-bg: var(--wrt-card-surface-1-bg); /* 輕度強調底色（次級內容） */
+  --wrt-card-content-muted-bg: var(--wrt-card-surface-2-bg); /* 提醒/對比底色（分區摘要） */
+  --wrt-card-content-strong-bg: var(--wrt-card-surface-3-bg); /* 強調底色（結果/警告） */
+  --wrt-card-content-padding-y: 1rem; /* 內容容器上下內距 */
+  --wrt-card-content-padding-x: 1rem; /* 內容容器左右內距 */
+  --wrt-card-section-padding-y: .75rem; /* 內容小段落上下內距 */
+  --wrt-card-section-padding-x: 1rem; /* 內容小段落左右內距 */
+  --wrt-card-section-gap-y: .5rem; /* 內容段落垂直間距 */
+  --wrt-card-section-gap-x: .5rem; /* 內容段落水平間距 */
+  --wrt-card-section-divider-color: var(--border-strong); /* 內容段落分隔線色 */
+  /* footer */
+  --wrt-card-footer-bg: var(--wrt-card-bg); /* 卡片頁尾背景（操作區） */
+  --wrt-card-footer-color: var(--text-secondary); /* 頁尾文字色（輔助資訊） */
+  --wrt-card-footer-border-color: var(--border-subtle); /* 頁尾上邊界色（需要分隔時啟用） */
+  --wrt-card-footer-border-width: 0px; /* 頁尾上邊界粗細（0 代表不顯示） */
+  --wrt-card-footer-padding-y: .75rem; /* 頁尾上下內距 */
+  --wrt-card-footer-padding-x: 1rem; /* 頁尾左右內距 */
+  /* dividers (inside card) */
+  --wrt-card-divider-color: var(--border-subtle);
+  --wrt-card-divider-thickness: 1px;
+  --wrt-card-divider-inset: 0;
+  /* interactions */
+  --wrt-card-hover-bg: var(--surface-hover);
+  --wrt-card-hover-shadow: var(--shadow-ambient-20);
+  --wrt-card-active-bg: var(--surface-active);
+  --wrt-card-active-shadow: var(--shadow-ambient-30);
+  --wrt-card-focus-ring: rgba(var(--focus-ring-rgb), .35);
+  /* variants */
+  --wrt-card-elevated-shadow: var(--shadow-ambient-20);
+  --wrt-card-outlined-border-color: var(--border-default);
+  --wrt-card-outlined-border-width: 1px;
+  /* content accents inside card */
+  --wrt-card-accent-color: var(--brand-primary);
+  --wrt-card-muted-color: var(--text-secondary);
+  --wrt-card-meta-color: var(--neutral-60);
+  --wrt-card-link-color: var(--link-color);
+  --wrt-card-link-hover-color: var(--link-hover-color);
+  /* media and badges */
+  --wrt-card-media-bg: var(--surface-panel);
+  --wrt-card-badge-bg: var(--primary-20);
+  --wrt-card-badge-color: var(--brand-primary);
+
+  /* ==================== Forms ==================== */
+  --wrt-input-bg: var(--textbox-bg-color);
+  --wrt-input-color: var(--text-input-color);
+  --wrt-input-border: var(--textbox-normal-stroke-color);
+  --wrt-input-placeholder: var(--text-secondary);
+  --wrt-input-focus-border: var(--focus-ring);
+  --wrt-input-focus-ring: rgba(var(--focus-ring-rgb), .35);
+  --wrt-input-error-bg: var(--textbox-error-fill-color);
+  --wrt-input-error-border: var(--textbox-error-stroke-color);
+  --wrt-input-disabled-bg: rgba(var(--surface-invert-rgb),0.05);
+  --wrt-input-disabled-color: var(--text-muted);
+  --wrt-input-disabled-border: rgba(var(--border-invert-rgb),0.5);
+  --wrt-input-radius: var(--radius-sm);
+  /* Textarea tokens */
+  --wrt-textarea-bg: var(--wrt-card-surface-1-bg);
+  --wrt-textarea-color: var(--text-input-color);
+  --wrt-textarea-border: var(--textbox-normal-stroke-color);
+  --wrt-textarea-placeholder: var(--text-secondary);
+  --wrt-textarea-focus-border: var(--focus-ring);
+  --wrt-textarea-focus-ring: rgba(var(--focus-ring-rgb), .35);
+  --wrt-textarea-disabled-bg: rgba(var(--surface-invert-rgb),0.05);
+  --wrt-textarea-disabled-color: var(--text-muted);
+  --wrt-textarea-disabled-border: rgba(var(--border-invert-rgb),0.5);
+  --wrt-textarea-radius: var(--radius-sm);
+  --wrt-textarea-padding-y: .5rem;
+  --wrt-textarea-padding-x: .75rem;
+
+  /* ==================== Forms - Checkbox & Radio (MDB-aligned) ==================== */
+  /* Checkbox tokens */
+  --wrt-checkbox-size: 16px;
+  --wrt-checkbox-radius: var(--radius-sm);
+  --wrt-checkbox-bg: var(--surface-panel);
+  --wrt-checkbox-border: var(--border-strong);
+  --wrt-checkbox-hover-bg: var(--surface-hover);
+  --wrt-checkbox-active-bg: var(--surface-active);
+  --wrt-checkbox-checked-bg: var(--brand-primary);
+  --wrt-checkbox-checked-border: var(--brand-primary);
+  --wrt-checkbox-checkmark-color: var(--white-alpha-100);
+  --wrt-checkbox-indeterminate-bg: var(--brand-primary);
+  --wrt-checkbox-focus-ring: rgba(var(--focus-ring-rgb), .35);
+  --wrt-checkbox-focus-border: var(--focus-ring);
+  --wrt-checkbox-disabled-bg: var(--surface-subtle);
+  --wrt-checkbox-disabled-border: var(--border-subtle);
+  --wrt-checkbox-disabled-checkmark-color: var(--neutral-60);
+  --wrt-checkbox-label-color: var(--text-primary);
+  --wrt-checkbox-label-disabled-color: var(--text-secondary);
+  --wrt-checkbox-gap-x: .5rem;
+  /* icons */
+  --wrt-checkbox-check-icon: url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 8.5 6.5 11.5 12.5 5.5' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --wrt-checkbox-indeterminate-icon: url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='3' y='7' width='10' height='2' fill='%23000'/%3E%3C/svg%3E");
+
+  /* Radio tokens */
+  --wrt-radio-size: 16px;
+  --wrt-radio-bg: var(--surface-panel);
+  --wrt-radio-border: rgba(var(--neutral-60-rgb),0.8);
+  --wrt-radio-hover-bg: var(--surface-hover);
+  --wrt-radio-active-bg: var(--surface-active);
+  --wrt-radio-checked-bg: var(--surface-panel);
+  --wrt-radio-checked-border: var(--brand-primary);
+  --wrt-radio-dot-size: 8px;
+  --wrt-radio-dot-color: var(--brand-primary);
+  --wrt-radio-focus-ring: rgba(var(--focus-ring-rgb), .35);
+  --wrt-radio-focus-border: var(--focus-ring);
+  --wrt-radio-disabled-bg: var(--surface-subtle);
+  --wrt-radio-disabled-border: var(--border-subtle);
+  --wrt-radio-disabled-dot-color: var(--neutral-60);
+  --wrt-radio-label-color: var(--text-primary);
+  --wrt-radio-label-disabled-color: var(--text-secondary);
+  --wrt-radio-gap-x: .5rem;
+
+  /* ==================== Modal/Overlay ==================== */
+  --wrt-overlay-bg: rgba(var(--surface-shade-rgb), .6);
+  --wrt-modal-bg: var(--surface-card);
+  --wrt-modal-border: var(--border-subtle);
+  --wrt-modal-shadow: var(--shadow-ambient-30);
+  /* Modal (Dialog) - 尺寸與層級 */
+  --wrt-modal-z-index: 1050;
+  --wrt-modal-backdrop-z-index: 1040;
+  --wrt-modal-width-sm: 300px;
+  --wrt-modal-width-md: 500px;
+  --wrt-modal-width-lg: 800px;
+  --wrt-modal-width-xl: 1140px;
+  /* 版面與外觀 */
+  --wrt-modal-margin-y: 1.75rem;
+  --wrt-modal-padding: 1rem;
+  --wrt-modal-color: var(--wrt-text-color);
+  --wrt-modal-border-color: var(--wrt-card-outlined-border-color);
+  --wrt-modal-border-width: var(--wrt-card-outlined-border-width);
+  --wrt-modal-border-radius: var(--radius-md);
+  --wrt-modal-box-shadow: var(--wrt-card-elevated-shadow);
+  /* Header / Footer */
+  --wrt-modal-header-padding-x: 1rem;
+  --wrt-modal-header-padding-y: .75rem;
+  --wrt-modal-header-border-color: var(--wrt-card-divider-color);
+  --wrt-modal-header-border-width: var(--wrt-card-divider-thickness);
+  --wrt-modal-footer-gap: .5rem;
+  --wrt-modal-footer-bg: var(--wrt-card-footer-bg);
+  --wrt-modal-footer-border-color: var(--wrt-card-divider-color);
+  --wrt-modal-footer-border-width: var(--wrt-card-divider-thickness);
+  --wrt-modal-footer-padding-y: .75rem;
+  --wrt-modal-footer-padding-x: 1rem;
+  /* Backdrop（遮罩） */
+  --wrt-modal-backdrop-bg: var(--wrt-overlay-bg);
+  --wrt-modal-backdrop-opacity: .5;
+  /* 動畫與位置 */
+  --wrt-modal-transition: transform .3s ease-out, opacity .3s ease-out;
+  --wrt-modal-fade-transform: translate3d(0, -25%, 0);
+  --wrt-modal-show-transform: none;
+
+  /* ==================== Popover / Popout ==================== */
+  --wrt-popover-bg: var(--surface-active);
+  --wrt-popover-border: rgba(var(--border-strong-rgb),0.8);
+  --wrt-popover-shadow: 0 0 10px 0 rgba(var(--shadow-ambient-30-rgb),0.5);
+  --wrt-popover-color: var(--wrt-text-color);
+  --wrt-popover-radius: var(--radius-sm);
+  --wrt-popover-padding-y: .75rem;
+  --wrt-popover-padding-x: 1rem;
+  --wrt-popover-arrow-color: var(--brand-primary);
+
+  /* ==================== Dropdowns (align MDB semantics) ==================== */
+  /* container */
+  --wrt-dropdown-bg: var(--surface-card);
+  --wrt-dropdown-color: var(--text-primary);
+  --wrt-dropdown-border: var(--border-subtle);
+  --wrt-dropdown-shadow: var(--shadow-ambient-20);
+  --wrt-dropdown-radius: var(--radius-sm);
+  --wrt-dropdown-padding-y: .25rem;
+  --wrt-dropdown-padding-x: 0;
+  --wrt-dropdown-min-width: 160px;
+  --wrt-dropdown-max-height: 300px;
+  --wrt-dropdown-offset-y: .25rem;  /* menu 與觸發元素的垂直間距 */
+  --wrt-dropdown-offset-x: 0;       /* menu 與觸發元素的水平間距 */
+  --wrt-dropdown-arrow-color: var(--brand-primary);
+
+  /* items */
+  --wrt-dropdown-item-bg: transparent;
+  --wrt-dropdown-item-color: var(--text-primary);
+  --wrt-dropdown-item-hover-bg: var(--surface-hover);
+  --wrt-dropdown-item-hover-color: var(--text-primary);
+  --wrt-dropdown-item-active-bg: var(--surface-active);
+  --wrt-dropdown-item-active-color: var(--text-primary);
+  --wrt-dropdown-item-selected-bg: var(--primary-20);
+  --wrt-dropdown-item-selected-color: var(--brand-primary);
+  --wrt-dropdown-item-disabled-color: var(--neutral-60);
+  --wrt-dropdown-item-padding-y: .375rem;
+  --wrt-dropdown-item-padding-x: .75rem;
+  --wrt-dropdown-item-gap-x: .5rem;    /* icon/checkbox 與文字的水平距離 */
+  --wrt-dropdown-item-gap-y: .25rem;   /* 多行項目時的垂直距離 */
+  --wrt-dropdown-item-icon-normal-color : var(--icon-active);
+  --wrt-dropdown-item-icon-active-color: var(--icon-primary);
+  --wrt-dropdown-item-icon-size: 1rem;
+  --wrt-dropdown-item-check-size: .875rem;
+  --wrt-dropdown-item-check-color: var(--brand-primary);
+  /* headers / group labels */
+  --wrt-dropdown-header-color: var(--text-secondary);
+  --wrt-dropdown-header-padding-y: .25rem;
+  --wrt-dropdown-header-padding-x: .75rem;
+
+  /* utilities */
+  --wrt-dropdown-divider-color: var(--wrt-divider-color);
+  --wrt-dropdown-divider-thickness: 1px;
+  --wrt-dropdown-divider-inset-x: 0;
+  --wrt-dropdown-section-gap-y: .25rem;
+  --wrt-dropdown-z-index: 1000;
+  --wrt-dropdown-caret-color: var(--icon-default);
+  --wrt-dropdown-caret-hover-color: var(--icon-hover);
+  --wrt-dropdown-focus-ring: rgba(var(--focus-ring-rgb), .35);
+  --wrt-dropdown-focus-border: var(--focus-ring);
+
+
+  /* icon/utility aliases used across project */
+  --wrt-icon-active-color:var(--brand-primary);
+  --wrt-icon-default-color: var(--icon-default);
+  --wrt-icon-primary-color: var(--brand-primary);
+  --wrt-text-primary: var(--wrt-text-color);
+  --wrt-text-secondary: var(--text-secondary);
+  --wrt-text-hyperlink-default-color: var(--wrt-link-color);
+  --wrt-brand-primary: var(--brand-primary);
+  --wrt-tab-nav-text-normal-color: var(--wrt-nav-tabs-link-color);
+  --wrt-tab-nav-text-active-color: var(--wrt-nav-tabs-link-active-color);
+  --wrt-tab-nav-border-color: var(--wrt-nav-tabs-border-color);
+  --wrt-input-text-color: var(--wrt-input-color);
+  /* gradients and scrollbar compat */
+  --gradient-accent-start-bg: var(--brand-primary);
+  --gradient-accent-end-bg: var(--brand-primary);
+  --scrollbar-track-bg: var(--wrt-scrollbar-track-hover-color);
+  /* Aura gradient border (reusable) */
+  --gradient-accent-start: var(--brand-primary);
+  --gradient-accent-end: var(--brand-primary);
+  --wrt-aura-border-width: 1px;
+  --wrt-aura-border-radius: var(--radius-sm);
+  --wrt-aura-anim-duration: 6s;
+  --wrt-aura-shadow-color: rgba(var(--brand-primary-rgb), .18);
+  --wrt-aura-shadow-strong: rgba(var(--brand-primary-rgb), .35);
+
+  /* ==================== List Group (align MDB semantics) ==================== */
+  /* base */
+  --wrt-list-group-color: var(--text-primary);
+  --wrt-list-group-bg: transparent;
+  --wrt-list-group-border-color: var(--border-subtle);
+  --wrt-list-group-border-width: 1px;
+  --wrt-list-group-border-radius: var(--radius-sm);
+  --wrt-list-group-item-padding-x: 1.5rem;
+  --wrt-list-group-item-padding-y: .5rem;
+  --wrt-list-group-item-transition-time: .5s;
+  /* actions */
+  --wrt-list-group-action-color: var(--text-secondary);
+  --wrt-list-group-action-hover-color: var(--text-primary);
+  --wrt-list-group-action-hover-bg: var(--surface-hover);
+  --wrt-list-group-action-active-color: var(--text-primary);
+  --wrt-list-group-action-active-bg: var(--surface-active);
+  /* disabled */
+  --wrt-list-group-disabled-color: var(--neutral-70);
+  --wrt-list-group-disabled-bg: var(--wrt-list-group-bg);
+  /* active */
+  --wrt-list-group-active-color: var(--text-primary);
+  --wrt-list-group-active-bg: var(--surface-active);
+  --wrt-list-group-active-border-color: var(--wrt-list-group-active-bg);
+  /* adjustments */
+  --wrt-list-group-item-active-margin-top: 0;
+  /* light variant */
+  --wrt-list-group-light-item-py: 1rem;
+  --wrt-list-group-light-item-border: 1px solid var(--border-subtle);
+  --wrt-list-group-light-item-border-width: 1px;
+  --wrt-list-group-light-active-border-radius: var(--radius-sm);
+  --wrt-list-group-light-active-bg: var(--primary-20);
+  --wrt-list-group-light-active-color: var(--brand-primary);
+  /* small variant */
+  --wrt-list-group-small-item-py: .5rem;
+  /* horizontal variant (MDB parity) */
+  --wrt-list-group-horizontal-gap: 1rem;
+  --wrt-list-group-horizontal-item-margin-x: .5rem;
+  --wrt-list-group-horizontal-item-margin-y: 0;
+  --wrt-list-group-horizontal-item-border-width: 1px;
+  --wrt-list-group-horizontal-item-separator-color: var(--border-subtle);
+  --wrt-list-group-horizontal-border-radius: var(--radius-sm);
+  --wrt-list-group-horizontal-item-radius-first: var(--radius-sm);
+  --wrt-list-group-horizontal-item-radius-last: var(--radius-sm);
+  /* breakpoint gaps (override when needed) */
+  --wrt-list-group-horizontal-sm-gap: var(--wrt-list-group-horizontal-gap);
+  --wrt-list-group-horizontal-md-gap: var(--wrt-list-group-horizontal-gap);
+  --wrt-list-group-horizontal-lg-gap: var(--wrt-list-group-horizontal-gap);
+  --wrt-list-group-horizontal-xl-gap: var(--wrt-list-group-horizontal-gap);
+  --wrt-list-group-horizontal-xxl-gap: var(--wrt-list-group-horizontal-gap);
+
+  /* ==================== Tabs (align MDB semantics) ==================== */
+  /* .nav (common) */
+  --wrt-nav-link-disabled-color: var(--text-secondary);
+  /* .nav-tabs container */
+  --wrt-nav-tabs-border-width: 1px;
+  --wrt-nav-tabs-border-color: var(--border-subtle);
+  --wrt-nav-tabs-border-radius: var(--radius-sm);
+  --wrt-nav-tabs-link-hover-border-color: var(--border-subtle);
+  --wrt-nav-tabs-link-active-bg: var(--surface-panel);
+  /* .nav-tabs .nav-link */
+  --wrt-nav-tabs-link-font-weight: 500;
+  --wrt-nav-tabs-link-font-size: var(--font-size-12);
+  --wrt-nav-tabs-link-color: var(--text-secondary);
+  --wrt-nav-tabs-link-padding-top: 17px;
+  --wrt-nav-tabs-link-padding-bottom: 16px;
+  --wrt-nav-tabs-link-padding-x: 29px;
+  --wrt-nav-tabs-link-hover-bg: var(--surface-hover);
+  --wrt-nav-tabs-link-border-bottom-width: 2px;
+  --wrt-nav-tabs-link-active-color: var(--brand-primary);
+  --wrt-nav-tabs-link-active-border-color: var(--brand-primary);
+  --wrt-nav-tabs-link-active-icon-color: var(--icon-active);
+  --wrt-nav-tabs-link-icon-color: var(--icon-default);
+
+  /* ==================== Tables ==================== */
+  /* base */
+  --wrt-table-bg: var(--surface-card);
+  --wrt-table-color: var(--text-primary);
+  --wrt-table-border-color: var(--border-subtle);
+  --wrt-table-border-width: 1px;
+  --wrt-table-radius: var(--radius-sm);
+  --wrt-table-shadow: var(--shadow-ambient-10);
+  /* header */
+  --wrt-table-header-bg: var(--surface-banner);
+  --wrt-table-header-color: var(--text-primary);
+  --wrt-table-header-border-color: var(--border-subtle);
+  /* rows */
+  --wrt-table-row-border-color: var(--border-subtle);
+  --wrt-table-row-hover-bg: var(--surface-hover);
+  --wrt-table-row-active-bg: var(--surface-active);
+  --wrt-table-row-selected-bg: rgba(var(--surface-invert-rgb),0.05);
+  --wrt-table-row-selected-color: var(--text-primary);
+  /* striped variant */
+  --wrt-table-striped-bg: var(--surface-subtle, var(--surface-hover));
+  --wrt-table-striped-color: var(--text-primary);
+  /* cells */
+  --wrt-table-cell-padding-y: .5rem;
+  --wrt-table-cell-padding-x: 1rem;
+  --wrt-table-cell-vertical-align: middle;
+  /* density */
+  --wrt-table-cell-padding-y-dense: .375rem;
+  --wrt-table-cell-padding-x-dense: .75rem;
+  /* utilities */
+  --wrt-table-caption-color: var(--text-secondary);
+  --wrt-table-link-color: var(--link-color);
+  --wrt-table-link-hover-color: var(--link-hover-color);
+  --wrt-table-sort-icon-color: var(--icon-active);
+  --wrt-table-sticky-header-shadow: var(--shadow-ambient-20);
+
+  /* ==================== Divider (Global separators) ==================== */
+  --wrt-divider-color: var(--border-default);
+  --wrt-divider-strong-color: rgba(var(--border-strong-rgb),0.8);
+  --wrt-divider-invert-color: rgba(var(--border-invert-rgb),0.8);
+  --wrt-divider-opacity: 1;
+  --wrt-divider-thickness: 1px;
+  --wrt-divider-strong-thickness: 2px;
+  --wrt-divider-inset: 1rem; /* for inset-start/end */
+  --wrt-divider-gap-x: var(--wrt-gutter-md);
+  --wrt-divider-gap-y: var(--wrt-gutter-md);
+
+  /* ==================== Scrollbar ==================== */
+  --wrt-scrollbar-width: 5px;
+  --wrt-scrollbar-height: 5px;
+  --wrt-scrollbar-thumb-color: rgba(var(--surface-invert-rgb),0.5);
+  --wrt-scrollbar-thumb-hover-color: var(--gradient-color-primary);
+  --wrt-scrollbar-track-hover-color: rgba(var(--surface-invert-rgb),0.3);
+  --wrt-scrollbar-radius: 20px;
+
+  /* ==================== Badges (alias to core badge tokens) ==================== */
+  /* metrics */
+  --wrt-badge-radius: 50px;
+  --wrt-badge-font-size: var(--font-size-9);
+  --wrt-badge-padding-y: .125rem;
+  --wrt-badge-padding-x: .5rem;
+
+  /* primary */
+  --wrt-badge-primary-bg: var(--badge-primary-container-bg);
+  --wrt-badge-primary-color: var(--badge-primary-container-text);
+  --wrt-badge-primary-border: var(--badge-primary-container-border);
+  --wrt-badge-primary-container-bg: var(--badge-primary-container-bg);
+  --wrt-badge-primary-container-color: var(--badge-primary-container-text);
+  --wrt-badge-primary-container-border: var(--badge-primary-container-border);
+  --wrt-badge-primary-outline-bg: var(--badge-primary-outline-bg);
+  --wrt-badge-primary-outline-color: var(--badge-primary-outline-text);
+  --wrt-badge-primary-outline-border: var(--badge-primary-outline-border);
+
+  /* neutral */
+  --wrt-badge-neutral-bg: var(--badge-neutral-container-bg);
+  --wrt-badge-neutral-color: var(--badge-neutral-container-text);
+  --wrt-badge-neutral-border: var(--badge-neutral-container-border);
+  --wrt-badge-neutral-outline-bg: var(--badge-neutral-outline-bg);
+  --wrt-badge-neutral-outline-color: var(--badge-neutral-outline-text);
+  --wrt-badge-neutral-outline-border: var(--badge-neutral-outline-border);
+  /* neutral container aliases (for wrt-badge default/container fallback) */
+  --wrt-badge-neutral-container-bg: var(--wrt-badge-neutral-bg);
+  --wrt-badge-neutral-container-color: var(--badge-neutral-container-text);
+  --wrt-badge-neutral-container-border: var(--wrt-badge-neutral-border);
+
+  /* success (maps to message: positive-strong) */
+  --wrt-badge-success-bg: var(--badge-success-container-bg);
+  --wrt-badge-success-color: var(--badge-success-container-text);
+  --wrt-badge-success-border: var(--badge-success-container-border);
+  --wrt-badge-success-container-bg: var(--badge-success-container-bg);
+  --wrt-badge-success-container-color: var(--badge-success-container-text);
+  --wrt-badge-success-container-border: var(--badge-success-container-border);
+  --wrt-badge-success-outline-bg: var(--badge-success-outline-bg);
+  --wrt-badge-success-outline-color: var(--badge-success-outline-text);
+  --wrt-badge-success-outline-border: var(--badge-success-outline-border);
+
+  /* warning (maps to message: negative) */
+  --wrt-badge-warning-bg: var(--badge-warning-container-bg);
+  --wrt-badge-warning-color: var(--badge-warning-container-text);
+  --wrt-badge-warning-border: var(--badge-warning-container-border);
+  --wrt-badge-warning-container-bg: var(--badge-warning-container-bg);
+  --wrt-badge-warning-container-color: var(--badge-warning-container-text);
+  --wrt-badge-warning-container-border: var(--badge-warning-container-border);
+  --wrt-badge-warning-outline-bg: var(--badge-warning-outline-bg);
+  --wrt-badge-warning-outline-color: var(--badge-warning-outline-text);
+  --wrt-badge-warning-outline-border: var(--badge-warning-outline-border);
+
+  /* error (maps to message: negative-strong) */
+  --wrt-badge-error-bg: var(--badge-error-container-bg);
+  --wrt-badge-error-color: var(--badge-error-container-text);
+  --wrt-badge-error-border: var(--badge-error-container-border);
+  --wrt-badge-error-container-bg: var(--badge-error-container-bg);
+  --wrt-badge-error-container-color: var(--badge-error-container-text);
+  --wrt-badge-error-container-border: var(--badge-error-container-border);
+  --wrt-badge-error-outline-bg: var(--badge-error-outline-bg);
+  --wrt-badge-error-outline-color: var(--badge-error-outline-text);
+  --wrt-badge-error-outline-border: var(--badge-error-outline-border);
+
+  /* info (maps to message: important) */
+  --wrt-badge-info-bg: var(--badge-info-container-bg);
+  --wrt-badge-info-color: var(--badge-info-container-text);
+  --wrt-badge-info-border: var(--badge-info-container-border);
+  --wrt-badge-info-container-bg: var(--badge-info-container-bg);
+  --wrt-badge-info-container-color: var(--badge-info-container-text);
+  --wrt-badge-info-container-border: var(--badge-info-container-border);
+  --wrt-badge-info-outline-bg: var(--badge-info-outline-bg);
+  --wrt-badge-info-outline-color: var(--badge-info-outline-text);
+  --wrt-badge-info-outline-border: var(--badge-info-outline-border);
+
+  /* ==================== Badge component (pure WRT, no Bootstrap dependency) ==================== */
+  /* Base */
+  .wrt-badge {
+    border-radius: var(--wrt-badge-radius);
+    font-size: var(--wrt-badge-font-size);
+    padding: var(--wrt-badge-padding-y) var(--wrt-badge-padding-x);
+    border: 1px solid var(--_border, var(--wrt-badge-neutral-container-border));
+    background-color: var(--_bg, var(--wrt-badge-neutral-container-bg));
+    color: var(--_color, var(--wrt-badge-neutral-container-color));
+    line-height: 1;
+    display: inline-block;
+    vertical-align: baseline;
+  }
+
+  /* Variants select from active tone set */
+  .wrt-badge[data-variant="solid"] {
+    --_bg: var(--bg-solid);
+    --_color: var(--color-solid);
+    --_border: var(--border-solid, transparent);
+  }
+  .wrt-badge[data-variant="container"] {
+    --_bg: var(--bg-container);
+    --_color: var(--color-container);
+    --_border: var(--border-container);
+  }
+  .wrt-badge[data-variant="outline"] {
+    --_bg: transparent;
+    --_color: var(--color-outline);
+    --_border: var(--border-outline);
+  }
+
+  /* ==================== Typography - Reference Styles (MDB-aligned) ==================== */
+  /* Headings (.wrt-h1 ~ .wrt-h6) */
+  .wrt-h1, .wrt-h2, .wrt-h3, .wrt-h4, .wrt-h5, .wrt-h6 {
+    font-family: var(--wrt-heading-font-family);
+    font-weight: var(--wrt-heading-font-weight);
+    line-height: var(--wrt-heading-line-height);
+    margin-top: var(--wrt-heading-margin-top);
+    margin-bottom: var(--wrt-heading-margin-bottom);
+    color: var(--wrt-text-color);
+  }
+  .wrt-h1 { font-size: var(--wrt-h1-font-size); }
+  .wrt-h2 { font-size: var(--wrt-h2-font-size); }
+  .wrt-h3 { font-size: var(--wrt-h3-font-size); }
+  .wrt-h4 { font-size: var(--wrt-h4-font-size); }
+  .wrt-h5 { font-size: var(--wrt-h5-font-size); }
+  .wrt-h6 { font-size: var(--wrt-h6-font-size); }
+
+  /* Display headings (.wrt-display-1 ~ .wrt-display-6) */
+  .wrt-display-1 { font-size: var(--font-size-36); font-weight: 300; line-height: 1.2; }
+  .wrt-display-2 { font-size: var(--font-size-30); font-weight: 300; line-height: 1.2; }
+  .wrt-display-3 { font-size: var(--font-size-24); font-weight: 300; line-height: 1.2; }
+  .wrt-display-4 { font-size: var(--font-size-20); font-weight: 300; line-height: 1.2; }
+  .wrt-display-5 { font-size: var(--font-size-18); font-weight: 300; line-height: 1.2; }
+  .wrt-display-6 { font-size: var(--font-size-16); font-weight: 300; line-height: 1.2; }
+
+  /* Lead paragraph */
+  .wrt-lead {
+    font-size: var(--wrt-lead-font-size);
+    font-weight: var(--wrt-lead-font-weight);
+    color: var(--wrt-text-color);
+  }
+
+  /* Inline text helpers */
+  .wrt-small { font-size: var(--wrt-small-font-size); }
+  .wrt-mark {
+    background-color: var(--wrt-mark-bg);
+    color: var(--wrt-mark-color);
+    padding: .125em .25em;
+    border-radius: .125rem;
+  }
+  .wrt-text-muted { color: var(--wrt-text-muted-color) !important; }
+  .wrt-text-primary { color: var(--brand-primary) !important; }
+  .wrt-text-secondary { color: var(--text-secondary) !important; }
+  .wrt-text-success { color: var(--status-msg-positive-strong) !important; }
+  .wrt-text-warning { color: var(--status-msg-negative) !important; }
+  .wrt-text-danger { color: var(--status-msg-negative-strong) !important; }
+  .wrt-text-info { color: var(--status-msg-important) !important; }
+  .wrt-text-invert { color: var(--text-invert) !important; }
+
+  /* Links */
+  .wrt-link {
+    color: var(--wrt-link-color);
+    text-decoration: underline;
+    text-underline-offset: .12em;
+  }
+  .wrt-link:hover { color: var(--wrt-link-hover-color); }
+
+  /* Text alignment and transform utilities */
+  .wrt-text-start { text-align: left !important; }
+  .wrt-text-center { text-align: center !important; }
+  .wrt-text-end { text-align: right !important; }
+  .wrt-text-lowercase { text-transform: lowercase !important; }
+  .wrt-text-uppercase { text-transform: uppercase !important; }
+  .wrt-text-capitalize { text-transform: capitalize !important; }
+  .wrt-text-nowrap { white-space: nowrap !important; }
+  .wrt-text-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Lists */
+  .wrt-list-unstyled {
+    padding-left: 0;
+    list-style: none;
+    margin: 0;
+  }
+  .wrt-list-inline { padding-left: 0; list-style: none; margin: 0; }
+  .wrt-list-inline > .wrt-list-inline-item { display: inline-block; }
+  .wrt-list-inline > .wrt-list-inline-item + .wrt-list-inline-item { margin-left: .5rem; }
+
+  /* Blockquote */
+  .wrt-blockquote {
+    font-size: var(--wrt-blockquote-font-size);
+    border-left: 4px solid var(--wrt-blockquote-border-color);
+    margin: 0 0 1rem 0;
+    padding: .5rem 1rem;
+    color: var(--wrt-text-color);
+  }
+  .wrt-blockquote-footer {
+    display: block;
+    font-size: var(--wrt-small-font-size);
+    color: var(--wrt-text-muted-color);
+    margin-top: .25rem;
+  }
+
+  /* ==================== Dropdown component (pure WRT, MDB-aligned) ==================== */
+  .wrt-dropdown-menu {
+    background-color: var(--wrt-dropdown-bg);
+    color: var(--wrt-dropdown-color);
+    border: 1px solid var(--wrt-dropdown-border);
+    box-shadow: var(--wrt-dropdown-shadow);
+    border-radius: var(--wrt-dropdown-radius);
+    padding: var(--wrt-dropdown-padding-y) var(--wrt-dropdown-padding-x);
+    z-index: var(--wrt-dropdown-z-index);
+  }
+  .wrt-dropdown-item {
+    background: var(--wrt-dropdown-item-bg);
+    color: var(--wrt-dropdown-item-color);
+    padding: var(--wrt-dropdown-item-padding-y) var(--wrt-dropdown-item-padding-x);
+    display: block;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .wrt-dropdown-item:hover {
+    background: var(--wrt-dropdown-item-hover-bg);
+    color: var(--wrt-dropdown-item-hover-color);
+  }
+  .wrt-dropdown-item[aria-selected="true"],
+  .wrt-dropdown-item.selected {
+    background: var(--wrt-dropdown-item-selected-bg);
+    color: var(--wrt-dropdown-item-selected-color);
+  }
+  .wrt-dropdown-item[aria-disabled="true"],
+  .wrt-dropdown-item.disabled {
+    color: var(--wrt-dropdown-item-disabled-color);
+    pointer-events: none;
+  }
+  .wrt-dropdown-divider {
+    height: 1px;
+    margin: .25rem 0;
+    background: var(--wrt-dropdown-divider-color);
+  }
+
+  /* ==================== Checkbox / Radio components (pure WRT, MDB-aligned) ==================== */
+  /* Structure: <div class="wrt-form-check"> <input class="wrt-form-check-input" type="checkbox|radio" id="x"> <label class="wrt-form-check-label" for="x">...</label> */
+  .wrt-form-check {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--wrt-checkbox-gap-x);
+  }
+  .wrt-form-check-input {
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    display: inline-block;
+    width: var(--wrt-checkbox-size);
+    height: var(--wrt-checkbox-size);
+    background: var(--wrt-checkbox-bg);
+    border: 1px solid var(--wrt-checkbox-border);
+    border-radius: var(--wrt-checkbox-radius);
+    vertical-align: middle;
+    cursor: pointer;
+    outline: 0;
+    transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .05s ease;
+  }
+  /* Checkbox check icon */
+  .wrt-form-check-input[type="checkbox"]::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--wrt-checkbox-checkmark-color);
+    -webkit-mask-image: var(--wrt-checkbox-check-icon);
+            mask-image: var(--wrt-checkbox-check-icon);
+    -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+            mask-position: center;
+    opacity: 0;
+    transform: scale(.9);
+    transition: opacity .15s ease, transform .15s ease;
+  }
+  /* Checkbox states */
+  .wrt-form-check-input[type="checkbox"]:hover {
+    background: var(--wrt-checkbox-hover-bg);
+  }
+  .wrt-form-check-input[type="checkbox"]:active {
+    background: var(--wrt-checkbox-active-bg);
+  }
+  .wrt-form-check-input[type="checkbox"]:checked {
+    background: var(--wrt-checkbox-checked-bg);
+    border-color: var(--wrt-checkbox-checked-border);
+  }
+  .wrt-form-check-input[type="checkbox"]:checked::after {
+    opacity: 1;
+    transform: scale(1);
+  }
+  /* indeterminate */
+  .wrt-form-check-input[type="checkbox"]:indeterminate {
+    background: var(--wrt-checkbox-indeterminate-bg);
+    border-color: var(--wrt-checkbox-checked-border);
+  }
+  .wrt-form-check-input[type="checkbox"]:indeterminate::after {
+    background-color: var(--wrt-checkbox-checkmark-color);
+    -webkit-mask-image: var(--wrt-checkbox-indeterminate-icon);
+            mask-image: var(--wrt-checkbox-indeterminate-icon);
+    opacity: 1;
+    transform: none;
+  }
+  /* focus and disabled */
+  .wrt-form-check-input:focus-visible {
+    box-shadow: 0 0 0 3px var(--wrt-checkbox-focus-ring);
+    border-color: var(--wrt-checkbox-focus-border);
+  }
+  .wrt-form-check-input:disabled {
+    background: var(--wrt-checkbox-disabled-bg);
+    border-color: var(--wrt-checkbox-disabled-border);
+    cursor: not-allowed;
+  }
+  .wrt-form-check-input:disabled::after {
+    background-color: var(--wrt-checkbox-disabled-checkmark-color);
+  }
+  .wrt-form-check-label {
+    color: var(--wrt-checkbox-label-color);
+    cursor: pointer;
+  }
+  .wrt-form-check-input:disabled + .wrt-form-check-label {
+    color: var(--wrt-checkbox-label-disabled-color);
+    cursor: default;
+  }
+
+  /* Radio */
+  .wrt-form-check-input[type="radio"] {
+    width: var(--wrt-radio-size);
+    height: var(--wrt-radio-size);
+    background: var(--wrt-radio-bg);
+    border: 1px solid var(--wrt-radio-border);
+    border-radius: 50%;
+  }
+  .wrt-form-check-input[type="radio"]::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: var(--wrt-radio-dot-size);
+    height: var(--wrt-radio-dot-size);
+    background: var(--wrt-radio-dot-color);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform .15s ease;
+  }
+  .wrt-form-check-input[type="radio"]:hover {
+    background: var(--wrt-radio-hover-bg);
+  }
+  .wrt-form-check-input[type="radio"]:active {
+    background: var(--wrt-radio-active-bg);
+  }
+  .wrt-form-check-input[type="radio"]:checked {
+    background: var(--wrt-radio-checked-bg);
+    border-color: var(--wrt-radio-checked-border);
+  }
+  .wrt-form-check-input[type="radio"]:checked::after {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .wrt-form-check-input[type="radio"]:focus-visible {
+    box-shadow: 0 0 0 3px var(--wrt-radio-focus-ring);
+    border-color: var(--wrt-radio-focus-border);
+  }
+  .wrt-form-check-input[type="radio"]:disabled {
+    background: var(--wrt-radio-disabled-bg);
+    border-color: var(--wrt-radio-disabled-border);
+    cursor: not-allowed;
+  }
+  .wrt-form-check-input[type="radio"]:disabled::after {
+    background: var(--wrt-radio-disabled-dot-color);
+  }
+  .wrt-form-check-input[type="radio"]:disabled + .wrt-form-check-label {
+    color: var(--wrt-radio-label-disabled-color);
+    cursor: default;
+  }
+
+
+  /* Tones map to alias tokens */
+  .wrt-badge[data-tone="neutral"] {
+    --bg-solid: var(--wrt-badge-neutral-bg);
+    --color-solid: var(--wrt-badge-neutral-color);
+    --border-solid: var(--wrt-badge-neutral-border);
+    --bg-container: var(--wrt-badge-neutral-container-bg);
+    --color-container: var(--wrt-badge-neutral-container-color);
+    --border-container: var(--wrt-badge-neutral-container-border);
+    --color-outline: var(--wrt-badge-neutral-outline-color);
+    --border-outline: var(--wrt-badge-neutral-outline-border);
+  }
+  .wrt-badge[data-tone="primary"] {
+    --bg-solid: var(--wrt-badge-primary-bg);
+    --color-solid: var(--wrt-badge-primary-color);
+    --border-solid: var(--wrt-badge-primary-border);
+    --bg-container: var(--wrt-badge-primary-container-bg);
+    --color-container: var(--wrt-badge-primary-container-color);
+    --border-container: var(--wrt-badge-primary-container-border);
+    --color-outline: var(--wrt-badge-primary-outline-color);
+    --border-outline: var(--wrt-badge-primary-outline-border);
+  }
+  .wrt-badge[data-tone="success"] {
+    --bg-solid: var(--wrt-badge-success-bg);
+    --color-solid: var(--wrt-badge-success-color);
+    --border-solid: var(--wrt-badge-success-border);
+    --bg-container: var(--wrt-badge-success-container-bg);
+    --color-container: var(--wrt-badge-success-container-color);
+    --border-container: var(--wrt-badge-success-container-border);
+    --color-outline: var(--wrt-badge-success-outline-color);
+    --border-outline: var(--wrt-badge-success-outline-border);
+  }
+  .wrt-badge[data-tone="info"] {
+    --bg-solid: var(--wrt-badge-info-bg);
+    --color-solid: var(--wrt-badge-info-color);
+    --border-solid: var(--wrt-badge-info-border);
+    --bg-container: var(--wrt-badge-info-container-bg);
+    --color-container: var(--wrt-badge-info-container-color);
+    --border-container: var(--wrt-badge-info-container-border);
+    --color-outline: var(--wrt-badge-info-outline-color);
+    --border-outline: var(--wrt-badge-info-outline-border);
+  }
+  .wrt-badge[data-tone="warning"] {
+    --bg-solid: var(--wrt-badge-warning-bg);
+    --color-solid: var(--wrt-badge-warning-color);
+    --border-solid: var(--wrt-badge-warning-border);
+    --bg-container: var(--wrt-badge-warning-container-bg);
+    --color-container: var(--wrt-badge-warning-container-color);
+    --border-container: var(--wrt-badge-warning-container-border);
+    --color-outline: var(--wrt-badge-warning-outline-color);
+    --border-outline: var(--wrt-badge-warning-outline-border);
+  }
+  .wrt-badge[data-tone="error"] {
+    --bg-solid: var(--wrt-badge-error-bg);
+    --color-solid: var(--wrt-badge-error-color);
+    --border-solid: var(--wrt-badge-error-border);
+    --bg-container: var(--wrt-badge-error-container-bg);
+    --color-container: var(--wrt-badge-error-container-color);
+    --border-container: var(--wrt-badge-error-container-border);
+    --color-outline: var(--wrt-badge-error-outline-color);
+    --border-outline: var(--wrt-badge-error-outline-border);
+  }
+
+  /* ==================== Aura Border Utility ==================== */
+  @property --wrt-aura-angle-rot {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 135deg;
+  }
+  @keyframes wrtAuraBorderAngleRot{
+    to { --wrt-aura-angle-rot: 495deg; }
+  }
+  .wrt-aura-border {
+    position: relative;
+    isolation: isolate;
+    border: 1px solid transparent;
+    border-radius: var(--wrt-aura-border-radius);
+    box-shadow: 0 1px 4px var(--wrt-aura-shadow-color), 0 0 8px var(--wrt-aura-shadow-strong);
+    background: var(--wrt-badge-neutral-bg);
+  }
+  .wrt-aura-border::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: var(--wrt-aura-border-width);
+    background: conic-gradient(
+      from var(--wrt-aura-angle-rot),
+      var(--gradient-accent-start) 0turn,
+      var(--gradient-accent-end) .5turn,
+      var(--gradient-accent-start) 1turn
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask-composite: exclude;
+    background-clip: padding-box;
+    pointer-events: none;
+    z-index: 0;
+    animation: wrtAuraBorderAngleRot var(--wrt-aura-anim-duration) linear infinite;
+  }
+
+  /* ==================== QoE Radar Chart (CSS variables) ==================== */
+  /* dataset 1 defaults */
+  --qoe-radar-border-color: rgba(144, 144, 144, 0.4);
+  --qoe-radar-background-color: rgba(255, 255, 255, 0.4);
+  --qoe-radar-border-width: 1;
+  --qoe-radar-point-background-color:  rgba(144, 144, 144, 0.4);
+  --qoe-radar-point-border-color:  rgba(144, 144, 144, 0.4);
+  /* dataset 2 defaults */
+  --qoe-radar-layer2-border-color: #ffffff;
+  --qoe-radar-layer2-background-color: rgba(255, 255, 255, 0.15);
+  --qoe-radar-layer2-border-width: 2;
+  --qoe-radar-layer2-point-background-color: #fff;
+  --qoe-radar-layer2-point-border-color: #fff;
+  /* dataset 3 defaults */
+  --qoe-radar-layer3-border-color: #ffffff;
+  --qoe-radar-layer3-border-width: 2;
+  --qoe-radar-layer3-point-background-color: #fff;
+  --qoe-radar-layer3-point-border-color: #f5f5f5;
+  --qoe-radar-layer3-point-border-width: 1;
+  --qoe-radar-layer3-point-radius: 3;
+  --qoe-radar-layer3-point-hover-radius: 5;
+}
+
+
+/* Dark 模式如需差異，可在此微調；多數會自動跟隨 Core Tokens 無需重定義 */
+[data-asuswrt-color="dark"] {
+  --wrt-btn-primary-focus-ring: rgba(var(--focus-ring-rgb), .45);
+  --wrt-input-focus-ring: rgba(var(--focus-ring-rgb), .45);
+}
+
+/* Theme overrides: ProArt 專用按鈕配色（使用 color-table.css: --gradient-color-to-botton） */
+[data-asuswrt-theme="proart"] {
+  /* 僅覆寫背景（正常/hover/active），其他語意維持 Core/Alias 預設，避免相容性風險 */
+  --wrt-btn-primary-bg: var(--gradient-color-to-botton);
+  --wrt-btn-primary-hover-bg: var(--gradient-color-to-botton);
+  --wrt-btn-primary-active-bg: var(--gradient-color-to-botton);
+}
+

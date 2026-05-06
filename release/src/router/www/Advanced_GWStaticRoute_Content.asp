@@ -338,11 +338,11 @@ function Ctrl_LANIPList(obj){
 			  	</tr>
 			</thead>			
 				<tr>
-					<th><a href="javascript:void(0);" onClick="openHint(6,1);"><div class="table_text"><#RouterConfig_GWStaticIP_itemname#></div></a></th>
-					<th><a href="javascript:void(0);" onClick="openHint(6,2);"><div class="table_text"><#RouterConfig_GWStaticMask_itemname#></div></a></th>
-					<th><a href="javascript:void(0);" onClick="openHint(6,3);"><div class="table_text"><#RouterConfig_GWStaticGW_itemname#></div></a></th>
-					<th><a href="javascript:void(0);" onClick="openHint(6,4);"><div class="table_text"><#RouterConfig_GWStaticMT_itemname#></div></a></th>
-					<th><a href="javascript:void(0);" onClick="openHint(6,5);"><div class="table_text"><#wan_interface#></div></a></th>
+					<th><a href="javascript:void(0);" class="hintstyle" onClick="openHint(6,1);"><div><#RouterConfig_GWStaticIP_itemname#></div></a></th>
+					<th><a href="javascript:void(0);" class="hintstyle" onClick="openHint(6,2);"><div><#RouterConfig_GWStaticMask_itemname#></div></a></th>
+					<th><a href="javascript:void(0);" class="hintstyle" onClick="openHint(6,3);"><div><#RouterConfig_GWStaticGW_itemname#></div></a></th>
+					<th><a href="javascript:void(0);" class="hintstyle" onClick="openHint(6,4);"><div><#RouterConfig_GWStaticMT_itemname#></div></a></th>
+					<th><a href="javascript:void(0);" class="hintstyle" onClick="openHint(6,5);"><div><#wan_interface#></div></a></th>
 					<th><#list_add_delete#></th>					
 			    </tr>
 			  

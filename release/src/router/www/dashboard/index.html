@@ -39,12 +39,15 @@
         <script src="./popup.js"></script>
 
         <link rel="stylesheet" href="./css/bootstrap.min.css" />
+        <link rel="stylesheet" href="./css/wrt-ui-alias-tokens.css" />
         <link rel="stylesheet" href="./css/bootstrap-customize.css" />
         <link rel="stylesheet" href="./css/architecture.css" />
     </head>
     <script>
         postMessageToApp({ web_ready: "1" });
 
+        var pathSegments = location.pathname.split("/").filter(Boolean);
+        var rootPath = (pathSegments[0].length == 32) ? `/${pathSegments[0]}` : "";
         const checkAuthInterval = setInterval(function () {
             if(isSupport(`demoui`)) return false;
             let loadingFlag = false;
@@ -61,7 +64,9 @@
             if (loadingFlag) {
                 clearInterval(checkAuthInterval);
             } else {
-                fetch("/check_Auth.cgi", {method: 'POST'})
+                var targetDevice = (/^aae-sgrst001-\w+\.asuscomm\.com$/.test(window.location.hostname)) ? `${location.origin}/${location.pathname.split("/")[1]}` : ``;
+
+                fetch(`${targetDevice}/check_Auth.cgi`, {method: 'POST'})
                     .then(response => response.json())
                     .catch(e => {
                         window.location.href = '/';
@@ -94,13 +99,24 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
-
-
             let urlParameter = new URLSearchParams(window.location.search);
-            let page = urlParameter.get("page");
+
+            function sanitizeParam(value) {
+                if (!value || typeof value !== 'string') return null;
+                return value.replace(/[<>\"'&]/g, '').trim();
+            }
+
+            function validatePageParam(page) {
+                if (!page) return null;
+                return /^[a-zA-Z0-9_-]+$/.test(page) ? page : null;
+            }
+
+            let page = sanitizeParam(urlParameter.get("page"));
+            page = validatePageParam(page);
+
             let param = [];
             if (page === "aiprotection") {
-                let view = urlParameter.get("view");
+                let view = sanitizeParam(urlParameter.get("view"));
                 const validViews = ["ark_mals", "ark_adblock", "ark_tracker", "dpi_mals", "dpi_vp", "dpi_cc"];
                 if (view && validViews.includes(view)) {
                     param.push(`page=${page}`);
@@ -117,11 +133,15 @@
             }
 
             if(!page){
-                page = window.localStorage.getItem("page") || "dashboard";
+                let storedPage = window.localStorage.getItem("page");
+                storedPage = sanitizeParam(storedPage);
+                storedPage = validatePageParam(storedPage);
+                page = storedPage || "dashboard";
             }
 
             const foundItem = menuList.find(item => item.url === page);
             if(!foundItem) {
+                page = "dashboard";
                 setTimeout(function(){pageRedirect("dashboard");}, 100);
             }
 
@@ -178,6 +198,39 @@
                         target.removeChild(item);
                         target.appendChild(linkElement);
                     }
+
+                    setTimeout(function(){
+                        const styleSheets = document.styleSheets;
+                        const retryLimit = 3;
+                        const retriedStylesheets = new Map();
+                        for (let i = 0; i < styleSheets.length; i++) {
+                            const stylesheet = styleSheets[i];
+                            if (stylesheet.href) {
+                                try {
+                                    if (!stylesheet.cssRules || stylesheet.cssRules.length === 0) {
+                                        throw new Error('CSS rules not accessible or empty');
+                                    }
+                                } catch (e) {
+                                    const { pathname } = new URL(stylesheet.href);
+                                    const retries = retriedStylesheets.get(stylesheet.href) || 0;
+                                    if (retries < retryLimit) {
+                                        retriedStylesheets.set(stylesheet.href, retries + 1);
+                                        const link = document.createElement('link');
+                                        link.rel = 'stylesheet';
+                                        link.type = 'text/css';
+                                        link.href = pathname;
+                                        document.head.appendChild(link);
+                                        if(typeof httpApi === "object")
+                                            httpApi.log("CSS ERR_TOO_MANY_RETRIES", `[Append CSS again] Request: ${pathname}, Page: ${window.location.pathname}`);
+                                    }
+                                    else {
+                                        if(typeof httpApi === "object")
+                                            httpApi.log("CSS ERR_TOO_MANY_RETRIES", `[Retries fail: ${retryLimit}] Request: ${pathname}, Page: ${window.location.pathname}`);
+                                    }
+                                }
+                            }
+                        }
+                    }, 1000);
                 });
 
             // hide HEADER/NAV while page launched by APP
@@ -217,6 +270,7 @@
         });
     </script>
     <script src="js/chart.min.js"></script>
+    <script src="js/chartjs-adapter-date-fns.js"></script>
     <body>
         <div class="app-topbar d-flex align-items-center">
             <div class="menu-header d-flex align-items-center ms-3 px-1"><div role="icon" class="icon-menu icon-size-24"></div></div>

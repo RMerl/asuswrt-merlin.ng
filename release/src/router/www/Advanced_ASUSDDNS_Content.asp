@@ -22,9 +22,6 @@
 <script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=5"></script>
 <script type="text/javascript" src="/form.js"></script>
 <style type="text/css">
-    * {
-        box-sizing: content-box;
-    }
 
     .contentM_upload {
         position: absolute;
@@ -393,7 +390,7 @@ function submitForm(){
 
 	document.form.submit();
 	showLoading();
-	setTimeout('location.reload();', 5000);
+	setTimeout('location.replace(location.href)', 5000);
 }
 
 function check_update(){
@@ -556,11 +553,7 @@ function apply_eula_check(){
                         },
                         knowRiskCallback: () => {
                             alert(`<#ASUS_POLICY_Function_Confirm#>`);
-                            $("#radio_ddns_enable").removeClass("on");
-                            $('input[name="ddns_enable_x"][value="0"]').prop('checked', true);
-                            change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '0')
-                            $("#policy_popup_modal").remove();
-                            PolicyStatus();
+                            location.reload();
                         }
                     });
                     policyModal.show();
@@ -901,7 +894,7 @@ function change_ddns_setting(v){
 				inputCtrl(document.form.ddns_username_x, 1);
 			inputCtrl(document.form.ddns_passwd_x, 1);
 			var disable_wild = 0;
-			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM" || v == "DYNU.COM")
+			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM" || v == "DYNU.COM" || v == "CLOUDFLARE.COM")
 				var disable_wild = 1;
 			else
 				var disable_wild = 0;
@@ -990,7 +983,7 @@ function change_cert_method(cert_method){
 				document.getElementById("le_desc").innerHTML = "<#LANHostConfig_x_DDNSLetsEncrypt_desc#>";
 				html_code = '<div style="margin-top:5px;"><input type="checkbox" name="letsEncryptTerm_check" checked>';
 				html_code += "<#DDNS_https_cert_LetsEncrypt_agree#>";
-				html_code += '<a href="https://letsencrypt.org/documents/LE-SA-v1.2-November-15-2017.pdf" target="_blank" style="margin-left: 5px; color:#FFF; text-decoration: underline;">Term of Service</a>'
+				html_code += '<a href="https://letsencrypt.org/documents/LE-SA-v1.2-November-15-2017.pdf" target="_blank" style="margin-left: 5px; color:var(--text-primary, #FFF); text-decoration: underline;">Term of Service</a>'
 				html_code += "</div>";
 				document.getElementById("cert_act").innerHTML = html_code;
 
@@ -1272,32 +1265,25 @@ function clear_cert_key(){
 
 				<div class="formfontdesc hint-color" id="wan_ip_hide2" style="color:#FC0; display:none;"><#LANHostConfig_x_DDNSEnable_sectiondesc4#><#LANHostConfig_x_DDNSEnable_sectiondesc2#></div>
 				<div class="formfontdesc hint-color" id="lb_note" style="color:#FC0; display:none;"><#lb_note_ddns#></div>
-				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+				<table width="100%" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 				<input type="hidden" name="wl_gmode_protection_x" value="<% nvram_get("wl_gmode_protection_x"); %>">
 			<tr>
 				<th><#LANHostConfig_x_DDNSEnable_itemname#></th>
-				<td>
-				    <div id="radio_ddns_enable"></div>
+				<td style="display: flex;flex-direction: column;align-items: flex-start;">
+				    <div align="center" id="radio_ddns_enable"></div>
                     <script type="text/javascript">
-                    $("#radio_ddns_enable").addClass("icon_switch");
-                    if('<% nvram_get("ddns_enable_x"); %>'=='1')
-                        $("#radio_ddns_enable").addClass("on");
-                    else
-                        $("#radio_ddns_enable").removeClass("on");
-                    $("#radio_ddns_enable").click(function(e){
-                        e = e || event;
-                        e.stopPropagation();
-                        $(this).toggleClass("on");
-                        if($(this).hasClass("on")){
+                    $('#radio_ddns_enable').iphoneSwitch('<% nvram_get("ddns_enable_x"); %>',
+                        function(){
                             document.form.ddns_enable_x.value = "1";
                             change_cert_method();
                             show_cert_details();
                             change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '1');
-                        }else{
+                        },
+                        function(){
                             document.form.ddns_enable_x.value = "0";
                             change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '0');
                         }
-                    });
+                    );
                     </script>
                     <div style="color:#FFCC00">*<#LANHostConfig_x_DDNSEnable_security_info#></div>
 				</td>
@@ -1334,6 +1320,7 @@ function clear_cert_key(){
 						<option value="WWW.DNSOMATIC.COM" <% nvram_match("ddns_server_x", "WWW.DNSOMATIC.COM","selected"); %>>WWW.DNSOMATIC.COM</option>
 						<option value="DNS.HE.NET" <% nvram_match("ddns_server_x", "DNS.HE.NET","selected"); %>>HE.NET</option>
 						<option value="DYNU.COM" <% nvram_match("ddns_server_x", "DYNU.COM","selected"); %>>DYNU.COM</option>
+						<option value="CLOUDFLARE.COM" <% nvram_match("ddns_server_x", "CLOUDFLARE.COM","selected"); %>>CLOUDFLARE.COM</option>
 						<option value="WWW.TUNNELBROKER.NET" <% nvram_match("ddns_server_x", "WWW.TUNNELBROKER.NET","selected"); %>>WWW.TUNNELBROKER.NET</option>
 						<option value="WWW.NO-IP.COM" <% nvram_match("ddns_server_x", "WWW.NO-IP.COM","selected"); %>>WWW.NO-IP.COM</option>
 						<option value="WWW.ORAY.COM" <% nvram_match("ddns_server_x", "WWW.ORAY.COM","selected"); %>>WWW.ORAY.COM(花生壳)</option>
@@ -1357,7 +1344,7 @@ function clear_cert_key(){
 						<input type="text" maxlength="63" class="input_25_table" name="ddns_hostname_x" id="ddns_hostname_x" value="<% nvram_get("ddns_hostname_x"); %>" onKeyPress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
 					</div>
 					<div id="asusddnsname_input" style="width:500px; display:none;">
-						<input type="text" maxlength="50" class="input_32_table" name="DDNSName" id="DDNSName" class="inputtext" onKeyPress="return validator.isString(this, event)" OnClick="cleandef();" autocorrect="off" autocapitalize="off"><span id="domain_text" style="color: #FFFFFF;">.asuscomm.com</span>
+						<input type="text" maxlength="50" class="input_32_table" name="DDNSName" id="DDNSName" class="inputtext" onKeyPress="return validator.isString(this, event)" OnClick="cleandef();" autocorrect="off" autocapitalize="off"><span id="domain_text" style="color: var(--text-primary, #FFF);">.asuscomm.com</span>
 						<div id="alert_block" style="color:#FFCC00; margin-left:5px; font-size:11px;display:none;">
 								<span id="alert_str"></span>
 						</div>
@@ -1411,21 +1398,21 @@ function clear_cert_key(){
 				  	<input type="submit" maxlength="15" class="button_gen" onclick="showLoading();return onSubmitApply('ddnsclient');" size="12" name="LANHostConfig_x_DDNSStatus_button" value="<#LANHostConfig_x_DDNSStatus_buttonname#>" /></td>
 			</tr>
 			<tr id="ddns_status_tr" style="display:none;">
-				<th>DDNS Status</th>
+				<th><#DDNS_status#></th>
 				<td><span id="ddns_status" style="color:#FFCC00"></span><span id="ddns_status_detail" class="notificationon" style="display: none;" onmouseover="show_ddns_status_detail();" onMouseOut="nd();"></span></td>
 			</tr>
 			<tr id="ddns_result_tr" style="display:none;">
-				<th>DDNS Registration Result</th>
+				<th><#DDNS_reg_result#></th>
 				<td id="ddns_result"></td>
 			</tr>
 			<tr id="https_cert" style="display:none;">
 				<th><#DDNS_https_cert#></th>
 				<td>
-					<span id="le_crypt" style="color:#FFF;display:none;">
+					<span id="le_crypt" style="color:var(--text-primary, #FFF);display:none;">
 					<input type="radio" value="1" name="le_enable" onClick="change_cert_method(this.value);" <% nvram_match("le_enable", "1", "checked"); %>><#DDNS_https_cert_LetsEncrypt#>
 					</span>
 					<input type="radio" value="2" name="le_enable" onClick="change_cert_method(this.value);" <% nvram_match("le_enable", "2", "checked"); %>><#DDNS_https_cert_Import#>
-					<span id="self_signed" style="color:#FFF;">
+					<span id="self_signed" style="color:var(--text-primary, #FFF)">
 					<input type="radio" value="0" name="le_enable" onClick="change_cert_method(this.value);" <% nvram_match("le_enable", "0", "checked"); %>><#Auto#>
 					</span>	
 					<div id="cert_desc" style="color:#FFCC00; margin-top: 5px;">
@@ -1439,7 +1426,7 @@ function clear_cert_key(){
 			</tr>
 
 			<tr id="CAcert_details" style="display:none;">
-				<th>Root Certificate/Intermediate Certificate</th>
+				<th><#DDNS_root_ca#></th>
 				<td>
 					<div style="display: flex;">
 						<div class="cert_status_title"><#vpn_openvpn_KC_to#> :</div>

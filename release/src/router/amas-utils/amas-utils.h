@@ -73,6 +73,7 @@ typedef enum
 enum MISC_INFO_TYPE {
     MISC_INFO_COBRAND = 1,
     MISC_INFO_RCSUPPORT = 2,
+    MISC_INFO_WIFI_GEN = 3,
     MISC_INFO_MAX
 };
 

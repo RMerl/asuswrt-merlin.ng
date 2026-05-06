@@ -672,6 +672,7 @@ static int ERP_CHECK_MODEL_LIST()
 		|| model == MODEL_BT10
 		|| model == MODEL_BQ16
 		|| model == MODEL_BQ16_PRO
+		|| model == MODEL_BN12
 		|| model == MODEL_BM68
 		|| model == MODEL_XT8_V2
 		|| model == MODEL_RTAXE95Q
@@ -726,7 +727,12 @@ static int ERP_CHECK_MODEL_LIST()
 		|| model == MODEL_GTBE19000AI
 		|| model == MODEL_GSBE18000
 		|| model == MODEL_GT7
+		|| model == MODEL_GS7_PRO_MAX
 		|| model == MODEL_GTBE96_AI
+		|| model == MODEL_GTBN98_PRO
+		|| model == MODEL_GTBN96X
+		|| model == MODEL_GTBN98
+		|| model == MODEL_GTBN96
 #endif
 	) {
 		ret = 1;
@@ -795,8 +801,7 @@ static void erp_standby_mode(int model)
 
 #if defined(RTCONFIG_AI_SERVICE)
 	char buf[128] = {0};
-	snprintf(buf, sizeof(buf), "echo 0 > /sys/class/leds/led_gpio_6/brightness");
-	system(buf);
+	safe_do_system_to_file("/sys/class/leds/led_gpio_6/brightness", 0, "echo 0");
 #endif
 
 	/* update status */
@@ -958,8 +963,7 @@ static void erp_wakeup_mode(int model)
 
 #if defined(RTCONFIG_AI_SERVICE)
 	char buf[128] = {0};
-	snprintf(buf, sizeof(buf), "echo 255 > /sys/class/leds/led_gpio_6/brightness");
-	system(buf);
+	safe_do_system_to_file("/sys/class/leds/led_gpio_6/brightness", 0, "echo 255");
 #endif
 
 	/* update status */

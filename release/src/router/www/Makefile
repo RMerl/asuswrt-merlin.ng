@@ -87,6 +87,12 @@ endif
 ifeq ($(RTCONFIG_UI4), y)
 	cp -rfL $(TOP)/www/sysdep/FUNCTION/UI4/* $(INSTALLDIR)/www/
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/white_04.gif
+	rm -rf $(INSTALLDIR)/www/images/New_ui/login_bg.png
+	rm -rf $(INSTALLDIR)/www/images/New_ui/VPN/get_start_white.svg
+endif
+
+ifeq ($(RTCONFIG_PROART_UI), y)
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/PROART_UI/* $(INSTALLDIR)/www/
 endif
 
 ifeq ($(RTCONFIG_ROG_UI), y)
@@ -251,9 +257,9 @@ ifneq ($(or $(RTCONFIG_PPTPD),$(RTCONFIG_ACCEL_PPTPD),$(RTCONFIG_OPENVPN),$(RTCO
 	rm -rf $(INSTALLDIR)/www/images/New_ui/VPN
 endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AX82U RT-AX82U_V2 DSL-AX82U GT-AXE11000 GT-AC2900 GT-AX11000 GS-AX3000 GS-AX5400 \
-	TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GS-AX6000 GT-AX6000 GT10 TUF-AX6000 GS7 GS-BE7200X GS-BE18000 GS-BE12000 GS7_PRO \
-	GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI))
+ifeq ($(or $(filter $(BUILD_NAME), RT-AX82U RT-AX82U_V2 DSL-AX82U GT-AXE11000 GT-AC2900 GT-AX11000 GS-AX3000 GS-AX5400 \
+	TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GS-AX6000 GT-AX6000 GT10 TUF-AX6000 GS7 GS-BE7200X GS-BE18000 GS-BE12000 GS7_PRO GS7_PRO_MAX \
+	GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI), $(filter y, $(RTCONFIG_AURALED))),)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect
 	rm -rf $(INSTALLDIR)/www/device-map/router_light_effect.asp
 else
@@ -267,7 +273,7 @@ endif
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AXE16000 GT-AX11000_PRO))
 	cd $(INSTALLDIR)/www/light_effect && mv sysdep_css/light_effect_GT-AXE16000.css light_effect_sysdep.css
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI GT-BN98_PRO))
 	cd $(INSTALLDIR)/www/light_effect && mv sysdep_css/light_effect_GT-BESeries.css light_effect_sysdep.css
 endif
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT10 GS-BE18000))
@@ -281,9 +287,14 @@ ifeq ($(RTCONFIG_UI4),y)
 else
 	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect/light_effect_mask_UI4.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect/light_effect_mask_rog_UI4.png
+	rm -rf $(INSTALLDIR)/www/light_effect/light_effect_v4.css
 endif
 	rm -rf $(INSTALLDIR)/www/light_effect/sysdep_css
 endif
+endif
+ifneq ($(or $(filter y,$(RTCONFIG_AURA_SCHED)),$(filter y,$(RTCONFIG_LED_SCHED))),y)
+	rm -rf $(INSTALLDIR)/www/js/ledScheduler.js
+	rm -rf $(INSTALLDIR)/www/images/New_ui/icon-time.svg
 endif
 
 ifeq ($(RTCONFIG_MULTISERVICE_WAN),y)
@@ -313,10 +324,47 @@ ifneq ($(RTCONFIG_DASHBOARD), y)
 	rm -rf $(INSTALLDIR)/www/dashboard
 else
 	cp -rf $(INSTALLDIR)/www/dashboard/index.html $(INSTALLDIR)/www/index.html
+	cp -rf $(INSTALLDIR)/www/dashboard/manifest.json $(INSTALLDIR)/www/manifest.json
 	cp -rf $(INSTALLDIR)/www/dashboard/pages $(INSTALLDIR)/www/
-ifneq ($(RTCONFIG_GTBOOSTER), y)
-	rm -rf $(INSTALLDIR)/www/pages/qoe.html
-	rm -rf $(INSTALLDIR)/www/ark-app-list.json
+ifeq ($(RTCONFIG_GTBOOSTER), y)
+ifneq ($(RTCONFIG_UI4),y)
+	mkdir -p $(INSTALLDIR)/www/pages
+	cp $(TOP)/www/dashboard/pages/ark_log.html $(INSTALLDIR)/www/pages/ark_log.html -rf
+	cp $(TOP)/www/dashboard/pages/qoe_ui3.html $(INSTALLDIR)/www/pages/qoe_ui3.html -rf
+	cp $(TOP)/www/dashboard/pages/aiprotection_info.html $(INSTALLDIR)/www/pages/aiprotection_info.html -rf
+	cp $(TOP)/www/dashboard/datatables $(INSTALLDIR)/www/datatables -rf
+	cp $(TOP)/www/dashboard/css/bootstrap.min.css $(INSTALLDIR)/www/css/bootstrap.min.css
+	cp $(TOP)/www/dashboard/css/bootstrap-customize.css $(INSTALLDIR)/www/css/bootstrap-customize.css
+	cp $(TOP)/www/dashboard/css/daterangepicker.css $(INSTALLDIR)/www/css/daterangepicker.css
+	cp $(TOP)/www/dashboard/css/svg-icon.css $(INSTALLDIR)/www/css/svg-icon.css
+	cp $(TOP)/www/dashboard/css/aiProtection.css $(INSTALLDIR)/www/css/aiProtection.css
+	cp $(TOP)/www/dashboard/js/bootstrap.bundle.min.js $(INSTALLDIR)/www/js/bootstrap.bundle.min.js
+	cp $(TOP)/www/dashboard/js/chart.min.js $(INSTALLDIR)/www/js/chart.min.js
+	cp $(TOP)/www/dashboard/js/chartjs-adapter-date-fns.js $(INSTALLDIR)/www/js/chartjs-adapter-date-fns.js
+	cp $(TOP)/www/dashboard/js/clientlist.module.js $(INSTALLDIR)/www/js/clientlist.module.js
+	cp $(TOP)/www/dashboard/js/component.module.js $(INSTALLDIR)/www/js/component.module.js
+	cp $(TOP)/www/dashboard/js/component-styles.module.js $(INSTALLDIR)/www/js/component-styles.module.js
+	cp $(TOP)/www/dashboard/js/daterangepicker.js $(INSTALLDIR)/www/js/daterangepicker.js
+	cp $(TOP)/www/dashboard/js/moment.min.js $(INSTALLDIR)/www/js/moment.min.js
+	cp $(TOP)/www/dashboard/js/utils.module.js $(INSTALLDIR)/www/js/utils.module.js
+	cp $(TOP)/www/dashboard/js/aiprotection.module.js $(INSTALLDIR)/www/js/aiprotection.module.js
+	cp $(TOP)/www/dashboard/images/New_ui/Home_Protection_Scenario_white.svg $(INSTALLDIR)/www/images/New_ui/Home_Protection_Scenario_white.svg
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/ARK_UI/* $(INSTALLDIR)/www/
+ifeq ($(RTCONFIG_TUF_UI),y)
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/ARK_UI/* $(INSTALLDIR)/TUF_UI
+endif
+ifeq ($(RTCONFIG_ROG_UI),y)
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/ARK_UI/* $(INSTALLDIR)/ROG_UI
+endif
+ifeq ($(RTCONFIG_TS_UI),y)
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/ARK_UI/* $(INSTALLDIR)/TS_UI
+endif
+endif
+else
+	-rm -rf $(INSTALLDIR)/www/pages/qoe.html
+	-rm -rf $(INSTALLDIR)/www/ark-app-list.json
+	-rm -rf $(INSTALLDIR)/www/pages/ark_log.html
+	-rm -rf $(INSTALLDIR)/www/Ark_WebHistory_Content.asp
 endif
 ifneq ($(and $(RTCONFIG_IPSEC),$(RTCONFIG_INSTANT_GUARD)), y)
 	rm -rf $(INSTALLDIR)/www/pages/ig.html
@@ -327,6 +375,12 @@ endif
 	cp -rf $(INSTALLDIR)/www/dashboard/images/* $(INSTALLDIR)/www/images/
 	cp -rf $(INSTALLDIR)/www/dashboard/datatables $(INSTALLDIR)/www/
 	rm -rf $(INSTALLDIR)/www/dashboard
+endif
+
+ifeq ($(RTCONFIG_DEMOUI), y)
+	if [ -f $(INSTALLDIR)/www/patch/js/httpApi.js.patch ] && [ -f $(INSTALLDIR)/www/js/httpApi.js ]; then \
+		sed -i '1e cat $(INSTALLDIR)/www/patch/js/httpApi.js.patch' $(INSTALLDIR)/www/js/httpApi.js; \
+	fi
 endif
 
 ifeq ($(RTCONFIG_AUTODICT), y)
@@ -563,7 +617,9 @@ ifneq ($(RTCONFIG_USB),y)
 	rm -rf $(INSTALLDIR)/www/disk_fsck.xml
 	rm -rf $(INSTALLDIR)/www/disk_scan.asp
 	rm -rf $(INSTALLDIR)/www/diskmon_test.asp
-	rm -rf $(INSTALLDIR)/www/disk_functions.js
+	# Keep disk_functions.js: AiProtection / Captive Portal / AiMesh /
+	# cloud_router_sync include it unconditionally via <script src="...">,
+	# so stripping it on non-USB builds caused 404s on those pages.
 	# disk format
 	rm -rf $(INSTALLDIR)/www/device-map/disk_format.asp
 endif
@@ -808,6 +864,22 @@ ifneq ($(RTCONFIG_CAPTIVE_PORTAL), y)
 	rm -rf $(INSTALLDIR)/www/ajax_captive_portal_log.asp
 	rm -rf $(INSTALLDIR)/www/jscolor
 endif
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), BRT-AC828))
+	rm -rf $(INSTALLDIR)/www/images/New_ui/captive_portal
+	rm -rf $(INSTALLDIR)/www/ajax_captive_portal.asp
+
+	rm -rf $(INSTALLDIR)/www/Captive_Portal.asp
+	rm -rf $(INSTALLDIR)/www/Captive_Portal.css
+	rm -rf $(INSTALLDIR)/www/Captive_Portal_Preview.asp
+	rm -rf $(INSTALLDIR)/www/Captive_Portal_template.js
+
+	rm -rf $(INSTALLDIR)/www/Captive_Portal_Advanced.asp
+	rm -rf $(INSTALLDIR)/www/Captive_Portal_Advanced.css
+	rm -rf $(INSTALLDIR)/www/Captive_Portal_Advanced_Preview.asp
+	rm -rf $(INSTALLDIR)/www/Captive_Portal_Advanced_template.js
+	rm -rf $(INSTALLDIR)/www/ajax_captive_portal_log.asp
+	rm -rf $(INSTALLDIR)/www/jscolor
+endif
 ifeq ($(RTCONFIG_NOIPTV), y)
 	rm -rf $(INSTALLDIR)/www/Advanced_IPTV_Content.asp
 endif
@@ -874,12 +946,12 @@ ifeq ($(RTCONFIG_UI4),y)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_v4.js modules/menuTree.js
 else ifeq ($(RTCONFIG_BUSINESS),y)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_BUSINESS.js modules/menuTree.js
+else ifeq ($(RTCONFIG_GS_UI),y)
+	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_GS.js modules/menuTree.js
 else ifeq ($(RTCONFIG_ROG_UI),y)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_ROG.js modules/menuTree.js
 else ifeq ($(RTCONFIG_TUF_UI),y)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_TUF.js modules/menuTree.js
-else ifeq ($(RTCONFIG_GS_UI),y)
-	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_GS.js modules/menuTree.js
 else
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree.js modules/menuTree.js
 endif
@@ -942,18 +1014,18 @@ ifeq ($(and $(RTCONFIG_AMAS),$(RTCONFIG_WIFI_SON)),y)
 endif
 	mkdir -p $(INSTALLDIR)/www
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC9600 GT-AXY16000 GT-AX11000 GT-AXE11000 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC9600 GT-AXY16000 GT-AX11000 GT-AXE11000 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI GT-BN98_PRO))
 	rm -rf $(INSTALLDIR)/www/qis/QIS_tge_setting.htm
 endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AX11000 GT-AC2900 GT-AXY16000 GT-AXE11000 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AX11000 GT-AC2900 GT-AXY16000 GT-AXE11000 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI GT-BN98_PRO))
 	rm -rf $(INSTALLDIR)/www/images/New_ui/img-aurasync-logo.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/img-aurasync-rog-logo-mask.png
 	rm -rf $(INSTALLDIR)/www/images/aura
 endif
 
 ifneq ($(RTCONFIG_UUPLUGIN), y)
-	rm -rf $(INSTALLDIR)/www/images/uu_accelerator.png
+	rm -rf $(INSTALLDIR)/www/images/UU_Logo_RGB.svg
 	rm -rf $(INSTALLDIR)/www/images/New_ui/icon_UU.png
 endif
 
@@ -1070,13 +1142,13 @@ endif
 	rm -rf $(INSTALLDIR)/www/images/New_ui/new_qis
 endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC2900 GT-AC5300 GT-AX11000 GT-AXE11000 GT-AXY16000 RT-AX82U RT-AX82U_V2 DSL-AX82U GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GT-AX6000 GT10 GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC2900 GT-AC5300 GT-AX11000 GT-AXE11000 GT-AXY16000 RT-AX82U RT-AX82U_V2 DSL-AX82U GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GT-AX6000 GT10 GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI GT-BN98_PRO))
 ifneq ($(RTCONFIG_AMAS),y)
 	rm -rf $(INSTALLDIR)/www/fonts
 endif
 endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AX82U RT-AX82U_V2 RT-AX86U RT-AX88U GT-AX11000 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AX82U RT-AX82U_V2 RT-AX86U RT-AX88U GT-AX11000 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI GT-BN98_PRO))
 	rm -rf $(INSTALLDIR)/www/css/gundam.css
 endif
 ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AX82U RT-AX82U_V2 RT-AX86U))
@@ -1144,7 +1216,7 @@ ifeq ($(RTCONFIG_NO_AIDISK), y)
 	rm -rf $(INSTALLDIR)/www/aidisk/Aidisk-3.asp
 	rm -rf $(INSTALLDIR)/www/aidisk/Aidisk-4.asp
 	rm -rf $(INSTALLDIR)/www/aidisk/Aidisk-1_help.asp
-	rm -rf $(INSTALLDIR)/www/images/New_ui/aidisk
+	rm -rf $(INSTALLDIR)/www/images/New_ui/aidisk/step[123].png
 	rm -rf $(INSTALLDIR)/www/aidisk.asp
 endif
 
@@ -1152,6 +1224,10 @@ ifneq ($(RTCONFIG_AI_SERVICE), y)
 	rm -rf $(INSTALLDIR)/www/pages/aiboard.html
 	rm -rf $(INSTALLDIR)/www/images/aiboard
 endif
+
+	if [ -d $(INSTALLDIR)/www/patch ]; then \
+		rm -rf $(INSTALLDIR)/www/patch; \
+	fi
 
 # Legacy files no longer used by Asuswrt-Merlin
 	rm -rf $(INSTALLDIR)/www/tm.svg

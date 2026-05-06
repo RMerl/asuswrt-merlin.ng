@@ -2616,7 +2616,7 @@ function Get_Component_reboot_schedule_ui(config){
 				<tr>
 				  <th width="40%"><#Router_Login_Name#></th>
 					<td>
-						<span style="color:#FFF; display: inline-block; width: 250px;"><% nvram_get("http_username"); %></span>
+						<span style="color:var(--text-primary, #FFF); display: inline-block; width: 250px;"><% nvram_get("http_username"); %></span>
 					<span style="text-decoration: underline; cursor: pointer;" onclick="open_chpass(0);"><#Change#></span>
 					</td>
 				</tr>
@@ -2624,7 +2624,7 @@ function Get_Component_reboot_schedule_ui(config){
 				<tr>
 					<th width="40%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,4)"><#Router_Login_Password#></a></th>
 					<td>
-						<span style="color:#FFF; display: inline-block; width: 250px;">-</span>
+						<span style="color:var(--text-primary, #FFF); display: inline-block; width: 250px;">-</span>
 						<span style="text-decoration: underline; cursor: pointer;" onclick="open_chpass(1);""><#Change#></span>
 					</td>
 				</tr>
@@ -3042,7 +3042,7 @@ function Get_Component_reboot_schedule_ui(config){
 				</tr>
 				<script>
 					var http_enable_default = httpApi.nvramDefaultGet(["http_enable"]).http_enable;
-					if(in_territory_code("AA") || in_territory_code("SG") && http_enable_default == "2"){
+					if((in_territory_code("AA") || in_territory_code("SG") || in_territory_code("HK")) && http_enable_default == "2"){
 						document.getElementById("http_enable").options[2].text = "<#Setting_factorydefault_value#>";
 					}
 				</script>

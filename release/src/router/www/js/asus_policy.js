@@ -12,7 +12,7 @@ const ASUS_POLICY = {
         Notice2: `<#ASUS_POLICY_Notice_2#>`,
         ReadAgain: `<#ASUS_POLICY_Read_Again#>`,
         KnowRisk: `<#ASUS_POLICY_Know_Risk#>`,
-        QisDesc: `<#ASUS_POLICY_QIS_Desc#>`,
+        QisDesc: `<#ASUS_POLICY_QIS_Desc_v5#>`,
         Ok: `<#CTL_ok#>`,
         SelectLanguage: `<#selected_language#>`,
         ModalName: `<#Web_Title2#>`,
@@ -477,8 +477,14 @@ const ASUS_POLICY = {
         TM: {
             Title: `<#lyra_TrendMicro_agreement#>`,
             HTML: `<div class="d-flex flex-column gap-1">
-                        <div>${`<#TM_eula_new_desc1#>`.replace('%@', `<#AiProtection_two-way_IPS#>`)}</div>
-						<div>${`<#TM_eula_new_desc2#>`.replace('%@', `<#AiProtection_two-way_IPS#>`)}</div>
+                        <div>${
+                            isSupport("gtbooster")
+                                ? `<#TM_eula_new_desc1#>`.replace('%@', `<#AiProtection_two-way_IPS#>`) : `<#TM_eula_desc1#>`
+                        }</div>
+                        <div>${
+                            isSupport("gtbooster")
+                                ? `<#TM_eula_new_desc2#>`.replace('%@', `<#AiProtection_two-way_IPS#>`) : `<#TM_eula_desc2#>`
+                        }</div>
                         <div><#TM_privacy_policy#></div>
                         <div><#TM_data_collection#></div>
                         <div><#TM_eula_desc3#></div>
@@ -502,7 +508,7 @@ const ASUS_POLICY = {
                     url: `https://www.wtfast.com/en/privacy-policy/`,
                     company: `AAA Internet Publishing Inc.`
                 },
-                '网易UU加速器': {
+                'UU 加速器': {
                     url_text: `网易游戏隐私政策`,
                     url: `https://unisdk.update.netease.com/html/latest_v90.html`,
                     company: `网易游戏隐私政策`
@@ -572,66 +578,18 @@ const ASUS_POLICY = {
                     .policy_law li li::marker{
                         content: counters(list-item,".",list-item)" ";
                     }
-                    .policy_law > ol > li{
-                        font-weight: bold;
-                    }
-                    .policy_law > ol > li > div:first-child{
-                        font-weight: normal;
-                    }
-                    .policy_law > ol > li:not(:first-child) li{
-                        font-weight: bold;
-                    }
-                    .policy_law > ol > li:not(:first-child) li div{
-                        font-weight: normal;
-                    }
-                    .policy_law > ol > li li{
-                        font-weight: normal;
-                    }
-                    .font-weight-bold {
-                        font-weight: bold;
-                    }
                 </style>
                 <div>
                     <div class="policy_desc"><#ASUS_Aiboard_EULA_Desc#></div>
                     <div class="policy_law">
                         <ol>
                             <li><#ASUS_Aiboard_EULA_Law_1#>
-                                <ol>
-                                    <li><#ASUS_Aiboard_EULA_Law_1_1#></li>
-                                    <li><#ASUS_Aiboard_EULA_Law_1_2#></li>
-                                    <li><#ASUS_Aiboard_EULA_Law_1_3#></li>
-                                </ol>
                             </li>
-                            <li><#ASUS_Aiboard_EULA_Law_2#>
-                                <ol>
-                                    <li><#ASUS_Aiboard_EULA_Law_2_1#>
-                                        <div><#ASUS_Aiboard_EULA_Law_2_1_Desc#></div>
-                                    </li>
-                                    <li><#ASUS_Aiboard_EULA_Law_2_2#>
-                                        <div><#ASUS_Aiboard_EULA_Law_2_2_Desc#></div>
-                                    </li>
-                                    <li><#ASUS_Aiboard_EULA_Law_2_3#>
-                                        <div><#ASUS_Aiboard_EULA_Law_2_3_Desc#></div>
-                                    </li>
-                                    <li><#ASUS_Aiboard_EULA_Law_2_4#>
-                                        <div><#ASUS_Aiboard_EULA_Law_2_4_Desc#></div>
-                                    </li>
-                                    <li><#ASUS_Aiboard_EULA_Law_2_5#>
-                                        <div><#ASUS_Aiboard_EULA_Law_2_5_Desc#></div>
-                                    </li>
-                                    <li><#ASUS_Aiboard_EULA_Law_2_6#>
-                                        <div><#ASUS_Aiboard_EULA_Law_2_6_Desc#></div>
-                                    </li>
-                                    <li><#ASUS_Aiboard_EULA_Law_2_7#>
-                                        <div><#ASUS_Aiboard_EULA_Law_2_7_Desc#></div>
-                                    </li>
-                                    <li><#ASUS_Aiboard_EULA_Law_2_8#>
-                                        <div><#ASUS_Aiboard_EULA_Law_2_8_Desc#></div>
-                                    </li>
-                                    <li><#ASUS_Aiboard_EULA_Law_2_9#>
-                                        <div><#ASUS_Aiboard_EULA_Law_2_9_Desc#></div>
-                                    </li>
-                                </ol>
+                            <li><#ASUS_Aiboard_EULA_Law_2_1#><#ASUS_Aiboard_EULA_Law_2_2#><#ASUS_Aiboard_EULA_Law_2_3#><#ASUS_Aiboard_EULA_Law_2_4#>
+                            </li>
+                            <li>${`<#ASUS_Aiboard_EULA_Law_3_1#>`.replaceAll("%@", `<a target="_blank" style="text-decoration: underline;cursor: pointer;" href="https://www.asus.com/support/faq/1056404/">https://www.asus.com/support/faq/1056404/</a>`)}<#ASUS_Aiboard_EULA_Law_3_2#>
+                            </li>
+                            <li><#ASUS_Aiboard_EULA_Law_4_1#><#ASUS_Aiboard_EULA_Law_4_2#>
                             </li>
                         </ol>
                     </div>
@@ -753,7 +711,7 @@ const ASUS_POLICY = {
         }
         
         .policy-scroll-div a, .policy-scroll-div .link {
-            color: #006ce1;
+            color: var(--text-hyperlink-default-color, #006ce1);
         }
         .btn {
             display: inline-block;
@@ -876,6 +834,18 @@ const ASUS_POLICY = {
         }
         .gap-1 {
             gap: 1em;
+        }
+        .lh-1 {
+            line-height: 1 !important;
+        }
+        .lh-sm {
+            line-height: 1.25 !important;
+        }
+        .lh-base {
+            line-height: 1.5 !important;
+        }
+        .lh-lg {
+            line-height: 2 !important;
         }
         .notice_title {
             display: flex !important;
@@ -2148,7 +2118,7 @@ class PolicyModalComponent {
 
                     break
                 case "PP":
-                    if (this.policyStatus.PP_read === 0 && this.policyStatus.EULA_allow_skip === 1) {
+                    if (this.policyStatus.PP === "" && this.policyStatus.EULA_allow_skip === 1) {
                         let yearChecked = this.ageCheckbox.checked;
                         if (!yearChecked) {
                             alert(ASUS_POLICY.Dict.AgeConfirm);
@@ -2210,7 +2180,7 @@ class PolicyModalComponent {
         if (!e.target.classList.contains("disabled")) {
             switch (this.policy) {
                 case "PP":
-                    if (this.policyStatus.PP_read === 0 && this.policyStatus.EULA_allow_skip === 1) {
+                    if (this.policyStatus.PP === "" && this.policyStatus.EULA_allow_skip === 1) {
                         let yearChecked = this.ageCheckbox.checked;
                         if (!yearChecked) {
                             alert(ASUS_POLICY.Dict.AgeConfirm);
@@ -2569,7 +2539,7 @@ class DisagreeNoticeComponent {
                     <div style="color: #ff5722">${ASUS_POLICY.Dict.Notice2}</div>
                     <div style="color: #ff5722">
                         <ul>
-                            <li>Account Binding</li>
+                            <li><#Account_Binding#></li>
                             <li>Config transfer</li>
                             <li>DDNS</li>
                             <li>Alexa</li>
@@ -2783,7 +2753,11 @@ class QisPolicyPageComponent {
                     font-size: 2em;
                     text-align: left;
                     font-weight: bold;
-                    color: var(--primary-60);
+                    color: var(--primary-50);
+                    background-image: var(--logo-color);
+                    background-clip: text;
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
                     word-break: break-word;
                     display: flex;
                     flex-direction: row;
@@ -3184,16 +3158,33 @@ class QisPolicyPageComponent {
                 .bg .header{
                     border: none;
                     background-color: transparent;
-                    border-image: linear-gradient(to right, #0A5EDB, #DB0A2C) 30;
+                    border-image: var(--gradient-color-primary) 30;
                     border-bottom-width: 2px;
                     border-bottom-style: solid;
                 }
                 .bg .icon-logo{
-                    background-color: #EA0029;
+                    background-color: var(--brand-primary);
                     --logo-svg: url("data:image/svg+xml,%3Csvg width='45' height='24' viewBox='0 0 45 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M14.729 19.014s.867.578 1.62.907c5.727 2.512 14.1 4.043 15.729 3.517 4.407-1.43 9.338-10.774 10.89-15.084 0 0-4.63 1.844-9.327 4.045-3.924 1.84-6.306 3.02-7.427 3.586l-.23.093.2-.077c-.505.255-.744.38-.744.38l13.385-4.056-2.459.756s-2.931 6.889-6.744 7.657c-3.816.767-10.586-1.914-10.596-1.916.56-.43 7.61-5.722 24.31-12.537.021-.007.044-.014.068-.02.55-.226 1.3-1.524 1.324-2.262 0 0-5.9.536-11.122 3.212-7.023 3.354-18.878 11.8-18.878 11.8zm16.421 2.54zM40.12 7.31a46.095 46.095 0 0 1 3.07-.983c-1.02.295-2.045.622-3.07.983zM25.982 16.075l-.012.005.012-.005zM0 10.59l.01.023-.01-.01.012.017c.127.341 1.315 3.468 2.532 5.033 1.195 1.54 6.02 2.742 6.699 2.904.051.023.083.035.083.035l-.034-.023.034.007C6.26 16.43 0 10.59 0 10.59z' fill='%23EA0029'/%3E%3Cpath d='M13.302 19.49c-.436-.833.104-1.935 3.667-4.572 3.22-2.384 14.814-12.13 25.906-14.75 0 0-5.815-.948-14.125 1.666-2.965.93-7.325 5.077-15.306 12.894-1.086.605-4.983-1.633-7.22-2.71 0 0 3.722 5.887 5.023 7.65 2.023 2.744 5.66 4.33 5.66 4.33s-.012-.01-.033-.032c-.301-.325-2.786-2.98-3.572-4.476z' fill='%23EA0029'/%3E%3C/svg%3E");
                     height: 30px;
                     width: 40px;
                     min-width: 30px;
+                }
+                ` : ``}
+                
+                ${theme === "proart" ? `
+                .bg .header{
+                    border: none;
+                    background-color: transparent;
+                    border-image: var(--gradient-color-primary) 30;
+                    border-bottom-width: 2px;
+                    border-bottom-style: solid;
+                }
+                .bg .icon-logo{
+                    background-color: var(--logo-color);
+                    --logo-svg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='80' height='48' fill='none' viewBox='0 0 80 48'%3e%3cpath fill='white' fill-rule='evenodd' d='M10.573 12.36c-.97-.243-2.754-.36-5.452-.36H0v23.479h3.369v-10.14h1.11c2.93 0 4.886-.126 5.98-.388 1.54-.37 2.77-1.105 3.655-2.185.89-1.085 1.342-2.471 1.342-4.119 0-1.638-.463-3.025-1.376-4.123-.905-1.087-2.086-1.816-3.507-2.165ZM6.74 22.076l-3.371-.04V15.31h3.537c1.48 0 2.543.123 3.162.367a2.91 2.91 0 0 1 1.401 1.158c.363.556.54 1.15.54 1.82 0 .69-.177 1.295-.54 1.85-.359.549-.84.935-1.47 1.181-.665.26-1.764.391-3.26.391Zm67.753-7.466-3.275 1.162v2.761l-3.167.006c-3.634 0-6.587 2.875-6.587 6.407V35.47h3.262V25.322c0-2.282 1.608-3.887 3.704-4.005h2.788v8.891c0 2.165.395 3.537 1.273 4.444.807.894 2.033 1.348 3.648 1.348 1.042 0 1.93-.131 2.636-.392l.558-.206-.509-2.635-.769.266c-.225.076-.692.168-1.633.168-1.003 0-1.929-.316-1.929-2.61v-9.274h4.331v-2.783h-4.33v-3.923Zm-49.109 6.485a9.081 9.081 0 0 1 2.505-1.782 8.488 8.488 0 0 1 3.739-.864c1.489 0 2.94.393 4.313 1.168a8.468 8.468 0 0 1 3.255 3.272c.78 1.389 1.177 2.84 1.177 4.315 0 1.474-.394 2.926-1.17 4.315a8.415 8.415 0 0 1-3.248 3.272c-1.371.775-2.832 1.167-4.341 1.167a8.587 8.587 0 0 1-3.09-.566 8.555 8.555 0 0 1-2.612-1.574c-.75-.664-1.341-1.353-1.76-2.047a9.144 9.144 0 0 1-.953-2.175 8.234 8.234 0 0 1-.33-2.28c0-1.241.232-2.413.689-3.48.454-1.065 1.069-1.987 1.826-2.741Zm1.303 9.066c.487.9 1.197 1.62 2.111 2.14.924.528 1.887.787 2.844.787.948 0 1.891-.256 2.783-.76a5.422 5.422 0 0 0 2.104-2.136 6.19 6.19 0 0 0 .77-3.03c0-1.102-.262-2.111-.778-2.999a5.513 5.513 0 0 0-2.153-2.087c-.922-.504-1.848-.759-2.754-.759-.913 0-1.847.266-2.775.79A5.433 5.433 0 0 0 26.7 24.27a6.242 6.242 0 0 0-.757 3.019c0 .997.25 1.964.743 2.873Zm-4.102-11.635c-3.633 0-6.636 2.897-6.636 6.43v10.522h3.263V25.33c0-2.314 1.649-3.948 3.789-4.025 0 0 1.427-2.588 1.462-2.67-.876-.109-1.878-.109-1.878-.109ZM49.294 12l-9.63 23.486h3.325l2.86-6.961h8.079l2.836 6.937h-.011l.01.024h3.25L50.508 12h-1.214Zm.598 6.684.01.026.007-.016 2.699 6.6h-5.41l.173-.423h-.02l2.541-6.186Z' clip-rule='evenodd'/%3e%3c/svg%3e");
+                    height: 30px;
+                    width: 90px;
+                    min-width: 90px;
                 }
                 ` : ``}
                 
@@ -3225,6 +3216,25 @@ class QisPolicyPageComponent {
                 }
                 ` : ``}
                 
+                ${theme === "rog" && isSupport("YEAR20") ? `
+                .bg .header{
+                    border: none;
+                    background-color: transparent;
+                    border-image: var(--gradient-50) 30;
+                    border-bottom-width: 2px;
+                    border-bottom-style: solid;
+                }
+                .bg .icon-logo{
+                    background-color: var(--primary-50);
+                    background-image: var(--logo-color);
+                    --logo-svg: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTMyIiBoZWlnaHQ9IjQwIiB2aWV3Qm94PSIwIDAgMTMyIDQwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNNzEuNTYxNSAwTDYwLjAyODMgMTIuNjIxMVY1Ljc1MTk1TDU3LjA0MyAxLjQ5NjA5SDM2LjcwN0wzMy42ODY1IDUuNzUxOTVWMjUuNTc4MUwzNi43MSAyOS45MTZINDQuMjI4NUwzNS4wMTU2IDQwSDMzLjUyNTRMNDAuMjg5MSAzMi41OTQ3SDM2Ljg3NEwzMy4xOTczIDI3LjMxOTNWMjcuMjY4NkwzMi4zMTM1IDI2LjAwNDlWNS4zMTkzNEwzNS45OTQxIDAuMTMxODM2SDU3Ljc1ODhMNjIuMjg1MiA2LjYzNjcyVjguNTIxNDhMNzAuMDcxMyAwSDcxLjU2MTVaTTIyLjg1NzQgMzUuNDA1M0MyMi45OTk1IDM1LjQwNTMgMjMuMTIzMSAzNS40Mjk1IDIzLjIzNjMgMzUuNDc2NkMyMy4zNDY5IDM1LjUyMzYgMjMuNDQxMiAzNS41OTI3IDIzLjUyMzQgMzUuNjc3N0MyMy42MDI2IDM1Ljc2NTMgMjMuNjY4NiAzNS44NjU5IDIzLjcxNTggMzUuOTg1NEMyMy43NjY2IDM2LjEwNDMgMjMuNzk3NyAzNi4yMzI5IDIzLjgxMzUgMzYuMzcxMUwyMy4xNjAyIDM2LjQ0MzRMMjMuMTU0MyAzNi40NDYzQzIzLjE0NzcgMzYuMzYxNyAyMy4xMzE4IDM2LjI5MjIgMjMuMTA2NCAzNi4yMzI0QzIzLjA4MTcgMzYuMTc2NiAyMy4wNTMzIDM2LjEyOTkgMjMuMDE4NiAzNi4wOTg2QzIyLjk4NCAzNi4wNjcyIDIyLjk0NTkgMzYuMDQxMSAyMi45MDUzIDM2LjAyNTRDMjIuODY0MiAzNi4wMDk3IDIyLjgyNTcgMzYuMDAzOSAyMi43ODgxIDM2LjAwMzlDMjIuNjc3NSAzNi4wMDM5IDIyLjU5MjEgMzYuMDM4NiAyMi41MzIyIDM2LjEwNzRDMjIuNDcyNSAzNi4xNzY3IDIyLjQ0NDQgMzYuMjczOCAyMi40NDQzIDM2LjM5NTVDMjIuNDQ0MyAzNi41MDg0IDIyLjQ3ODMgMzYuNjE1OCAyMi41NDc5IDM2LjcxQzIyLjYxNzQgMzYuODA0MSAyMi43MDI2IDM2LjkwMTUgMjIuODA2NiAzNi45OTUxQzIyLjkxMDYgMzcuMDg5MiAyMy4wMjQ4IDM3LjE4NjEgMjMuMTQ0NSAzNy4yODMyQzIzLjI2NzkgMzcuMzgwNCAyMy4zNzgzIDM3LjQ4NzUgMjMuNDgyNCAzNy42MDY0QzIzLjU4NjUgMzcuNzI1OSAyMy42NzE3IDM3Ljg1NDggMjMuNzQxMiAzNy45OTYxQzIzLjgxMDcgMzguMTM2NyAyMy44NDE3IDM4LjI5NjUgMjMuODQxOCAzOC40Nzg1QzIzLjg0MTggMzguNjQ0NiAyMy44MTY2IDM4Ljc4OTQgMjMuNzU5OCAzOC45MThDMjMuNzA2NSAzOS4wNDM1IDIzLjYzNCAzOS4xNTAyIDIzLjUzOTEgMzkuMjM4M0MyMy40NDQ3IDM5LjMyNTggMjMuMzMwOCAzOS4zODg2IDIzLjE5NTMgMzkuNDMyNkMyMy4wNTkzIDM5LjQ3NjEgMjIuOTEwNyAzOS40OTggMjIuNzUyOSAzOS40OThDMjIuNTk1MiAzOS40OTggMjIuNDQ5OSAzOS40Njk5IDIyLjMyNzEgMzkuNDEwMkMyMi4yMDA4IDM5LjM1MDkgMjIuMDk0MSAzOS4yNzIxIDIyLjAwODggMzkuMTcxOUMyMS45MjA1IDM5LjA3MTEgMjEuODUzOSAzOC45NTIgMjEuODA2NiAzOC44MjAzQzIxLjc1OTUgMzguNjg4OCAyMS43MzA3IDM4LjU0NzIgMjEuNzI0NiAzOC4zOTY1TDIyLjM4MDkgMzguMzAzN0MyMi4zOTY2IDM4LjUwNyAyMi40NDExIDM4LjY1NzcgMjIuNTEzNyAzOC43NTQ5QzIyLjU4NjIgMzguODU1IDIyLjY4MDUgMzguOTAyMyAyMi43OTEgMzguOTAyM0MyMi45MTA4IDM4LjkwMjMgMjMuMDA2NSAzOC44NzA0IDIzLjA3OTEgMzguODA3NkMyMy4xNTE0IDM4Ljc0NDggMjMuMTg4NSAzOC42NTM4IDIzLjE4ODUgMzguNTM4MUMyMy4xODg1IDM4LjQwNjUgMjMuMTU0NSAzOC4yODc0IDIzLjA4NSAzOC4xODM2QzIzLjAxNTQgMzguMDgwMyAyMi45MzAyIDM3Ljk4MjkgMjIuODI2MiAzNy44ODU3QzIyLjcyMjEgMzcuNzkxNiAyMi42MDgxIDM3LjY5NDcgMjIuNDg4MyAzNy42MDA2QzIyLjM2ODUgMzcuNTA2NCAyMi4yNTQ1IDM3LjQgMjIuMTUwNCAzNy4yODcxQzIyLjA0NjQgMzcuMTc0MiAyMS45NjExIDM3LjA0NTYgMjEuODkxNiAzNi45MDE0QzIxLjgyMiAzNi43NTcxIDIxLjc5MSAzNi41OTAzIDIxLjc5MSAzNi4zOTk0QzIxLjc5MSAzNi4wNzk0IDIxLjg4MiAzNS44MzQyIDIyLjA2ODQgMzUuNjYyMUMyMi4yNTQ3IDM1LjQ5MjUgMjIuNTE2OCAzNS40MDUzIDIyLjg1NzQgMzUuNDA1M1pNMy43ODcxMSAzOS40NDgySDMuMTIxMDlMMi45OTgwNSAzOC41NjM1SDIuMjQ0MTRMMi4xMjEwOSAzOS40NDgySDEuNDU1MDhMMi4xOTMzNiAzNS40NjQ4SDMuMDQ4ODNMMy43ODcxMSAzOS40NDgyWk02LjA3OTEgMzcuNzQyMkg2LjA5MThWMzUuNDY0OEg2LjcxMjg5VjM5LjQ0ODJINi4xMTMyOEw1LjIzNjMzIDM2Ljk2MDlINS4yMjM2M1YzOS40NDgySDQuNjAxNTZWMzUuNDY0OEg1LjIzOTI2TDYuMDc5MSAzNy43NDIyWk05LjI3MjQ2IDM3Ljc0MjJIOS4yODIyM1YzNS40NjQ4SDkuOTA0M1YzOS40NDgySDkuMzA0NjlMOC40MjY3NiAzNi45NjA5SDguNDE3OTdWMzkuNDQ4Mkg3Ljc5NTlWMzUuNDY0OEg4LjQzMzU5TDkuMjcyNDYgMzcuNzQyMlpNMTEuNzY5NSAzOS40NDgySDExLjA4MTFWMzUuNDY0OEgxMS43Njk1VjM5LjQ0ODJaTTEzLjgzOTggMzguMjI3NUgxMy44NTI1TDE0LjM1MTYgMzUuNDY0OEgxNS4wMjY0TDE0LjE5MDQgMzkuNDQ4MkgxMy41MDJMMTIuNjYzMSAzNS40NjQ4SDEzLjM0MThMMTMuODM5OCAzOC4yMjc1Wk0xNy42NzE5IDM2LjA2MDVIMTYuNTE2NlYzNy4wODY5SDE3LjQwMzNWMzcuNjgyNkgxNi41MTY2VjM4Ljg1MjVIMTcuNzQ3MVYzOS40NDgySDE1LjgyODFWMzUuNDY0OEgxNy42NzE5VjM2LjA2MDVaTTE5LjY3NTggMzUuNDY0OEMyMC4wNjEgMzUuNDY0OSAyMC4zNTE0IDM1LjU1NTcgMjAuNTQ2OSAzNS43MzQ0QzIwLjc0MjggMzUuOTE2MSAyMC44Mzk4IDM2LjIxNzUgMjAuODM5OCAzNi42NDA2QzIwLjgzOTggMzYuODAzNCAyMC44MjgxIDM2Ljk0MTkgMjAuNzk5OCAzNy4wNTQ3QzIwLjc3MTQgMzcuMTY3NSAyMC43MzY2IDM3LjI2NTMgMjAuNjg5NSAzNy4zNDM4QzIwLjY0MjMgMzcuNDIxNiAyMC41OTA5IDM3LjQ4NDEgMjAuNTM0MiAzNy41MzQyQzIwLjQ3NzMgMzcuNTgxMyAyMC40MTcyIDM3LjYxOTcgMjAuMzYwNCAzNy42NDQ1TDIwLjk0NTMgMzkuNDQ4MkgyMC4yNDQxTDE5Ljc1NDkgMzcuNzk4OEMxOS43MTA3IDM3LjgwNDkgMTkuNjU2OCAzNy44MTE1IDE5LjU5MDggMzcuODExNUgxOS4zOTc1VjM5LjQ0ODJIMTguNzFWMzUuNDY0OEgxOS42NzU4Wk0yNi44NDY3IDM5LjQ0ODJIMjYuMTgxNkwyNi4wNTc2IDM4LjU2MzVIMjUuMzAzN0wyNS4xODA3IDM5LjQ0ODJIMjQuNTE0NkwyNS4yNTI5IDM1LjQ2NDhIMjYuMTA4NEwyNi44NDY3IDM5LjQ0ODJaTTI4LjYzMDkgMzUuNDY0OEMyOS4wMTUzIDM1LjQ2NDkgMjkuMzA1NiAzNS41NTU4IDI5LjUwMSAzNS43MzQ0QzI5LjY5NjkgMzUuOTE2MSAyOS43OTQ5IDM2LjIxNzUgMjkuNzk0OSAzNi42NDA2QzI5Ljc5NDkgMzYuODAzNCAyOS43ODIzIDM2Ljk0MTkgMjkuNzUzOSAzNy4wNTQ3QzI5LjcyNTUgMzcuMTY3NSAyOS42OTA3IDM3LjI2NTMgMjkuNjQzNiAzNy4zNDM4QzI5LjU5NjUgMzcuNDIxNSAyOS41NDU0IDM3LjQ4NDEgMjkuNDg5MyAzNy41MzQyQzI5LjQzMjQgMzcuNTgxMiAyOS4zNzIzIDM3LjYxOTcgMjkuMzE1NCAzNy42NDQ1TDI5Ljg5OTQgMzkuNDQ4MkgyOS4xOTgyTDI4LjcwOSAzNy43OTg4QzI4LjY2NDggMzcuODA0OSAyOC42MTA4IDM3LjgxMTUgMjguNTQ0OSAzNy44MTE1SDI4LjM1MjVWMzkuNDQ4MkgyNy42NjQxVjM1LjQ2NDhIMjguNjMwOVpNMzEuNjYwMiAzNi45ODI0SDMxLjY2OTlMMzIuMTMwOSAzNS40NjQ4SDMyLjgzMkwzMS45OTggMzcuNzkyVjM5LjQ0ODJIMzEuMzA5NlYzNy43OTJMMzAuNDc2NiAzNS40NjQ4SDMxLjE3NzdMMzEuNjYwMiAzNi45ODI0Wk0xMjguNjk4IDAuMDkwODIwM0MxMjUuMjU1IDEuNDE0MzcgMTIwLjY3OCAyLjUzNzQzIDExMi42MTEgNi43NDAyM0MxMDQuMDM5IDExLjIwOTcgOTUuNDQxMiAxNy4zMDA4IDg1LjcwMTIgMjQuNzgxMkM3OS44MDU2IDI5LjMxMDIgNzguNTY4IDMwLjg5MTUgNzkuNTUyNyAzMi43MDEyQzgwLjYyNjcgMzQuNjc5IDg0Ljc5NjIgMzkuMTgzNCA4NC44MTQ1IDM5LjIwMzFDODQuODE0NSAzOS4yMDMxIDc5LjE2MTggMzYuOTA0NCA3NS44NjMzIDMyLjQ1N0M3My43MzA5IDI5LjU4MyA2Ny42MzU5IDIwLjA4NyA2Ny42MTMzIDIwLjA1MThDNjcuNjUxIDIwLjA3MjggNzMuMjI3MiAyMy4xODYyIDc2Ljc5NzkgMjQuMzQyOEM3OS4wNjM1IDI1LjEyNjggNzkuNDU1NSAyNC43ODQ0IDgxLjAzMDMgMjMuMjY5NUM4Mi4wNTk5IDIyLjI3NzkgOTcuNzcwMyA2LjM2Nzg4IDEwMy4xMiA0LjA1MjczQzEwOS41NjUgMS4yNjQ0MSAxMTguMjIzIDAuMDkwODQ0OSAxMjQuMDQ2IDAuMDkwODIwM0gxMjguNjk4Wk0xMzIgNi43NTI5M0MxMzIgNy43NzIyNyAxMzAuOTI3IDkuOTgzNjQgMTI5LjY1MSAxMC41NTc2QzEyOC4zMjggMTEuMTUxMSAxMDQuNSAyMC42ODU2IDg5LjAwMjkgMzEuMTkyNEM4OS4wNTA0IDMxLjIxMTQgOTcuOTg3NCAzNC43OSAxMDUuNjY1IDM0Ljc5QzExMi4zMDkgMzQuNzg5NCAxMTguMDQ0IDIxLjgxNTEgMTE4LjA2NSAyMS43Njc2TDk5Ljc3NDQgMjcuMzI4MUM5OS43NzQ0IDI3LjMyODEgMTExLjI4NiAyMS4yMTU2IDEyOC43MDEgMTQuMTI0QzEyOC42NTcgMTQuMjM4MiAxMTkuMDg0IDM5LjIwMzEgMTA5LjAyMiAzOS4yMDMxQzk5Ljk2NzQgMzkuMjA2MiA4Ny4wMzAzIDM0LjYwODEgODEuOTE0MSAzMS4zODA5QzgxLjk4ODEgMzEuMzI4OSA5OC42Nzg4IDE5LjYyMDkgMTExLjk0NSAxMi44MjgxTDExMy4yMjQgMTIuMTkxNEMxMjIuMTc3IDcuNzUwNCAxMzEuMzE3IDYuNzUzMDIgMTMyIDYuNzUyOTNaTTIuMzQxOCAzNy45NzA3SDIuODk3NDZMMi42MjU5OCAzNi4yNjE3SDIuNjEzMjhMMi4zNDE4IDM3Ljk3MDdaTTI1LjQwNDMgMzcuOTcwN0gyNS45NkwyNS42ODg1IDM2LjI2MTdIMjUuNjc1OEwyNS40MDQzIDM3Ljk3MDdaTTE5LjM5NzUgMzcuMjUyOUgxOS42NDE2QzE5LjczMjggMzcuMjUyOSAxOS44MTIgMzcuMjQzMyAxOS44Nzc5IDM3LjIyNDZDMTkuOTQxMiAzNy4yMDU5IDE5Ljk5NDEgMzcuMTc0IDIwLjAzNTIgMzcuMTI0QzIwLjA3NjMgMzcuMDc2OSAyMC4xMDUyIDM3LjAxNDEgMjAuMTI0IDM2LjkzMjZDMjAuMTQyOCAzNi44NTQxIDIwLjE1MjMgMzYuNzUzNiAyMC4xNTIzIDM2LjYzNzdDMjAuMTUyMyAzNi40MDI0IDIwLjExNDMgMzYuMjQyOCAyMC4wMzUyIDM2LjE1NTNDMTkuOTU2NSAzNi4wNjczIDE5LjgyNzcgMzYuMDI2NCAxOS42NDE2IDM2LjAyNjRIMTkuMzk3NVYzNy4yNTI5Wk0yOC4zNTI1IDM3LjI1MjlIMjguNTk1N0MyOC42ODY5IDM3LjI1MjkgMjguNzY2MSAzNy4yNDMzIDI4LjgzMiAzNy4yMjQ2QzI4Ljg5NTUgMzcuMjA1OSAyOC45NDkxIDM3LjE3NDEgMjguOTkwMiAzNy4xMjRDMjkuMDMxMyAzNy4wNzcgMjkuMDU5NCAzNy4wMTQgMjkuMDc4MSAzNi45MzI2QzI5LjA5NzQgMzYuODU0MSAyOS4xMDY0IDM2Ljc1MzYgMjkuMTA2NCAzNi42Mzc3QzI5LjEwNjQgMzYuNDAyNyAyOS4wNjkyIDM2LjI0MjkgMjguOTkwMiAzNi4xNTUzQzI4LjkxMTYgMzYuMDY3MiAyOC43ODE5IDM2LjAyNjQgMjguNTk1NyAzNi4wMjY0SDI4LjM1MjVWMzcuMjUyOVpNMjkuMzM2OSA2LjYzNjcyVjE5Ljg3M0gxMS4yMTY4VjI1LjUzNDJIMzAuODM5OEwyNS44Nzc5IDMyLjU5NDdMMS40NzM2MyAzMi41NzUyTDEuNDgzNCAxMi44MDk2SDE5LjcxMDlWNy42OTcyN0wxOS4zNDE4IDcuMTk1MzFINC45NDkyMkwwLjg4MDg1OSAxLjQ0OTIySDAuOTMwNjY0TDAgMC4xMzE4MzZIMjQuNzczNEwyOS4zMzY5IDYuNjM2NzJaTTcyLjU3MTMgMzEuMzgwOUM3Mi41NzEzIDMxLjM4MDkgNjQuMzUyNSAyOS4xNzg2IDYyLjA0MiAyNi44ODU3QzU5LjczNjYgMjQuNTk3NyA1Ny4yMzA3IDE3LjcyNjMgNTcuMjE5NyAxNy42OTYzSDU3LjIyMjdMNzIuNTcxMyAzMS4zODA5Wk00Ljc4MTI1IDQuNTEzNjdIMTkuMTY1TDIxLjA4NjkgNy4xNDQ1M1YxNC4xNzY4SDIuODU2NDVWMjkuOTE2SDI1LjE5NjNMMjcuMzc5OSAyNi44OTg0SDguOTU3MDNWMTcuMTk0M0gyNy4wODRWNS43NTE5NUwyNC4wNjM1IDEuNDk2MDlIMi42NDQ1M0w0Ljc4MTI1IDQuNTEzNjdaTTU0LjE3MzggNy4zNjEzM1YxOS4wMzIyTDQ2Ljk4NzMgMjYuODk4NEg0MS42NzE5TDM5LjU0NDkgMjMuODc3OVY3LjM1ODRMNDEuNjc3NyA0LjQyODcxSDUyLjA3ODFMNTQuMTczOCA3LjM2MTMzWk00MS43OTQ5IDkuMTE4MTZWMjQuNzAwMkw0Mi4zODE4IDI1LjUzNDJINDYuNzQxMkw1Mi44MDA4IDE4LjkwNDNWNy44Nzg5MUg1Mi43OTc5TDUyLjI0OCA3LjExMDM1SDQzLjI1NjhMNDEuNzk0OSA5LjExODE2WiIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzIzOTFfNTM0MzgpIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMjM5MV81MzQzOCIgeDE9IjMyLjMxMzYiIHkxPSIyMCIgeDI9IjcxLjU2MTIiIHkyPSIyMCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRTBCRTYyIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0Y1RjVEQyIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=");
+                    height: 30px;
+                    width: 84px;
+                    min-width: 30px;
+                }
+                
+                ` : ``}
+                
                 .bg .btn.disabled:hover{
                     box-shadow: none;
                 }
@@ -3250,7 +3260,7 @@ class QisPolicyPageComponent {
                         width: 25%;
                         position: absolute;
                         z-index: 3;
-                        --borderColor: #FF3535;
+                        --borderColor: var(--primary-60);
                         ${theme !== "asus" && theme !== "rt" ? `
                         background: linear-gradient(to left, var(--borderColor), var(--borderColor)) left top no-repeat, linear-gradient(to bottom, var(--borderColor), var(--borderColor)) left top no-repeat, linear-gradient(to left, var(--borderColor), var(--borderColor)) right top no-repeat, linear-gradient(to bottom, var(--borderColor), var(--borderColor)) right top no-repeat, linear-gradient(to left, var(--borderColor), var(--borderColor)) left bottom no-repeat, linear-gradient(to bottom, var(--borderColor), var(--borderColor)) left bottom no-repeat, linear-gradient(to left, var(--borderColor), var(--borderColor)) right bottom no-repeat, linear-gradient(to left, var(--borderColor), var(--borderColor)) right bottom no-repeat;
                         background-size: 1px 4px, 4px 1px, 1px 4px, 4px 1px;
@@ -3396,7 +3406,7 @@ class QisPolicyPageComponent {
                         <div class="page-title" role="heading" aria-level="1" aria-label="${title_orig}">${title}</div>
                         <div>
                             <div class="page-content">
-                                <div class="page-desc">${ASUS_POLICY.Dict.QisDesc}</div>
+                                <div class="page-desc">${ASUS_POLICY.Dict.QisDesc.replaceAll("%@", ASUS_POLICY.Dict.I_Understand)}</div>
                                 <div class="policy-content"></div>
                                 ${policy == 'EULA' ? `<div class="scroll-info">${ASUS_POLICY.Dict.ScrollDown}</div>` : ``}
                                 <div class="policy-age"></div>
@@ -3711,6 +3721,167 @@ class FeedbackNoticeModalComponent {
     }
 }
 
+class NotificationModalComponent {
+    constructor(props) {
+        const {
+            id = 'notification_popup_modal',
+            title = '',
+            message = '',
+            theme = this.getTheme(),
+            modalSize = '',
+            closeBtnText = '',
+            closeCallback = function () {
+            },
+        } = props;
+        this.id = id;
+        this.closeCallback = closeCallback;
+
+        const div = document.createElement('div');
+        div.id = id;
+        const shadowRoot = div.attachShadow({mode: 'open'});
+        const template = document.createElement('template');
+
+        let color = "dark";
+        if (isSupport("UI4") || theme == "business") {
+            color = "light";
+        }
+
+        template.innerHTML = `
+          ${ASUS_POLICY.PolicyModalStyle}
+          <div class="popup_bg" data-asuswrt-color="${color}" data-asuswrt-theme="${theme}">
+            <div class="modal" tabindex="0">
+                <div class="modal-dialog ${modalSize}">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div class="modal-title"></div>
+                        </div>
+                        <div class="modal-body">
+                            <div class="policy-scroll-div lh-lg"></div>
+                        </div>
+                        <div class="modal-footer">
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        `;
+
+        shadowRoot.appendChild(template.content.cloneNode(true));
+        this.element = div;
+
+        this.setupFocusTrap();
+
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'btn btn-primary btn-block close';
+        closeBtn.innerHTML = closeBtnText || ASUS_POLICY.Dict.Ok;
+        closeBtn.addEventListener('click', this.handleClickClose.bind(this));
+        this.closeBtn = closeBtn;
+
+        if (title) {
+            this.element.shadowRoot.querySelector('div.modal-title').innerHTML = title;
+        }
+        if (message) {
+            this.element.shadowRoot.querySelector('div.policy-scroll-div').innerHTML = message;
+        }
+
+        this.element.shadowRoot.querySelector('div.modal-footer').appendChild(closeBtn);
+    }
+
+    closeBtn = null;
+
+    setupFocusTrap() {
+        this.element.addEventListener('keydown', this.handleKeyDown.bind(this));
+    }
+
+    getFocusableElements() {
+        const shadowRoot = this.element.shadowRoot;
+        const focusableSelector = 'button:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
+        return Array.from(shadowRoot.querySelectorAll(focusableSelector));
+    }
+
+    handleKeyDown(event) {
+        if (event.key === 'Tab') {
+            const focusableElements = this.getFocusableElements();
+            if (focusableElements.length === 0) return;
+
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+
+            if (event.shiftKey) {
+                if (this.element.shadowRoot.activeElement === firstElement || this.element.shadowRoot.activeElement === null) {
+                    event.preventDefault();
+                    lastElement.focus();
+                }
+            } else {
+                if (this.element.shadowRoot.activeElement === lastElement) {
+                    event.preventDefault();
+                    firstElement.focus();
+                }
+            }
+        }
+    }
+
+    focusFirstElement() {
+        const focusableElements = this.getFocusableElements();
+        if (focusableElements.length > 0) {
+            focusableElements[0].focus();
+        }
+    }
+
+    getTheme() {
+        let ui_support = httpApi.hookGet("get_ui_support");
+
+        function isSupport(_ptn) {
+            return ui_support[_ptn] ? true : false;
+        }
+
+        let theme = 'rt';
+        if (isSupport("UI4")) {
+            theme = 'asus'
+        }
+        if (isSupport("rog")) {
+            return "rog";
+        } else if (isSupport("tuf")) {
+            return "tuf";
+        } else if (isSupport("business")) {
+            return "business";
+        } else if (isSupport("TS_UI")) {
+            return "ts";
+        } else {
+            return theme;
+        }
+    }
+
+    handleClickClose() {
+        this.closeCallback();
+        this.hide();
+    }
+
+    render() {
+        setTimeout(() => {
+            this.focusFirstElement();
+        }, 100);
+        return this.element;
+    }
+
+    show() {
+        top.document.body.style.overflow = 'hidden';
+        if (top.document.querySelector(`#${this.id}`) == null) {
+            top.document.body.appendChild(this.element);
+        }
+
+        setTimeout(() => {
+            this.focusFirstElement();
+        }, 100);
+    }
+
+    hide() {
+        top.document.body.style.removeProperty('overflow');
+        this.element.remove();
+    }
+}
+
 function showPersonalData() {
     const PersonalDataModal = new PersonalDataModalComponent({});
     PersonalDataModal.show();
@@ -3724,6 +3895,6 @@ function showFeedbackNotice() {
 
 if (typeof module !== 'undefined') {
     module.exports = {
-        PolicyModalComponent, PolicyWithdrawModalComponent, ThirdPartyPolicyModalComponent
+        PolicyModalComponent, PolicyWithdrawModalComponent, ThirdPartyPolicyModalComponent, NotificationModalComponent
     };
 }

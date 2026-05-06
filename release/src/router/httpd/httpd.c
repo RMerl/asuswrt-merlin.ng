@@ -268,7 +268,8 @@ extern int save_iptv_port(char *isp);
 #endif
 
 extern int get_file_md5(char *file, char *out, int len);
-extern int get_string_md5(const char *input_string, char *out, int len);
+
+#define UI_REV_HASH_LEN 24
 
 int check_current_ip_is_lan_or_wan();
 
@@ -294,8 +295,6 @@ int login_error_status = 0;
 char cloud_file[256];
 char indexpage[128];
 
-static char cached_extendno[256] = {0};
-static char cached_extendno_md5[33] = {0};
 
 /* Added by Joey for handle one people at the same time */
 unsigned int login_ip = 0; // IPv6 compat: the logined ip
@@ -305,6 +304,7 @@ time_t login_timestamp=0; // the timestamp of the logined ip
 time_t login_timestamp_tmp=0; // the timestamp of the current session.
 unsigned int login_ip_tmp = 0; // IPv6 compat: the ip of the current session.
 uaddr login_uip_tmp = {0}; // the ip of the current session.
+uaddr app_login_uip = {0}; // the app log ip
 usockaddr login_usa_tmp = {0};
 //Add by Andy for handle the login block mechanism by LAN/WAN
 time_t login_timestamp_tmp_wan=0; // the timestamp of the current session.
@@ -748,10 +748,6 @@ send_headers( int status, char* title, char* extra_header, char* mime_type, int 
     (void) fprintf( conn_fp, "Date: %s\r\n", timebuf );
 
 	if ( extra_header != (char*) 0 && *extra_header != '\0'){
-
-		if(!strcmp(extra_header, cache_object) && fromapp != 0){
-			extra_header = cache_long_object;
-		}
 		(void) fprintf( conn_fp, "%s\r\n", extra_header );
 	}
 
@@ -977,11 +973,33 @@ static char *mod_url_path(char *path, char *tpath, size_t tpath_size)
 static inline char *mod_url_path(char *path, char *tpath, size_t tpath_size) { return path; }
 #endif
 
+static void
+copy_request_path_without_query(const char *request_path, char *out, size_t len)
+{
+	const char *query = NULL;
+	size_t copy_len = 0;
+
+	if (!out || len == 0)
+		return;
+
+	out[0] = '\0';
+	if (!request_path)
+		return;
+
+	query = strchr(request_path, '?');
+	copy_len = query ? (size_t)(query - request_path) : strlen(request_path);
+	if (copy_len >= len)
+		copy_len = len - 1;
+
+	memcpy(out, request_path, copy_len);
+	out[copy_len] = '\0';
+}
+
 void do_file(char *path, FILE *stream)
 {
 	FILE *fp;
-	char buf[1024], tmp_path[256];
-	char *_path = mod_url_path(path, tmp_path, sizeof(tmp_path));
+	char buf[1024], request_path[1024], tmp_path[256];
+	char *_path;
 	int nr;
 	int read_count = 0;
 
@@ -990,6 +1008,9 @@ void do_file(char *path, FILE *stream)
 	off_t content_start = 0;
 	off_t content_end = 0;
 	off_t content_length = 0;
+
+	copy_request_path_without_query(path, request_path, sizeof(request_path));
+	_path = mod_url_path(request_path, tmp_path, sizeof(tmp_path));
 
 	if(stat(_path, &buf_size) == 0)
 		file_size = buf_size.st_size;
@@ -1047,7 +1068,7 @@ void do_file(char *path, FILE *stream)
 		fclose(fp);
 	}
 
-	if (_path != path && _path != tmp_path)
+	if (_path != request_path && _path != tmp_path)
 		free(_path);
 }
 
@@ -1188,55 +1209,197 @@ int getEtagHeaderFlag(const char *key)
     return 1;
 }
 
-int append_etag_header(char *file, char *extra_header, char *if_none_match, char *title, int title_len, char *final_header, int final_header_len)
+static int
+should_vary_etag_by_runtime(const struct mime_handler *handler)
+{
+	return handler && handler->output && handler->output != do_file;
+}
+
+int
+get_ui_rev(char *out, size_t len)
+{
+	static const char *ui_cache_schema_version = "3";
+	char tuple[256] = {0};
+	char digest[33] = {0};
+
+	if (!out || len == 0)
+		return -1;
+
+	out[0] = '\0';
+
+	snprintf(
+		tuple,
+		sizeof(tuple),
+		"%s|%s|%s|%s|%s|%s",
+		ui_cache_schema_version,
+		nvram_safe_get("preferred_lang"),
+		nvram_safe_get("firmver"),
+		nvram_safe_get("buildno"),
+		nvram_safe_get("extendno"),
+		nvram_safe_get("productid")
+	);
+
+	str_to_md5(tuple, strlen(tuple), digest);
+	snprintf(out, len, "%.*s", UI_REV_HASH_LEN, digest);
+	return 0;
+}
+
+static char *
+resolve_cache_header(const struct mime_handler *handler)
+{
+	if (handler && should_vary_etag_by_runtime(handler))
+		return no_cache;
+
+	return handler ? handler->extra_header : NULL;
+}
+
+static void
+append_runtime_variant_to_etag(char *etag_value, size_t etag_len, const struct mime_handler *handler)
+{
+	char current_ui_rev[UI_REV_HASH_LEN + 1] = {0};
+	char variant[64] = {0};
+	size_t current_len = 0;
+	int variant_len = 0;
+
+	if (!etag_value || etag_len == 0 || !should_vary_etag_by_runtime(handler))
+		return;
+
+	if (get_ui_rev(current_ui_rev, sizeof(current_ui_rev)) != 0)
+		return;
+
+	variant_len = snprintf(variant, sizeof(variant), "|ui_rev=%s", current_ui_rev);
+	if (variant_len <= 0 || (size_t) variant_len >= sizeof(variant))
+		return;
+
+	current_len = strlen(etag_value);
+	if (current_len + (size_t) variant_len >= etag_len)
+		return;
+
+	strlcat(etag_value, variant, etag_len);
+}
+
+static int
+etag_token_matches(const char *if_none_match, const char *etag_value)
+{
+	const char *token = NULL;
+	const char *end = NULL;
+	size_t etag_len = 0;
+
+	if (!if_none_match || !etag_value || !*etag_value)
+		return 0;
+
+	etag_len = strlen(etag_value);
+
+	while (*if_none_match) {
+		token = if_none_match;
+		end = strchr(token, ',');
+		if (!end)
+			end = token + strlen(token);
+
+		while (token < end && isspace((unsigned char) *token))
+			token++;
+		while (end > token && isspace((unsigned char) *(end - 1)))
+			end--;
+
+		if (end > token) {
+			if ((end - token) == 1 && *token == '*')
+				return 1;
+
+			if ((end - token) >= 2 && (token[0] == 'W' || token[0] == 'w') && token[1] == '/') {
+				token += 2;
+				while (token < end && isspace((unsigned char) *token))
+					token++;
+			}
+
+			if ((size_t) (end - token) == etag_len && strncmp(token, etag_value, etag_len) == 0)
+				return 1;
+
+			if ((size_t) (end - token) == etag_len + 2 &&
+			    token[0] == '"' &&
+			    *(end - 1) == '"' &&
+			    strncmp(token + 1, etag_value, etag_len) == 0)
+				return 1;
+		}
+
+		if_none_match = *end ? end + 1 : end;
+	}
+
+	return 0;
+}
+
+static int
+header_date_matches(const char *header_value, time_t compare_time)
+{
+	char expected[100] = {0};
+	char incoming[128] = {0};
+	const char *end = NULL;
+	size_t copy_len = 0;
+
+	if (!header_value || !*header_value)
+		return 0;
+
+	while (*header_value && isspace((unsigned char) *header_value))
+		header_value++;
+
+	end = header_value + strcspn(header_value, ";\r\n");
+	while (end > header_value && isspace((unsigned char) *(end - 1)))
+		end--;
+
+	copy_len = end - header_value;
+	if (copy_len == 0 || copy_len >= sizeof(incoming))
+		return 0;
+
+	memcpy(incoming, header_value, copy_len);
+	incoming[copy_len] = '\0';
+
+	strftime(expected, sizeof(expected), RFC1123FMT, gmtime(&compare_time));
+	return strcmp(incoming, expected) == 0;
+}
+
+int append_etag_header(char *file, struct mime_handler *handler, char *if_none_match, char *title, int title_len, char *final_header, int final_header_len)
 {
 	int ret = 0, status = 200;
-	int etag_header_flag = 0, safariAgent = 0;
+	int etag_header_flag = 0;
 	time_t now = time(NULL);
-	char md5String[128] = {0}, timebuf[100] = {0};
+	time_t last_modified = now;
+	char etag_value[256] = {0}, timebuf[100] = {0};
+	char file_path[1024] = {0};
+	char *query = NULL;
+	char *extra_header = NULL;
+	struct stat st;
+	int is_static_file = 0;
 
 	strlcpy(title, "OK", title_len);
 
-	etag_header_flag = getEtagHeaderFlag(file);
+	strlcpy(file_path, file, sizeof(file_path));
+	query = strchr(file_path, '?');
+	if (query)
+		*query = '\0';
 
-	if(!strstr(user_agent, "Chrome") && strstr(user_agent, "Safari"))
-		safariAgent = 1;
+	extra_header = resolve_cache_header(handler);
+	etag_header_flag = getEtagHeaderFlag(file_path);
+	is_static_file = handler && handler->output == do_file;
 
-	if(!safariAgent && etag_header_flag > 0) {
-		if ((ret = get_file_md5(file, md5String, sizeof(md5String))) == 0) {
+	if (is_static_file && stat(file_path, &st) == 0)
+		last_modified = st.st_mtime;
 
-			strftime( timebuf, sizeof(timebuf), RFC1123FMT, gmtime( &now ) );
+	if(etag_header_flag > 0) {
+		if ((ret = get_file_md5(file_path, etag_value, sizeof(etag_value))) == 0) {
+			append_runtime_variant_to_etag(etag_value, sizeof(etag_value), handler);
 
-			if(etag_header_flag == 2) {
-				char *extendno = nvram_safe_get("extendno");
-				if (extendno && strlen(extendno) > 0) {
-					if (strcmp(cached_extendno, extendno) != 0) {
-						strlcpy(cached_extendno, extendno, sizeof(cached_extendno));
-						if (get_string_md5(extendno, cached_extendno_md5, sizeof(cached_extendno_md5)) != 0) {
-							cached_extendno_md5[0] = '\0';
-						}
-					}
+			strftime( timebuf, sizeof(timebuf), RFC1123FMT, gmtime( &last_modified ) );
 
-					if (cached_extendno_md5[0] != '\0') {
-						strlcat(md5String, cached_extendno_md5, sizeof(md5String));
-					}
-				}
-			}
-
-			if(strstr(file, ".js"))
-				strlcat(md5String, nvram_safe_get("preferred_lang"), sizeof(md5String));
-
-			if(etag_header_flag==2 && extra_header){
+			if(extra_header){
 				strlcpy(final_header, extra_header, final_header_len);
 				strlcat(final_header, "\r\n", final_header_len);
 			}
 			strlcat(final_header, "ETag: ", final_header_len);
-			strlcat(final_header, md5String, final_header_len);
+			strlcat(final_header, etag_value, final_header_len);
 			strlcat(final_header, "\r\n", final_header_len);
 			strlcat(final_header, "Last-Modified: ", final_header_len);
 			strlcat(final_header, timebuf, final_header_len);
 
-			if (if_none_match && strstr(if_none_match, md5String)){
+			if (etag_token_matches(if_none_match, etag_value)){
 				status = 304;
 				strlcpy(title, "Not Modified", title_len);
 			}
@@ -1258,6 +1421,7 @@ handle_request(void)
 	char line[10000], *cur;
 	char *method, *path, *protocol, *boundary, *alang, *cookies, *referer, *useragent, *range = NULL;
     char *if_none_match = NULL;
+	char *if_modified_since = NULL;
 	char *cp;
 	char *file;
 	int len;
@@ -1273,6 +1437,7 @@ handle_request(void)
 	char id_local[32],prouduct_id[32];
 #endif
 	char inviteCode[512];
+	char uip_tmp[128] = {0}, *temp_ip_str = NULL;
 
 	/* Initialize the request variables. */
 	auth_result = 1;
@@ -1457,9 +1622,18 @@ handle_request(void)
             if_none_match = cp;
             cur = cp + strlen(cp) + 1;
         }
+		else if ( strncasecmp( cur, "If-Modified-Since:", 18 ) == 0 )
+		{
+			cp = &cur[18];
+			cp += strspn( cp, " \t" );
+			if_modified_since = cp;
+			cur = cp + strlen(cp) + 1;
+		}
 	}
 
 	slowloris_check();
+
+	temp_ip_str = safe_uaddr_ntop(&login_uip_tmp, uip_tmp, sizeof(uip_tmp));
 
 	if ( strcasecmp( method, "get" ) != 0 && strcasecmp(method, "post") != 0 && strcasecmp(method, "head") != 0 ) {
 		send_error( 501, "Not Implemented", (char*) 0, "That method is not implemented." );
@@ -1477,7 +1651,7 @@ handle_request(void)
 		return;
 	}
 
-	if(HTS == 1 && strcmp(inet_ntoa(login_usa_tmp.sa_in.sin_addr), "127.0.0.1")){ //allow tunnel pass
+	if(HTS == 1 && strcmp(temp_ip_str, "127.0.0.1")){ //allow tunnel pass
 		snprintf(inviteCode, sizeof(inviteCode), "<meta http-equiv=\"refresh\" content=\"0; https://%s:%d\">\r\n", gethost(), nvram_get_int("https_lanport"));
 		send_page( 307, "Temporary Redirect", (char*) 0, inviteCode, 0);
 		return;
@@ -1580,7 +1754,7 @@ handle_request(void)
 // _dprintf("[httpd] file: %s\n", file);
         }
 #endif
-	HTTPD_DBG("IP(%s), file = %s\nUser-Agent: %s\n", inet_ntoa(login_usa_tmp.sa_in.sin_addr), file, user_agent);
+	HTTPD_DBG("IP(%s), file = %s\nUser-Agent: %s\n", temp_ip_str, file, user_agent);
 	mime_exception = 0;
 	do_referer = 0;
 
@@ -1667,7 +1841,7 @@ handle_request(void)
 #if defined(RTCONFIG_AURALED) \
 	|| defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) \
 	|| defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) \
-	|| defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
+	|| defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI)
 				httpd_switch_ledg(LEDG_QIS_FINISH);
 #endif
 				if ((mime_exception&MIME_EXCEPTION_NOAUTH_FIRST)&&!x_Setting) {
@@ -1720,6 +1894,7 @@ handle_request(void)
 							&& !strstr(url, ".js")
 							&& !strstr(url, ".css")
 							&& !strstr(url, ".gif")
+							&& !strstr(url, ".webp")
 							&& !strstr(url, ".png")) {
 #if defined(RTCONFIG_WIRELESSREPEATER) || defined(RTCONFIG_CONCURRENTREPEATER)					 
 						if (nvram_match("x_Setting", "0") && (strstr(url, "start_apply2.htm") || strstr(url, "apscan.asp") || strstr(url, "data:image/")))
@@ -1776,46 +1951,50 @@ handle_request(void)
 				}
 #endif
 			}
-			if(!strstr(file, ".cgi") && !strstr(file, "syslog.txt") && !(strstr(file,"uploadIconFile.tar")) && (fnmatch("backup_jffs*.tar",file,0) == FNM_NOMATCH) && !(strstr(file,"networkmap.tar")) && !(strstr(file,".CFG")) && !(strstr(file,".log")) && !check_if_file_exist(file)
+				char file_path[1024] = {0};
+
+				copy_request_path_without_query(file, file_path, sizeof(file_path));
+				if(!strstr(file_path, ".cgi") && !strstr(file_path, "syslog.txt") && !(strstr(file_path,"uploadIconFile.tar")) && !(strstr(file_path,"networkmap.tar")) && !(strstr(file_path,"backup_jffs*.tar")) && !(strstr(file_path,".CFG")) && !(strstr(file_path,".log")) && !check_if_file_exist(file_path)
+
 #ifdef RTCONFIG_USB_MODEM
-					&& !strstr(file, "modemlog.txt")
+						&& !strstr(file_path, "modemlog.txt")
 #endif
 #ifdef RTCONFIG_DSL_TCLINUX
-					&& !strstr(file, "TCC.log")
+						&& !strstr(file_path, "TCC.log")
 #endif
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)
-					&& !strstr(file, "asustitle.png")
+						&& !strstr(file_path, "asustitle.png")
 #endif
-					&& !strstr(file,"cert.crt")
-					&& !strstr(file,"cacert_key.tar")
-					&& !strstr(file,"cert_key.tar")
-					&& !strstr(file,"cert.tar")
+						&& !strstr(file_path,"cert.crt")
+						&& !strstr(file_path,"cacert_key.tar")
+						&& !strstr(file_path,"cert_key.tar")
+						&& !strstr(file_path,"cert.tar")
 #ifdef RTCONFIG_OPENVPN
-					&& !strstr(file, "server_ovpn.cert")
+						&& !strstr(file_path, "server_ovpn.cert")
 #endif
 #ifdef RTCONFIG_CAPTCHA
-					&& !strstr(file, "captcha.gif")
+						&& !strstr(file_path, "captcha.gif")
 #endif
 #ifdef RTCONFIG_IPSEC
-					&& !strstr(file, "renew_ikev2_cert_mobile.pem") && !strstr(file, "ikev2_cert_mobile.pem")
-					&& !strstr(file, "renew_ikev2_cert_windows.der") && !strstr(file, "ikev2_cert_windows.der")
-					&& !strstr(file, "ipsec_s2s.conf")
-					&& !strstr(file, "server_ipsec.cert")
-					&& !strstr(file, "ipsec.log")
+						&& !strstr(file_path, "renew_ikev2_cert_mobile.pem") && !strstr(file_path, "ikev2_cert_mobile.pem")
+						&& !strstr(file_path, "renew_ikev2_cert_windows.der") && !strstr(file_path, "ikev2_cert_windows.der")
+						&& !strstr(file_path, "ipsec_s2s.conf")
+						&& !strstr(file_path, "server_ipsec.cert")
+						&& !strstr(file_path, "ipsec.log")
 #endif
-					&& !strstr(file, "get_download_info")
-					&& !strstr(file, "INO")
+						&& !strstr(file_path, "get_download_info")
+						&& !strstr(file_path, "INO")
 #ifdef RTCONFIG_WIREGUARD
-					&& !strstr(file, "wgs_client.")
+						&& !strstr(file_path, "wgs_client.")
 #endif
 #if defined(DSL_AX82U)
-					|| (is_ax5400_i1() &&
-						(strstr(file, "Advanced_TR069_Content.asp")
-						 || strstr(file, "Advanced_OAM_Content.asp")
-						 || strstr(file, "Advanced_ADSL_Content.asp")
-						))
+						|| (is_ax5400_i1() &&
+							(strstr(file_path, "Advanced_TR069_Content.asp")
+							 || strstr(file_path, "Advanced_OAM_Content.asp")
+							 || strstr(file_path, "Advanced_ADSL_Content.asp")
+							))
 #endif
-					){
+						){
               send_error( 404, "Not Found", (char*) 0, "File not found." );
               return;
            }
@@ -1823,7 +2002,28 @@ handle_request(void)
             int status = 200;
             char final_header[512] = {0}, title[64] = {0};
 
-            status = append_etag_header(file, handler->extra_header, if_none_match, title, sizeof(title), final_header, sizeof(final_header));
+            status = append_etag_header(file, handler, if_none_match, title, sizeof(title), final_header, sizeof(final_header));
+
+			if (status == 200 &&
+			    !if_none_match &&
+			    if_modified_since &&
+			    handler &&
+			    handler->output == do_file) {
+				char file_path[1024] = {0};
+				char *query = NULL;
+				struct stat st;
+
+				strlcpy(file_path, file, sizeof(file_path));
+				query = strchr(file_path, '?');
+				if (query)
+					*query = '\0';
+
+				if (stat(file_path, &st) == 0 &&
+				    header_date_matches(if_modified_since, st.st_mtime)) {
+					status = 304;
+					strlcpy(title, "Not Modified", sizeof(title));
+				}
+			}
 
 			if (nvram_match("x_Setting", "0") &&
 				(strcmp(url, "QIS_default.cgi") == 0 || strcmp(url, "page_default.cgi") == 0 ||
@@ -1835,7 +2035,7 @@ handle_request(void)
 			}else if (strncmp(url, "login.cgi", strlen(url)) != 0 && strcmp(file, "login_v2.cgi")) {
 				send_headers(status, title, final_header, handler->mime_type, fromapp);
 			}
-			if (strcasecmp(method, "head") != 0 && handler->output) {
+			if (status != 304 && strcasecmp(method, "head") != 0 && handler->output) {
 				handler->output(file, conn_fp);
 			}
 			break;
@@ -1906,6 +2106,11 @@ uaddr *uaddr_pton(const char *src, uaddr *uip)
 char *uaddr_ntop(const uaddr *uip, char *dst, size_t cnt)
 {
 	return (char *)inet_ntop(uip->family, &uip->in, dst, cnt);
+}
+
+char *safe_uaddr_ntop(const uaddr *uip, char *dst, size_t cnt)
+{
+	return ((char *)inet_ntop(uip->family, &uip->in, dst, cnt))?:"";
 }
 
 /* IPv6 compat */
@@ -2020,6 +2225,7 @@ void app_http_login(uaddr *uip)
 		return;
 
 	app_login_ip = uaddr_addr(uip); /* IPv6 compat */
+	app_login_uip = *uip;
 
 	snprintf(tmp, sizeof(tmp), "%lu", uptime());
 	nvram_set("app_login_timestamp", tmp);
@@ -2559,13 +2765,17 @@ void check_alive()
 		check_alive_count = 0;
 	}
 	else if(check_alive_count > 20){
-		struct in_addr ip_addr, temp_ip_addr, app_temp_ip_addr;
-		ip_addr.s_addr = login_ip;
-		app_temp_ip_addr.s_addr = app_login_ip;
-		temp_ip_addr.s_addr = login_ip_tmp;
+
+		char tmp1[128] = {0}, *login_ip_str = NULL;
+		char tmp2[128] = {0}, *temp_ip_str = NULL;
+		char tmp3[128] = {0}, *app_ip_str = NULL;
+
+		login_ip_str = safe_uaddr_ntop(&login_uip, tmp1, sizeof(tmp1));
+		app_ip_str = safe_uaddr_ntop(&app_login_uip, tmp2, sizeof(tmp2));
+		temp_ip_str = safe_uaddr_ntop(&login_uip_tmp, tmp3, sizeof(tmp3));
 		//dbg("slow_post_read_count(%d) > 3\n", slow_post_read_count);
-		HTTPD_FB_DEBUG("login_ip = %s(%lu), app_login_ip = %s(%lu)\n", inet_ntoa(ip_addr), login_ip, inet_ntoa(app_temp_ip_addr), app_login_ip);
-		HTTPD_FB_DEBUG("login_ip_tmp = %s(%lu), url = %s\n", inet_ntoa(temp_ip_addr), login_ip_tmp, url);
+		HTTPD_FB_DEBUG("login_ip = %s(%lu), app_login_ip = %s(%lu)\n", login_ip_str, login_ip, app_ip_str, app_login_ip);
+		HTTPD_FB_DEBUG("login_ip_tmp = %s(%lu), url = %s\n", temp_ip_str, login_ip_tmp, url);
 		logmessage("HTTPD", "waitting 10 minitues and restart\n");
 		check_lock_state();
 		notify_rc("restart_httpd");
@@ -2996,8 +3206,9 @@ void start_ssl(int http_port)
 			/* Backup certificates if httpds initialization successful. */
 			if (save)
 				save_cert();
-
+#ifdef RTCONFIG_IPSEC
 			prn_cert_info(HTTPD_CERT);
+#endif
 			/* Unset reload flag if set */
 #if defined(RTCONFIG_IPV6)
 			if (!http_ipv6_only && nvram_get("httpds_reload_cert"))

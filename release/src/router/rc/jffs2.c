@@ -117,6 +117,7 @@ unsigned int get_root_type(void)
 		case MODEL_BT10:
 		case MODEL_BQ16:
 		case MODEL_BQ16_PRO:
+		case MODEL_BN12:
 		case MODEL_BM68:
 		case MODEL_XT8_V2:
 		case MODEL_RTAXE95Q:
@@ -155,6 +156,10 @@ unsigned int get_root_type(void)
 		case MODEL_GTBE19000:
 		case MODEL_GTBE19000AI:
 		case MODEL_GTBE96_AI:
+		case MODEL_GTBN98_PRO:
+		case MODEL_GTBN96X:
+		case MODEL_GTBN98:
+		case MODEL_GTBN96:
 			return 0x24051905;      /* ubifs */
 		case MODEL_DSLAX82U:
 		{

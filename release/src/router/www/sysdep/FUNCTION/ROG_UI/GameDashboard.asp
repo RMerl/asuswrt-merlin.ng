@@ -1111,6 +1111,18 @@ function showClientlistModal() {
 	const clientlistModal = new ClientlistModel();
 	clientlistModal.show();
 }
+if (isSupport("AURA_SCHED")) {
+	let script = document.createElement('script');
+	script.type = 'text/javascript';
+	script.src = '/js/ledScheduler.js';
+	script.onload = function() {
+		window.showLedScheduler = function(parms){
+			const ledScheduler = new popupLedScheduler(parms);
+			ledScheduler.show();
+		}
+	};
+	document.head.appendChild(script);
+}
 </script>
 </head>
 
@@ -1294,10 +1306,7 @@ function showClientlistModal() {
 																$ledg_html.find(".logo_container")
 																	.css({"width":"18vw", "background-position-y":"50%"});
 															}
-															const support_night_mode = (()=>{
-																return ((based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000" || based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI") ? true : false);
-															})();
-															if(support_night_mode){
+															if(isSupport("ledg_night_mode")){
 																$ledg_html.find(".light_effect_mask").css({
 																	"width":"102%",
 																	"margin-left":"-1%",
@@ -1452,11 +1461,11 @@ function showClientlistModal() {
 										</div>
 									</div>
 										<div id="uu_field" style="width:345px;height:425px;margin:-428px 0 0 390px;position: relative;display:none;">
-										<div style="font-size: 26px;color:#BFBFBF;margin-left:12px;">网易UU加速器</div>
+										<div style="font-size: 26px;color:#BFBFBF;margin-left:12px;"><#UU_Accelerator#></div>
 										<div style="margin: 24px 0 36px 18px;">
-											<img src="/images/uu_accelerator.png" alt="">
+											<img src="/images/UU_Logo_RGB.svg" alt="">
 										</div>
-										<div style="font-size:16px;margin: 0 6px;">UU路由器插件为三大主机PS4、Switch、Xbox One提供加速。可实现多台主机同时加速，NAT类型All Open。畅享全球联机超快感！</div>
+										<div style="font-size:16px;margin: 0 6px;"><#UU_Accelerator_desc#></div>
 										<div style="margin:6px;">
 											<a href="https://uu.163.com/router/" target="_blank" style="color:#4A90E2;text-decoration: underline">FAQ</a>
 										</div>

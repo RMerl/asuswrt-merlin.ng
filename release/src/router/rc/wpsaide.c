@@ -28,6 +28,21 @@ static void wpsaide_pbc(int sig)
 #ifdef CONFIG_BCMWL5
 	char tmp[100], prefix[] = "wlXXXXXXXXXX_";
 
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
+	nvram_set("wl0_mode_prev", nvram_safe_get("wl0_mode"));
+	nvram_set("wl1_mode_prev", nvram_safe_get("wl1_mode"));
+	nvram_set("wlc_psta_prev", nvram_safe_get("wlc_psta"));
+	nvram_set("wlc_dpsta_prev", nvram_safe_get("wlc_dpsta"));
+
+	if (!nvram_match("re_mode", "1") && nvram_match("x_Setting", "1")) {
+		if (nvram_match("wl0_mode", "ap") && nvram_match("wl1_mode", "ap")) {	// curr ap, role registra
+			_dprintf("%s: do not convert mode\n", __func__);
+		} else if (nvram_match("wl0_mode", "wet") && nvram_match("wl1_mode", "wet")) {	// curr rp, role not changed
+			_dprintf("%s: do not convert mode\n", __func__);
+		// (Removed large block of commented-out code)
+		}
+	}
+#endif
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	if (!nvram_match(strcat_r(prefix, "mode", tmp), "ap")
 #ifdef RTCONFIG_AMAS

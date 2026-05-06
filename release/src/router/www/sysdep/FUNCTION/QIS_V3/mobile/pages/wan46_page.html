@@ -1,5 +1,5 @@
 <style>
-span{
+.wan_detect{
 	border:0px solid #FFFFFF;
 	color:#FFFFFF;
 	font-size:24px;
@@ -7,6 +7,9 @@ span{
 	text-align:right;
 	margin:0px auto;
 	ime-mode:disabled;
+}
+.wan_detect_light{
+	color:#F02934;
 }
 </style>
 <script>
@@ -67,6 +70,14 @@ else{	//0 and else
 	wan46_result = wanTypeList.init;
 }
 
+$(document).ready(function() {
+	if (isSupport("UI4") || isSupport("business")) {
+		var $auto46detResult = $("#auto46det_result");
+		if ($auto46detResult.length) {
+			$auto46detResult.addClass("wan_detect_light");
+		}
+	}
+});
 </script>
 
 <div class="headerBar">
@@ -98,7 +109,7 @@ else{	//0 and else
 		</div>
 	</div>
 	<div class="table_td">
-		<div class="pageDesc"><#WAN_type_detected#> : <span id="auto46det_result"></span></div>
+		<div class="pageDesc"><#WAN_type_detected#> : <span id="auto46det_result" class="wan_detect"></span></div>
 		<div id="hint_msg"></div>
 		
 		<div style="margin-top:160px;">

@@ -37,7 +37,10 @@ function load_page(){
 function initial(){
 	show_menu();
 
-	if(CoBrand == "8"){
+	if(isSupport("UI4")){
+		$("#FormTitle").css("background-color", "transparent");
+	}
+	else if(CoBrand == "8"){
 		$("#FormTitle").css("background", "#24272A");
 	}
 	else if(rog_support){

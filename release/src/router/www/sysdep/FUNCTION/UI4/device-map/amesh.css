@@ -1,4 +1,4 @@
-﻿.description_table {
+.description_table {
 	margin-bottom: 5px;
 	border-color: #2e393d;
 	border-collapse: collapse;
@@ -955,7 +955,7 @@
 .aimesh_node_category_bg {
 	color: #262626;
 	font-size: 1.1em;
-	background-color: #dcdcdc!important;
+	background-color: #dcdcdc;
 	text-align: left;
 	font-weight: bolder;
 	/*border: 1px solid #222;*/

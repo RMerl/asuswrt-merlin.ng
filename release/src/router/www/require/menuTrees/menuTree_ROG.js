@@ -80,6 +80,7 @@ define(function(){
 					{url: "ParentalControl.asp", tabName: "<#Time_Scheduling#>"},
 					{url: "YandexDNS.asp", tabName: "<#YandexDNS#>"},
 					{url: "adGuard_DNS.asp", tabName: "AdGuard"},
+					{url: "Ark_WebHistory_Content.asp", tabName: "<#Adaptive_History#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -88,7 +89,7 @@ define(function(){
 				index: "menu_GameBoost",
 				tab: [
 					{url: "GameBoost.asp", tabName: "<#Game_acceleration#>"},
-					{url: "QoS_EZQoS.asp", tabName: "<#menu5_3_2#>"},
+					{url: "QoS_EZQoS.asp", tabName: "<#Adaptive_QoS#>"},
 					{url: "QoS_Stats.asp", tabName: "Classification"},
 					{url: "Advanced_QOSUserPrio_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_QOSUserRules_Content.asp", tabName: "__INHERIT__"},
@@ -330,7 +331,7 @@ define(function(){
 					{url: "Main_IPTStatus_Content.asp", tabName: "<#menu5_7_5#>"},
 					{url: "Main_AdslStatus_Content.asp", tabName: "<#menu_dsl_log#>"},
 					{url: "Main_ConnStatus_Content.asp", tabName: "<#Connections#>"},
-					{url: "Main_Security_Change_Notification.asp", tabName: "Security Update Notification"},
+					{url: "Main_Security_Change_Notification.asp", tabName: "<#Notification_security_update#>"},
 					/* {url: "###Main_ConnStatus_Content.asp", tabName: "Captive Portal Connection Log"}, */
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
@@ -372,14 +373,6 @@ define(function(){
 
 				if(!dashboard_support){
 					retArray.push("menu_NewDashboard");
-				}
-
-				if(!isSupport("adaptive_qos") && !isSupport("bandwidth_monitor") && !isSupport("dns_dpi")){	
-					for(i=0; i<menuTree.list.length; i++){
-						if(menuTree.list[i].menuName == '<#Adaptive_QoS#>'){
-							menuTree.list[i].menuName = '<#menu5_3_2#>';
-						}
-					}
 				}
 
 				if(!isSupport("dpi_mals") && !isSupport("dpi_cc") && !isSupport("dpi_vp")){
@@ -616,7 +609,7 @@ define(function(){
 					retArray.push("adGuard_DNS.asp");
 				}
 
-				if(!frs_feedback_support) {		
+				if(!frs_feedback_support) {
 					retArray.push("Advanced_Feedback.asp");
 					retArray.push("Feedback_Info.asp");
 				}
@@ -624,13 +617,15 @@ define(function(){
 				if(noftp_support){
 					retArray.push("Advanced_AiDisk_ftp.asp");
 				}
-				
+
 				if(!dualWAN_support){
 					retArray.push("Advanced_WANPort_Content.asp");
 				}
 				else{
 					if(!dualwan_enabled && usb_index == 0){
 						retArray.push("Advanced_WAN_Content.asp");
+						if(dsl_support)
+							retArray.push("Advanced_DSL_Content.asp");
 						if(!gobi_support)
 							retArray.push("Advanced_MobileBroadband_Content.asp");
 						else
@@ -888,12 +883,20 @@ define(function(){
 					retArray.push("DNSDirector.asp");
 				}
 
-				if (isSupport("gtbooster")) {
-					if (isSupport("ark_iam")) {
-						retArray.push("AiProtection_WebProtector.asp");
-					} else {
-						retArray.push("AiProtection_ContentFilter.asp");
+				if(isSupport("ark_qoe")){
+					for (i = 0; i < menuTree.list.length; i++) {
+						if (menuTree.list[i].menuName == '<#Adaptive_QoS#>') {
+							menuTree.list[i].menuName = '<#Adaptive_QoE#>';
+						}
 					}
+					replaceTabNameByUrl("menu_BandwidthMonitor", "QoS_EZQoS.asp", "<#Adaptive_QoE#>");
+				}
+
+				if (isSupport("ark_iam")) {
+					retArray.push("AiProtection_WebProtector.asp");
+				} else {
+					retArray.push("AiProtection_ContentFilter.asp");
+                    retArray.push("Ark_WebHistory_Content.asp");
 				}
 
 				/* System Status Changed */

@@ -1,4 +1,5 @@
-﻿:root{
+﻿:root,
+:host{
 	--primary-color: #FF9E1B;
 	--primary-alpha40: rgba(255,170,50,0.4);
 	--bg-container: #1C1C1D;
@@ -257,6 +258,9 @@
 .customize_alert .desc{
 	color: #FFFFFF;
 }
+.customize_alert .title{
+	color: #FF9E1B;
+}
 .del_profile .title{
 	color: #FFFFFF;
 }
@@ -310,6 +314,9 @@
 	background: rgba(128, 128, 128, 0.1);
 }
 .custom_select_container .select_options_container div.disabled{
+	color: rgb(255 255 255 / 50%);
+}
+.custom_select_container .select_options_container span.option_sub_text{
 	color: rgb(255 255 255 / 50%);
 }
 .custom_select_container .select_options_container::-webkit-scrollbar-track,

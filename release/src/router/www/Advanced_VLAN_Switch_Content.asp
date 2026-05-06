@@ -58,8 +58,54 @@
 		text-align:center;
 	}
 
-	.FormTable thead td{
+	.vlan-thead {
+		border-bottom: 2px solid var(--wrt-table-border-color, #3E4E59);
+		padding: 8px 12px;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+	.vlan-header {
+		font-size: 1rem;
+		font-weight: bold;
+		color: var(--wrt-text-color, #ffffff);
+		background-color: var(--gradient-color-primary, #ffffff12);
+		padding: 3px 10px;
+		border-radius: 3px;
+		white-space: nowrap;
+	}
+	.vlan-device-info {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		flex: 1;
+	}
+	.vlan-device-info .info-model {
+		font-weight: bold;
+	}
+	.vlan-device-info .info-item {
+		font-size: 12px;
+		font-family: monospace;
+	}
+	.vlan-row {
+		display: flex;
+		border-bottom: 1px solid #3E4E59;
+	}
+	.vlan-th {
+		width: 15%;
+		padding: 4px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: var(--wrt-table-header-bg, #ffffff12);
+	}
+	.vlan-td {
+		flex: 1;
+		padding: 4px;
 		text-align: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
 	}
 
 	select {
@@ -276,7 +322,7 @@ httpApi.get_VLAN_port_status = function(mac) {
 										data["special_port_name"] = data["special_port_name"] + "G baseT";
 								} else
 									data["special_port_name"] = data["special_port_name"] + "G";
-								
+
 							}
 						}
 					}
@@ -658,7 +704,7 @@ var get_VLAN_Status;
 function initial() {
 	show_menu();
 	$("#vlan_desc2").html(str_vlan_desc2);
-	var vlan_switch_array = { "VLAN" : ["VLAN", "Advanced_VLAN_Switch_Content.asp"], "Profile" : ["Profile", "Advanced_VLAN_Profile_Content.asp"]};
+	var vlan_switch_array = { "VLAN" : ["VLAN", "Advanced_VLAN_Switch_Content.asp"], "Profile" : ["<#vpnc_profile#>", "Advanced_VLAN_Profile_Content.asp"]};
 	$('#divSwitchMenu').html(gen_switch_menu(vlan_switch_array, "VLAN"));
 
 	get_VLAN_Status = update_VLAN_ports();
@@ -691,7 +737,7 @@ function arrayRemove(arr, value) {
 	});
 }
 
-function update_VLAN_ports() { //ajax update VLAN ports	
+function update_VLAN_ports() { //ajax update VLAN ports
 
 	return VLAN_port_status; //no update temporarily
 }
@@ -713,6 +759,7 @@ function gen_VLAN_port_table(port_profile) {
 
 			role_str = (i == 0) ? "<#Device_type_02_RT#>" : "<#AiMesh_Node#>";
 			model_str = port_profile[mesh_mac[i]].model;
+			model_str = model_str.replace(/_/g, " ");
 			macaddr_str = port_profile[mesh_mac[i]].macAddress;
 			loc_val = port_profile[mesh_mac[i]].location;
 			specific_location = aimesh_location_arr.filter(function(item, index, _array){
@@ -750,23 +797,16 @@ function gen_VLAN_port_table(port_profile) {
 				.hide();
 
 			//table head
-			var $port_table_bg = $("<table>").addClass("FormTable").appendTo($target_div);
+			var $port_table_bg = $("<div>").addClass("FormTable").appendTo($target_div);
 
 			$port_table_bg.attr("id", table_id)
-				.attr('border', '1')
-				.attr('cellpadding', '4')
-				.attr('cellspacing', '0')
 				.css('width', '100%');
 
-			var $port_table_thead = $("<thead>").appendTo($port_table_bg);
-			var $port_table_thead_tr = $("<tr>").appendTo($port_table_thead);
-			var $port_table_thead2 = $("<td>")
-				.attr('colSpan', '6')
-				.appendTo($port_table_thead_tr)
-				.css({
-					"text-align": "left",
-					"padding-left": "10px"
-				})
+			var $port_table_thead = $("<div>").addClass("vlan-thead").appendTo($port_table_bg);
+
+			var $port_table_thead2 = $("<div>")
+				.addClass("vlan-header")
+				.appendTo($port_table_thead);
 
 			if (i > 0) {
 				$port_table_bg.css({
@@ -777,23 +817,31 @@ function gen_VLAN_port_table(port_profile) {
 				$port_table_thead2.html("<#AiMesh_Router#>");
 			}
 
+			$("<div>").addClass("vlan-device-info")
+				.append($("<span>").addClass("info-model").text(model_str))
+				.append($("<span>").addClass("info-sep").text("|"))
+				.append($("<span>").addClass("info-item").text(macaddr_str))
+				.append(
+					loc_str !== macaddr_str
+						? $("<span>").addClass("info-sep").text("|")
+                  			.add($("<span>").addClass("info-item").text(loc_str))
+            			: null
+    			)
+				.appendTo($port_table_thead);
+
 			//table content : status
-			var $port_table_tr_status = $("<tr>").appendTo($port_table_bg);
-			var $port_table_th_status = $("<th>").appendTo($port_table_tr_status);
-			$port_table_th_status.css({"width":"20%"});
-			$port_table_th_status.html(`<ul class='ul-align'><li>${model_str}</li><li>${macaddr_str}</li><li>${loc_str}</li></ul>`);
+			var $port_table_tr_status = $("<div>").addClass("vlan-row").appendTo($port_table_bg);
+			var $port_table_th_status = $("<div>").addClass("vlan-th").appendTo($port_table_tr_status);
 
 			//table content : mode
-			var $port_table_tr_mode = $("<tr>").appendTo($port_table_bg);
-			var $port_table_th_mode = $("<th>").appendTo($port_table_tr_mode);
-			$port_table_th_mode.css({"width":"20%"});
+			var $port_table_tr_mode = $("<div>").addClass("vlan-row").appendTo($port_table_bg);
+			var $port_table_th_mode = $("<div>").addClass("vlan-th").appendTo($port_table_tr_mode);
 			$port_table_th_mode.html("<#DSL_Mode#>");
 
 			//table content : profile
-			var $port_table_tr_profile = $("<tr>").appendTo($port_table_bg);
-			var $port_table_th_profile = $("<th>").appendTo($port_table_tr_profile);
-			$port_table_th_profile.css({"width":"20%"});
-			$port_table_th_profile.html("SDN (VLAN) Profile"); /* Untranslated */			
+			var $port_table_tr_profile = $("<div>").addClass("vlan-row").appendTo($port_table_bg);
+			var $port_table_th_profile = $("<div>").addClass("vlan-th").appendTo($port_table_tr_profile);
+			$port_table_th_profile.html(`<#VALN_Profile#>`);
 
 			//Note: modify array
 			var wan_aggregation_array = [];
@@ -806,7 +854,7 @@ function gen_VLAN_port_table(port_profile) {
 			var link_aggregation_ui_display = [];
 			var iptv_ui_display = [];
 			var wan_ui_display = [];
-			var ext_switch_ui_display = [];	
+			var ext_switch_ui_display = [];
 
 			if (port_length > 0) { //With port_info //with empty 0 item
 
@@ -820,11 +868,11 @@ function gen_VLAN_port_table(port_profile) {
 					//var lanport_idx = port_profile[mesh_mac[i]].port[key].portLabel.replace("L", "");
 					var lanport_idx = port_profile[mesh_mac[i]].port[key].portLabel.replace("W", "").replace("L", "");
 					if(col_count<=4){
-						
-						var $port_table_td_status = $("<td>").appendTo($port_table_tr_status);
+
+						var $port_table_td_status = $("<div>").addClass("vlan-td").appendTo($port_table_tr_status);
 						$port_table_td_status.css("width", "100px");
-						var $port_table_td_profile = $("<td>").appendTo($port_table_tr_profile);
-						var $port_table_td_mode = $("<td>").appendTo($port_table_tr_mode);
+						var $port_table_td_profile = $("<div>").addClass("vlan-td").appendTo($port_table_tr_profile);
+						var $port_table_td_mode = $("<div>").addClass("vlan-td").appendTo($port_table_tr_mode);
 						var $port_status_title, $port_status_icon, $port_status_idx, $port_status_note;
 						var aggressive_tag = 0;
 						$port_status_title = $("<div>").appendTo($port_table_td_status);
@@ -852,7 +900,7 @@ function gen_VLAN_port_table(port_profile) {
 						}
 						switch (port_profile[mesh_mac[i]].port[key].status) {
 							case '0': //unplug
-						
+
 									$port_status_icon = $("<div>").appendTo($port_status_title);
 									$port_status_icon.addClass("port_icon unplug");
 									$("<div>").html((port_ui_display_txt=="")? port_max_rate_txt:port_ui_display_txt).appendTo($port_table_td_status);
@@ -960,7 +1008,7 @@ function gen_VLAN_port_table(port_profile) {
 						}
 						*/
 
-						// 2. (cap with bit PHY_PORT_CAP_LAN  && with bit PHY_PORT_CAP_WANLAN) && ext_port_id != -1 
+						// 2. (cap with bit PHY_PORT_CAP_LAN  && with bit PHY_PORT_CAP_WANLAN) && ext_port_id != -1
 						if(port_profile[mesh_mac[i]].port[key].detail.cap_support.LAN &&
 							port_profile[mesh_mac[i]].port[key].detail.cap_support.WANLAN &&
 							port_profile[mesh_mac[i]].port[key].ext_port_id != -1){
@@ -1005,22 +1053,17 @@ function gen_VLAN_port_table(port_profile) {
 					for(var r=1; r<rowCount; r++){
 
 					//table content : status
-					$port_table_tr_status[r] = $("<tr>").appendTo($port_table_bg);
-					var $port_table_th_status = $("<th>").appendTo($port_table_tr_status[r]);
-					$port_table_th_status.css({"width":"20%"});
-					$port_table_th_status.css({"height":"70px"});
-					$port_table_th_status.html("<ul class='ul-align'><li>" + macaddr_str + "</li></ul>");	//<li>" + loc_str + "</li>
+					$port_table_tr_status[r] = $("<div>").addClass("vlan-row").appendTo($port_table_bg);
+					var $port_table_th_status = $("<div>").addClass("vlan-th").appendTo($port_table_tr_status[r]);
 
 					//table content : mode
-					$port_table_tr_mode[r] = $("<tr>").appendTo($port_table_bg);
-					var $port_table_th_mode = $("<th>").appendTo($port_table_tr_mode[r]);
-					$port_table_th_mode.css({"width":"20%"});
+					$port_table_tr_mode[r] = $("<div>").addClass("vlan-row").appendTo($port_table_bg);
+					var $port_table_th_mode = $("<div>").addClass("vlan-th").appendTo($port_table_tr_mode[r]);
 					$port_table_th_mode.html("<#DSL_Mode#>");
 					//table content : profile
-					$port_table_tr_profile[r] = $("<tr>").appendTo($port_table_bg);
-					var $port_table_th_profile = $("<th>").appendTo($port_table_tr_profile[r]);
-					$port_table_th_profile.css({"width":"20%"});
-					$port_table_th_profile.html("SDN (VLAN) Profile");
+					$port_table_tr_profile[r] = $("<div>").addClass("vlan-row").appendTo($port_table_bg);
+					var $port_table_th_profile = $("<div>").addClass("vlan-th").appendTo($port_table_tr_profile[r]);
+					$port_table_th_profile.html(`<#VALN_Profile#>`);
 
 					col2_count[r]=0;
 					port_info.forEach(([key, value]) => {
@@ -1032,13 +1075,13 @@ function gen_VLAN_port_table(port_profile) {
 						// Determine the group based on colX_count
 						var row_colStart = Math.floor((col2_count[r] - 1) / 4) * 4 + 1;
 						var row_colEnd = row_colStart + 3;
-						
+
 						if(row_colStart > 4*r && col2_count[r] >= row_colStart && col2_count[r] <= row_colEnd && row_colStart <= 4*(r+1)){
-							
-							var $port_table_td_status = $("<td>").appendTo($port_table_tr_status[r]);
+
+							var $port_table_td_status = $("<div>").addClass("vlan-td").appendTo($port_table_tr_status[r]);
 							$port_table_td_status.css("width", "100px");
-							var $port_table_td_mode = $("<td>").appendTo($port_table_tr_mode[r]);
-							var $port_table_td_profile = $("<td>").appendTo($port_table_tr_profile[r]);
+							var $port_table_td_mode = $("<div>").addClass("vlan-td").appendTo($port_table_tr_mode[r]);
+							var $port_table_td_profile = $("<div>").addClass("vlan-td").appendTo($port_table_tr_profile[r]);
 							var $port_status_title, $port_status_icon, $port_status_idx, $port_status_note;
 							var aggressive_tag = 0;
 							$port_status_title = $("<div>").appendTo($port_table_td_status);

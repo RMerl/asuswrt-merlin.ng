@@ -79,6 +79,10 @@
 #define STR_REALLOC		0x1				/* Reallocate the buffer as required */
 #define STR_INC			64				/* Growth increment */
 
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126) || defined(WIFI8_SDK_20260204) || defined(WIFI8_SDK_20260402)
+#define RSIZE_MAX (SIZE_MAX >> 1u)
+#endif /* WIFI7_SDK_20250506 || WIFI8_SDK_20251126 || WIFI8_SDK_20260204 || WIFI8_SDK_20260402 */
+
 unsigned char	used_shift='C';
 
 typedef struct {
@@ -770,6 +774,48 @@ int ether_inc(unsigned char *e, const unsigned char n)
 		if (c) {
 			ret = (e[3] >= 0xff) ? -1 : 0;
 			e[3] += 1;
+		}
+	}
+
+	return (ret);
+}
+
+/*
+ * Decrease Ethernet address e with n
+ */
+int ether_dec(unsigned char *e, const unsigned char n)
+{
+	int b = 0;
+	int ret = 0;
+
+	// Handle borrow from e[5]
+	if (e[5] < n) {
+		e[5] = (256 + e[5]) - n;
+		b = 1;
+	} else {
+		e[5] -= n;
+		b = 0;
+	}
+
+	if (b) {
+		// Need to borrow from e[4]
+		if (e[4] == 0) {
+			e[4] = 255;
+			b = 1;
+		} else {
+			e[4] -= 1;
+			b = 0;
+		}
+
+		if (b) {
+			// Need to borrow from e[3]
+			if (e[3] == 0) {
+				e[3] = 255;
+				ret = -1;  // Indicate underflow error
+			} else {
+				e[3] -= 1;
+				ret = 0;
+			}
 		}
 	}
 
@@ -3171,4 +3217,424 @@ int replace_literal_newline(char *inputstr, char *output, int buflen)
 		}
 	}
 	return 1;
+}
+
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126) || defined(WIFI8_SDK_20260204) || defined(WIFI8_SDK_20260402)
+/*
+ * memcpy_s - secure memcpy
+ * dest : pointer to the object to copy to
+ * destsz : size of the destination buffer
+ * src : pointer to the object to copy from
+ * n : number of bytes to copy
+ * Return Value : zero on success and non-zero on error
+ * Also on error, if dest is not a null pointer and destsz not greater
+ * than RSIZE_MAX, writes destsz zero bytes into the dest object.
+ */
+int
+BCMPOSTTRAPFN(memcpy_s)(void *dest, size_t destsz, const void *src, size_t n)
+{
+	int err = BCME_OK;
+	char *d = dest;
+	const char *s = src;
+
+	if ((!d) || ((d + destsz) < d)) {
+		err = BCME_BADARG;
+		goto exit;
+	}
+
+	if (destsz > RSIZE_MAX) {
+		err = BCME_BADLEN;
+		goto exit;
+	}
+
+	if (destsz < n) {
+		bzero(dest, destsz);
+		err = BCME_BADLEN;
+		goto exit;
+	}
+
+	if ((!s) || ((s + n) < s)) {
+		bzero(dest, destsz);
+		err = BCME_BADARG;
+		goto exit;
+	}
+
+	/* overlap checking between dest and src */
+	if (!(((d + destsz) <= s) || (d >= (s + n)))) {
+		bzero(dest, destsz);
+		err = BCME_BADARG;
+		goto exit;
+	}
+
+	(void)memcpy(dest, src, n);
+exit:
+	return err;
+}
+
+#endif /* WIFI7_SDK_20250506 || WIFI8_SDK_20251126 || WIFI8_SDK_20260204 || WIFI8_SDK_20260402 */
+
+
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126) || defined(WIFI8_SDK_20260204) || defined(WIFI8_SDK_20260402)
+/*
+ * memset_s - secure memset
+ * dest : pointer to the object to be set
+ * destsz : size of the destination buffer
+ * c : byte value
+ * n : number of bytes to be set
+ * Return Value : zero on success and non-zero on error
+ * Also on error, if dest is not a null pointer and destsz not greater
+ * than RSIZE_MAX, writes destsz bytes with value c into the dest object.
+ */
+int
+BCMPOSTTRAPFN(memset_s)(void *dest, size_t destsz, int c, size_t n)
+{
+	int err = BCME_OK;
+	if ((!dest) || (((char *)dest + destsz) < (char *)dest)) {
+		err = BCME_BADARG;
+		goto exit;
+	}
+
+	if (destsz > RSIZE_MAX) {
+		err = BCME_BADLEN;
+		goto exit;
+	}
+
+	if (destsz < n) {
+		(void)memset(dest, c, destsz);
+		err = BCME_BADLEN;
+		goto exit;
+	}
+
+	(void)memset(dest, c, n);
+exit:
+	return err;
+}
+#endif /* WIFI7_SDK_20250506 || WIFI8_SDK_20251126 || WIFI8_SDK_20260204 || WIFI8_SDK_20260402 */
+
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126) || defined(WIFI8_SDK_20260204) || defined(WIFI8_SDK_20260402)
+#ifndef MIN
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
+/**
+ * strlcat_s - Concatenate a %NUL terminated string with a sized buffer
+ * @dest: Where to concatenate the string to
+ * @src: Where to copy the string from
+ * @size: size of destination buffer
+ * return: string length of created string (i.e. the initial length of dest plus the length of src)
+ *         not including the NUL char, up until size
+ *
+ * Unlike strncat(), strlcat() take the full size of the buffer (not just the number of bytes to
+ * copy) and guarantee to NUL-terminate the result (even when there's nothing to concat).
+ * If the length of dest string concatinated with the src string >= size, truncation occurs.
+ *
+ * Compatible with *BSD: the result is always a valid NUL-terminated string that fits in the buffer
+ * (unless, of course, the buffer size is zero).
+ *
+ * If either src or dest is not NUL-terminated, dest[size-1] will be set to NUL.
+ * If size < strlen(dest) + strlen(src), dest[size-1] will be set to NUL.
+ * If size == 0, dest[0] will be set to NUL.
+ */
+size_t
+strlcat_s(char *dest, const char *src, size_t size)
+{
+	char *d = dest;
+	const char *s = src;	/* point to the start of the src string */
+	size_t n = size;
+	size_t dlen;
+	size_t bytes_to_copy = 0;
+
+	if (dest == NULL) {
+		return 0;
+	}
+
+	/* set d to point to the end of dest string (up to size) */
+	while (n != 0 && *d != '\0') {
+		d++;
+		n--;
+	}
+	dlen = (size_t)(d - dest);
+
+	if (s != NULL) {
+		size_t slen = 0;
+
+		/* calculate src len in case it's not null-terminated */
+		n = size;
+		while (n-- != 0 && *(s + slen) != '\0') {
+			++slen;
+		}
+
+		n = size - dlen;	/* maximum num of chars to copy */
+		if (n != 0) {
+			/* copy relevant chars (until end of src buf or given size is reached) */
+			bytes_to_copy = MIN(slen - (size_t)(s - src), n - 1);
+			(void)memcpy(d, s, bytes_to_copy);
+			d += bytes_to_copy;
+		}
+	}
+	if (n == 0 && dlen != 0) {
+		--d;	/* nothing to copy, but NUL-terminate dest anyway */
+	}
+	*d = '\0';	/* NUL-terminate dest */
+
+	return (dlen + bytes_to_copy);
+}
+#endif /* WIFI7_SDK_20250506 || WIFI8_SDK_20251126 || WIFI8_SDK_20260204 || WIFI8_SDK_20260402 */
+
+#define INITIAL_ARGV_CAP 8
+#define INITIAL_BUF_CAP 64
+
+/* Reject shell control characters */
+static bool is_dangerous_char(char c) {
+	switch (c) {
+		case '|': case '&': case ';':
+		case '>': case '<':
+		case '$': case '`':
+			return TRUE;
+		default:
+			return FALSE;
+	}
+}
+
+/* Append a character to dynamic buffer */
+static int buf_append(char **buf, size_t *len, size_t *cap, char c) {
+	char *tmp;
+	size_t new_cap;
+
+	if (*len + 1 >= *cap) {
+		new_cap = (*cap) * 2;
+		tmp = realloc(*buf, new_cap);
+		if (!tmp) return -1;
+		*buf = tmp;
+		*cap = new_cap;
+	}
+
+	(*buf)[(*len)++] = c;
+
+	return 0;
+}
+
+/* Push token into argv array */
+static int argv_push(char ***argv, size_t *argc, size_t *cap, char *token) {
+	char **tmp;
+	size_t new_cap;
+
+	if (*argc + 1 >= *cap) {
+		new_cap = (*cap) * 2;
+		tmp = realloc(*argv, new_cap * sizeof(char *));
+		if (!tmp) return -1;
+		*argv = tmp;
+		*cap = new_cap;
+	}
+
+	(*argv)[(*argc)++] = token;
+
+	return 0;
+}
+
+/* Free argv */
+static void free_argv(char **argv) {
+	int i;
+
+	if (!argv) return;
+
+	for (i = 0; argv[i]; i++)
+		free(argv[i]);
+
+	free(argv);
+}
+
+/* Convert command string to argv[] */
+static char **parse_cmd_safe(const char *cmd) {
+	const char *p = cmd;
+	size_t argv_cap = INITIAL_ARGV_CAP;
+	size_t argc = 0;
+	char **argv = calloc(argv_cap, sizeof(char *));
+	size_t buf_cap;
+	size_t len;
+	char *buf;
+	char quote, c;
+	char *token;
+
+	if (!argv) return NULL;
+
+	while (*p) {
+		// Skip leading whitespace
+		while (isspace((unsigned char)*p)) p++;
+		if (*p == '\0') break;
+
+		buf_cap = INITIAL_BUF_CAP;
+		buf = malloc(buf_cap);
+		if (!buf) goto fail;
+
+		quote = 0;
+		len = 0;
+
+		while (*p) {
+			c = *p;
+
+			// Stop at whitespace if not inside quotes
+			if (!quote && isspace((unsigned char)c))
+				break;
+
+			// Enter quote mode
+			if (!quote && (c == '"' || c == '\'')) {
+				quote = c;
+				p++;
+
+				continue;
+			}
+
+			// Exit quote mode
+			if (quote && c == quote) {
+				quote = 0;
+				p++;
+
+				continue;
+			}
+
+			// Handle escape sequence
+			if (c == '\\') {
+				p++;
+				if (*p) {
+					if (buf_append(&buf, &len, &buf_cap, *p) < 0) {
+						free(buf);
+						goto fail;
+					}
+					p++;
+				}
+
+				continue;
+			}
+
+			// Security check (only outside quotes)
+			if (!quote && is_dangerous_char(c)) {
+				fprintf(stderr, "Rejected dangerous char: %c\n", c);
+				free(buf);
+				goto fail;
+			}
+
+			if (buf_append(&buf, &len, &buf_cap, c) < 0) {
+				free(buf);
+				goto fail;
+			}
+			p++;
+		}
+
+		// Detect unclosed quotes
+		if (quote) {
+			fprintf(stderr, "Unclosed quote\n");
+			free(buf);
+			goto fail;
+		}
+
+		buf[len] = '\0';
+
+		token = strdup(buf);
+		free(buf);
+		if (!token) goto fail;
+
+		if (argv_push(&argv, &argc, &argv_cap, token) < 0) {
+			free(token);
+			goto fail;
+		}
+		argv[argc] = NULL;
+	}
+
+	argv[argc] = NULL;
+	return argv;
+
+fail:
+	free_argv(argv);
+	return NULL;
+}
+
+/* Safe popen: execute argv[] safely */
+static int safe_popen_argv(const char *path, char *const argv[], pid_t *child_pid) {
+	int pipefd[2];
+	pid_t pid;
+
+	if (pipe(pipefd) == -1)
+		return -1;
+
+	pid = fork();
+	if (pid < 0) {
+		close(pipefd[0]);
+		close(pipefd[1]);
+		return -1;
+	}
+
+	if (pid == 0) {
+		// Child process
+		close(pipefd[0]); // close read end
+
+		// Redirect stdout to pipe
+		dup2(pipefd[1], STDOUT_FILENO);
+		close(pipefd[1]);
+
+		// Execute program safely (no shell)
+		execvp(path, argv);
+
+		// If exec fails
+		_exit(errno);
+	}
+
+	// Parent process
+	close(pipefd[1]); // close write end
+
+	if (child_pid)
+		*child_pid = pid;
+
+	return pipefd[0]; // return read end of pipe
+}
+
+/* Safe popen: convert command string to argv[] and execute safely */
+int safe_popen(const char *cmd, pid_t *pid) {
+	char **argv;
+	int fd;
+
+	if (pid == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	argv = parse_cmd_safe(cmd);
+	if (!argv || !argv[0]) {
+		free_argv(argv);
+		if (errno == 0)
+			errno = EINVAL;
+		return -1;
+	}
+
+	fd = safe_popen_argv(argv[0], argv, pid);
+	free_argv(argv);
+
+	return fd;
+}
+
+/* Blocking wait like pclose */
+int safe_pclose(pid_t pid, int *wait_status) {
+	int status;
+	pid_t r;
+
+	/* Validate pid to avoid waitpid() waiting for any child/process group */
+	if (pid <= 0) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	while (1) {
+		r = waitpid(pid, &status, 0);
+		if (r == -1) {
+			if (errno == EINTR) continue; // retry if interrupted
+			return -1;
+		}
+
+		break;
+	}
+
+	if (wait_status)
+		*wait_status = status;
+
+	return 0;
 }

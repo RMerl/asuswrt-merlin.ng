@@ -2013,7 +2013,7 @@ function get_mobile_fw_upgrade_status(){
 			</tr>	
 			</thead>
 			<tr>
-				<th><#FW_auto_upgrade#></th>
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,16);"><#FW_auto_upgrade#></a></th>
 				<td>
 					<div align="center" class="left" style="width:75px; float:left; cursor:pointer;" id="switch_webs_update_enable"></div>
 					<script type="text/javascript">
@@ -2055,14 +2055,14 @@ function get_mobile_fw_upgrade_status(){
 				<td>
 					<select id="webs_update_time_x_hour" name="webs_update_time_x_hour" class="input_option" onchange="save_update_enable();"></select> : 
 					<select id="webs_update_time_x_min" name="webs_update_time_x_min" class="input_option" onchange="save_update_enable();"></select>
-					<span id="system_time" class="devicepin" style="color:#FFFFFF;"></span>
-					<br><span id="dstzone" style="display:none;margin-left:5px;color:#FFFFFF;"></span>
+					<span id="system_time" class="devicepin" style="color:var(--text-primary, #FFF);"></span>
+					<br><span id="dstzone" style="display:none;margin-left:5px;color:var(--text-primary, #FFF);"></span>
 				</td>	
 			</tr>
 
 			<tr>
 				<td colspan="2">
-					<#FW_auto_upgrade_desc#>
+					<#FW_auto_upgrade_desc1#>
 				</td>
 			</tr>
 		</table>
@@ -2148,7 +2148,7 @@ function get_mobile_fw_upgrade_status(){
 			<tr id="sig_ver_field" style="display:none;">
 				<th>Trend Micro: <#sig_ver#></th>
 				<td >
-					<div style="height:33px;margin-top:5px;"><span id="sig_ver_word" style="color:#FFFFFF;"></span><span id="sig_update_date"></span></div>
+					<div style="height:33px;margin-top:5px;"><span id="sig_ver_word" style="color:var(--text-primary, #FFF);"></span><span id="sig_update_date"></span></div>
 					<div style="margin-left:200px;margin-top:-38px;">
 						<input type="button" id="sig_check" name="sig_check" class="button_gen_in_table button_gen" onclick="sig_version_check();" value="<#liveupdate#>">
 					</div>

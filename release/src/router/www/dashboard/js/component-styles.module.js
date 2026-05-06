@@ -5,6 +5,8 @@ export const ComponentStyles = {
         @import "/css/bootstrap.min.css";
         @import "/css/bootstrap-customize.css";
         @import "/css/svg-icon.css";
+        @import "/css/color-table.css";
+        @import "/css/wrt-ui-alias-tokens.css";
     `,
 
     // 彈窗相關樣式
@@ -49,7 +51,7 @@ export const ComponentStyles = {
             background-clip: padding-box;
             border-radius: var(--radius-sm);
             border: 1px solid var(--popup-stroke-color);
-            gap: 16px;
+            gap: var(--wrt-gutter-md);
             box-shadow: var(--shadow-elevation40);
         }
 
@@ -59,14 +61,14 @@ export const ComponentStyles = {
             justify-content: space-between;
             border-top-left-radius: 0.3rem;
             border-top-right-radius: 0.3rem;
-            padding: 24px 16px 0;
+            padding: var(--wrt-gutter-lg) var(--wrt-gutter-md) 0;
             border-bottom: none;
         }
 
         .modal-title {
-            color: var(--body-text-color);
+            color: var(--text-primary);
             font-weight: bold;
-            font-size: 14px;
+            font-size: var(--font-size-body-01);
             margin-bottom: 0;
             line-height: 1.5;
         }
@@ -88,7 +90,7 @@ export const ComponentStyles = {
         }
         
         .modal-close:focus {
-            outline: 2px solid var(--primary-40);
+            outline: 2px solid var(--icon-default);
             outline-offset: 2px;
         }
 
@@ -117,7 +119,7 @@ export const ComponentStyles = {
             display: block;
             height: 100%;
             width: 100%;
-            background-color: var(--icon-static-color);
+            background-color: var(--icon-default);
             mask-image: var(--ic-close-stroke);
             -webkit-mask-image: var(--ic-close-stroke);
             mask-repeat: no-repeat;
@@ -140,24 +142,25 @@ export const ComponentStyles = {
             min-width: 90px;
             height: 32px;
             display: inline-block;
-            font-size: 14px;
+            font-size: var(--font-size-body-01);
             overflow: hidden;
             position: relative;
-            color: var(--primary-text-btn-normal);
+            color: var(--btn-text-color);
         }
 
         .btn.btn-primary {
-            background-color: var(--primary-btn-normal-fill);
-            color: var(--primary-btn-text-color);
+            background-color: var(--wrt-btn-primary-bg);
+            color: var(--wrt-btn-primary-color);
         }
 
         .btn.btn-secondary {
             background-color: transparent;
-            color: var(--neutral-text-btn-normal);
+            color: var(--wrt-btn-secondary-color);
+            border: 1px solid var(--wrt-btn-secondary-border);
         }
 
         .btn-primary:hover {
-            background-color: var(--primary-btn-hover-fill) !important;
+            background-color: var(--wrt-btn-primary-hover-bg) !important;
         }
 
         .btn-text {
@@ -189,7 +192,7 @@ export const ComponentStyles = {
             transform-origin: bottom left;
             bottom: 0;
             height: 44px;
-            background-color: var(--primary-btn-hover-fill);
+            background-color: var(--wrt-btn-primary-hover-bg);
         }
 
         .btn:hover .hover-color {
@@ -207,8 +210,7 @@ export const ComponentStyles = {
             border-radius: var(--radius-lg);
             align-items: center;
             justify-content: space-between;
-            border: 1.5px solid var(--switch-btn-off-normal-ellipse-stroke-color);
-            background-color: var(--switch-bg-color);
+            border: 1.5px solid var(--wrt-switch-track-border-off);
             cursor: pointer;
             transition: all 0.6s;
             position: relative;
@@ -222,9 +224,9 @@ export const ComponentStyles = {
         .toggle-button.with-text::before {
             font-family: "Roboto";
             content: "OFF";
-            font-size: 12px;
+            font-size: var(--font-size-body-01);
             font-weight: bold;
-            color: var(--switch-btn-off-normal-ellipse-stroke-color);
+            color: var(--wrt-switch-track-border-off);
             transition: all 0.6s;
             position: absolute;
             right: 4px;
@@ -237,7 +239,7 @@ export const ComponentStyles = {
             content: "ON";
             font-size: 12px;
             font-weight: bold;
-            color: var(--switch-btn-on-normal-text-color);
+            color: var(--wrt-switch-label-color-on);
             transition: all 0.6s;
             position: absolute;
             left: 4px;
@@ -255,27 +257,27 @@ export const ComponentStyles = {
         }
 
         .toggle-button.active {
-            background-color: var(--switch-btn-on-normal-fill-color);
-            border: 1.5px solid var(--switch-btn-on-normal-ellipse-stroke-color);
+            background-color: var(--wrt-switch-track-bg-on);
+            border: 1.5px solid var(--wrt-switch-track-border-on);
         }
 
         .toggle-button .toggle-button-handle {
             width: 16px;
             height: 16px;
             border-radius: var(--radius-lg);
-            background-color: var(--switch-btn-off-normal-ellipse-stroke-color);
+            background-color: var(--wrt-switch-track-border-off);
             transition: all 0.6s;
             position: absolute;
             left: 4px;
         }
 
         .toggle-button.active .toggle-button-handle {
-            background-color: var(--switch-btn-on-normal-ellipse-fill-color);
+            background-color: var(--wrt-switch-thumb-bg-on);
             transform: translateX(20px);
         }
 
         .toggle-button.with-text.active .toggle-button-handle {
-            background-color: var(--switch-btn-on-normal-ellipse-fill-color);
+            background-color: var(--wrt-switch-thumb-bg-on);
             transform: translateX(26px);
         }
     `,
@@ -333,10 +335,10 @@ export const ComponentStyles = {
         .asuswrt-password-input .form-control {
             width: 100%;
             padding: 0.375rem 0.75rem;
-            border: 1px solid #ced4da;
+            border: 1px solid var(--border-default);
             border-radius: var(--global-radius, 0.375rem);
             font-size: 1rem;
-            background-color: #fff;
+            background-color: var(--wrt-input-bg);
             background-clip: padding-box;
             transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
         }
@@ -380,7 +382,7 @@ export const ComponentStyles = {
             display: block;
             height: 20px;
             width: 20px;
-            background-color: var(--icon-static-color, #6c757d);
+            background-color: var(--icon-default);
             mask-image: var(--ic-eye-open);
             -webkit-mask-image: var(--ic-eye-open);
             mask-repeat: no-repeat;
@@ -395,7 +397,7 @@ export const ComponentStyles = {
             display: block;
             height: 20px;
             width: 20px;
-            background-color: var(--icon-static-color, #6c757d);
+            background-color: var(--icon-default);
             mask-image: var(--ic-eye-close);
             -webkit-mask-image: var(--ic-eye-close);
             mask-repeat: no-repeat;
@@ -408,8 +410,8 @@ export const ComponentStyles = {
     
         .asuswrt-password-input .strength-meter {
             height: 8px;
-            background-color: #e9ecef;
-            border-radius: 4px;
+            background-color: var(--wrt-input-bg);
+            border-radius: var(--global-radius);
             overflow: hidden;
             margin-top: 8px;
         }
@@ -417,13 +419,13 @@ export const ComponentStyles = {
         .asuswrt-password-input .strength-fill {
             height: 100%;
             transition: width 0.3s ease, background-color 0.3s ease;
-            border-radius: 4px;
+            border-radius: var(--global-radius);
         }
 
         .asuswrt-password-input .strength-text {
             font-size: 0.875rem;
             margin-top: 4px;
-            color: #6c757d;
+            color: var(--wrt-input-text-color);
         }
 
         .asuswrt-password-input .bg-danger { background-color: #dc3545 !important; }
@@ -489,19 +491,20 @@ export const ComponentStyles = {
             width: 100%;
             padding: 12px 40px 12px 16px;
             font-size: 14px;
-            border: 1px solid var(--bg-circle-chart-color);
+            border: 1px solid var(--border-default);
             border-radius: var(--global-radius, 8px);
             outline: none;
             transition: all 0.3s ease;
-            background: var(--bg-nav-color);
+            background: var(--wrt-input-bg);
             cursor: pointer;
             box-sizing: border-box;
+            color: var(--wrt-input-placeholder);
         }
         
         .cs-dropdown-input:focus {
-            border-color: var(--primary-30);
-            background: white;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: var(--wrt-input-focus-border);
+            background: var(--wrt-input-focus-bg);
+            box-shadow: 0 0 0 3px var(--wrt-input-focus-ring);
         }
         
         .cs-dropdown-arrow {
@@ -513,13 +516,14 @@ export const ComponentStyles = {
             height: 0;
             border-left: 5px solid transparent;
             border-right: 5px solid transparent;
-            border-top: 5px solid #666;
+            border-top: 5px solid var(--icon-default);
             transition: transform 0.3s ease;
             pointer-events: none;
         }
         
         .cs-dropdown-arrow.open {
             transform: translateY(-50%) rotate(180deg);
+            border-top: 5px solid var(--icon-primary);
         }
         
         .cs-dropdown-list {
@@ -527,10 +531,11 @@ export const ComponentStyles = {
             top: 100%;
             left: 0;
             right: 0;
-            background: white;
-            border: 2px solid var(--select-border-color);
+            background: var(--wrt-input-bg);
+            border: 1px solid var(--border-default);
             border-top: none;
             border-radius: 0 0 var(--global-radius) var(--global-radius);
+            border-radius: var(--global-radius);
             max-height: 300px;
             overflow-y: auto;
             z-index: 1000;
@@ -538,7 +543,7 @@ export const ComponentStyles = {
             visibility: hidden;
             transform: translateY(-10px);
             transition: all 0.3s ease;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-elevation20);
             box-sizing: border-box;
         }
         
@@ -552,7 +557,7 @@ export const ComponentStyles = {
             padding: 12px 16px;
             cursor: pointer;
             transition: background-color 0.2s ease;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid var(--border-default);
         }
         
         .cs-dropdown-item:last-child {
@@ -560,12 +565,12 @@ export const ComponentStyles = {
         }
         
         .cs-dropdown-item:hover {
-            background-color: var(--primary-30);
+            background-color: var(--wrt-list-group-hover-bg);
         }
         
         .cs-dropdown-item.selected {
-            background-color: var(--primary-30);
-            color: white;
+            background-color: var(--wrt-list-group-active-bg);
+            color: var(--wrt-list-group-active-color);
         }
         
         .cs-dropdown-item.hidden {
@@ -584,42 +589,48 @@ export const ComponentStyles = {
             align-items: center;
             font-weight: 600;
             font-size: 14px;
-            color: #333;
+            color: var(--text-primary);
         }
         
         .cs-dropdown-item.selected .cs-device-name {
-            color: white;
+            color: var(--wrt-list-group-active-color);
         }
         
         .cs-device-details {
             display: flex;
             gap: 6px;
             font-size: 12px;
-            color: #666;
+            color: var(--text-secondary);
             flex-wrap: wrap;
         }
         
         .cs-dropdown-item.selected .cs-device-details {
-            color: rgba(255, 255, 255, 0.9);
+            color: var(--wrt-list-group-active-color);
         }
         
         .cs-device-mac,
         .cs-device-ip {
-            background: rgba(0, 0, 0, 0.05);
+            background: rgba(var(--surface-invert-rgb),0.1);
             padding: 2px 6px;
             border-radius: 3px;
             font-size: 11px;
         }
-        
+
+        .cs-address-disabled {
+            opacity: 0.5;
+            cursor: not-allowed !important;
+            pointer-events: none;
+        }
+
         .cs-dropdown-item.selected .cs-device-mac,
         .cs-dropdown-item.selected .cs-device-ip {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(var(--surface-invert-rgb),0.2);
         }
         
         .cs-no-results {
             padding: 16px;
             text-align: center;
-            color: #666;
+            color: var(--text-secondary);
             font-style: italic;
             font-size: 14px;
         }
@@ -627,9 +638,10 @@ export const ComponentStyles = {
         .cs-selected-value {
             margin-top: 12px;
             padding: 8px 16px;
-            background: #f8f9fa;
+            background: var(--surface-card);
             border-radius: var(--global-radius, 8px);
-            border-left: 4px solid var(--primary-40);
+            border-left: 4px solid var(--brand-primary);
+            box-shadow: 0 0 0 1px var(--border-default);
         }
         
         .cs-selected-info {
@@ -637,10 +649,11 @@ export const ComponentStyles = {
         }
         
         .cs-selected-info strong {
-            color: var(--primary-40);
+            color: var(--brand-primary);
             font-size: 14px;
             display: block;
             margin-bottom: 8px;
+            text-align: left;
         }
         
         .cs-close-button {
@@ -651,7 +664,7 @@ export const ComponentStyles = {
             border: none;
             font-size: 18px;
             font-weight: bold;
-            color: #666;
+            color: var(--icon-default);
             cursor: pointer;
             padding: 0;
             width: 20px;
@@ -664,8 +677,8 @@ export const ComponentStyles = {
         }
         
         .cs-close-button:hover {
-            background-color: #e9ecef;
-            color: #333;
+            background-color: var(--surface-hover);
+            color: var(--icon-active);
         }
         
         .cs-close-button:active {
@@ -681,7 +694,7 @@ export const ComponentStyles = {
         .cs-selected-value .cs-device-name {
             font-weight: 600;
             font-size: 16px;
-            color: #333;
+            color: var(--text-primary);
         }
         
         .cs-selected-value .cs-device-details {
@@ -692,29 +705,29 @@ export const ComponentStyles = {
         
         .cs-selected-value .cs-device-mac,
         .cs-selected-value .cs-device-ip {
-            background: #e9ecef;
+            background: var(--surface-hover);
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 12px;
-            color: #495057;
+            color: var(--text-secondary);
         }
         
         .cs-dropdown-list::-webkit-scrollbar {
-            width: 6px;
+            width: var(--wrt-scrollbar-width);
         }
         
         .cs-dropdown-list::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 3px;
+            background: var(--wrt-scrollbar-track-hover-color);
+            border-radius: var(--wrt-scrollbar-radius);
         }
         
         .cs-dropdown-list::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 3px;
+            background: var(--wrt-scrollbar-thumb-color);
+            border-radius: var(--wrt-scrollbar-radius);
         }
         
         .cs-dropdown-list::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
+            background: var(--wrt-scrollbar-thumb-hover-color);
         }
         
         i.connect-status {
@@ -725,11 +738,11 @@ export const ComponentStyles = {
         }
         
         i.connect-status.online {
-            background-color: var(--client-online-icon-color);
+            background-color: var(--hint-on-status-fill);
         }
         
         i.connect-status.offline {
-            background-color: var(--client-onffline-icon-color);
+            background-color: var(--hint-off-status-fill);
         }
         
         @media (max-width: 480px) {

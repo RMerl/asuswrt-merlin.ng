@@ -29,8 +29,8 @@
     --bg-chart-color-2: rgba(var(--color-chart-2), 0.3);
     --bg-shadow-color: rgba(var(--color-bg-card-shadow), 0.1);
     /* TEXT */
-    --text-regular-color: rgb(var(--color-text-regular));
-    --text-feature-title-color: rgb(var(--color-text-feature-title));
+    --text-regular-color: rgb(var(--text-primary-rgb));
+    --text-feature-title-color: rgb(var(--text-secondary-rgb));
     /* --text-highlight-color: rgb(var(--color-text-highlight)); */
     --text-menu-title-color: rgb(var(--color-text-menu-title));
     --text-title-color: rgb(var(--color-text-title));
@@ -70,25 +70,28 @@
     /* CARD */
     --card-border-line-color: rgba(var(--color-bg-divide-line), 1);
 
-    --loader-color: rgb(var(--color-loader-active-1));
-    --chart-color-1: rgb(var(--color-chart-1));
-    --chart-color-2: rgb(var(--color-chart-2));
+    --loader-color: rgb(var(--gradient-color-primary));
 
-    --circle-chart-color-1: rgb(var(--color-circle-chart-1));
-    --circle-chart-color-2: rgb(var(--color-circle-chart-2));
-    --circle-chart-color-3: rgb(var(--color-circle-chart-3));
-    --circle-chart-color-4: rgb(var(--color-circle-chart-4));
-    --circle-chart-color-5: rgb(var(--color-circle-chart-5));
-
-    --chart-color-good: rgb(var(--color-chart-good));
-    --chart-color-warning: rgb(var(--color-chart-warning));
-    --chart-color-unplug: rgb(var(--color-chart-unplug));
-
+    --chart-color-1: rgb(var(--chart-seq-1-rgb));
+    --chart-bg-1: rgba(var(--chart-seq-1-rgb),.12);
+    --chart-color-2: rgb(var(--chart-seq-2-rgb));
+    --chart-bg-2: rgba(var(--chart-seq-2-rgb),.12);
+    --chart-circle-1: rgba(var(--chart-seq-1-rgb),1);
+    --chart-circle-2: rgba(var(--chart-seq-5-rgb),1);
+    --chart-circle-3: rgba(var(--chart-seq-7-rgb),1);
+    --chart-circle-4: rgba(var(--chart-seq-9-rgb),1);
+    --chart-circle-5: rgba(var(--chart-seq-10-rgb),1);
+    --chart-color-good: rgb(var(--chart-seq-2-rgb));
+    --chart-bg-good: rgba(var(--chart-seq-2-rgb),.12);
+    --chart-color-warning: rgb(var(--chart-seq-4-rgb));
+    --chart-bg-warning: rgba(var(--chart-seq-4-rgb),.12);
+    --chart-color-unplug: rgb(var(--chart-seq-8-rgb));
+    --chart-bg-unplug: rgba(var(--chart-seq-8-rgb),.12);
     --app-topbar-height: 56px;
 }
 
 body {
-    font-size: 1rem;
+    font-size: 0.725rem;
     background-image: var(--global-bg-image, none);
     margin: 0;
     align-items: center;
@@ -105,13 +108,14 @@ body {
     color: var(--page-title-color);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--wrt-gutter-sm);
+    padding: 0;
 }
 
 .page-title::before {
     content: "";
     display: inline-block;
-    background: var(--icon-logo-color);
+    background: var(--brand-color);
     height: 24px;
     width: 4px;
 }
@@ -119,6 +123,21 @@ body {
 .dashboard-layout {
     height: calc(100% - var(--app-topbar-height));
     display: flex;
+    /* 目前側欄寬度（用於主內容動態配置剩餘寬度） */
+    --wrt-sidenav-width-current: var(--wrt-sidenav-width-expanded, 300px);
+}
+
+.app-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1200;
+    height: var(--app-topbar-height);
+    min-height: var(--app-topbar-height);
+    box-shadow: none;
+    transition: box-shadow .2s ease;
+}
+.app-topbar.has-shadow {
+    box-shadow: 0 2px 8px rgba(var(--shadow-ambient-20-rgb, 0,0,0), .35);
 }
 
 .chartCard {
@@ -127,7 +146,7 @@ body {
 
 /* HEADER */
 header {
-    background: var(--body-bg-color);
+    background: var(--surface-body);
     background-repeat: no-repeat;
     background-size: 100%;
     box-shadow: unset;
@@ -136,7 +155,7 @@ header {
 }
 
 .icon-menu {
-    background-color: var(--nav-icon-color);
+    background-color: var(--wrt-sidenav-icon-color);
 }
 
 .icon-logo {
@@ -212,8 +231,8 @@ aside.sidebar {
     flex: 0 0 auto;
     width: 300px;
     box-sizing: border-box;
-    border-right: 1px solid var(--nav-border-color);
-    background: var(--nav-bg-color);
+    border-right: 1px solid var(--wrt-sidenav-border);
+    background: var(--wrt-sidenav-bg);
     position: fixed; /* 固定在視窗左側 */
     top: var(--app-topbar-height);       /* 讓出頂部工具列高度 */
     left: 0;
@@ -278,7 +297,7 @@ aside.sidebar nav .menu-name {
 
 aside.sidebar.sidebar-show nav .menu-name {
     display: block;
-    color: var(--body-text-color);
+    color: var(--wrt-sidenav-link-color);
     font-size: 0.745rem;
 }
 
@@ -452,9 +471,9 @@ aside.sidebar.sidebar-show nav {
     aside.sidebar.sidebar-show { width: 180px; }
     aside.sidebar.sidebar-show nav { max-width: 180px; }
     /* 展開（180）顯示功能名稱，縮字級與間距（sidebar-show 與預設相同字級，避免第一次點擊放大） */
-    aside.sidebar nav .menu-name { display: block; font-size: 0.625rem; }
+    aside.sidebar nav .menu-name { display: block; color: var(--wrt-sidenav-link-color); font-size: 0.625rem; }
     aside.sidebar.sidebar-show nav .menu-name { font-size: 0.625rem; }
-    aside.sidebar nav .menu-name a { text-decoration: none; }
+    aside.sidebar nav .menu-name a { color: var(--wrt-sidenav-link-color); text-decoration: none; }
     aside.sidebar.sidebar-collapse-80 nav .menu-name { display: none; }
     aside.sidebar:not(.sidebar-collapse-80) nav button {
         justify-content: start;
@@ -491,8 +510,8 @@ aside.sidebar.sidebar-show nav {
     aside.sidebar ~ article.main-content { padding-left: 240px; }
     aside.sidebar.sidebar-collapse-80 ~ article.main-content { padding-left: 80px; }
     /* 預設 240 時顯示功能名稱；非收合狀態使用展開排列樣式 */
-    aside.sidebar nav .menu-name { display: block; }
-    aside.sidebar nav .menu-name a { text-decoration: none; }
+    aside.sidebar nav .menu-name { display: block; color: var(--wrt-sidenav-link-color); }
+    aside.sidebar nav .menu-name a { color: var(--wrt-sidenav-link-color); text-decoration: none; }
     aside.sidebar.sidebar-collapse-80 nav .menu-name { display: none; }
     aside.sidebar:not(.sidebar-collapse-80) nav button {
         justify-content: start;
@@ -517,7 +536,7 @@ aside.sidebar.sidebar-show nav {
 article {
     -webkit-box-flex: 1;
     flex-grow: 1;
-    overflow: auto;
+    overflow: visible;
 }
 
 section {
@@ -526,13 +545,13 @@ section {
 
 .menu-clicked {
     border-radius: 0 8px 8px 0;
-    background-color: var(--nav-bg-active-color);
+    background-color: var(--wrt-sidenav-active-bg);
 }
 
 .menu-clicked::before {
     content: "";
     background-image: unset;
-    background-color: var(--nav-active-pin-color);
+    background-color: var(--wrt-sidenav-active-indicator-bg);
     position: absolute;
     height: 100%;
     width: 4px;
@@ -542,8 +561,14 @@ section {
 }
 
 .menu-clicked > [role~="icon"] {
-    background-color: var(--nav-icon-active-color);
+    background-image: var(--wrt-sidenav-icon-active-color);
 }
+
+/* Menu text colors: default and selected(highlight) */
+aside.sidebar nav .menu-name { color: var(--wrt-sidenav-link-color); }
+aside.sidebar nav .menu-name a { color: var(--wrt-sidenav-link-color); text-decoration: none; }
+.menu-clicked .menu-name,
+.menu-clicked .menu-name a { color: var(--wrt-sidenav-link-active-color); }
 
 .menu-block {
     display: flex;
@@ -560,7 +585,7 @@ button {
 }
 
 [role~="menu"]:hover {
-    background-color: var(--nav-bg-active-color);
+    background-color: var(--wrt-sidenav-hover-bg);
 }
 
 [role~="menu"]:hover [role~="icon"],
@@ -568,7 +593,7 @@ button {
 [role~="btn-notication"]:hover [role~="icon"],
 [role~="btn-logout"]:hover [role~="icon"],
 [role~="icon"]:hover {
-    background-color: var(--nav-icon-active-color);
+    background-color: var(--wrt-sidenav-icon-hover-color);
 }
 
 [role~="btn-notication"]:hover [role~="info-text"],
@@ -594,8 +619,8 @@ button {
 }
 
 [role~="time-banner"] {
-    background-color: var(--header-bg-color);
-    border: 1px solid var(--divide-stroke-color-default);
+    background-color: var(--surface-banner);
+    border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
 }
 
@@ -604,19 +629,19 @@ button {
 }
 
 .banner-title {
-    color: var(--body-text-color);
+    color: var(--text-primary);
     font-size: 10px;
     letter-spacing: 0.4px;
 }
 
 .banner-text {
-    color: var(--text-brand-color);
+    color: var(--brand-primary);
     font-size: 12px;
     letter-spacing: 0.25px;
 }
 
 .banner-time {
-    color: var(--page-title-color);
+    color: var(--text-primary);
     font-size: 14px;
 }
 
@@ -626,7 +651,7 @@ button {
 }
 
 .banner-time-meridiem {
-    color: var(--text-brand-color);
+    color: var(--brand-primary);
     font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.11px;
@@ -654,7 +679,7 @@ button {
 
 /* SVG icon color*/
 .icon-color-menu {
-    background-color: var(--nav-icon-color);
+    background-color: var(--wrt-sidenav-icon-color);
 }
 
 .color-logo {
@@ -668,7 +693,7 @@ main {
 
 /* POP UP CARD */
 .shadow-bg {
-    background-color: var(--elevation-20);
+    background-color: var(--wrt-modal-backdrop-bg);
     position: fixed;
     width: 100%;
     height: 100%;
@@ -676,7 +701,7 @@ main {
     right: 0;
     left: 0;
     bottom: 0;
-    z-index: 80;
+    z-index: 1050;
     display: block;
 }
 
@@ -692,15 +717,15 @@ main {
     min-height: 150px;
     padding: 16px;
     margin: 0 12px;
-    box-shadow: 3px 3px 10px 2px #00000069;
-    border: 1px solid rgba(0, 0, 0, .2);
+    box-shadow: var(--shadow-ambient-20);
+    border: 1px solid var(--wrt-card-border-color);
 }
 
 .card-header-float {
     font-size: 24px;
     font-weight: 600;
     padding: 8px 12px;
-    border-bottom: 1px solid var(--bg-divide-line-color);
+    border-bottom: 1px solid var(--wrt-divider-color);
 }
 
 .card-body-float {
@@ -716,12 +741,12 @@ main {
 
 .card-footer {
     background-color: transparent !important;
-    border-top: 1px solid var(--divide-stroke-color-El20);
+    border-top: 1px solid var(--wrt-divider-color);
 }
 
 .card-footer-float {
     padding: 12px 12px 0 12px;
-    border-top: 1px solid var(--divide-stroke-color-El20);
+    border-top: 1px solid var(--wrt-divider-color);
 }
 
 .card-content-float {
@@ -738,26 +763,34 @@ main {
 }
 
 .btn-regular {
-    background-color: var(--primary-20);
+    background-color: var(--wrt-btn-default-bg);
+    color: var(--wrt-btn-default-color);
+    border: 1px solid var(--wrt-btn-default-border);
+    transition: all 0.2s ease;
+    &:hover {
+        background-color: var(--wrt-btn-default-hover-bg);
+        color: var(--wrt-btn-default-hover-color);
+        border: 1px solid var(--wrt-btn-default-hover-border);
+    }
 }
 
 .btn-confirm {
-    background-color: var(--primary-60);
+    background-color: var(--wrt-btn-primary-bg);
+    color: var(--wrt-btn-primary-color);
+    border: 1px solid var(--wrt-btn-primary-border);
+    transition: all 0.2s ease;
+    &:hover {
+        background-color: var(--wrt-btn-primary-hover-bg);
+        color: var(--wrt-btn-primary-hover-color);
+        border: 1px solid var(--wrt-btn-primary-hover-border);
+    }
 }
 
-.btn-regular:hover,
-.btn-confirm:hover {
-    color: var(--text-highlight-color);
-}
 
 .btn-check:checked + .btn-color, .btn-confirm {
-    color: var(--text-invert-color);
+    color: var(--wrt-btn-primary-color);
 }
 
-.btn-confirm:hover {
-    background-color: var(--primary-70);
-    color: var(--text-invert-color);
-}
 
 .hint-text {
     color: var(--text-hint-color);
@@ -770,14 +803,14 @@ main {
 }
 
 .card-data-title {
-    color: var(--text-subtitle-color);
+    color: var(--text-primary);
     /* font-size: 16px; */
     text-transform: uppercase;
 }
 
 .card-data-value {
-    color: var(--text-statistic-value-color);
-    font-size: 14px;
+    color: var(--text-primary);
+    font-size: 0.675rem;
 }
 
 .card-data-value a {
@@ -790,7 +823,7 @@ main {
     font-weight: 500;
 } */
 .traffic-up-value-color {
-    color: var(--icon-traffic-up-color);
+    color: var(--wrt-text-primary);
 }
 
 .traffic-up-color,
@@ -799,7 +832,7 @@ main {
 }
 
 .traffic-down-value-color {
-    color: var(--icon-traffic-down-color);
+    color: var(--wrt-text-primary);
 }
 
 .traffic-down-color,
@@ -825,9 +858,8 @@ main {
 @media (max-width: 576px) {
     /* [role~="info-text"], */
     [role~="info-banner"],
-    [role~="btn-notication"],
-    [role~="btn-logout"],
-    [role~="btn-reboot"] {
+    [role~="btn-notication"]
+    {
         display: none !important;
     }
 
@@ -868,7 +900,7 @@ main {
 }
 
 /* width > 768px */
-@media (min-width: 768px) {
+@media (min-width: 769px) {
     aside.sidebar {
         display: block;
     }
@@ -909,9 +941,7 @@ main {
         display: none !important;
     }
 
-    [role~="info-banner"],
-    [role~="btn-logout"],
-    [role~="btn-reboot"] {
+    [role~="info-banner"] {
         display: none !important;
     }
 }
@@ -974,7 +1004,7 @@ main {
 .system-good-tab {
     width: 12px;
     height: 12px;
-    background-color: var(--chart-color-good);
+    background-color: #10b880;
     border-radius: 2px;
 }
 
@@ -1043,7 +1073,7 @@ main {
 .bg-success {
     width: 10px !important;
     height: 10px !important;
-    color: var(--hint-on-status-fill) !important;
+    background-color: var(--hint-on-status-fill) !important;
 }
 
 .modal .modal-content {
@@ -1067,10 +1097,10 @@ main {
     font-width: 600;
 }
 
-.modal-backdrop {
+.loading-backdrop {
     backdrop-filter: blur(5px) !important;
     -webkit-backdrop-filter: blur(5px) !important;
-    background: unset !important;
+    background-color: rgba(0, 0, 0, 0.5);
     opacity: 1 !important;
 }
 
@@ -1179,17 +1209,17 @@ main {
 .app-name {
     font-weight: bold;
     font-size: 16px;
-    color: #333;
+    color: var(--wrt-text-primary);
 }
 
 .notification-text {
     font-size: 13px;
-    color: #999;
+    color: var(--wrt-text-secondary);
 }
 #right-panel {
     position: fixed;
     bottom: 0;
-    z-index: 1050;
+    z-index: 1001;
     top: 56px;
     height: calc(100% - 56px);
     max-height: 100vh;
@@ -1225,7 +1255,6 @@ main {
     align-items: center;
     justify-content: space-between;
     border: 1.5px solid var(--switch-btn-off-normal-ellipse-stroke-color);
-    background-color: var(--switch-bg-color);
     cursor: pointer;
     transition: all 0.6s;
     position: relative;
@@ -1299,7 +1328,6 @@ main {
 
 .router-assistant-container {
 	max-width: 550px;
-	margin-left: auto !important;
 	margin-right: auto !important;
 }
 
@@ -1310,6 +1338,41 @@ main {
     aside.sidebar.sidebar-collapse-80 ~ article.main-content {
         padding-left: 0 !important;
     }
+}
+
+/* ==================== Utilities: Divider ==================== */
+.wrt-divider {
+    display: block;
+    width: 100%;
+    height: var(--wrt-divider-thickness, 1px);
+    background-color: var(--wrt-divider-color, var(--border-subtle));
+    opacity: var(--wrt-divider-opacity, 1);
+    margin: var(--wrt-divider-gap-y, 16px) 0;
+}
+.wrt-divider.strong {
+    height: var(--wrt-divider-strong-thickness, 2px);
+    background-color: var(--wrt-divider-strong-color, var(--border-subtle));
+}
+.wrt-divider.inset-start {
+    margin-left: var(--wrt-divider-inset, 1rem);
+}
+.wrt-divider.inset-end {
+    margin-right: var(--wrt-divider-inset, 1rem);
+}
+.wrt-divider-vertical {
+    display: inline-block;
+    width: var(--wrt-divider-thickness, 1px);
+    height: 100%;
+    background-color: var(--wrt-divider-color, var(--border-subtle));
+    margin: 0 var(--wrt-divider-gap-x, 16px);
+    align-self: stretch;
+}
+.wrt-divider.dashed {
+    background: repeating-linear-gradient(to right,
+        var(--wrt-divider-color, var(--border-subtle)),
+        var(--wrt-divider-color, var(--border-subtle)) 4px,
+        transparent 4px,
+        transparent 8px);
 }
 
 /* config toggle button group */
@@ -1326,7 +1389,7 @@ main {
     display: inline-flex;
     border-radius: var(--global-radius);
     width: 100%;
-    background-color: rgb(255, 255, 255);
+    background-color: var(--wrt-segmented-control-bg);
 }
 
 .config-toggle-button {
@@ -1345,18 +1408,18 @@ main {
     border-radius: var(--global-radius);
     padding: 11px;
     border: 1px solid;
-    border-color: #DFE2E7FF;
+    border-color: var(--wrt-segment-fill-border);
 }
 
 .config-toggle-button:hover {
     text-decoration: none;
-    background-color: var(--tab-nav-hover-bg-fill-color);
+    background-color: var(--wrt-segment-fill-hover-bg);
 }
 
 .config-toggle-button.selected {
-    background-color: var(--primary-10);
-    color: var(--primary-50);
-    border-color: var(--primary-30);
+    background-color: var(--wrt-segment-fill-selected-bg);
+    color: var(--wrt-segment-fill-selected-color);
+    border-color: var(--wrt-segment-fill-selected-border);
 }
 
 .config-toggle-button i[role="icon"]{
@@ -1364,11 +1427,11 @@ main {
 }
 
 .config-toggle-button.selected i[role="icon"]{
-    background-color: var(--primary-50);
+    background-color: var(--wrt-segment-fill-selected-color);
 }
 
 .config-toggle-button.selected:hover {
-    background-color: var(--primary-20);
+    background-color: var(--wrt-segment-fill-selected-hover-bg);
 }
 
 .config-toggle-button-group-first {

@@ -72,45 +72,154 @@ function genHeader(filter = ["logo", "router-assistant", "model-name", /*"time",
             code += genNotification();
         }
 
-        // LOGOUT
-        if(filter.includes("logout")) {
-            code += genLogout();
-        }
-
-        // REBOOT
-        if(filter.includes("reboot")) {
-            code += genReboot();
-        }
-
-        // LANGUAGE MENU
-        if(filter.includes("language")) {
-            code += genLanguageList();
-        }
-
-        // MORE
-        if(filter.includes("more")) {
-            code += `
-                <div role="more" class="d-flex justify-content-end d-lg-none">
-                    <a href="#" class="nav-link dropdown-toggle rounded-pill p-1 lh-1 pe-1 pe-md-2 d-flex align-items-center justify-content-center" aria-expanded="true" data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                        <div role="icon" class="icon-size-28 icon-more-vert mx-2"></div>
-                     </a>
-                     <div class="dropdown-menu mt-0 p-0 dropdown-menu-end overflow-hidden">
-                        <div role="" class="dropdown-item d-flex align-items-center p-3 border-bottom" onclick="logout();">
-                            <div role="icon" class="icon-size-24 icon-logout"></div>
-                            <div role="" class="ps-2 logout-title"><#t1Logout#></div>
-                        </div>
-                        <div role="t" class="dropdown-item d-flex align-items-center p-3" onclick="reboot();">
-                            <div role="icon" class="icon-size-24 icon-reboot"></div>
-                            <div role="" class="ps-2 reboot-title"><#BTN_REBOOT#></div>
-                        </div>
-                             
-                     </div>
+        code += `<button class="btn d-flex" title="Configuration" type="button" data-bs-toggle="offcanvas" data-bs-placement="right" data-bs-target="#offcanvasConfiguration" aria-controls="offcanvasConfiguration"><i role="icon" class="icon-size-24 icon-advancedsettings icon-color-menu"></i></button>`
+        code += `
+            <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasConfiguration" aria-labelledby="offcanvasConfigurationLabel">
+              <div class="offcanvas-header">
+                <h5 id="offcanvasConfigurationLabel"><#Configuration#></h5>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+              </div>
+              <hr class="m-0">
+              <div class="offcanvas-body">
+                <p class="config-title"><#DSL_Mode#></p>
+                <div role="group" class="config-toggle-button-group-root" aria-labelledby="config-color">
+                    <button class="config-toggle-button config-toggle-button-group-first selected" tabindex="0" type="button" value="light" aria-pressed="true" aria-label="Light" data-ga-event-category="color" data-ga-event-action="light">
+                        <i role="icon" class="icon-size-24 icon-theme-light"></i> <#Configuration_light_mode#>
+                    </button>
+                    <button class="config-toggle-button config-toggle-button-group-last" tabindex="0" type="button" value="dark" aria-pressed="false" aria-label="Dark" data-ga-event-category="color" data-ga-event-action="dark">
+                        <i role="icon" class="icon-size-24 icon-theme-dark"></i> <#Configuration_dark_mode#>
+                    </button>
                 </div>
-            `;
-        }
-
+                ${theme === 'rog' ? `
+                <p class="config-title"><#Configuration_theme#></p>
+                <div role="group" class="config-toggle-button-group-root" aria-labelledby="config-style">
+                    <button class="config-toggle-button config-toggle-button-group-first" tabindex="0" type="button" value="normal" aria-pressed="false" aria-label="Normal" data-ga-event-category="style" data-ga-event-action="normal">
+                        <i role="icon" class="icon-size-24 icon-theme-normal"></i> <#AiMesh_Conn_Quality_Normal#>
+                    </button>
+                    <button class="config-toggle-button config-toggle-button-group-last selected" tabindex="0" type="button" value="fancy" aria-pressed="true" aria-label="Fancy" data-ga-event-category="style" data-ga-event-action="fancy">
+                        <i role="icon" class="icon-size-24 icon-theme-fancy"></i> <#Configuration_fancy_theme#>
+                    </button>
+                </div>` : ``}
+                ${(filter.includes("language"))? `<p class="config-title"><#PASS_LANG#></p>${genLanguageSelect()}`: ``}               
+              </div>
+              <div class="offcanvas-footer border-top p-3 d-flex justify-content-around">
+                ${(filter.includes("logout")) ? genLogout() : ``}
+                ${(filter.includes("reboot")) ? genReboot() : ``}
+              </div>
+            </div>
+        `
 
         header.innerHTML = code;
+
+        // Handle Style toggle (Normal/Fancy)
+        const styleButtons = document.querySelectorAll('[aria-labelledby="config-style"] .config-toggle-button');
+
+        // Initialize style button selected state from current HTML attribute
+        const currentStyle = document.documentElement.getAttribute('data-asuswrt-style');
+        styleButtons.forEach(btn => {
+            const isMatch = (btn.value === 'fancy' && currentStyle === 'tech') || (btn.value === 'normal' && (!currentStyle || currentStyle === ''));
+            btn.classList.toggle('selected', isMatch);
+            btn.setAttribute('aria-pressed', isMatch ? 'true' : 'false');
+        });
+
+        styleButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const buttonValue = this.value;
+                const htmlElement = document.documentElement;
+
+                // Update data-asuswrt-style attribute
+                if (buttonValue === 'normal') {
+                    htmlElement.setAttribute('data-asuswrt-style', '');
+                } else if (buttonValue === 'fancy') {
+                    htmlElement.setAttribute('data-asuswrt-style', 'tech');
+                }
+
+                // Update button states for this group
+                styleButtons.forEach(btn => {
+                    if (btn === this) {
+                        btn.classList.add('selected');
+                        btn.setAttribute('aria-pressed', 'true');
+                    } else {
+                        btn.classList.remove('selected');
+                        btn.setAttribute('aria-pressed', 'false');
+                    }
+                });
+
+                // Save preference
+                localStorage.setItem('theme-style-preference', buttonValue);
+
+                // Trigger custom event
+                window.dispatchEvent(new CustomEvent('styleChanged', {
+                    detail: {style: buttonValue}
+                }));
+            });
+        });
+
+        // Handle Mode toggle (Light/Dark)
+        const modeButtons = document.querySelectorAll('[aria-labelledby="config-color"] .config-toggle-button');
+
+        // Initialize mode button selected state from current HTML attribute
+        const currentColor = document.documentElement.getAttribute('data-asuswrt-color');
+        modeButtons.forEach(btn => {
+            const isMatch = btn.value === currentColor;
+            btn.classList.toggle('selected', isMatch);
+            btn.setAttribute('aria-pressed', isMatch ? 'true' : 'false');
+        });
+
+        modeButtons.forEach(button => {
+            button.addEventListener('click', function (event) {
+                const buttonValue = this.value;
+                const htmlElement = document.documentElement;
+                const previousColor = htmlElement.getAttribute('data-asuswrt-color');
+
+                // Save preference first so reload picks up the new mode
+                localStorage.setItem('theme-mode-preference', buttonValue);
+
+                // Reload page on real user click to re-render cached UI with the new mode
+                // Skip DOM/state updates below — the reload will re-init everything from the saved preference
+                if (event.isTrusted && previousColor !== buttonValue) {
+                    location.reload();
+                    return;
+                }
+
+                // Update data-asuswrt-color attribute
+                htmlElement.setAttribute('data-asuswrt-color', buttonValue);
+
+                // Update button states for this group
+                modeButtons.forEach(btn => {
+                    if (btn === this) {
+                        btn.classList.add('selected');
+                        btn.setAttribute('aria-pressed', 'true');
+                    } else {
+                        btn.classList.remove('selected');
+                        btn.setAttribute('aria-pressed', 'false');
+                    }
+                });
+
+                // Trigger custom event
+                window.dispatchEvent(new CustomEvent('modeChanged', {
+                    detail: {mode: buttonValue}
+                }));
+            });
+        });
+
+        // Load saved preferences on page load
+        const savedStyle = localStorage.getItem('theme-style-preference');
+        if (savedStyle) {
+            const savedStyleButton = document.querySelector(`[aria-labelledby="config-style"] .config-toggle-button[value="${savedStyle}"]`);
+            if (savedStyleButton) {
+                savedStyleButton.click();
+            }
+        }
+
+        const savedMode = localStorage.getItem('theme-mode-preference');
+        if (savedMode) {
+            const savedModeButton = document.querySelector(`[aria-labelledby="config-color"] .config-toggle-button[value="${savedMode}"]`);
+            if (savedModeButton) {
+                savedModeButton.click();
+            }
+        }
+
         setTimeout(checkNotification, 2000);
         import('./indexing.js').catch(e => { console.error('Failed to load indexing.js', e); });
         
@@ -123,10 +232,10 @@ function genHeader(filter = ["logo", "router-assistant", "model-name", /*"time",
 function genRouterAssistant() {
     let code = "";
 	var searchIconClass = isSupport("ai_board_slm") ? "icon-AiBoard" : "icon-search";
-	var searchText = isSupport("ai_board_slm") ? "Ask Router Assistant..." : "<#CTL_search#>";
+	var searchText = isSupport("ai_board_slm") ? `<#SLM_Ask#>` : `<#CTL_search#>`;
 	
     code += `
-        <div role="router-assistant" class="router-assistant-container flex-grow-1 mx-3" style="position: relative; display: flex; justify-content: center;z-index: 1999;">
+        <div role="router-assistant" class="router-assistant-container flex-grow-1 mx-3" style="position: relative; display: flex; justify-content: center;z-index: 999;">
             <div id="router-assistant-wrapper" style="position:relative; width:100%;">
                 <div class="position-absolute" style="left: 12px; top: 50%; transform: translateY(-50%); z-index: 10; pointer-events: none;">
                     <div role="icon" class="icon-size-20 ${searchIconClass}" style="opacity: 0.6;"></div>
@@ -140,8 +249,8 @@ function genRouterAssistant() {
                           oninput="autoResizeTextarea(this)"></textarea>
             </div>
             <div id="router-assistant-response" 
-                 class="position-absolute bg-white shadow rounded p-3" 
-                 style="font-size: 1rem; top:100%; width:100%; max-height:500px; overflow-y:auto; display:none; z-index:1050; border:1px solid #dee2e6;">
+                 class="position-absolute card card-content shadow" 
+                 style="font-size: 1rem; top:100%; width:100%; max-height:500px; overflow-y:auto; display:none; z-index:1050; border:1px solid var(--wrt-card-border);">
             </div>
         </div>
     `;
@@ -262,6 +371,36 @@ function genReboot() {
 	return code;
 }
 
+function genLanguageSelect() {
+    let code = "";
+    let { currentLang, supportList } = system.language;
+
+    code += `
+          <select 
+             class="form-control lang-select" 
+             id="languageSelect"
+             onchange="changeLanguage(this.value)"
+             aria-label="Select language"
+          >
+    `;
+
+    // Add current language as the selected option
+    code += `<option value="${currentLang}" selected>${supportList[currentLang]}</option>`;
+
+    // Add other languages as options
+    for (let [key, value] of Object.entries(supportList)) {
+       if (key === currentLang) continue;
+
+       code += `<option value="${key}">${value}</option>`;
+    }
+
+    code += `
+          </select>
+    `;
+
+    return code;
+}
+
 function genLanguageList() {
 	let code = "";
 	let { currentLang, supportList } = system.language;
@@ -330,14 +469,14 @@ var menuList = [
 		divide: false,
 	},
 	{
-		name: `Clients`,
+		name: `<#statusTitle_Client#>`,
 		icon: "icon-client-list",
 		url: "clients",
 		clicked: false,
 		divide: false,
 	},
 	{
-		name: `Adaptive QoE`,
+		name: `<#Adaptive_QoE#>`,
 		icon: "icon-AdaptiveQoe",
 		url: "qoe",
 		clicked: false,
@@ -418,27 +557,56 @@ var menuList = [
 let urlParameter = new URLSearchParams(window.location.search);
 /* DECIDE THEME */
 let theme = (function () {
-	if (isSupport("rog"))
+    if (isSupport("rog"))
 		return "rog";
 	else if (isSupport("tuf"))
 		return "tuf";
 	else if (isSupport("BUSINESS"))
 		return "business";
+    else if (isSupport("proart"))
+        return "proart";
 	else
 		return "asus";
 })();
 
-if (isSupport("UI4")) {
-	document.querySelector("html").setAttribute("data-asuswrt-theme", theme);
-	document.querySelector("html").setAttribute("data-asuswrt-color", "light");
-}
-if(isSupport("ROG_UI")) {
-    let asuswrtStyle = window.localStorage.getItem("asuswrt-style");
-    if(asuswrtStyle) {
-        document.querySelector("html").setAttribute("data-asuswrt-style", asuswrtStyle);
-    }else {
-        document.querySelector("html").setAttribute("data-asuswrt-style", "tech");
+let asuswrtStyle = (function () {
+    let asuswrtStyleStorage = '';
+    if(isSupport("ROG_UI")) {
+        asuswrtStyleStorage = window.localStorage.getItem("asuswrt-style") || "tech";
     }
+    if (isSupport("YEAR20"))
+        return asuswrtStyleStorage ? `${asuswrtStyleStorage} 20th` : "20th";
+    else
+        return "";
+})();
+
+if (isSupport("UI4")) {
+    const _nvram_basic = httpApi.nvramGet(["productid", "odmpid", "ui_color_mode", "ui_theme", "ui_style"]);
+    let productId = _nvram_basic.productid || "";
+    let odmpid = _nvram_basic.odmpid || "";
+    let uiColorMode = _nvram_basic.ui_color_mode || "";
+    let uiTheme = _nvram_basic.ui_theme || "";
+    let uiStyle = _nvram_basic.ui_style || "";
+
+    // data-asuswrt-theme: nvram ui_theme overrides auto-detection
+    document.querySelector("html").setAttribute("data-asuswrt-theme", uiTheme || theme);
+
+    // data-asuswrt-color: nvram ui_color_mode overrides model-based default
+    if (uiColorMode === "dark" || uiColorMode === "light") {
+        document.querySelector("html").setAttribute("data-asuswrt-color", uiColorMode);
+    } else if (productId === "GT-BE19000AI" || productId === "GT-BE96_AI" || theme === "business" || odmpid.startsWith("ZenWiFi")) {
+        document.querySelector("html").setAttribute("data-asuswrt-color", "light");
+    } else {
+        document.querySelector("html").setAttribute("data-asuswrt-color", "dark");
+    }
+
+    // data-asuswrt-style: nvram ui_style overrides localStorage/auto-detection
+    if (uiStyle) {
+        asuswrtStyle = uiStyle;
+    }
+}
+if (asuswrtStyle) {
+    document.querySelector("html").setAttribute("data-asuswrt-style", asuswrtStyle);
 }
 
 if(!isSupport("UI4")){
@@ -453,15 +621,15 @@ if (!(isSupport("gtbooster") && isSupport("ark_qoe"))) {
 	});
 }
 
-if(!isSupport("traffic_analyzer")){
+if(!isSupport("bwdpi") && !isSupport("traffic_analyzer") && !isSupport("dns_dpi")){
 	menuList = menuList.filter(function(item, index, array){
 		return (item.url != "trafficanalyzer");
 	});
 }
 
-if(!isSupport("bwdpi")){
+if (!isSupport("ark_iam")) {
 	menuList = menuList.filter(function(item, index, array){
-		return (item.url != "trafficanalyzer") && (item.url != "aiprotection");
+		return (item.url != "aiprotection");
 	});
 }
 
@@ -471,7 +639,7 @@ if(!isSupport("ai_support")){
 	});
 }
 
-if (!isSupport("rog")) {
+if (!isSupport("rog") || !isSupport("gameMode") ) {
     menuList = menuList.filter(function (item, index, array) {
         return (item.url != "game_acceleration");
     });
@@ -904,8 +1072,8 @@ function pageRedirect(target, lastPage = "") {
 					const stylesheet = styleSheets[i];
 					if (stylesheet.href) {
 						try {
-							if (!stylesheet.cssRules) {
-								throw new Error('CSS rules not accessible');
+							if (!stylesheet.cssRules || stylesheet.cssRules.length === 0) {
+								throw new Error('CSS rules not accessible or empty');
 							}
 						} catch (e) {
 							const { pathname } = new URL(stylesheet.href);
@@ -988,7 +1156,7 @@ function applyLoading(time, string, callback) {
 	`;
 
 	let element = document.createElement("div");
-	element.className = "shadow-bg modal-backdrop";
+	element.className = "shadow-bg loading-backdrop";
 	element.innerHTML = template;
 	document.body.appendChild(element);
 
@@ -1017,7 +1185,7 @@ function showConfirmDialog(message, options = {}) {
 
 	const element = document.createElement("div");
 	element.id = 'customConfirmDialog';
-	element.className = "shadow-bg modal-backdrop";
+	element.className = "shadow-bg loading-backdrop";
 	element.setAttribute('role', 'dialog');
 	element.setAttribute('aria-modal', 'true');
 	element.setAttribute('aria-describedby', 'confirmDialogMessage');
@@ -1900,10 +2068,19 @@ function showResult(response, userQuestion) {
 					if (window.jQuery && typeof jQuery.fn.qrcode === 'function') {
 						renderJqueryQRCode();
 					} else {
-						let script = document.createElement('script');
-						script.src = '/js/qrcode/jquery.qrcode.min.js';
-						script.onload = renderJqueryQRCode;
-						document.body.appendChild(script);
+						if (typeof httpApi !== 'undefined' && typeof httpApi.loadScriptAsset === 'function') {
+							httpApi.loadScriptAsset('/js/qrcode/jquery.qrcode.min.js', {
+								cacheMode: 'force-cache',
+								readyCheck: function() {
+									return !!(window.jQuery && typeof jQuery.fn.qrcode === 'function');
+								}
+							}).then(renderJqueryQRCode).catch(function(){});
+						} else {
+							let script = document.createElement('script');
+							script.src = '/js/qrcode/jquery.qrcode.min.js';
+							script.onload = renderJqueryQRCode;
+							document.body.appendChild(script);
+						}
 					}
 					if (cancelBtn) {
 						cancelBtn.style.display = '';
@@ -2053,9 +2230,9 @@ function showRouterAssistantResponse(content, userQuestion = '') {
 		if (content === 'loading') {
 			html += `<div class="text-break d-flex align-items-center mb-3">
 						<div class="spinner-border spinner-border-sm me-2" role="status">
-							<span class="visually-hidden">Loading...</span>
+							<span class="visually-hidden"><#SLM_Loading#></span>
 						</div>
-						Thinking...
+						<#SLM_Thinking#>
 						</div>`;
 		} else {
 			html += `<div data-component="router-assistant-response" class="text-break mb-2">${content}</div>`;
@@ -2064,8 +2241,8 @@ function showRouterAssistantResponse(content, userQuestion = '') {
 					${currentSLM.model === "slm-cn-asus" ? `<#SLM_disclaimer_CN#>` : `<#SLM_disclaimer#>`}
 			</div>`;
 		html += `<div class="d-flex justify-content-end gap-2 pt-2 border-top">
-				<button data-group="router-assistant-action" data-component="cancelBtn" type="button" class="btn btn-outline-primary btn-sm" style="display:none" onclick="closeRouterAssistantResponse()">Later</button>
-				<button data-group="router-assistant-action" data-component="okBtn" type="button" class="btn btn-primary btn-sm" style="display:none">Do it now</button>
+				<button data-group="router-assistant-action" data-component="cancelBtn" type="button" class="btn btn-outline-primary btn-sm" style="display:none" onclick="closeRouterAssistantResponse()"><#CTL_later#></button>
+				<button data-group="router-assistant-action" data-component="okBtn" type="button" class="btn btn-primary btn-sm" style="display:none"><#CTL_Do_Now#></button>
 			</div>`;
 		responseDiv.innerHTML = html;
 		responseDiv.style.display = 'block';
@@ -2105,3 +2282,225 @@ setTimeout(async () => {
 		currentSLM.model = null;
 	}
 }, 1000);
+
+var pre_sdn_all_rl_json = [];
+window.addEventListener('load', function() {
+	const sdn_all_rl_attr = function(){
+		this.sdn_rl = {};
+		this.vlan_rl = {};
+		this.subnet_rl = {};
+		this.radius_rl = {};
+		this.apg_rl = {};
+		this.cp_rl = {};
+		this.sdn_access_rl = [];
+		this.dot_rl = [];
+		this.dhcpres_rl = {"idx":"", "data":[]};
+	};
+	var sdn_rl_attr = function(){
+		this.idx = "0";
+		this.sdn_name = "";
+		this.sdn_enable = "1";
+		this.vlan_idx = "0";
+		this.subnet_idx = "0";
+		this.apg_idx = "0";
+		this.vpnc_idx = "0";
+		this.vpns_idx = "0";
+		this.dns_filter_idx = "0";
+		this.urlf_idx = "0";
+		this.nwf_idx = "0";
+		this.cp_idx = "0";
+		this.gre_idx = "0";
+		this.firewall_idx = "0";
+		this.kill_switch = "0";
+		this.access_host_service = "0";
+		this.wan_unit = "0";
+		this.pppoe_relay = "0";
+		this.wan6_unit = "0";
+		this.createby = "WEB";
+		this.mtwan_idx = "0";
+		this.mswan_idx = "0";
+		this.prio = "0";
+	};
+	var vlan_rl_attr = function(){
+		this.vlan_idx = "";
+		this.vid = "";
+		this.port_isolation = "0";
+	};
+	var subnet_rl_attr = function(){
+		this.subnet_idx = "";
+		this.ifname = "";
+		this.addr = "";
+		this.netmask = "";
+		this.dhcp_enable = "";
+		this.dhcp_min = "";
+		this.dhcp_max = "";
+		this.dhcp_lease = "";
+		this.domain_name = "";
+		this.dns = "";
+		this.wins = "";
+		this.dhcp_static = "";
+		this.dhcp_unit = "";
+		this.ipv6_enable = "";
+		this.autoconf = "";
+		this.addr6 = "";
+		this.dhcp6_start = "";
+		this.dhcp6_end = "";
+		this.dns6 = "";
+		this.dot_enable = "";
+		this.dot_tls = "";
+	};
+	var apg_rl_attr = function(){
+		this.apg_idx = "";
+		this.enable = "";
+		this.ssid = "";
+		this.hide_ssid = "";
+		this.security = "";
+		this.bw_limit = "";
+		this.timesched = "";
+		this.sched = "";
+		this.expiretime = "";
+		this.ap_isolate = "";
+		this.macmode = "disabled";
+		this.mlo = "";
+		this.maclist = "";
+		this.iot_max_cmpt = "";
+		this.apg_11be = "0";
+		this.dut_list = "";
+		this.disabled = "0";//for fw update, the wifi band is full
+	};
+	function pre_init_sdn_all_list(){
+		const apg_wifi_sched_on = httpApi.hookGet("apg_wifi_sched_on", true);
+		const apm_wifi_sched_on = (()=>{
+			if(isSupport("sdn_mwl"))
+				return httpApi.hookGet("apm_wifi_sched_on", true);
+			else
+				return {};
+		})();
+		const get_apg_wifi7_onoff = (!isSupport("wifi7") || httpApi.hookGet("get_apg_wifi7_onoff", true) == undefined) ? [] : httpApi.hookGet("get_apg_wifi7_onoff");
+		pre_sdn_all_rl_json = [];
+		var sdn_all_rl_info = httpApi.nvramCharToAscii(["sdn_rl", "vlan_rl", "subnet_rl", "radius_list", "sdn_access_rl"]);
+		var sdn_rl = decodeURIComponent(sdn_all_rl_info.sdn_rl);
+		var vlan_rl = decodeURIComponent(sdn_all_rl_info.vlan_rl);
+		vlan_rl_json = parse_StrToJSON_vlan_rl_list(vlan_rl);
+		var each_sdn_rl = sdn_rl.split("<");
+		$.each(each_sdn_rl, function(index, value){
+			if(value != ""){
+				var sdn_all_rl = JSON.parse(JSON.stringify(new sdn_all_rl_attr()));
+				var profile_data = value.split(">");
+				var sdn_rl_profile = set_sdn_profile(profile_data);
+				if(sdn_rl_profile.idx == "0")
+					return;
+				sdn_all_rl.sdn_rl = sdn_rl_profile;
+
+				var specific_vlan = vlan_rl_json.filter(function(item, index, array){
+					return (item.vlan_idx == sdn_rl_profile.vlan_idx);
+				})[0];
+				if(specific_vlan != undefined){
+					sdn_all_rl.vlan_rl = specific_vlan;
+				}
+
+				const ap_prefix = (sdn_rl_profile.sdn_name == "MAINFH" || sdn_rl_profile.sdn_name == "MAINBH") ? "apm" : "apg";
+				const apg_rl_list = get_apg_rl_list(sdn_rl_profile.apg_idx, ap_prefix);
+				const specific_apg = apg_rl_list.find(item => item.apg_idx == sdn_rl_profile.apg_idx);
+				if(specific_apg != undefined){
+					sdn_all_rl.apg_rl = specific_apg;
+				}
+				sdn_all_rl.mainfh_smart_connect = {"status":false, "band_bitwise":0};
+				sdn_all_rl.client_num = 0;
+				pre_sdn_all_rl_json.push(sdn_all_rl);
+			}
+		});
+
+		function set_sdn_profile(profile_data){
+			var sdn_profile = JSON.parse(JSON.stringify(new sdn_rl_attr()));
+			sdn_profile.idx = profile_data[0];
+			sdn_profile.sdn_name = profile_data[1];
+			sdn_profile.sdn_enable = profile_data[2];
+			sdn_profile.vlan_idx = profile_data[3];
+			sdn_profile.subnet_idx = profile_data[4];
+			sdn_profile.apg_idx = profile_data[5];
+			sdn_profile.wifi_sched_on = (()=>{
+				const ap_prefix = (sdn_profile.sdn_name == "MAINFH" || sdn_profile.sdn_name == "MAINBH") ? "apm" : "apg";
+				const ap_key = ap_prefix + sdn_profile.apg_idx;
+				const sched_status = (ap_prefix == "apm") ? apm_wifi_sched_on[ap_key] : apg_wifi_sched_on[ap_key];
+				return check_value_is_exist(sched_status) ? sched_status : "1";
+			})();
+			sdn_profile.wifi7_onoff = (get_apg_wifi7_onoff[sdn_profile.idx] == undefined) ? "0" : get_apg_wifi7_onoff[sdn_profile.idx];
+			sdn_profile.vpnc_idx = profile_data[6];
+			sdn_profile.vpns_idx = profile_data[7];
+			sdn_profile.dns_filter_idx = profile_data[8];
+			sdn_profile.urlf_idx = profile_data[9];
+			sdn_profile.nwf_idx = profile_data[10];
+			sdn_profile.cp_idx = profile_data[11];
+			sdn_profile.gre_idx = profile_data[12];
+			sdn_profile.firewall_idx = profile_data[13];
+			sdn_profile.kill_switch = profile_data[14];
+			sdn_profile.access_host_service = profile_data[15];
+			sdn_profile.wan_unit = (check_value_is_exist(profile_data[16]) ? profile_data[16] : "0");
+			sdn_profile.pppoe_relay = (check_value_is_exist(profile_data[17]) ? profile_data[17] : "0");
+			sdn_profile.wan6_unit = (check_value_is_exist(profile_data[18]) ? profile_data[18] : "0");
+			sdn_profile.createby = (check_value_is_exist(profile_data[19]) ? profile_data[19] : "WEB");
+			sdn_profile.mtwan_idx = (check_value_is_exist(profile_data[20]) ? profile_data[20] : "0");
+			sdn_profile.mswan_idx = (check_value_is_exist(profile_data[21]) ? profile_data[21] : "0");
+			sdn_profile.prio = (check_value_is_exist(profile_data[22]) ? profile_data[22] : "0");
+			return sdn_profile;
+		}
+		function parse_StrToJSON_vlan_rl_list(vlan_rl){
+			var vlan_rl_list = [];
+			var each_vlan_rl = vlan_rl.split("<");
+			$.each(each_vlan_rl, function(index, value){
+				if(value != ""){
+					var profile_data = value.split(">");
+					var vlan_profile = new vlan_rl_attr();
+					vlan_profile.vlan_idx = profile_data[0];
+					vlan_profile.vid = profile_data[1];
+					vlan_profile.port_isolation = (check_value_is_exist(profile_data[2]) ? profile_data[2] : "0");
+					vlan_rl_list.push(JSON.parse(JSON.stringify(vlan_profile)));
+				}
+			});
+			vlan_rl_list.sort(function(a, b) {
+				return parseInt(a.vlan_idx) - parseInt(b.vlan_idx);
+			});
+			return vlan_rl_list;
+		}
+		function get_apg_rl_list(_idx, _prefix){
+			let prefix = (_prefix === "apg" || _prefix === "apm") ? _prefix : "apg";
+			let apg_rl_list = [];
+			if(parseInt(_idx) > 0){
+				let apg_profile = new apg_rl_attr();
+				let apg_info = httpApi.nvramCharToAscii([prefix + _idx + "_enable", prefix + _idx + "_ssid", prefix + _idx + "_hide_ssid", prefix + _idx + "_security",
+					prefix + _idx + "_bw_limit", prefix + _idx + "_timesched", prefix + _idx + "_sched", prefix + _idx + "_expiretime",prefix + _idx + "_ap_isolate",
+					prefix + _idx + "_macmode", prefix + _idx + "_mlo", prefix + _idx + "_maclist", prefix + _idx + "_iot_max_cmpt", prefix + _idx + "_dut_list",
+					prefix + _idx + "_11be", prefix + _idx + "_disabled"], true);
+				apg_profile.apg_idx = _idx.toString();
+				apg_profile.enable = apg_info[prefix + _idx + "_enable"];
+				apg_profile.ssid = decodeURIComponent(apg_info[prefix + _idx + "_ssid"]);
+				apg_profile.hide_ssid = apg_info[prefix + _idx + "_hide_ssid"];
+				apg_profile.security = decodeURIComponent(apg_info[prefix + _idx + "_security"]);
+				apg_profile.bw_limit = decodeURIComponent(apg_info[prefix + _idx + "_bw_limit"]);
+				apg_profile.timesched = apg_info[prefix + _idx + "_timesched"];
+				apg_profile.sched = decodeURIComponent(apg_info[prefix + _idx + "_sched"]);
+				apg_profile.expiretime = decodeURIComponent(apg_info[prefix + _idx + "_expiretime"]);
+				apg_profile.ap_isolate = apg_info[prefix + _idx + "_ap_isolate"];
+				apg_profile.macmode = decodeURIComponent(apg_info[prefix + _idx + "_macmode"]);
+				apg_profile.mlo = apg_info[prefix + _idx + "_mlo"];
+				apg_profile.maclist = decodeURIComponent(apg_info[prefix + _idx + "_maclist"]);
+				apg_profile.iot_max_cmpt = apg_info[prefix + _idx + "_iot_max_cmpt"];
+				apg_profile.dut_list = decodeURIComponent(apg_info[prefix + _idx + "_dut_list"]);
+				apg_profile.apg_11be = decodeURIComponent(apg_info[prefix + _idx + "_11be"]);
+				apg_profile.disabled = decodeURIComponent(apg_info[prefix + _idx + "_disabled"]);
+				apg_rl_list.push(JSON.parse(JSON.stringify(apg_profile)));
+			}
+			return apg_rl_list;
+		}
+		function check_value_is_exist(val){
+			let result = true;
+			if(val == "undefined" || val == undefined || val == "")
+				result = false;
+
+			return result;
+		}
+	}
+
+	pre_init_sdn_all_list();
+});

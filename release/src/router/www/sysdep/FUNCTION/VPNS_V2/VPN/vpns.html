@@ -2,92 +2,68 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
-<link rel="stylesheet" type="text/css" href="/index_style.css">
-<link rel="stylesheet" type="text/css" href="/form_style.css">
-<link rel="stylesheet" type="text/css" href="/other.css">
+<link rel="stylesheet" type="text/css" href="../index_style.css">
+<link rel="stylesheet" type="text/css" href="../form_style.css">
 <!--link rel="stylesheet" type="text/css" href="/VPN/vpnc.css"-->
-<link rel="stylesheet" type="text/css" href="/VPN/vpns.css">
-<link rel="stylesheet" type="text/css" href="/pwdmeter.css">
-<script type="text/javaScript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
-<script type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/popup.js"></script>
-<script type="text/javascript" src="/general.js"></script>
-<script type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/VPN/vpns_general.js"></script>
+<link rel="stylesheet" type="text/css" href="../VPN/vpns.css">
+<script type="text/javaScript" src="../js/jquery.js"></script>
+<script type="text/javascript" src="../js/httpApi.js"></script>
+<script type="text/javascript" src="../state.js"></script>
+<script type="text/javascript" src="../general.js"></script>
+<script type="text/javascript" src="../VPN/vpns_general.js"></script>
 </head>
-<style>
-.block_filter a {
-        text-decoration:none !important;
-}
-</style>
 <script>
-$(function () {
-	$('link[group="extend_css"]').remove();
-	var getUrlParameter = function getUrlParameter(param){
-		var url_parm = window.location.search.substring(1);
-		var parm_array = url_parm.split("&");
-		var key_value;
+$('link[group="extend_css"]').remove();
+var getUrlParameter = function getUrlParameter(param){
+	var url_parm = window.location.search.substring(1);
+	var parm_array = url_parm.split("&");
+	var key_value;
 
-		for(var i = 0; i < parm_array.length; i += 1){
-			key_value = parm_array[i].split("=");
-			if (key_value[0] == param) {
-				return typeof key_value[1] == "undefined" ? "" : decodeURIComponent(key_value[1]);
-			}
-		}
-		return "";
-	};
-
-	var theme = getUrlParameter("current_theme").toUpperCase();
-	if(theme == "WHITE" || theme == "GT" || theme == "TUF"){
-		if (isSupport("UI4")) {
-			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/vpn_v4.css">');
-			$('link').last().after('<link rel="stylesheet" type="text/css" href="/css/business-white.css">');
-			setTimeout(function(){
-				$("body").css({"visibility":"visible"})
-			}, 1000)
-		} else {
-			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpns' + theme + '.css">');
+	for(var i = 0; i < parm_array.length; i += 1){
+		key_value = parm_array[i].split("=");
+		if (key_value[0] == param) {
+			return typeof key_value[1] == "undefined" ? "" : decodeURIComponent(key_value[1]);
 		}
 	}
-	else{
-		if (isSupport("UI4")) {
-			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/vpn_v4.css">');
-			$('link').last().after('<link rel="stylesheet" type="text/css" href="/css/business-white.css">');
-			setTimeout(function(){
-				$("body").css({"visibility":"visible"})
-			}, 1000)
-		} else if(isSupport("ROG_UI")){
-			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpnsGT.css">');
-		}
-		else if(isSupport("TUF_UI")){
-			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpnsTUF.css">');
-		}
+	return "";
+};
+function getSafeTheme(paramName, allowedValues = ['WHITE', 'ROG', 'TUF', '']) {
+	let rawValue = getUrlParameter(paramName);
+	if (!rawValue) return "";
+	let safePrefix = rawValue.toUpperCase().match(/^[A-Z0-9_]*/)[0];
+	return allowedValues.includes(safePrefix) ? safePrefix : "";
+}
+var theme = getSafeTheme("current_theme", ['WHITE', 'ROG', 'GT', 'TUF', '']).toUpperCase();
+(function(){
+	const hasThemeCssFile = (theme == "WHITE" || theme == "GT" || theme == "TUF");
+	const is_Web_iframe = (($(parent.document).find("#mainMenu").length > 0) || (top.webWrapper)) ? true : false;
+	var cssHref = "";
+	if(theme == "PROART") {
+		cssHref = isSupport("UI4") ? "../css/vpn_v4.css" : "";
+	} else if(hasThemeCssFile) {
+		cssHref = (isSupport("UI4") && is_Web_iframe) ? "../css/vpn_v4.css" : "../VPN/vpns" + theme + ".css";
+	} else {
+		if(isSupport("UI4"))
+			cssHref = "../css/vpn_v4.css";
+		else if(isSupport("ROG_UI"))
+			cssHref = "../VPN/vpnsGT.css";
+		else if(isSupport("TUF_UI"))
+			cssHref = "../VPN/vpnsTUF.css";
 	}
+	if(cssHref)
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="' + cssHref + '">');
+})();
 
-	if(isSupport("TS_UI"))
-		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/difference.css">');
-});
-if(isSupport("pptpd")){
-	$('<script />', { type : 'text/javascript', src : "/VPN/vpns_pptp.js"}).appendTo('head');
-}
-//if(isSupport("openvpnd")){
-//	$('<script />', { type : 'text/javascript', src : "/VPN/vpns_openvpn.js"}).appendTo('head');
-//}
-if(isSupport("ipsec_srv")){
-	$('<script />', { type : 'text/javascript', src : "/VPN/vpns_ipsec.js"}).appendTo('head');
-}
-if(isSupport("wireguard")){
-	$('<script />', { type : 'text/javascript', src : "/VPN/vpns_wireguard.js"}).appendTo('head');
-}
+if(isSupport("TS_UI"))
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="../css/difference.css">');
+
 var faq_port_forwarding_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=118";
 var common_setting = httpApi.nvramGet(["wans_mode", "productid"]);
 var select_vpn_type = "";
 function show_vpn_serverlist(){
 	$("#srv_profile_list").empty();
 	if(isSupport("pptpd")){
-		var pptp_settings = httpApi.nvramGet(["pptpd_enable", "enable_samba"], true);
+		var pptp_settings = httpApi.nvramGet(["pptpd_enable", "enable_samba"]);
 		var $svr_item_container = $("<div>").addClass("svr_item_container").attr({"type":"pptp"});
 		$("#srv_profile_list").append($svr_item_container);
 		var $svr_item_text_container = $("<div>").addClass("svr_item_text_container");
@@ -145,7 +121,7 @@ function show_vpn_serverlist(){
 					var time = 10;
 					showLoading(time);
 					setTimeout(function(){
-						httpApi.nvramGet(["pptpd_enable"], true);
+						httpApi.nvramGet(["pptpd_enable"]);
 						if(!window.matchMedia('(max-width: 575px)').matches)
 							$this_switch_icon.closest(".svr_item_container").find(".svr_item_text_container").click();
 					}, time*1000);
@@ -155,7 +131,7 @@ function show_vpn_serverlist(){
 	}
 /*
 	if(isSupport("openvpnd")){
-		var VPNServer_enable = httpApi.nvramGet(["VPNServer_enable"], true).VPNServer_enable;
+		var VPNServer_enable = httpApi.nvramGet(["VPNServer_enable"]).VPNServer_enable;
 		var $svr_item_container = $("<div>").addClass("svr_item_container").attr({"type":"openvpn"});
 		$("#srv_profile_list").append($svr_item_container);
 
@@ -164,6 +140,7 @@ function show_vpn_serverlist(){
 		$svr_item_text_container.unbind("click").click(function(e){
 			e = e || event;
 			e.stopPropagation();
+			if(typeof Get_Component_Setting_Profile_OpenVPN !== 'function') return;
 			$(this).closest("#srv_profile_list").find(".svr_item_container").removeClass("selected");
 			select_vpn_type = $(this).closest(".svr_item_container").addClass("selected").attr("type");
 			if($(".profile_setting_container").css("display") == "none"){
@@ -207,7 +184,7 @@ function show_vpn_serverlist(){
 			}
 			var $this_switch_icon = $(this).find(".switch");
 			$this_switch_icon.toggleClass("off on").promise().done(function(){
-				var openvpn_settings = httpApi.nvramGet(["enable_samba", "vpn_serverx_dns"], true);
+				var openvpn_settings = httpApi.nvramGet(["enable_samba", "vpn_serverx_dns"]);
 				var nvramSet_obj = {"action_mode": "apply"};
 				if($this_switch_icon.hasClass("on")){
 					nvramSet_obj.rc_service = "restart_openvpnd;restart_chpass;";
@@ -228,7 +205,7 @@ function show_vpn_serverlist(){
 					var time = 10;
 					showLoading(time);
 					setTimeout(function(){
-						httpApi.nvramGet(["VPNServer_enable"], true);
+						httpApi.nvramGet(["VPNServer_enable"]);
 						if(!window.matchMedia('(max-width: 575px)').matches)
 							$this_switch_icon.closest(".svr_item_container").find(".svr_item_text_container").click();
 					}, time*1000);
@@ -238,7 +215,7 @@ function show_vpn_serverlist(){
 	}
 */
 	if(isSupport("ipsec_srv")){
-		var ipsec_settings = httpApi.nvramGet(["ipsec_server_enable"], true);
+		var ipsec_settings = httpApi.nvramGet(["ipsec_server_enable"]);
 		var $svr_item_container = $("<div>").addClass("svr_item_container").attr({"type":"ipsec"});
 		$("#srv_profile_list").append($svr_item_container);
 		var $svr_item_text_container = $("<div>").addClass("svr_item_text_container");
@@ -246,6 +223,7 @@ function show_vpn_serverlist(){
 		$svr_item_text_container.unbind("click").click(function(e){
 			e = e || event;
 			e.stopPropagation();
+			if(typeof Get_Component_Setting_Profile_IPSec !== 'function') return;
 			$(this).closest("#srv_profile_list").find(".svr_item_container").removeClass("selected");
 			select_vpn_type = $(this).closest(".svr_item_container").addClass("selected").attr("type");
 			if($(".profile_setting_container").css("display") == "none"){
@@ -303,7 +281,7 @@ function show_vpn_serverlist(){
 					var time = 10;
 					showLoading(time);
 					setTimeout(function(){
-						httpApi.nvramGet(["ipsec_server_enable"], true);
+						httpApi.nvramGet(["ipsec_server_enable"]);
 						if(!window.matchMedia('(max-width: 575px)').matches)
 							$this_switch_icon.closest(".svr_item_container").find(".svr_item_text_container").click();
 					}, time*1000);
@@ -312,7 +290,7 @@ function show_vpn_serverlist(){
 		});
 	}
 	if(isSupport("wireguard")){
-		var wgs_settings = httpApi.nvramGet(["wgs_enable"], true);
+		var wgs_settings = httpApi.nvramGet(["wgs_enable"]);
 		var $svr_item_container = $("<div>").addClass("svr_item_container").attr({"type":"wireguard"});
 		$("#srv_profile_list").append($svr_item_container);
 		var $svr_item_text_container = $("<div>").addClass("svr_item_text_container");
@@ -320,6 +298,7 @@ function show_vpn_serverlist(){
 		$svr_item_text_container.unbind("click").click(function(e){
 			e = e || event;
 			e.stopPropagation();
+			if(typeof Get_Component_Setting_Profile_WGS !== 'function') return;
 			$(this).closest("#srv_profile_list").find(".svr_item_container").removeClass("selected");
 			select_vpn_type = $(this).closest(".svr_item_container").addClass("selected").attr("type");
 			if($(".profile_setting_container").css("display") == "none"){
@@ -366,10 +345,10 @@ function show_vpn_serverlist(){
 					var time = 3;
 					showLoading(time);
 					setTimeout(function(){
-						httpApi.hookGet("get_wgs_parameter", true);
-						httpApi.nvramGet(["wgs_enable"], true);
+						httpApi.hookGet("get_wgs_parameter");
+						httpApi.nvramGet(["wgs_enable"]);
 						if(httpApi.nvramGet(["wgs" + nvramSet_obj.wgs_unit + "_addr"])["wgs" + nvramSet_obj.wgs_unit + "_addr"] == ""){
-							httpApi.nvramGet(["wgs" + nvramSet_obj.wgs_unit + "_addr"], true);
+							httpApi.nvramGet(["wgs" + nvramSet_obj.wgs_unit + "_addr"]);
 						}
 						if(!window.matchMedia('(max-width: 575px)').matches)
 							$this_switch_icon.closest(".svr_item_container").find(".svr_item_text_container").click();
@@ -398,17 +377,15 @@ function show_vpn_serverlist(){
 	else{
 		select_vpn_type = $("#srv_profile_list").children(":first-child").attr("type");
 	}
-
-	if(!window.matchMedia('(max-width: 575px)').matches)
-		$("#srv_profile_list").children("[type='" + select_vpn_type + "']").addClass("selected").find(".svr_item_text_container").click();
 }
-function initial(){	
+function initial(){
 	show_loading_obj();
 
 	var vpn_server_array = { "OpenVPN" : ["OpenVPN", "/Advanced_VPN_OpenVPN.asp"], "Others" : ["Others", "/Advanced_VPNServer_Content.asp"]};
 	if(!isSupport("openvpnd")){
 		delete vpn_server_array.OpenVPN;
 	}
+
 	if (isSupport("UI4")) {
 		$('#divSwitchMenu4').html(gen_switch_menu(vpn_server_array, "Others"));
 	} else {
@@ -416,6 +393,53 @@ function initial(){
 	}
 
 	show_vpn_serverlist();
+	const vpnScripts = [
+		{ support: "pptpd", src: '../VPN/vpns_pptp.js' },
+		{ support: "openvpnd", src: '../VPN/vpns_openvpn.js' },
+		{ support: "ipsec_srv", src: '../VPN/vpns_ipsec.js' },
+		{ support: "wireguard", src: '../VPN/vpns_wireguard.js' }
+	];
+	const supportedScripts = vpnScripts.filter(item => isSupport(item.support));
+	// Shared utility scripts that the click handlers and state.js helpers
+	// depend on. general.js provides inet_network / add_options_x2 which
+	// state.js's checkIPConflict touches the moment a profile row is
+	// clicked, so it MUST be ready before the auto-click fires.
+	const sharedScripts = ['../popup.js', '../general.js', '../validator.js', '../help.js'];
+	// Load every supported VPN script and the shared utility scripts in
+	// parallel; wait until all of them resolve before the auto-click.
+	// Previously the first script loaded immediately, VPN scripts were
+	// staggered by 1500ms each, and shared utilities sat behind a 2s
+	// setTimeout, which left a window where the auto-click (or a quick
+	// user click) could reach Get_Component_Setting_Profile_* before its
+	// VPN script loaded, or reach checkIPConflict -> inet_network before
+	// general.js loaded (ReferenceError).
+	const wrapLoad = function(src){
+		return new Promise(function(resolve){
+			let resolved = false;
+			const oneShot = function(){ if(!resolved){ resolved = true; resolve(); } };
+			loadScriptWithRetry(src, 3, oneShot);
+			// Failsafe: if every retry fails (loadScriptWithRetry never
+			// invokes callback on permanent failure) still resolve after
+			// 10s so the auto-click chain does not hang forever.
+			setTimeout(oneShot, 10000);
+		});
+	};
+	const loadPromises = supportedScripts.map(item => wrapLoad(item.src))
+		.concat(sharedScripts.map(wrapLoad));
+	Promise.all(loadPromises).then(function(){
+		const is_Web_iframe = (($(parent.document).find("#mainMenu").length > 0) || (top.webWrapper)) ? true : false;
+		const maxWidth = isSupport("UI4") && is_Web_iframe ? '768px' : '575px';
+		if(!window.matchMedia(`(max-width: ${maxWidth})`).matches){
+			$("#srv_profile_list").children("[type='" + select_vpn_type + "']").addClass("selected").find(".svr_item_text_container").click();
+		}
+	});
+
+	// Decorative styles can still be deferred since nothing in the auto-
+	// click path depends on them.
+	setTimeout(function(){
+		document.head.insertAdjacentHTML('beforeend', '<link rel="stylesheet" type="text/css" href="../other.css">');
+		document.head.insertAdjacentHTML('beforeend', '<link rel="stylesheet" type="text/css" href="../pwdmeter.css">');
+	}, 2000);
 
 	if(parent.webWrapper){
 		const resizeObserver = new ResizeObserver(entries => {
@@ -429,6 +453,25 @@ function initial(){
 		resizeObserver.observe(document.querySelector('.popup_container'));
 		resizeObserver.observe(document.querySelector('.profile_setting_container'));
 	}
+}
+function loadScriptWithRetry(src, retryLimit = 3, callback) {
+	let retries = 0;
+	function tryLoad() {
+		const script = document.createElement('script');
+		script.src = src;
+		script.type = 'text/javascript';
+		script.onload = function() {
+			if (typeof callback === "function") callback();
+		};
+		script.onerror = function() {
+			retries++;
+			if (retries < retryLimit) {
+				tryLoad();
+			}
+		};
+		document.head.appendChild(script);
+	}
+	tryLoad();
 }
 $(document).ready(initial);
 </script>
@@ -449,7 +492,7 @@ $(document).ready(initial);
 		<div class="content_container">
 			<div class="server_list_container">
 				<div class="svr_list_title_container">
-					<div class="svr_list_title">server list</div>
+					<div class="svr_list_title"><#VPN_Fusion_Server_List#></div>
 				</div>
 				<div id="srv_profile_list"></div>
 			</div>
@@ -532,7 +575,7 @@ function show_warning_message(){
 	var based_modelid = common_setting.productid;
 	var get_real_ip = function(){
 		$.ajax({
-			url: '/get_real_ip.asp',
+			url: `${rootPath}/get_real_ip.asp`,
 			dataType: 'script',
 			error: function(xhr){
 				get_real_ip();

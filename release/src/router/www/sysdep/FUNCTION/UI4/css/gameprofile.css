@@ -941,3 +941,11 @@
 .select-container > select {
     background-color: var(--neutral-10);
 }
+[data-asuswrt-color][data-asuswrt-theme]{
+    .input-container, .select-container > select {
+        background-color: var(--wrt-input-bg);
+        border-color: var(--wrt-input-border);
+        color: var(--wrt-input-color);
+        border-radius: var(--wrt-input-radius);
+    }
+}

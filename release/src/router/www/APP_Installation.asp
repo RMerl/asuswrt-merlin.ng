@@ -117,6 +117,31 @@ var fileflex_text = "<#FileFlex_desc0#>";
 var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=141";
 var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=142";
 
+var ALLOWED_APPS = [
+	'downloadmaster', 'aicloud', 'mediaserver', 'mediaserver2', 
+	'fileflex', 'DM2_Utility', 'TimeMachine', 'PrinterServer'
+];
+
+function htmlEncode(str) {
+	if (str === null || str === undefined) return '';
+	if (typeof str !== 'string') str = String(str);
+	var div = document.createElement('div');
+	div.textContent = str;
+	return div.innerHTML;
+}
+
+function getSafeAppsLast() {
+	var rawValue = window.localStorage.getItem("apps_last") || '';
+	
+	if (!rawValue) return '';
+	
+	if (ALLOWED_APPS.indexOf(rawValue) !== -1) {
+		return rawValue;
+	}
+	
+	return htmlEncode(rawValue);
+}
+
 function initial(){
 	default_apps_array = [["AiDisk", "aidisk.asp", "<#AiDiskWelcome_desp1#>", "Aidisk_png", ""],
 			["<#Servers_Center#>", "mediaserver.asp", "<#UPnPMediaServer_Help#>", "server_png", ""],
@@ -148,7 +173,7 @@ function initial(){
 			default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("AiDisk")[0]);
 	}
 
-	if(!printer_support || noprinter_support || re_mode == "1"){
+	if(!printer_support || noprinter_support){
 		if(default_apps_array.getIndexByValue2D("<#Network_Printer_Server#>") != -1)
 			default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("<#Network_Printer_Server#>")[0]);
 	}
@@ -295,7 +320,8 @@ function check_appstate(){
 				if(installPercent > 99)
 					installPercent = 99;
 				document.getElementById("loadingicon").style.display = "none";
-				document.getElementById("apps_state_desc").innerHTML = "[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+				var safeAppName = getSafeAppsLast();
+				document.getElementById("apps_state_desc").innerHTML = "[" + safeAppName + "] <#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 				installPercent = installPercent + proceed;//*/
 			}
 			else{
@@ -307,19 +333,24 @@ function check_appstate(){
 			document.getElementById("apps_state_desc").innerHTML = "<#usb_uninstalling#>";
 		else{
 			if(apps_depend_action_target != "terminated" && apps_depend_action_target != "error"){
-				if(apps_depend_action_target == "")
-					document.getElementById("apps_state_desc").innerHTML = "<b>[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> </b>";
-				else
-					document.getElementById("apps_state_desc").innerHTML = "<b>[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> </b>"
-							+"<br> <span style='font-size: 16px;'> <#Excute_processing#>："+apps_depend_do+"</span>"
-							+"<br> <span style='font-size: 16px;'>"+apps_depend_action+"  "+apps_depend_action_target+"</span>"
+				if(apps_depend_action_target == ""){
+					var safeAppName = getSafeAppsLast();
+					document.getElementById("apps_state_desc").innerHTML = "<b>[" + safeAppName + "] <#Excute_processing#> </b>";
+				}
+				else{
+					var safeAppName = getSafeAppsLast();
+					document.getElementById("apps_state_desc").innerHTML = "<b>[" + safeAppName + "] <#Excute_processing#> </b>"
+							+"<br> <span style='font-size: 16px;'> <#Excute_processing#>："+htmlEncode(apps_depend_do)+"</span>"
+							+"<br> <span style='font-size: 16px;'>"+htmlEncode(apps_depend_action)+"  "+htmlEncode(apps_depend_action_target)+"</span>"
 							;
+				}
 			}
 			else{
 				if(installPercent > 99)
 					installPercent = 99;
 				document.getElementById("loadingicon").style.display = "none";
-				document.getElementById("apps_state_desc").innerHTML = "[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+				var safeAppName = getSafeAppsLast();
+				document.getElementById("apps_state_desc").innerHTML = "[" + safeAppName + "] <#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 				installPercent = installPercent + proceed;
 			}
 		}
@@ -421,7 +452,8 @@ function check_appstate(){
 				if(installPercent > 99)
 					installPercent = 99;
 				document.getElementById("loadingicon").style.display = "none";
-				document.getElementById("apps_state_desc").innerHTML = "[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+				var safeAppName = getSafeAppsLast();
+				document.getElementById("apps_state_desc").innerHTML = "[" + safeAppName + "] <#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 				installPercent = installPercent + proceed;//*/
 			}
 			else{
@@ -435,15 +467,17 @@ function check_appstate(){
 					if(installPercent > 99)
 						installPercent = 99;
 					document.getElementById("loadingicon").style.display = "none";
-					document.getElementById("apps_state_desc").innerHTML = "[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+					var safeAppName = getSafeAppsLast();
+					document.getElementById("apps_state_desc").innerHTML = "[" + safeAppName + "] <#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 					installPercent = installPercent + proceed;
 				}
 				else{
-					var _apps_depend_do = apps_depend_do.replace(apps_depend_action, "<span style='color:#FC0'>"+apps_depend_action+"</span>");
-
-					document.getElementById("apps_state_desc").innerHTML = "<b>[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> </b>"
+					var encodedAction = htmlEncode(apps_depend_action);
+					var _apps_depend_do = htmlEncode(apps_depend_do).replace(encodedAction, "<span style='color:#FC0'>"+encodedAction+"</span>");
+					var safeAppName = getSafeAppsLast();
+					document.getElementById("apps_state_desc").innerHTML = "<b>[" + safeAppName + "] <#Excute_processing#> </b>"
 							+"<br> <span style='font-size: 16px;'> <#Excute_processing#>："+_apps_depend_do+"</span>"
-							+"<br><br> <span style='font-size: 18px;'>"+apps_depend_action+"  "+apps_depend_action_target+"</span>"
+							+"<br><br> <span style='font-size: 18px;'>"+htmlEncode(apps_depend_action)+"  "+htmlEncode(apps_depend_action_target)+"</span>"
 					;
 				}
 			}
@@ -451,7 +485,8 @@ function check_appstate(){
 				if(installPercent > 99)
 					installPercent = 99;
 				document.getElementById("loadingicon").style.display = "none";
-				document.getElementById("apps_state_desc").innerHTML = "[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+				var safeAppName = getSafeAppsLast();
+				document.getElementById("apps_state_desc").innerHTML = "[" + safeAppName + "] <#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 				installPercent = installPercent + proceed;
 			}
 		}
@@ -554,7 +589,6 @@ function show_apps(){
 			htmlcode += '<div id="'+default_apps_array[i][3]+'" class="app_list" style="cursor:pointer" onclick="location.href=\''+ default_apps_array[i][1] +'\';"></div>';
 		htmlcode += '</td><td class="app_table_radius_right" style="width:350px;">\n';
 		if(i == 3 && wan_unit_orig != usb_index && usb_index != -1){
-			console.log("2 need to change wan unit!");
 			htmlcode += '<div class="app_name"><a style="text-decoration: underline; cursor:pointer;" onclick="go_modem_page('+usb_index+');">'+ default_apps_array[i][0] + '</a></div>\n';
 		}
 		else{
@@ -880,6 +914,10 @@ function show_partition(){
 }
 
 function apps_form(_act, _name, _flag){
+	if (!_name || ALLOWED_APPS.indexOf(_name) === -1) {
+		return;
+	}
+	
 	window.localStorage.setItem("apps_last", _name, 1000);
 
 	document.app_form.apps_action.value = _act;

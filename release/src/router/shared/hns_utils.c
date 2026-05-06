@@ -91,6 +91,7 @@ struct hnsSupport_t s_hnsSupport_tuple[] =
 
 #ifdef RTBE55
 	{"RT-BE55"         , {1, 1, 1, 0, 1, 1}},
+	{"RT-BE3600HP"     , {1, 1, 1, 0, 1, 1}},
 #endif
 
 	// The END

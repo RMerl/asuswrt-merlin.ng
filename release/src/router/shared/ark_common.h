@@ -15,6 +15,7 @@
 #define ARK_NORMAL_TIMEOUT      12
 #define ARK_INI_TMP             TMP_ARK"/ark.ini"
 #define ARK_INI_USR             USR_ARK"/ark.ini"
+#define ARK_GMQ_SH              "gmq.sh"
 #define ARK_GMQ                 "gmq"
 #define ARK_MOSQUITTO           "mosquitto"
 #define ARK_GHS                 "ghs"
@@ -24,6 +25,8 @@
 #define ARK_GLOGER              "gloger"
 #define ARK_GDRCTL              "gdm.sh"
 #define ARK_GDR                 "gdm"
+#define ARK_GST_SH              "gst.sh"
+#define ARK_GST                 "gst"
 #define ARK_SERVICE             "ark_service"
 #define ARK_LOGD                "arklogd"
 
@@ -37,6 +40,9 @@
 #define ARK_MALS                nvram_get_int("ark_mals_enable")
 #define ARK_ADBLOCK             nvram_get_int("ark_adblock_enable")
 #define ARK_TRACKER             nvram_get_int("ark_tracker_enable")
+#define ARK_IDS                 nvram_get_int("ark_ids_enable")
+//#define ARK_GDM                 nvram_get_int("ark_gdm_enable") // GDM : add support, no need nvram to control
+//#define ARK_GST                 nvram_get_int("ark_gst_enable") // GST : add support, no need nvram to control
 
 /* function */
 #define KMODULE_ARK             "/sys/module/ark/"
@@ -197,6 +203,34 @@ extern ArkFeature limiterFeature;
 #define IAM_MAX_APP_LIST        4                                // eq. nvram "ark_iam_app_list1", "ark_iam_app_list2", "ark_iam_app_list3" ...
 #define IAM_GLOBAL_CT_INDEX     3                                // global category id will be stored into category[3]
 
+/* domain size in profile struct */
+#define MAX_DOMAIN_SIZE         64 * 128
+
+/* White List parameters */
+#define ARK_WLIST               ARK_JFFS_SYS"/ARKWBL"
+#define ARK_WLIST_DIR           ARK_WLIST"/ark_wlist_url"
+#define ARK_WLIST_TMP           ARK_WLIST"/ark_wlist_url.tmp"
+#define MAX_DOMAIN_LEN          128
+#define MAX_DOMAINS             64
+
+/* White List action types */
+#define ARK_WLIST_ACTION_ADD    "add"
+#define ARK_WLIST_ACTION_DELETE "delete"
+#define ARK_WLIST_ACTION_GET    "get"
+#define ARK_WLIST_ACTION_EXISTS "exists"
+
+/* White List return codes */
+#define ARK_WLIST_SUCCESS                 0
+#define ARK_WLIST_ERROR_INVALID_ACTION   -1
+#define ARK_WLIST_ERROR_INVALID_DOMAIN   -2
+#define ARK_WLIST_ERROR_FILE_READ        -3
+#define ARK_WLIST_ERROR_FILE_WRITE       -4
+#define ARK_WLIST_ERROR_MEMORY           -5
+#define ARK_WLIST_ERROR_NOT_FOUND        -6
+#define ARK_WLIST_ERROR_ALREADY_EXISTS   -7
+#define ARK_WLIST_ERROR_BUFFER_TOO_SMALL -8
+#define ARK_WLIST_ERROR_JSON_PARSE       -9
+
 typedef struct {
 	char device[18];
 	int categories[MAX_CATEGORIES][MAX_CT_ENTRIES];          // category ID for each category class, per profile
@@ -207,6 +241,22 @@ typedef struct {
 
 	UT_hash_handle hh;                                       // uthash handle
 } IAM_Profile;
+
+/*
+ * Domain whitelist storage
+ *
+ * The domain whitelist is only used for the global "*" profile.
+ * To avoid an 8KB buffer in every IAM_Profile instance, we keep
+ * a single global buffer instead of embedding it per profile.
+ */
+extern char g_iam_domain_whitelist[MAX_DOMAIN_SIZE];
+
+typedef struct {
+	char device[18];
+	int r_block_i;
+	int r_pass_i;   // 0 means none
+	UT_hash_handle hh;
+} R_ruleMap;
 
 /* Generic struct define for "category" & "app" */
 typedef struct {
@@ -274,6 +324,9 @@ typedef enum {
 	ARK_S_MALS,
 	ARK_S_ADBLOCK,
 	ARK_S_TRACKER,
+	ARK_S_IDS,
+	ARK_S_GDM,
+	ARK_S_GST,
 	ARK_S_FEATURE_MAX
 } arkFeature_e;
 
@@ -298,6 +351,7 @@ extern void exe_ark_limiter_service();
 extern void exe_ark_iam_service();
 extern void check_ark_alive_service();
 extern void ark_sig_update_flow();
+extern int IS_ARK_IAM();
 
 /* ark_db.c */
 extern void exe_ark_protection();
@@ -307,5 +361,8 @@ extern void exe_ark_history();
 extern void ark_cgi_mon_to_json(char *type, char *start, char *end, FILE *stream);
 extern void ark_cgi_mon_del_db(char *type, FILE *stream);
 extern void ark_cgi_log_to_json(char *start, char *end, char *mac, char *page, char *num, char *sortBy, char *sortOrder, FILE *stream);
+
+/* ark_migrate.c */
+extern void exe_ark_protection();
 
 #endif /* _ark_common_h_ */

@@ -156,6 +156,7 @@ define(function(){
 					{url: "ParentalControl.asp", tabName: "<#Time_Scheduling#>"},
 					{url: "YandexDNS.asp", tabName: "<#YandexDNS#>"},
 					{url: "adGuard_DNS.asp", tabName: "AdGuard"},
+					{url: "Ark_WebHistory_Content.asp", tabName: "<#Adaptive_History#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -174,10 +175,10 @@ define(function(){
 				] 
 			},		
 			{
-				menuName: "网易UU加速器",
+				menuName: "<#UU_Accelerator#>",
 				index: "menu_UU", 
 				tab: [
-					{url: "UUAccelerator.asp", tabName: "网易UU加速器"},
+					{url: "UUAccelerator.asp", tabName: "<#UU_Accelerator#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -332,7 +333,7 @@ define(function(){
 					{url: "Main_IPTStatus_Content.asp", tabName: "<#menu5_7_5#>"},
 					{url: "Main_AdslStatus_Content.asp", tabName: "<#menu_dsl_log#>"},
 					{url: "Main_ConnStatus_Content.asp", tabName: "<#Connections#>"},
-					{url: "Main_Security_Change_Notification.asp", tabName: "Security Update Notification"},
+					{url: "Main_Security_Change_Notification.asp", tabName: "<#Notification_security_update#>"},
 					/* {url: "###Main_ConnStatus_Content.asp", tabName: "Captive Portal Connection Log"}, */
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
@@ -922,6 +923,7 @@ define(function(){
 						retArray.push("AiProtection_WebProtector.asp");
 					} else {
 						retArray.push("AiProtection_ContentFilter.asp");
+						retArray.push("Ark_WebHistory_Content.asp");
 					}
 				}
 

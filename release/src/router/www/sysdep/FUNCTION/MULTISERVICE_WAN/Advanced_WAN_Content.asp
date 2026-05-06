@@ -62,7 +62,7 @@
 	max-width:330px;
 }
 .assign_dns_bussiness{
-	color:#000;
+	color: var(--text-primary, #000);
 	opacity: 0.7;
 	max-width:600px;
 }
@@ -92,7 +92,7 @@
     top: 500px;
     left: 15%;
 	min-width: 950px;
-    background: rgb(255, 255, 255);
+    background: var(--popup-bg-color, rgb(255, 255, 255));
     color: rgb(24, 24, 24);
 	border: 1px solid rgba(255, 255, 255, 0.02);
     box-shadow: 0px 2px 4px 0px rgb(0 0 0 / 8%), 0px 1px 4px 0px rgb(60 60 60 / 10%);
@@ -197,7 +197,7 @@
 </style>
 <script>
 if(isSupport("UI4")){
-	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_WHITE.css">');
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_v4.css">');
 }
 else if(rog_support){
 	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_ROG.css">');
@@ -221,7 +221,13 @@ var getUrlParameter = function getUrlParameter(param){
 	}
 	return "";
 };
-var theme = getUrlParameter("current_theme").toUpperCase();
+function getSafeTheme(paramName, allowedValues = ['WHITE', 'ROG', 'TUF', '']) {
+	let rawValue = getUrlParameter(paramName);
+	if (!rawValue) return "";
+	let safePrefix = rawValue.toUpperCase().match(/^[A-Z0-9_]*/)[0];
+	return allowedValues.includes(safePrefix) ? safePrefix : "";
+}
+var theme = getSafeTheme("current_theme").toUpperCase();
 
 var wans_dualwan = '<% nvram_get("wans_dualwan"); %>';
 var wans_lanport = '<% nvram_get("wans_lanport"); %>';
@@ -421,7 +427,7 @@ function save_applyData(wan_unit){
 	/* Multi-Service WAN / IPTV Conflict check */
 	if(httpApi.nvramGet(["switch_wantag"], true).switch_wantag != "none" || original_switch_stb_x != "0"){
 		var hint_str = `<#conflict_function_hint#>`;
-		var msg = hint_str.replace("%1$@", `Multi-Service WAN`).replace("%2$@", "IPTV");
+		var msg = hint_str.replace("%1$@", `<#multiservice_WAN#>`).replace("%2$@", "IPTV");
 
 		if(confirm(msg)){
 			applyData["switch_wantag"] = "none";
@@ -439,7 +445,7 @@ function save_applyData(wan_unit){
 	}
 
 	if(isSupport("autowan") && autowan_conflict){
-		var msg = `<#conflict_function_wanport_hint#>`.replace("%1$@", `Multi-Service WAN`).replaceAll("%2$@", get_default_wan_name());
+		var msg = `<#conflict_function_wanport_hint#>`.replace("%1$@", `<#multiservice_WAN#>`).replaceAll("%2$@", get_default_wan_name());
 
 		$("#autowan_hint").html(msg);
 		$("#autowan_hint_div").show();
@@ -1903,7 +1909,7 @@ function genWANSoption(){
 
 function change_wan_unit_idx(idx,iptv_row){
 	// reset to old values
-	if (parseInt(idx) < 100) document.getElementById("pvc_sel").innerHTML = "Internet";
+	if (parseInt(idx) < 100) document.getElementById("pvc_sel").innerHTML = `<#Internet#>`;
 	else document.getElementById("pvc_sel").innerHTML = "IPTV #"+iptv_row.toString();
 
 	wan_unit_tmp = idx.toString();
@@ -3549,7 +3555,7 @@ function Update_DNS_status(){
 	$("#DNS_status").empty();
 
 	if(document.form.wan_dnsenable_x.value == 1){
-		DSN_status_info="<b> :</b><#IPConnection_x_DefaultStatus#> : <#IPConnection_x_DNSServer_auto#>";
+		DSN_status_info="<b><#IPConnection_x_DefaultStatus#>:</b> <#IPConnection_x_DNSServer_auto#>";
 	}
 	else{
 		DNS_list_index=DNSList_match(document.form.wan_dns1_x.value, document.form.wan_dns2_x.value);
@@ -3769,7 +3775,7 @@ function change_wizard(o, id){
 									<div style="margin: 10px 0 10px 5px;" class="splitLine"></div>
 									<div id="desc_default" class="formfontdesc"></div>
 									<div id="desc_edit" class="formfontdesc"></div>
-									<div style="font-size: 13px; text-decoration: underline; margin-left: 5px; cursor: pointer;" onclick="show_popup('new');">Add Profile (Multi-Service WAN)</div>
+									<div style="font-size: 13px; text-decoration: underline; margin-left: 5px; cursor: pointer;" onclick="show_popup('new');"><#vpnc_step1#> (<#multiservice_WAN#>)</div>
 									<table id="WANscap" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 										<thead>
 										<tr>
@@ -3804,11 +3810,11 @@ function change_wizard(o, id){
 									<table id="t2BC" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 										<thead>
 										<tr>
-											<td colspan="2">Internet Settings</td><!--untranslated-->
+											<td colspan="2"><#menu5_3_1#></td>
 										</tr>
 										</thead>
 										<tr>
-											<th>Profile</th>
+											<th><#vpnc_profile#></th>
 											<td><span id="pvc_sel" style="color:white;"></span></td>
 										</tr>
 										<tr>

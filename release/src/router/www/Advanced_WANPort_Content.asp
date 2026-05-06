@@ -492,6 +492,11 @@ function get_default_wan(){
 	return default_wan;
 }
 
+const AUTOWAN_SUPPORTED_PROTOS = ["dhcp", "pppoe", "v6plus", "ocnvc", "dslite", "v6opt"];
+function is_autowan_supported_proto(proto){
+	return AUTOWAN_SUPPORTED_PROTOS.includes(proto);
+}
+
 function form_show(v, change_primary_wan){
 	if(change_primary_wan != undefined)
 		var wan_value = change_primary_wan;
@@ -539,7 +544,7 @@ function form_show(v, change_primary_wan){
 			}
 		}
 
-		if(isSupport("autowan") && orig_switch_wantag == "none" && switch_stb_x == "0" && (!wan_bonding_support || orig_bond_wan == "0") && (!lacp_support || lacp_enabled == "0") && (wan_proto == "dhcp" || wan_proto == "pppoe") && orig_wan0_dot1q == "0" && !(isSupport("multi_service_wan") && wan_service_num > 1)){
+		if(isSupport("autowan") && orig_switch_wantag == "none" && switch_stb_x == "0" && (!wan_bonding_support || orig_bond_wan == "0") && (!lacp_support || lacp_enabled == "0") && is_autowan_supported_proto(wan_proto) && orig_wan0_dot1q != "1" && !(isSupport("multi_service_wan") && wan_service_num > 1)){
 			if($("#wans_primary option[value='auto']").length == 0){
 				($('<option>', {
 					"value": "auto",
@@ -1083,8 +1088,7 @@ function applyRule(){
 			}
 		}
 
-		if(based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI"){
-			var lacp_ifnames_x = httpApi.nvramGet(["lacp_ifnames_x"], true).lacp_ifnames_x;
+		if(based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI" || based_modelid == "GT-BN98_PRO"){
 			if(document.form.wans_dualwan.value.indexOf("wan") != -1 && document.form.wans_extwan.value == "1"){ //2.5G WAN included
 				if(lacp_support && lacp_enabled == "1" && lacp_ifnames_x == ""){
 					if(conflict_func_array.indexOf("<#NAT_lacp#>") == -1)
@@ -2215,7 +2219,7 @@ function remain_origins(){
 													<option value="fo"><#dualwan_mode_fo#></option>
 													<option value="lb" <% nvram_match("wans_mode", "lb", "selected"); %>><#dualwan_mode_lb#></option>
 												</select>
-												<span id="wans_mode_fo" style="margin-left:5px; color:#FFF; display:none;"><#dualwan_mode_fo#></span>
+												<span id="wans_mode_fo" style="margin-left:5px; color:var(--text-primary, #FFF); display:none;"><#dualwan_mode_fo#></span>
 												<span id="fb_span" style="display:none"><input type="checkbox" id="fb_checkbox"><#dualwan_failback_allow#></span>
 										  		<script>
 										  			document.getElementById("fb_checkbox").onclick = function(){

@@ -1,7 +1,21 @@
 @charset "UTF-8";
 .client-detail {
-    border-radius: 16px;
-    background-color: var(--bg-content-color);
+    border-radius: var(--wrt-card-radius);
+    background-color: var(--wrt-card-content-emphasis-bg);
+}
+
+@media (max-width: 339px) {
+    #aura_rgb_field,
+    #aura_rgb_field .card,
+    #aura_rgb_field .card-body {
+        min-width: 0;
+    }
+
+    #aura_rgb_field .auraRgb {
+        display: block;
+        width: 100%;
+        max-width: none;
+    }
 }
 
 .chart {
@@ -16,15 +30,15 @@
 }
 
 .chart::after {
-    --bord: 20%;
+    --bord: 10%;
     content: "";
     position: absolute;
-    left: 49%;
+    left: 50%;
     top: 50%;
-    transform: translate(-50%, -49%);
+    transform: translate(-50%, -50%);
     width: calc(100% - var(--bord));
     height: calc(100% - var(--bord));
-    background-color: var(--bg-circle-chart-color);
+    background-color: var(--surface-card);
     border-radius: inherit;
 }
 
@@ -41,17 +55,20 @@
     font-weight: bolder;
 }
 .chart-color-2g1 {
-    background-color: var(--circle-chart-color-1);
+    background-color: var(--chart-circle-1);
 }
 
 .chart-color-5g1 {
-    background-color: var(--circle-chart-color-2);
+    background-color: var(--chart-circle-1);
 }
 .chart-color-5g2 {
-    background-color: var(--circle-chart-color-3);
+    background-color: var(--chart-circle-1);
 }
 .chart-color-6g1 {
-    background-color: var(--circle-chart-color-4);
+    background-color: var(--chart-circle-1);
+}
+.chart-color-6g2 {
+    background-color: var(--chart-circle-1);
 }
 .bar-percent-0 {
     width: 0%;
@@ -358,11 +375,11 @@
 }
 .divide-line {
     height: 1px;
-    background-color: var(--bg-divide-line-color);
+    background-color: var(--wrt-divider-color);
 }
 .clientBorder{
-    border: 1px solid var(--bg-divide-line-color);
-    border-radius: 16px;
+    border: 1px solid var(--wrt-divider-color);
+    border-radius: var(--wrt-card-radius);
 }
 .icon-color-active-1 {
     background-color: var(--icon-active-color);
@@ -374,9 +391,9 @@ div[role~="icon-inner"] {
     color: var(--text-regular-color);
 }
 .btn-input-label {
-    background-color: var(--bg-btn-regular-color);
-    border-color: var(--bg-btn-regular-color);
-    color: var(--text-regular-color);
+    background-color: var(--wrt-btn-default-bg);
+    border-color: var(--wrt-btn-default-border);
+    color: var(--wrt-btn-default-color);
 }
 .btn-input-icon {
     color: var(--primary-btn-text-color);
@@ -386,15 +403,15 @@ div[role~="icon-inner"] {
 .card-sub-content {
     width: 90%;
     margin-left: auto;
-    background-color: var(--bg-btn-regular-color);
+    background-color: var(--wrt-card-content-emphasis-bg);
     border-radius: 10px;
 }
 .disk-banner {
     padding: 8px 16px;
 }
 .disk-banner:hover {
-    background-color: rgb(93, 114, 136);
-    border-radius: 10px;
+    background-color: var(--wrt-card-surface-2-bg);
+    border-radius: var(--wrt-card-radius);
     cursor: pointer;
 }
 /* DNS PING */
@@ -416,7 +433,7 @@ div[role~="icon-inner"] {
 }
 .progress-active {
     border-radius: 4px;
-    background-image: linear-gradient(var(--gradient-loader-color));
+    background-image: var(--gradient-color-primary);
 }
 .dns-content-default {
     overflow-y: auto;

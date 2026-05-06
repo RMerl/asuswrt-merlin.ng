@@ -173,7 +173,7 @@ html::-webkit-scrollbar-track{
 	margin-top:10px;
 	/*font-size:12px;*/
 	font-family:Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
-	border: 1px solid #dcdcdc;
+	border: 1px solid var(--wrt-table-border-color, #dcdcdc);
 	border-collapse: collapse;
 }
 .FormTable_table th{
@@ -183,7 +183,7 @@ html::-webkit-scrollbar-track{
 	text-align:center;
 	font-size:12px;
 	height:25px;
-	border: 1px solid #dcdcdc;
+	border: 1px solid var(--wrt-table-border-color, #dcdcdc);
 	border-collapse: collapse;
 }
 .FormTable_table th.select_table{
@@ -201,32 +201,33 @@ html::-webkit-scrollbar-track{
 .FormTable_table td{
 	/*background-color:#475a5f;*/
 	text-align:center;
-	border: 1px solid #dcdcdc;
+	border: 1px solid var(--wrt-table-border-color, #dcdcdc);
 	border-collapse: collapse;
 	position: relative;
 }
 .FormTable_table td span{
-	color:#FFCC00;
+	color: var(--wrt-text-success, #FFCC00);
 }
 .FormTable_table thead td{
 	font-size:12px;
-	background-color:#dcdcdc;
+	background-color:var(--wrt-table-header-bg, #dcdcdc);
 	text-align:left;
 	font-weight:bolder;
-	border: 1px solid #dcdcdc;
+	border: 1px solid var(--wrt-table-border-color, #dcdcdc);
 	padding: 3px;
 	border-collapse: collapse;
 	padding-left: 10px;
+	color: var(--wrt-table-header-color, #000);
 	
 }
 .FormTable_table thead th{
 	width: 98px;
-	color: #000;
+	color: var(--wrt-table-header-color, #000);
 	font-size:12px;
 	/*background-color:#1F2D35;*/
 	text-align: center;
 	font-weight:normal;
-	border: 1px solid #dcdcdc;
+	border: 1px solid var(--wrt-table-border-color, #dcdcdc);
 	border-collapse: collapse;
 }
 
@@ -582,7 +583,7 @@ th a:hover,th a:active {
 
 .devicepin{
 	border:0px;
-	color:#000;
+	color: var(--wrt-text-color, #000);
 	font-family:Verdana;
 	font-size:13px;
 	padding-left:2px;
@@ -846,7 +847,7 @@ font-size:13px;
 }
 a:link {
 	text-decoration: none;
-	color: #006ce1 !important;
+	color: #006ce1;
 }
 a:visited {
 	text-decoration: none;
@@ -1504,6 +1505,39 @@ padding-top:1px;
 	-moz-border-radius: 0 0 5px 5px;
 	border-radius: 0 0 5px 5px;
 }
+
+/* ── hint panel (replaces overlib overDiv popup) ── */
+#overDiv.hint-panel {
+    position: fixed;
+    max-width: 300px;
+    min-width: 140px;
+    background: var(--card-bg-color, #2b2b2b);
+	border: 1px solid var(--body-bg-opacity, #2e2e2e);
+    color: var(--text-primary, #eee);
+    font-size: 13px;
+    border-radius: 6px;
+    padding: 12px 14px;
+    box-shadow: 0 4px 16px var(--bg-shadow-color, rgba(0,0,0,.4));
+    display: none;
+    z-index: 9999;
+}
+.hint-panel-caption {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--bg-divide-line-color, rgba(255,255,255,.15));
+}
+.hint-panel-close {
+    cursor: pointer;
+    opacity: .6;
+    padding: 0 2px;
+    font-size: 14px;
+    line-height: 1;
+}
+.hint-panel-close:hover { opacity: 1; }
 
 .aidisk1_table{
 	width:740px;
@@ -2483,4 +2517,327 @@ i.icon-comments {
 }
 .a-hint-text {
 	color: #006ce1 !important;
+}
+
+/* Log textarea variant */
+.textarea--log {
+    background: var(--wrt-textarea-bg, #475A5F);
+    color: var(--wrt-textarea-color, #FFFFFF);
+    font-family: 'Courier New', Courier, monospace;
+    width: 97%;
+    font-size: var(--font-size-12, 0.75rem);
+    resize: none;
+    display: block;
+    line-height: 1.4;
+    white-space: pre;
+}
+
+[data-asuswrt-theme="proart"] .FormTitle thead,
+[data-asuswrt-theme="tuf"] .FormTitle thead,
+[data-asuswrt-theme="rog"] .FormTitle thead,
+[data-asuswrt-theme="asus"] .FormTitle thead{
+	background-color: var(--wrt-table-header-bg);
+}
+[data-asuswrt-theme="proart"] .edit_btn,
+[data-asuswrt-theme="tuf"] .edit_btn,
+[data-asuswrt-theme="rog"] .edit_btn,
+[data-asuswrt-theme="asus"] .edit_btn{
+	background: none;
+	mask-image: var(--ic-edit-stroke);
+	-webkit-mask-image: var(--ic-edit-stroke);
+	width: 24px;
+	height: 24px;
+	background-color: var(--wrt-btn-icon-active-color);
+	border-radius: 50%;
+	padding: 0;
+	margin: 0;
+	cursor: pointer;
+}
+:root, [data-asuswrt-color="light"]{
+	--ic-account-add: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' viewBox='0 0 24 24'%3e%3cg stroke='black' stroke-linecap='round' stroke-width='1.5'%3e%3cpath stroke-linejoin='round' d='M4.81 17.63c1.74-1.55 4.32-2.54 7.19-2.54 1.626 0 3.16.315 4.5.871'/%3e%3cpath stroke-linejoin='round' d='M12 12a2.57 2.57 0 1 1 0-5.14A2.57 2.57 0 0 1 12 12Z' clip-rule='evenodd'/%3e%3cpath stroke-linejoin='round' d='M21.02 14.056a9.25 9.25 0 1 0-6.965 6.965'/%3e%3cpath d='M19 17v4m2-2h-4'/%3e%3c/g%3e%3c/svg%3e");
+	--ic-account-delete: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' viewBox='0 0 24 24'%3e%3cg stroke='black' stroke-linecap='round' stroke-width='1.5'%3e%3cpath stroke-linejoin='round' d='M4.81 17.63c1.74-1.55 4.32-2.54 7.19-2.54 1.626 0 3.16.315 4.5.871'/%3e%3cpath stroke-linejoin='round' d='M12 12a2.57 2.57 0 1 1 0-5.14A2.57 2.57 0 0 1 12 12Z' clip-rule='evenodd'/%3e%3cpath stroke-linejoin='round' d='M21.02 14.056a9.25 9.25 0 1 0-6.965 6.965'/%3e%3cpath d='M22 18h-4'/%3e%3c/g%3e%3c/svg%3e");
+	--ic-account-modify: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' viewBox='0 0 24 24'%3e%3cg stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5'%3e%3cpath d='M4.81 17.63c1.74-1.55 4.32-2.54 7.19-2.54 1.626 0 3.16.315 4.5.871'/%3e%3cpath d='M12 12a2.57 2.57 0 1 1 0-5.14A2.57 2.57 0 0 1 12 12Z' clip-rule='evenodd'/%3e%3cpath d='M21.25 12A9.25 9.25 0 1 0 12 21.25m8.095-5.923a1.116 1.116 0 0 1 1.578 1.578l-3.343 3.343a.67.67 0 0 1-.29.17L16 21l.582-2.04a.67.67 0 0 1 .17-.29l3.343-3.343Z'/%3e%3c/g%3e%3c/svg%3e");
+	--ic-folder-add: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' viewBox='0 0 24 24'%3e%3cg stroke='black' stroke-width='1.5'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='M21 15v-4.757a3 3 0 0 0-.879-2.122L14.88 2.88A3 3 0 0 0 12.757 2H6a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h7.5'/%3e%3cpath stroke-linejoin='round' d='M14 2v4a3 3 0 0 0 3 3h4'/%3e%3cpath stroke-linecap='round' d='M18 16v6m3-3h-6'/%3e%3c/g%3e%3c/svg%3e");
+	--ic-folder-delete: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' viewBox='0 0 24 24'%3e%3cg stroke='black' stroke-width='1.5'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='M21 15v-4.757a3 3 0 0 0-.879-2.122L14.88 2.88A3 3 0 0 0 12.757 2H6a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h7.5'/%3e%3cpath stroke-linejoin='round' d='M14 2v4a3 3 0 0 0 3 3h4'/%3e%3cpath stroke-linecap='round' d='M21 19h-6'/%3e%3c/g%3e%3c/svg%3e");
+	--ic-folder-modify: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' viewBox='0 0 24 24'%3e%3cg stroke='black' stroke-linejoin='round' stroke-width='1.5'%3e%3cpath stroke-linecap='round' d='M21 12v-1.757a3 3 0 0 0-.879-2.122L14.88 2.88A3 3 0 0 0 12.757 2H6a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h4.5'/%3e%3cpath d='M14 2v4a3 3 0 0 0 3 3h4'/%3e%3cpath stroke-linecap='round' d='M18.46 14.436a1.488 1.488 0 1 1 2.104 2.104l-4.457 4.457a.891.891 0 0 1-.386.227L13 22l.776-2.72a.891.891 0 0 1 .227-.387l4.457-4.457Z'/%3e%3c/g%3e%3c/svg%3e");
+	--ic-user-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' viewBox='0 0 24 24'%3e%3cg stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5'%3e%3cpath d='M19.19 17.63c-1.74-1.56-4.32-2.54-7.19-2.54s-5.45.99-7.19 2.54'/%3e%3cpath d='M12 12a2.57 2.57 0 1 1 0-5.14A2.57 2.57 0 0 1 12 12Z' clip-rule='evenodd'/%3e%3cpath d='M12 21.25a9.25 9.25 0 1 1 0-18.5 9.25 9.25 0 0 1 0 18.5Z' clip-rule='evenodd'/%3e%3c/g%3e%3c/svg%3e");
+	--ic-user-icon-hover: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' viewBox='0 0 24 24'%3e%3cpath fill='%23006CE1' fill-rule='evenodd' d='M2 12c0 5.51 4.49 10 10 10s10-4.49 10-10S17.51 2 12 2 2 6.49 2 12Zm13.32-2.57c0 1.83-1.49 3.32-3.32 3.32-1.83 0-3.32-1.49-3.32-3.32 0-1.83 1.49-3.32 3.32-3.32 1.83 0 3.32 1.49 3.32 3.32ZM5.79 17.8c-.34-.36-.65-.76-.93-1.19 1.9-1.45 4.47-2.28 7.14-2.28s5.24.83 7.14 2.28c-.28.43-.59.83-.93 1.19A8.475 8.475 0 0 1 12 20.5c-2.45 0-4.66-1.04-6.21-2.7Z' clip-rule='evenodd'/%3e%3c/svg%3e");
+}
+[data-asuswrt-color="dark"]{
+	--ic-user-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' viewBox='0 0 24 24'%3e%3cg stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5'%3e%3cpath d='M19.19 17.63c-1.74-1.56-4.32-2.54-7.19-2.54s-5.45.99-7.19 2.54'/%3e%3cpath d='M12 12a2.57 2.57 0 1 1 0-5.14A2.57 2.57 0 0 1 12 12Z' clip-rule='evenodd'/%3e%3cpath d='M12 21.25a9.25 9.25 0 1 1 0-18.5 9.25 9.25 0 0 1 0 18.5Z' clip-rule='evenodd'/%3e%3c/g%3e%3c/svg%3e");
+	--ic-user-icon-hover: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' viewBox='0 0 24 24'%3e%3cpath fill='%23006CE1' fill-rule='evenodd' d='M2 12c0 5.51 4.49 10 10 10s10-4.49 10-10S17.51 2 12 2 2 6.49 2 12Zm13.32-2.57c0 1.83-1.49 3.32-3.32 3.32-1.83 0-3.32-1.49-3.32-3.32 0-1.83 1.49-3.32 3.32-3.32 1.83 0 3.32 1.49 3.32 3.32ZM5.79 17.8c-.34-.36-.65-.76-.93-1.19 1.9-1.45 4.47-2.28 7.14-2.28s5.24.83 7.14 2.28c-.28.43-.59.83-.93 1.19A8.475 8.475 0 0 1 12 20.5c-2.45 0-4.66-1.04-6.21-2.7Z' clip-rule='evenodd'/%3e%3c/svg%3e");
+}
+[data-asuswrt-theme][data-asuswrt-color] {
+	/* 預設連結色：排除 id/class 含 faq、.hintstyle、.table_text，其餘 a 套用；table th 內 a、.clientlist_dropdown 內 a 由下方規則覆蓋 */
+	a:link:not([id*="faq"]):not([class*="faq"]):not(.hintstyle):not(.table_text),
+	a:not([id*="faq"]):not([class*="faq"]):not(.hintstyle):not(.table_text){
+		color: var(--wrt-link-color);
+	}
+	/* table th 內的連結一律用主文字色（特異性低於上方 a:not()，故需 !important 才能覆蓋） */
+	table th a,
+	table th a:link,
+	table th a:visited {
+		color: var(--wrt-text-primary) !important;
+	}
+	a[id*="faq"],
+	a[class*="faq"]{
+		color: var(--wrt-text-primary);
+	}
+	a.hintstyle:link {
+		color: var(--wrt-text-primary);
+	}
+	/* .clientlist_dropdown 內所有連結用主文字色（含巢狀），!important 以覆蓋上方預設連結色 */
+	.clientlist_dropdown a{
+		color: var(--wrt-text-primary) !important;
+	}
+	.clientlist_dropdown a:hover {
+		color: var(--wrt-link-hover-color) !important;
+	}
+	div.icon-circle-mask{
+		background: var(--wrt-card-surface-3-bg);
+	}
+	.splitLine{
+		background: var(--wrt-card-divider-color);
+	}
+	#sortable div table tr:hover{
+		background: var(--wrt-card-surface-3-bg);
+		color: var(--wrt-text-primary);
+	}
+	#sortable div table tr:hover td{
+		color: var(--wrt-text-primary);
+	}
+
+	.createAccountBtn{
+		mask-image:var(--ic-account-add);
+		-webkit-mask-image:var(--ic-account-add);
+		background-color: var(--wrt-btn-icon-color);
+		mask-repeat: no-repeat;
+		mask-position: center;
+		mask-size: contain;
+		height:24px;
+		width:24px;
+		background-image: none;
+	}
+	.createAccountBtn_hover{
+		mask-image:var(--ic-account-add);
+		mask-size: contain;
+		mask-repeat: no-repeat;
+		mask-position: center;
+		background-color: var(--wrt-btn-icon-active-color);
+		background-image: none;
+		height:24px;
+		width:24px;
+		cursor: pointer;
+	}
+	.createAccountBtn_add{
+		mask-image:var(--ic-account-add);
+		-webkit-mask-image:var(--ic-account-add);
+		mask-repeat: no-repeat;
+		mask-position: center;
+		mask-size: 100%;
+		height:24px;
+		width:24px;
+		background-color: var(--wrt-btn-icon-color);
+		background-image: none;
+		cursor: pointer;
+	}
+
+	.deleteAccountBtn{
+		-webkit-mask-image:var(--ic-account-delete);
+		mask-image:var(--ic-account-delete);
+		mask-repeat: no-repeat;
+		mask-position: center;
+		mask-size: 100%;
+		background-repeat:no-repeat;
+		height:24px;
+		width:24px;
+		background-color: var(--wrt-btn-icon-color);
+		background-image: none;
+		cursor: pointer;
+	}
+	.deleteAccountBtn_hover{
+		-webkit-mask-image:var(--ic-account-delete);
+		mask-image:var(--ic-account-delete);
+		mask-repeat: no-repeat;
+		mask-position: center;
+		mask-size: 100%;
+		height:24px;
+		width:24px;
+		background-color: var(--wrt-btn-icon-active-color);
+		background-image: none;
+		cursor: pointer;
+	}
+	.deleteAccountBtn_add{
+		-webkit-mask-image:var(--ic-account-delete);
+		mask-image:var(--ic-account-delete);
+		mask-repeat: no-repeat;
+		mask-position: center;
+		mask-size: 100%;
+		background-repeat:no-repeat;
+		height:24px;
+		width:24px;
+		background-color: var(--wrt-btn-icon-color);
+		background-image: none;
+		cursor: pointer;
+	}
+	.deleteAccountBtn_add:hover{
+		-webkit-mask-image:var(--ic-account-delete);
+		mask-image:var(--ic-account-delete);
+		mask-repeat: no-repeat;
+		mask-position: center;
+		mask-size: 100%;
+		background-repeat:no-repeat;
+		background-position:0px -56px;
+		height:24px;
+		width:24px;
+		cursor: pointer;
+	}
+	.modifyAccountBtn{
+		-webkit-mask-image:var(--ic-account-modify);
+		mask-image:var(--ic-account-modify);
+		mask-repeat: no-repeat;
+		mask-position: center;
+		mask-size: 100%;
+		background-repeat:no-repeat;
+		height:24px;
+		width:24px;
+		background-color: var(--wrt-btn-icon-color);
+		background-image: none;
+		cursor: pointer;
+	}
+	.modifyAccountBtn_hover{
+		mask-image:var(--ic-account-modify);
+		mask-size: contain;
+		mask-repeat: no-repeat;
+		mask-position: center;
+		background-color: var(--wrt-btn-icon-active-color);
+		background-image: none;
+		height:24px;
+		width:24px;
+		cursor: pointer;
+	}
+	.modifyAccountBtn_add{
+		mask-image:var(--ic-account-modify);
+		mask-repeat:no-repeat;
+		mask-position:0px 0px;
+		mask-size: contain;
+		height:24px;
+		width:24px;
+		background-color: var(--wrt-btn-icon-color);
+		background-image: none;
+		cursor: pointer;
+	}
+
+	/* 資料夾圖示：mask 版共用 24×24 底 */
+	.createFolderBtn,
+	.createFolderBtn_hover,
+	.createFolderBtn_add,
+	.createFolderBtn_add:hover {
+		mask-image: var(--ic-folder-add);
+		mask-repeat: no-repeat;
+		mask-position: 0 0;
+		mask-size: contain;
+		height: 24px;
+		width: 24px;
+		background-image: none;
+		cursor: pointer;
+	}
+	.createFolderBtn,
+	.createFolderBtn_add {
+		background-color: var(--wrt-btn-icon-color);
+	}
+	.createFolderBtn_hover,
+	.createFolderBtn_add:hover {
+		background-color: var(--wrt-btn-icon-active-color);
+	}
+
+	.deleteFolderBtn,
+	.deleteFolderBtn_hover,
+	.deleteFolderBtn_add,
+	.deleteFolderBtn_add:hover {
+		mask-image: var(--ic-folder-delete);
+		mask-repeat: no-repeat;
+		mask-position: 0 0;
+		mask-size: contain;
+		height: 24px;
+		width: 24px;
+		background-image: none;
+		cursor: pointer;
+	}
+	.deleteFolderBtn,
+	.deleteFolderBtn_add {
+		background-color: var(--wrt-btn-icon-color);
+	}
+	.deleteFolderBtn_hover,
+	.deleteFolderBtn_add:hover {
+		background-color: var(--wrt-btn-icon-active-color);
+	}
+
+	.modifyFolderBtn,
+	.modifyFolderBtn_hover,
+	.modifyFolderBtn_add,
+	.modifyFolderBtn_add:hover {
+		mask-image: var(--ic-folder-modify);
+		mask-repeat: no-repeat;
+		mask-position: 0 0;
+		mask-size: contain;
+		height: 24px;
+		width: 24px;
+		background-image: none;
+	}
+	.modifyFolderBtn_hover,
+	.modifyFolderBtn_add,
+	.modifyFolderBtn_add:hover {
+		cursor: pointer;
+	}
+	.modifyFolderBtn,
+	.modifyFolderBtn_add {
+		background-color: var(--wrt-btn-icon-color);
+	}
+	.modifyFolderBtn_hover,
+	.modifyFolderBtn_add:hover {
+		background-color: var(--wrt-btn-icon-active-color);
+	}
+
+	.userIcon{
+		background-image:var(--ic-user-icon);
+		background-repeat: no-repeat;
+		background-position: 0px 0px;
+		background-size: contain;
+		padding-left:30px;
+		height:24px;
+		width:24px;
+		font-family:Verdana, Arial, Helvetica, sans-serif;
+		font-size:12px;
+		line-height:25px;
+	}
+
+	.userIcon:hover{
+		background-image:var(--ic-user-icon-hover);
+		background-repeat: no-repeat;
+		background-position: 0px 0px;
+		background-size: contain;
+		padding-left:30px;
+		height:24px;
+		width:24px;
+		cursor: pointer;
+		font-family:Verdana, Arial, Helvetica, sans-serif;
+		font-size:12px;
+		line-height:25px;
+	}
+	.userIcon_click{
+		background-image:var(--ic-user-icon);
+		background-repeat: no-repeat;
+		background-position: 0px 0px;
+		background-size: contain;
+		padding-left:30px;
+		height:24px;
+		width:24px;
+		font-family:Verdana, Arial, Helvetica, sans-serif;
+		font-size:12px;
+		line-height:25px;
+	}
+	.popup_container .popup_title_container .title {
+		color: var(--wrt-text-primary);
+	}
 }

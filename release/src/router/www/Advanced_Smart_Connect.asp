@@ -861,19 +861,18 @@ function applyRule(){
 			}
 		}
 		
-		variable[`wl${shift}${subUnit}_bsd_if_select_policy`] = if_array.join(' ');
-
-		/*
-			Bounce Detect 
-			[Window Time, Counts, Dwell Time]
-		*/
-		let bounce_array = [document.querySelector('#windows_time_sec').value,
-							document.querySelector('#bsd_counts').value,
-							document.querySelector('#dwell_time_sec').value];
-
-		variable['bsd_bounce_detect'] = bounce_array.join(' ');
+		variable[`wl${shift}${subUnit}_bsd_if_select_policy`] = if_array.join(' ');	
 	}
 
+	/*
+		Bounce Detect 
+		[Window Time, Counts, Dwell Time]
+	*/
+	let bounce_array = [document.querySelector('#windows_time_sec').value,
+						document.querySelector('#bsd_counts').value,
+						document.querySelector('#dwell_time_sec').value];
+
+	variable['bsd_bounce_detect'] = bounce_array.join(' ');
 	variable['action_mode'] = 'apply';
 	variable['rc_service'] = 'restart_wireless';
 	httpApi.nvramSet(variable, function(){

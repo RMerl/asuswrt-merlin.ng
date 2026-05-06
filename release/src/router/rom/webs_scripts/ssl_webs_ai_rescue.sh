@@ -113,7 +113,7 @@ def_ha_file=${ai_productid}_ha_${default_rescue_ver}_un_rescue.zip
 def_ha_rsa_file=${ai_productid}_ha_${default_rescue_ver}_rsa`nvram get live_update_rsa_ver`_rescue.zip
 
 # This part is from server
-live_update_rescue_ver=$(nvram get aiboard_rescue_ver | tr '.' '_')
+live_update_rescue_ver=$(nvram get frs_aiboard_rescue_ver | tr '.' '_')
 fw_file=${ai_productid}_${live_update_rescue_ver}_un_rescue.zip
 fw_rsa_file=${ai_productid}_${live_update_rescue_ver}_rsa`nvram get live_update_rsa_ver`_rescue.zip
 frigate_file=${ai_productid}_frigate_${live_update_rescue_ver}_un_rescue.zip
@@ -195,7 +195,9 @@ verify_file() {
     local download_rsa_result=0
     local rsa_check_result=0
 
+    update_ai_prog "START" 0 "" 0 0 3 1 25 "$(basename $local_filepath)"
     if [ ! -f "$local_filepath" ]; then
+	update_ai_prog "START" 0 "" 0 0 3 2 50 "$(basename $local_filepath)"
     	download_file "$download_url" "$download_file" "$local_filepath"
 	download_result=$?
     	download_file "$download_url" "$download_rsa_file" "$local_rsa_filepath"
@@ -213,6 +215,7 @@ verify_file() {
     	logger -t AI_RESCUE " $local_rsa_filepath rsa is already exist"
     fi
     
+    update_ai_prog "START" 0 "" 0 0 3 3 75 "$(basename $local_filepath)"
     nvram set ai_rsasign_check=0
     check_signature "$local_filepath" "$local_rsa_filepath"
     if [ $(nvram get ai_rsasign_check) -eq 1 ]; then

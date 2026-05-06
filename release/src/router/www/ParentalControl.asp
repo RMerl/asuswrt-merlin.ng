@@ -155,6 +155,7 @@ function initial(){
 		$("#desc_note_item").find("li:eq(0)").remove();
 		if($("#nat_desc").css("display") == "none"){
 			$("#desc_note").hide();
+			$("#desc_note").parent().hide();
 			$("#desc_note_item").hide();
 		}
 	}
@@ -689,11 +690,13 @@ function show_inner_tab(){
 							<li><#ParentalCtrl_Desc4#></li>
 							<li><#ParentalCtrl_Desc5#></li>							
 						</ol>
-						<span id="desc_note" class="hint-color"><#ADSL_FW_note#></span>
-						<ol id="desc_note_item" class="hint-color" style="margin:-5px 0px 3px -18px;*margin-left:18px;">
-							<li><#ParentalCtrl_default#></li>
-							<li id="nat_desc"><#ParentalCtrl_disable_NAT#></li>
-						</ol>	
+						<div class="hint-color">
+							<span id="desc_note"><#ADSL_FW_note#></span>
+							<ol id="desc_note_item" style="margin:-5px 0px 3px -18px;*margin-left:18px;">
+								<li><#ParentalCtrl_default#></li>
+								<li id="nat_desc"><#ParentalCtrl_disable_NAT#></li>
+							</ol>
+						</div>
 					</td>
 				</tr>
 			</table>

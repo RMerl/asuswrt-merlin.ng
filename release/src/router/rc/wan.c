@@ -221,18 +221,18 @@ _dprintf("add_multi_routes: skip because of the result of is_wan_connect(%d)...\
 		}
 
 		snprintf(cmd, sizeof(cmd), "ip route replace %s dev %s proto kernel", wan_multi_gate[unit], wan_multi_if[unit]);
+		safe_do_system("ip route replace %s dev %s proto kernel", wan_multi_gate[unit], wan_multi_if[unit]);
 if(debug) printf("test 10. cmd=%s.\n", cmd);
-		system(cmd);
 
 		// set the default gateway.
 		snprintf(cmd, sizeof(cmd), "ip route replace default via %s dev %s", wan_multi_gate[unit], wan_multi_if[unit]);
+		safe_do_system("ip route replace default via %s dev %s", wan_multi_gate[unit], wan_multi_if[unit]);
 if(debug) printf("test 11. cmd=%s.\n", cmd);
-		system(cmd);
 
 		if(!strcmp(wan_proto, "pptp") || !strcmp(wan_proto, "l2tp")){
 			snprintf(cmd, sizeof(cmd), "ip route del %s dev %s 2>/dev/null", wan_multi_gate[unit], wan_multi_if[unit]);
+			safe_do_system("ip route del %s dev %s", wan_multi_gate[unit], wan_multi_if[unit]);
 if(debug) printf("test 12. cmd=%s.\n", cmd);
-			system(cmd);
 		}
 	}
 
@@ -1240,6 +1240,9 @@ void restore_wan_ebtables_rules()
 		if (nvram_pf_get_int(wan_prefix, "dhcpfilter_enable"))
 			start_dhcpfilter(nvram_pf_safe_get(wan_prefix, "ifname"));
 	}
+#ifdef RTCONFIG_MSWAN_GENERIC
+	config_mswan_br_rule();
+#endif
 #endif
 }
 
@@ -1286,9 +1289,6 @@ start_wan_if(int unit)
 #endif
 #if defined(BCM4912)
 	uint phy_pwr_skip = 0;
-#endif
-#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
-	char mv_ifname[16];
 #endif
 
 #if !defined(RTCONFIG_MULTISERVICE_WAN)
@@ -1340,13 +1340,6 @@ start_wan_if(int unit)
 #endif
 			}
 #endif
-
-#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
-			if(is_auto_wanport_enabled() == 1)
-				_dprintf("%s(%d) %d: AUTO_WANPORT: skip to config_mswan().\n", __func__, getpid(), __LINE__);
-			else
-#endif
-			{
 			//config after bonding interface ready
 #if defined(HND_ROUTER)
 			config_mswan(unit);
@@ -1359,7 +1352,6 @@ start_wan_if(int unit)
 				if (nvram_get(tmp)) {
 					start_wan_if(mswan_unit);
 				}
-			}
 			}
 		}
 #ifdef RTCONFIG_MULTIWAN_IF
@@ -1441,6 +1433,28 @@ start_wan_if(int unit)
 			system("rtkswitch 10");
 		else if ((get_wans_dualwan() & WANSCAP_LAN) && !strcmp(wan_ifname, "vlan2") && (nvram_get_int("wans_lanport") >= 2) && (nvram_get_int("wans_lanport") <= 4))
 			doSystem("rtkswitch 12 %d", nvram_get_int("wans_lanport") - 1);
+
+#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
+		nvram_set("freeze_duck", "60");
+		if(!strcmp(wan_ifname, "vlan4094")){
+			int sec = 1, connected = 0;
+			for(sec = 1; sec <= 60; ++sec){
+				if(rtk_get_phy_status(1) == 1)
+					++connected;
+				else
+					connected = 0;
+
+				if(connected >= 3){
+					logmessage("start_wan_if", "the LAN1 port is up");
+					break;
+				}
+
+				logmessage("start_wan_if", "Wait the LAN1 port be up at %d seconds", sec);
+				sleep(1);
+			}
+		}
+		nvram_set("freeze_duck", "1");
+#endif
 	}
 #endif
 
@@ -1795,13 +1809,6 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 		convert_wan_nvram(prefix, unit);
 
 		/* make sure the connection exists and is enabled */
-#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
-		if(is_auto_wanport_enabled() == 1){
-			config_macvlan(nvram_safe_get("lan_ifname"), 1, mv_ifname, sizeof(mv_ifname));
-			strlcpy(wan_ifname, mv_ifname, sizeof(wan_ifname));
-		}
-		else
-#endif
 		snprintf(wan_ifname, sizeof(wan_ifname), "%s", nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
 		if (*wan_ifname == '\0')
 			return;
@@ -1852,7 +1859,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			doSystem("ethswctl -c wan -i %s -o %s", wan_ifname, "enable");
 		}
 #endif
-#if defined(BQ16) || defined(BQ16_PRO)
+#if defined(BQ16) || defined(BQ16_PRO) || defined(BN12)
 		if (!strcmp(wan_ifname, "eth4")){
 			doSystem("ethswctl -c wan -i %s -o %s", wan_ifname, "enable");
 		}
@@ -1953,10 +1960,6 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 
 			/* Bring up i/f */
 			_ifconfig(wan_ifname, IFUP, NULL, NULL, NULL, wan_mtu);
-#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
-			if(is_auto_wanport_enabled() == 1)
-				_ifconfig(nvram_safe_get(strcat_r(prefix, "ifname", tmp)), IFUP, NULL, NULL, NULL, wan_mtu);
-#endif
 		}
 		close(s);
 
@@ -2145,6 +2148,8 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			if (dhcpenable) {
 #if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
 				if(is_auto_wanport_enabled() == 1){
+					strlcpy(wan_ifname, nvram_safe_get("lan_ifname"), sizeof(wan_ifname));
+
 					dbG("AUTO_WANPORT start PPP's udhcpc: %s, %d\n", wan_ifname, unit);
 					start_udhcpc(wan_ifname, unit,
 						(wan_proto == WAN_PPPOE) ? &pid : NULL);
@@ -2301,17 +2306,37 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			}
 #endif
 
-			/* Bring up WAN interface */
-			dbG("ifup:%s\n", wan_ifname);
-			ifconfig(wan_ifname, IFUP, NULL, NULL);
+#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
+			if(is_auto_wanport_enabled() == 1){
+				strlcpy(wan_ifname, nvram_safe_get("lan_ifname"), sizeof(wan_ifname));
+				/* Bring up WAN interface */
+				dbG("AUTO_WANPORT ifup:%s\n", wan_ifname);
+				ifconfig(wan_ifname, IFUP, NULL, NULL);
 
-			/* Start pre-authenticator */
-			dbG("start auth:%d\n", unit);
-			start_auth(unit, 0);
+				/* Start pre-authenticator */
+				dbG("AUTO_WANPORT start auth:%d\n", unit);
+				start_auth(unit, 0);
 
-			/* Start dhcp daemon */
-			dbG("start udhcpc:%s, %d\n", wan_ifname, unit);
-			start_udhcpc(wan_ifname, unit, &pid);
+				/* Start dhcp daemon */
+				dbG("AUTO_WANPORT start udhcpc:%s, %d\n", wan_ifname, unit);
+				start_udhcpc(wan_ifname, unit, &pid);
+			}
+			else
+#endif
+			{
+				/* Bring up WAN interface */
+				dbG("ifup:%s\n", wan_ifname);
+				ifconfig(wan_ifname, IFUP, NULL, NULL);
+
+				/* Start pre-authenticator */
+				dbG("start auth:%d\n", unit);
+				start_auth(unit, 0);
+
+				/* Start dhcp daemon */
+				dbG("start udhcpc:%s, %d\n", wan_ifname, unit);
+				start_udhcpc(wan_ifname, unit, &pid);
+			}
+
 			break;
 		}
 
@@ -2636,9 +2661,6 @@ stop_wan_if(int unit)
 			}
 		}
 #endif
-#if defined(HND_ROUTER)
-		clean_mswan_vitf(unit);
-#endif
 	}
 #endif
 
@@ -2917,6 +2939,14 @@ stop_wan_if(int unit)
 	else
 #endif // RTCONFIG_USB_MODEM
 		update_wan_state(prefix, WAN_STATE_STOPPED, end_wan_sbstate);
+
+#ifdef RTCONFIG_MULTISERVICE_WAN
+#if defined(HND_ROUTER) || defined(RTCONFIG_MSWAN_GENERIC)
+	// Destroy virtual interface
+	if (dualwan_unit__nonusbif(unit) && nvram_match("switch_wantag", "none"))
+		clean_mswan_vitf(unit);
+#endif
+#endif
 
 	// wait for release finished ?
 #ifdef RTCONFIG_MULTISERVICE_WAN
@@ -3855,16 +3885,14 @@ void modify_tx_pad(char *func_name, char *wan_ifname, int option)
 		if(option == 1)
 		{
 			logmessage(func_name, "Enable tx_pad for Starlink.\n");
-			snprintf(cmd, sizeof(cmd), "ethctl %s tx_pad %d", wan_ifname, option);
-			system(cmd);
+			safe_do_system("ethctl %s tx_pad %d", wan_ifname, option);
 			snprintf(cmd, sizeof(cmd), "%d>%s", option, wan_ifname);
 			nvram_set("ethctl_tx_pad", cmd);
 		}
 		else if(option == 0)
 		{
 			logmessage(func_name, "Disable tx_pad feature.\n");
-			snprintf(cmd, sizeof(cmd), "ethctl %s tx_pad %d", wan_ifname, option);
-			system(cmd);
+			safe_do_system("ethctl %s tx_pad %d", wan_ifname, option);
 			snprintf(cmd, sizeof(cmd), "%d>%s", option, wan_ifname);
 			nvram_set("ethctl_tx_pad", cmd);
 		}
@@ -4281,12 +4309,10 @@ NOIP:
 	if (nvram_match("iptv_ifname", wan_ifname) && nvram_match("switch_wantag", "none"))
 	{
 		if (wan_proto == WAN_BRIDGE && !is_ms_base_unit(wan_unit))
-#if defined(RTCONFIG_DSL_BCM)
 			if (nvram_get_int("switch_stb_x") == 0)
 				start_igmpproxy(wan_ifname);
 			else
-#endif
-			start_igmpproxy(STB_BR_IF);
+				start_igmpproxy(STB_BR_IF);
 		else
 			start_igmpproxy(wan_ifname);
 	}
@@ -6137,7 +6163,7 @@ void detwan_apply_wan(const char *wan_ifname, unsigned int wan_mask, unsigned in
 		int retry = RETRY_COUNT;
 		char buf[32];
 		snprintf(buf, sizeof(buf), "restart_wan_if %d", 0);
-		while(retry-- > 0 && notify_rc_and_wait(buf) != 0);
+		while(retry-- > 0 && notify_rc_and_wait_2min(buf) != 0);
 		logmessage(__func__, "3: 'restart_wan_if 0' finish\n");
 	}
 }

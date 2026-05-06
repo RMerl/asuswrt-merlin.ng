@@ -468,7 +468,7 @@ void start_wl(void)
 		/* specific non-bridged lan iface */
 		eval("wlconf", lan_ifname, "start");
 	}
-#if defined(BQ16) || defined(BQ16_PRO)
+#if defined(BQ16) || defined(BQ16_PRO) || defined(BN12)
 	wl_defer_conf("start_wl");
 #endif
 #if 0
@@ -1984,9 +1984,43 @@ void start_lan(void)
 #ifdef HND_ROUTER
 				if (!strcmp(ifname, wan_if_eth()))
 					set_hwaddr(ifname, (const char *) get_lan_hwaddr());
-#if (defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(BCM6750) && !defined(BCM63178)) || defined(RTBE86U)
-				else if (!strncmp(ifname, "eth", 3) && (wl_probe(ifname) < 0))
+#if (defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(BCM6750) && !defined(BCM63178)) || defined(RTBE86U) || defined(RTCONFIG_BCM_EXT_SWITCH_RTK) || defined(RTCONFIG_BCM_EXT_SWITCH_MXL)
+#if defined(RTCONFIG_BCM_EXT_SWITCH_RTK) || defined(RTCONFIG_BCM_EXT_SWITCH_MXL)
+				else if (!strncmp(ifname, "eth", 3) && isdigit(ifname[3])) {
+					// eth1: lan_hwaddr - 0, eth2: lan_hwaddr - 1, eth3: lan_hwaddr - 2, etc.
+					int eth_num;
+					unsigned char mac[ETHER_ADDR_LEN];
+					char mac_str[32];
+
+					eth_num = atoi(ifname + 3);
+
+					// Validate eth_num and get base MAC address
+					if (eth_num > 0 && ether_atoe(get_lan_hwaddr(), mac)) {	
+						// a WAR due no default macaddr for rtk ifnames.
+						if (eth_num > 1) {
+							// Decrement MAC address, check for errors
+							if (ether_dec(mac, eth_num - 1) < 0) {
+								// Underflow error, use original behavior
+								set_hwaddr(ifname, (const char *) get_lan_hwaddr());
+							} else {
+								ether_etoa(mac, mac_str);
+								set_hwaddr(ifname, mac_str);
+							}
+						} else {
+							// eth1 or eth0: use base MAC without decrement
+							ether_etoa(mac, mac_str);
+							set_hwaddr(ifname, mac_str);
+						}
+					} else {
+						// Fallback to original behavior if eth_num invalid or MAC parsing fails
+						set_hwaddr(ifname, (const char *) get_lan_hwaddr());
+					}
+				}
+#else
+				else if (!strncmp(ifname, "eth", 3) && (wl_probe(ifname) < 0)) {
 					set_hwaddr(ifname, (const char *) get_lan_hwaddr());
+				}
+#endif
 #endif
 #endif
 #if defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(XC5) || defined(RTBE86U)
@@ -2071,7 +2105,7 @@ void start_lan(void)
 #endif
 				}
 
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GTBN98_PRO) || defined(GTBN96X) || defined(GTBN98) || defined(GTBN96)
                                 if ((re_mode()) && !strcmp(ifname, "vlan4094")) continue;
 #endif
 				/* Set the logical bridge address to that of the first interface */
@@ -3812,7 +3846,7 @@ NEITHER_WDS_OR_PSTA:
 						nvram_set("wans_dualwan", dualwan);
 						nvram_set_int("wans_usb_bk_act", 0);
 						nvram_set_int("link_wan1", 0);
-						notify_rc("restart_wan_if 1");
+						notify_rc_and_wait_2min("restart_wan_if 1");
 					}
 				}
 #endif	//RTCONFIG_MULTIWAN_PROFILE
@@ -4135,7 +4169,7 @@ NEITHER_WDS_OR_PSTA:
 						nvram_set("wans_dualwan", dualwan);
 						nvram_set_int("wans_usb_bk_act", 0);
 						nvram_set_int("link_wan1", 0);
-						notify_rc("restart_wan_if 1");
+						notify_rc_and_wait_2min("restart_wan_if 1");
 					}
 				}
 #endif	//RTCONFIG_MULTIWAN_PROFILE
@@ -4212,6 +4246,9 @@ static int radio_join(int idx, int unit, int subunit, void *param)
 	char ifname[16];
 
 	int *unit_filter = param;
+#if defined(RPBE58) || defined(RTBE58_GO)
+	if (!nvram_match("force_radio_join", "1"))	return 0;
+#endif
 	if (*unit_filter >= 0 && *unit_filter != unit) return 0;
 
 	if (!nvram_get_int(wl_nvname("radio", unit, 0)) || !wl_client(unit, subunit)) return 0;
@@ -4245,8 +4282,8 @@ static int radio_join(int idx, int unit, int subunit, void *param)
 				stacheck = stacheck_connect;
 			}
 			else {
-#ifdef CONFIG_BCMWL5
-				if (!repeater_mode())
+#if defined(CONFIG_BCMWL5) && !defined(RTCONFIG_BRCM_HOSTAPD)
+				if (sw_mode() != SW_MODE_REPEATER)
 					break;
 
 				if (!strlen(nvram_safe_get(wl_nvname("ssid", unit, subunit)))
@@ -4773,12 +4810,12 @@ lan_up(char *lan_ifname)
 
 			foreach(word, wl_ifnames, next){
 				snprintf(tmp , sizeof(tmp), "brctl delif %s %s", nvram_safe_get("lan_ifname"), word);
+				safe_do_system("brctl delif %s %s", nvram_safe_get("lan_ifname"), word);
 				_dprintf("%s: run \"%s\"...\n", __func__, tmp);
-				system(tmp);
 
 				snprintf(tmp , sizeof(tmp), "ifconfig %s down", word);
+				safe_do_system("ifconfig %s down", word);
 				_dprintf("%s: run \"%s\"...\n", __func__, tmp);
-				system(tmp);
 
 				++i;
 			}
@@ -4876,7 +4913,7 @@ lan_up(char *lan_ifname)
 #endif
 	update_srv_cert_if_lan_ip_changed();
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_HND_ROUTER_AX)
-#if defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2)
+#if defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2) || defined(BN12)
 	_dprintf("[%s][%d] skip (GPY211)\n", __FUNCTION__, __LINE__);
 #else
 	if (nvram_get_int("re_mode") == 1 && nvram_get_int("gpy211_war")) {
@@ -5046,6 +5083,11 @@ void stop_lan_wl(void)
 		eval("ebtables", "-F");
 		eval("ebtables", "-t", "broute", "-F");
 		eval("ebtables", "-t", "nat", "-F");
+
+#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
+		if(is_auto_wanport_enabled() == 1)
+			autowan_set_dhcp_block(1);
+#endif
 	}
 
 #ifdef HND_ROUTER
@@ -5388,7 +5430,9 @@ void start_lan_wl(void)
 	wlconf_pre();
 #endif
 #endif
-
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_VIF_ONBOARDING) && defined(RTCONFIG_AMAS_5G_ONBOARDING)
+	set_onboarding_vif_ifnames();
+#endif
 
 	check_wps_enable();
 
@@ -6352,7 +6396,7 @@ void lanaccess_wl(void)
 #elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	if (is_rtl8372_boardid())
 		start_rtkmonitor();
-#elif defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#elif defined(RTCONFIG_MXL_826XX)
 	start_mxlmonitor();
 #endif
 
@@ -6630,7 +6674,12 @@ void restart_wireless(void)
 	// But let conn_diag to start ariq_monitor.
 	stop_airiq_monitor();
 #endif
+#ifdef RTCONFIG_CISCAN_MONITOR
+	stop_ciscan_monitor();
+#endif
 
+#ifdef RTCONFIG_WIFI8
+#else
 #if defined(RTCONFIG_HND_ROUTER_BE_4916) && defined(RTCONFIG_MLO)
 #if defined(RPBE58) || defined(RTBE58_GO)
 #if defined(RPBE58)
@@ -6643,6 +6692,7 @@ void restart_wireless(void)
 	} else
 #endif
         mlo_toggle_fb();
+#endif
 #endif
 
 #if defined(RTCONFIG_RALINK) && defined(RTCONFIG_AMAS_WDS)
@@ -6705,6 +6755,7 @@ void restart_wireless(void)
 	trigger_wave_monitor(__func__, __LINE__, WAVE_ACTION_WEB);
 	_dprintf("[%s][%d] call wave_monitor()-05\n", __func__, __LINE__);
 #endif
+	stop_wlcscan();
 #ifdef RTCONFIG_BCMWL6
 #ifdef RTCONFIG_AMAS
 	stop_obd();
@@ -6767,7 +6818,7 @@ void restart_wireless(void)
 		wl_defaults_wps();
 	}
 
-#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(RTBE58_GO) || defined(RPBE58)
+#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTCONFIG_MXL_826XX) || defined(RTBE58_GO) || defined(RPBE58)
 	reload_wl_check();
 #endif
 
@@ -6887,11 +6938,6 @@ void restart_wireless(void)
 	restart_wl();
 	lanaccess_wl();
 #endif
-	nvram_set("reload_svc_radio", "1");
-#ifndef RTCONFIG_QCA
-	nvram_set_int("wlready", 1);
-	timecheck();
-#endif
 
 #ifdef RTCONFIG_WIRELESSREPEATER
 	// when wlc_mode = 0 & wlc_state = WLC_STATE_CONNECTED, don't notify wanduck yet.
@@ -7009,10 +7055,6 @@ void restart_wireless(void)
 		qtn_monitor_main();
 	}
 #endif
-	file_unlock(lock);
-#if defined(RTCONFIG_CONCURRENTREPEATER)
-	nvram_set_int("led_status", LED_RESTART_WL_DONE);
-#endif
 
 #ifdef RTCONFIG_WIFI_SON
 	if (sw_mode() != SW_MODE_REPEATER && nvram_match("wifison_ready", "1")) {
@@ -7068,6 +7110,16 @@ void restart_wireless(void)
 	send_event_to_cfgmnt(EID_RC_RESTART_WIRELESS);
 #endif
 	restore_wan_ebtables_rules();
+
+	nvram_set("reload_svc_radio", "1");
+#ifndef RTCONFIG_QCA
+	nvram_set_int("wlready", 1);
+	timecheck();
+#endif
+	file_unlock(lock);
+#if defined(RTCONFIG_CONCURRENTREPEATER)
+	nvram_set_int("led_status", LED_RESTART_WL_DONE);
+#endif
 }
 
 #ifdef RTCONFIG_BCM_7114
@@ -7175,7 +7227,7 @@ void start_lan_port(int dt)
 	lanport_ctrl(1);
 #endif
 #ifdef RTCONFIG_HND_ROUTER_AX
-#if defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2)
+#if defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2) || defined(BN12)
 	_dprintf("[%s][%d] skip (GPY211)\n", __FUNCTION__, __LINE__);
 #elif defined(RTAX86U_PRO)
 	if(client_mode()){
@@ -7498,28 +7550,64 @@ int start_qtn(void)
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_VIF_ONBOARDING)
 void set_onboarding_vif_status()
 {
-	char prefix[] = "wlXXXXXXXXXX_", tmp[64];
-	int unit = WL_2G_BAND;
-	char wl_radio[] = "wlXXXX_radio";
+	char prefix[sizeof("wlXXXXX_")], wl_radio[sizeof("wlXXXX_radio")], tmp[64], wl_ifnames[64], word[16], *next;
+	int unit = 0;
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+	char wl_prefix[sizeof("wlXXXXX_")];
+	int nband_type = 0;
+#endif
 
-	if (nvram_get_int("re_mode") == 1)
-		snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
-	else
-	{
-		/* not router mode or ap mode, return it */
-		if (!is_router_mode() && !access_point_mode())
-			return;
-		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-	}
+	if (nvram_get_int("re_mode") == 0 && !is_router_mode() && !access_point_mode())
+		return;
 
-	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae") || nvram_match(strcat_r(prefix, "closed", tmp), "1")) {
-		snprintf(wl_radio, sizeof(wl_radio), "wl%d_radio", unit);
-		if (nvram_get_int(wl_radio)) //radio on
-			nvram_set_int("obvif_bss", 1);
-		else //radio off
+	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+
+	foreach (word, wl_ifnames, next) {
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+		snprintf(wl_prefix, sizeof(wl_prefix), "wl%d_", unit);
+		nband_type = nvram_get_int(strcat_r(wl_prefix, "nband_type", tmp));
+		/* skip none 2g & 5g band based on nband_type */
+		if (nband_type < 0 || nband_type > 3 || nband_type == 2) {
+			unit++;
+			continue;
+		}
+#else
+		if (unit != WL_2G_BAND) {
+			unit++;
+			continue;
+		}
+#endif
+
+		if (nvram_get_int("re_mode") == 1)
+			snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
+		else
+			snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+
+		if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae") || nvram_match(strcat_r(prefix, "closed", tmp), "1")) {
+			snprintf(wl_radio, sizeof(wl_radio), "wl%d_radio", unit);
+			if (nvram_get_int(wl_radio)) //radio on
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+				nvram_set_int(strcat_r(wl_prefix, "obvif_bss", tmp), 1);
+#else
+				nvram_set_int("obvif_bss", 1);
+#endif
+			else
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+				nvram_set_int(strcat_r(wl_prefix, "obvif_bss", tmp), 0);
+#else
+				nvram_set_int("obvif_bss", 0);
+#endif
+		}
+		else
+		{
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+			nvram_set_int(strcat_r(wl_prefix, "obvif_bss", tmp), 0);
+#else
 			nvram_set_int("obvif_bss", 0);
+#endif
+		}
+
+		unit++;
 	}
-	else
-		nvram_set_int("obvif_bss", 0);
 }
 #endif

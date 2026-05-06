@@ -1755,6 +1755,10 @@ config RTCONFIG_TUF_UI
         bool "TUF theme support"
         default n
 
+config RTCONFIG_PROART_UI
+        bool "PROART theme support"
+        default n
+
 config RTCONFIG_GEOIP
 	bool "determine country by IP address"
 	default n
@@ -1799,6 +1803,12 @@ config RTCONFIG_RTL8221VB
 
 config RTCONFIG_EXTPHY_BCM84880
 	bool "BCM84880 external 2.5Gbps PHY"
+
+config RTCONFIG_BCM_EXT_SWITCH_RTK
+	bool "RTCONFIG_BCM_EXT_SWITCH_RTK"
+
+config RTCONFIG_BCM_EXT_SWITCH_MXL
+	bool "RTCONFIG_BCM_EXT_SWITCH_MXL"
 
 config RTCONFIG_BCM_HND_CRASHLOG
 	bool "BRCM HND crashlog"
@@ -2815,6 +2825,11 @@ config RTCONFIG_MULTISERVICE_WAN
 	bool "setup multiple subunit wan"
 	default n
 
+config RTCONFIG_MSWAN_GENERIC
+	depends on RTCONFIG_MULTISERVICE_WAN
+	bool "cross platform multi-service wan support"
+	default n
+
 config RTCONFIG_VIF_ONBOARDING
 	bool "onboarding via virtual interface"
 	default n
@@ -2841,6 +2856,10 @@ config RTCONFIG_WIFI7
 
 config RTCONFIG_DISWIFI7
 	bool "Disable WiFi7"
+	default n
+
+config RTCONFIG_WIFI8
+	bool "WiFi 8"
 	default n
 
 config RTCONFIG_UAWIFI
@@ -3352,6 +3371,11 @@ config RTCONFIG_MLO_DEFAULT_ACTIVE
         bool "Enable MLO in default"
         default n
 
+config RTCONFIG_RE_MLO_VSIE_ACTIVE
+        bool "Enable add RE MLO in VSIE"
+        default n
+        depends on RTCONFIG_MLO
+
 config RTCONFIG_NO_AIDISK
 	bool "No AiDisk support"
 	default n
@@ -3414,4 +3438,46 @@ config RTCONFIG_AIRIQ
 
 config RTCONFIG_CSIMON
 	bool "CSIMON FUNCTION"
+	default n
+
+config RTCONFIG_AURA_SCHED
+	bool "AURA scheduler"
+	default n
+
+config RTCONFIG_AURA_NIGHT_SCHED
+	bool "AURA night mode scheduler"
+	default n
+
+config RTCONFIG_LED_SCHED
+	bool "LED scheduler"
+	default n
+
+config RTCONFIG_LED_NIGHT_SCHED
+	bool "LED night mode scheduler"
+	default n
+
+config RTCONFIG_CISCAN_MONITOR
+	bool "CI SCAN MONITOR FUNCTION"
+	default n
+
+config RTCONFIG_MXL_826XX
+	bool "MaxLinear MxL862XX"
+	default n
+
+config RTCONFIG_AMAS_5G_ONBOARDING
+	bool "onboarding via 5G"
+	default n
+
+config RTCONFIG_VLANCTL
+	bool "BRCM Wifi7 vlanctl support"
+	depends on RTCONFIG_HND_ROUTER_BE_4916
+	default n
+
+config RTCONFIG_WIFI_MODE
+	bool "WiFi mode selection feature support"
+	default n
+
+config RTCONFIG_ZASSOC_B4ACS
+	bool "Zero maxassoc before auto channel select"
+	depends on RTCONFIG_HND_ROUTER_AX
 	default n

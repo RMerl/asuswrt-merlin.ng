@@ -922,7 +922,7 @@ function applyRule(){
 		if(document.form.switch_stb_x.value != "0" || document.form.switch_wantag.value != "none"){
 			if(mswan_support && with_multiservice >= 1){
 				is_mswan_conflicted = true;
-				conflict_functions = `Multi-Service WAN`;
+				conflict_functions = `<#multiservice_WAN#>`;
 			}
 
 			if(httpApi.nvramGet(["wan0_dot1q"], true).wan0_dot1q == "1"){
@@ -2202,7 +2202,7 @@ function use_single_default_wan_sfp(){
 				</select>
 				<span id="mr_hint" style="display:none;">( <#RouterConfig_GWMulticastEnable_hint#> )</span>
 				<div id="mr_disable" style="display:none;">
-					<span style="color:#FFF;"><#WLANConfig11b_WirelessCtrl_buttonname#></span>
+					<span style="color:var(--text-primary, #FFF)"><#WLANConfig11b_WirelessCtrl_buttonname#></span>
 					<span style="margin-left: 5px;"><#RouterConfig_GWMulticastEnable_hint2#></span>
 				</div>
 			</td>

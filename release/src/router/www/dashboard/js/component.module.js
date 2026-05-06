@@ -386,6 +386,7 @@ export class ClientSelector {
             className: '',
             onSelect: null,
             searchFields: ['name', 'mac', 'ip'], // 可搜尋的欄位
+            allowAddressSelection: true, // 允許選擇 MAC 或 IP
             ...options
         };
 
@@ -393,6 +394,7 @@ export class ClientSelector {
         this.selectedIndex = -1;
         this.filteredItems = [];
         this.selectedValue = null;
+        this.selectedType = null; // 'mac' 或 'ip' 或 null
 
         this.createElements();
         this.bindEvents();
@@ -401,6 +403,7 @@ export class ClientSelector {
     createElements() {
         // 建立 Shadow DOM
         this.container = document.createElement('div');
+        this.container.style.width = this.options.width;
         const shadowRoot = this.container.attachShadow({mode: 'open'});
         this.shadowRoot = shadowRoot;
         
@@ -441,7 +444,7 @@ export class ClientSelector {
                 ${this.options.showSelectedValue ? `
                     <div class="cs-selected-value" style="display: none;" id="${selectedId}">
                         <div class="cs-selected-info">
-                            <strong><#Selected_Device#>:</strong>
+                            <strong><#Selected_Device#></strong>
                             <button class="cs-close-button" type="button" aria-label="Clear device selection" tabindex="0">×</button>
                             <div class="cs-device-info">
                                 <div class="cs-device-name"></div>
@@ -478,7 +481,8 @@ export class ClientSelector {
             const deviceName = (item.nickName !== '') ? item.nickName : item.name;
             const statusText = item.isOnline ? 'online' : 'offline';
             const ipText = (item.ip !== '') ? item.ip : 'N/A';
-            
+            const isIpAvailable = item.ip !== '';
+
             element.innerHTML = `
                 <div class="cs-device-item">
                     <div class="cs-device-name">
@@ -488,18 +492,18 @@ export class ClientSelector {
                         ${deviceName}
                     </div>
                     <div class="cs-device-details">
-                        <span class="cs-device-mac">MAC: ${item.mac}</span>
-                        <span class="cs-device-ip">IP: ${ipText}</span>
+                        <span class="cs-device-mac cs-address-option" data-type="mac" data-value="${item.mac}">MAC: ${item.mac}</span>
+                        <span class="cs-device-ip ${isIpAvailable ? 'cs-address-option' : 'cs-address-disabled'}" data-type="ip" data-value="${ipText}">IP: ${ipText}</span>
                     </div>
                 </div>
             `;
-            
+
             // 設置無障礙屬性
             element.setAttribute('role', 'option');
             element.setAttribute('aria-label', `${deviceName}, MAC: ${item.mac}, IP: ${ipText}, Status: ${statusText}`);
             element.setAttribute('aria-selected', 'false');
             element.setAttribute('tabindex', '-1');
-            
+
             element.dataset.value = item.mac;
             element.dataset.name = deviceName;
             element.dataset.mac = item.mac;
@@ -532,8 +536,17 @@ export class ClientSelector {
 
         // 點擊選項
         this.items.forEach((item) => {
-            item.addEventListener('click', () => {
-                this.selectItem(item);
+            item.addEventListener('click', (e) => {
+                // 檢查是否點擊了 MAC 或 IP 地址
+                const addressOption = e.target.closest('.cs-address-option');
+                if (this.options.allowAddressSelection && addressOption) {
+                    e.stopPropagation();
+                    const type = addressOption.dataset.type;
+                    const value = addressOption.dataset.value;
+                    this.selectItemByAddress(item, type, value);
+                } else {
+                    this.selectItem(item);
+                }
             });
 
             // 滑鼠懸停效果
@@ -541,6 +554,22 @@ export class ClientSelector {
                 this.clearSelection();
                 item.classList.add('selected');
             });
+
+            // 為 MAC 和 IP 添加懸停效果
+            if (this.options.allowAddressSelection) {
+                const addressOptions = item.querySelectorAll('.cs-address-option');
+                addressOptions.forEach(option => {
+                    option.addEventListener('mouseenter', (e) => {
+                        e.stopPropagation();
+                        option.style.cursor = 'pointer';
+                        option.style.textDecoration = 'underline';
+                    });
+                    option.addEventListener('mouseleave', (e) => {
+                        e.stopPropagation();
+                        option.style.textDecoration = 'none';
+                    });
+                });
+            }
         });
 
         // 點擊關閉按鈕
@@ -566,8 +595,17 @@ export class ClientSelector {
     rebindEvents() {
         // 點擊選項
         this.items.forEach((item) => {
-            item.addEventListener('click', () => {
-                this.selectItem(item);
+            item.addEventListener('click', (e) => {
+                // 檢查是否點擊了 MAC 或 IP 地址
+                const addressOption = e.target.closest('.cs-address-option');
+                if (this.options.allowAddressSelection && addressOption) {
+                    e.stopPropagation();
+                    const type = addressOption.dataset.type;
+                    const value = addressOption.dataset.value;
+                    this.selectItemByAddress(item, type, value);
+                } else {
+                    this.selectItem(item);
+                }
             });
 
             // 滑鼠懸停效果
@@ -575,6 +613,22 @@ export class ClientSelector {
                 this.clearSelection();
                 item.classList.add('selected');
             });
+
+            // 為 MAC 和 IP 添加懸停效果
+            if (this.options.allowAddressSelection) {
+                const addressOptions = item.querySelectorAll('.cs-address-option');
+                addressOptions.forEach(option => {
+                    option.addEventListener('mouseenter', (e) => {
+                        e.stopPropagation();
+                        option.style.cursor = 'pointer';
+                        option.style.textDecoration = 'underline';
+                    });
+                    option.addEventListener('mouseleave', (e) => {
+                        e.stopPropagation();
+                        option.style.textDecoration = 'none';
+                    });
+                });
+            }
         });
     }
 
@@ -755,14 +809,15 @@ export class ClientSelector {
     }
 
     selectItem(item) {
-        console.log(item)
         const value = item.dataset.value;
         const name = item.dataset.name;
         const mac = item.dataset.mac;
         const ip = item.dataset.ip;
         const index = parseInt(item.dataset.index);
+        const type = null;
 
-        this.selectedValue = {value, name, mac, ip, index};
+        this.selectedValue = {value, name, mac, ip, index, type};
+        this.selectedType = type; // 選擇設備名稱時，type 為 null
         this.input.value = name;
         this.input.setAttribute('aria-describedby', `Selected device: ${name}`);
 
@@ -784,7 +839,7 @@ export class ClientSelector {
         }
 
         this.close();
-        
+
         // 通知螢幕閱讀器選擇結果
         this.announceToScreenReader(`Selected device: ${name}`);
 
@@ -799,16 +854,70 @@ export class ClientSelector {
         }));
     }
 
+    selectItemByAddress(item, type, value) {
+        const name = item.dataset.name;
+        const mac = item.dataset.mac;
+        const ip = item.dataset.ip;
+        const index = parseInt(item.dataset.index);
+
+        this.selectedValue = {value: type === 'mac' ? mac : ip, name, mac, ip, index, type};
+        this.selectedType = type; // 記錄選擇的類型 ('mac' 或 'ip')
+        this.input.value = value;
+        this.input.setAttribute('aria-describedby', `Selected ${type.toUpperCase()}: ${value}`);
+
+        // 更新選項的 aria-selected 狀態
+        this.items.forEach(opt => opt.setAttribute('aria-selected', 'false'));
+        item.setAttribute('aria-selected', 'true');
+
+        if (this.options.showSelectedValue && this.selectedDisplay) {
+            const nameEl = this.selectedDisplay.querySelector('.cs-device-name');
+            const macEl = this.selectedDisplay.querySelector('.cs-device-mac');
+            const ipEl = this.selectedDisplay.querySelector('.cs-device-ip');
+
+            nameEl.textContent = `${name} (${type.toUpperCase()})`;
+            macEl.textContent = `MAC: ${mac}`;
+            ipEl.textContent = ip ? `IP: ${ip}` : 'IP: N/A';
+
+            this.selectedDisplay.style.display = 'block';
+            this.selectedDisplay.setAttribute('aria-live', 'polite');
+        }
+
+        this.close();
+
+        // 通知螢幕閱讀器選擇結果
+        this.announceToScreenReader(`Selected ${type.toUpperCase()}: ${value}`);
+
+        // 執行回調函數
+        if (typeof this.options.onSelect === 'function') {
+            this.options.onSelect(this.selectedValue);
+        }
+
+        // 觸發自定義事件
+        this.container.dispatchEvent(new CustomEvent('clientSelect', {
+            detail: {...this.selectedValue, selectedType: type}
+        }));
+    }
+
     clearSelection() {
         this.items.forEach(item => item.classList.remove('selected'));
     }
 
     clearSelectedValue() {
         this.selectedValue = null;
+        this.selectedType = null;
         this.input.value = '';
         if (this.selectedDisplay) {
             this.selectedDisplay.style.display = 'none';
         }
+
+        // 關閉下拉選單並重置篩選
+        this.close();
+
+        // 重置所有項目的顯示狀態
+        this.items.forEach(item => {
+            item.classList.remove('hidden');
+        });
+        this.filteredItems = [...this.items];
 
         // 觸發清除事件
         this.container.dispatchEvent(new CustomEvent('clientClear', {
@@ -822,22 +931,15 @@ export class ClientSelector {
     }
 
     // 公開方法
-    render(targetElement) {
-        if (typeof targetElement === 'string') {
-            targetElement = document.querySelector(targetElement);
-        }
-
-        if (!targetElement) {
-            console.error('ClientSelector: 目標元素不存在');
-            return this;
-        }
-
-        targetElement.appendChild(this.container);
-        return this;
+    render() {
+        return this.container;
     }
 
     getInputValue() {
-        return this.input.value;
+        return {
+            value: this.input.value,
+            type: this.selectedType // 'mac', 'ip', 或 null (選擇設備名稱時)
+        };
     }
 
     getValue() {
@@ -846,6 +948,10 @@ export class ClientSelector {
 
     getMac() {
         return this.selectedValue ? this.selectedValue.mac : null;
+    }
+
+    getSelectedType() {
+        return this.selectedType;
     }
 
     setValue(value) {
@@ -866,6 +972,7 @@ export class ClientSelector {
 
     reset() {
         this.selectedValue = null;
+        this.selectedType = null;
         this.input.value = '';
         if (this.selectedDisplay) {
             this.selectedDisplay.style.display = 'none';

@@ -112,6 +112,10 @@ else
 HND_TC := /opt/toolchains/crosstools-arm-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25/usr
 endif
 
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
+HND_TC :=
+endif
+
 HND_RT_PLATFORM_EXT_CFLAGS := -DCHIP_$(BRCM_CHIP) -DCONFIG_BCM9$(BRCM_CHIP)
 ifeq ($(BRCM_CHIP),$(filter $(BRCM_CHIP),6855))
 HND_RT_PLATFORM_EXT_CFLAGS += -D_BCM96855_
@@ -119,6 +123,11 @@ endif
 
 export EXTRACFLAGS += -DDEBUG_NOISY -DDEBUG_RCTEST
 HND_CMN_CFLAGS := -DLINUX -Os -Wno-date-time -Wall -Darm -g -fPIC -pthread $(HND_RT_PLATFORM_EXT_CFLAGS) -I$(HND_TC)/include -L$(HND_TC)/lib
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
+HND_CMN_CFLAGS :=
+endif
+
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_6856_6878_6855_),)
 ifeq ($(BUILD_GPON),y)
 export BCM_PON=y
@@ -229,3 +238,71 @@ endif
 #	else
 SIZECHECK = @$(SIZE) $@
 #	endif
+#
+
+ifeq ($(HND_ROUTER_BE_4916),y)
+-include $(HND_SRC)/sdk_profile.mak
+endif
+
+TOOLCHAIN_ARCH_TYPE := arm-buildroot-linux-gnueabi
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506))
+ifeq ($(PROFILE_KARCH),armhfp)
+TOOLCHAIN_ARCH_TYPE := arm-buildroot-linux-gnueabihf
+endif
+endif
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506))
+ifeq ($(PROFILE_KARCH),aarch64)
+TOOLCHAIN_ARCH_TYPE := arm-buildroot-linux-gnueabihf
+endif
+endif
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
+ifeq ($(PROFILE_KARCH),armhfp)
+TOOLCHAIN_ARCH_TYPE := arm-buildroot-linux-gnueabihf
+endif
+endif
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
+ifeq ($(PROFILE_KARCH),aarch64)
+TOOLCHAIN_ARCH_TYPE := aarch64-buildroot-linux-gnu
+endif
+endif
+
+LD-LINUX_SO_TYPE :=
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506))
+ifeq ($(PROFILE_KARCH),armhfp)
+LD-LINUX_SO_TYPE := -armhf
+endif
+endif
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506))
+ifeq ($(PROFILE_KARCH),aarch64)
+LD-LINUX_SO_TYPE := -armhf
+endif
+endif
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
+ifeq ($(PROFILE_KARCH),armhfp)
+LD-LINUX_SO_TYPE := -armhf
+endif
+endif
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
+ifeq ($(PROFILE_KARCH),aarch64)
+LD-LINUX_SO_TYPE := -aarch64
+endif
+endif
+
+LIB_ARCH :=
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
+ifeq ($(PROFILE_KARCH),aarch64)
+LIB_ARCH := 64
+else
+LIB_ARCH :=
+endif
+endif
+

@@ -370,7 +370,7 @@ i[class^='vendor-icon'], i[class*=' vendor-icon']{
 	height: 100%;
 	width: 100%;
 	display: block;
-	background-color: #000000;
+	background-color: var(--wrt-btn-icon-active-color, #000000);
 }
 
 .type36{

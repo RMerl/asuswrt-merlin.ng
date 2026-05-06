@@ -36,9 +36,15 @@ var newPartition = function(){
 }
 
 var usbDevicesList = [];
-require(['/require/modules/diskList.js'], function(diskList){
-	usbDevicesList = diskList.list();
-});
+// Guard the AMD entry point: consumer pages (AiProtection / Captive Portal /
+// AiMesh / cloud_router_sync) include this script unconditionally but do not
+// always load require.min.js, so on non-USB builds an unguarded require()
+// would throw ReferenceError on every page load.
+if (typeof require === 'function') {
+	require(['/require/modules/diskList.js'], function(diskList){
+		usbDevicesList = diskList.list();
+	});
+}
 
 function get_layer(barcode){
 	var tmp, layer;

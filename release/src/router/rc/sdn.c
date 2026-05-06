@@ -566,14 +566,12 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 	FILE *fp;
 	char resolv_path[64];
 	int resolv_flag = 0, n;
+	int have_dhcp = 0;
 #if defined(RTCONFIG_DNSFILTER)
 	int count;
 	dnsf_srv_entry_t dnsfsrv;
 #endif
-#ifdef RTCONFIG_IPV6
-	int ipv6_service;
-	int wan6_unit = wan_primary_ifunit_ipv6();
-#endif
+
 	char buf[32];
 
 	if (!pmtl || !config_file)
@@ -621,7 +619,7 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 
 		if (pmtl->nw_t.dhcp_enable)
 		{
-			fprintf(fp, "dhcp-authoritative\n");
+			have_dhcp |= 1;
 			fprintf(fp, "dhcp-range=%s,%s,%s,%s,%ds\n", pmtl->nw_t.ifname, pmtl->nw_t.dhcp_min, pmtl->nw_t.dhcp_max, pmtl->nw_t.netmask, pmtl->nw_t.dhcp_lease);
 			fprintf(fp, "dhcp-option=%s,3,%s\n", pmtl->nw_t.ifname, pmtl->nw_t.addr);
 			if (pmtl->nw_t.dns[0][0] != '\0' && pmtl->nw_t.dns[1][0] != '\0')
@@ -636,10 +634,6 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 			{
 				fprintf(fp, "dhcp-option=%s,6,%s\n", pmtl->nw_t.ifname, pmtl->nw_t.dns[1]);
 			}
-		}
-		else
-		{
-			fprintf(fp, "no-dhcp-interface=%s\n", pmtl->nw_t.ifname);
 		}
 
 		/* limit number of outstanding requests */
@@ -753,92 +747,13 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 #endif
 
 #ifdef RTCONFIG_IPV6
-#ifdef RTCONFIG_MULTIWAN_IF
-#ifdef RTCONFIG_MULTIWAN_PROFILE
-		if (pmtl->sdn_t.mtwan_idx)
+		fprintf(fp, "interface=%s\n", pmtl->nw_t.ifname);
+		fprintf(fp, "except-interface=lo\n");
+ 
+		have_dhcp |= write_dnsmasq_conf_sdn_ra_dhcp6_range(fp, pmtl);
+		if (have_dhcp & HAVE_DHCP6)
 		{
-			wan6_unit = mtwan6_get_active_wan_unit(pmtl->sdn_t.mtwan_idx);
-			if (wan6_unit == WAN_UNIT_NONE)
-				_dprintf("%s: MTWAN(%d) No active wan6_unit\n", __FUNCTION__, pmtl->sdn_t.mtwan_idx);
-		}
-		else
-#endif
-		if (pmtl->sdn_t.wan6_idx)
-			wan6_unit = mtwan_get_mapped_unit(pmtl->sdn_t.wan6_idx);
-#endif
-		ipv6_service = get_ipv6_service_by_unit(wan6_unit);
-		if (ipv6_service != IPV6_DISABLED && pmtl->nw_t.v6_enable && ipv6_service != IPV6_PASSTHROUGH)
-		{
-			char v6_prefix[INET6_ADDRSTRLEN] = {0};
-			char v6_prefix_length = 0;
-			char sdn_prefix[INET6_ADDRSTRLEN] = {0};
-			int sdn_prefix_length = 0;
-			int ra_lifetime;
-			int dhcp_lifetime;
-			uint16_t dhcp_start, dhcp_end;
-			int share_subnet = 1;
-#ifdef RTCONFIG_MULTIWAN_IF
-			MTLAN_T *tmp_pmtl = NULL;
-			size_t tmp_mtl_sz = 0;
-
-			tmp_pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
-			if (tmp_pmtl) {
-				get_mtlan_by_idx(SDNFT_TYPE_WAN6, pmtl->sdn_t.wan6_idx, tmp_pmtl, &tmp_mtl_sz);
-				if (tmp_mtl_sz == 1)
-					share_subnet = 0;
-				FREE_MTLAN((void *)tmp_pmtl);
-			}
-#endif
-
-			strlcpy(v6_prefix, nvram_safe_get(ipv6_nvname_by_unit("ipv6_prefix", wan6_unit)), sizeof(v6_prefix));
-			v6_prefix_length = nvram_get_int(ipv6_nvname_by_unit("ipv6_prefix_length", wan6_unit)) ?:64;
-			ra_lifetime = nvram_get_int("ra_lifetime") ? : 600;
-			dhcp_lifetime = nvram_get_int(ipv6_nvname_by_unit("ipv6_dhcp_lifetime", wan6_unit)) ? : (int)strtol(nvram_default_get("ipv6_dhcp_lifetime"), NULL, 0);
-
-			fprintf(fp, "interface=%s\n", pmtl->nw_t.ifname);
-			fprintf(fp, "except-interface=lo\n");
-			fprintf(fp, "enable-ra\n"
-				"ra-param=%s,%d,%d\n"
-				"quiet-ra\n"
-				, pmtl->nw_t.ifname, 10, ra_lifetime);
-			if (v6_prefix[0] && v6_prefix_length <= 104)
-			{
-				if (share_subnet) {
-					sdn_prefix_length = mtlan_extend_prefix_by_subnet_idx(
-						v6_prefix, v6_prefix_length, pmtl->sdn_t.sdn_idx, 8, sdn_prefix, sizeof(sdn_prefix));
-					if (sdn_prefix_length < 64)
-						sdn_prefix_length = 64;
-				}
-				else {
-					if (v6_prefix_length < 64)
-						sdn_prefix_length = 64;
-					else
-						sdn_prefix_length = v6_prefix_length;
-					strlcpy(sdn_prefix, v6_prefix, sizeof(sdn_prefix));
-				}
-			}
-			else
-			{
-				sdn_prefix_length = mtlan_extend_prefix_by_subnet_idx(
-					nvram_safe_get("ipv6_ula_random"), 48, pmtl->sdn_t.sdn_idx, 16, sdn_prefix, sizeof(sdn_prefix));
-			}
-
-			if (sdn_prefix_length > 64 || pmtl->nw_t.v6_autoconf)
-			{
-				dhcp_start = (strtoul(pmtl->nw_t.dhcp6_min, NULL, 16)) ?: 0x1000;
-				dhcp_end = (strtoul(pmtl->nw_t.dhcp6_max, NULL, 16)) ?: 0x2000;
-				fprintf(fp, "dhcp-range=%s,%s%04x,%s%04x,%d,%ds\n"
-					, pmtl->nw_t.ifname
-					, sdn_prefix, (dhcp_start < dhcp_end) ? dhcp_start : dhcp_end
-					, sdn_prefix, (dhcp_start < dhcp_end) ? dhcp_end : dhcp_start
-					, sdn_prefix_length, dhcp_lifetime);
-			}
-			else
-			{
-				fprintf(fp, "dhcp-range=%s,::,constructor:%s,ra-stateless,64,%d\n"
-					, pmtl->nw_t.ifname, pmtl->nw_t.ifname, ra_lifetime);
-			}
-
+			/* DNS server */
 			if (pmtl->nw_t.dns6[0][0])
 			{
 				fprintf(fp, "dhcp-option=%s,option6:23,%s", pmtl->nw_t.ifname, pmtl->nw_t.dns6[0]);
@@ -867,6 +782,15 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 		/* OpenVPN clients: WINS and strict-mode support */
 		write_ovpn_client_dnsmasq_config(fp);
 #endif
+
+		if (have_dhcp)
+		{
+			fprintf(fp, "dhcp-authoritative\n");
+		}
+		else
+		{
+			fprintf(fp, "no-dhcp-interface=%s\n", pmtl->nw_t.ifname);
+		}
 
 		// TODO: TR-069 related.
 
@@ -1004,8 +928,7 @@ static int _remove_sdn_routing_table(const MTLAN_T *pmtl)
 		snprintf(tmp, sizeof(tmp), "table %d", IP_ROUTE_TABLE_ID_SDN);
 		while (fgets(buf, sizeof(buf), fp))
 		{
-			snprintf(cmd, sizeof(cmd), "ip route del %s", buf);
-			system(cmd);
+			safe_do_system("ip route del %s", buf);
 		}
 		fclose(fp);
 	}
@@ -1031,8 +954,7 @@ static int _remove_sdn_routing_rule(const MTLAN_T *pmtl, int v6)
 	{
 		while (fgets(buf, sizeof(buf), fp))
 		{
-			snprintf(cmd, sizeof(cmd), "ip %s rule del iif %s", (v6) ? "-6" : "", pmtl->nw_t.ifname);
-			system(cmd);
+			safe_do_system("ip %s rule del iif %s", (v6) ? "-6" : "", pmtl->nw_t.ifname);
 		}
 		fclose(fp);
 	}
@@ -1195,8 +1117,7 @@ static void _handle_sdn_routing_ipv6_prefix(const MTLAN_T *pmtl)
 					if (sys_info.uptime < finish_time)
 					{
 						fputs(buf, fpw);
-						snprintf(cmd, sizeof(cmd), "ip -6 route add %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
-						system(cmd);
+						safe_do_system("ip -6 route add %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
 					}
 					break;
 				case 2:
@@ -1205,8 +1126,7 @@ static void _handle_sdn_routing_ipv6_prefix(const MTLAN_T *pmtl)
 						trimNL(buf);
 						finish_time = sys_info.uptime + lifetime;
 						fprintf(fpw, "%s %ld\n", buf, finish_time);
-						snprintf(cmd, sizeof(cmd), "ip -6 route add %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
-						system(cmd);
+						safe_do_system("ip -6 route add %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
 					}
 					break;
 			}
@@ -1276,14 +1196,12 @@ static void _handle_sdn_routing_ipv6_neigh(const MTLAN_T *pmtl, const char *neig
 			{
 				_dprintf("keep %s", line);
 				fputs(line, fpw);
-				snprintf(cmd, sizeof(cmd), "ip -6 route replace %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
-				system(cmd);
+				safe_do_system("ip -6 route replace %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
 			}
 			else
 			{
 				_dprintf("drop %s", line);
-				snprintf(cmd, sizeof(cmd), "ip -6 route del %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
-				system(cmd);
+				safe_do_system("ip -6 route del %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
 			}
 		}
 		fclose(fpw);
@@ -1315,8 +1233,7 @@ static void _handle_sdn_routing_ipv6_neigh(const MTLAN_T *pmtl, const char *neig
 			if (strstr(buf, network))
 				continue;
 			fprintf(fpw, "%s %lu\n", network, utime);
-			snprintf(cmd, sizeof(cmd), "ip -6 route add %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
-			system(cmd);
+			safe_do_system("ip -6 route add %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
 			_dprintf("Add: %s %lu\n", network, utime);
 		}
 		fclose(fpw);
@@ -1633,16 +1550,14 @@ static int _handle_sdn_routing(const MTLAN_T *pmtl)
 		{
 			while(fgets(buf, sizeof(buf), fp))
 			{
-				snprintf(cmd, sizeof(cmd), "ip route del %s", buf);
-				system(cmd);
+				safe_do_system("ip route del %s", buf);
 			}
 			fclose(fp);
 		}
 
 		if(pmtl->enable)
 		{
-			snprintf(cmd, sizeof(cmd), "ip route add %s/%d dev %s proto kernel scope link src %s table %d", pmtl->nw_t.subnet, pmtl->nw_t.prefixlen, pmtl->nw_t.ifname, pmtl->nw_t.addr, IP_ROUTE_TABLE_ID_SDN);
-			system(cmd);
+			safe_do_system("ip route add %s/%d dev %s proto kernel scope link src %s table %d", pmtl->nw_t.subnet, pmtl->nw_t.prefixlen, pmtl->nw_t.ifname, pmtl->nw_t.addr, IP_ROUTE_TABLE_ID_SDN);
 		}
 #ifdef RTCONFIG_MULTIWAN_IF
 #ifdef RTCONFIG_IPV6
@@ -1659,16 +1574,14 @@ static int _handle_sdn_routing(const MTLAN_T *pmtl)
 	system(cmd);
 	if(f_size(iproute_tmp) == 0)
 	{
-		snprintf(cmd, sizeof(cmd), "ip rule add table %d pref %d", IP_ROUTE_TABLE_ID_SDN, IP_RULE_PREF_SDN_ROUTE);
-		system(cmd);
+		safe_do_system("ip rule add table %d pref %d", IP_ROUTE_TABLE_ID_SDN, IP_RULE_PREF_SDN_ROUTE);
 	}
 #ifdef RTCONFIG_IPV6
 	snprintf(cmd, sizeof(cmd), "ip -6 rule show | grep \"lookup %d\" > %s", IP_ROUTE_TABLE_ID_SDN, iproute_tmp);
 	system(cmd);
 	if(f_size(iproute_tmp) == 0)
 	{
-		snprintf(cmd, sizeof(cmd), "ip -6 rule add table %d pref %d", IP_ROUTE_TABLE_ID_SDN, IP_RULE_PREF_SDN_ROUTE);
-		system(cmd);
+		safe_do_system("ip -6 rule add table %d pref %d", IP_ROUTE_TABLE_ID_SDN, IP_RULE_PREF_SDN_ROUTE);
 	}
 #endif
 	unlink(iproute_tmp);
@@ -2005,5 +1918,168 @@ static int _handle_sdn_6relayd(const MTLAN_T *pmtl, size_t mtl_sz, int restart_a
 	start_6relayd();
 #endif
 	return 0;
+}
+#endif
+
+#ifdef RTCONFIG_IPV6
+int get_sdn_wan6_unit(const MTLAN_T *pmtl, int* share_subnet)
+{
+	int i;
+	int wan6_unit = wan_primary_ifunit_ipv6();
+	MTLAN_T *tmp_pmtl = NULL;
+	size_t tmp_mtl_sz = 0;
+
+	*share_subnet = 0;
+
+#ifdef RTCONFIG_MULTIWAN_IF
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+	if (pmtl->sdn_t.mtwan_idx)
+	{
+		wan6_unit = mtwan6_get_active_wan_unit(pmtl->sdn_t.mtwan_idx);
+		if (wan6_unit == WAN_UNIT_NONE)
+			_dprintf("%s: MTWAN(%d) No active wan6_unit\n", __FUNCTION__, pmtl->sdn_t.mtwan_idx);
+	}
+	else
+#endif
+	if (pmtl->sdn_t.wan6_idx)
+		wan6_unit = mtwan_get_mapped_unit(pmtl->sdn_t.wan6_idx);
+#endif
+
+	// compare with other subnet
+	tmp_pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
+	get_mtlan(tmp_pmtl, &tmp_mtl_sz);
+	if (tmp_pmtl)
+	{
+		for (i = 0; i < tmp_mtl_sz; i++)
+		{
+			if (tmp_pmtl[i].enable == 0
+			 || tmp_pmtl[i].nw_t.v6_enable == 0
+			 || tmp_pmtl[i].sdn_t.sdn_idx == pmtl->sdn_t.sdn_idx)
+				continue;
+
+#ifdef RTCONFIG_MULTIWAN_IF
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+			if (tmp_pmtl[i].sdn_t.mtwan_idx)
+			{
+				if (mtwan6_get_active_wan_unit(tmp_pmtl[i].sdn_t.mtwan_idx) == wan6_unit)
+				{
+					*share_subnet = 1;
+					break;
+				}
+			}
+			else
+#endif
+			if (tmp_pmtl[i].sdn_t.wan6_idx)
+			{
+				if (mtwan_get_mapped_unit(tmp_pmtl[i].sdn_t.wan6_idx) == wan6_unit)
+				{
+					*share_subnet = 1;
+					break;
+				}
+			}
+			else
+#endif
+			if (wan_primary_ifunit_ipv6() == wan6_unit)
+			{
+				*share_subnet = 1;
+				break;
+			}
+		}
+
+		FREE_MTLAN((void *)tmp_pmtl);
+	}
+
+	return (wan6_unit);
+}
+
+int write_dnsmasq_conf_sdn_ra_dhcp6_range(FILE* fp, const MTLAN_T *pmtl)
+{
+	int ipv6_service;
+	int wan6_unit = 0;
+	int share_subnet = 1;
+	char v6_prefix[INET6_ADDRSTRLEN] = {0};
+	char v6_prefix_length = 0;
+	char sdn_prefix[INET6_ADDRSTRLEN] = {0};
+	int sdn_prefix_length = 0;
+	int ra_interval = 0;
+	int ra_lifetime = 0;
+	int dhcp_lifetime = 0;
+	uint16_t dhcp_start = 0;
+	uint16_t dhcp_end = 0;
+	int v6_prefix_div = 0;
+	int announce = 0;
+
+	if (!fp || !pmtl)
+		return 0;
+
+	if (pmtl->nw_t.v6_enable == 0)
+		return 0;
+
+	wan6_unit = get_sdn_wan6_unit(pmtl, &share_subnet);
+	ipv6_service = get_ipv6_service_by_unit(wan6_unit);
+	if (ipv6_service == IPV6_DISABLED || ipv6_service == IPV6_PASSTHROUGH)
+		return 0;
+
+	ra_interval = nvram_get_int("ra_interval") ? : 10;
+	ra_lifetime = nvram_get_int("ra_lifetime") ? : 600;
+	announce = nvram_get_int(ipv6_nvname_by_unit("ipv6_radvd", wan6_unit)) ? : safe_atoi(nvram_default_get("ipv6_radvd"));
+	if (announce)
+	{
+		fprintf(fp, "enable-ra\n"
+			"quiet-ra\n"
+			"ra-param=%s,%d,%d\n"
+			, pmtl->nw_t.ifname, ra_interval, ra_lifetime);
+	}
+
+	strlcpy(v6_prefix, nvram_safe_get(ipv6_nvname_by_unit("ipv6_prefix", wan6_unit)), sizeof(v6_prefix));
+	v6_prefix_length = nvram_get_int(ipv6_nvname_by_unit("ipv6_prefix_length", wan6_unit)) ? : 64;
+	dhcp_lifetime = nvram_get_int(ipv6_nvname_by_unit("ipv6_dhcp_lifetime", wan6_unit)) ? : safe_atoi(nvram_default_get("ipv6_dhcp_lifetime"));
+	v6_prefix_div = nvram_get_int("ipv6_prefix_div") ? : 0;
+
+	if (v6_prefix[0] && v6_prefix_length <= 104)
+	{
+		if (share_subnet) {
+			if (v6_prefix_length <= 56 || v6_prefix_div) {
+				sdn_prefix_length = mtlan_extend_prefix_by_subnet_idx(
+					v6_prefix, v6_prefix_length, pmtl->nw_t.idx, 8, sdn_prefix, sizeof(sdn_prefix));
+				if (sdn_prefix_length < 64)
+					sdn_prefix_length = 64;
+			}
+			else {
+				sdn_prefix_length = mtlan_extend_prefix_by_subnet_idx(
+					nvram_safe_get("ipv6_ula_random"), 48, pmtl->nw_t.idx, 16, sdn_prefix, sizeof(sdn_prefix));
+			}
+		}
+		else {
+			if (v6_prefix_length < 64)
+				sdn_prefix_length = 64;
+			else
+				sdn_prefix_length = v6_prefix_length;
+			strlcpy(sdn_prefix, v6_prefix, sizeof(sdn_prefix));
+		}
+	}
+	else
+	{
+		sdn_prefix_length = mtlan_extend_prefix_by_subnet_idx(
+			nvram_safe_get("ipv6_ula_random"), 48, pmtl->nw_t.idx, 16, sdn_prefix, sizeof(sdn_prefix));
+	}
+
+	if (pmtl->nw_t.v6_autoconf || sdn_prefix_length > 64)
+	{
+		dhcp_start = (strtoul(pmtl->nw_t.dhcp6_min, NULL, 16)) ?: 0x1000;
+		dhcp_end = (strtoul(pmtl->nw_t.dhcp6_max, NULL, 16)) ?: 0x2000;
+		fprintf(fp, "dhcp-range=%s,%s%04x,%s%04x,%d,%ds\n"
+			, pmtl->nw_t.ifname
+			, sdn_prefix, (dhcp_start < dhcp_end) ? dhcp_start : dhcp_end
+			, sdn_prefix, (dhcp_start < dhcp_end) ? dhcp_end : dhcp_start
+			, sdn_prefix_length, dhcp_lifetime);
+	}
+	else if (announce)
+	{
+		fprintf(fp, "dhcp-range=%s,::,constructor:%s,ra-stateless,64,%d\n"
+			, pmtl->nw_t.ifname, pmtl->nw_t.ifname, ra_lifetime);
+	}
+
+	return HAVE_DHCP6;
 }
 #endif

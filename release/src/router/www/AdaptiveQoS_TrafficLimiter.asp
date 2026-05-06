@@ -1136,7 +1136,7 @@ function handle_value(){
 									</div>
 								</div>					
 							</div>						
-									<div style="width: 680px; height: 330px; margin-left:10px; display: block;color:#FFF;background-color:#37474F;">
+									<div style="width: 680px; height: 330px; margin-left:10px; display: block;color:var(--text-primary, #FFF);background-color:#37474F;">
 										<div id="scale" style="display:inline-block; width: 50px; height: 100%;float:left;padding-left:12px;">
 											<div style="height:10px;border-bottom:1px solid transparent;position:relative;text-align:right">
 												<span style="position:absolute;bottom:0;right:5px;width:100px">100 MB</span>

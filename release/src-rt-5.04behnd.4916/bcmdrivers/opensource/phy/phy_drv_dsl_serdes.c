@@ -248,6 +248,9 @@ static void dsl_serdes_poll_timer_config(phy_dev_t *phy_dev, int stmr, int stmr_
     dsl_serdes_poll_timer_op(phy_dev, SPD_TMR_RESTART);
 }
 
+#ifdef CONFIG_BCM_PHY_COMBO	/* combo PHY support debug */
+int serdes_num = 0; /* this is used to identify the serdes# */
+#endif
 int phy_dsl_serdes_init(phy_dev_t *phy_dev)
 {
     phy_serdes_t *phy_serdes = (phy_serdes_t *)phy_dev->priv;
@@ -265,6 +268,7 @@ int phy_dsl_serdes_init(phy_dev_t *phy_dev)
         phy_drv_init(phy_next->phy_drv);
         phy_next->phy_drv->init(phy_next);
 
+//        printk("\n ************** %s:%d For external Copper PHY, initialize it first phy_dev[%p] phy_next[%p] ****************\n", __FUNCTION__, __LINE__, phy_dev, phy_next);
         /* Adjust usxgmii_m_type for single port definition to accept
             both USXGMII_S and USXGMII_M from device tree */
         if (phy_dev_is_mphy(phy_dev) && phy_next->usxgmii_m_type == USXGMII_S)
@@ -275,6 +279,8 @@ int phy_dsl_serdes_init(phy_dev_t *phy_dev)
         caps = supported_caps & xgphy_supported_caps;
         phy_dev_caps_set(phy_next, caps);
     }
+//    else
+//        printk("\n ************** %s:%d No external Copper PHY phy_dev[%p] phy_next[%p] ****************\n", __FUNCTION__, __LINE__, phy_dev, phy_next);
 
     serdes[serdes_index++] = phy_serdes;
     phy_dev->inter_phy_types = phy_serdes->inter_phy_types;
@@ -324,6 +330,10 @@ int phy_dsl_serdes_init(phy_dev_t *phy_dev)
     dsl_serdes_sfp_lbe_op(phy_dev, LASER_OFF); /* Notify no SFP to turn off laser in the beginning, just in case hardware set on */
     phy_serdes->sfp_module_type = SFP_FIXED_PHY;
 
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    if(PhyIsCombo(phy_dev))
+        printk("phy_dev[%p] is combo PHY\n", phy_dev);
+
     if ((phy_next == NULL))
     {
         phy_serdes->sfp_module_type = SFP_NO_MODULE;
@@ -332,13 +342,41 @@ int phy_dsl_serdes_init(phy_dev_t *phy_dev)
 #endif
         phy_next = phy_dev->cascade_next;
     }
+    else if (phy_next && PhyIsCombo(phy_dev)) /* phy_next is the ext PHY in dts. Customer should make sure ext3 is configured. We need to create i2c device for combo port phy_next is NOT NULL */
+    {
+        phy_serdes->sfp_module_type = SFP_FIXED_PHY; /* SFP_FIXED_PHY set to AE module    SFP_NO_MODULE ?? */
+#if defined(CONFIG_I2C) && defined(CONFIG_BCM_OPTICALDET)
+        phy_drv_dsl_i2c_create_lock(phy_dev);
+//        printk("\n ************%s:%d creating i2c for serdes[%d] ***************\n", __FUNCTION__, __LINE__, serdes_num );
+#endif
+        phy_next = phy_dev->cascade_i2c;		/* replace phy_next by i2c device otherwise we can't read bcmsfp_mon_rxsd_pin in later code */
+    }
+#else
+    if ((phy_next == NULL))
+    {
+        phy_serdes->sfp_module_type = SFP_NO_MODULE;
+#if defined(CONFIG_I2C) && defined(CONFIG_BCM_OPTICALDET)
+        phy_drv_dsl_i2c_create_lock(phy_dev);
+#endif
+        phy_next = phy_dev->cascade_next;
+    }
+#endif
 
     /* Check if SFP signal detect pin is defined or not*/
     phy_serdes->signal_detect_gpio = -1;
-    if (phy_next && phy_serdes->sfp_module_type == SFP_NO_MODULE) {
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+//    printk("\n ******* %s:%d phy_serdes[%p] sfp_module_type[%d] ******* \n", __FUNCTION__, __LINE__, phy_serdes, phy_serdes->sfp_module_type );
+    if (phy_next && (phy_serdes->sfp_module_type == SFP_NO_MODULE || (PhyIsCombo(phy_dev) && phy_serdes->sfp_module_type == SFP_FIXED_PHY)))
+#else
+    if (phy_next && phy_serdes->sfp_module_type == SFP_NO_MODULE)
+#endif
+    {
         if (trxbus_mon_read(phy_next->addr, bcmsfp_mon_rxsd_pin, 0, &value) == 0) {
             phy_serdes->signal_detect_gpio = (short)value;
+//            printk("\n ************%s:%d phy_serdes[%p] addr[%d] signal_detect_gpio[%d] serdes[%d] ***************\n", __FUNCTION__, __LINE__, phy_serdes, phy_next->addr, phy_serdes->signal_detect_gpio, serdes_num );
         }
+//        else
+//            printk("\n ************%s:%d phy_serdes[%p] addr[%d] signal_detect_gpio isn't defined serdes[%d] ***************\n", __FUNCTION__, __LINE__, phy_serdes, phy_next->addr, serdes_num );
         /* turn on SFP tx power for AE/PON cage */
         trxbus_mon_write(phy_next->addr, bcmsfp_mon_tx_enable, 0, 1);
 
@@ -353,6 +391,9 @@ int phy_dsl_serdes_init(phy_dev_t *phy_dev)
     if (bug)
         BUG_CHECK("Serdes Initialization failed\n");
 end:
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    serdes_num++;
+#endif	
     return ret;
 }
 
@@ -389,9 +430,17 @@ static int phy_dsl_set_configured_types(phy_dev_t *phy_dev)
 static int sfp_phy_get_best_inter_phy_configure_type(phy_dev_t *phy_dev,
     int inter_phy_types, phy_speed_t speed)
 {
-    phy_dev_t *phy_i2c = phy_dev->cascade_next;
     int best_type;
 
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    phy_dev_t *phy_i2c;
+    if(PhyIsCombo(phy_dev))
+        phy_i2c = phy_dev->cascade_i2c;
+    else
+        phy_i2c = phy_dev->cascade_next;
+#else
+    phy_dev_t *phy_i2c = phy_dev->cascade_next;
+#endif
     /* Check if non multi speed mode is available since most SFP module only support non multi speed mode */
     if (phy_i2c->flag & PHY_FLAG_DYNAMIC && !(phy_i2c->flag & PHY_FLAG_NOT_PRESENTED) &&
         (phy_i2c->flag & PHY_FLAG_COPPER_CONFIGURABLE_SFP_TYPE))
@@ -541,6 +590,12 @@ int phy_dsl_serdes_post_init(phy_dev_t *phy_dev)
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
 
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support - need to check if it's Combo PHY - TBD - LJA */
+    if(PhyIsCombo(phy_dev))
+    {
+        phy_serdes->config_speed = PHY_SPEED_AUTO; /* restore to default setting */
+    }
+#endif
     phy_dsl_set_configured_types(phy_dev);
     if (phy_serdes->sfp_module_type == SFP_FIXED_PHY)
     {
@@ -851,7 +906,12 @@ int dsl_serdes_single_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duple
 
 end:
     if (org_power_level != phy_serdes->cur_power_level)
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    {
+    }
+#else
         dsl_powerdown_serdes(phy_dev);
+#endif
 
     return rc;
 }
@@ -952,12 +1012,20 @@ static int dsl_serdes_speed_detect(phy_dev_t *phy_dev)
     static int retry = 0;
     phy_serdes_t *phy_serdes = phy_dev->priv;
     u16 rnd;
-    phy_dev_t *phy_i2c = phy_dev->cascade_next;
     int inter_type;
     int highest_speed_inter_phy_type = INTER_PHY_TYPE_MAX - 1;
     uint32_t inter_phy_types;
     uint32_t supported_speed_caps;
     phy_speed_t speed;
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    phy_dev_t *phy_i2c;
+    if(PhyIsCombo(phy_dev))
+        phy_i2c = phy_dev->cascade_i2c;
+    else
+        phy_i2c = phy_dev->cascade_next;
+#else
+    phy_dev_t *phy_i2c = phy_dev->cascade_next;
+#endif
 
     if (PhyIsPortConnectedToExternalSwitch(phy_dev) || PhyIsFixedConnection(phy_dev))
         return 1;
@@ -1447,12 +1515,20 @@ static int dsl_sfp_module_detected(phy_dev_t *phy_dev)
     phy_serdes_t *phy_serdes = phy_dev->priv;
     int rc = 0;
 
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    if ((phy_serdes->sfp_module_type == SFP_FIXED_PHY) && (phy_serdes->signal_detect_gpio == -1))
+#else
     if (phy_serdes->sfp_module_type == SFP_FIXED_PHY)
+#endif
+    {
+//        printk(KERN_DEBUG "\n\n\n\n\n ******%s:%d phy_dev[%p] signal_detect_gpio[%d] return 1 ****** \n\n\n\n\n", __FUNCTION__, __LINE__, phy_dev, phy_serdes->signal_detect_gpio);
         return 1;
+    }
 
 #if defined(CONFIG_I2C)
     rc = phy_i2c_module_detect(phy_dev);
 #endif
+//    printk(KERN_DEBUG "\n\n\n\n\n ******%s:%d return phy_dev[%p] rc[%d] ****** \n\n\n\n\n", __FUNCTION__, __LINE__, phy_dev, rc);
     return rc;
 }
 
@@ -1491,19 +1567,37 @@ static int dsl_sfp_module_detect(phy_dev_t *phy_dev)
     phy_serdes_t *phy_serdes = phy_dev->priv;
     TRX_TYPE trx_type = TRX_TYPE_ETHERNET;
     phy_speed_t max_spd;
-    phy_dev_t *phy_i2c = phy_dev->cascade_next;
     long sfp_id;    /* The function of trbus_mon_read() defines long *, so we have to use long * here too to match different size of the kernel */
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    phy_dev_t *phy_i2c; /* use the backup dev as it's always available. cascade_next can be ext PHY */
+    if(PhyIsCombo(phy_dev) && phy_dev->i2c_dev_inactive) /* use the backup dev as it's always available. But cascade_next may be ext PHY */
+        phy_i2c = phy_dev->cascade_i2c;
+    else
+        phy_i2c = phy_dev->cascade_next;
+#else
+    phy_dev_t *phy_i2c = phy_dev->cascade_next;
+#endif
 
     /* Don't do module detection for fixed connection desgin */
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    if ((phy_serdes->sfp_module_type == SFP_FIXED_PHY) && (phy_serdes->signal_detect_gpio == -1))
+#else
     if (phy_serdes->sfp_module_type == SFP_FIXED_PHY)
+#endif
+    {
+//        printk(KERN_DEBUG "\n ****** %s:%d phy_serdes[%p] signal_detect_gpio[%d] ****** \n", __FUNCTION__, __LINE__, phy_serdes, phy_serdes->signal_detect_gpio);
         return 1;
+    }
 
     if (dsl_sfp_module_detected(phy_dev) == 0)
     {
         if (phy_i2c->flag & PHY_FLAG_NOT_PRESENTED)
             return 0;
 
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+#else
         phy_serdes->sfp_module_type = SFP_NO_MODULE;
+#endif
         phy_i2c->flag |= PHY_FLAG_NOT_PRESENTED;
         printk("SFP Module at Address %d Core %d is Unplugged\n",
                 phy_dev->addr, phy_serdes->core_num);
@@ -1514,8 +1608,11 @@ static int dsl_sfp_module_detect(phy_dev_t *phy_dev)
         return 0;
     }
 
+#ifdef CONFIG_BCM_PHY_COMBO  /* combo PHY supoprt skip return */
+#else
     if (phy_serdes->sfp_module_type != SFP_NO_MODULE)   /* Module detection done and no unplug */
         return 1;
+#endif
 
 #if defined(CONFIG_I2C) && defined(CONFIG_BCM_OPTICALDET)
     msleep(300);    /* Let I2C driver prepare data */
@@ -1543,6 +1640,9 @@ static int dsl_sfp_module_detect(phy_dev_t *phy_dev)
     phy_i2c->flag &= ~PHY_FLAG_NOT_PRESENTED;
     max_spd = phy_max_speed_get(phy_i2c);
 
+#ifdef CONFIG_BCM_PHY_COMBO
+	/* combo PHY  - too much trace - can be removed during debugging phase */
+#else
     switch (phy_serdes->sfp_module_type)
     {
         case SFP_GPON_MODULE:
@@ -1565,6 +1665,7 @@ static int dsl_sfp_module_detect(phy_dev_t *phy_dev)
     }
     printk(KERN_CONT "is Plugged in at Serdes address %d core %d lane %d\n", phy_dev->addr,
         phy_dev->core_index, phy_dev->lane_index);
+#endif
 
     return 1;
 }
@@ -1572,7 +1673,12 @@ static int dsl_sfp_module_detect(phy_dev_t *phy_dev)
 int phy_dsl_serdes_read_status(phy_dev_t *phy_dev)
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
+#ifdef CONFIG_BCM_PHY_COMBO	/* combo PHY support */
+    phy_dev_t *phy_i2c = phy_dev->cascade_i2c;
     phy_dev_t *phy_next = phy_dev->cascade_next;
+#else
+    phy_dev_t *phy_next = phy_dev->cascade_next;
+#endif
     phy_speed_t org_speed = phy_dev->speed;
     phy_dev_t *copper_phy = phy_dev->cascade_next;
     int org_link = phy_dev->link;
@@ -1580,6 +1686,7 @@ int phy_dsl_serdes_read_status(phy_dev_t *phy_dev)
 
     if (!phy_serdes || !phy_serdes->inited)
         goto read_end;
+//    printk(KERN_DEBUG "\n ****** %s:%d phy_dev[%p] i2c_dev_inactive[%d] sfp_module_type[%d] ****** \n", __FUNCTION__, __LINE__, phy_dev, phy_dev->i2c_dev_inactive, phy_serdes->sfp_module_type );
 
     if (PhyIsPortConnectedToExternalSwitch(phy_dev) || PhyIsFixedConnection(phy_dev))
     {
@@ -1594,6 +1701,7 @@ int phy_dsl_serdes_read_status(phy_dev_t *phy_dev)
         phy_serdes->link_changed = 0;
         if (phy_serdes->sfp_status == SFP_LINK_UP)
         {
+//            printk("\n\n\n\n ****** %s:%d set phy_dev[%p] sfp_status to SFP_MODULE_IN ****** \n\n\n\n", __FUNCTION__, __LINE__, phy_dev);
             phy_serdes->sfp_status = SFP_MODULE_IN;
             /* The routine below will turn on power to complete record configuration,
                 so it is safe to call and has to be called even in power down */
@@ -1614,7 +1722,11 @@ int phy_dsl_serdes_read_status(phy_dev_t *phy_dev)
         goto read_end;
     }
 
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    if ((phy_serdes->sfp_module_type == SFP_FIXED_PHY) && (phy_serdes->signal_detect_gpio == -1))
+#else
     if (phy_serdes->sfp_module_type == SFP_FIXED_PHY)
+#endif
     {
         if (dsl_serdes_check_power(phy_dev))
             goto read_end;
@@ -1640,7 +1752,10 @@ int phy_dsl_serdes_read_status(phy_dev_t *phy_dev)
         case SFP_MODULE_OUT:
 sfp_module_out:
             if(phy_serdes->sfp_status == SFP_MODULE_OUT && dsl_sfp_module_detect(phy_dev))
+            {
+//                printk("\n ****** %s:%d phy_dev[%p] ****** \n", __FUNCTION__, __LINE__, phy_dev );
                 goto sfp_module_in;
+            }
 
             if ( phy_serdes->sfp_status == SFP_MODULE_IN)
             {
@@ -1650,29 +1765,86 @@ sfp_module_out:
                 dsl_serdes_poll_timer_op(phy_dev, SPD_TMR_RESTART);
             }
 
+//            printk("\n ****** %s:%d set sfp_status to SFP_MODULE_OUT ****** \n", __FUNCTION__, __LINE__);
             phy_serdes->sfp_status = SFP_MODULE_OUT;
             goto sfp_end;
 
         case SFP_MODULE_IN:
 sfp_module_in:
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+//            printk(KERN_DEBUG "\n ****** %s:%d sfp_module_in phy_dev[%p] ****** \n", __FUNCTION__, __LINE__, phy_dev );
+            if(PhyIsCombo(phy_dev) && phy_dev->cascade_i2c && (phy_dev->cascade_next != phy_dev->cascade_i2c))
+            {
+//                printk(KERN_DEBUG "\n ****** %s:%d link change call ******\n", __FUNCTION__, __LINE__ );
+                phy_dev->link_change_ctx = phy_dev->cascade_next->link_change_ctx;
+                phy_dev->link_change_cb = phy_dev->cascade_next->link_change_cb;
+                phy_dev->cascade_next = phy_dev->cascade_i2c; 
+                phy_dev->i2c_dev_inactive = 0;
+                if(phy_serdes->sfp_module_type == SFP_FIXED_PHY)
+                {
+                    phy_serdes->sfp_module_type = SFP_NO_MODULE;		/* force link change event */
+//                    printk("\n ****** %s:%d phy_dev[%p] los_set ******\n", __FUNCTION__, __LINE__, phy_dev);
+                    phy_dev->phy_drv->los_set(phy_dev, 1);
+                }
+//                else
+//                    printk("\n ****** %s:%d phy_dev[%p] sfp_module_type[%d] ******\n", __FUNCTION__, __LINE__, phy_dev, phy_serdes->sfp_module_type);
+                phy_dev->phy_drv->los_set(phy_dev, 1);
+            }
+#endif
+//            printk(KERN_DEBUG "\n ****** %s:%d phy_dev[%p] ****** \n", __FUNCTION__, __LINE__, phy_dev);
             if(phy_serdes->sfp_status >= SFP_MODULE_IN && !dsl_sfp_module_detect(phy_dev))
             {
+//                printk("\n ****** %s:%d set sfp_status to SFP_MODULE_IN ****** \n", __FUNCTION__, __LINE__);
                 phy_serdes->sfp_status = SFP_MODULE_IN;
+//                printk(KERN_DEBUG "\n ****** %s:%d ****** goto sfp_module_out \n", __FUNCTION__, __LINE__);
                 goto sfp_module_out;
             }
 
+//            printk(KERN_DEBUG "\n ****** %s:%d ****** \n", __FUNCTION__, __LINE__);
             if(phy_serdes->sfp_module_type == SFP_GPON_MODULE)    /* PON module */
             {
+//                printk("\n ****** %s:%d set sfp_status to SFP_MODULE_IN goto sfp_end ****** \n", __FUNCTION__, __LINE__);
                 phy_serdes->sfp_status = SFP_MODULE_IN;
                 goto sfp_end;
             }
 
+//            printk(KERN_DEBUG "\n ****** %s:%d ****** \n", __FUNCTION__, __LINE__);
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+            if(PhyIsCombo(phy_dev) && phy_serdes->sfp_module_type == SFP_FIXED_PHY)
+                phy_serdes->sfp_module_type = SFP_NO_MODULE; /* force link change event */
+#endif
+//            printk(KERN_DEBUG "\n ****** %s:%d ****** \n", __FUNCTION__, __LINE__);
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+            if(PhyIsCombo(phy_dev))
+            phy_dsl_serdes_post_init(phy_dev);
+            else
+                dsl_powerup_serdes(phy_dev);
+#else
             dsl_powerup_serdes(phy_dev);
+#endif
 
+//            printk(KERN_DEBUG "\n ****** %s:%d ****** \n", __FUNCTION__, __LINE__);
             if (dsl_serdes_silent_start_light_detected(phy_dev))
                 dsl_serdes_sfp_lbe_op(phy_dev, LASER_ON);
 
-            if(phy_serdes->sfp_status < SFP_MODULE_IN)
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+            if(PhyIsCombo(phy_dev) && phy_serdes->sfp_status <= SFP_MODULE_IN) /* combo PHY */
+            {
+//                printk(KERN_DEBUG "\n ****** %s:%d ****** \n", __FUNCTION__, __LINE__);
+                cascade_phy_set_common_inter_types(phy_dev);
+                phy_dsl_set_configured_types(phy_dev);
+                set_common_speed_range(phy_dev);
+                if (phy_dev->configured_current_inter_phy_type == INTER_PHY_TYPE_AUTO)
+                    phy_dev->current_inter_phy_type = phy_i2c->current_inter_phy_type =
+                        sfp_phy_get_best_inter_phy_configure_type(phy_dev,
+                        phy_dev->configured_inter_phy_types, phy_serdes->config_speed);
+                else
+                    phy_dev->current_inter_phy_type = phy_i2c->current_inter_phy_type =
+                        phy_dev->configured_current_inter_phy_type;
+                phy_dev_speed_set(phy_i2c, phy_serdes->config_speed, PHY_DUPLEX_FULL);
+                dsl_serdes_single_speed_set(phy_dev, phy_serdes->config_speed, PHY_DUPLEX_FULL);
+            }
+            else if(phy_serdes->sfp_status < SFP_MODULE_IN)
             {
                 cascade_phy_set_common_inter_types(phy_dev);
                 phy_dsl_set_configured_types(phy_dev);
@@ -1689,9 +1861,28 @@ sfp_module_in:
                 phy_dev_speed_set(phy_next, phy_serdes->config_speed, PHY_DUPLEX_FULL);
                 dsl_serdes_single_speed_set(phy_dev, phy_serdes->config_speed, PHY_DUPLEX_FULL);
             }
+#else
+            if(phy_serdes->sfp_status < SFP_MODULE_IN)
+            {
+                cascade_phy_set_common_inter_types(phy_dev);
+                phy_dsl_set_configured_types(phy_dev);
+                set_common_speed_range(phy_dev);
+                if (phy_dev->configured_current_inter_phy_type == INTER_PHY_TYPE_AUTO)
+                    phy_dev->current_inter_phy_type = phy_next->current_inter_phy_type =
+                        sfp_phy_get_best_inter_phy_configure_type(phy_dev,
+                                phy_dev->configured_inter_phy_types, phy_serdes->config_speed);
+                else
+                    phy_dev->current_inter_phy_type = phy_next->current_inter_phy_type =
+                        phy_dev->configured_current_inter_phy_type;
+                phy_dev_speed_set(phy_next, phy_serdes->config_speed, PHY_DUPLEX_FULL);
+                dsl_serdes_single_speed_set(phy_dev, phy_serdes->config_speed, PHY_DUPLEX_FULL);
+            }
+#endif
+//            printk(KERN_DEBUG "\n ****** %s:%d ****** \n", __FUNCTION__, __LINE__);
 
             if(phy_serdes->sfp_status <= SFP_MODULE_IN)
             {
+//                printk("\n ****** %s:%d set sfp_status to SFP_MODULE_IN ****** \n", __FUNCTION__, __LINE__);
                 phy_serdes->sfp_status = SFP_MODULE_IN;
 
                 if (dsl_serdes_silent_start_light_detected(phy_dev))
@@ -1704,27 +1895,37 @@ sfp_module_in:
                 */
                 if (!dsl_serdes_speed_detect(phy_dev))
                 {
+//                    printk("\n ****** %s:%d set sfp_status to SFP_MODULE_IN ****** \n", __FUNCTION__, __LINE__);
                     phy_serdes->sfp_status = SFP_MODULE_IN;
+//                    printk(KERN_DEBUG "\n ****** %s:%d ****** goto sfp_module_out \n", __FUNCTION__, __LINE__);
                     goto sfp_module_out;
                 }
 
                 sfp_link_status_check(phy_dev);
                 if (phy_dev->link)
+                {
+//                    printk(KERN_DEBUG "\n ****** %s:%d ****** goto sfp_link_up \n", __FUNCTION__, __LINE__);
                     goto sfp_link_up;
+                }
             }
+//            printk("\n ****** %s:%d set sfp_status to SFP_MODULE_IN ****** \n", __FUNCTION__, __LINE__);
             phy_serdes->sfp_status = SFP_MODULE_IN;
+//            printk(KERN_DEBUG "\n ****** %s:%d ****** goto sfp_end \n", __FUNCTION__, __LINE__);
             goto sfp_end;
 
         case SFP_LINK_UP:
 sfp_link_up:
+//            printk(KERN_DEBUG "\n ****** %s:%d ****** \n", __FUNCTION__, __LINE__);
             if(phy_serdes->sfp_status == SFP_LINK_UP)
             {
                 if(!dsl_sfp_module_detect(phy_dev))
                 {
                     phy_dev->link = 0;
+//                    printk(KERN_DEBUG "\n ****** %s:%d ****** goto sfp_module_out \n", __FUNCTION__, __LINE__);
                     goto sfp_module_out;
                 }
                 sfp_link_status_check(phy_dev);
+//                printk(KERN_DEBUG "\n ****** %s:%d ****** \n", __FUNCTION__, __LINE__);
                 if (org_link && phy_dev->link && org_speed != phy_dev->speed)
                     phy_dev->link = 0;
 
@@ -1746,6 +1947,7 @@ sfp_link_up:
                         if (phy_dev->current_inter_phy_type != INTER_PHY_TYPE_UNKNOWN)
                             dsl_serdes_single_speed_set(phy_dev, phy_serdes->common_highest_speed, PHY_DUPLEX_FULL);
                     }
+//                    printk(KERN_DEBUG "\n ****** %s:%d ****** \n", __FUNCTION__, __LINE__);
                     goto sfp_module_in;
                 }
             }
@@ -1753,15 +1955,75 @@ sfp_link_up:
                 phy_dev_status_reverse_propagate(phy_dev);
 
             phy_serdes->sfp_status = SFP_LINK_UP;
+//            printk(KERN_DEBUG "\n ****** %s:%d ****** goto sfp_end \n", __FUNCTION__, __LINE__);
             goto sfp_end;
     }
 
 sfp_end:
+#ifdef CONFIG_BCM_PHY_COMBO	/* combo PHY support */
+    if(PhyIsCombo(phy_dev))
+    {
+    }
+    else
+    {
+    if ((phy_serdes->power_mode == SERDES_BASIC_POWER_SAVING && phy_serdes->sfp_status == SFP_MODULE_OUT) ||
+        (phy_serdes->power_mode == SERDES_ADVANCED_POWER_SAVING && phy_serdes->sfp_status != SFP_LINK_UP))
+            dsl_powerdown_serdes(phy_dev);	
+    }
+#else
     if ((phy_serdes->power_mode == SERDES_BASIC_POWER_SAVING && phy_serdes->sfp_status == SFP_MODULE_OUT) ||
         (phy_serdes->power_mode == SERDES_ADVANCED_POWER_SAVING && phy_serdes->sfp_status != SFP_LINK_UP))
         dsl_powerdown_serdes(phy_dev);
+#endif
 
 read_end:
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    if(PhyIsCombo(phy_dev))
+    {
+        switch (phy_serdes->sfp_status)
+        {
+            case SFP_MODULE_OUT:/* switch to ext PHY - TBD - if ext PHY exist */
+                if((phy_dev->cascade_ext) && (phy_dev->cascade_next != phy_dev->cascade_ext))
+                {
+                    phy_dev->cascade_next = phy_dev->cascade_ext; 
+                    phy_dsl_serdes_post_init(phy_dev);	  /* init copper phy */
+                    phy_dev->i2c_dev_inactive = 1;
+                    phy_serdes->sfp_module_type = SFP_FIXED_PHY;/* force link change event */
+//                    printk("\n ****** %s:%d SFP_MODULE_OUT switch to copper PHY phy_dev[%p] cascade_next[%p] cascade_ext[%p] ****** \n", __FUNCTION__, __LINE__, phy_dev, phy_dev->cascade_next, phy_dev->cascade_ext);
+#if 0 /* combo PHY support -------- TBD */
+                    phy_dev->phy_drv->los_set(phy_dev, 0);
+#endif
+                }
+#if 1 /* combo PHY support -------- TBD */
+//                printk("\n ****** %s:%d SFP_MODULE_OUT los_set 0 phy_dev[%p] cascade_next[%p] cascade_ext[%p] ****** \n", __FUNCTION__, __LINE__, phy_dev, phy_dev->cascade_next, phy_dev->cascade_ext);
+                phy_dev->phy_drv->los_set(phy_dev, 0);
+#endif
+                break;
+            case SFP_MODULE_IN:
+//                printk("\n ****** %s:%d ****** \n", __FUNCTION__, __LINE__);
+                if((phy_dev->cascade_i2c) && (phy_dev->cascade_next != phy_dev->cascade_i2c))
+                {
+                    phy_dev->cascade_next = phy_dev->cascade_i2c; 
+                    phy_dev->i2c_dev_inactive = 0;
+                    {
+                        phy_serdes->sfp_module_type = SFP_NO_MODULE; /* force link change event */
+#if 0
+                        printk("\n ****** %s:%d phy_dev[%p] SFP_MODULE_IN los_set ****** \n", __FUNCTION__, __LINE__, phy_dev);
+                        phy_dev->phy_drv->los_set(phy_dev, 1);
+#endif
+                    }
+//                    printk("\n ****** %s:%d SFP_MODULE_IN switch to SFP ****** \n", __FUNCTION__, __LINE__);
+                }
+//                else
+//                    printk("\n ****** %s:%d SFP_MODULE_IN NO switch phy_dev[%p] cascade_next[%p] cascade_i2c[%p] ****** \n", __FUNCTION__, __LINE__, phy_dev, phy_dev->cascade_next, phy_dev->cascade_i2c);
+#if 1 /* combo PHY support */
+//                printk("\n ****** %s:%d SFP_MODULE_IN los_set 1 phy_dev[%p] cascade_next[%p] cascade_i2c[%p] ****** \n", __FUNCTION__, __LINE__, phy_dev, phy_dev->cascade_next, phy_dev->cascade_i2c);
+                phy_dev->phy_drv->los_set(phy_dev, 1);
+#endif
+                break;
+        }
+    }
+#endif
     return 0;
 }
 
@@ -1832,8 +2094,19 @@ int dsl_serdes_power_mode_set(phy_dev_t *phy_dev, int mode)
             break;
         case SERDES_BASIC_POWER_SAVING:
         case SERDES_ADVANCED_POWER_SAVING:
+#ifdef CONFIG_BCM_PHY_COMBO	/* combo PHY support - disable power saving for combo PHY support */
+        if(PhyIsCombo(phy_dev))
+        {
+        }
+        else
+        {
             phy_dsl_serdes_power_set(phy_dev, 1);
             dsl_powerdown_serdes(phy_dev);
+        }
+#else
+            phy_dsl_serdes_power_set(phy_dev, 1);
+            dsl_powerdown_serdes(phy_dev);
+#endif
             break;
         case SERDES_FORCE_OFF:
             phy_dsl_serdes_power_set(phy_dev, 0);

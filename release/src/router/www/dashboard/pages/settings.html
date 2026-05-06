@@ -4,28 +4,44 @@
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0,  user-scalable=no" />
+
     </head>
 
     <body>
-        <div class="d-flex align-items-center mb-3">
+        <div class="d-flex align-items-center my-3">
             <div class="page-title"><#Settings#></div>
         </div>
-		<div class="row">
-            <div class="col-12 mb-3">
+		<div class="row justify-content-center">
+            <div class="col-12 col-xxl-10 mb-3">
 				<div class="card card-cut-none pt-2 h-100">
-					<iframe id="settingsWindow" style="width: 100%; height: 100vh;" src="/Advanced_Default_Content.asp"></iframe>
+					<iframe id="settingsWindow" style="width: 100%; height: 100vh;" src=""></iframe>
 				</div>
+
 			</div>
         </div>
 	</body>
 
 	<script>
-		var webWrapper = true;
+		(() => {
+		window.webWrapper = true;
 		var targetPage = urlParameter.get("tab");
         if (targetPage === "" || targetPage === undefined || targetPage == null) {
-			const lastSettingsPage = top.Session.get("settings-lastPage") || "";
-            const isValidPage = lastSettingsPage && lastSettingsPage !== "index.html" && lastSettingsPage.includes(".");
-            targetPage = isValidPage ? lastSettingsPage : "Tools_Sysinfo.asp";
+            const ui_lang = httpApi.nvramGet(["preferred_lang"], false).preferred_lang;
+            const menuList = top.Session.get("menuList." + ui_lang);
+            const menuExclude = top.Session.get("menuExclude");
+            const lastSettingsPage = top.Session.get("settings-lastPage") || "";
+            const excludedMenus = new Set(menuExclude?.menus ?? []);
+            const excludedTabs = new Set(menuExclude?.tabs ?? []);
+            const validUrls = new Set(
+                Array.isArray(menuList)
+                    ? menuList
+                        .filter(m => !excludedMenus.has(m.index))
+                        .flatMap(m => m.tab?.map(t => t.url) ?? [])
+                        .filter(u => u !== "NULL" && u !== "QIS_wizard.htm" && u !== "index.html" && u !== "index.asp" && !excludedTabs.has(u))
+                    : []
+            );
+            const isValidPage = lastSettingsPage && lastSettingsPage !== "index.html" && lastSettingsPage.includes(".") && validUrls.has(lastSettingsPage);
+            targetPage = isValidPage ? lastSettingsPage : (validUrls.size > 0 ? validUrls.values().next().value : "Tools_Sysinfo.asp");
 		} else {
             const state = null;
             const title = "";
@@ -99,8 +115,8 @@
 				"width": "100%",
 				"border-spacing": "0px"
 			})
-			iframe.find(".tab").parent().css({"border-bottom": "solid 4px #dcdcdc"})
-			iframe.find(".tabClicked").parent().css({"border-bottom": "solid 4px var(--primary-70)"})
+			iframe.find(".tab").parent().css({"border-bottom": "solid 4px var(--wrt-segment-fill-border)"})
+			iframe.find(".tabClicked").parent().css({"border-bottom": "solid 4px var(--wrt-segment-fill-selected-border)"})
 			iframe.find("#FormTitle").attr({"width": "100%"})
 			iframe.find('#whiteThemeWrapper table').attr('width', '100%');
 			iframe.find('td[width="17"]').remove();
@@ -118,15 +134,8 @@
 			});
 		}
 
-		function setupBusinessUI(){
+		window.setupBusinessUI = function(){
 			var iframe = $("#settingsWindow").contents();
-
-			findColorAndReplace("color", "FFFFFF", "006CE1");
-			findColorAndReplace("color", "FFCC00", "006CE1");
-			setTimeout(function(){findColorAndReplace("color", "FFCC00", "e10000");}, 500);
-
-			findColorAndReplace("background-color", "475A5F", "transparent");
-			findColorAndReplace("background-color", "4D595D", "transparent");
 
 			if(theme.toLocaleUpperCase() == "WHITE"){
 				iframe.find('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_' + theme.toLocaleUpperCase() + '.css">');
@@ -235,5 +244,6 @@
 				}
 			}
 		});
+		})();
 	</script>
 </html>

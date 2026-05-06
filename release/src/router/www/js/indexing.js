@@ -18,7 +18,7 @@ let menuTree = [
         ]
     },
     {
-        menuName: "Clients",
+        menuName: "<#statusTitle_Client#>",
         tab: [
             {url: "index.html?page=clients", tabName: ``}
         ]
@@ -30,7 +30,7 @@ let menuTree = [
         ]
     },
     {
-        menuName: "Adaptive QoE",
+        menuName: `<#Adaptive_QoE#>`,
         tab: [
             {url: "index.html?page=qoe", tabName: ``}
         ]
@@ -292,7 +292,7 @@ let menuTree = [
             {url: "Main_IPTStatus_Content.asp", tabName: "<#menu5_7_5#>"},
             {url: "Main_AdslStatus_Content.asp", tabName: "<#menu_dsl_log#>"},
             {url: "Main_ConnStatus_Content.asp", tabName: "<#Connections#>"},
-            {url: "Main_Security_Change_Notification.asp", tabName: "Security Update Notification"},
+            {url: "Main_Security_Change_Notification.asp", tabName: "<#Notification_security_update#>"},
             /* {url: "###Main_ConnStatus_Content.asp", tabName: "Captive Portal Connection Log"}, */
             {url: "NULL", tabName: "__INHERIT__"}
         ]
@@ -303,9 +303,9 @@ let menuTree = [
         tab: [
             {url: "Main_Analysis_Content.asp", tabName: "<#Network_Analysis#>"},
             {url: "Main_Netstat_Content.asp", tabName: "Netstat"},
-            {url: "Main_WOL_Content.asp", tabName: "<#NetworkTools_WOL#>"},
+            {url: "Main_WOL_Content.asp", tabName: "<#NetworkTools_WOL#>"}
             // {url: "Main_ChkSta_Content.asp", tabName: "<#NetworkTools_ChkSta#>"},
-            {url: "Advanced_Smart_Connect.asp", tabName: "<#smart_connect_rule#>"}
+            // {url: "Advanced_Smart_Connect.asp", tabName: "<#smart_connect_rule#>"}
         ]
     },
     {
@@ -368,28 +368,31 @@ async function loadData(lang = 'EN') {
 
     // Load local dictionary first
     let dictText = "";
-    const localDictResponse = await fetch(`/${lang}.dict`);
-    if (localDictResponse.ok) {
-        dictText = await localDictResponse.text();
-        dictData = parseDict(dictText);
-    }
+    await httpApi.fetchStaticText(`/${lang}.dict`, "force-cache")
+        .then(function(text){
+            dictText = text;
+            dictData = parseDict(dictText);
+        })
+        .catch(function(){});
 
     // Load local indexing.json first
     let usageJson = "";
-    const localUsageResponse = await fetch('/js/indexing.json');
-    if (localUsageResponse.ok) {
-        usageJson = JSON.stringify(await localUsageResponse.json());
-        usageIndex = JSON.parse(usageJson);
-    }
+    await httpApi.fetchStaticJson('/js/indexing.json', "force-cache")
+        .then(function(json){
+            usageJson = JSON.stringify(json);
+            usageIndex = JSON.parse(usageJson);
+        })
+        .catch(function(){});
 
     // Load local qa_asuswrt.json first
     let qaPair = "";
     let qaPairFileName = httpApi.nvramGet(["territory_code"]).territory_code.includes("CN") ? 'qa_asuswrt_sc.json' : 'qa_asuswrt.json';
     if(isSupport("ai_board_slm")){
-        const localQaPairResponse = await fetch(`/js/${qaPairFileName}`);
-        if (localQaPairResponse.ok) {
-            qaPairData = await localQaPairResponse.json();
-        }
+        await httpApi.fetchStaticJson(`/js/${qaPairFileName}`, "force-cache")
+            .then(function(json){
+                qaPairData = json;
+            })
+            .catch(function(){});
     }
 
     // Try to load cloud data and replace local if successful (non-blocking)
@@ -402,7 +405,7 @@ async function loadData(lang = 'EN') {
                     });
                 }
             }).catch(() => {}),
-            
+
             fetch('https://nw-dlcdnet.asus.com/indexing/indexing.json').then(response => {
                 if (response.ok) {
                     return response.json().then(json => {
@@ -410,24 +413,24 @@ async function loadData(lang = 'EN') {
                     });
                 }
             }).catch(() => {}),
-            
+
             isSupport("ai_board_slm") ? 
                 fetch(`https://nw-dlcdnet.asus.com/indexing/${qaPairFileName}`).then(response => {
                     if (response.ok) {
                         return response.json().then(json => {
                             qaPairData = Array.isArray(json)
                                 ? json.filter(entry => entry.id !== 10029)
-                                : json;                            
+                                : json;
                         });
                     }
                 }).catch(() => {}) 
                 : Promise.resolve()
         ];
-        
+
         // Load all cloud data in parallel, but don't block the main execution
         return Promise.all(cloudPromises);
     };
-    
+
     // Start cloud data loading in background
     loadCloudData();
 
@@ -445,10 +448,10 @@ async function loadData(lang = 'EN') {
         .result-item {
             margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--wrt-card-border);
         }
         .result-item strong {
-            color: #d9534f;
+            color: var(--status-msg-important);
         }
         .tab-name {
             color: #0056b3;
@@ -456,12 +459,12 @@ async function loadData(lang = 'EN') {
             font-weight: bold;
         }
         .found-string {
-            color: #6c757d;
+            color: var(--text-primary);
             font-size: 0.9em;
             padding-left: 20px;
         }
         .highlight {
-            color: red;
+            color: var(--text-highlight-custom-01-color);
             font-weight: bold;
         }
         .result-item ul {
@@ -472,7 +475,7 @@ async function loadData(lang = 'EN') {
             padding: 5px 0;
         }
         .result-item a {
-            color: #0275d8;
+            color: var(--link-color-assistant);
             text-decoration: none;
         }
         .result-item a:hover {
@@ -481,16 +484,16 @@ async function loadData(lang = 'EN') {
         .qa-section {
             margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--brand-primary);
         }
         .qa-section .tab-name {
-            color: #0275d8;
+            color: var(--link-color-assistant);
             font-size: 1.1em;
             font-weight: bold;
             margin-bottom: 10px;
         }
         .qa-question {
-            color: #0056b3;
+            color: var(--brand-primary);
             text-decoration: none;
             cursor: pointer;
             font-size: 0.9em;
@@ -576,7 +579,7 @@ function performSearch() {
                 const validUrls = urls
                     .map(url => ({ url, tabName: getTabNameFromUrl(url) }))
                     .filter(item => item.tabName !== null);
-                
+
                 if (validUrls.length > 0) {
                     const uniqueTabNames = [...new Set(validUrls.map(item => item.tabName))];
                     uniqueTabNames.forEach(tabName => {
@@ -629,7 +632,7 @@ function performSearch() {
                 <p class="tab-name">Related Questions</p>
                 <ul>
         `;
-        
+
         matchingQuestions.forEach((question, index) => {
             const highlightedQuestion = question.replace(highlightRegex, '<span class="highlight">$1</span>');
             html += `
@@ -676,7 +679,7 @@ function performSearch() {
             </div>
         `;
     });
-   
+
     resultsDiv.innerHTML = html;
     document.getElementById('router-assistant-response').style.display = '';
     

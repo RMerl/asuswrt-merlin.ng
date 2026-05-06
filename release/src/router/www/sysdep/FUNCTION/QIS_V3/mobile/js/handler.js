@@ -1277,7 +1277,13 @@ apply.wireless = function(){
 			qisPostData[`wl${band}_ssid`] = ($(`#wireless_ssid_${band}`).length) ? $(`#wireless_ssid_${band}`).val() : scProfile.ssid;
 			qisPostData[`wl${band}_wpa_psk`] = ($(`#wireless_key_${band}`).length) ? $(`#wireless_key_${band}`).val() : scProfile.wpa_psk;
 			qisPostData[`wl${band}_crypto`] = "aes";
-			qisPostData[`wl${band}_11be`] = "1";
+			if(isSupport("wifi_mode")){
+				qisPostData[`wl${band}_wifi_mode`] = "bn";
+				qisPostData[`wl${band}_iot_cmpt`] = "disable";
+			}
+			else if(isSupport("wifi7")){
+				qisPostData[`wl${band}_11be`] = "1";
+			}
 			qisPostData[`wl${band}_radio`] = "1";
 			qisPostData[`wl${band}_timesched`] = "0";
 
@@ -1318,9 +1324,16 @@ apply.wireless = function(){
 		}
 
 		if(qisPostData[`wl${band}_auth_mode_x`] == "sae" || qisPostData[`wl${band}_auth_mode_x`] == "psk2sae"){
-			const wifi7Nvram = httpApi.nvramGet([`wl${band}_crypto`, `wl${band}_11be`]);
-			if(wifi7Nvram[`wl${band}_11be`]){
-				if(wifi7Nvram[`wl${band}_11be`] == '1'){
+			if(isSupport("wifi_mode")) {
+				const wifiModeNvram = httpApi.nvramGet([`wl${band}_crypto`, `wl${band}_wifi_mode`]);
+				const mode = wifiModeNvram[`wl${band}_wifi_mode`];
+				if(mode && ["bn", "be"].includes(mode)) {
+					qisPostData[`wl${band}_crypto`] = "aes";
+				}
+			}
+			else if(isSupport("wifi7")) {
+				const wifi7Nvram = httpApi.nvramGet([`wl${band}_crypto`, `wl${band}_11be`]);
+				if(wifi7Nvram[`wl${band}_11be`] == '1') {
 					qisPostData[`wl${band}_crypto`] = "aes";
 				}
 			}
@@ -1666,7 +1679,7 @@ apply.amasonboarding = function(){
 	$("#amasonboarding_page").find("#loading").show();
 	var processCount = 0;
 	$('#amasonboarding_page').find("#loading").find(".processText").html("" + processCount + " %");
-	$('#amasonboarding_page').find("#ob_status").show().html(`Adding the AiMesh node....`);/* untranslated */
+	$('#amasonboarding_page').find("#ob_status").show().html(`<#AiMesh_Adding_Node#>`);
 	var onboardingDone = false;
 
 	let cfg_obstart = "";
@@ -1725,9 +1738,9 @@ apply.amasonboarding = function(){
 		}
 		if(processCount > 0 && processCount < 100){
 			const ob_status = (()=>{
-				if(cfg_obresult == "1") return `Adding the AiMesh node....`;/* untranslated */
-				else if(cfg_obresult == "3") return `The node is joining the network....`;/* untranslated */
-				else if(cfg_obresult == "2") return `Activating your mesh network....`;/* untranslated */
+				if(cfg_obresult == "1") return `<#AiMesh_Adding_Node#>`;
+				else if(cfg_obresult == "3") return `<#AiMesh_Node_joining#>`;
+				else if(cfg_obresult == "2") return `<#AiMesh_Node_activating#>`;
 				else return ``;
 			})();
 			if(ob_status === ""){
@@ -3356,6 +3369,7 @@ goTo.rpMode = function(){
 };
 
 goTo.wispMode = function(){
+	postDataModel.remove(wispObj);
 	postDataModel.insert(wispObj);
 
 	if(typeof login_mac_str == 'function' && systemVariable.macClone){
@@ -4818,7 +4832,7 @@ goTo.Finish = function(){
 		else if(isSupport("apMode_detwan") && isSwMode("AP")){
 			let domain_href = httpApi.hookGet("get_header_info").protocol + "://" + httpApi.nvramGet(["lan_hostname"]).lan_hostname + ".local";
 			let domain_html = $("<a/>").attr({"href":domain_href, "target":"_self"}).css({"text-decoration":"underline"}).html(domain_href)[0].outerHTML;
-			let domain_text = `<div style='margin-right:12px;'>Once the new SSID is connected, you can go to ${domain_html} for more advanced settings.</div>`;
+			let domain_text = `<div style='margin-right:12px;'>` + `<#QIS_AP_connect_hint#>`.replace("%1$@", domain_html) + `</div>`;
 			$("#summary_page").find("#stepText2").empty().append(domain_text);
 
 			if(systemVariable.detwanResult.wanType == "CONNECTED"){
@@ -5615,9 +5629,9 @@ goTo.EULA = function(){
 		apply.Policy();
 		return
 	}
-	const policyStatus = PolicyStatus()
+	PolicyStatus()
 		.then(data => {
-			if (data.EULA > 0 && data.EULA_read == 1) {
+			if (data.EULA_read == 1) {
 				goTo.PP();
 			} else {
 				const policy_page = document.querySelector('#policy_page');
@@ -5638,7 +5652,7 @@ goTo.PP = function () {
 		return
 	}
 
-	const policyStatus = PolicyStatus()
+	PolicyStatus()
 		.then(data => {
 			const policy_page = document.querySelector('#policy_page');
 			const qisPolicyPageComponent = new QisPolicyPageComponent({
@@ -5875,6 +5889,22 @@ goTo.amassearch = function(){
 		onboardinglist_array.forEach(function(nodeInfo){
 			gen_node_component(nodeInfo);
 		});
+
+		const $onboardingList = $('#onboardinglist');
+		if(isSupport("wifi_mode")){
+			const totalNodes = $onboardingList.find('[data-recommended]').length;
+			const recommendedTrue = $onboardingList.find('[data-recommended="true"]').length;
+			const recommendedFalse = $onboardingList.find('[data-recommended="false"]').length;
+			if (totalNodes === recommendedTrue || totalNodes === recommendedFalse) {
+				$onboardingList.find('[data-recommended]').hide();
+			} else {
+				$onboardingList.find('[data-recommended]').hide();
+				$onboardingList.find('[data-recommended="true"]').show();
+			}
+		}
+		else {
+			$onboardingList.find('[data-recommended]').hide();
+		}
 	}
 	function gen_node_component(nodeInfo){
 		let model_info = {"model_name": nodeInfo.name, "tcode": nodeInfo.tcode, "cobrand": nodeInfo.cobrand, "icon_model_name": "", "cloudModelName": nodeInfo.cloud_model_name};
@@ -5923,6 +5953,14 @@ goTo.amassearch = function(){
 		}
 		else if(systemVariable.modelCloudIcon[cloudModelName])
 			$('#onboardinglist').find('[model_name="' + cloudModelName + '"]').css("background-image", "url(" + systemVariable.modelCloudIcon[cloudModelName] + ")");
+
+		const isrecommendeded = nodeInfo.is_recommended;
+		if (isrecommendeded) {
+			$ob_node_comp.find('[data-recommended]').attr('data-recommended', 'true');
+		}
+		else {
+			$ob_node_comp.find('[data-recommended]').attr('data-recommended', 'false');
+		}
 	}
 };
 
@@ -5953,11 +5991,20 @@ goTo.amasOnboarding = function(){
 	/* init end */
 
 	if((parseInt(systemVariable.onboardingInfo.rssi) < parseInt(get_onboardingstatus.cfg_wifi_quality)) && (systemVariable.onboardingInfo.source != "2")){
-		$("#amasonboarding_page").find("#weak").show();
+		$("#amasonboarding_page").find("#weak").addClass("text_yellow_italic").show();
 		$("#amasonboarding_page").find("#controlBtn_result").show();
 	}
 	else
 		$("#amasonboarding_page").find("#controlBtn_apply").show();
+
+	if(isSupport("wifi_mode")){
+		if(!systemVariable.onboardingInfo?.is_recommended){
+			$("#amasonboarding_page").find("#recommended_hint").show();
+			if($("#amasonboarding_page").find("#weak").css("display") != "none"){
+				$("#amasonboarding_page").find("#weak").removeClass("text_yellow_italic ");
+			}
+		}
+	}
 
 	if($("#amasonboarding_page").find("#weak").css("display") == "none"){
 		systemVariable.authModePostData = {};

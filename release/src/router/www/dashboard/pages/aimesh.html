@@ -27,8 +27,9 @@
 	</body>
 
 	<script>
-		var webWrapper = true;
-		$("#settingsWindow").attr({src: "/AiMesh.asp?current_theme=" + theme});
+		(() => {
+		window.webWrapper = true;
+		$("#settingsWindow").attr({src: `${rootPath}/AiMesh.asp?current_theme=${theme}`});
 
 		var findColorAndReplace = function(styleSheet, oldColor, newColor){
 			function hexToRgb(hex) {
@@ -122,7 +123,7 @@
 			iframe.find("body").addClass("scaleBodyAiMesh");
 		}
 
-		function setupBusinessUI(){
+		window.setupBusinessUI = function(){
 			findColorAndReplace("color", "FFCC00", "006CE1");
 			findColorAndReplace("background-color", "475A5F", "transparent");
 			findColorAndReplace("background-color", "4D595D", "transparent");
@@ -160,5 +161,6 @@
 				}
 			}
 		});
+		})();
 	</script>
 </html>

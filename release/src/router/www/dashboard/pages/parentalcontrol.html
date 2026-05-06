@@ -90,12 +90,8 @@
             display: flex;
             align-items: center;
             background: var(--tab-navigation-bg-color);
-            font-size: 1.2rem;
-            font-family: inherit;
-            font-weight: 500;
-            letter-spacing: 0.01em;
             position: relative;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0;
             overflow-x: auto !important;
             overflow-y: hidden !important;
             -webkit-overflow-scrolling: touch;
@@ -138,7 +134,7 @@
 
         .tab-navigation__item.active {
             color: var(--tab-navigation-active-text);
-            font-weight: 700;
+            font-weight: 500;
             border-bottom: 4px solid var(--tab-navigation-active-primary);
             border-radius: var(--radius-none) !important;
         }
@@ -192,19 +188,21 @@
     </head>
 
     <body>
-		<div class="nav nav-tabs" id="parentalcontrolTabList" role="tablist">
-			<nav class="tab-navigation p-0">
+		<div class="nav nav-tabs mt-3" id="parentalcontrolTabList" role="tablist">
+			<nav class="tab-navigation p-0 w-100">
 				<button class="tab-navigation__item active" data-tab="AiProtection_WebProtector"><#AiProtection_filter#></button>
 				<span class="tab-navigation__divider"></span>
 				<button class="tab-navigation__item " data-tab="parentalControl"><#Time_Scheduling#></button>
 				<span class="tab-navigation__divider adguard_menu"></span>
 				<button class="tab-navigation__item adguard_menu" data-tab="adGuard_DNS">AdGuard</button>
+                <span class="tab-navigation__divider"></span>
+                <button class="tab-navigation__item" data-tab="webHistory"><#Adaptive_History#></button>
 			</nav>
 		</div>
 		
 		<div class="row justify-content-center">
             <div class="col-12 col-xxl-10 mb-3">
-				<div class="card card-cut-none pt-2 h-100">
+				<div class="card-cut-none pt-2 h-100">
 					<iframe id="settingsWindow" style="
 						width: 98%;
 						height: 100vh;
@@ -216,7 +214,8 @@
 	</body>
 
 	<script>
-		var webWrapper = true;
+		(() => {
+		window.webWrapper = true;
         var webFilterPathname = isSupport("ark_iam") ? "/AiProtection_ContentFilter.asp" : "/AiProtection_WebProtector.asp";
 
         $("#settingsWindow").attr({src: webFilterPathname});
@@ -283,22 +282,22 @@
 			})
 
 			iframe.find("#mainTable_table").css({
-				"background": "#F5F5F5",
+				"background": "var(--wrt-table-bg)",
 				"opacity": "0.9"
 			})
 			setTimeout(function(){
 				iframe.find("#mainTable_table").css({
-					"background": "#F5F5F5",
+					"background": "var(--wrt-table-bg)",
 					"opacity": "0.9"
 				})
 			}, 100)
 			
 			iframe.find(".tab").parent().css({
-				"border-bottom": "solid 3px #6B7071"
+				"border-bottom": "solid 3px var(--wrt-tabs-border-color)"
 			})
 
 			iframe.find(".tabClicked").parent().css({
-				"border-bottom": "solid 3px #006ce1"
+				"border-bottom": "solid 3px var(--wrt-tabs-border-color)"
 			})
 
 			iframe.find("#tabMenu").hide();
@@ -327,7 +326,7 @@
 			iframe.find("head").append('<style>* { font-family: "Roboto Condensed" !important; }</style>');
 		}
 
-		function setupBusinessUI(){
+		window.setupBusinessUI = function(){
 			findColorAndReplace("color", "FFCC00", "006CE1");
 			findColorAndReplace("background-color", "475A5F", "transparent");
 			findColorAndReplace("background-color", "4D595D", "transparent");
@@ -372,6 +371,9 @@
 			}
 			else if(tab == "parentalControl"){
 				$("#settingsWindow").attr({src: "/ParentalControl.asp"});
+			}
+			else if(tab == "webHistory"){
+				$("#settingsWindow").attr({src: isSupport("ark_iam") ? "/pages/ark_log.html" : "/AdaptiveQoS_WebHistory.asp"});
 			}
 			else {
 				$("#settingsWindow").attr({src: webFilterPathname});
@@ -539,7 +541,8 @@
 			if(
 				lastPage == "AiProtection_WebProtector" || 
 				lastPage == "parentalControl" || 
-				lastPage == "adGuard_DNS"
+				lastPage == "adGuard_DNS" ||
+                lastPage == "webHistory"
 			){
 				document.querySelectorAll("button.tab-navigation__item").forEach(btn => btn.classList.remove("active"));
 				const targetButton = document.querySelector(`button[data-tab="${lastPage}"]`);
@@ -550,5 +553,6 @@
 				onTabShown(lastPage);
 			}
 		}
+		})();
 	</script>
 </html>

@@ -1,9 +1,9 @@
 .daterangepicker {
   position: absolute;
   color: inherit;
-  background-color: #fff;
-  border-radius: 4px;
-  border: 1px solid #ddd;
+  background-color: var(--wrt-modal-bg);
+  border-radius: var(--wrt-btn-radius);
+  border: 1px solid var(--wrt-modal-border-color);
   width: 278px;
   max-width: none;
   padding: 0;
@@ -20,7 +20,7 @@
 .daterangepicker:before, .daterangepicker:after {
   position: absolute;
   display: inline-block;
-  border-bottom-color: rgba(0, 0, 0, 0.2);
+  border-bottom-color: var(--wrt-modal-border-color);
   content: '';
 }
 
@@ -28,13 +28,13 @@
   top: -7px;
   border-right: 7px solid transparent;
   border-left: 7px solid transparent;
-  border-bottom: 7px solid #ccc;
+  border-bottom: 7px solid var(--wrt-modal-border-color);
 }
 
 .daterangepicker:after {
   top: -6px;
   border-right: 6px solid transparent;
-  border-bottom: 6px solid #fff;
+  border-bottom: 6px solid var(--wrt-modal-bg);
   border-left: 6px solid transparent;
 }
 
@@ -124,10 +124,9 @@
 .daterangepicker .drp-calendar.single .calendar-table {
   border: none;
 }
-
 .daterangepicker .calendar-table .next span, .daterangepicker .calendar-table .prev span {
   color: #fff;
-  border: solid black;
+  border: solid var(--text-primary, black);
   border-width: 0 2px 2px 0;
   border-radius: 0;
   display: inline-block;
@@ -160,9 +159,9 @@
 }
 
 .daterangepicker .calendar-table {
-  border: 1px solid #fff;
-  border-radius: 4px;
-  background-color: #fff;
+  border: 1px solid var(--wrt-card-border);
+  border-radius: var(--wrt-card-radius);
+  background-color: var(--wrt-card-bg);
 }
 
 .daterangepicker .calendar-table table {
@@ -173,7 +172,7 @@
 }
 
 .daterangepicker td.available:hover, .daterangepicker th.available:hover {
-  background-color: #eee;
+  background-color: var(--primary-40);
   border-color: transparent;
   color: inherit;
 }
@@ -184,15 +183,15 @@
 }
 
 .daterangepicker td.off, .daterangepicker td.off.in-range, .daterangepicker td.off.start-date, .daterangepicker td.off.end-date {
-  background-color: #fff;
+  background-color: var(--wrt-btn-default-bg);
   border-color: transparent;
-  color: #999;
+  color: var(--wrt-btn-default-color);
 }
 
 .daterangepicker td.in-range {
-  background-color: var(--primary-10);
+  background-color: var(--primary-60);
   border-color: transparent;
-  color: #000;
+  color: var(--wrt-btn-primary-color);
   border-radius: 0;
 }
 
@@ -209,9 +208,9 @@
 }
 
 .daterangepicker td.active, .daterangepicker td.active:hover {
-  background-color: var(--primary-60);
+  background-color: var(--primary-50);
   border-color: transparent;
-  color: #fff;
+  color: var(--wrt-btn-primary-color);
 }
 
 .daterangepicker th.month {
@@ -219,7 +218,7 @@
 }
 
 .daterangepicker td.disabled, .daterangepicker option.disabled {
-  color: #999;
+  color: var(--wrt-btn-default-color);
   cursor: not-allowed;
   text-decoration: line-through;
 }

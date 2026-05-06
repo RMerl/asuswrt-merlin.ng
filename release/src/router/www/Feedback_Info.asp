@@ -422,7 +422,7 @@ function CheckFBState(){
 </div>
 
 <div id="fb_fail_textarea" style="display:none;">
-	<textarea name="fb_fail_content" cols="70" rows="10" style="width:90%;margin-left:25px;font-family:'Courier New', Courier, mono; font-size:13px;background:#475A5F;color:#FFFFFF;" readonly><% nvram_dump("fb_fail_content", ""); %></textarea>
+	<textarea class="textarea--log" name="fb_fail_content" cols="70" rows="10" readonly><% nvram_dump("fb_fail_content", ""); %></textarea>
 	<br>
 </div>
 
@@ -458,7 +458,7 @@ function CheckFBState(){
 
 <div id="fb_success_dsl_1" style="display:none;">
 	<br>
-	<div class="feedback_info_1">We are working hard to improve the firmware of <#Web_Title2#> and your feedback is very important to us. We will use your feedbacks and comments to strive to improve your ASUS experience.</div>
+	<div class="feedback_info_1">We are working hard to improve the firmware of <#Web_Title2#> and your feedback is very important to us. We will use your feedback and comments to strive to improve your ASUS experience.</div>
 	<br>	
 </div>
 
@@ -489,7 +489,7 @@ function CheckFBState(){
 	<br>
 	<div class="feedback_info_1">Please send us an email directly ( <a id="Email_subject" href="" target="_top" style="color:#FFCC00;">broadband_feedback@asus.com</a> ). Simply copy from following text area and paste as mail content. <br><div onClick="reset_diag_state();" style="text-decoration: underline; font-family:Lucida Console; cursor:pointer;">Click here to download the debug log and add as mail attachment.</div></div>
 	<br>
-	<textarea name="fb_send_debug_log_content" cols="70" rows="15" style="width:90%; margin-left:25px; font-family:'Courier New', Courier, mono; font-size:13px;background:#475A5F;color:#FFFFFF;" readonly></textarea>
+	<textarea class="textarea--log" name="fb_send_debug_log_content" cols="70" rows="15" readonly></textarea>
 	<br>	
 </div>
 

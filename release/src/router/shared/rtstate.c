@@ -1496,6 +1496,12 @@ char *get_default_ssid(int unit, int subunit)
 		}else{
 			strlcat(ssid, "_BT10", sizeof(ssid));
 		}
+#elif defined(BN12)
+		if(nvram_match("odmpid", "ZenWiFi_BN12")){
+			strlcat(ssid, "_BN12", sizeof(ssid));
+		}else{
+			strlcat(ssid, "_BN12", sizeof(ssid));
+		}
 #elif defined(BQ16)
 		strlcat(ssid, "_BQ16", sizeof(ssid));
 #elif defined(BQ16_PRO)
@@ -1985,5 +1991,43 @@ int get_ms_num(int wan_unit)
 			num++;
 	}
 	return (num);
+}
+
+char* get_mswan_base_ifname(int wan_unit, char* buf, size_t len)
+{
+	int unit = WAN_UNIT_FIRST;
+	char wan_ifnames[64] = {0};
+	char ifname[IFNAMSIZ] = {0};
+	char *next = NULL;
+	int base_unit = get_ms_base_unit(wan_unit);
+#ifdef RTCONFIG_MULTIWAN_IF
+	int real_unit;
+	char wan_prefix[16] = {0};
+#endif
+
+	if (!buf)
+		return NULL;
+
+	memset(buf, 0, len);
+
+	nvram_safe_get_r("wan_ifnames", wan_ifnames, sizeof(wan_ifnames));
+	foreach (ifname, wan_ifnames, next)
+	{
+		if (unit == base_unit)
+		{
+			strlcpy(buf, ifname, len);
+			break;
+		}
+#ifdef RTCONFIG_MULTIWAN_IF
+		real_unit = mtwan_get_real_wan(unit + MULTI_WAN_START_IDX, wan_prefix, sizeof(wan_prefix));
+		if (real_unit == base_unit)
+		{
+			strlcpy(buf, ifname, len);
+			break;
+		}
+#endif
+		unit++;
+	}
+	return buf[0] ? buf: NULL;
 }
 #endif //RTCONFIG_MULTISERVICE_WAN

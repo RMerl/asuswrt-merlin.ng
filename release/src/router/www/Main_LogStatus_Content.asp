@@ -61,7 +61,7 @@ function clearLog(){
 	document.form1.target = "hidden_frame";
 	document.form1.action_mode.value = " Clear ";
 	document.form1.submit();
-	location.reload();
+	location.replace(location.href);
 }
 
 function showDST(){

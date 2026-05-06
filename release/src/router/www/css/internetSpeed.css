@@ -263,6 +263,9 @@ body{
 	color: #FFFFFF;
 	line-height: 72px;
 }
+.test_result_long{
+	font-size: 40px;
+}
 
 .speed_level_div{
 	width: 40%;
@@ -882,6 +885,9 @@ body{
 	color: #FFFFFF;
 	line-height: 48px;
 	margin-left: 15px;
+}
+.detail_downup_text_long{
+	font-size: 26px;
 }
 
 .speedtest_result_div_small{
@@ -1699,6 +1705,9 @@ body{
 	.test_result{
 		width: 60%;
 		font-size: 40px;
+	}
+	.test_result .test_result_long{
+		font-size: 32px;
 	}
 
 	.ping_result_div{

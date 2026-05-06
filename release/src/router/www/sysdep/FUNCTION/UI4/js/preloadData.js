@@ -1,7 +1,8 @@
 httpApi.nvramGet([
     'productid', 
     'odmpid', 
-    'preferred_lang', 
+    'HwId',
+    'preferred_lang',
     'sw_mode', 
     'wlc_psta', 
     'wlc_express', 
@@ -27,7 +28,9 @@ httpApi.nvramGet([
     'mtwan_unit', 
     'mtwan1_enable', 
     'mtwan1_enable', 
-    
+    'wgs1_enable',
+    'qos_enable',
+    'ipv6_service',
     '2g1_ssid', 
     '2g1_wpa_psk', 
     '2g1_nmode_x', 
@@ -230,19 +233,31 @@ httpApi.nvramGet([
     'serial_no',
     'secret_code',
     'lan_ipaddr',
-    'lan_ipaddr_t'
+    'lan_ipaddr_t',
+    'dhcp_start',
+    'dhcp_end',
+    'dhcp_staticlist',
+    'ipsec_server_enable',
+    'pptpd_enable',
+    'enable_samba',
+    'VPNServer_enable',
+    'wgs_enable',
+    'link_internet',
+    'vpnc_default_wan'
 ]);
 
 httpApi.hookGetMore([
     'get_cfg_clientlist',
     'get_clientlist', 
     'get_clientlist_from_json_database', 
-    'get_ui_support', 
+    'get_upload_icon_count_list',
+    'get_ui_support',
     'language_support_list', 
     'wl_nband_info', 
     'get_label_mac', 
     'uptime', 
-    'get_cfg_clientlist', 
+    'apg_wifi_sched_on',
+    'get_cfg_clientlist',
     'wl_control_channel', 
     'get_newob_onboardinglist',
     'get_header_info',
@@ -266,7 +281,11 @@ httpApi.hookGetMore([
     'get_wl_channel_list_5g', 
     'get_wl_channel_list_5g_2', 
     'get_wl_channel_list_6g', 
-    'get_wl_channel_list_6g_2'
+    'get_wl_channel_list_6g_2',
+    'get_wgs_parameter',
+    'get_vpnc_nondef_wan_prof_list',
+    'get_vpnc_status',
+    'get_wan_unit'
 ]);
 
 httpApi.nvramCharToAscii([
@@ -276,12 +295,13 @@ httpApi.nvramCharToAscii([
     '5g1_wpa_psk',
     '5g2_ssid',
     '5g2_wpa_psk',
-    'custom_card_list', 
+    '6g1_ssid',
+    '6g1_wpa_psk',
+    'custom_card_list',
     'vlan_rl', 
     'vlan_trunklist', 
     'cp_type_rl', 
-    'vpns_rl', 
-    'sdn_rl', 
+    'vpns_rl',
     'sdn_rl', 
     'vlan_rl', 
     'subnet_rl', 
@@ -302,9 +322,14 @@ httpApi.nvramCharToAscii([
     'apg1_dut_list', 
     'cp2_profile', 
     'cp2_local_auth_profile', 
-    'cp2_radius_profile', 
-    'sdn_rl', 
+    'cp2_radius_profile',
     'apg1_ssid',
     'dns_ping_list',
-    'vpnc_clientlist'
-], 1);
+    'vpnc_clientlist',
+    'mlo_bh_band',
+    'productid',
+    'extendno',
+    'dhcp_staticlist',
+    'vpnc_dev_policy_list',
+    'vpnc_pptp_options_x_list',
+]);

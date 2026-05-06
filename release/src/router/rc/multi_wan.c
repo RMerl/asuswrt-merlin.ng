@@ -158,8 +158,7 @@ static int _remove_iptables(const char *ifname)
 		{
 			while(fgets(tmp, sizeof(tmp), fp))
 			{
-				snprintf(cmd, sizeof(cmd), "iptables -t %s %s", tables[i], tmp);
-				system(cmd);
+				safe_do_system("iptables -t %s %s", tables[i], tmp);
 			}
 			fclose(fp);
 		}
@@ -174,8 +173,7 @@ static void _show_routing_table(const int unit)
 	FILE *fp;
 
 	mtwan_get_route_table_id(unit, table, sizeof(table));
-	snprintf(buf, sizeof(buf), "ip route show table %s > /tmp/rttmp", table);
-	system(buf);
+	safe_do_system_to_file("/tmp/rttmp", 0, "ip route show table %s", table);
 	fp = fopen("/tmp/rttmp", "r");
 
 	_dprintf("[%s]wan%d routing table:\n", __FUNCTION__, unit);
@@ -1919,8 +1917,7 @@ static int _update_iptables(const int unit, const int up)
 			_remove_iptables(gw_ifname);
 			if(up == 1 && ipaddr[0] != '\0')
 			{
-				snprintf(tmp, sizeof(tmp), "iptables -t nat -A POSTROUTING ! -s %s/32 -o %s -j MASQUERADE", ipaddr, gw_ifname);
-				system(tmp);
+				safe_do_system("iptables -t nat -A POSTROUTING ! -s %s/32 -o %s -j MASQUERADE", ipaddr, gw_ifname);
 			}
 			return 0;
 		}

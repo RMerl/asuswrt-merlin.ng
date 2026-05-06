@@ -159,6 +159,15 @@ int is_valid_ip6(const char* addr)
 	return (is_valid_ip(addr) == 2) ? 1 : 0;
 }
 
+/* validates if a string is a valid IPv4 address */
+int is_valid_ipv4(const char *addr)
+{
+	struct sockaddr_in sa;
+	int result = inet_pton(AF_INET, addr, &(sa.sin_addr));
+
+	return (result == 1);
+}
+
 int is_ip4_in_use(const char* addr)
 {
 	struct in_addr ipaddr;
@@ -353,3 +362,105 @@ int is_same_subnet(const char *ip1, const char *ip2, const char *netmask)
 
 	return (get_network_addr(ip1, netmask) == get_network_addr(ip2, netmask)) ? 1 : 0;
 }
+
+#if defined(RTCONFIG_BCM_EXT_SWITCH_RTK) || defined(RTCONFIG_BCM_EXT_SWITCH_MXL)
+
+int
+parse_portmask_to_ulong(const char *pmask, unsigned long *out_mask)
+{
+	char *endp = NULL;
+	unsigned long v;
+
+	if (!pmask || !*pmask || !out_mask)
+		return 0;
+
+	v = strtoul(pmask, &endp, 0); /* accept 0x.. or decimal */
+	if (endp == pmask)
+		return 0;
+
+	*out_mask = v;
+	return 1;
+}
+
+static int
+ipaddr_has_prefixlen(const char *ipaddr)
+{
+	return (ipaddr && strchr(ipaddr, '/') != NULL);
+}
+
+static int
+if_has_ipv4_addr(const char *ifname)
+{
+	int fd;
+	struct ifreq ifr;
+
+	if (!ifname || !*ifname)
+		return 0;
+
+	fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (fd < 0)
+		return 0;
+
+	memset(&ifr, 0, sizeof(ifr));
+	strlcpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
+
+	if (ioctl(fd, SIOCGIFADDR, &ifr) == 0) {
+		close(fd);
+		return 1;
+	}
+
+	close(fd);
+	return 0;
+}
+
+int
+ensure_bridge_with_ip(int vid, const char *ipaddr_cidr)
+{
+	char br_if[IFNAMSIZ];
+	char ip_buf[64];
+
+	if (vid <= 0)
+		return 0;
+
+	snprintf(br_if, sizeof(br_if), "br%d", vid);
+
+	// ignore error if it already exists
+	safe_do_system("brctl addbr %s", br_if);
+	safe_do_system("ip link set %s up", br_if);
+
+	if (!ipaddr_cidr || !*ipaddr_cidr)
+		return 0;
+
+	if (ipaddr_has_prefixlen(ipaddr_cidr)) {
+		snprintf(ip_buf, sizeof(ip_buf), "%s", ipaddr_cidr);
+	} else {
+		snprintf(ip_buf, sizeof(ip_buf), "%s/24", ipaddr_cidr);
+	}
+
+	// set IP if bridge currently has no ipv4 address
+	if (!if_has_ipv4_addr(br_if)) {
+		safe_do_system("ip addr flush dev %s", br_if);
+		safe_do_system("ip addr add %s dev %s", ip_buf, br_if);
+	}
+
+	return 1;
+}
+
+void
+create_vlan_and_config_ip(const char *base_ifname, int vid)
+{
+	char vlan_if[IFNAMSIZ];
+
+	if (!base_ifname || !*base_ifname)
+		return;
+	if (vid <= 0)
+		return;
+
+	/* DEV_PLUS_VID_NO_PAD => ethX.<vid> */
+	snprintf(vlan_if, sizeof(vlan_if), "%s.%d", base_ifname, vid);
+
+	safe_do_system("vconfig add %s %d", base_ifname, vid);
+
+	safe_do_system("ip link set %s up", vlan_if);
+}
+#endif

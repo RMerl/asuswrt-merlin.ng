@@ -231,6 +231,8 @@
                 let { smartConnectReferenceIndex } = smartConnect;
                 let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
                 let { ssidValue } = wlBandSeq[prefixNvram];
+                ssidValue = htmlEnDeCode.htmlEncode(ssidValue);
+
                 return `
                     <div class="info-block">
                         <div class="info-title"><#QIS_finish_wireless_item1#></div>
@@ -362,7 +364,7 @@
                 let { wlBandSeq, smartConnect, wpaEncryptObject, aMesh } = systemManipulable;
                 let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
                 let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
-                let { authMethodValue, wpaEncryptValue, joinSmartConnect, wifi7ModeEnabled } = wlBandSeq[prefixNvram];
+                let { authMethodValue, wpaEncryptValue, joinSmartConnect, wifi7ModeEnabled, beSupport } = wlBandSeq[prefixNvram];
                 let wpaEncryptStringObject = objectDeepCopy(wpaEncryptObject);
                 let displayFlag = (() => {
                     if (
@@ -399,30 +401,44 @@
                     return "none";
                 })();
 
-                if (authMethodValue !== "psk" && authMethodValue !== "wpa") {
-                    delete wpaEncryptStringObject["tkip"];
+                let cryptoOptions = {};
+                if (authMethodValue === "psk" || authMethodValue === "wpa"){
+                    ["aes", "tkip"].forEach(key => {
+                        if (wpaEncryptStringObject[key]) cryptoOptions[key] = wpaEncryptStringObject[key];
+                    });
                 }
-
-                if (authMethodValue !== "pskpsk2" && authMethodValue !== "wpawpa2") {
-                    delete wpaEncryptStringObject["tkip+aes"];
+                else if (authMethodValue === "suite-b"){
+                    ["suite-b"].forEach(key => {
+                        if (wpaEncryptStringObject[key]) cryptoOptions[key] = wpaEncryptStringObject[key];
+                    });
                 }
-
-                if (authMethodValue !== "suite-b") {
-                    delete wpaEncryptStringObject["suite-b"];
+                else if (authMethodValue === "pskpsk2" || authMethodValue === "wpawpa2") {
+                    ["aes", "tkip+aes"].forEach(key => {
+                        if (wpaEncryptStringObject[key]) cryptoOptions[key] = wpaEncryptStringObject[key];
+                    });
                 }
-
-                if (authMethodValue === "suite-b") {
-                    delete wpaEncryptStringObject["aes"];
+                else if (
+                    authMethodValue === "psk2sae" || authMethodValue === "sae"
+                ) {
+                    if (beSupport) {
+                        ["aes", "aes+gcmp256"].forEach(key => {
+                            if (wpaEncryptStringObject[key]) cryptoOptions[key] = wpaEncryptStringObject[key];
+                        });
+                    }
+                    else {
+                        ["aes"].forEach(key => {
+                            if (wpaEncryptStringObject[key]) cryptoOptions[key] = wpaEncryptStringObject[key];
+                        });
+                    }
                 }
-
-                if (!wifi7ModeEnabled || authMethodValue.indexOf("sae") == -1) {
-                    delete wpaEncryptStringObject["aes+gcmp256"];
-                } else {
-                    delete wpaEncryptStringObject["aes"];
+                else {
+                    ["aes"].forEach(key => {
+                        if (wpaEncryptStringObject[key]) cryptoOptions[key] = wpaEncryptStringObject[key];
+                    });
                 }
 
                 let wpaEncryptSnippet = "";
-                for (let [value, desc] of Object.entries(wpaEncryptStringObject)) {
+                for (let [value, desc] of Object.entries(cryptoOptions)) {
                     wpaEncryptSnippet += `<option value="${value}" ${wpaEncryptValue === value ? "selected" : ""}>${desc}</option>`;
                 }
 
@@ -666,7 +682,7 @@
                     systemManipulable.wlBandSeq[prefixNvram].authMethodValue = authMethodValue;
                     if (beSupport) {
                         if (authMethodValue === "sae" || authMethodValue === "psk2sae") {
-                            // systemManipulable.wlBandSeq[prefixNvram].wifi7ModeEnabled = true;
+                            systemManipulable.wlBandSeq[prefixNvram].wifi7ModeEnabled = true;
                         } else {
                             if (mloEnabled) {
                                 confirm_asus({
@@ -738,7 +754,7 @@
             }
 
             function apply() {
-                let { isMTKplatform, isQCAplatform, smartConnect, wlBandSeq, aMesh, isKRSku } = systemManipulable;
+                let { isMTKplatform, isQCAplatform, smartConnect, wlBandSeq, aMesh, isKRSku, currentOPMode } = systemManipulable;
                 let { smartConnectEnable, radioSeqArray, version } = smartConnect;
                 let { dwbBand, dwbMode } = aMesh;
                 let postObject = {};
@@ -826,10 +842,10 @@
                 }
 
                 for (let [key, value] of Object.entries(wlBandSeq)) {
-                    let { joinSmartConnect, wlModeValue, wifi7ModeEnabled, beSupport } = value;
-
+                    let { joinSmartConnect, wlModeValue, wifi7ModeEnabled, beSupport, prefixFronthaulNvram } = value;
+                    const wlFronthaulKey = prefixFronthaulNvram;
                     //SSID
-                    postObject[`${key}_ssid`] = (() => {
+                    postObject[`${wlFronthaulKey}_ssid`] = (() => {
                         if (smartConnectEnable && joinSmartConnect) {
                             validator.stringSSID(document.getElementById("smart_connect_ssid")) ? "" : validateErrorCount++;
                             if (dwbMode === "1") {
@@ -856,7 +872,7 @@
                     })();
 
                     // Authentication Method
-                    postObject[`${key}_auth_mode_x`] = (() => {
+                    postObject[`${wlFronthaulKey}_auth_mode_x`] = (() => {
                         if (smartConnectEnable && joinSmartConnect) {
                             let authMethodValue = document.getElementById("smart_connect_auth_method").value;
                             if (key === "6g1" || key === "6g2") {
@@ -890,7 +906,7 @@
                     })();
 
                     // WPA Key
-                    let authMethodValue = postObject[`${key}_auth_mode_x`];
+                    let authMethodValue = postObject[`${wlFronthaulKey}_auth_mode_x`];
                     if (
                         authMethodValue === "psk" ||
                         authMethodValue === "psk2" ||
@@ -898,7 +914,7 @@
                         authMethodValue === "pskpsk2" ||
                         authMethodValue === "psk2sae"
                     ) {
-                        postObject[`${key}_wpa_psk`] = (() => {
+                        postObject[`${wlFronthaulKey}_wpa_psk`] = (() => {
                             if (smartConnectEnable && joinSmartConnect) {
                                 let is_common_string = check_common_string(
                                     document.getElementById("smart_connect_wpa_key").value,
@@ -959,7 +975,7 @@
                         authMethodValue === "wpawpa2" ||
                         authMethodValue === "wpa2pwa3"
                     ) {
-                        postObject[`${key}_crypto`] = (() => {
+                        postObject[`${wlFronthaulKey}_crypto`] = (() => {
                             if (smartConnectEnable && joinSmartConnect) {
                                 let wpaEncryption = document.getElementById("smart_connect_wpa_encrypt").value;
                                 if (key === "6g1" || key === "6g2") {
@@ -992,7 +1008,7 @@
                         authMethodValue === "wpa2pwa3"
                     ) {
                         let { mfpValue } = value;
-                        postObject[`${key}_mfp`] = (() => {
+                        postObject[`${wlFronthaulKey}_mfp`] = (() => {
                             let mfp = "0";
                             if (
                                 authMethodValue === "owe" ||
@@ -1052,7 +1068,7 @@
 
                     // WiFi 7 mode
                     if (beSupport) {
-                        postObject[`${key}_11be`] = (() => {
+                        postObject[`${wlFronthaulKey}_11be`] = (() => {
                             return wifi7ModeEnabled ? "1" : "0";
                         })();
                     }

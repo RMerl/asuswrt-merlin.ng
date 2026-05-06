@@ -9,21 +9,19 @@
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
 <title><#Web_Title#> - AiMesh</title>
-<link rel="stylesheet" type="text/css" href="/index_style.css">
-<link rel="stylesheet" type="text/css" href="/form_style.css">
-<link rel="stylesheet" type="text/css" href="/device-map/device-map.css" />
-<link rel="stylesheet" type="text/css" href='/aimesh/aimesh_topology.css?v=<% nvram_char_to_ascii("", "extendno"); %>' />
-<link rel="stylesheet" type="text/css" href="/css/asus_faq.css">
-<script type="text/javascript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/calendar/jquery-ui.js"></script>
-<script type="text/javascript" src="/js/jstree/jstree.min.js"></script>
-<script type="text/javascript" src="/js/jstree/jstree_customize.js"></script>
-<script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
-<script type="text/javascript" src="/client_function.js"></script>
-<script type="text/javascript" src="/form.js"></script>
-<script type="text/javascript" src="/js/collected_FAQ.js"></script>
+<link rel="stylesheet" type="text/css" href='./aimesh/aimesh_topology.css?v=<% nvram_char_to_ascii("", "extendno"); %>' />
+<link rel="stylesheet" type="text/css" href="./index_style.css">
+<link rel="stylesheet" type="text/css" href="./form_style.css">
+<link rel="stylesheet" type="text/css" href="./device-map/device-map.css" />
+<script type="text/javascript" src="./js/jquery.js"></script>
+<script type="text/javascript" src="./calendar/jquery-ui.js"></script>
+<script type="text/javascript" src="./js/jstree/jstree.min.js"></script>
+<script type="text/javascript" src="./js/jstree/jstree_customize.js"></script>
+<script type="text/javascript" src="./state.js"></script>
+<script type="text/javascript" src="./js/httpApi.js"></script>
+<script type="text/javascript" src="./client_function.js" defer></script>
+<script type="text/javascript" src="./help.js" defer></script>
+<script type="text/javascript" src="./form.js" defer></script>
 <script>
 var getUrlParameter = function getUrlParameter(param){
 	var url_parm = window.location.search.substring(1);
@@ -38,36 +36,62 @@ var getUrlParameter = function getUrlParameter(param){
 	}
 	return "";
 };
-var theme = getUrlParameter("current_theme").toLocaleUpperCase();
+function getSafeTheme(paramName, allowedValues = ['WHITE', 'ROG', 'TUF', '']) {
+	let rawValue = getUrlParameter(paramName);
+	if (!rawValue) return "";
+	let safePrefix = rawValue.toUpperCase().match(/^[A-Z0-9_]*/)[0];
+	return allowedValues.includes(safePrefix) ? safePrefix : "";
+}
+
+var theme = getSafeTheme("current_theme").toUpperCase();
 if (isSupport("UI4")) {
-	$('link').filter("[href*='/aimesh/aimesh_topology.css']").after('<link rel="stylesheet" type="text/css" href="/aimesh/aimesh_topology_v4.css">');
+	$('link').filter("[href*='./aimesh/aimesh_topology.css']").after('<link rel="stylesheet" type="text/css" href="./aimesh/aimesh_topology_v4.css">');
 } else if (theme == "WHITE") {
-	$('link').filter("[href*='/aimesh/aimesh_topology.css']").after('<link rel="stylesheet" type="text/css" href="/aimesh/aimesh_topology_' + theme + '.css">');
+	$('link').filter("[href*='./aimesh/aimesh_topology.css']").after('<link rel="stylesheet" type="text/css" href="./aimesh/aimesh_topology_' + theme + '.css">');
 }
 
 if(isSupport("TS_UI"))
-	$('link').last().after('<link rel="stylesheet" type="text/css" href="css/difference.css">');
+	$('link').last().after('<link rel="stylesheet" type="text/css" href="./css/difference.css">');
 
 function initial(){
 	show_menu();
-	$("#AiMesh_Topology").load("/aimesh/aimesh_topology.html", function(){
-		setTimeout(function(){
-			$('link').filter("[href*='/aimesh/aimesh_topology.css']").after('<link rel="stylesheet" type="text/css" href="/aimesh/aimesh_system_settings.css">');
-			if (isSupport("UI4")) {
-				$('link').filter("[href='/aimesh/aimesh_system_settings.css']").after('<link rel="stylesheet" type="text/css" href="/aimesh/aimesh_system_settings_v4.css">');
-			} else if(theme == "WHITE"){
-				$('link').filter("[href='/aimesh/aimesh_system_settings.css']").after('<link rel="stylesheet" type="text/css" href="/aimesh/aimesh_system_settings_' + theme + '.css">');
+	change_tab(1);
+	let retryCount = 0;
+	function loadAiMeshTopology() {
+		$("#AiMesh_Topology").load(`${rootPath}/aimesh/aimesh_topology.html`, function(response, status, xhr){
+			if(status === "error" && retryCount < 3){
+				retryCount++;
+				setTimeout(loadAiMeshTopology, 500);
+				return;
 			}
-			$("#AiMesh_System_Settings").load("/aimesh/aimesh_system_settings.html");
-			addNewScript("/general.js");
-			addNewScript("/popup.js");
-			addNewScript("/validator.js");
-			addNewScript("/disk_functions.js");
-			addNewScript("/form.js");
-			addNewScript("/switcherplugin/jquery.iphone-switch.js");
-			change_tab(1);
-		}, 100);
-	});
+			else if(status === "error") {
+				$("#AiMesh_Topology").html(`<div class='text_emphasize'><#vpn_ipsec_update_cert_fail#></div>`);
+				return;
+			}
+			setTimeout(function(){
+				$('link').filter("[href*='./aimesh/aimesh_topology.css']").after('<link rel="stylesheet" type="text/css" href="./aimesh/aimesh_system_settings.css">');
+				if (isSupport("UI4")) {
+					$('link').filter("[href='./aimesh/aimesh_system_settings.css']").after('<link rel="stylesheet" type="text/css" href="./aimesh/aimesh_system_settings_v4.css">');
+				} else if(theme == "WHITE"){
+					$('link').filter("[href='./aimesh/aimesh_system_settings.css']").after('<link rel="stylesheet" type="text/css" href="./aimesh/aimesh_system_settings_' + theme + '.css">');
+				}
+				document.head.insertAdjacentHTML('beforeend', '<link rel="stylesheet" type="text/css" href="./css/asus_faq.css">');
+				$("#AiMesh_System_Settings").load("./aimesh/aimesh_system_settings.html");
+				[
+					'./general.js',
+					'./popup.js',
+					'./validator.js',
+					'./disk_functions.js',
+					'./form.js',
+					'./switcherplugin/jquery.iphone-switch.js',
+					'./js/collected_FAQ.js'
+				].forEach(function(src) {
+					loadScriptWithRetry(src, 3);
+				});
+			}, 100);
+		});
+	}
+	loadAiMeshTopology();
 
 	if(parent.webWrapper){
 		const resizeObserver = new ResizeObserver(entries => {
@@ -96,6 +120,25 @@ function change_tab(_index){
 		}
 	}
 }
+function loadScriptWithRetry(src, retryLimit = 3, callback) {
+	let retries = 0;
+	function tryLoad() {
+		const script = document.createElement('script');
+		script.src = src;
+		script.type = 'text/javascript';
+		script.onload = function() {
+			if (typeof callback === "function") callback();
+		};
+		script.onerror = function() {
+			retries++;
+			if (retries < retryLimit) {
+				tryLoad();
+			}
+		};
+		document.head.appendChild(script);
+	}
+	tryLoad();
+}
 </script>
 </head>
 
@@ -116,7 +159,7 @@ function change_tab(_index){
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 
-<table class="content" align="center" cellpadding="0" cellspacing="0">
+<table class="content ui4-no-bg" align="center" cellpadding="0" cellspacing="0">
 	<tr>
 		<td width="17">&nbsp;</td>
 		<!--=====Beginning of Main Menu=====-->
@@ -127,10 +170,10 @@ function change_tab(_index){
 		<td valign="top">
 			<div id="tabMenu" class="submenuBlock"></div>
 			<!--===================================Beginning of Main Content===========================================-->
-			<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
+			<table class="ui4-no-bg" width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
 				<tr>
 					<td align="left" valign="top">
-						<table width="760px" border="0" cellpadding="5" cellspacing="0" class="FormTitle" id="FormTitle" style="border-radius:3px;">
+						<table width="760px" border="0" cellpadding="5" cellspacing="0" class="FormTitle ui4-no-bg" id="FormTitle" style="border-radius:3px;">
 							<tbody>
 								<tr>
 									<td bgcolor="#4D595D" valign="top">

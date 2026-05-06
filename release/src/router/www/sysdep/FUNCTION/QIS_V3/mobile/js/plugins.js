@@ -326,6 +326,7 @@ function getAiMeshOnboardinglist(_onboardingList){
 			node_info.cobrand = httpApi.aimesh_get_misc_info(newReMacArray[newReMac]).cobrand;
 			node_info.misc_info = newReMacArray[newReMac].misc_info;
 			node_info.cloud_model_name = httpApi.transformCloudModelName({"model_name": node_info.name, "tcode": node_info.tcode, "cobrand": node_info.cobrand, "icon_model_name": ""});
+			node_info.is_recommended = obIsRecommededNode(node_info);
 			jsonArray.push(node_info);
 		});
 	});
@@ -423,9 +424,63 @@ function getAiMeshOnboardinglist_newob(){
 		node_info.cobrand = httpApi.aimesh_get_misc_info(ob_info).cobrand;
 		node_info.misc_info = ob_info.misc_info;
 		node_info.cloud_model_name = httpApi.transformCloudModelName({"model_name": node_info.name, "tcode": node_info.tcode, "cobrand": node_info.cobrand, "icon_model_name": ""});
+		node_info.is_recommended = obIsRecommededNode(node_info);
 		jsonArray.push(node_info);
 	});
 	return jsonArray;
+}
+
+function obIsRecommededNode(nodeInfo) {
+	const modelNameMap = {
+		"AC": 5,
+		"AX": 6,
+		"BE": 7,
+		"BN": 8
+	};
+	const miscInfoBitMap = {
+		"WIFI5": 0,
+		"WIFI6": 1,
+		"WIFI7": 2,
+		"WIFI8": 3
+	};
+	const cap_generation = (()=>{
+		let result = {"modelName": "", "miscInfo": "", "gen": 0};
+		if(isSupport("wifi8")){
+			result.modelName = "BN";
+			result.miscInfo = "WIFI8";
+			result.gen = modelNameMap["BN"];
+		}
+		else if(isSupport("wifi7")){
+			result.modelName = "BE";
+			result.miscInfo = "WIFI7";
+			result.gen = modelNameMap["BE"];
+		}
+		return result;
+	})();
+	if(cap_generation.gen === 0) return false;
+	const threshold = cap_generation.gen - 1;
+
+	const sortedKeys = Object.keys(modelNameMap).sort((a, b) => modelNameMap[b] - modelNameMap[a]);
+	const modelName = (nodeInfo.model_name || nodeInfo.name || "").toUpperCase();
+	let nodeGen = 0;
+	for(const key of sortedKeys){
+		if(modelName.includes(key)){
+			nodeGen = modelNameMap[key];
+			break;
+		}
+	}
+
+	if(nodeGen > 0) return nodeGen >= threshold;
+
+	if(nodeInfo.misc_info && nodeInfo.misc_info["3"]){
+		const misc3 = Number(nodeInfo.misc_info["3"]);
+		const capMiscBit = miscInfoBitMap[cap_generation.miscInfo];
+		if(!isNaN(misc3) && misc3 >= 1 && capMiscBit !== undefined){
+			const n = Math.log2(misc3);
+			if(Number.isInteger(n)) return n >= capMiscBit - 1;
+		}
+	}
+	return false;
 }
 
 function getProcessPercentage(_start, _current, _timeout, _percentage){
@@ -963,6 +1018,23 @@ var Get_Component_AiMeshOnboarding_List = function(nodeInfo) {
 		$(this).removeClass("ap_ssid_hover")
 		$(this).find(".aimesh_mac").removeClass("ap_ssid_hover");
 	})
+
+	const recommendedContainer = $("<div>").attr({"data-recommended": "false"}).addClass("ap_icon_container middle").appendTo(nodeDiv);
+	const recommendedText = `<#qis_simple_wls_recmd#>`.replace(/^[()]+|[()]+$/g, "");
+	$("<div>")
+		.addClass('recommended-text')
+		.css({"margin-right": "18px"})
+		.text(recommendedText)
+		.appendTo(recommendedContainer);
+	$("<div>")
+		.addClass('recommended-icon icon-size-32 icon-recommended')
+		.attr({
+			"role": "img",
+			"title": recommendedText,
+			"aria-label": recommendedText
+		})
+		.css({"margin-right": "18px"})
+		.appendTo(recommendedContainer);
 
 	var band_icon_container = $("<div>").addClass("ap_icon_container middle");
 	nodeDiv.append(band_icon_container);
@@ -1734,11 +1806,6 @@ function setupWLCNvram(apProfileID) {
 			qisPostData["wlc" + unit + "_crypto"] = "aes";
 			qisPostData["wlc" + unit + "_wep"] = "0";
 		}
-		else if(isSupport('wifi7') && authentication == "WPA3-Personal" && encryption == "AES+GCMP256"){
-			qisPostData["wlc" + unit + "_auth_mode"] = "sae";
-			qisPostData["wlc" + unit + "_crypto"] = "aes+gcmp256";
-			qisPostData["wlc" + unit + "_wep"] = "0";
-		}
 		else if(isSupport('wifi7') && authentication == "Enhanced Open" && encryption == "AES"){
 			qisPostData["wlc" + unit + "_auth_mode"] = "owe";
 			qisPostData["wlc" + unit + "_crypto"] = "aes";
@@ -1756,6 +1823,12 @@ function setupWLCNvram(apProfileID) {
 			qisPostData["wlc" + unit + "_auth_mode"] = "wpa2";
 			qisPostData["wlc" + unit + "_crypto"] = "aes";
 			qisPostData["wlc" + unit + "_wep"] = "0";
+		}
+		else if(authentication == "OWE" && (encryption == "AES" || encryption == "AES+GCMP256")){
+			qisPostData["wlc" + unit + "_auth_mode"] = "owe";
+			qisPostData["wlc" + unit + "_crypto"] = "aes";
+			qisPostData["wlc" + unit + "_wep"] = "0";
+			encryption = "NONE";
 		}
 		else{
 			qisPostData["wlc" + unit + "_auth_mode"] = "psk2";
@@ -2376,6 +2449,8 @@ function startDetectLinkInternet(){
 }
 
 function startLiveUpdate(){
+	if(isSupport("demoui")) return false;
+
 	var CheckTime = "";
 	var TimeDiff = "";
 	if(!systemVariable.linkInternet){
@@ -2992,6 +3067,9 @@ function get_new_sdn_mlo(){
 }
 
 function createSDNCompatibleNetwork(){
+	if(isSupport("wifi_mode")) {// wifi_mode no need to create sdn IoT compatible network
+		return false;
+	}
 	if(isSwModeChanged()){
 		return true;
 	}
@@ -3116,7 +3194,13 @@ function configApmVariables(){
 		var bhKey = `${calcMD5(qisPostData.wl0_wpa_psk)}K`.slice(0, 32);
 
 		qisPostData.sdn_rl += `<${findNextSdnIndex(qisPostData.sdn_rl)}>MAINBH>1>0>0>${apmBhIdx}>0>0>0>0>0>0>0>0>0>0>0>0>0>WEB>0>0`;
-		qisPostData[`apm${apmBhIdx}_11be`] = 1;
+		if(isSupport("wifi_mode")){
+			qisPostData[`apm${apmBhIdx}_wifi_mode`] = "bn";
+			qisPostData[`apm${apmIdx}_iot_cmpt`] = "disable";
+		}
+		else if(isSupport("wifi7")){
+			qisPostData[`apm${apmBhIdx}_11be`] = 1;
+		}
 		qisPostData[`apm${apmBhIdx}_ap_isolate`] = 0;
 		qisPostData[`apm${apmBhIdx}_dut_list`] = `<*>127>`;
 		qisPostData[`apm${apmBhIdx}_enable`] = 1;
@@ -3161,7 +3245,15 @@ function configApmVariables(){
 		}
 		if(apmIdx == apmBhIdx) apmIdx++;
 		qisPostData.sdn_rl += `<${findNextSdnIndex(qisPostData.sdn_rl)}>MAINFH>1>0>0>${apmIdx}>0>0>0>0>0>0>0>0>0>0>0>0>0>WEB>0>0`;
-		qisPostData[`apm${apmIdx}_11be`] = 1;
+
+		if(isSupport("wifi_mode")){
+			qisPostData[`apm${apmIdx}_wifi_mode`] = "bn";
+			qisPostData[`apm${apmIdx}_iot_cmpt`] = "ax";
+		}
+		else if(isSupport("wifi7")){
+			qisPostData[`apm${apmIdx}_11be`] = 1;
+		}
+
 		qisPostData[`apm${apmIdx}_ap_isolate`] = 0;
 		qisPostData[`apm${apmIdx}_dut_list`] = dutList;
 		qisPostData[`apm${apmIdx}_enable`] = 1;

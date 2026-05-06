@@ -50,11 +50,22 @@ MAP := .map
 UNR := .unresolved
 SYM := .symbols
 
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506))
+all:
+	echo "using prebuild libbcmcrypto.so"
+else
 all: libbcmcrypto.so
+endif
 
 install: all
 	install -d $(INSTALLDIR)/usr/lib
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506))
+	# install -m 755 prebuilt.be_0506/libbcmcrypto.so_saved-$(PROFILE_KARCH)  $(INSTALLDIR)/usr/lib/libbcmcrypto.so
+	# always use armhfg for 32bit and 64bit platform
+	install -m 755 prebuilt.be_0506/libbcmcrypto.so_saved-armhfp  $(INSTALLDIR)/usr/lib/libbcmcrypto.so
+else
 	install -m 755 libbcmcrypto.so $(INSTALLDIR)/usr/lib
+endif
 	$(STRIP) $(INSTALLDIR)/usr/lib/libbcmcrypto.so
 
 clean:

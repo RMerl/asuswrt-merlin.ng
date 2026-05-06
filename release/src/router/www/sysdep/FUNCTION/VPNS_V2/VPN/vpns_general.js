@@ -347,8 +347,18 @@ function Get_Component_Switch(_parm){
 		e.stopPropagation();
 		if($(this).attr("temp_disable") == "disabled")
 			return;
-		$(this).toggleClass("off on");
+		$(this).addClass("hide-text");
+		setTimeout(function(){
+			$(this).toggleClass("off on");
+		}.bind(this), 300);
+		setTimeout(function(){
+			$(this).removeClass("hide-text");
+		}.bind(this), 500);
 	}).appendTo($input_container);
+
+	if(_parm.set_value != undefined && (_parm.set_value == "on" || _parm.set_value == "off")) {
+		$switch_icon.removeClass("off on hide-text").addClass(_parm.set_value);
+	}
 
 	return $container;
 }

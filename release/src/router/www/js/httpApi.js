@@ -1,4 +1,25 @@
 var disUpdate = !(top.cachedData?.get && Object.keys(top.cachedData.get).length);
+var targetDevice = (/^aae-sgrst001-\w+\.asuscomm\.com$/.test(window.location.hostname)) ? `${location.origin}/${location.pathname.split("/")[1]}` : ``;
+var httpApiPageUnloadInProgress = false;
+
+window.addEventListener('beforeunload', function(){
+	httpApiPageUnloadInProgress = true;
+}, { capture: true });
+
+window.addEventListener('pagehide', function(){
+	httpApiPageUnloadInProgress = true;
+}, { capture: true });
+
+function isExpectedFetchCancellation(error) {
+	if (!error)
+		return false;
+
+	if (error.name === 'AbortError')
+		return true;
+
+	return httpApiPageUnloadInProgress && String(error).indexOf('Failed to fetch') >= 0;
+}
+
 setTimeout(function(){
 	disUpdate = false;
 }, 1000);
@@ -20,10 +41,243 @@ var asyncData = {
 	"clear": function(dataArray){$.each(dataArray, function(idx, val){delete asyncData.get[val];})}
 }
 
+var staticAssetInFlight = {};
+var staticAssetSessionPrefix = "httpApiStaticAsset::";
+var scriptAssetInFlight = {};
+
+function buildStaticAssetKey(url, responseType){
+	return [responseType || "json", url].join("::");
+}
+
+function getStaticAssetStorageKey(cacheKey){
+	return staticAssetSessionPrefix + cacheKey;
+}
+
+function clearStaticAssetCache(cacheKey){
+	try{
+		sessionStorage.removeItem(getStaticAssetStorageKey(cacheKey));
+	}
+	catch(error){
+		// Ignore storage access errors and fall back to network.
+	}
+}
+
+function readStaticAssetCache(cacheKey){
+	try{
+		var raw = sessionStorage.getItem(getStaticAssetStorageKey(cacheKey));
+		if(!raw) return null;
+		var parsed = JSON.parse(raw);
+		if(!parsed || typeof parsed.body !== "string")
+			return null;
+		return parsed;
+	}
+	catch(error){
+		return null;
+	}
+}
+
+function writeStaticAssetCache(cacheKey, payload){
+	try{
+		sessionStorage.setItem(getStaticAssetStorageKey(cacheKey), JSON.stringify(payload));
+	}
+	catch(error){
+		// Ignore storage quota/private-mode failures and fall back to network.
+	}
+}
+
+function parseCachedStaticAsset(cachedAsset, responseType){
+	if(!cachedAsset) return null;
+	try{
+		if(responseType === "text")
+			return cachedAsset.body;
+		return JSON.parse(cachedAsset.body);
+	}
+	catch(error){
+		return null;
+	}
+}
+
+function isRetryableStaticAssetError(error){
+	if(!error) return true;
+
+	var status = error.status || 0;
+	if(status >= 500) return true;
+	if(status === 0) return true;
+
+	return false;
+}
+
+function fetchStaticAsset(url, responseType, cacheMode){
+	var cacheKey = buildStaticAssetKey(url, responseType);
+	if(staticAssetInFlight[cacheKey])
+		return staticAssetInFlight[cacheKey];
+
+	var parseNetworkResponse = function(response){
+		if(!response.ok){
+			var error = new Error("Failed to fetch static asset");
+			error.status = response.status;
+			error.response = response;
+			throw error;
+		}
+
+		return response.text().then(function(body){
+			var cachePayload = {
+				body: body,
+				etag: response.headers.get("ETag") || "",
+				lastModified: response.headers.get("Last-Modified") || ""
+			};
+			writeStaticAssetCache(cacheKey, cachePayload);
+			return parseCachedStaticAsset(cachePayload, responseType);
+		});
+	};
+
+	var recoverFromInvalidCachedAsset = function(){
+		clearStaticAssetCache(cacheKey);
+		return fetch(url, {
+			cache: "no-store",
+			credentials: "same-origin"
+		}).then(parseNetworkResponse);
+	};
+
+	var attemptFetch = function(attempt){
+		var cachedAsset = readStaticAssetCache(cacheKey);
+		var requestHeaders = {};
+		var requestCacheMode = (cacheMode === "force-cache") ? "no-cache" : cacheMode;
+
+		if(cachedAsset){
+			if(cachedAsset.etag)
+				requestHeaders["If-None-Match"] = cachedAsset.etag;
+			if(cachedAsset.lastModified)
+				requestHeaders["If-Modified-Since"] = cachedAsset.lastModified;
+			if(requestHeaders["If-None-Match"] || requestHeaders["If-Modified-Since"])
+				requestCacheMode = "no-store";
+		}
+
+		return fetch(url, {
+			cache: requestCacheMode,
+			credentials: "same-origin",
+			headers: requestHeaders
+		}).then(function(response){
+			if(response.status === 304){
+				var parsedCachedAsset = parseCachedStaticAsset(cachedAsset, responseType);
+				if(parsedCachedAsset !== null)
+					return parsedCachedAsset;
+
+				return recoverFromInvalidCachedAsset();
+			}
+
+			return parseNetworkResponse(response);
+		}).catch(function(error){
+			if(attempt < 1 && isRetryableStaticAssetError(error)){
+				return new Promise(function(resolve){
+					setTimeout(resolve, 500);
+				}).then(function(){
+					return attemptFetch(attempt + 1);
+				});
+			}
+			throw error;
+		});
+	};
+
+	var request = attemptFetch(0);
+	staticAssetInFlight[cacheKey] = request;
+	request.then(
+		function(){
+			if(staticAssetInFlight[cacheKey] === request)
+				delete staticAssetInFlight[cacheKey];
+		},
+		function(){
+			if(staticAssetInFlight[cacheKey] === request)
+				delete staticAssetInFlight[cacheKey];
+		}
+	);
+
+	return request;
+}
+
+function buildScriptAssetKey(url, targetDocument){
+	var baseUrl = (targetDocument && targetDocument.baseURI) ? targetDocument.baseURI : window.location.href;
+	var absoluteUrl = new URL(url, baseUrl).href;
+	var documentKey = (targetDocument === top.document) ? "top" : "self";
+	return {
+		absoluteUrl: absoluteUrl,
+		cacheKey: [documentKey, absoluteUrl].join("::")
+	};
+}
+
+function hasLoadedScriptAsset(targetDocument, absoluteUrl){
+	if(!targetDocument || !targetDocument.scripts)
+		return false;
+
+	for(var i = 0; i < targetDocument.scripts.length; i++){
+		var script = targetDocument.scripts[i];
+		if(script.getAttribute("data-httpapi-script-url") === absoluteUrl)
+			return true;
+		if(script.src){
+			try{
+				if(new URL(script.src, targetDocument.baseURI).href === absoluteUrl)
+					return true;
+			}
+			catch(error){
+				// Ignore malformed script.src values.
+			}
+		}
+	}
+
+	return false;
+}
+
+function loadScriptAsset(url, options){
+	options = options || {};
+
+	var targetDocument = options.targetDocument || document;
+	var cacheMode = options.cacheMode || "force-cache";
+	var readyCheck = (typeof options.readyCheck === "function") ? options.readyCheck : function(){ return false; };
+	var scriptInfo = buildScriptAssetKey(url, targetDocument);
+
+	if(readyCheck() || hasLoadedScriptAsset(targetDocument, scriptInfo.absoluteUrl))
+		return Promise.resolve();
+
+	if(scriptAssetInFlight[scriptInfo.cacheKey])
+		return scriptAssetInFlight[scriptInfo.cacheKey];
+
+	var request = fetchStaticAsset(scriptInfo.absoluteUrl, "text", cacheMode)
+		.then(function(scriptText){
+			if(readyCheck() || hasLoadedScriptAsset(targetDocument, scriptInfo.absoluteUrl))
+				return;
+
+			var script = targetDocument.createElement("script");
+			script.type = "text/javascript";
+			script.setAttribute("data-httpapi-script-url", scriptInfo.absoluteUrl);
+			script.text = scriptText + "\n//# sourceURL=" + scriptInfo.absoluteUrl;
+			(targetDocument.head || targetDocument.documentElement).appendChild(script);
+		});
+
+	request.then(function(){
+		if(scriptAssetInFlight[scriptInfo.cacheKey] === request)
+			delete scriptAssetInFlight[scriptInfo.cacheKey];
+	}, function(){
+			if(scriptAssetInFlight[scriptInfo.cacheKey] === request)
+				delete scriptAssetInFlight[scriptInfo.cacheKey];
+	});
+
+	scriptAssetInFlight[scriptInfo.cacheKey] = request;
+	return request;
+}
+
 var httpApi ={
 	"detRetryCnt_MAX": 10,
 	"detRetryCnt": this.detRetryCnt_MAX,
 	"app_dataHandler": false,
+	"fetchStaticJson": function(url, cacheMode = "force-cache"){
+		return fetchStaticAsset(url, "json", cacheMode);
+	},
+	"fetchStaticText": function(url, cacheMode = "force-cache"){
+		return fetchStaticAsset(url, "text", cacheMode);
+	},
+	"loadScriptAsset": function(url, options){
+		return loadScriptAsset(url, options);
+	},
 
 	"nvramGetAsync": function(q){
 		if(!q.success || !q.data) return false;
@@ -33,7 +287,7 @@ var httpApi ={
 		};
 
 		$.ajax({
-			url: '/appGet.cgi?hook=' + __nvramget(q.data),
+			url: targetDevice + '/appGet.cgi?hook=' + __nvramget(q.data),
 			dataType: 'json',
 			error: q.error,
 			success: function(encNvram){
@@ -50,7 +304,7 @@ var httpApi ={
 		var queryString = q.data.split("-")[0] + "(" + (q.data.split("-")[1] || "") + ")";
 
 		$.ajax({
-			url: '/appGet.cgi?hook=' + queryString,
+			url: targetDevice + '/appGet.cgi?hook=' + queryString,
 			dataType: 'json',
 			error: q.error,
 			success: function(res){
@@ -71,21 +325,24 @@ var httpApi ={
 		if(forceUpdate) top.cachedData.clear(objItems);
 
 		objItems.forEach(function(key){
-			if(top.cachedData.get.hasOwnProperty(key)){
-				retData[key] = top.cachedData.get[key];
-			}
-			else if(asyncData.get.hasOwnProperty(key)){
-				retData[key] = top.cachedData.get[key] = asyncData.get[key];
-				if(forceUpdate) delete asyncData.get[key];
-			}
-			else{
-				queryArray.push(key);
+			if (typeof mergedPreload !=="undefined" && mergedPreload.hasOwnProperty(key)) {
+				retData[key] = mergedPreload[key];
+			} else {
+				if (top.cachedData.get.hasOwnProperty(key)) {
+					retData[key] = top.cachedData.get[key];
+				} else if (asyncData.get.hasOwnProperty(key)) {
+					retData[key] = top.cachedData.get[key] = asyncData.get[key];
+					if (forceUpdate) delete asyncData.get[key];
+				} else {
+					queryArray.push(key);
+					top.cachedData.get[key] = "";
+				}
 			}
 		});
 
 		if(queryArray.length != 0){
 			$.ajax({
-				url: '/appGet.cgi?hook=' + __nvramget(queryArray),
+				url: targetDevice + '/appGet.cgi?hook=' + __nvramget(queryArray),
 				dataType: 'json',
 				async: false,
 				error: function(){
@@ -93,7 +350,7 @@ var httpApi ={
 					retData.isError = true;
 
 					$.ajax({
-						url: '/appGet.cgi?hook=' + __nvramget(queryArray),
+						url: targetDevice + '/appGet.cgi?hook=' + __nvramget(queryArray),
 						dataType: 'json',
 						error: function(){
 							for(var i=0; i<queryArray.length; i++){asyncData.get[queryArray[i]] = "";}
@@ -140,7 +397,7 @@ var httpApi ={
 
 		if(queryArray.length != 0){
 			$.ajax({
-				url: '/appGet.cgi?hook=' + __nvramget(queryArray),
+				url: targetDevice + '/appGet.cgi?hook=' + __nvramget(queryArray),
 				dataType: 'json',
 				async: false,
 				error: function(){
@@ -148,7 +405,7 @@ var httpApi ={
 					retData.isError = true;
 
 					$.ajax({
-						url: '/appGet.cgi?hook=' + __nvramget(queryArray),
+						url: targetDevice + '/appGet.cgi?hook=' + __nvramget(queryArray),
 						dataType: 'json',
 						error: function(){
 							for(var i=0; i<queryArray.length; i++){asyncData.get[queryArray[i] + "_default"] = "";}
@@ -183,21 +440,24 @@ var httpApi ={
 		if(forceUpdate) top.cachedData.clear(objItems.map(item => item + '_ascii'));
 
 		objItems.forEach(function(key){
-			if(top.cachedData.get.hasOwnProperty(key + "_ascii")){
-				retData[key] = top.cachedData.get[key + "_ascii"];
-			}
-			else if(asyncData.get.hasOwnProperty(key + "_ascii")){
-				retData[key] = top.cachedData.get[key + "_ascii"] = asyncData.get[key + "_ascii"];
-				if(forceUpdate) delete asyncData.get[key + "_ascii"];
-			}
-			else{
-				queryArray.push(key);
+			if(typeof mergedPreload !== "undefined" && mergedPreload.hasOwnProperty(key)) {
+				retData[key] = mergedPreload[key];
+			}else {
+				if (top.cachedData.get.hasOwnProperty(key + "_ascii")) {
+					retData[key] = top.cachedData.get[key + "_ascii"];
+				} else if (asyncData.get.hasOwnProperty(key + "_ascii")) {
+					retData[key] = top.cachedData.get[key + "_ascii"] = asyncData.get[key + "_ascii"];
+					if (forceUpdate) delete asyncData.get[key + "_ascii"];
+				} else {
+					queryArray.push(key);
+					top.cachedData.get[key + "_ascii"] = "";
+				}
 			}
 		});
 
-		if(queryArray.length != 0){
+        if(queryArray.length != 0){
 			$.ajax({
-				url: '/appGet.cgi?hook=' + __nvramget(queryArray),
+				url: targetDevice + '/appGet.cgi?hook=' + __nvramget(queryArray),
 				dataType: 'json',
 				async: false,
 				error: function(){
@@ -205,7 +465,7 @@ var httpApi ={
 					retData.isError = true;
 
 					$.ajax({
-						url: '/appGet.cgi?hook=' + __nvramget(queryArray),
+						url: targetDevice + '/appGet.cgi?hook=' + __nvramget(queryArray),
 						dataType: 'json',
 						error: function(){
 							for(var i=0; i<queryArray.length; i++){asyncData.get[queryArray[i] + "_ascii"] = "";}
@@ -241,7 +501,10 @@ var httpApi ={
 
 	"nvramSet": function(postData, handler, async = true, postMessageToAppFlag = true){
 		delete postData.isError;
-		if(top.cachedData && typeof top.cachedData.clear === 'function') top.cachedData.clear(Object.keys(postData));
+		if(top.cachedData && typeof top.cachedData.clear === 'function') {
+			top.cachedData.clear(Object.keys(postData));
+			top.cachedData.clear(Object.keys(postData).map(item => item + '_ascii'));
+		}
 
 		if(this.app_dataHandler && postMessageToAppFlag){
 			if(typeof postMessageToApp == "function")
@@ -249,7 +512,7 @@ var httpApi ={
 		}
 		else{
 			$.ajax({
-				url: '/applyapp.cgi',
+				url: targetDevice + '/applyapp.cgi',
 				dataType: 'json',
 				data: encodeURIComponent(JSON.stringify(postData)),
 				type: 'POST',
@@ -302,7 +565,7 @@ var httpApi ={
 		}
 
 		$.ajax({
-			url: '/splash_page_SDN.cgi',
+			url: targetDevice + '/splash_page_SDN.cgi',
 			dataType: 'text',
 			data: formData,
 			contentType: false,
@@ -328,7 +591,7 @@ var httpApi ={
 		}
 
 		$.ajax({
-			url: '/vpnupload.cgi',
+			url: targetDevice + '/vpnupload.cgi',
 			dataType: 'text',
 			data: formData,
 			contentType: false,
@@ -354,7 +617,7 @@ var httpApi ={
 		}
 
 		$.ajax({
-			url: '/upload_server_ovpn_cert.cgi',
+			url: targetDevice + '/upload_server_ovpn_cert.cgi',
 			dataType: 'text',
 			data: formData,
 			contentType: false,
@@ -380,7 +643,7 @@ var httpApi ={
 		}
 
 		$.ajax({
-			url: '/upload_wgc_config.cgi',
+			url: targetDevice + '/upload_wgc_config.cgi',
 			dataType: 'text',
 			data: formData,
 			contentType: false,
@@ -429,47 +692,46 @@ var httpApi ={
 
 	"hookGet": function(hookName, forceUpdate){
 		var queryString = hookName.split("-")[0] + "(" + (hookName.split("-")[1] || "") + ")";
-		var retData = {};
-		if(disUpdate) forceUpdate = false;
+		var retData = typeof mergedPreload !== "undefined" ? mergedPreload : {};
+        if (disUpdate) forceUpdate = false;
 
-		if(forceUpdate) top.cachedData.clear([hookName]);
+        if (forceUpdate) top.cachedData.clear([hookName]);
+		if(typeof retData[hookName] === "undefined") {
+			if (top.cachedData.get.hasOwnProperty(hookName) && !forceUpdate) {
+				retData[hookName] = top.cachedData.get[hookName];
+			} else if (asyncData.get.hasOwnProperty(hookName)) {
+				retData[hookName] = top.cachedData.get[hookName] = asyncData.get[hookName];
+				if (forceUpdate) delete asyncData.get[hookName];
+			} else {
+				$.ajax({
+					url: targetDevice + '/appGet.cgi?hook=' + queryString,
+					dataType: 'json',
+					async: false,
+					error: function () {
+						retData[hookName] = "";
+						retData.isError = true;
 
-		if(top.cachedData.get.hasOwnProperty(hookName) && !forceUpdate){
-			retData[hookName] = top.cachedData.get[hookName];
+						$.ajax({
+							url: targetDevice + '/appGet.cgi?hook=' + queryString,
+							dataType: 'json',
+							error: function () {
+								asyncData.get[hookName] = "";
+							},
+							success: function (response) {
+								asyncData.get[hookName] = response[hookName];
+							}
+						});
+					},
+					success: function (response) {
+						retData = response;
+						top.cachedData.get[hookName] = response[hookName];
+						retData.isError = false;
+					}
+				});
+			}
 		}
-		else if(asyncData.get.hasOwnProperty(hookName)){
-			retData[hookName] = asyncData.get[hookName];
-			if(forceUpdate) delete asyncData.get[hookName];
-		}
-		else{
-			$.ajax({
-				url: '/appGet.cgi?hook=' + queryString,
-				dataType: 'json',
-				async: false,
-				error: function(){
-					retData[hookName] = "";
-					retData.isError = true;
 
-					$.ajax({
-						url: '/appGet.cgi?hook=' + queryString,
-						dataType: 'json',
-						error: function(){
-							asyncData.get[hookName] = "";
-						},
-						success: function(response){
-							asyncData.get[hookName] = response[hookName];
-						}
-					});
-				},
-				success: function(response){
-					retData = response;
-					top.cachedData.get[hookName] = response[hookName]
-					retData.isError = false;
-				}
-			});
-		}
-
-		return retData[hookName];
+        return retData[hookName];
 	},
 
 	"hookGetMore": function(objItems, forceUpdate){
@@ -485,22 +747,21 @@ var httpApi ={
 
 		if(forceUpdate) top.cachedData.clear(objItems);
 
-		objItems.forEach(function(key){
-			if(top.cachedData.get.hasOwnProperty(key)){
+		objItems.forEach(function (key) {
+			if (top.cachedData.get.hasOwnProperty(key)) {
 				retData[key] = top.cachedData.get[key];
-			}
-			else if(asyncData.get.hasOwnProperty(key)){
+			} else if (asyncData.get.hasOwnProperty(key)) {
 				retData[key] = top.cachedData.get[key] = asyncData.get[key];
-				if(forceUpdate) delete asyncData.get[key];
-			}
-			else{
+				if (forceUpdate) delete asyncData.get[key];
+			} else{
 				queryArray.push(key);
+				top.cachedData.get[key] = "";
 			}
 		});
 
 		if(queryArray.length != 0){
 			$.ajax({
-				url: '/appGet.cgi?hook=' + __hookNames(queryArray),
+				url: targetDevice + '/appGet.cgi?hook=' + __hookNames(queryArray),
 				dataType: 'json',
 				async: false,
 				error: function(){
@@ -508,7 +769,7 @@ var httpApi ={
 					retData.isError = true;
 
 					$.ajax({
-						url: '/appGet.cgi?hook=' + __hookNames(queryArray),
+						url: targetDevice + '/appGet.cgi?hook=' + __hookNames(queryArray),
 						dataType: 'json',
 						error: function(){
 							for(var i=0; i<queryArray.length; i++){asyncData.get[queryArray[i]] = "";}
@@ -966,7 +1227,7 @@ var httpApi ={
 			var confirm_flag = confirm("<#JS_cleanLog#>");
 			if(confirm_flag) {
 				$.ajax({
-					url: '/cleanlog.cgi?path=' + path,
+					url: targetDevice + '/cleanlog.cgi?path=' + path,
 					dataType: 'script',	
 					error: function(xhr) {
 						alert("Clean error!");/*untranslated*/
@@ -1034,7 +1295,7 @@ var httpApi ={
 		var retData = {};
 
 		$.ajax({
-			url: '/appGet.cgi?hook=' + queryString,
+			url: targetDevice + '/appGet.cgi?hook=' + queryString,
 			dataType: 'json',
 			async: false,
 			error: function(){
@@ -1054,7 +1315,7 @@ var httpApi ={
 		var eulaType = _eulaType.toUpperCase()
 
 		$.ajax({
-			url: '/set_' + eulaType + '_EULA.cgi?' + eulaType + '_EULA=' + enable,
+			url: targetDevice + '/set_' + eulaType + '_EULA.cgi?' + eulaType + '_EULA=' + enable,
 			error: function(){},
 			success: function (response) {
 				if (callback)
@@ -1066,7 +1327,7 @@ var httpApi ={
     "AIBOARD_EULA": {
         "set": (enable, callback) => {
 			$.ajax({
-				url: '/set_AI_board_EULA.cgi',
+				url: targetDevice + '/set_AI_board_EULA.cgi',
 				data: {
 					"AI_board_EULA": enable
 				},
@@ -1078,45 +1339,7 @@ var httpApi ={
             });
         },
         "get": () => {
-            return fetch('/get_ASUS_privacy_policy.cgi')
-                .then(response => response.json())
-                .then(resp => {
-                    const AIBOARD_EULA = parseInt(resp.AI_board_EULA);
-                    return {
-                        AIBOARD_EULA: !isNaN(AIBOARD_EULA) ? AIBOARD_EULA : "",
-                        AIBOARD_EULA_read: parseInt(resp.AI_board_EULA_read),
-                        AIBOARD_EULA_allow_skip: parseInt(resp.AI_board_EULA_allow_skip),
-                        AIBOARD_EULA_force_sign: parseInt(resp.AI_board_EULA_force_sign),
-                    };
-                })
-                .catch(error => {
-                    console.error('Error fetching ASUS privacy policy:', error);
-                    return {
-                        AIBOARD_EULA: "",
-                        AIBOARD_EULA_read: 0,
-                        AIBOARD_EULA_allow_skip: 0,
-                        AIBOARD_EULA_force_sign: 1,
-                    };
-                });
-        }
-    },
-
-    "AIBOARD_EULA": {
-        "set": (enable, callback) => {
-			$.ajax({
-				url: '/set_AI_board_EULA.cgi',
-				data: {
-					"AI_board_EULA": enable
-				},
-				dataType: 'json',
-				success: function (response) {
-					if (callback)
-						callback(response);
-				}
-            });
-        },
-        "get": () => {
-            return fetch('/get_ASUS_privacy_policy.cgi')
+            return fetch(targetDevice + '/get_ASUS_privacy_policy.cgi')
                 .then(response => response.json())
                 .then(resp => {
                     const AIBOARD_EULA = parseInt(resp.AI_board_EULA);
@@ -1142,7 +1365,7 @@ var httpApi ={
 	"newEula": {
 		"set": (enable, callback) => {
 			$.ajax({
-				url: '/set_ASUS_NEW_EULA.cgi',
+				url: targetDevice + '/set_ASUS_NEW_EULA.cgi',
 				data: {
 					"ASUS_NEW_EULA": enable
 				},
@@ -1164,7 +1387,7 @@ var httpApi ={
 	"privateEula": {
 		"set": function(enable, callback){
 			$.ajax({
-				url: '/set_ASUS_privacy_policy.cgi',
+				url: targetDevice + '/set_ASUS_privacy_policy.cgi',
 				data: {
 					"ASUS_privacy_policy": enable
 				},
@@ -1178,7 +1401,7 @@ var httpApi ={
 		},
 
         "get": function () {
-            return fetch('/get_ASUS_privacy_policy.cgi')
+            return fetch(targetDevice + '/get_ASUS_privacy_policy.cgi')
                 .then(response => response.json())
                 .then(resp => {
                     const EULA = parseInt(resp.ASUS_NEW_EULA);
@@ -1203,23 +1426,10 @@ var httpApi ={
                     };
                 })
                 .catch(error => {
-                    console.error('Error fetching ASUS privacy policy:', error);
-                    return {
-                        EULA: "",
-                        EULA_read: 0,
-                        EULA_allow_skip: 0,
-                        EULA_force_sign: 1,
-
-                        PP: "",
-                        PP_time: "",
-                        PP_read: 0,
-                        PP_force_sign: 1,
-
-                        AIBOARD_EULA: "",
-                        AIBOARD_EULA_read: 0,
-                        AIBOARD_EULA_allow_skip: 0,
-                        AIBOARD_EULA_force_sign: 1,
-                    };
+                    if (!isExpectedFetchCancellation(error)) {
+                        console.error('Error fetching ASUS privacy policy:', error);
+                    }
+                    throw error
                 });
         }
     },
@@ -1227,7 +1437,7 @@ var httpApi ={
 	"securityUpdate": {
 		"set": function(enable, callback){
 			$.ajax({
-				url: '/set_security_update.cgi?' + 'security_update=' + enable,
+				url: targetDevice + '/set_security_update.cgi?' + 'security_update=' + enable,
 				async: false,
 				success: function (response) {
 					if (callback)
@@ -1239,7 +1449,7 @@ var httpApi ={
 		"get": function(){
 			var retData;
 			$.ajax({
-				url: '/get_security_update.cgi',
+				url: targetDevice + '/get_security_update.cgi',
 				dataType: 'json',
 				async: false,
 				success: function(resp){
@@ -1253,7 +1463,7 @@ var httpApi ={
 
 	"unregisterAsusDDNS": function(callback){
 		$.ajax({
-			url: '/unreg_ASUSDDNS.cgi',
+			url: targetDevice + '/unreg_ASUSDDNS.cgi',
 			error: function(){},
 			success: function (response) {
 				if (callback)
@@ -1568,7 +1778,7 @@ var httpApi ={
 	},
 
 	"updateClientList": function(){
-		$.post("/applyapp.cgi?action_mode=update_client_list");
+		$.post(targetDevice + "/applyapp.cgi?action_mode=update_client_list");
 	},
 
 	"hasAiMeshNode": function(){
@@ -1625,7 +1835,7 @@ var httpApi ={
 
 			if(httpApi.amazon_wss.if_support(_wl_unit, _wl_subunit)){
 				$.ajax({
-					url: '/amazon_wss.cgi',
+					url: targetDevice + '/amazon_wss.cgi',
 					dataType: 'json',
 					data: postData,
 					async: asyncDefault,
@@ -1733,7 +1943,7 @@ var httpApi ={
 	"set_ledg" : function(postData, parmData){
 		var asyncDefault = true;
 		$.ajax({
-			url: '/set_ledg.cgi',
+			url: targetDevice + '/set_ledg.cgi',
 			dataType: 'json',
 			data: postData,
 			async: asyncDefault,
@@ -1777,7 +1987,7 @@ var httpApi ={
 			];
 
 		$.ajax({
-			url: "/get_port_status.cgi?node_mac=" + mac,
+			url: targetDevice + "/get_port_status.cgi?node_mac=" + mac,
 			dataType: 'json',
 			async: true,
 			error: function(){},
@@ -2019,7 +2229,7 @@ var httpApi ={
 	"set_antled" : function(postData, parmData){
 		var asyncDefault = true;
 		$.ajax({
-			url: '/set_antled.cgi',
+			url: targetDevice + '/set_antled.cgi',
 			dataType: 'json',
 			data: postData,
 			async: asyncDefault,
@@ -2036,7 +2246,7 @@ var httpApi ={
 			_wl_unit = wl_unit;
 
 		$.ajax({
-			url: "/get_wl_sched.cgi?unit=" + _wl_unit,
+			url: targetDevice + "/get_wl_sched.cgi?unit=" + _wl_unit,
 			dataType: 'json',
 			async: true,
 			error: function(){},
@@ -2049,7 +2259,7 @@ var httpApi ={
 	
 	"set_wl_sched": function(postData){
 		$.ajax({
-			url: "/set_wl_sched.cgi",
+			url: targetDevice + "/set_wl_sched.cgi",
 			type: "POST",
 			dataType: 'json',
 			data: JSON.stringify(postData),
@@ -2061,7 +2271,7 @@ var httpApi ={
 
 	"set_afc_enable": function(enable){
 		$.ajax({
-			url: "/set_afc_enable.cgi?afc_enable=" + enable,
+			url: targetDevice + "/set_afc_enable.cgi?afc_enable=" + enable,
 			type: "POST",
 			dataType: 'json',
 			async: true,
@@ -2074,7 +2284,7 @@ var httpApi ={
 		var retValue,retStatus = 0;
 
 		$.ajax({
-			url: "/get_afc_info.cgi",
+			url: targetDevice + "/get_afc_info.cgi",
 			type: "POST",
 			dataType: 'json',
 			async: false,
@@ -2486,7 +2696,7 @@ afcData = {
 	},
 	"get_ipsec_cert_info": function(callBack){
 		$.ajax({
-			url: "/ipsec_cert_info.cgi",
+			url: targetDevice + "/ipsec_cert_info.cgi",
 			dataType: 'json',
 			async: true,
 			error: function(){},
@@ -2498,7 +2708,7 @@ afcData = {
 	},
 	"get_ipsec_clientlist": function(callBack){
 		$.ajax({
-			url: "/get_ipsec_clientlist.cgi",
+			url: targetDevice + "/get_ipsec_clientlist.cgi",
 			dataType: 'json',
 			data: {"get_json":"1"},
 			async: true,
@@ -2511,7 +2721,7 @@ afcData = {
 	},
 	"set_ipsec_clientlist": function(postData){
 		$.ajax({
-			url: "/set_ipsec_clientlist.cgi",
+			url: targetDevice + "/set_ipsec_clientlist.cgi",
 			type: "POST",
 			dataType: 'json',
 			data: JSON.stringify(postData),
@@ -2522,7 +2732,7 @@ afcData = {
 	},
 	"renew_ikev2_cert_key": function(callBack){
 		$.ajax({
-			url: "/renew_ikev2_cert_key.cgi",
+			url: targetDevice + "/renew_ikev2_cert_key.cgi",
 			async: true,
 			error: function(){},
 			success: function(response){
@@ -2533,7 +2743,7 @@ afcData = {
 	},
 	"get_ipsec_conn": function(callBack){
 		$.ajax({
-			url: "/appGet.cgi",
+			url: targetDevice + "/appGet.cgi",
 			async: true,
 			error: function(){},
 			success: function(response){
@@ -2544,7 +2754,7 @@ afcData = {
 	},
 	"clean_ipsec_log": function(callBack) {
 		$.ajax({
-			url: '/clear_file.cgi?clear_file_name=ipsec',
+			url: targetDevice + '/clear_file.cgi?clear_file_name=ipsec',
 			dataType: 'script',
 			error: function(xhr) {
 				alert("Clean error!");/*untranslated*/
@@ -2557,7 +2767,7 @@ afcData = {
 	},
 	"set_ig_config": function(postData){
 		$.ajax({
-			url: "/set_ig_config.cgi",
+			url: targetDevice + "/set_ig_config.cgi",
 			type: "POST",
 			dataType: 'json',
 			data: JSON.stringify(postData),
@@ -2568,7 +2778,7 @@ afcData = {
 	},
 	"get_ig_config": function(callBack){
 		$.ajax({
-			url: "/get_ig_config.cgi",
+			url: targetDevice + "/get_ig_config.cgi",
 			async: true,
 			error: function(){},
 			success: function(response){
@@ -2593,7 +2803,7 @@ afcData = {
 			postData.new_passwd = btoa(postData.new_passwd);
 
 		$.ajax({
-			url: '/chpass.cgi',
+			url: targetDevice + '/chpass.cgi',
 			dataType: 'json',
 			data: postData,
 			async: false,
@@ -2609,7 +2819,7 @@ afcData = {
 	},
         "get_app_client_stats": function(queryParam, handler){
                 $.ajax({
-                        url: '/get_app_client_stats.cgi?' + queryParam,
+                        url: targetDevice + '/get_app_client_stats.cgi?' + queryParam,
                         dataType: 'json',
                         type: "GET",
                         error: function(jqXHR, textStatus, errorThrown){
@@ -2691,7 +2901,7 @@ afcData = {
 		queryParam.ts = parseInt(queryParam.ts/1000);
 		
 		$.ajax({
-			url: '/get_diag_avg_data.cgi',
+			url: targetDevice + '/get_diag_avg_data.cgi',
 			dataType: 'json',
 			type: "POST",
 			data: queryParam,
@@ -2717,7 +2927,7 @@ afcData = {
 		queryParam.ts = parseInt(queryParam.ts/1000);
 		
 		$.ajax({
-			url: '/get_diag_content_data.cgi',
+			url: targetDevice + '/get_diag_content_data.cgi',
 			dataType: 'json',
 			type: "POST",
 			data: queryParam,
@@ -2732,7 +2942,7 @@ afcData = {
 		queryParam.ts = parseInt(queryParam.ts/1000);
 		
 		$.ajax({
-			url: '/get_diag_active_client.cgi',
+			url: targetDevice + '/get_diag_active_client.cgi',
 			dataType: 'json',
 			type: "POST",
 			data: queryParam,
@@ -2748,7 +2958,7 @@ afcData = {
         queryParam.is_bh = 1;
 		
 		$.ajax({
-			url: '/get_diag_eth_traffic_data.cgi',
+			url: targetDevice + '/get_diag_eth_traffic_data.cgi',
 			dataType: 'json',
 			type: "POST",
 			data: queryParam,
@@ -2800,7 +3010,7 @@ afcData = {
 			}
 
 			$.ajax({
-				url: '/get_diag_content_data.cgi',
+				url: targetDevice + '/get_diag_content_data.cgi',
 				async: false,
 				data: {
 					"db": "dns_ping",
@@ -2831,7 +3041,7 @@ afcData = {
 	"iperf": {
 		"start": function(target, handler){
 			$.ajax({
-				url: "/do_iperf.cgi?caller=" + target.caller + "&serverMac=" + target.serverMac + "&nodeMac=" + target.nodeMac,
+				url: targetDevice + "/do_iperf.cgi?caller=" + target.caller + "&serverMac=" + target.serverMac + "&nodeMac=" + target.nodeMac,
 				success: function(response){
 					if(handler) handler.call(response);
 				}
@@ -2873,7 +3083,7 @@ afcData = {
 				queryData["filter"] += "caller>txt>" + target.caller + ">0;";
 
 			$.ajax({
-				url: '/get_diag_content_data.cgi',
+				url: targetDevice + '/get_diag_content_data.cgi',
 				async: false,
 				data: queryData,
 				success: function(response){
@@ -2900,7 +3110,7 @@ afcData = {
 			var statusCode = "-1";
 
 			$.ajax({
-				url: "/aae_fbwifi2_reg.cgi",
+				url: targetDevice + "/aae_fbwifi2_reg.cgi",
 				type: "POST",
 				dataType: 'json',
 
@@ -2935,7 +3145,7 @@ afcData = {
 
 	"get_re_channel_info": function(mac, callBack){
 		$.ajax({
-			url: "/get_re_channel_info.cgi?re_mac=" + mac,
+			url: targetDevice + "/get_re_channel_info.cgi?re_mac=" + mac,
 			dataType: 'json',
 			async: true,
 			success: function(response){
@@ -2947,7 +3157,7 @@ afcData = {
 	},
 	"get_re_current_channel_info": function(mac, callBack){
 		$.ajax({
-			url: "/get_re_current_channel_info.cgi?re_mac=" + mac,
+			url: targetDevice + "/get_re_current_channel_info.cgi?re_mac=" + mac,
 			dataType: 'json',
 			async: true,
 			success: function(response){

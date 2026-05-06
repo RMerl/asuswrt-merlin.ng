@@ -1,10 +1,62 @@
 ﻿@import "/css/color-table.css";
 @import "/css/svg-icon.css";
+@import "/css/wrt-ui-alias-tokens.css";
+
+:root, [data-asuswrt-theme="asus"], [data-asuswrt-theme="proart"]{
+	--icon-lock: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='6' height='7' fill='none' viewBox='0 0 6 7'%3e%3cpath fill='currentColor' fill-rule='evenodd' d='M1.583 1.583a1.083 1.083 0 0 1 2.167 0V2H1.583v-.417Zm-.5.44v-.44a1.583 1.583 0 0 1 3.167 0v.44a1.334 1.334 0 0 1 1.083 1.31v2c0 .737-.597 1.334-1.333 1.334H1.333A1.333 1.333 0 0 1 0 5.333v-2c0-.65.467-1.193 1.083-1.31Zm2.25 2.31a.667.667 0 1 1-1.333 0 .667.667 0 0 1 1.333 0Z' clip-rule='evenodd'/%3e%3c/svg%3e");
+	--icon-wifi: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='20' height='21' fill='none' viewBox='0 0 20 21'%3e%3cpath fill='currentColor' d='M3.72 2.09a.6.6 0 1 1 0 1.2H2.66c-.81 0-1.46.65-1.46 1.459v13.19c0 .809.65 1.46 1.46 1.46h14.39c.808 0 1.46-.651 1.46-1.46V4.75c0-.758-.573-1.378-1.31-1.452l-.15-.008H15.8a.6.6 0 1 1 0-1.2h1.25l.272.015A2.657 2.657 0 0 1 19.71 4.75v13.19a2.657 2.657 0 0 1-2.66 2.66H2.66A2.657 2.657 0 0 1 0 17.94V4.75a2.656 2.656 0 0 1 2.66-2.66h1.06ZM6.4 0a8.148 8.148 0 0 1 8.162 8.162.6.6 0 1 1-1.199 0A6.95 6.95 0 0 0 6.4 1.2a.6.6 0 1 1 0-1.2Zm.313 3.438a4.36 4.36 0 0 1 4.35 4.35.6.6 0 1 1-1.2 0 3.161 3.161 0 0 0-3.15-3.151.6.6 0 1 1 0-1.2Z'/%3e%3c/svg%3e");
+	--icon-wifi-lock: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='22' height='24' fill='none' viewBox='0 0 22 24'%3e%3cpath fill='%23006CE1' d='M16.8 0a5 5 0 0 1 2.91 9.064V20.84a2.658 2.658 0 0 1-2.66 2.66H2.66A2.657 2.657 0 0 1 0 20.84V7.65a2.656 2.656 0 0 1 2.66-2.66h1.06a.6.6 0 1 1 0 1.2H2.66c-.81 0-1.46.651-1.46 1.46v13.19c0 .808.65 1.46 1.46 1.46h14.39c.808 0 1.46-.652 1.46-1.46V9.7a4.99 4.99 0 0 1-1.71.3 4.976 4.976 0 0 1-2.412-.62c.113.543.175 1.105.175 1.682a.6.6 0 1 1-1.2 0A6.95 6.95 0 0 0 6.4 4.1a.6.6 0 1 1 0-1.2 8.13 8.13 0 0 1 5.4 2.04 5 5 0 0 1 5-4.94ZM6.713 6.338a4.36 4.36 0 0 1 4.35 4.35.6.6 0 1 1-1.2 0 3.16 3.16 0 0 0-3.15-3.15.6.6 0 1 1 0-1.2ZM16.8.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Z'/%3e%3c/svg%3e");
+	--icon-band-text-2G: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='15' height='9' fill='none' viewBox='0 0 15 9'%3e%3cpath fill='currentColor' d='M5.292 7.932V6.708H2.088v-.024l.684-.588c1.356-1.26 2.34-2.364 2.34-3.732C5.112 1.092 4.272 0 2.544 0 1.56 0 .708.348.144.804l.432 1.044c.396-.3.984-.648 1.668-.648 1.02 0 1.392.612 1.392 1.308C3.624 3.54 2.76 4.476.924 6.18L0 7.032v.9h5.292Zm2.15.132c.552 0 .912-.408.912-.948 0-.564-.372-.948-.912-.948-.528 0-.912.396-.912.948 0 .54.372.948.912.948Zm6.472-.132v-1.98h1.008V4.836h-1.008V.132h-1.74l-3.18 4.86v.96h3.528v1.98h1.392Zm-3.516-3.096.012-.024 1.428-2.136c.24-.432.444-.828.684-1.32h.048c-.036.456-.048.912-.048 1.356v2.124h-2.124Z'/%3e%3c/svg%3e");
+	--icon-band-text-5G: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2IiBoZWlnaHQ9IjkiIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCA2IDkiPjxwYXRoIGZpbGw9IiMwMDAiIGQ9Ik01LjM4MiAwSDEuMDE0TC40NTUgNC4yNjRhNy4zNTYgNy4zNTYgMCAwIDEgMS4xNTctLjA3OGMxLjY5IDAgMi40MDUuNjM3IDIuNDA1IDEuNTk5IDAgMS4wMTQtLjg5NyAxLjU0Ny0xLjgzMyAxLjU0Ny0uNzY3IDAtMS40OTUtLjI0Ny0xLjg1OS0uNDQyTDAgOC4wOTljLjQ0Mi4yNDcgMS4yNjEuNDk0IDIuMjM2LjQ5NCAyLjA4IDAgMy40MTktMS4zMTMgMy40MTktMi45MjUgMC0xLjAyNy0uNDY4LTEuNzQyLTEuMTA1LTIuMTQ1LS41NzItLjM3Ny0xLjMxMy0uNTQ2LTIuMDU0LS41NDZhNC4yNiA0LjI2IDAgMCAwLS42MTEuMDM5bC4yNDctMS42OWgzLjI1VjBaIi8+PC9zdmc+");
+	--icon-band-text-5G-1: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNCIgaGVpZ2h0PSI4IiBmaWxsPSJub25lIiB2aWV3Qm94PSIwIDAgMTQgOCI+PHBhdGggZmlsbD0iIzAwMCIgZD0iTTQuOTY4IDBILjkzNkwuNDIgMy45MzZhNi43OSA2Ljc5IDAgMCAxIDEuMDY4LS4wNzJjMS41NiAwIDIuMjIuNTg4IDIuMjIgMS40NzYgMCAuOTM2LS44MjggMS40MjgtMS42OTIgMS40MjgtLjcwOCAwLTEuMzgtLjIyOC0xLjcxNi0uNDA4TDAgNy40NzZjLjQwOC4yMjggMS4xNjQuNDU2IDIuMDY0LjQ1NiAxLjkyIDAgMy4xNTYtMS4yMTIgMy4xNTYtMi43IDAtLjk0OC0uNDMyLTEuNjA4LTEuMDItMS45OC0uNTI4LS4zNDgtMS4yMTItLjUwNC0xLjg5Ni0uNTA0LS4yMjggMC0uMzg0LjAxMi0uNTY0LjAzNmwuMjI4LTEuNTZoM1YwWk02LjI5IDQuMDkydjEuMDJoMy4wNnYtMS4wMkg2LjI5Wk0xMi41NDcgNy44aDEuNDI4VjBoLTEuMjM2bC0xLjg5Ni45MzYuMjUyIDEuMTE2IDEuNDI4LS43MmguMDI0VjcuOFoiLz48L3N2Zz4=");
+	--icon-band-text-5G-2: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSI5IiBmaWxsPSJub25lIiB2aWV3Qm94PSIwIDAgMTYgOSI+PHBhdGggZmlsbD0iIzAwMCIgZD0iTTQuOTguMTMydjEuMjI0aC0zbC0uMjI4IDEuNTZjLjE2OC0uMDI0LjMyNC0uMDM2LjU1Mi0uMDM2LjY4NCAwIDEuMzguMTU2IDEuODk2LjUwNC41ODguMzcyIDEuMDIgMS4wMzIgMS4wMiAxLjk4IDAgMS40ODgtMS4yMzYgMi43LTMuMTQ0IDIuNy0uOTEyIDAtMS42NjgtLjIyOC0yLjA3Ni0uNDU2bC4zLTEuMTE2Yy4zMzYuMTggMS4wMDguNDA4IDEuNzE2LjQwOC44NjQgMCAxLjY5Mi0uNDkyIDEuNjkyLTEuNDE2IDAtLjktLjY2LTEuNDg4LTIuMjA4LTEuNDg4LS40NDQgMC0uNzY4LjAzNi0xLjA2OC4wNzJMLjkzNi4xMzJINC45OFptMS4zMSA0LjA5MmgzLjA2djEuMDJINi4yOXYtMS4wMlptOS4yMiAzLjcwOGgtNS4yOHYtLjlsLjkyNS0uODUyYzEuODM2LTEuNzA0IDIuNy0yLjY0IDIuNzEyLTMuNjcyIDAtLjY5Ni0uMzcyLTEuMzA4LTEuMzkyLTEuMzA4LS42OTYgMC0xLjI3Mi4zNDgtMS42NjguNjQ4TDEwLjM3NS44MDRDMTAuOTM5LjM0OCAxMS43OSAwIDEyLjc3NSAwYzEuNzI4IDAgMi41NjggMS4wOTIgMi41NjggMi4zNjQgMCAxLjM2OC0uOTg0IDIuNDcyLTIuMzUyIDMuNzMybC0uNjcyLjU4OHYuMDI0aDMuMTkydjEuMjI0WiIvPjwvc3ZnPg==");
+	--icon-band-text-6G: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3IiBoZWlnaHQ9IjkiIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCA3IDkiPjxwYXRoIGZpbGw9IiMwMDAiIGQ9Ik01LjI3OC4wMDhhNC41MjggNC41MjggMCAwIDAtLjgwNi4wMjZjLTEuMjA5LjEwNC0yLjIyMy41Mi0zLjAwMyAxLjI0OEMuNTg1IDIuMTI3IDAgMy40NTIgMCA1LjA3OGMwIDIuMDggMS4xMzEgMy42NCAzLjE4NSAzLjY0IDEuNzk0IDAgMi45NzctMS40MDQgMi45NzctMy4wMTYgMC0xLjcxNi0xLjEzMS0yLjc1Ni0yLjU4Ny0yLjc1Ni0uODQ1IDAtMS40ODIuMzM4LTEuODk4LjgxOWgtLjAzOWMuMjA4LTEuMTcgMS4wNjYtMi4yNjIgMi44MzQtMi40Ny4zMjUtLjA0LjU4NS0uMDQuODE5LS4wNEw1LjI3OC4wMDlaTTMuMTcyIDcuNTIyYy0xLjAyNyAwLTEuNTYtLjkxLTEuNTg2LTIuMDI4IDAtLjIyMS4wMzktLjM3Ny4xMDQtLjUwNy4yNDctLjUwNy43OC0uODcxIDEuMzc4LS44NzEuOTM2IDAgMS40NjkuNzAyIDEuNDY5IDEuNjc3IDAgMS4wMTQtLjUzMyAxLjcyOS0xLjM2NSAxLjcyOVoiLz48L3N2Zz4=");
+	--icon-band-text-6G-1: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSI5IiBmaWxsPSJub25lIiB2aWV3Qm94PSIwIDAgMTUgOSI+PHBhdGggZmlsbD0iIzAwMCIgZD0iTTQuODcyLjAwN1YxLjE3Yy0uMjE2LS4wMTItLjQ1NiAwLS43NDQuMDM2LTEuNjQ0LjE5Mi0yLjQyNCAxLjE4OC0yLjYxNiAyLjI2OGguMDM2Yy4zODQtLjQ0NC45NzItLjc1NiAxLjc1Mi0uNzU2IDEuMzQ0IDAgMi4zODguOTYgMi4zODggMi41NDQgMCAxLjQ4OC0xLjA5MiAyLjc4NC0yLjc0OCAyLjc4NEMxLjA0NCA4LjA0NyAwIDYuNjA3IDAgNC42NzVjMC0xLjUuNTQtMi43MTIgMS4zNTYtMy40OEMyLjA2NC41MSAzLjAxMi4xMjcgNC4xMjguMDQzYy4zMjQtLjA0OC41NjQtLjA0OC43NDQtLjAzNlpNMi45NCA2Ljk0M2MuNzU2IDAgMS4yNDgtLjY2IDEuMjQ4LTEuNTk2IDAtLjkxMi0uNDkyLTEuNTQ4LTEuMzU2LTEuNTQ4LS41NTIgMC0xLjA0NC4zMzYtMS4yNzIuODA0LS4wNi4xMi0uMDk2LjI2NC0uMDk2LjQ2OC4wMjQgMS4wMzIuNTA0IDEuODcyIDEuNDc2IDEuODcyWm0zLjQ3LTIuNzM2aDMuMDZ2MS4wMkg2LjQxdi0xLjAyWm02LjI1NyAzLjcwOFYxLjQ0N2gtLjAyNGwtMS40MjguNzItLjI1Mi0xLjExNkwxMi44Ny4xMTVoMS4yMjR2Ny44aC0xLjQyOFoiLz48L3N2Zz4=");
+	--icon-band-text-6G-2: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSI5IiBmaWxsPSJub25lIiB2aWV3Qm94PSIwIDAgMTYgOSI+PHBhdGggZmlsbD0iIzAwMCIgZD0iTTQuODcyLjAyNHYxLjE2NGMtLjIxNi0uMDEyLS40NTYgMC0uNzQ0LjAzNi0xLjY0NC4xOTItMi40MjQgMS4xODgtMi42MTYgMi4yNjhoLjAzNmMuMzg0LS40NDQuOTcyLS43NTYgMS43NTItLjc1NiAxLjM0NCAwIDIuMzg4Ljk2IDIuMzg4IDIuNTQ0IDAgMS40ODgtMS4wOTIgMi43ODQtMi43NDggMi43ODRDMS4wNDQgOC4wNjQgMCA2LjYyNCAwIDQuNjkyYzAtMS41LjU0LTIuNzEyIDEuMzU2LTMuNDhDMi4wNjQuNTI4IDMuMDEyLjE0NCA0LjEyOC4wNmMuMzI0LS4wNDguNTY0LS4wNDguNzQ0LS4wMzZaTTIuOTQgNi45NmMuNzU2IDAgMS4yNDgtLjY2IDEuMjQ4LTEuNTk2IDAtLjkxMi0uNDkyLTEuNTQ4LTEuMzU2LTEuNTQ4LS41NTIgMC0xLjA0NC4zMzYtMS4yNzIuODA0LS4wNi4xMi0uMDk2LjI2NC0uMDk2LjQ2OC4wMjQgMS4wMzIuNTA0IDEuODcyIDEuNDc2IDEuODcyWm0zLjQ3LTIuNzM2aDMuMDZ2MS4wMkg2LjQxdi0xLjAyWm05LjIyIDMuNzA4aC01LjI4di0uOWwuOTI1LS44NTJjMS44MzYtMS43MDQgMi43LTIuNjQgMi43MTItMy42NzIgMC0uNjk2LS4zNzItMS4zMDgtMS4zOTItMS4zMDgtLjY5NiAwLTEuMjcyLjM0OC0xLjY2OC42NDhMMTAuNDk1LjgwNEMxMS4wNTkuMzQ4IDExLjkxIDAgMTIuODk1IDBjMS43MjggMCAyLjU2OCAxLjA5MiAyLjU2OCAyLjM2NCAwIDEuMzY4LS45ODQgMi40NzItMi4zNTIgMy43MzJsLS42NzIuNTg4di4wMjRoMy4xOTJ2MS4yMjRaIi8+PC9zdmc+");
+	--icon-band-text-mlo: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSI2IiBmaWxsPSJub25lIiB2aWV3Qm94PSIwIDAgMTYgNiI+PHBhdGggZmlsbD0iIzAwMCIgZD0ibTQuNzYgNS40OC0uMDgtMi4wNjRBNjAuNjY3IDYwLjY2NyAwIDAgMSA0LjYzMiAxLjJoLS4wMjRhMjkuMTg2IDI5LjE4NiAwIDAgMS0uNiAyLjA4OGwtLjY1NiAyLjEwNEgyLjRsLS41NzYtMi4wODhjLS4xNzYtLjYzMi0uMzYtMS40LS40ODgtMi4xMDRIMS4zMmMtLjAzMi43MjgtLjA1NiAxLjU2LS4wOTYgMi4yMzJMMS4xMjggNS40OEgwTC4zNDQuMDg4aDEuNjI0bC41MjggMS44Yy4xNjguNjI0LjMzNiAxLjI5Ni40NTYgMS45MjhoLjAyNGMuMTUyLS42MjQuMzM2LTEuMzM2LjUxMi0xLjkzNkw0LjA2NC4wODhoMS41OTJsLjI5NiA1LjM5Mkg0Ljc2Wm0yLjEyNiAwVi4wODhIOC4xMXY0LjM2OGgyLjE0NFY1LjQ4SDYuODg2Wk0xMy4wNDMgMGMxLjY1NiAwIDIuNTYgMS4yNCAyLjU2IDIuNzI4IDAgMS43NjgtMS4wNzIgMi44NC0yLjY0OCAyLjg0LTEuNiAwLTIuNTM2LTEuMjA4LTIuNTM2LTIuNzQ0QzEwLjQxOSAxLjIwOCAxMS40NSAwIDEzLjA0MyAwWm0tLjAzMi45NjhjLS44MjQgMC0xLjMwNC43ODQtMS4zMDQgMS44MzIgMCAxLjA1Ni40OTYgMS44IDEuMzEyIDEuOC44MjQgMCAxLjI5Ni0uNzg0IDEuMjk2LTEuODMyIDAtLjk2OC0uNDY0LTEuOC0xLjMwNC0xLjhaIi8+PC9zdmc+");
+	
+}
+[data-asuswrt-theme="rog"], [data-asuswrt-theme="tuf"]{
+	--icon-lock: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='6' height='7' fill='none' viewBox='0 0 6 7'%3e%3cpath fill='currentColor' fill-rule='evenodd' d='M1.583 1.583a1.083 1.083 0 0 1 2.167 0V2H1.583v-.417Zm-.5.44v-.44a1.583 1.583 0 0 1 3.167 0v.44a1.334 1.334 0 0 1 1.083 1.31v2c0 .737-.597 1.334-1.333 1.334H1.333A1.333 1.333 0 0 1 0 5.333v-2c0-.65.467-1.193 1.083-1.31Zm2.25 2.31a.667.667 0 1 1-1.333 0 .667.667 0 0 1 1.333 0Z' clip-rule='evenodd'/%3e%3c/svg%3e");	--icon-wifi: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMSIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDIwIDIxIj48ZyBpZD0iR3JvdXAiPjxnIGlkPSJBaXJwbGF5Ij48ZyBpZD0iR3JvdXBfMiI+PHBhdGggaWQ9IlJlY3RhbmdsZSAxMDM2OF9fX19fMF8xX01ZQVlMV1lLTFMiIHN0cm9rZT0iI0RDRENEQyIgc3Ryb2tlLXdpZHRoPSIxLjIiIGQ9Ik01LjEgMi4wOTk5MUgwLjZWMTkuNTk5OUgxOC42VjIuMDk5OTFIMTUuMSIvPjwvZz48ZyBpZD0iR3JvdXBfMyI+PHBhdGggaWQ9IlZlY3Rvcl9fX19fMF8yX1pRWU9OV0NTQVIiIHN0cm9rZT0iI0RDRENEQyIgc3Ryb2tlLWxpbmVjYXA9InNxdWFyZSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIxLjIiIGQ9Ik02LjYgMC42QzEwLjc4NzUgMC42IDE0LjE2MjUgMy45NzUgMTQuMTYyNSA4LjE2MjUiLz48cGF0aCBpZD0iVmVjdG9yX19fX18wXzNfTFFDRU9DQklKUCIgc3Ryb2tlPSIjRENEQ0RDIiBzdHJva2UtbGluZWNhcD0ic3F1YXJlIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuMiIgZD0iTTYuOTEyNSA0LjAzNzUyQzguOTc1IDQuMDM3NTIgMTAuNjYyNSA1LjcyNTAxIDEwLjY2MjUgNy43ODc1MSIvPjwvZz48L2c+PC9nPjwvc3ZnPg==");
+	--icon-wifi: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMSIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDIwIDIxIj48ZyBpZD0iR3JvdXAiPjxnIGlkPSJBaXJwbGF5Ij48ZyBpZD0iR3JvdXBfMiI+PHBhdGggaWQ9IlJlY3RhbmdsZSAxMDM2OF9fX19fMF8xX0JFRkxWSFBaSlQiIHN0cm9rZT0iI0RDRENEQyIgc3Ryb2tlLXdpZHRoPSIxLjIiIGQ9Ik01LjEgMi4wOTk5MUgwLjZWMTkuNTk5OUgxOC42VjIuMDk5OTFIMTUuMSIvPjwvZz48ZyBpZD0iR3JvdXBfMyI+PHBhdGggaWQ9IlZlY3Rvcl9fX19fMF8yX1lDQUlOUlJPUEUiIHN0cm9rZT0iI0RDRENEQyIgc3Ryb2tlLWxpbmVjYXA9InNxdWFyZSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIxLjIiIGQ9Ik02LjYgMC42QzEwLjc4NzUgMC42IDE0LjE2MjUgMy45NzUgMTQuMTYyNSA4LjE2MjUiLz48cGF0aCBpZD0iVmVjdG9yX19fX18wXzNfWVJOQVFWVExSTiIgc3Ryb2tlPSIjRENEQ0RDIiBzdHJva2UtbGluZWNhcD0ic3F1YXJlIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuMiIgZD0iTTYuOTEyNSA0LjAzNzUyQzguOTc1IDQuMDM3NTIgMTAuNjYyNSA1LjcyNTAxIDEwLjY2MjUgNy43ODc1MSIvPjwvZz48L2c+PC9nPjwvc3ZnPg==");
+	--icon-wifi-lock: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSIjMDAwIiBkPSJNNC45MiA2LjE5SDIuNFYyMi4zaDE3LjMxVjEwLjA2bDEuMi0uNjZ2MTQuMUgxLjJWNC45OWgzLjcydjEuMlptMTAuNzMgMy41MTljLjA3My40NC4xMTMuODkyLjExMyAxLjM1NGgtMS4yYTYuOTkgNi45OSAwIDAgMC0uMzMyLTIuMTMybDEuNDE4Ljc3OFpNNy45MTIgNi4zMzhhNC4zNiA0LjM2IDAgMCAxIDQuMzUgNC4zNWgtMS4yYTMuMTYgMy4xNiAwIDAgMC0zLjE1LTMuMTV2LTEuMlpNNy42MDEgMi45QTguMTMgOC4xMyAwIDAgMSAxMyA0LjkzOHYxLjcyQTYuOTQzIDYuOTQzIDAgMCAwIDcuNiA0LjFWMi45WiIvPjxwYXRoIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIuNSIgZD0iTTIyLjc1IDIuODk2djUuMjA4bC00Ljc1MSAyLjYxLTMuNzE0LTIuMDQtLjg5NC0uNDk0aC0uMDAxbC0uMTQtLjA3N1YyLjg5NmwuMzcxLS4yMDUuMjQ2LS4xMzdoLjAwMWwuMjUtLjEzMi4wMDMtLjAwMi41LS4yNzcgMS0uNTQ3IDEtLjU1M3YtLjAwMWwxLjM3OC0uNzU4IDQuNzUxIDIuNjEyWiIvPjwvc3ZnPg==");
+	--icon-band-text-2G: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSI2IiBmaWxsPSJub25lIiB2aWV3Qm94PSIwIDAgMTUgNiI+PGcgaWQ9Ikdyb3VwIj48cGF0aCBpZD0iVW5pb24iIGZpbGw9IiNFQkVCRUIiIGQ9Ik0zLjk1OTk2IDBDNC44NTk5NiAwIDUuMzA5NTcgMC4zNjAwNzggNS4zMDk1NyAxLjA4MDA4VjIuMDcwMzFDNS4zMDk0NCAyLjc5MDEgNC44NTk4MyAzLjE1MDM5IDMuOTU5OTYgMy4xNTAzOUgxLjYyMDEyQzEuMzgwMTIgMy4xNTAzOSAxLjI1OTc3IDMuMjQ2NDggMS4yNTk3NyAzLjQzODQ4VjUuMTc0OEg1LjMwOTU3VjUuOTQwNDNIMFYzLjQ2NDg0QzYuNTI1NTNlLTA1IDIuNzQ1MDUgMC40NDk5MzUgMi4zODQ4NyAxLjM0OTYxIDIuMzg0NzdIMy42OTA0M0MzLjkzMDE0IDIuMzg0NjUgNC4wNDk4IDIuMjg4NTcgNC4wNDk4IDIuMDk2NjhWMS4wNTI3M0M0LjA0OTY5IDAuODYxMDI2IDMuOTMwMDMgMC43NjQ3NjMgMy42OTA0MyAwLjc2NDY0OEgwLjQ1MDE5NVYwSDMuOTU5OTZaTTcuODMwMDggNS45NDA0M0g2LjU2OTM0VjQuODYwMzVINy44MzAwOFY1Ljk0MDQzWk0xNC4zOTc1IDUuOTQwNDNIMTMuMTM3N1Y0LjcyNDYxSDkuMDg3ODlWMy45NTk5NkwxMi44MjMyIDBIMTQuMzk3NVY1Ljk0MDQzWk0xMC41NDU5IDMuOTU5OTZIMTMuMTM3N1YxLjIxNDg0TDEwLjU0NTkgMy45NTk5NloiLz48L2c+PC9zdmc+");
+	--icon-band-text-5G: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3IiBoZWlnaHQ9IjkiIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCA3IDkiPjxnIGlkPSJHcm91cCI+PHBhdGggaWQ9IjUiIGZpbGw9IiNEQ0RDREMiIGQ9Ik0wLjg0NTE3NiA3VjYuMjM1SDQuNTM1MThDNC43NzUxOCA2LjIzNSA0Ljg5NTE4IDYuMTM5IDQuODk1MTggNS45NDdWNC40OThDNC44OTUxOCA0LjMwNiA0Ljc3NTE4IDQuMjEgNC41MzUxOCA0LjIxSDAuODQ1MTc2VjEuMDZINS43OTUxOFYxLjgyNUgyLjEwNTE4VjMuNDQ1SDQuODA1MThDNS43MDUxOCAzLjQ0NSA2LjE1NTE4IDMuODA1IDYuMTU1MTggNC41MjVWNS45MkM2LjE1NTE4IDYuNjQgNS43MDUxOCA3IDQuODA1MTggN0gwLjg0NTE3NloiLz48L2c+PC9zdmc+");
+	--icon-band-text-5G-1: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNyIgaGVpZ2h0PSI5IiBmaWxsPSJub25lIiB2aWV3Qm94PSIwIDAgMTcgOSI+PGcgaWQ9Ikdyb3VwIj48cGF0aCBpZD0iNS0xIiBmaWxsPSIjRENEQ0RDIiBkPSJNMC42Njg0MTggN1Y2LjIzNUg0LjM1ODQyQzQuNTk4NDIgNi4yMzUgNC43MTg0MiA2LjEzOSA0LjcxODQyIDUuOTQ3VjQuNDk4QzQuNzE4NDIgNC4zMDYgNC41OTg0MiA0LjIxIDQuMzU4NDIgNC4yMUgwLjY2ODQxOFYxLjA2SDUuNjE4NDJWMS44MjVIMS45Mjg0MlYzLjQ0NUg0LjYyODQyQzUuNTI4NDIgMy40NDUgNS45Nzg0MiAzLjgwNSA1Ljk3ODQyIDQuNTI1VjUuOTJDNS45Nzg0MiA2LjY0IDUuNTI4NDIgNyA0LjYyODQyIDdIMC42Njg0MThaTTYuOTIzMDcgNC44NFY0LjAzSDEwLjA3MzFWNC44NEg2LjkyMzA3Wk0xMS45MjE5IDEuODI1VjEuMDZIMTQuODAxOVY3SDEzLjU0MTlWMS44MjVIMTEuOTIxOVoiLz48L2c+PC9zdmc+");
+	--icon-band-text-5G-2: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNyIgaGVpZ2h0PSI5IiBmaWxsPSJub25lIiB2aWV3Qm94PSIwIDAgMTcgOSI+PGcgaWQ9Ikdyb3VwIj48cGF0aCBpZD0iNS0yIiBmaWxsPSIjRENEQ0RDIiBkPSJNMC42Njg0MTggN1Y2LjIzNUg0LjM1ODQyQzQuNTk4NDIgNi4yMzUgNC43MTg0MiA2LjEzOSA0LjcxODQyIDUuOTQ3VjQuNDk4QzQuNzE4NDIgNC4zMDYgNC41OTg0MiA0LjIxIDQuMzU4NDIgNC4yMUgwLjY2ODQxOFYxLjA2SDUuNjE4NDJWMS44MjVIMS45Mjg0MlYzLjQ0NUg0LjYyODQyQzUuNTI4NDIgMy40NDUgNS45Nzg0MiAzLjgwNSA1Ljk3ODQyIDQuNTI1VjUuOTJDNS45Nzg0MiA2LjY0IDUuNTI4NDIgNyA0LjYyODQyIDdIMC42Njg0MThaTTYuOTIzMDcgNC44NFY0LjAzSDEwLjA3MzFWNC44NEg2LjkyMzA3Wk0xMS4wMjE5IDdWNC41MjVDMTEuMDIxOSAzLjgwNSAxMS40NzE5IDMuNDQ1IDEyLjM3MTkgMy40NDVIMTQuNzExOUMxNC45NTE5IDMuNDQ1IDE1LjA3MTkgMy4zNDkgMTUuMDcxOSAzLjE1N1YyLjExM0MxNS4wNzE5IDEuOTIxIDE0Ljk1MTkgMS44MjUgMTQuNzExOSAxLjgyNUgxMS40NzE5VjEuMDZIMTQuOTgxOUMxNS44ODE5IDEuMDYgMTYuMzMxOSAxLjQyIDE2LjMzMTkgMi4xNFYzLjEzQzE2LjMzMTkgMy44NSAxNS44ODE5IDQuMjEgMTQuOTgxOSA0LjIxSDEyLjY0MTlDMTIuNDAxOSA0LjIxIDEyLjI4MTkgNC4zMDYgMTIuMjgxOSA0LjQ5OFY2LjIzNUgxNi4zMzE5VjdIMTEuMDIxOVoiLz48L2c+PC9zdmc+");
+	--icon-band-text-6G: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3IiBoZWlnaHQ9IjkiIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCA3IDkiPjxnIGlkPSJHcm91cCI+PHBhdGggaWQ9IjYiIGZpbGw9IiNEQ0RDREMiIGQ9Ik0wLjg0NTE3NiA1LjkyVjIuMzU2QzAuODQ1MTc2IDEuNDkyIDEuMzg1MTggMS4wNiAyLjQ2NTE4IDEuMDZINS43MDUxOFYxLjgyNUgyLjgyNTE4QzIuMzQ1MTggMS44MjUgMi4xMDUxOCAyLjAxNyAyLjEwNTE4IDIuNDAxVjMuNDQ1SDQuODA1MThDNS43MDUxOCAzLjQ0NSA2LjE1NTE4IDMuODA1IDYuMTU1MTggNC41MjVWNS45MkM2LjE1NTE4IDYuNjQgNS43MDUxOCA3IDQuODA1MTggN0gyLjE5NTE4QzEuMjk1MTggNyAwLjg0NTE3NiA2LjY0IDAuODQ1MTc2IDUuOTJaTTIuMTA1MTggNS45NDdDMi4xMDUxOCA2LjEzOSAyLjIyNTE4IDYuMjM1IDIuNDY1MTggNi4yMzVINC41MzUxOEM0Ljc3NTE4IDYuMjM1IDQuODk1MTggNi4xMzkgNC44OTUxOCA1Ljk0N1Y0LjQ5OEM0Ljg5NTE4IDQuMzA2IDQuNzc1MTggNC4yMSA0LjUzNTE4IDQuMjFIMi4xMDUxOFY1Ljk0N1oiLz48L2c+PC9zdmc+");
+	--icon-band-text-6G-1: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNyIgaGVpZ2h0PSI5IiBmaWxsPSJub25lIiB2aWV3Qm94PSIwIDAgMTcgOSI+PGcgaWQ9Ikdyb3VwIj48cGF0aCBpZD0iNi0xIiBmaWxsPSIjRENEQ0RDIiBkPSJNMC42Njg0MTggNS45MlYyLjM1NkMwLjY2ODQxOCAxLjQ5MiAxLjIwODQyIDEuMDYgMi4yODg0MiAxLjA2SDUuNTI4NDJWMS44MjVIMi42NDg0MkMyLjE2ODQyIDEuODI1IDEuOTI4NDIgMi4wMTcgMS45Mjg0MiAyLjQwMVYzLjQ0NUg0LjYyODQyQzUuNTI4NDIgMy40NDUgNS45Nzg0MiAzLjgwNSA1Ljk3ODQyIDQuNTI1VjUuOTJDNS45Nzg0MiA2LjY0IDUuNTI4NDIgNyA0LjYyODQyIDdIMi4wMTg0MkMxLjExODQyIDcgMC42Njg0MTggNi42NCAwLjY2ODQxOCA1LjkyWk0xLjkyODQyIDUuOTQ3QzEuOTI4NDIgNi4xMzkgMi4wNDg0MiA2LjIzNSAyLjI4ODQyIDYuMjM1SDQuMzU4NDJDNC41OTg0MiA2LjIzNSA0LjcxODQyIDYuMTM5IDQuNzE4NDIgNS45NDdWNC40OThDNC43MTg0MiA0LjMwNiA0LjU5ODQyIDQuMjEgNC4zNTg0MiA0LjIxSDEuOTI4NDJWNS45NDdaTTYuOTIzMDcgNC44NFY0LjAzSDEwLjA3MzFWNC44NEg2LjkyMzA3Wk0xMS45MjE5IDEuODI1VjEuMDZIMTQuODAxOVY3SDEzLjU0MTlWMS44MjVIMTEuOTIxOVoiLz48L2c+PC9zdmc+");
+	--icon-band-text-6G-2: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNyIgaGVpZ2h0PSI5IiBmaWxsPSJub25lIiB2aWV3Qm94PSIwIDAgMTcgOSI+PGcgaWQ9Ikdyb3VwIj48cGF0aCBpZD0iNi0yIiBmaWxsPSIjRENEQ0RDIiBkPSJNMC42Njg0MTggNS45MlYyLjM1NkMwLjY2ODQxOCAxLjQ5MiAxLjIwODQyIDEuMDYgMi4yODg0MiAxLjA2SDUuNTI4NDJWMS44MjVIMi42NDg0MkMyLjE2ODQyIDEuODI1IDEuOTI4NDIgMi4wMTcgMS45Mjg0MiAyLjQwMVYzLjQ0NUg0LjYyODQyQzUuNTI4NDIgMy40NDUgNS45Nzg0MiAzLjgwNSA1Ljk3ODQyIDQuNTI1VjUuOTJDNS45Nzg0MiA2LjY0IDUuNTI4NDIgNyA0LjYyODQyIDdIMi4wMTg0MkMxLjExODQyIDcgMC42Njg0MTggNi42NCAwLjY2ODQxOCA1LjkyWk0xLjkyODQyIDUuOTQ3QzEuOTI4NDIgNi4xMzkgMi4wNDg0MiA2LjIzNSAyLjI4ODQyIDYuMjM1SDQuMzU4NDJDNC41OTg0MiA2LjIzNSA0LjcxODQyIDYuMTM5IDQuNzE4NDIgNS45NDdWNC40OThDNC43MTg0MiA0LjMwNiA0LjU5ODQyIDQuMjEgNC4zNTg0MiA0LjIxSDEuOTI4NDJWNS45NDdaTTYuOTIzMDcgNC44NFY0LjAzSDEwLjA3MzFWNC44NEg2LjkyMzA3Wk0xMS4wMjE5IDdWNC41MjVDMTEuMDIxOSAzLjgwNSAxMS40NzE5IDMuNDQ1IDEyLjM3MTkgMy40NDVIMTQuNzExOUMxNC45NTE5IDMuNDQ1IDE1LjA3MTkgMy4zNDkgMTUuMDcxOSAzLjE1N1YyLjExM0MxNS4wNzE5IDEuOTIxIDE0Ljk1MTkgMS44MjUgMTQuNzExOSAxLjgyNUgxMS40NzE5VjEuMDZIMTQuOTgxOUMxNS44ODE5IDEuMDYgMTYuMzMxOSAxLjQyIDE2LjMzMTkgMi4xNFYzLjEzQzE2LjMzMTkgMy44NSAxNS44ODE5IDQuMjEgMTQuOTgxOSA0LjIxSDEyLjY0MTlDMTIuNDAxOSA0LjIxIDEyLjI4MTkgNC4zMDYgMTIuMjgxOSA0LjQ5OFY2LjIzNUgxNi4zMzE5VjdIMTEuMDIxOVoiLz48L2c+PC9zdmc+");
+	--icon-band-text-mlo: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNyIgaGVpZ2h0PSI5IiBmaWxsPSJub25lIiB2aWV3Qm94PSIwIDAgMTcgOSI+PGcgaWQ9Ikdyb3VwIj48cGF0aCBpZD0iTUxPIiBmaWxsPSIjRUJFQkVCIiBkPSJNMC44OTc0MTIgN1YyLjcxSDIuMDY3NDFMMy42OTI0MSA2LjExNkw1LjMxNzQxIDIuNzFINi40ODc0MVY3SDUuNTc3NDFWNC4wMDM1TDQuMTQ3NDEgN0gzLjIzNzQxTDEuODA3NDEgNC4wMDM1VjdIMC44OTc0MTJaTTcuNDYwODkgN1YyLjcxSDguMzcwODlWNi40NDc1SDExLjIzMDlWN0g3LjQ2MDg5Wk0xMS44MTU0IDYuMjJWMy40OUMxMS44MTU0IDIuOTcgMTIuMTQwNCAyLjcxIDEyLjc5MDQgMi43MUgxNS4xMzA0QzE1Ljc4MDQgMi43MSAxNi4xMDU0IDIuOTcgMTYuMTA1NCAzLjQ5VjYuMjJDMTYuMTA1NCA2Ljc0IDE1Ljc4MDQgNyAxNS4xMzA0IDdIMTIuNzkwNEMxMi4xNDA0IDcgMTEuODE1NCA2Ljc0IDExLjgxNTQgNi4yMlpNMTIuNzI1NCA2LjIzOTVDMTIuNzI1NCA2LjM3ODE3IDEyLjgxMiA2LjQ0NzUgMTIuOTg1NCA2LjQ0NzVIMTQuOTM1NEMxNS4xMDg3IDYuNDQ3NSAxNS4xOTU0IDYuMzc4MTcgMTUuMTk1NCA2LjIzOTVWMy40NzA1QzE1LjE5NTQgMy4zMzE4MyAxNS4xMDg3IDMuMjYyNSAxNC45MzU0IDMuMjYyNUgxMi45ODU0QzEyLjgxMiAzLjI2MjUgMTIuNzI1NCAzLjMzMTgzIDEyLjcyNTQgMy40NzA1VjYuMjM5NVoiLz48L2c+PC9zdmc+");
+}
+
 
 .popup_container.hide_title_cntr .action_container .btn_container.delete{
-	background: rgb(255 255 255 / 0%);
-	border: 1px solid #B3B3B3;
-	color: var(--page-title-color);
+	background: var(--wrt-btn-default-bg);
+	border: 1px solid var(--wrt-btn-default-border);
+	box-shadow: var(--wrt-btn-default-shadow);
+	border-radius: var(--wrt-btn-radius);
+	color: var(--wrt-btn-default-color);
+	transition: background-color .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+	transform: translateY(0);
+}
+.popup_container.hide_title_cntr .action_container .btn_container.delete:hover{
+	background: var(--wrt-btn-default-hover-bg);
+	color: var(--wrt-btn-default-hover-color);
+	border-color: var(--wrt-btn-default-hover-border);
+	box-shadow: var(--wrt-btn-default-hover-shadow);
+	transform: translateY(-1px);
+}
+.popup_container.hide_title_cntr .action_container .btn_container.delete:active{
+	background: var(--wrt-btn-default-active-bg);
+	color: var(--wrt-btn-default-active-color);
+	border-color: var(--wrt-btn-default-active-border);
+	box-shadow: var(--wrt-btn-default-shadow);
+	transform: translateY(0);
+}
+.popup_container.hide_title_cntr .action_container .btn_container.delete:focus-visible{
+	outline: 3px solid rgba(var(--focus-ring-rgb), .35);
+	outline-offset: 1px;
 }
 .profile_item_container.wizard{
 	background: var(--card-list-EL02-item-normal-color);
@@ -13,13 +65,13 @@
 	border-radius: var(--radius-sm);
 }
 .profile_item_container.wizard:hover{
-	background: var(--card-list-EL02-item-hover-color);
+	background: rgba(var(--surface-invert-rgb),0.03);
 	outline: 1px solid var(--brand-color);
-	box-shadow: var(--shadow-elevation10-primary-color);
+	box-shadow: rgba(var(--shadow-ambient-primary-50-rgb),0.2);
 }
 
 [data-asuswrt-theme="rog"] .profile_item_container.wizard{
-	background: var(--card-list-EL01-item-normal-color);
+	background: rgba(var(--surface-invert-rgb),0.03);
 	-webkit-tap-highlight-color: transparent;
 	display: flex;
 	align-items: center;
@@ -39,35 +91,6 @@
 	/*box-shadow: 3px 1px 1px 1px #FFFFFF;*/
 }
 
-[data-asuswrt-theme="rog"] .profile_item_container.wizard::before,
-[data-asuswrt-theme="rog"] .profile_item_container.wizard::after {
-	position: absolute;
-	z-index: -1;
-	content: '';
-	transition: 1s ease-in-out;
-}
-
-[data-asuswrt-theme="rog"] .profile_item_container.wizard::before {
-	width: 0;
-	height: 104%;
-}
-
-[data-asuswrt-theme="rog"] .profile_item_container.wizard::after {
-	height: 0;
-	width:  104%;
-}
-[data-asuswrt-theme="rog"] .profile_item_container.wizard:hover::before {
-	height: 104%;
-	width: 96%;
-	background: var(--card-list-EL02-item-normal-color);
-  }
-
-[data-asuswrt-theme="rog"] .profile_item_container.wizard:hover::after {
-	width:  104%;
-	height:  80%;
-	background: var(--card-list-EL02-item-normal-color);
-}
-
 .profile_item_container.ScenariosExplorer{
 	background: var(--body-bg-color);
 }
@@ -83,27 +106,31 @@
 	margin-left: 24px;
 }
 .profile_item_container.profile_list .bottom_info{
-	background-color: var(--card-list-EL03-item-static);
-	color: var(--body-text-color);
+	background-color: var(--wrt-card-surface-1-bg);
+	color: var(--text-primary);
 	border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-}
-.item_text_container .main_info:before{
-	background-color: var(--primary-icon-normal-color);
 }
 .profile_item_container.wizard .item_text_container .sub_info{
 	color: var(--text-info-02-color);
 	margin-left: 24px;
 	font-weight: 300;
 }
-.profile_item_container.Gaming .item_text_container .main_info:before{
-	--svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij4KICA8cGF0aCBmaWxsPSIjMDAwIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Im0xOC41IDQgMS43MDUgMS43MDUgMS41NyAxMi41MkwyMCAyMGgtMmwtMi0ySDhsLTIgMkg0bC0xLjc3NS0xLjc3NSAxLjU3LTEyLjUyTDUuNSA0SDdsMiAyaDZsMi0yaDEuNVpNNy4yOTUgMTcuMjk1bC4yOS0uMjk1SDkuNVY3aC0uOTE1bC0uMjktLjI5NUw2LjU4NSA1aC0uNjdsLTEuMTcgMS4xNy0xLjQ3IDExLjY5TDQuNDE1IDE5aDEuMTdsMS43MS0xLjcwNVpNMTAgMTdoNFY3aC00djEwWm04LjQxNSAyaDEuMTdsMS4xNC0xLjE0LTEuNDctMTEuNjlMMTguMDg1IDVoLS42N2wtMS43MSAxLjcwNS0uMjkuMjk1SDE0LjV2MTBoMS45MTVsLjI5LjI5NUwxOC40MTUgMTlaTTYuNSA5aDF2MWgxdjFoLTF2MWgtMXYtMWgtMXYtMWgxVjlabS41IDQuNXYxaDF2LTFIN1pNMTYuNSA5aDF2MWgtMVY5Wm0wIDJoLTF2LTFoMXYxWm0xIDB2MWgtMXYtMWgxWm0wIDBoMXYtMWgtMXYxWk0xNiAxNC41di0xaDF2MWgtMVoiIGNsaXAtcnVsZT0iZXZlbm9kZCIvPgo8L3N2Zz4K");
+
+/* wizard 的圖示尺寸與定位微調 */
+.item_text_container .main_info:before{
+	background-color: var(--brand-color);
+}
+.profile_item_container.wizard .item_text_container .main_info:before{
+	width: 28px;
+	height: 28px;
+	left: -40px;
 }
 .profile_item_container.feature_desc{
-	border: 1px solid #DCDCDC;
+	border: 1px solid var(--border-subtle);
 	background: initial;
 }
 .profile_item_container.feature_desc:hover{
-	border: 1px solid #DCDCDC;
+	border: 1px solid var(--border-subtle);
 }
 .profile_item_container.feature_desc .main_info{
 	color: var(--brand-color);
@@ -118,75 +145,496 @@
 	background-color: var(--icon-static-color);
 }
 .item_text_container .bottom_info > div:not(:first-child):before{
-	border-right: 1px solid #DCDCDC;
+	border-right: 1px solid var(--border-subtle);
 }
 .item_text_container .bottom_info span{
-	color: #181818;
+	color: var(--body-text-color);
 }
 .item_text_container .clients_num > .icon_client{
 	background-color: var(--icon-static-color);
 }
 .status_info .split_line{
-	background-color: #DCDCDC;
+	background-color: var(--border-subtle);
+}
+/* older svg file, remove this after all svg file is updated */
+.node_content_container > .icon_wifi_band{
+	background-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
+	min-width: 0;
+	margin-left: 0;
 }
 /* wifi signal icons */
 .status_info .conn_type.WiFi_2G{
-	background-image: var(--wifi-2G);
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	/* 以兩層背景作為顏色來源（Text on top → WiFi below） */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 9px, 100% 100%;
+	background-position: 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat;
+	/* 兩層 mask 對應兩層背景（文字在上、WiFi 在下） */
+	-webkit-mask-image: var(--icon-band-text-2G), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-2G), var(--icon-wifi);
+	-webkit-mask-size: 15px 9px, 100% 100%;
+	        mask-size: 15px 9px, 100% 100%;
+	-webkit-mask-position: 3.4px 12.4px, center center;
+	        mask-position: 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
 }
 .status_info .conn_type.WiFi_2G_lock{
-	background-image: var(--WiFi-2G-lock);
+	position: relative;
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	/* 三層背景作為顏色來源（由上到下）：Lock(文字) → 2G(文字) → WiFi(品牌) */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 5px 6px, 15px 9px, 100% 100%;
+	background-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat, no-repeat;
+	/* 三層 mask 對應三層背景（順序需與 background 對齊） */
+	-webkit-mask-image: var(--icon-lock), var(--icon-band-text-2G), var(--icon-wifi-lock);
+	        mask-image: var(--icon-lock), var(--icon-band-text-2G), var(--icon-wifi-lock);
+	-webkit-mask-size: 5px 6px, 15px 9px, 100% 100%;
+	        mask-size: 5px 6px, 15px 9px, 100% 100%;
+	-webkit-mask-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	        mask-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat, no-repeat;
 }
 /* -end wifi signal icons */
 .status_info .conn_type.WiFi_5G{
-	background-image: var(--WiFi-5G);
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	/* Text on top → WiFi below */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 9px, 100% 100%;
+	background-position: 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-band-text-5G), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-5G), var(--icon-wifi);
+	-webkit-mask-size: 15px 9px, 100% 100%;
+	        mask-size: 15px 9px, 100% 100%;
+	-webkit-mask-position: 3.4px 12.4px, center center;
+	        mask-position: 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
 }
 .status_info .conn_type.WiFi_5G_lock{
-	background-image: var(--WiFi-5G-lock);
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	/* Lock (text) → 5G (text) → WiFi (brand) */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 5px 6px, 15px 9px, 100% 100%;
+	background-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-lock), var(--icon-band-text-5G), var(--icon-wifi-lock);
+	        mask-image: var(--icon-lock), var(--icon-band-text-5G), var(--icon-wifi-lock);
+	-webkit-mask-size: 5px 6px, 15px 9px, 100% 100%;
+	        mask-size: 5px 6px, 15px 9px, 100% 100%;
+	-webkit-mask-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	        mask-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat, no-repeat;
 }
-.status_info .conn_type.WiFi_5G1{
-	background-image: var(--WiFi-5G-1);
+.status_info .conn_type.WiFi_5G1, .icon_wifi_band.wifi_5g1{
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 9px, 100% 100%;
+	background-position: 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-band-text-5G-1), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-5G-1), var(--icon-wifi);
+	-webkit-mask-size: 15px 9px, 100% 100%;
+	        mask-size: 15px 9px, 100% 100%;
+	-webkit-mask-position: 3.4px 12.4px, center center;
+	        mask-position: 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
 }
 .status_info .conn_type.WiFi_5G1_lock{
-	background-image: var(--WiFi-5G-1-lock);
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 5px 6px, 15px 9px, 100% 100%;
+	background-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-lock), var(--icon-band-text-5G-1), var(--icon-wifi-lock);
+	        mask-image: var(--icon-lock), var(--icon-band-text-5G-1), var(--icon-wifi-lock);
+	-webkit-mask-size: 5px 6px, 15px 9px, 100% 100%;
+	        mask-size: 5px 6px, 15px 9px, 100% 100%;
+	-webkit-mask-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	        mask-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat, no-repeat;
 }
-.status_info .conn_type.WiFi_5G2{
-	background-image: var(--WiFi-5G-2);
+.status_info .conn_type.WiFi_5G2, .icon_wifi_band.wifi_5g2{
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 9px, 100% 100%;
+	background-position: 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-band-text-5G-2), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-5G-2), var(--icon-wifi);
+	-webkit-mask-size: 15px 9px, 100% 100%;
+	        mask-size: 15px 9px, 100% 100%;
+	-webkit-mask-position: 3.4px 12.4px, center center;
+	        mask-position: 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
 }
 .status_info .conn_type.WiFi_5G2_lock{
-	background-image: var(--WiFi-5G-2-lock);
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 5px 6px, 15px 9px, 100% 100%;
+	background-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-lock), var(--icon-band-text-5G-2), var(--icon-wifi-lock);
+	        mask-image: var(--icon-lock), var(--icon-band-text-5G-2), var(--icon-wifi-lock);
+	-webkit-mask-size: 5px 6px, 15px 9px, 100% 100%;
+	        mask-size: 5px 6px, 15px 9px, 100% 100%;
+	-webkit-mask-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	        mask-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat, no-repeat;
 }
-.status_info .conn_type.WiFi_6G{
-	background-image: var(--WiFi-6G);
+.status_info .conn_type.WiFi_6G, .icon_wifi_band.wifi_6g{
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 9px, 100% 100%;
+	background-position: 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-band-text-6G), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-6G), var(--icon-wifi);
+	-webkit-mask-size: 15px 9px, 100% 100%;
+	        mask-size: 15px 9px, 100% 100%;
+	-webkit-mask-position: 3.4px 12.4px, center center;
+	        mask-position: 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
 }
 .status_info .conn_type.WiFi_6G_lock{
-	background-image: var(--WiFi-6G-lock);
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 5px 6px, 15px 9px, 100% 100%;
+	background-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-lock), var(--icon-band-text-6G), var(--icon-wifi-lock);
+	        mask-image: var(--icon-lock), var(--icon-band-text-6G), var(--icon-wifi-lock);
+	-webkit-mask-size: 5px 6px, 15px 9px, 100% 100%;
+	        mask-size: 5px 6px, 15px 9px, 100% 100%;
+	-webkit-mask-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	        mask-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat, no-repeat;
 }
-.status_info .conn_type.WiFi_6G1{
-	background-image: var(--WiFi-6G-1);
+.status_info .conn_type.WiFi_6G1, .icon_wifi_band.wifi_6g1{
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 9px, 100% 100%;
+	background-position: 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-band-text-6G-1), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-6G-1), var(--icon-wifi);
+	-webkit-mask-size: 15px 9px, 100% 100%;
+	        mask-size: 15px 9px, 100% 100%;
+	-webkit-mask-position: 3.4px 12.4px, center center;
+	        mask-position: 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
 }
 .status_info .conn_type.WiFi_6G1_lock{
-	background-image: var(--WiFi-6G-1-lock);
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 5px 6px, 15px 9px, 100% 100%;
+	background-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-lock), var(--icon-band-text-6G-1), var(--icon-wifi-lock);
+	        mask-image: var(--icon-lock), var(--icon-band-text-6G-1), var(--icon-wifi-lock);
+	-webkit-mask-size: 5px 6px, 15px 9px, 100% 100%;
+	        mask-size: 5px 6px, 15px 9px, 100% 100%;
+	-webkit-mask-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	        mask-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat, no-repeat;
 }
-.status_info .conn_type.WiFi_6G2{
-	background-image: var(--WiFi-6G-2);
+.status_info .conn_type.WiFi_6G2, .icon_wifi_band.wifi_6g2{
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 9px, 100% 100%;
+	background-position: 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-band-text-6G-2), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-6G-2), var(--icon-wifi);
+	-webkit-mask-size: 15px 9px, 100% 100%;
+	        mask-size: 15px 9px, 100% 100%;
+	-webkit-mask-position: 3.4px 12.4px, center center;
+	        mask-position: 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
 }
 .status_info .conn_type.WiFi_6G2_lock{
-	background-image: var(--WiFi-6G-2-lock);
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 5px 6px, 15px 9px, 100% 100%;
+	background-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-lock), var(--icon-band-text-6G-2), var(--icon-wifi-lock);
+	        mask-image: var(--icon-lock), var(--icon-band-text-6G-2), var(--icon-wifi-lock);
+	-webkit-mask-size: 5px 6px, 15px 9px, 100% 100%;
+	        mask-size: 5px 6px, 15px 9px, 100% 100%;
+	-webkit-mask-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	        mask-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat, no-repeat;
 }
 .status_info .conn_type.WiFi_mlo{
-	background-image: var(--WiFi-mlo);
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 9px, 100% 100%;
+	background-position: 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-band-text-mlo), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-mlo), var(--icon-wifi);
+	-webkit-mask-size: 15px 9px, 100% 100%;
+	        mask-size: 15px 9px, 100% 100%;
+	-webkit-mask-position: 3.4px 12.4px, center center;
+	        mask-position: 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
 }
 .status_info .conn_type.WiFi_mlo_lock{
-	background-image: var(--WiFi-mlo-lock);
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 5px 6px, 15px 9px, 100% 100%;
+	background-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-lock), var(--icon-band-text-mlo), var(--icon-wifi-lock);
+	        mask-image: var(--icon-lock), var(--icon-band-text-mlo), var(--icon-wifi-lock);
+	-webkit-mask-size: 5px 6px, 15px 9px, 100% 100%;
+	        mask-size: 5px 6px, 15px 9px, 100% 100%;
+	-webkit-mask-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	        mask-position: 15.7px 1.9px, 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat, no-repeat;
 }
+/* add profile\more confige\ aimesh*/
+.icon_wifi_band.wifi_2g{
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	/* 以兩層背景作為顏色來源（Text on top → WiFi below） */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 9px, 100% 100%;
+	background-position: 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat;
+	/* 兩層 mask 對應兩層背景（文字在上、WiFi 在下） */
+	-webkit-mask-image: var(--icon-band-text-2G), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-2G), var(--icon-wifi);
+	-webkit-mask-size: 15px 9px, 100% 100%;
+	        mask-size: 15px 9px, 100% 100%;
+	-webkit-mask-position: 4px 12.4px, center center;
+	        mask-position: 4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
 
+}
+.icon_wifi_band.wifi_5g{
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	/* Text on top → WiFi below */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 9px, 100% 100%;
+	background-position: 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-band-text-5G), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-5G), var(--icon-wifi);
+	-webkit-mask-size: 15px 9px, 100% 100%;
+	        mask-size: 15px 9px, 100% 100%;
+	-webkit-mask-position: 4px 12.4px, center center;
+	        mask-position: 4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
+}
+.icon_wifi_band.wifi_5g1{
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	/* Text on top → WiFi below */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 9px, 100% 100%;
+	background-position: 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-band-text-5G-1), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-5G-1), var(--icon-wifi);
+	-webkit-mask-size: 15px 9px, 100% 100%;
+	        mask-size: 15px 9px, 100% 100%;
+	-webkit-mask-position: 4px 12.4px, center center;
+	        mask-position: 4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
+}
+.icon_wifi_band.wifi_5g2{
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	/* Text on top → WiFi below */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 9px, 100% 100%;
+	background-position: 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-band-text-5G-2), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-5G-2), var(--icon-wifi);
+	-webkit-mask-size: 15px 9px, 100% 100%;
+	        mask-size: 15px 9px, 100% 100%;
+	-webkit-mask-position: 4px 12.4px, center center;
+	        mask-position: 4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
+}
+.icon_wifi_band.wifi_6g{
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	/* Text on top → WiFi below */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 9px, 100% 100%;
+	background-position: 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-band-text-6G), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-6G), var(--icon-wifi);
+	-webkit-mask-size: 15px 9px, 100% 100%;
+	        mask-size: 15px 9px, 100% 100%;
+	-webkit-mask-position: 4px 12.4px, center center;
+	        mask-position: 4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
+}
+.icon_wifi_band.wifi_6g1{
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	/* Text on top → WiFi below */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 9px, 100% 100%;
+	background-position: 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-band-text-6G-1), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-6G-1), var(--icon-wifi);
+	-webkit-mask-size: 15px 9px, 100% 100%;
+	        mask-size: 15px 9px, 100% 100%;
+	-webkit-mask-position: 4px 12.4px, center center;
+	        mask-position: 4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
+}
+.icon_wifi_band.wifi_6g2{
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	/* Text on top → WiFi below */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 9px, 100% 100%;
+	background-position: 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-band-text-6G-2), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-6G-2), var(--icon-wifi);
+	-webkit-mask-size: 15px 9px, 100% 100%;
+	        mask-size: 15px 9px, 100% 100%;
+	-webkit-mask-position: 4px 12.4px, center center;
+	        mask-position: 4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
+}
 
 .status_info .conn_type.WiFi,
 .status_info .conn_type.WiFi_offline,
 .status_info .conn_type.LAN{
 	background-color: var(--brand-color);
 }
-.status_info .conn_type.WiFi7{
+.status_info .conn_type.WiFi6,
+.status_info .conn_type.WiFi7,
+.status_info .conn_type.WiFi8{
 	background-color: var( --icon-static-color);
 }
 .profile_setting.Get_Start{
@@ -230,7 +678,7 @@
 	margin-bottom: initial;
 }
 .setting_subtab_container > .subtab_item{
-	color: var(---tab-nav-text-normal-color);
+	color: var(--tab-nav-text-normal-color);
 	justify-content: space-evenly;
 }
 .setting_subtab_container > .subtab_item:hover{
@@ -253,42 +701,42 @@
 	width: 100%;
 }
 .node_container{
-	background: var(--card-list-EL02-item-static);
+	background: var(--wrt-card-surface-1-bg);
 }
 .node_container:before,
 .cb_item_container:before{
-	border-bottom: 1px solid var(--card-list-EL02-item-static-stroke);
+	border-bottom: 1px solid var(--wrt-card-surface-1-stroke);
 }
 .node_content_container > .node_info > .node_main_info{
 	color: var(--text-info-color);
 }
 .node_content_container  > .node_info > .node_sub_info{
-	color: var(--text-brand-color);
+	color: var(--wrt-text-primary);
 }
-.node_content_container > .icon_wifi_band{
-	background-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
+.node_sub_info span::after {
+	background-color: rgb(--wrt-divider-color);  
 }
 .node_container > .node_hint,
 .profile_group > .profile_hint{
-	color: #ff0000;
+	color: var(--hint-text-el10-warning);
 }
 .dns_list_container .category_title,
 .dns_list_container.ping .dns_title{
-	background: rgba(0, 133, 255, 0.1);
-	color: #262626;
+	background: var(--tab-nav-hover-bg-fill-color);
+	color: var(--body-text-color);
 }
 .dns_list_container .item_container{
-	color: #4d4d4d;
+	color: var(--text-info-color);
 }
 .dns_list_container .item_container.dns_content{
-	color: #262626;
+	color: var(--body-text-color);
 }
 .dns_list_container.ping .item_container .service span{
 	color: var(--brand-color);
 }
 .dns_list_container .category_title:before,
 .dns_list_container .item_container:before{
-	border-bottom: 1px solid #DCDCDC;
+	border-bottom: 1px solid var(--border-subtle);
 }
 .dns_ping_text_component .text-loading{
 	color: rgb(100 100 100 / 30%);
@@ -298,54 +746,55 @@
 }
 .bg_template_container::-webkit-scrollbar-track,
 .manual_dhcp_list_container::-webkit-scrollbar-track{
-	border: 4px solid #FFFFFF;
-	background-color: #DCDCDC;
+	border: 4px solid var(--white-alpha-100);
+	background-color: var(--border-subtle);
 }
 .bg_template_container::-webkit-scrollbar-thumb,
 .manual_dhcp_list_container::-webkit-scrollbar-thumb{
-	background-color: #CCCCCC;
-	border: 2px solid #FFFFFF;
+	background-color: var(--border-subtle);
+	border: 2px solid var(--white-alpha-100);
 }
 .bg_template_container .bg_upload_image{
-	background: #F5F5F5;
-	border: 2px dashed #999999;
+	background: var(--surface-card);
+	border: 2px dashed var(--text-secondary);
 }
 .bg_template_container .bg_upload_image:before{
-	color: #999999;
+	color: var(--text-secondary);
 }
 .bg_template_container .bg_upload_image:hover{
-	border: 2px dashed #262626;
+	border: 2px dashed var(--page-title-color);
 }
 .bg_template_container .bg_upload_image:hover:before{
-	color: #262626;
+	color: var(--page-title-color);
 }
 .VPN_list_container,
 .macfilter_list_container,
 .manual_dhcp_list_container{
-	background: #F5F5F5;
+	background: var(--card-bg-color);
 }
 .manual_dhcp_list_container .dhcp_rule_container{
-	background-color: #FFF;
+	background-color: var(--card-bg-color);
 	box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05), 0px 1px 4px rgba(60, 60, 60, 0.1);
 	border: 1px solid rgba(255, 255, 255, 0.02);
 }
 .VPN_list_container:before,
 .macfilter_list_container:before{
-	border-bottom: 1px solid #DCDCDC;
+	border-bottom: 1px solid var(--border-subtle);
 }
 .VPN_list_container .profile_group:not(:first-child):before{
-	border-top: 1px solid #DCDCDC;
+	border-top: 1px solid var(--border-subtle);
 }
 .VPN_list_container .title,
 .macfilter_list_container .title{
 	color: var(--brand-color);
+	line-height: 2.5rem;
 }
 .VPN_list_container .profile_container,
 .macfilter_list_container .macfilter_rule_container{
-	background: #FFF;
+	background: var(--surface-card);
 }
 .VPN_list_container .profile_item:before{
-	border-bottom: 1px solid #DCDCDC;
+	border-bottom: 1px solid var(--border-subtle);
 }
 .clientlist_container .client_container:before,
 .clientlist_container .no_client_hint:before,
@@ -357,74 +806,159 @@
 .clientlist_container .client_container:not(:first-child):before,
 .clientlist_container .no_client_hint:not(:first-child):before,
 .macfilter_list_container .no_rule_hint:before{
-	border-top: 1px solid #DCDCDC;
+	border-top: 1px solid var(--border-subtle);
 }
 .clientlist_container .no_client_hint,
 .macfilter_list_container .no_rule_hint,
 .manual_dhcp_list_container .no_rule_hint{
-	color: #181818;
+	color: var(--body-text-color);
 }
 .macfilter_rule_container:before{
-	border-top: 1px solid #DCDCDC;
+	border-top: 1px solid var(--border-subtle);
 }
 .manual_dhcp .client_content_container .sub_info > div{
-	color: #262626;
+	color: var(--body-text-color);
 }
 .client_content_container > .sub_info > div{
-	color: #262626;
+	color: var(--body-text-color);
 }
 .client_content_container .sub_info > div:not(:first-child):before{
-	border-left: 1px solid #DCDCDC;
+	border-left: 1px solid var(--border-subtle);
 }
 .client_content_container .client_name{
-	color: #262626;
+	color: var(--body-text-color);
 }
 .manual_dhcp .client_content_container .client_mac{
-	color: #4D4D4D;
+	color: var(--text-info-color);
 }
 .client_content_container .conn_type.LAN{
 	background-color: var(--brand-color);
 }
 .client_content_container .conn_type.WiFi_2G{
-	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_2g.svg);
+	width: 20px;
+	height: 20px;
+	display: inline-block;
+	/* 以兩層背景作為顏色來源（Text on top → WiFi below） */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 8px, 100% 100%;
+	background-position: 3.4px 11.5px, center center;
+	background-repeat: no-repeat, no-repeat;
+	/* 兩層 mask 對應兩層背景（文字在上、WiFi 在下） */
+	-webkit-mask-image: var(--icon-band-text-2G), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-2G), var(--icon-wifi);
+	-webkit-mask-size: 15px 8px, 100% 100%;
+	        mask-size: 15px 8px, 100% 100%;
+	-webkit-mask-position: 3.4px 11.5px, center center;
+	        mask-position: 3.4px 11.5px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
 }
 .client_content_container .conn_type.WiFi_5G{
-	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_5g.svg);
+	width: 20px;
+	height: 20px;
+	display: inline-block;
+	/* 以兩層背景作為顏色來源（Text on top → WiFi below） */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 8px, 100% 100%;
+	background-position: 3.4px 11.5px, center center;
+	background-repeat: no-repeat, no-repeat;
+	/* 兩層 mask 對應兩層背景（文字在上、WiFi 在下） */
+	-webkit-mask-image: var(--icon-band-text-5G), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-5G), var(--icon-wifi);
+	-webkit-mask-size: 15px 8px, 100% 100%;
+	        mask-size: 15px 8px, 100% 100%;
+	-webkit-mask-position: 3.4px 11.5px, center center;
+	        mask-position: 3.4px 11.5px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
 }
 .client_content_container .conn_type.WiFi_6G{
-	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g.svg);
+	width: 20px;
+	height: 20px;
+	display: inline-block;
+	/* 以兩層背景作為顏色來源（Text on top → WiFi below） */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 8px, 100% 100%;
+	background-position: 3.4px 11.5px, center center;
+	background-repeat: no-repeat, no-repeat;
+	/* 兩層 mask 對應兩層背景（文字在上、WiFi 在下） */
+	-webkit-mask-image: var(--icon-band-text-6G), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-6G), var(--icon-wifi);
+	-webkit-mask-size: 15px 8px, 100% 100%;
+	        mask-size: 15px 8px, 100% 100%;
+	-webkit-mask-position: 3.4px 11.5px, center center;
+	        mask-position: 3.4px 11.5px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
 }
 .client_content_container .conn_type.WiFi_MLO{
-	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_mlo.svg);
+	width: 20px;
+	height: 20px;
+	display: inline-block;
+	/* 以兩層背景作為顏色來源（Text on top → WiFi below） */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 9px, 100% 100%;
+	background-position: 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat;
+	/* 兩層 mask 對應兩層背景（文字在上、WiFi 在下） */
+	-webkit-mask-image: var(--icon-band-text-mlo), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-mlo), var(--icon-wifi);
+	-webkit-mask-size: 15px 9px, 100% 100%;
+	        mask-size: 15px 9px, 100% 100%;
+	-webkit-mask-position: 3.4px 12.4px, center center;
+	        mask-position: 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
 }
 .feature_desc_container .title{
 	color: var(--brand-color);
 }
 .feature_desc_container .desc{
-	color: #4D4D4D;
+	color: var(--text-info-color);
 }
 .feature_desc_container .desc a:link{
 	color: var(--brand-color);
 }
 .feature_desc_container .wizard_list_bg:before{
-	border-bottom: 1px solid #DCDCDC;
+	border-bottom: 1px solid var(--border-subtle);
 }
 .wifi_share_container .qrcode_container{
-	border: 1px solid rgb(85 100 111);
+	border: 1px solid var(--border-subtle);
 	border-radius: 8px;
 	background: initial;
 }
 .qrcode_container > .qr_text{
-	color: rgb(94, 100, 112);
+	color: var(--wrt-text-primary);
 }
 .qrcode_btn{
-	background-color: var(--icon-normal-color);
+	background-color: var(--wrt-btn-icon-color);
 }
 .export_btn_container > .export_btn{
-	color: rgb(94, 100, 112);
+	color: var(--wrt-btn-outline-primary-color);
+	border: 1px solid var(--wrt-btn-outline-primary-border);
+	background-color: var(--wrt-btn-outline-primary-bg);
+}
+.export_btn_container > .export_btn:hover{
+	background-color: var(--wrt-btn-outline-primary-hover-bg);
+	color: var(--wrt-btn-outline-primary-hover-color);
+	border: 1px solid var(--wrt-btn-outline-primary-border);
+}
+.export_btn_container > .export_btn:active{
+	background-color: var(--wrt-btn-outline-primary-active-bg);
+	color: var(--wrt-btn-outline-primary-active-color);
+	border: 1px solid var(--wrt-btn-outline-primary-active-border);
 }
 .export_btn_container > .export_btn .btn_text:before{
-	background-color: #4D4D4D;
+	background-color: var(--icon-active-color);
+	top: -10px !important;
 }
 .profile_setting_title.Scenarios > .title{
 	color: var(--brand-color);
@@ -433,30 +967,30 @@
 	color: var(--brand-color);
 }
 .gaming_action_container > div{
-	box-shadow: 0px 2px 3px 0px rgb(20 50 80 / 5%);
-	color: rgb(255, 255, 255);
+	box-shadow: var(--shadow-elevation10);
+	color: var(--text-primary);
 }
 .gaming_action_container > div.gaming_btn_cancel{
-	border: 1px solid #B3B3B3;
-	color: #4D4D4D;
+	border: 1px solid var(--border-subtle);
+	color: var(--text-info-color);
 }
 .gaming_action_container > div.gaming_btn_save{
 	border: 1px solid var(--brand-color);
 	background: var(--brand-color);
 }
 .gaming_profile_list_title{
-	color: #4D4D4D;
+	color: var(--text-info-color);
 }
 .gaming_profile_list_cntr .profile_item_container{
-	background: #FFFFFF;
+	background: var(--surface-card);
 	box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05), 0px 1px 4px rgba(60, 60, 60, 0.1);
 }
 .gaming_profile_list_cntr .profile_info .profile_title,
 .gaming_profile_list_cntr .profile_info .profile_text{
-	color: #4D4D4D;
+	color: var(--text-info-color);
 }
 .gaming_profile_list_cntr .profile_info .profile_text{
-	color: #181818;
+	color: var(--text-primary);
 }
 .profile_setting_item .title span.mlo_band{
 	color: #007B91;
@@ -469,6 +1003,19 @@
 		margin-top: initial;
 	}
 	.export_btn_container > .export_btn .btn_text:before{
-		background-color: #000000;
+		background-color: var(--icon-normal-color);
 	}
 }
+
+.customize_alert .cus_alert_main_desc{
+	color: var(--text-info-color) !important;
+}
+.customize_alert .cus_alert_sub_desc{
+	color: var(--wrt-btn-outline-primary-color) !important;
+}
+.customize_alert .cus_alert_hint{
+	color: var(--hint-text-el10-warning) !important;
+}
+
+/* ==================== Theme overrides: ROG (migrate diffs from sdn_ROG.css with tokens) ==================== */
+/* ROG overrides removed to restore 14:00 state */

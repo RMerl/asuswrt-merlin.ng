@@ -10,7 +10,7 @@
         <div class="d-flex align-items-center mb-3">
             <div class="page-title"><#AiProtection_title_Dashboard_title#></div>
             <div role="icon" class="icon-size-24 icon-add-chart ms-3" onclick="addCard()"></div>
-            <div role="icon" class="icon-size-24 icon-settings ms-3" onclick="databaseSetting()"></div>
+            <div role="icon" class="icon-size-24 icon-settings ms-3 d-none" id="db_setting_icon" onclick="databaseSetting()"></div>
         </div>
         <div class="row">
             <!-- WAN -->
@@ -137,7 +137,7 @@
                                     </div>
                                     <div class="ms-auto card-data-value">
                                         <span id="cpu_usage_value"></span>
-                                        <span class="badge rounded-pill border text-primary small lh-1 fw-bold ms-2"><#feedback_when_now#></span>
+                                        <span class="badge rounded-pill ms-2" data-variant="outline" data-tone="primary"><#feedback_when_now#></span>
                                     </div>
                                 </div>
 
@@ -152,7 +152,7 @@
                                     </div>
                                     <div class="ms-auto card-data-value">
                                         <span id="ram_usage_value"></span>
-                                        <span class="badge rounded-pill border text-primary small lh-1 fw-bold ms-2"><#feedback_when_now#></span>
+                                        <span class="badge rounded-pill ms-2" data-variant="outline" data-tone="primary"><#feedback_when_now#></span>
                                     </div>
                                 </div>
 
@@ -170,7 +170,7 @@
                     <h5 class="card-header d-flex align-items-center justify-content-between"><#Status_Ethernet_Ports#></h5>
                     <div class="card-body p-0">
                         <div class="">
-							<iframe id="ethPortStatus" class="iframeInCard d-flex align-items-center clientBorder" src="/device-map/router_status.asp"></iframe>
+							<iframe id="ethPortStatus" class="iframeInCard d-flex align-items-center clientBorder" src="./device-map/router_status.asp"></iframe>
 
                             <div class="col-12 mt-2">
                                 <div class="d-flex align-items-center p-2">
@@ -189,7 +189,7 @@
                                         <div class="d-flex align-items-center">
                                             <div class="me-2 system-warning-tab"></div>
                                             <div class="ms-1 chart-sub-content-title"><#Notice#></div>
-                                            <span id="ethPortStatus_hint" class="badge rounded-pill border text-primary small lh-1 fw-bold ms-2 d-none">!</span>
+                                            <span id="ethPortStatus_hint" class="badge rounded-pill ms-2 d-none" data-variant="outline" data-tone="primary">!</span>
                                         </div>
                                     </div>
                                 </div>
@@ -235,7 +235,7 @@
             </div>
 
              <!-- Aura RGB -->
-            <div class="col-12 col-md-6 col-xl-4 mb-3">
+            <div id="aura_rgb_field" class="col-12 col-md-6 col-xl-4 mb-3">
                 <div class="card pt-2 h-100">
                     <h5 class="card-header d-flex align-items-center justify-content-between">Aura RGB</h5>
                     <div class="card-body p-0">
@@ -260,14 +260,14 @@
                                     <div class="me-2 system-cpu-tab"></div>
                                     <div class="ms-1 me-3 content-data-title"><#Traffic_Analyzer_usedtraffic#></div>
                                     <div class="fs-5 fw-bold" id="traffic">0 MB</div>
-                                    <div class="badge rounded-pill border text-primary small lh-1 fw-bold ms-2"><#feedback_when_now#></div>
+                                    <div class="badge rounded-pill ms-2" data-variant="outline" data-tone="primary"><#feedback_when_now#></div>
                                 </div>
 
                                 <div class="d-flex align-items-center col-6 col-xl-4 px-2">
                                     <div class="me-2 system-ram-tab"></div>
                                     <div class="ms-1 me-3 content-data-title"><#tm_wireless#></div>
                                     <div class="fs-5 fw-bold" id="wireless_client">0</div>
-                                    <div class="badge rounded-pill border text-primary small lh-1 fw-bold ms-2"><#feedback_when_now#></div>
+                                    <div class="badge rounded-pill ms-2" data-variant="outline" data-tone="primary"><#feedback_when_now#></div>
                                 </div>
                             </div-->
 
@@ -285,7 +285,7 @@
                                     </div>
                                     <div class="ms-auto card-data-value">
                                         <span id="traffic">0 MB</span>
-                                        <span class="badge rounded-pill border text-primary small lh-1 fw-bold ms-2"><#feedback_when_now#></span>
+                                        <span class="badge rounded-pill ms-2" data-variant="outline" data-tone="primary"><#feedback_when_now#></span>
                                     </div>
                                 </div>
 
@@ -300,7 +300,7 @@
                                     </div>
                                     <div class="ms-auto card-data-value">
                                         <span id="wireless_client">0</span>
-                                        <span class="badge rounded-pill border text-primary small lh-1 fw-bold ms-2"><#feedback_when_now#></span>
+                                        <span class="badge rounded-pill ms-2" data-variant="outline" data-tone="primary"><#feedback_when_now#></span>
                                     </div>
                                 </div>
                             </div>
@@ -311,8 +311,6 @@
             <!-- WiFi Interference -->
             <div class="col-12 mb-3" id="WiFiInterferenceView"></div>
         </div>
-        <script src="js/chart.min.js"></script>
-        <script src="js/chartjs-adapter-date-fns.js"></script>
         <script>
 			var webWrapper = true;
 
@@ -403,82 +401,165 @@
 
             var clientChart;
             function genAllClient() {
-                const wiredColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-1")}`;
-                const wirelesssColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-2")}`;
-                const labelColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-title-color")}`;
+                const wiredColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-circle-1")}`;
+                const wirelesssColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-circle-2-2")}`;
+                const labelColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-primary")}`;
 
                 let wirelessAllCount = system.client.wirelessCount,
                     wireAllCount = system.client.wiredCount;
                 let client = [wireAllCount, wirelessAllCount];
-                const colorArray = [wiredColor, wirelesssColor];
+                let colorArray = [wiredColor, wirelesssColor];
+                let labels = [`<#tm_wired#>`, `<#tm_wireless#>`];
+                let totalCount = wirelessAllCount + wireAllCount;
+                if (wireAllCount === 0 && wirelessAllCount === 0) {
+                    client = [1, 0, 0];
+                    labels = [`hidden`, `<#tm_wired#>`, `<#tm_wireless#>`];
+                    colorArray = ["rgba(255,255,255,0.7)", wiredColor, wirelesssColor];
+                }
+                if (clientChart && !clientChart.canvas.isConnected) {
+                    clientChart.destroy();
+                    clientChart = null;
+                }
                 if (clientChart) {
                     clientChart.data.datasets[0].data = client;
-                    clientChart.data.datasets[0].backgroundColor = [colorArray[0], colorArray[1]];
+                    clientChart.data.datasets[0].backgroundColor = colorArray;
+                    clientChart.data.labels = labels;
+                    if (totalCount === 0) {
+                        clientChart.options.plugins.tooltip = { enabled: false };
+                        clientChart.options.onHover = null;
+                        clientChart.options.onClick = null;
+                        clientChart.options.plugins.legend.onClick = function(){};
+                        if (clientChart._hiddenIndices) {
+                            Object.keys(clientChart._hiddenIndices).forEach(function(idx) {
+                                clientChart._hiddenIndices[idx] = false;
+                            });
+                        }
+                    } else {
+                        clientChart.options.plugins.tooltip = { enabled: true };
+                        clientChart.options.onHover = undefined;
+                        clientChart.options.onClick = undefined;
+                        clientChart.options.plugins.legend.onClick = undefined;
+                    }
                     clientChart.update('none');
                 } else {
                     const ctx1 = document.getElementById("chart_clients").getContext("2d");
                     const data = {
-                        labels: ["<#tm_wired#>", "<#tm_wireless#>"],
+                        labels: labels,
                         datasets: [
                             {
                                 data: client,
-                                backgroundColor: [colorArray[0], colorArray[1]],
+                                backgroundColor: colorArray,
                                 hoverOffset: 4,
                                 borderColor: "transparent",
                             },
                         ],
                     };
+                    let options = {
+                        cutout: "80%",
+                        scales: {
+                            ticks: {
+                                display: false,
+                            },
+                        },
+                        plugins: {
+                            legend: {
+                                position: "right",
+                                labels: {
+                                    color: labelColor,
+                                    display: false,
+                                    padding: 30,
+                                    filter: function(item) {
+                                        return item.text !== "hidden";
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                enabled: totalCount !== 0
+                            }
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                    };
+                    if (totalCount === 0) {
+                        options.onHover = null;
+                        options.onClick = null;
+                    }
                     clientChart = new Chart(ctx1, {
                         type: "doughnut",
                         data: data,
-                        options: {
-                            scales: {
-                                ticks: {
-                                    display: false,
-                                },
-                            },
-                            plugins: {
-                                legend: {
-                                    position: "right",
-                                    labels: {
-                                        color: labelColor,
-                                        display: false,
-                                        padding: 30,
-                                    },
-                                },
-                            },
-                            responsive: true,
-                            maintainAspectRatio: false,
-                        },
+                        options: options,
                     });
                 }
 
                 let code = "";
 
-                for (let [index, value] of Object.entries(system.wlBandSeq)) {
-                    let { name } = value,
-                        _perCount = system.client.wireless[index].count,
-                        percentage = 100;
+                if (system.aMesh.nodeList.length > 1 && system.aimeshWiFiIfList && system.aimeshWiFiIfList.length > 0) {
+                    const wifiIfList = system.aimeshWiFiIfList;
+                    for (let i = 0; i < wifiIfList.length; i++) {
+                        const { band, name } = wifiIfList[i];
 
-                    if (code !== "") {
-                        code += '<div class="divide-line"></div>';
-                    }
+                        let clientCount = 0;
+                        if (band === "2g" && system.client.wireless["2g1"]) {
+                            clientCount = system.client.wireless["2g1"].count || 0;
+                        }
+                        else if (band === "5g") {
+                            const count5g1 = system.client.wireless["5g1"] ? (system.client.wireless["5g1"].count || 0) : 0;
+                            const count5g2 = system.client.wireless["5g2"] ? (system.client.wireless["5g2"].count || 0) : 0;
+                            clientCount = count5g1 + count5g2;
+                        }
+                        else if (band === "6g") {
+                            const count6g1 = system.client.wireless["6g1"] ? (system.client.wireless["6g1"].count || 0) : 0;
+                            const count6g2 = system.client.wireless["6g2"] ? (system.client.wireless["6g2"].count || 0) : 0;
+                            clientCount = count6g1 + count6g2;
+                        }
 
-                    code += `
-                                <div class="row ps-4 pe-2">
-                                    <div class="col-3">
-                                        <div class="chart chart-color-${index}">
-                                            <div role="icon icon-inner" class="icon-size-20 icon-wifi icon-color-active-1"></div>
-                                        </div>
-                                    </div>
-                                    <div class="col-9 d-flex d-sm-block d-md-flex align-items-center justify-content-between">
-                                        <div class="me-3 text-sm-end pt-sm-2 pt-md-0 content-data-title" >
-                                            ${name}
-                                        </div>
-                                        <div class="me-3 content-data-value">${_perCount}</div>
+                        if (code !== "") {
+                            code += '<div class="divide-line"></div>';
+                        }
+
+                        code += `
+                            <div class="row ps-4 pe-2">
+                                <div class="col-3">
+                                    <div class="chart chart-color-${band}1">
+                                        <div role="icon icon-inner" class="icon-size-20 icon-wifi icon-color-active-1"></div>
                                     </div>
                                 </div>
-                            `;
+                                <div class="col-9 d-flex d-sm-block d-md-flex align-items-center justify-content-between">
+                                    <div class="me-3 text-sm-end pt-sm-2 pt-md-0 content-data-title" >
+                                        ${name}
+                                    </div>
+                                    <div class="me-3 content-data-value">${clientCount}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+                else {
+                    for (let [index, value] of Object.entries(system.wlBandSeq)) {
+                        let { name } = value,
+                            _perCount = system.client.wireless[index].count,
+                            percentage = 100;
+
+                        if (code !== "") {
+                            code += '<div class="divide-line"></div>';
+                        }
+
+                        code += `
+                            <div class="row ps-4 pe-2">
+                                <div class="col-3">
+                                    <div class="chart chart-color-${index}">
+                                        <div role="icon icon-inner" class="icon-size-20 icon-wifi icon-color-active-1"></div>
+                                    </div>
+                                </div>
+                                <div class="col-9 d-flex d-sm-block d-md-flex align-items-center justify-content-between">
+                                    <div class="me-3 text-sm-end pt-sm-2 pt-md-0 content-data-title" >
+                                        ${name}
+                                    </div>
+                                    <div class="me-3 content-data-value">${_perCount}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
                 }
 
                 document.querySelector("#wifi_client_table").innerHTML = code;
@@ -503,8 +584,8 @@
                 let nodeCount = [onlineAllCount, offlineAllCount];
                 let nodeLabel = [`<#Clientlist_Online#>`, `<#Clientlist_OffLine#>`];
 
-                const onlineColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-2")}`;
-                const offlineColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-hint-color-light")}`;
+                const onlineColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-1")}`;
+                const offlineColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-unplug")}`;
                 const labelColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-title-color")}`;
                 const ctx1 = document.getElementById("chart_nodes").getContext("2d");
                 const colorArray = [onlineColor, offlineColor];
@@ -524,6 +605,7 @@
                     type: "doughnut",
                     data: data,
                     options: {
+                        cutout: "80%",
                         scales: {
                             ticks: {
                                 display: false,
@@ -552,6 +634,7 @@
             // DNS PING
             var dns_ping_list = "", ping_array = [];
             var getDnsPingDataRetryCount = 0;
+            var getDnsPingDataTimer = null;
             function getDnsPingData() {
                 let data = httpApi.diag_ping.getResult(),
                     dns_ping = {};
@@ -565,12 +648,18 @@
                 ) {
                     getDnsPingDataRetryCount++;
                     if (getDnsPingDataRetryCount < 10) {
-                        setTimeout(getDnsPingData, 1000);
+                        getDnsPingDataTimer = setTimeout(getDnsPingData, 1000);
                     }
                 } else {
                     getDnsPingDataRetryCount = 0;
                     let item = Object.keys(data);
                     const dns_ping_list_array = decodeURIComponent(httpApi.nvramCharToAscii(["dns_ping_list"]).dns_ping_list).split("<");
+                    dns_ping_list = "";
+                    function findNameFromNvram(ip){
+                        const matchResult = dns_ping_list_array.filter(function(dns){return dns.split(">")[1] == ip});
+                        return matchResult[0] ? matchResult[0].split(">")[0] : "";
+                    }
+
                     for (let i = 0; i < item.length; i++) {
                         if (item[i] === "status") {
                             continue;
@@ -578,9 +667,8 @@
                         let target = data[item[i]],
                             index = item[i];
 
-                        function findNameFromNvram(ip){
-                            const matchResult = dns_ping_list_array.filter(function(dns){return dns.split(">")[1] == ip})
-                            return matchResult[0] ? matchResult[0].split(">")[0] : "";
+                        if (!findNameFromNvram(index)) {
+                            continue;
                         }
 
                         dns_ping[index] = {
@@ -594,7 +682,12 @@
                     ping_array = Object.values(dns_ping);
                     ping_array.sort((a, b) => a.avg - b.avg);
                     for (let item of Object.values(dns_ping)) {
-                        dns_ping_list += "<" + item.alias + ">" + item.ip;
+                        let newEntry = "<" + item.alias + ">" + item.ip;
+                        const existingEntries = dns_ping_list.split("<").slice(1);
+                        const isDuplicate = existingEntries.some(entry => "<" + entry === newEntry);
+                        if (!isDuplicate) {
+                            dns_ping_list += newEntry;
+                        }
                     }
 
                     genDnsPingTable();
@@ -654,6 +747,8 @@
             }
 
             function genCpuRam(rawData) {
+                const chartCanvas = document.getElementById("cpu_ram_chart");
+                if (!chartCanvas) return;
                 cpuLongData = [...rawData[0]];
                 ramLongData = [...rawData[1]];
                 let length = 15;
@@ -726,8 +821,12 @@
                     }
                 }
 
-                let ctx = document.getElementById("cpu_ram_chart").getContext("2d");
+                let ctx = chartCanvas.getContext("2d");
                 let labelColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color");
+                const gridColor = (() => {
+                    const v = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid-rgb').trim();
+                    return v ? `rgba(${v}, 0.30)` : 'rgba(139,139,139,.5)';
+                })();
                 cpuChart = new Chart(ctx, {
                     type: "line",
                     data: {
@@ -752,12 +851,18 @@
                                     stepSize: 20,
                                     count: 5,
                                 },
+                                grid: {
+                                    color: gridColor
+                                },
                                 suggestedMin: 0,
                                 suggestedMax: 100,
                             },
                             x: {
                                 ticks: {
                                     color: labelColor,
+                                },
+                                grid: {
+                                    color: gridColor
                                 },
                             },
                         },
@@ -780,6 +885,8 @@
                 return value.toFixed(1) + " " + scale[count];
             }
             function genBwClient(bw, client) {
+                const chartCanvas = document.getElementById("bw_chart");
+                if (!chartCanvas) return;
                 const labelColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color");
                 let length = 30;
                 let labelTag = [];
@@ -797,7 +904,11 @@
                     }
                 }
 
-                let ctx = document.getElementById("bw_chart").getContext("2d");
+                let ctx = chartCanvas.getContext("2d");
+                const gridColor = (() => {
+                    const v = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid-rgb').trim();
+                    return v ? `rgba(${v}, 0.30)` : 'rgba(139,139,139,.5)';
+                })();
                 let bwLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-1");
                 let bwLineBgColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--bg-chart-color-1");
                 let clientColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-2");
@@ -817,7 +928,7 @@
                         barPercentage: 0.6,
                     },
                     {
-                        label: "TRAFFIC",
+                        label: "<#Traffic_Analyzer_usedtraffic#>",
                         data: bandwidthUsage,
                         backgroundColor: [`${bwLineBgColor}`],
                         borderWidth: 1,
@@ -855,7 +966,7 @@
                                         let label = context.dataset.label || "",
                                             traffic = context.parsed.y;
                                         if (traffic !== null) {
-                                            if (label === "TRAFFIC") {
+                                            if (label === "<#Traffic_Analyzer_usedtraffic#>") {
                                                 label += ": " + convertTrafficUnit(traffic);
                                             } else {
                                                 label += ": " + traffic;
@@ -879,6 +990,9 @@
                                     stepSize: 1,
                                     maxTicksLimit: 5,
                                 },
+                                grid: {
+                                    color: gridColor
+                                },
                                 suggestedMin: 0,
                             },
                             y1: {
@@ -891,12 +1005,19 @@
                                     beginAtZero: true,
                                     maxTicksLimit: 5,
                                 },
+                                grid: {
+                                    color: gridColor,
+                                    drawOnChartArea: false
+                                },
                                 suggestedMin: 0,
                                 position: "right",
                             },
                             x: {
                                 ticks: {
                                     color: labelColor,
+                                },
+                                grid: {
+                                    color: gridColor
                                 },
                             },
                         },
@@ -978,14 +1099,29 @@
                         }
                     }
 
-                    dns_ping_list += "<" + name + ">" + ip;
+                    let newEntry = "<" + name + ">" + ip;
+                    const existingEntries = dns_ping_list.split("<").slice(1);
+                    const isDuplicate = existingEntries.some(entry => "<" + entry === newEntry);
+                    if (!isDuplicate) {
+                        dns_ping_list += newEntry;
+                    }
                     httpApi.nvramSet(
                         {
                             action_mode: "apply",
                             dns_ping_list: dns_ping_list,
                         },
                         function () {
+                            httpApi.nvramCharToAscii(["dns_ping_list"], true);
+                            const dnsPingTable = document.querySelector("#dns_ping_table");
+                            if (dnsPingTable) {
+                                dnsPingTable.innerHTML = '<div class="mt-5 text-center text-loading" data-text="DNS PING...">DNS PING...</div>';
+                            }
                             httpApi.diag_ping.start();
+                            if (getDnsPingDataTimer) {
+                                clearTimeout(getDnsPingDataTimer);
+                                getDnsPingDataTimer = null;
+                            }
+                            getDnsPingDataRetryCount = 0;
                             setTimeout(function () {
                                 getDnsPingData();
                             }, 100);
@@ -1085,7 +1221,9 @@
                             action_mode: "apply",
                             dns_ping_list: dns_ping_list,
                         },
-                        function () {}
+                        function () {
+                            httpApi.nvramCharToAscii(["dns_ping_list"], true);
+                        }
                     );
                     document.body.removeChild(element);
                 });
@@ -1115,7 +1253,7 @@
             var maxFreeSpace = 0;
             function genDisk(diskList) {
                 let template = "";
-                       
+
                 template += `
                                     <div class="d-flex align-items-center justify-content-center disk-banner">
                                         <div class="mx-3">
@@ -1250,6 +1388,11 @@
                 document.body.appendChild(element);
                 let { ex_db_backup_path, ex_db_backup_size, ex_db_backup_enable } = httpApi.nvramGet(["ex_db_backup_path", "ex_db_backup_size", "ex_db_backup_enable"], true);
 
+                if(isSupport("ai_support") && ex_db_backup_enable === "1" && ex_db_backup_path === "/ai"){
+                    ex_db_backup_path = "";
+                    ex_db_backup_size = "";
+                }
+
                 document.getElementById("db_path").value = ex_db_backup_path;
                 document.getElementById("db_size").value = ex_db_backup_size / 1024 / 1024;
 
@@ -1272,6 +1415,7 @@
                 });
                 // DATABASE confirm
                 document.getElementById("db_confirm").addEventListener("click", function () {
+                    let dbPath = document.getElementById("db_path").value;
                     let dbSize = document.getElementById("db_size").value;
 
                     if (document.querySelector("#space_size_hint")) {
@@ -1288,10 +1432,15 @@
                         return false;
                     }
 
+                    if(isSupport("ai_support") && dbPath === "") {
+                        dbPath = "/ai";
+                        dbSize = "100";
+                    }
+
                     httpApi.nvramSet({
                         action_mode: "apply",
                         ex_db_backup_enable: "1",
-                        ex_db_backup_path: document.getElementById("db_path").value,
+                        ex_db_backup_path: dbPath,
                         ex_db_backup_size: dbSize * 1024 * 1024,
                     });
 
@@ -1308,7 +1457,7 @@
                 let template = `
                                 <div class="d-flex justify-content-center mt-5">
                                 <div class="card-float">
-                                    <div class="card-header-float">ADD CARD</div>
+                                    <div class="card-header-float"><#AiProtection_title_Dashboard_add_card#></div>
                                     <div class="card-body-float">
                                         <div class="d-sm-flex align-items-center py-2">
                                             <div class="me-auto"><#Clientlist_name#></div>
@@ -1440,7 +1589,7 @@
 					let card_list = `${name}>${mac}>${category}>${dataTypeString}`;
                     let mainContainer = document.querySelectorAll(".row")[0];
                     let postData = {};
-                    
+
                     custom_card_list += "<" + card_list;
                     postData = {
                         action_mode: "apply",
@@ -1544,7 +1693,7 @@
                                         </div>
                                         <div class="ms-auto card-data-value">
                                             <span id="${cardName}_${dataTypeArray[i]}_usage_value"></span>
-                                            <span class="badge rounded-pill border text-primary small lh-1 fw-bold ms-2"><#feedback_when_now#></span>
+                                            <span class="badge rounded-pill ms-2" data-variant="outline" data-tone="primary"><#feedback_when_now#></span>
                                         </div>
                                     </div>
                                     <div class="divide-line ${cardName}_${dataTypeArray[i]}"></div>
@@ -1581,6 +1730,10 @@
             function genCpuRamChart(targetID, rawData) {
                 let ctx = document.getElementById(targetID + "_chart").getContext("2d");
                 let labelColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color");
+                const gridColor = (() => {
+                    const v = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid-rgb').trim();
+                    return v ? `rgba(${v}, 0.30)` : 'rgba(139,139,139,.5)';
+                })();
                 let cpuLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-icon-traffic-up");
                 let ramLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-icon-traffic-down");
                 cpuLongData = [...rawData[0]];
@@ -1693,12 +1846,18 @@
                                     beginAtZero: true,
                                     count: 5,
                                 },
+                                grid: {
+                                    color: gridColor
+                                },
                                 suggestedMin: 0,
                                 suggestedMax: 100,
                             },
                             x: {
                                 ticks: {
                                     color: labelColor,
+                                },
+                                grid: {
+                                    color: gridColor
                                 },
                             },
                         },
@@ -1734,6 +1893,10 @@
             function genWlClientChart(targetID, rawData) {
                 let ctx = document.getElementById(targetID + "_chart").getContext("2d");
                 let labelColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color");
+                const gridColor = (() => {
+                    const v = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid-rgb').trim();
+                    return v ? `rgba(${v}, 0.30)` : 'rgba(139,139,139,.5)';
+                })();
                 let clientLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-icon-traffic-up");
 
                 clientLongData = [...rawData[0]];
@@ -1815,11 +1978,17 @@
                                     stepSize: 1,
                                     maxTicksLimit: 5,
                                 },
+                                grid: {
+                                    color: gridColor
+                                },
                                 suggestedMin: 0,
                             },
                             x: {
                                 ticks: {
                                     color: labelColor,
+                                },
+                                grid: {
+                                    color: gridColor
                                 },
                             },
                         },
@@ -1847,6 +2016,10 @@
             function genRssiChart(targetID, rawData) {
                 let ctx = document.getElementById(targetID + "_chart").getContext("2d");
                 let labelColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color");
+                const gridColor = (() => {
+                    const v = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid-rgb').trim();
+                    return v ? `rgba(${v}, 0.30)` : 'rgba(139,139,139,.5)';
+                })();
                 let rssiLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-icon-traffic-up");
 
                 let length = 15;
@@ -1936,10 +2109,16 @@
                                 // stacked: true,
 
                                 suggestedMax: -100,
+                                grid: {
+                                    color: gridColor
+                                },
                             },
                             x: {
                                 ticks: {
                                     color: labelColor,
+                                },
+                                grid: {
+                                    color: gridColor
                                 },
                             },
                         },
@@ -1974,6 +2153,10 @@
             function genTxRxChart(targetID, rawData) {
                 let ctx = document.getElementById(targetID + "_chart").getContext("2d");
                 let labelColor = `rgb(${getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color")})`;
+                const gridColor = (() => {
+                    const v = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid-rgb').trim();
+                    return v ? `rgba(${v}, 0.30)` : 'rgba(139,139,139,.5)';
+                })();
                 let txLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-icon-traffic-up");
                 let rxLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-icon-traffic-down");
                 txLongData = [...rawData[0]];
@@ -2078,12 +2261,18 @@
                                     beginAtZero: true,
                                     count: 5,
                                 },
+                                grid: {
+                                    color: gridColor
+                                },
                                 suggestedMin: 0,
                                 suggestedMax: 100,
                             },
                             x: {
                                 ticks: {
                                     color: labelColor,
+                                },
+                                grid: {
+                                    color: gridColor
                                 },
                             },
                         },
@@ -2092,7 +2281,7 @@
                     },
                 });
             }
-            
+
             function getTxRxData(targetMac, cardID) {
                 httpApi.get_diag_content_data(
                     {
@@ -2120,6 +2309,10 @@
 			function genTbyteRbyteChart(targetID, rawData) {
                 let ctx = document.getElementById(targetID + "_chart").getContext("2d");
                 let labelColor = `rgb(${getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color")})`;
+                const gridColor = (() => {
+                    const v = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid-rgb').trim();
+                    return v ? `rgba(${v}, 0.30)` : 'rgba(139,139,139,.5)';
+                })();
                 let txLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-icon-traffic-up");
                 let rxLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-icon-traffic-down");
                 txLongData = [...rawData[0]];
@@ -2225,12 +2418,18 @@
                                     beginAtZero: true,
                                     count: 5,
                                 },
+                                grid: {
+                                    color: gridColor
+                                },
                                 suggestedMin: 0,
                                 suggestedMax: 100,
                             },
                             x: {
                                 ticks: {
                                     color: labelColor,
+                                },
+                                grid: {
+                                    color: gridColor
                                 },
                             },
                         },
@@ -2239,7 +2438,7 @@
                     },
                 });
             }
-           
+
             function getTbyteRbyteData(targetMac, cardID) {
                 httpApi.get_diag_content_data(
                     {
@@ -2263,10 +2462,14 @@
                     }
                 );
             }
-            
+
             function genInternetChart(targetID, rawData) {
                 let ctx = document.getElementById(targetID + "_chart").getContext("2d");
                 let labelColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color");
+                const gridColor = (() => {
+                    const v = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid-rgb').trim();
+                    return v ? `rgba(${v}, 0.30)` : 'rgba(139,139,139,.5)';
+                })();
                 let charLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-icon-traffic-up-notransparent");
                 let linkwanLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-text-hint-light");
                 let connectLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-chart-good");
@@ -2373,6 +2576,9 @@
                                 type: 'linear',
                                 responsive: true,
                                 maintainAspectRatio: false,
+                                grid: {
+                                    color: gridColor
+                                },
                             },
                             x: {
                                 type: 'time',
@@ -2382,6 +2588,9 @@
                                         hour: 'HH:mm'
                                     },
                                     tooltipFormat: 'yyyy-MM-dd HH:mm:ss',
+                                },
+                                grid: {
+                                    color: gridColor
                                 },
                             },
                         },
@@ -2396,7 +2605,7 @@
                     {
                         title: "3 Hours",
                         size: 180
-                    }, 
+                    },
                     {
                         title: "12 Hours",
                         size: 720
@@ -2438,8 +2647,8 @@
 
                         httpApi.log("The data of internet monitor: ", `retTimestamp0: ${retTimestamp[0].length}, retPing0: ${retPing[0].length}, retTimestamp: ${retTimestamp.length}`);
                         genInternetChart(cardID, [
-                            retTimestamp[0], 
-                            retPing[0], 
+                            retTimestamp[0],
+                            retPing[0],
                             (retTimestamp.length == 1) ? retLinkwan[0] : []
                         ]);
                     }
@@ -2956,7 +3165,7 @@
                                         <div class="d-flex flex-row align-items-center justify-content-between">
                                             <h6 class="m-0"><#dualwan_primary#></h6>
                                             <div class="d-flex align-items-base">
-                                                <div role="icon" class="icon-size-48 icon-wan-cable bg-primary"></div> 
+                                                <div role="icon" class="icon-size-48 icon-wan-cable bg-primary"></div>
                                             </div>
                                         </div>
                                         <div class="d-flex align-items-center mb-2">
@@ -3456,7 +3665,8 @@
 				if(diskList.length == 0) return false;
 
 				let code = "";
-				target = document.getElementById("usb_field");
+				const target = document.getElementById("usb_field");
+				if(!target) return false;
 
 				var diskInfo = {
 					"deviceName": diskList[0].deviceName,
@@ -3774,7 +3984,16 @@
 
 				counter(time);
 			}
-			updateDisk(genUSB);
+			if (isSupport("usbX")) {
+				updateDisk(genUSB);
+				document.getElementById("db_setting_icon").classList.remove("d-none");
+			}
+			else {
+				const usbField = document.getElementById("usb_field");
+				if (usbField) {
+					usbField.style.display = "none";
+				}
+			}
 
 			if(system.currentOPMode.id != "RT"){
 				$("#wan0_field").hide();
@@ -3789,6 +4008,8 @@
                     $("#light_effect_iframe").attr("src", "/light_effect/light_effect.html");
                     $("#light_effect_iframe").load(function(){
                         let $ledg_html = $(this).contents();
+                        $ledg_html.find("html, body").css("overflow-x", "hidden");
+                        $ledg_html.find(".light_effect_bg, .light_effect_setting_bg").css({"width":"100%", "min-width":"0"});
                         $ledg_html.find(".light_effect_bg").css("height", "160px");
                         $ledg_html.find(".logo_container").css({"width":"18vw"});
                         if(isSupport("antled")){
@@ -3811,22 +4032,31 @@
                     });
                 }, 3000);
             }
+            else {
+                const auraRgbField = document.getElementById("aura_rgb_field");
+                if (auraRgbField) {
+                    auraRgbField.style.display = "none";
+                }
+            }
         </script>
         <script type="module">
             import {WiFiInterferenceChart} from '/js/dashboard.module.js';
+
             const wifiInterferenceChart = new WiFiInterferenceChart(system.labelMac);
-            wifiInterferenceChart.init()
-                .then(() => {
-                    document.querySelector('#WiFiInterferenceView').append(wifiInterferenceChart.render());
-                })
-                .catch(error => {
-                    console.error('Failed to initialize WiFi interference chart:', error);
-                    // 顯示錯誤信息給用戶
-                    const errorElement = document.createElement('div');
-                    errorElement.className = 'chart-error';
-                    errorElement.textContent = 'Failed to load WiFi interference chart';
-                    document.querySelector('#WiFiInterferenceView').append(errorElement);
-                });
+            const wifiInterferenceView = document.querySelector('#WiFiInterferenceView');
+            if (wifiInterferenceView) {
+                wifiInterferenceChart.init()
+                    .then(() => {
+                        wifiInterferenceView.append(wifiInterferenceChart.render());
+                    })
+                    .catch(error => {
+                        console.error('Failed to initialize WiFi interference chart:', error);
+                        const errorElement = document.createElement('div');
+                        errorElement.className = 'chart-error';
+                        errorElement.textContent = 'Failed to load WiFi interference chart';
+                        wifiInterferenceView.append(errorElement);
+                    });
+            }
         </script>
     </body>
 </html>

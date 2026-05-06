@@ -1633,6 +1633,40 @@ padding-top:1px;
 	behavior: url(/PIE.htc);
 }
 
+/* ── hint panel (replaces overlib overDiv popup) ── */
+#overDiv.hint-panel {
+	position: fixed;
+	max-width: 300px;
+	min-width: 140px;
+	background: var(--card-bg-color, #2b2b2b);
+	border: 1px solid var(--body-bg-opacity, #2e2e2e);
+	color: var(--text-primary, #eee);
+	font-size: 13px;
+	border-radius: 6px;
+	padding: 12px 14px;
+	box-shadow: 0 4px 16px var(--bg-shadow-color, rgba(0,0,0,.4));
+	display: none;
+	z-index: 9999;
+}
+.hint-panel-caption {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-weight: bold;
+	margin-bottom: 8px;
+	padding-bottom: 6px;
+	border-bottom: 1px solid var(--bg-divide-line-color, rgba(255,255,255,.15));
+}
+.hint-panel-close {
+	cursor: pointer;
+	opacity: .6;
+	padding: 0 2px;
+	font-size: 14px;
+	line-height: 1;
+}
+.hint-panel-close:hover { opacity: 1; }
+
+
 .aidisk1_table{
 	width:740px;
 	height:760px;
@@ -2636,4 +2670,17 @@ i.icon-comments {
 
 .popup_container .popup_content_container .category_slide_title.expand {
 	background: rgba(0, 133, 255, 0.1);
+}
+
+/* Log textarea variant */
+.textarea--log {
+	background: var(--wrt-textarea-bg, #475A5F);
+	color: var(--wrt-textarea-color, #FFFFFF);
+	font-family: 'Courier New', Courier, monospace;
+	width: 97%;
+	font-size: var(--font-size-12, 0.75rem);
+	resize: none;
+	display: block;
+	line-height: 1.4;
+	white-space: pre;
 }

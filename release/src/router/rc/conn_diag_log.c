@@ -275,8 +275,7 @@ void debug_log_downsizing() {
     // move CONNDIAG_LOG_TEMP_PATH to CONNDIAG_LOG_PATH
     if (!check_file_exist(CONNDIAG_LOG_PATH)) {
         char cmd[128];
-        snprintf(cmd, 128, "mv %s %s", CONNDIAG_LOG_TEMP_PATH, CONNDIAG_LOG_PATH);
-        system(cmd);
+        safe_do_system("mv %s %s", CONNDIAG_LOG_TEMP_PATH, CONNDIAG_LOG_PATH);
     }
 
     sleep(1);

@@ -5,22 +5,32 @@
 /* CMD STATUS definition */
 #define TZ_SETTING "TZ_SETTING"
 #define TZ_SYNC    "TZ_SYNC"
+#define NTP_SETTING "NTP_SETTING"
+#define NTP_SYNC   "NTP_SYNC"
 #define CHECK      "CHECK"
 #define DOWNLOAD   "DOWNLOAD"
 #define CREATE     "CREATE"
 #define RUN        "RUN"
 #define CLEANUP    "CLEANUP"
+
 /* CMD IMAGE definition */
-#define APP_TZ         "tz"
+#define APP_TZ         "tz"             // timezone sync
+#define APP_CLEAN      "clean"          // clean up all none default data
 #define APP_TEST       "test"
-#define APP_FRIGATE    "frigate"
-#define APP_PORTAINER  "portainer"
+#define APP_FRIGATE    "frigate"        // Frigate NVR app
+#define APP_PORTAINER  "portainer"      // portainer app
 #define APP_DPANEL     "dpanel"
-#define APP_HA         "homeassistant"
-#define APP_ADGUARD    "adguard"
-#define APP_SLM        "slm"
+#define APP_HA         "homeassistant"  // Home Assistant app
+#define APP_ADGUARD    "adguard"        // Adguard app
+#define APP_SLM        "slm"            // Small language model app
 #define APP_SLMQA      "slmqa"
 #define APP_SLMQAVER   "slmqaver"
+
+#define APP_CMD(cmd, tag) \
+    cmd " 2>&1 >/dev/null | systemd-cat -p err -t " tag
+
+#define APP_RESTART_TIMESYNC "systemctl restart systemd-timesyncd"
+
 /* apps cmd struct declaration */
 typedef struct {
 	char *image;

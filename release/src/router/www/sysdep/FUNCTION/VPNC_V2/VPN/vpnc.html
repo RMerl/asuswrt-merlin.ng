@@ -1,17 +1,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
-<link rel="stylesheet" type="text/css" href="/index_style.css">
-<link rel="stylesheet" type="text/css" href="/other.css">
-<link rel="stylesheet" type="text/css" href="/VPN/vpnc.css">
-<link rel="stylesheet" type="text/css" href="/device-map/device-map.css">
-<script type="text/javaScript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
-<script type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/popup.js"></script>
-<script type="text/javascript" src="/general.js"></script>
-<script type="text/javascript" src="/client_function.js"></script>
-<script type="text/javascript" src="/js/asus_policy.js?v=5"></script>
+<link rel="stylesheet" type="text/css" href="../index_style.css">
+<link rel="stylesheet" type="text/css" href="../other.css">
+<link rel="stylesheet" type="text/css" href="../VPN/vpnc.css">
+<link rel="stylesheet" type="text/css" href="../device-map/device-map.css">
+<script type="text/javaScript" src="../js/jquery.js"></script>
+<script type="text/javascript" src="../js/httpApi.js"></script>
+<script type="text/javascript" src="../state.js"></script>
+<script type="text/javascript" src="../popup.js"></script>
+<script type="text/javascript" src="../general.js"></script>
+<script type="text/javascript" src="../client_function.js"></script>
+<script type="text/javascript" src="../js/asus_policy.js?v=5"></script>
 <style>
 .block_filter a {
         text-decoration:none !important;
@@ -48,41 +48,45 @@ var getUrlParameter = function getUrlParameter(param){
 	}
 	return "";
 };
+function getSafeTheme(paramName, allowedValues = ['WHITE', 'ROG', 'TUF', '']) {
+	let rawValue = getUrlParameter(paramName);
+	if (!rawValue) return "";
+	let safePrefix = rawValue.toUpperCase().match(/^[A-Z0-9_]*/)[0];
+	return allowedValues.includes(safePrefix) ? safePrefix : "";
+}
 var app_lang = getUrlParameter("current_lang").toUpperCase();
-$(function () {
-	$('link[group="extend_css"]').remove();
-	var theme = getUrlParameter("current_theme").toUpperCase();
-	if(theme == "WHITE" || rog_support || tuf_support){
-		if (isSupport("UI4")) {
-			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/vpn_v4.css">');
 
-			$('link').last().after('<link rel="stylesheet" type="text/css" href="/css/business-white.css">');
-			setTimeout(function(){
-				$("body").css({"visibility":"visible"})
-			}, 1000)
-		} else {
-			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpnc' + theme + '.css">');
-		}
+$('link[group="extend_css"]').remove();
+var theme = getSafeTheme("current_theme", ['WHITE', 'ROG', 'GT', 'TUF', '']).toUpperCase();
+(function(){
+	const hasThemeCssFile = (theme == "WHITE" || rog_support || tuf_support);
+	const is_Web_iframe = (($(parent.document).find("#mainMenu").length > 0) || (top.webWrapper)) ? true : false;
+	var cssHref = "";
+	if(theme == "PROART") {
+		cssHref = isSupport("UI4") ? "../css/vpn_v4.css" : "";
+	} else if(hasThemeCssFile) {
+		cssHref = (isSupport("UI4") && is_Web_iframe) ? "../css/vpn_v4.css" : "../VPN/vpnc" + theme + ".css";
+	} else {
+		if(isSupport("UI4"))
+			cssHref = "../css/vpn_v4.css";
+		else if(isSupport("ROG_UI"))
+			cssHref = "../VPN/vpncGT.css";
+		else if(isSupport("TUF_UI"))
+			cssHref = "../VPN/vpncTUF.css";
 	}
-	else{
-		if(isSupport("UI4")) {
-			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/vpn_v4.css">');
-			$('link').last().after('<link rel="stylesheet" type="text/css" href="/css/business-white.css">');
-			setTimeout(function(){
-				$("body").css({"visibility":"visible"})
-			}, 1000)
-		}
-		else if(rog_support){
-			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpncGT.css">');
-		}
-		else if(isSupport("TUF_UI")){
-			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpncTUF.css">');
-		}
-	}
+	if(cssHref)
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="' + cssHref + '">');
 
-	if(isSupport("TS_UI"))
-		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/difference.css">');
-});
+/* Override for Asuswrt-Merlin */
+	$('link').last().after('<link rel="stylesheet" type="text/css" href="/css/business-white.css">');
+	setTimeout(function(){
+		$("body").css({"visibility":"visible"})
+	}, 1000)
+})();
+
+if(isSupport("TS_UI"))
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="../css/difference.css">');
+
 var surfshark_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=sskVPN&lang="+ui_lang+"&kw=&num=&tcode="+ttc;
 var Nord_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=NordVPN&lang="+ui_lang+"&kw=&num=&tcode="+ttc;
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=167";
@@ -2097,7 +2101,7 @@ function Get_Component_Help(_parm){
 
 var ssk_region = new Object;
 function updateRegionListOnline(){
-	$.getJSON("/VPN/clusters.json", function(local_data){
+	$.getJSON("../VPN/clusters.json", function(local_data){
 		ssk_region = Object.keys(local_data).map(function(e){
 				return local_data[e];
 		});
@@ -2133,7 +2137,7 @@ function Update_ssk_region(flag){
 
 var nord_region = new Object;
 function updateNordVPNRegionListOnline(){
-	$.getJSON("/VPN/countries.json", function(local_data){
+	$.getJSON("../VPN/countries.json", function(local_data){
 		nord_region = Object.keys(local_data).map(function(e){
 			return local_data[e];
 		});
@@ -2172,16 +2176,33 @@ function Get_Component_Switch(_parm) {
 	if(_parm.show_item != undefined){
 		$container.attr("show_item", _parm.show_item);
 	}
-	$container.append($("<div>").addClass("title").html(htmlEnDeCode.htmlEncode(_parm.title)));
+	if(_parm.openHint != undefined){
+		var hint_array = _parm.openHint.split("_");
+		$("<a>").addClass("hintstyle").attr({"href":"javascript:void(0);"}).html(htmlEnDeCode.htmlEncode(_parm.title)).unbind("click").click(function(){
+			openHint(hint_array[0], hint_array[1], "rwd_vpns");
+		}).appendTo($("<div>").addClass("title").appendTo($container));
+	}
+	else
+		$("<div>").addClass("title").html(htmlEnDeCode.htmlEncode(_parm.title)).appendTo($container);
 
 	var $input_container = $("<div>").addClass("input_container").appendTo($container);
-	var $switch_icon = $("<div>").attr("id", _parm.id).addClass("switch on").appendTo($input_container).unbind("click").click(function(e){
+	var $switch_icon = $("<div>").attr("id", _parm.id).addClass("switch on").unbind("click").click(function(e){
 		e = e || event;
 		e.stopPropagation();
 		if($(this).attr("temp_disable") == "disabled")
 			return;
-		$(this).toggleClass("off on");
-	});
+		$(this).addClass("hide-text");
+		setTimeout(function(){
+			$(this).toggleClass("off on");
+		}.bind(this), 300);
+		setTimeout(function(){
+			$(this).removeClass("hide-text");
+		}.bind(this), 500);
+	}).appendTo($input_container);
+
+	if(_parm.set_value != undefined && (_parm.set_value == "on" || _parm.set_value == "off")) {
+		$switch_icon.removeClass("off on hide-text").addClass(_parm.set_value);
+	}
 
 	return $container;
 }
@@ -4208,7 +4229,7 @@ function initial(){
 		resizeObserver.observe(document.querySelector('.popup_container'));
 		resizeObserver.observe(document.querySelector('.profile_setting_container'));
 	}
-	
+
 	show_loading_obj();
 
 
@@ -4541,7 +4562,7 @@ $(document).ready(initial);
 			<div class="server_list_container">
 				<div class="svr_list_title_container">
 					<div class="svr_list_help_icon mobile">...</div>
-					<div class="svr_list_title">server list</div>
+					<div class="svr_list_title"><#VPN_Fusion_Server_List#></div>
 					<div class="svr_list_add_container">
 						<div class="svr_list_num"></div>
 						<div class="vpn_icon_all_collect svr_list_add_icon"></div>

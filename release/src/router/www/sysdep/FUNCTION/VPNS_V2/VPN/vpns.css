@@ -1,6 +1,7 @@
 ﻿body{
 	margin: 0;
 	background-color: initial !important;
+	visibility: visible !important;
 }
 .mobile{
 	display: none;

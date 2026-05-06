@@ -107,6 +107,7 @@ enum {
 	DIAGMODE_EVENT_PORT_STATUS_POE_CHANGE   = DIAGMODE_EVENT+9,
 	DIAGMODE_EVENT_ACSD 	                = DIAGMODE_EVENT+10,
 	DIAGMODE_EVENT_AIRIQ 	                = DIAGMODE_EVENT+11,
+	DIAGMODE_EVENT_CISCAN 	                = DIAGMODE_EVENT+12,
 	//DIAGMODE_EVENT
 	//DIAGMODE_SITE_SURVEY_2G = 0x800, //need modify
 	//DIAGMODE_SITE_SURVEY_5G1 = 0x1000, //need modify
@@ -195,6 +196,7 @@ enum {
 #define DIAG_EVENT_IPERF_SERVER "IPERFSERVER"
 #define DIAG_EVENT_IPERF_CLIENT "IPERFCLIENT"
 #define DIAG_AIRIQ_EVENT "AIRIQEVENT"
+#define DIAG_CISCAN_EVENT "CISCANEVENT"
 #ifdef RTCONFIG_BCMARM
 #define DIAG_EVENT_WIFISYS2 "WIFISYS2" // DIAG_EVENT_WIFISYS2>node type>IP>MAC>band>band's ifname>band's MAC>band's noise>band's MCS>band's capability>band's subif_count>base64encode(band's subif_ssid)>band's chanim>band's tx rate>band's rx rate>band's tx byte>band's rx byte
 #else
@@ -222,13 +224,28 @@ extern int get_wifi_country(char *ifname, char *output, int len);
 extern int get_wifi_noise(char *ifname, char *output, int len);
 extern int get_wifi_mcs(char *ifname, char *output, int len);
 #ifdef RTCONFIG_BCMARM
+typedef struct diag_chanim_stats_s {
+	int inband_ch;
+	int inband_bw;
+	uint8 tx;
+	uint8 inbss;
+	uint8 obss;
+	uint8 nocat;
+	uint8 nopkt;
+	uint8 doze;
+	uint8 txop;
+	uint8 goodtx;
+	uint8 badtx;
+	int32 glitch;
+	int32 badplcp;
+	int knoise;
+	uint8 idle;
+} diag_chanim_stats_t;
 extern int get_bss_info(char *ifname, int *capability); // TODO: non-Brcm needs to do.
 extern int get_subif_count(char *target, int *count); // TODO: non-Brcm needs to do.
 extern int get_subif_ssid(char *target, char *output, int outputlen); // TODO: non-Brcm needs to do.
-extern int get_wifi_txop(char *ifname,int *txop, int outputlen);
-extern int get_wifi_glitch(char *ifname,int *glitch, int outputlen);
-extern int get_wifi_knoise(char *ifname,int *knoise, int outputlen);
 extern int get_wifi_chanim(char *ifname, char *output, int outputlen);
+extern int get_wifi_chanim_stats(char *ifname, diag_chanim_stats_t *stats);
 extern int get_wifi_counters_info(char *ifname, char *info_name, int *value);
 #endif
 extern int get_wifi_dfs_status(char *output, int len, char *node, char *lan_ipaddr, char *lan_hwaddr);
@@ -311,3 +328,5 @@ extern int check_iperf_server_resp(char *in);
 #define ACSD_EVENT_FILE_LOCK "acsd_event_file_lock"
 #define AIRIQ_EVENT_FILE_PATH "/tmp/airiq_event_file"
 #define AIRIQ_EVENT_FILE_LOCK "airiq_event_file_lock"
+#define CISCAN_EVENT_FILE_PATH "/tmp/ciscan_event_file"
+#define CISCAN_EVENT_FILE_LOCK "ciscan_event_file_lock"

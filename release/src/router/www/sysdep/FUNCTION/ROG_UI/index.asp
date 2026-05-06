@@ -458,6 +458,19 @@ function initial(){
 
 	showMapWANStatus();
 
+	const bgURL = {
+		"bg1": usb_support
+			? "images/New_ui/networkmap/networkmap_bg.png"
+			: "images/New_ui/networkmap/networkmap_bg_noUsb.png",
+		"bg2": usb_support
+			? "images/New_ui/networkmap/networkmap_bg2.png"
+			: "images/New_ui/networkmap/networkmap_bg2_noUsb.png"
+	};
+	$("#background_div").css("background-image", "url('" + bgURL.bg1 + "')");
+	if (!usb_support) {
+		$("#clients_td").css("padding-top", "24px");
+	}
+
 	if(!isSwMode("RT")){
 		document.getElementById("wanIP_div").style.display = "none";
 		document.getElementById("ddnsHostName_div").style.display = "none";
@@ -488,7 +501,7 @@ function initial(){
 			document.getElementById('single_wan_line').style.display = "none";
 			document.getElementById('primary_wan_line').style.display = "";
 			document.getElementById('secondary_wan_line').style.display = "";
-			$("#background_div").css("background-image", "url('images/New_ui/networkmap/networkmap_bg2.png')")
+			$("#background_div").css("background-image", "url('" + bgURL.bg2 + "')");
 		}
 	}
 
@@ -905,28 +918,28 @@ function clickEvent(obj){
 				var eLAN_str = "<#Ethernet_wan#>".replace(/WAN/, "LAN");
 				if(obj.id.indexOf("primary") != -1){
 					if(dualwan_first_if == "wan")
-						stitle = "<#Ethernet_wan#> Status";
+						stitle = `<#AiMesh_WAN_Status#>`;
 					else if(dualwan_first_if == "lan")
-						stitle = eLAN_str+" Status";
+						stitle = eLAN_str+" <#Status_Str#>";
 					else if(dualwan_first_if == "usb"){
 						if(gobi_support)
-							stitle = "<#Mobile_title#> Status";
+							stitle = `<#Mobile_status_title#>`;
 						else
-							stitle = "<#menu5_4_4#> Status";
+							stitle = `<#HSDPAConfig_hsdpa_mode_status#>`;
 					}
 					else	
 						stitle = "<#statusTitle_Primary_WAN#>";
 				}
 				else{
 					if(dualwan_second_if == "wan")
-						stitle = "<#Ethernet_wan#> Status";
+						stitle = `<#AiMesh_WAN_Status#>`;
 					else if(dualwan_second_if == "lan")
-						stitle = eLAN_str+" Status";
+						stitle = eLAN_str+" <#Status_Str#>";
 					else if(dualwan_second_if == "usb"){
 						if(gobi_support)
-							stitle = "<#Mobile_title#> Status";
+							stitle = `<#Mobile_status_title#>`;
 						else
-							stitle = "<#menu5_4_4#> Status";
+							stitle = `<#HSDPAConfig_hsdpa_mode_status#>`;
 					}
 					else
 						stitle = "<#statusTitle_Secondary_WAN#>";
@@ -2418,6 +2431,18 @@ function showClientlistModal(){
     clientlistModal.show();
 }
 
+if (isSupport("AURA_SCHED")) {
+	let script = document.createElement('script');
+	script.type = 'text/javascript';
+	script.src = '/js/ledScheduler.js';
+	script.onload = function() {
+		window.showLedScheduler = function(parms){
+			const ledScheduler = new popupLedScheduler(parms);
+			ledScheduler.show();
+		}
+	};
+	document.head.appendChild(script);
+}
 </script>
 </head>
 
@@ -2825,7 +2850,7 @@ function showClientlistModal(){
 						</div>
 						<div style="display:table-cell">
 							<div>
-								<span id="SmartConnectName" style="font-size:14px;font-family: Verdana, Arial, Helvetica, sans-serif; display:none">Smart Connect Status: </span>
+								<span id="SmartConnectName" style="font-size:14px;font-family: Verdana, Arial, Helvetica, sans-serif; display:none"><#smart_connect_status#>: </span>
 							</div>
 							<div>
 								<strong id="SmartConnectStatus" class="index_status" style="font-size:14px; display:none"><a style="color:#FFF;text-decoration:underline;" href="/

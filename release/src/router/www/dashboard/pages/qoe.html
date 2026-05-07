@@ -2040,35 +2040,48 @@
 
     <div id="tab-section-cake" class="container tab-content pt-5" style="display: none;">
         <div class="row">
-            <div class="col-12 col-md-6">
+            <div class="col-12">
                 <h2>Cake</h2>
-                <div class="switch-div">
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 mb-4">
+                <div class="switch-div-bw">
                     <div class="switch-div-title">CAKE</div>
                     <div id="enable_cake_btn" class="toggle-button with-text">
                         <div class="toggle-button-handle"></div>
                     </div>
                 </div>
+            </div>
 
-                <div class="setting-row mt-3">
-                    <div class="bandwidth-cell">
-                        <label for="cake_upload">Upload (Mbps)</label>
-                        <input id="cake_upload" class="input form-control ms-3" type="number" min="0" step="0.01" placeholder="Upload">
+            <div class="col-12">
+                <div id="cake-bandwidth-row" class="row setting-row gap-sm-2 gap-lg-0 mt-3">
+                    <div class="col-12 col-sm-12 col-lg-4">
+                        <div class="bandwidth-cell">
+                            <label for="cake_upload">Upload bandwidth</label>
+                            <div class="d-flex align-items-center w-100">
+                                <input id="cake_upload" class="input form-control ms-3" type="number" min="0" step="0.01" placeholder="Upload">
+                                <span class="ms-2 me-2">Mbps</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-12 col-lg-4">
+                        <div class="bandwidth-cell">
+                            <label for="cake_download">Download bandwidth</label>
+                            <div class="d-flex align-items-center w-100">
+                                <input id="cake_download" class="input form-control ms-3" type="number" min="0" step="0.01" placeholder="Download">
+                                <span class="ms-2 me-2">Mbps</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="setting-row mt-2">
-                    <div class="bandwidth-cell">
-                        <label for="cake_download">Download (Mbps)</label>
-                        <input id="cake_download" class="input form-control ms-3" type="number" min="0" step="0.01" placeholder="Download">
-                    </div>
-                </div>
-
+            <div class="col-12">
                 <div class="setting-row mt-3">
                     <div class="d-flex align-items-center gap-3">
                         <div class="bandwidth-cell">
                             <label for="cake_overhead">Packet Overhead</label>
                             <div class="d-flex align-items-center" style="gap:0px;">
-                                <input id="cake_overhead" class="input form-control" type="number" min="0" step="1" placeholder="Overhead" style="width:6rem; margin-right:0px;">
+                                <input id="cake_overhead" class="input form-control ms-3" type="number" min="0" step="1" placeholder="Overhead" style="width:6rem; margin-right:0px;">
                                 <button id="cake_overhead_pull_arrow" type="button" class="btn btn-light" style="border:1px solid #ccc; padding:0.25rem 0.4rem; margin-left:0px; min-width:2rem; height:2rem; display:flex; align-items:center; justify-content:center;" aria-label="Overhead presets" title="Select a preset for your connection type (ATM/VDSL/Cable etc)">
                                     <span id="cake_overhead_pull_arrow_icon" style="font-size:0.8rem;">▾</span>
                                 </button>
@@ -2093,10 +2106,6 @@
                 <div class="d-flex justify-content-start mt-3">
                     <button id="cake_apply_btn" class="btn btn-primary">Apply</button>
                 </div>
-            </div>
-            <div class="col-12 col-md-6">
-                <h4>Description</h4>
-                <p>Configure the CAKE (Common Applications Kept Enhanced) queuing discipline. Set upload and download shaping.</p>
             </div>
         </div>
     </div>

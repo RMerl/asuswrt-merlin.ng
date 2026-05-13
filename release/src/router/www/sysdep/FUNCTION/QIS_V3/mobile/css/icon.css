@@ -143,3 +143,33 @@
 .icon_cancel{
 	background: no-repeat url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%0A%3Csvg%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20viewBox%3D%220%200%2016.9%2016.9%22%20style%3D%22enable-background%3Anew%200%200%2016.9%2016.9%3B%22%20xml%3Aspace%3D%22preserve%22%3E%0A%09%3Cpolygon%20fill%3D%22%23FFF%22%20points%3D%2216.1%2C14.2%2010.3%2C8.4%2016.1%2C2.7%2014.2%2C0.8%208.4%2C6.5%202.7%2C0.8%200.8%2C2.7%206.5%2C8.4%200.8%2C14.2%202.7%2C16.1%208.4%2C10.3%2014.2%2C16.1%20%22%2F%3E%0A%3C%2Fsvg%3E%0A");
 }
+.icon-size-32 {
+	width: 32px;
+	height: 32px;
+}
+.icon-history {
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-size: 100%;
+	mask-size: 100%;
+	background-color: #007AFF;
+	mask-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBzdHJva2U9IiMwMDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIxLjUiPjxwYXRoIGQ9Ik0zLjMwNyAxNC4zM2E5IDkgMCAxIDAtLjAwMi00LjY1OW0wIDBMMi4xNCA1LjMyNG0xLjE2NSA0LjM0NyA0LjI3LTEuMTQ0Ii8+PHBhdGggZD0iTTEyIDh2NWwzIDMiLz48L2c+PC9zdmc+");
+}
+.icon-star, .icon-star-outline{
+	cursor: pointer;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-size: 100%;
+	mask-size: 100%;
+	-webkit-mask-position: 50%;
+	mask-position: 50%;
+	background-color: #FFF;
+}
+.icon-star {
+	-webkit-mask-size: 120%;
+	mask-size: 120%;
+	mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="12,2 15,8.5 22,9.3 17,14.1 18.2,21 12,17.8 5.8,21 7,14.1 2,9.3 9,8.5" fill="white"/></svg>');
+}
+.icon-star-outline {
+	mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="12,2 15,8.5 22,9.3 17,14.1 18.2,21 12,17.8 5.8,21 7,14.1 2,9.3 9,8.5" fill="none" stroke="white" stroke-width="2"/></svg>');
+}

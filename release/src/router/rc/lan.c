@@ -2805,9 +2805,9 @@ _dprintf("nat_rule: stop_nat_rules 1.\n");
 
 #if defined(RPBE58) || defined(RTBE58_GO)
 #if defined(RPBE58)
-	if (client_mode() && !nvram_match("force_mlo", "1")) {
+	if ((client_mode() && !nvram_match("re_mode", "1")) && !nvram_match("force_mlo", "1")) {
 #else 
-	if (client_mode() && nvram_match("mlo_off", "1")) {
+	if ((client_mode() && !nvram_match("re_mode", "1")) && nvram_match("mlo_off", "1")) {
 #endif
 		mlo_down();
 		nvram_set("5gbh_war", "0");
@@ -6594,13 +6594,16 @@ void restart_wireless(void)
 	nvram_set_int("led_status", LED_RESTART_WL);
 #endif
 	nvram_set_int("wlready", 0);
+#ifdef RTCONFIG_AMAS
+	nvram_set_int("amas_ready", 0);
+#endif
 
 #if defined(RTCONFIG_HND_ROUTER_BE_4916) && defined(RTCONFIG_MLO)
 #if defined(RPBE58) || defined(RTBE58_GO)
 #if defined(RPBE58)
-	if (client_mode() && !nvram_match("force_mlo", "1")) {
+	if ((client_mode() && !nvram_match("re_mode", "1")) && !nvram_match("force_mlo", "1")) {
 #else 
-	if (client_mode() && nvram_match("mlo_off", "1")) {
+	if ((client_mode() && !nvram_match("re_mode", "1")) && nvram_match("mlo_off", "1")) {
 #endif
 		mlo_down();
 		nvram_set("5gbh_war", "0");
@@ -6843,16 +6846,13 @@ void restart_wireless(void)
 	if (nvram_get_int("channel_plan"))
 		start_amas_lanctrl();
 #endif
+	logmessage("AMAS", "restart amas service success\n");
+	nvram_set_int("amas_ready", 1);
 #endif
 
 #ifndef RTCONFIG_DHDAP
 	restart_wl();
 	lanaccess_wl();
-#endif
-	nvram_set("reload_svc_radio", "1");
-#ifndef RTCONFIG_QCA
-	nvram_set_int("wlready", 1);
-	timecheck();
 #endif
 
 #ifdef RTCONFIG_WIRELESSREPEATER
@@ -6971,10 +6971,6 @@ void restart_wireless(void)
 		qtn_monitor_main();
 	}
 #endif
-	file_unlock(lock);
-#if defined(RTCONFIG_CONCURRENTREPEATER)
-	nvram_set_int("led_status", LED_RESTART_WL_DONE);
-#endif
 
 #ifdef RTCONFIG_WIFI_SON
 	if (sw_mode() != SW_MODE_REPEATER && nvram_match("wifison_ready", "1")) {
@@ -7030,6 +7026,16 @@ void restart_wireless(void)
 	send_event_to_cfgmnt(EID_RC_RESTART_WIRELESS);
 #endif
 	restore_wan_ebtables_rules();
+
+	nvram_set("reload_svc_radio", "1");
+#ifndef RTCONFIG_QCA
+	nvram_set_int("wlready", 1);
+	timecheck();
+#endif
+	file_unlock(lock);
+#if defined(RTCONFIG_CONCURRENTREPEATER)
+	nvram_set_int("led_status", LED_RESTART_WL_DONE);
+#endif
 }
 
 #ifdef RTCONFIG_BCM_7114

@@ -2239,6 +2239,11 @@ static int rctest_main(int argc, char *argv[])
 		else if (strcmp(argv[1], "rdpd_loading") == 0) {
 			printf("ret = %d\n", pd_loading_test());
 		}
+#if defined(RTCONFIG_SW_BTN)
+		else if (strcmp(argv[1], "reload") == 0) {
+			reload_wl_od();
+		}
+#endif
 #endif
 #if defined(RTCONFIG_KNV_BACKUP) || defined(RTCONFIG_NV_BACKUP2)
 		else if (strcmp(argv[1], "diff_knv") == 0) {
@@ -3077,6 +3082,9 @@ static const applets_t applets[] = {
 	{ "fwupg_flashing",		fwupg_flashing_main		},
 #ifdef RTCONFIG_AI_SERVICE
 	{ "ai_response_check",		ai_response_check_main		},
+#endif
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_WISP)
+	{ "wlcmon",			wlcmon_main			},
 #endif
 #ifdef RTCONFIG_CONNTRACK
 	{ "pctime",			pctime_main			},

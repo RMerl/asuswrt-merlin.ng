@@ -9841,7 +9841,6 @@ void onboarding_check()
 }
 #endif
 
-
 #ifdef RTCONFIG_CFGSYNC
 void cfgsync_check()
 {
@@ -11252,6 +11251,54 @@ void check_ubifs()
 }
 #endif
 
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+
+#define MOUNT_FILE "/proc/mounts"
+#define CHECK_PATH "/data"
+
+int is_data_ro() {
+	FILE *fp = fopen(MOUNT_FILE, "r");
+	if (!fp) {
+		perror("fopen");
+		return -1;
+	}
+	char line[512];
+	int found = 0;
+
+	while (fgets(line, sizeof(line), fp)) {
+		char dev[128], mnt[128], fstype[64], opts[256];
+		if (sscanf(line, "%127s %127s %63s %255s", dev, mnt, fstype, opts) == 4) {
+			if (strcmp(mnt, CHECK_PATH) == 0) {
+				found = 1;
+				if (strstr(opts, "ro")) {
+					fclose(fp);
+					return 1; // read-only
+				} else {
+					fclose(fp);
+					return 0; // read-write
+				}
+			}
+		}
+	}
+	fclose(fp);
+	return found ? 0 : -1; // -1: not mounted
+}
+
+void check_mtd_data()
+{
+	static int prev_state = -1;
+	int ro = is_data_ro();
+	if (ro == 1 && prev_state != 1) {
+		logmessage("mtd", "ALERT: /data is now read-only!\n");
+	} else if (ro == 0 && prev_state != 0) {
+		logmessage("mtd", "/data checked (rw).\n");
+	} else if (ro == -1 && prev_state != -1) {
+		logmessage("mtd", "WARNING: /data is not mounted.\n");
+	}
+	prev_state = ro;
+}
+#endif
+
 /* wathchdog is runned in NORMAL_PERIOD, 1 seconds
  * check in each NORMAL_PERIOD
  *	1. button
@@ -11401,7 +11448,6 @@ void watchdog(int sig)
 		g_t1 = uptime();
 	}
 #endif
-
 	if (!nvram_match("asus_mfg", "0")) 
 		return;
 
@@ -11789,6 +11835,9 @@ wdp:
 	infosvr_check();
 #if defined(RTCONFIG_UBIFS)
         check_ubifs();
+#endif
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+	check_mtd_data();
 #endif
 }
 

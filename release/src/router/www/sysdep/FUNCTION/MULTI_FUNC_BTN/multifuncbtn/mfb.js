@@ -7,20 +7,29 @@ let btnsw_list = [
 	{"title":`WiFi`, "value":"3"},/* untranslated */
 	{"title":`${Guest_Network_naming}`, "value":"5"},
 	{"title":`<#AiMesh_NodeLocation01#> / Travel`, "value":"1"},/* untranslated */
+	{"title":`Outdoor Mode`, "value":"6"},/* untranslated */
 	{"title":`No Function`, "value":"0"}/* untranslated */
 ];
 //const support_vpn_btn = (isSupport("vpn_fusion") && (isSwMode("RT") || isSwMode("WISP")));
 const support_vpn_btn = 0;
 if(!support_vpn_btn){
-	btnsw_list = btnsw_list.filter(item => item.value != "4")
+	btnsw_list = btnsw_list.filter(item => item.value != "4");
 }
 if(!isSupport("mtlancfg")){
-	btnsw_list = btnsw_list.filter(item => item.value != "5")
+	btnsw_list = btnsw_list.filter(item => item.value != "5");
 }
 if (isSwMode("RP") || isSwMode("MB")) {
 	btnsw_list = btnsw_list.filter(item => item.value != "3" && item.value != "5");
 }
 
+(() => {
+	const jpOdSupported = isSupport('jp_od');
+	const swModeSupported = isSwMode("RT") || isSwMode("AP");
+	const productid = httpApi.nvramGet(["productid"]).productid || '';
+	if (!(jpOdSupported && swModeSupported && productid === 'RT-BE58_GO')) {
+		btnsw_list = btnsw_list.filter(item => item.value != "6");
+	}
+})();
 let nv_btnsw_onoff = httpApi.nvramGet(["btnsw_onoff"]).btnsw_onoff;
 let vpnc_profile_list = [];
 if(support_vpn_btn){
@@ -98,6 +107,9 @@ function Get_Component_Profile_Item(_profile_data){
 					case "5":
 						return Get_Component_BTNSW_SDN("popup");
 						break;
+					case "6":
+						return Get_Component_BTNSW_OD("popup");
+						break;
 					default:
 						break;
 				}
@@ -126,6 +138,9 @@ function Get_Component_Profile_Item(_profile_data){
 						break;
 					case "5":
 						return Get_Component_BTNSW_SDN();
+						break;
+					case "6":
+						return Get_Component_BTNSW_OD();
 						break;
 					default:
 						break;
@@ -544,6 +559,42 @@ function Get_Component_BTNSW_SDN(view_mode){
 			top.location.href = "/SDN/sdn.html" + ((typeof theme == "string" && theme != "") ? "?current_theme=" + theme + "" : "");
 		}
 	});
+
+	return $container;
+}
+function Get_Component_BTNSW_OD(view_mode){
+	let $container = $("<div>").addClass("setting_content_container no_action_container");
+
+	if(view_mode == "popup"){
+		Get_Component_Popup_Profile_Title(`Outdoor Mode`).appendTo($container)
+			.find("#title_close_btn").unbind("click").click(function(e){
+				e = e || event;
+				e.stopPropagation();
+				close_popup_container($container);
+			});
+	}
+	else
+		Get_Component_Profile_Title(`Outdoor Mode`).appendTo($container).find("#title_del_btn").remove();
+
+	let $content_container = $("<div>").addClass("popup_content_container profile_setting").appendTo($container);
+
+	const odDesc = `<#Outdoor_desc_title#>
+		<br>
+		<ol style="padding-left: 20px; margin-top: 6px;">
+			<li><#Outdoor_desc1#></li>
+			<li><#Outdoor_desc2#></li>
+		</ol>
+	`;
+	Get_Component_Schematic({"fun_desc":odDesc}).appendTo($content_container);
+
+	let btnsw_onoff_parm = {"title":"Multi-Function Button Default", "type":"switch", "id":"btnsw_onoff", "set_value":"off"};
+	Get_Component_Switch(btnsw_onoff_parm).appendTo($content_container)
+		.find("#" + btnsw_onoff_parm.id + "").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			const this_btnsw_onoff = $(this).closest(".setting_content_container").attr("data-btnsw-onoff");
+			Set_BTNSW_ONOFF({"btnsw_onoff":this_btnsw_onoff, "switch_status":$(this).hasClass("on")});
+		});
 
 	return $container;
 }

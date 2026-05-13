@@ -854,6 +854,10 @@ var Get_Component_Loading = function(){
 
 var Get_Component_SiteSurvey_List = function(papList, filterBand) {
 	var siteSurveyContainer = $("<div>");
+	const $historyAPCntr = $("<div>").attr({"data-container": "history"}).appendTo(siteSurveyContainer);
+	const $scannedAPCntr = $("<div>").attr({"data-container": "scanned"}).appendTo(siteSurveyContainer);
+	let savedSSIDFlag = false;
+	const wlcProfiles = parseWlcProfileList();
 	papList.forEach(function(macIndex){
 		var AP = papList[macIndex];
 		if(AP.ssid == "") return true;
@@ -862,6 +866,14 @@ var Get_Component_SiteSurvey_List = function(papList, filterBand) {
 				return $(this).html() === AP.ssid;
 			});
 			if(same_ssid.length > 0){
+				return true;
+			}
+		}
+		if (isSupport("wisp")) {
+			const same_ssid_band = siteSurveyContainer.find(".ap_ssid").filter(function(){
+				return $(this).html() === AP.ssid && $(this).siblings('.ap_band').attr("data-band") === AP.unit;
+			});
+			if(same_ssid_band.length > 0){
 				return true;
 			}
 		}
@@ -892,7 +904,103 @@ var Get_Component_SiteSurvey_List = function(papList, filterBand) {
 			$(this).removeClass("ap_ssid_hover")
 		})
 
-		var ap_band = $("<div>").addClass("ap_band").html(
+		const savedSSID = getWlcProfile({"targetSSID": AP.ssid, "targetBand": AP.unit, "wlcProfiles": wlcProfiles});
+		if(savedSSID){
+			savedSSIDFlag = true;
+			const savedSSID_icon_container = $("<div>").addClass("ap-icon-history-container");
+			$("<div>")
+				.addClass((savedSSID.pin === '1' ? "icon-star" : "icon-star-outline") + " icon-size-32")
+				.attr({
+					"role": "img",
+					"title": (savedSSID.pin === '1' ? `<#VLAN_Tagged#>` : `<#VLAN_Untagged#>`),
+					"aria-label": (savedSSID.pin === '1' ? `<#VLAN_Tagged#>` : `<#VLAN_Untagged#>`)
+				})
+				.css({"margin-right": "10px"})
+				.on("click", function(e) {
+					e.stopPropagation();
+					const $icon = $(this);
+					let pin = "0";
+					if ($icon.hasClass("icon-star-outline")) {
+						$icon.removeClass("icon-star-outline").addClass("icon-star");
+						pin = "1";
+						$icon.attr({
+							"title": `<#VLAN_Tagged#>`,
+							"aria-label": `<#VLAN_Tagged#>`
+						});
+					} else if ($icon.hasClass("icon-star")) {
+						$icon.removeClass("icon-star").addClass("icon-star-outline");
+						pin = "0";
+						$icon.attr({
+							"title": `<#VLAN_Untagged#>`,
+							"aria-label": `<#VLAN_Untagged#>`
+						});
+					}
+					const thisSSID = AP.ssid;
+					const thisBand = AP.unit;
+					const thisWlcProfiles = parseWlcProfileList(true);
+					const postData = thisWlcProfiles.map(profile => {
+						let pinValue = profile.pin;
+						if (profile.ssid === thisSSID && profile.band === thisBand) {
+							pinValue = pin;
+						}
+						return [
+							profile.band,
+							transformWifiString(profile.ssid, true),
+							transformWifiString(profile.key, true),
+							profile.auth,
+							profile.crypto,
+							pinValue,
+							transformWifiString(profile.nickname, true),
+							profile.timestamp
+						].join('<') + '>';
+					}).join('');
+					httpApi.nvramSet({
+						"action_mode" : "apply",
+						"wlc_profile_list": postData
+					}, () => {
+						httpApi.nvramCharToAscii(["wlc_profile_list"], true);
+					});
+				})
+				.appendTo(savedSSID_icon_container);
+			$("<div>")
+				.addClass("remove icon-size-32")
+				.attr({
+					"role": "img",
+					"title": `<#CTL_clear#>`,
+					"aria-label": `<#CTL_clear#>`
+				})
+				.on("click", function(e) {
+					e.stopPropagation();
+					const thisSSID = AP.ssid;
+					const thisBand = AP.unit;
+					const thisWlcProfiles = wlcProfiles;
+					const filteredProfiles = thisWlcProfiles.filter(profile => !(profile.ssid === thisSSID && profile.band === thisBand));
+					const postData = filteredProfiles.map(profile => {
+						return [
+							profile.band,
+							transformWifiString(profile.ssid, true),
+							transformWifiString(profile.key, true),
+							profile.auth,
+							profile.crypto,
+							profile.pin,
+							transformWifiString(profile.nickname, true),
+							profile.timestamp
+						].join('<') + '>';
+					}).join('');
+					httpApi.nvramSet({
+						"action_mode" : "apply",
+						"wlc_profile_list": postData
+					}, () => {
+						httpApi.nvramCharToAscii(["wlc_profile_list"], true);
+						genPAPList(systemVariable.papList, systemVariable.multiPAP.wlcOrder);
+					});
+				})
+				.appendTo(savedSSID_icon_container);
+
+			apListDiv.append(savedSSID_icon_container);
+		}
+
+		var ap_band = $("<div>").addClass("ap_band").attr({"data-band": AP.unit}).html(
 			isSupport("MLO_CLIENT")
 				? ""
 				: AP.mlomacaddr == ""
@@ -909,10 +1017,86 @@ var Get_Component_SiteSurvey_List = function(papList, filterBand) {
 		var ap_narrow = $("<div>").addClass("icon_arrow_right ap_narrow");
 		ap_narrow.appendTo(ap_narrow_container);
 
-		siteSurveyContainer.append(apListContainer);
+		if (savedSSID) {
+			$historyAPCntr.append(apListContainer);
+		}
+		else {
+			$scannedAPCntr.append(apListContainer);
+		}
 	});
+
+	const historyBlock = `
+		<div data-group='historyPAP' style="display:flex; flex-wrap:nowrap;justify-content:space-between;">
+			<div class="apListTitle">History</div>
+			<div class="labelContainer" style="margin:-5px -20px -20px;"></div>
+		</div>
+	`;/* untranslated */
+	$(historyBlock).prependTo($historyAPCntr);
+	$historyAPCntr.find('.labelContainer').append($Component_WiFi_Auto_Connect);
+	$("<div>").attr({"data-group": "historyPAP"}).addClass("apListTitle").html(`Scanned WiFi networks`).prependTo($scannedAPCntr);/* untranslated */
+	if (savedSSIDFlag) {
+		siteSurveyContainer.find("[data-group='historyPAP']").css("display", "flex");
+	}
+	else {
+		siteSurveyContainer.find("[data-group='historyPAP']").css("display", "none");
+	}
+
 	return siteSurveyContainer;
 }
+
+/**
+ * WiFi Auto-connect Toggle Component
+ * This component renders a UI toggle (checkbox) for enabling/disabling WiFi auto-connect.
+ * It syncs the toggle state with the `enable_wlcmon` nvram setting via httpApi.
+ */
+var $Component_WiFi_Auto_Connect = (()=>{
+	const $container = $("<div>");
+
+	const $label = $("<label>")
+		.attr("for", "wireless_auto_connect")
+		.addClass("labelInput")
+		.text("Enable WiFi Auto-connect");/* untranslated */
+
+	const $checkbox = $("<input>")
+		.attr({
+			type: "checkbox",
+			id: "wireless_auto_connect",
+			"data-mini": "true",
+			"aria-label": "Enable WiFi Auto-connect",
+			"tabindex": "0"
+		});
+
+	$container.append($label).append($checkbox);
+
+	const enableWlcmon = httpApi.nvramGet(["enable_wlcmon"]).enable_wlcmon;
+	if (enableWlcmon === "1") {
+		$checkbox.prop("checked", true);
+		$checkbox.attr("aria-checked", "true");
+	} else {
+		$checkbox.prop("checked", false);
+		$checkbox.attr("aria-checked", "false");
+	}
+
+	$checkbox.on("change", function(){
+		const isChecked = $(this).is(":checked") ? "1" : "0";
+		$(this).attr("aria-checked", isChecked === "1" ? "true" : "false");
+		httpApi.nvramSet({
+			"action_mode" : "apply",
+			"enable_wlcmon": isChecked,
+			"rc_service": "restart_wlcmon"
+		}, () => {
+			httpApi.nvramGet(["enable_wlcmon"], true);
+		});
+	});
+	$checkbox.on("keydown", function(e){
+		if (e.key === " " || e.key === "Enter") {
+			e.preventDefault();
+			$(this).click();
+		}
+	});
+
+	return $container;
+})();
 
 var Get_Component_AiMeshOnboarding_List = function(nodeInfo) {
 	var nodeContainer = $("<div>").attr({"id" : nodeInfo.id}).addClass("apListContainer apProfile");
@@ -1015,8 +1199,8 @@ var Get_Component_WirelessInput = function(wlArray){
 
 			const specific_main_fh_info = main_fh_info.find(item => item.band & band_value);
 			if(specific_main_fh_info != undefined){
-				wirelessAP["wl" + wl.ifname + "_ssid"] = specific_main_fh_info["ssid"];
-				wirelessAP["wl" + wl.ifname + "_wpa_psk"] = specific_main_fh_info["psk"];
+				wirelessAP["wl" + wl.ifname + "_ssid"] = encodeURIComponent(specific_main_fh_info["ssid"]);
+				wirelessAP["wl" + wl.ifname + "_wpa_psk"] = encodeURIComponent(specific_main_fh_info["psk"]);
 			}
 			else{
 				wirelessAP["wl" + wl.ifname + "_ssid"] = "";
@@ -1373,6 +1557,11 @@ function handleSysDep(){
 	$(".defpassSupport").toggle(isSupport("defpass"));
 	$(".defpskSupport").toggle(isSupport("defpsk"));
 	$(".wispSupport").toggle(isSupport("wisp"));
+	if (isSupport("wisp")) {
+		$("#opMode_page [data-container='opMode_wisp']").css("display", "block");
+		$("#opMode_page [data-container='opMode_general']").css("display", "none");
+	}
+	$(".usbbkSupport").toggle(isSupport("usb_bk"));
 	$(".mloSupport").toggle(isSupport("mlo"));
 
 	if(systemVariable.forceChangePw){
@@ -3193,49 +3382,115 @@ function get_sdn_main_fh_info(){
 	return main_fh_info;
 }
 
-function update_wlc_profile_list(newSSID, newKey) {
-    var wlc_profile_list = httpApi.nvramGet(["wlc_profile_list"],1).wlc_profile_list;
-    var matches = wlc_profile_list.match(/[^&#]+&#60[^&#]+&#62/g);
-    var entries = matches
-        ? matches.map(entry => {
-            let [ssid, key] = entry.split('&#60');
-            key = key.replace('&#62', '');
-            return { ssid, key };
-        })
-        : [];
+function update_wlc_profile_list(selectedAP) {
+	const MAX_WLC_PROFILES = 16;
+	if (typeof selectedAP !== 'object' || selectedAP === null) return;
 
-    var existingIndex = entries.findIndex(entry => entry.ssid === newSSID);
-    if (existingIndex !== -1) {
-        entries[existingIndex].key = newKey;
-    } else {
-        entries.push({ ssid: newSSID, key: newKey });
-    }
-    while (entries.length > 8) {
-        entries.shift();
-    }
+	const newSSID = selectedAP.ssid ?? '';
+	if (newSSID === undefined || newSSID === null || newSSID === '') return;
 
-    var postData = entries.map(entry => `${entry.ssid}<${entry.key}>`).join('');
+	const newBand = selectedAP.unit ?? '';
+	if (newBand === undefined || newBand === null || newBand === '') return;
 
+	const wlcData = Object.fromEntries(
+		Object.entries(qisPostData).filter(([key]) => key.startsWith(`wlc${newBand}_`))
+	);
+	if (Object.keys(wlcData).length === 0) return;
+
+	const newKey = wlcData[`wlc${newBand}_wpa_psk`] ?? '';
+	const newAuth = wlcData[`wlc${newBand}_auth_mode`] ?? '';
+	const newCrypto = wlcData[`wlc${newBand}_crypto`] ?? '';
+
+	const wlcProfiles = parseWlcProfileList(true);
+	const existingIndex = wlcProfiles.findIndex(profile => profile.ssid === newSSID && profile.band === newBand);
+	if (existingIndex !== -1) {
+		wlcProfiles[existingIndex].band = newBand;
+		wlcProfiles[existingIndex].key = newKey;
+		wlcProfiles[existingIndex].auth = newAuth;
+		wlcProfiles[existingIndex].crypto = newCrypto;
+	}
+	else {
+		const newProfile = {
+			band: newBand,
+			ssid: newSSID,
+			key: newKey,
+			auth: newAuth,
+			crypto: newCrypto,
+			pin: '0',
+			nickname: '',
+			timestamp: ''
+		};
+		if (wlcProfiles.length < MAX_WLC_PROFILES) {
+			wlcProfiles.push(newProfile);
+		}
+		else {
+			const idx = wlcProfiles.findIndex(profile => profile.pin === '0');
+			if (idx !== -1) {
+				wlcProfiles.splice(idx, 1);
+				wlcProfiles.push(newProfile);
+			}
+		}
+	}
+
+	const postData = wlcProfiles.map(profile => {
+		return [
+			profile.band,
+			transformWifiString(profile.ssid, true),
+			transformWifiString(profile.key, true),
+			profile.auth,
+			profile.crypto,
+			profile.pin,
+			transformWifiString(profile.nickname, true),
+			profile.timestamp
+		].join('<') + '>';
+	}).join('');
 	httpApi.nvramSet({
 		"action_mode" : "apply",
 		"wlc_profile_list": postData
+	},() => {
+		httpApi.nvramCharToAscii(["wlc_profile_list"], true);
 	});
 }
 
-function getKeyBySSID(targetSSID) {
-    var wlc_profile_list = httpApi.nvramGet(["wlc_profile_list"],1).wlc_profile_list;
-    let matches = wlc_profile_list.match(/[^&#]+&#60[^&#]+&#62/g);
+function getWlcProfile(options = {}) {
+	const { targetSSID = "", targetBand = "", wlcProfiles = [] } = options;
+	const foundProfile = wlcProfiles.find(profile => profile.ssid === targetSSID && profile.band === targetBand);
+	return foundProfile || null;
+}
+function parseWlcProfileList(forceUpdate = false) {
+	const wlc_profile_list = decodeURIComponent(httpApi.nvramCharToAscii(["wlc_profile_list"], forceUpdate).wlc_profile_list);
+	let wlcProfiles = [];
+	if (wlc_profile_list && wlc_profile_list !== '') {
+		const apList = wlc_profile_list.split('>');
+		wlcProfiles = apList
+			.filter(entry => entry !== '' && entry.includes('<'))
+			.map(entry => {
+				const parts = entry.split('<');
+				if (parts.length !== 8) return undefined;
+				let [band, ssid, key, auth, crypto, pin, nickname, timestamp] = parts;
+				return {
+					"band": band,
+					"ssid": transformWifiString(ssid, false),
+					"key": transformWifiString(key, false),
+					"auth": auth,
+					"crypto": crypto,
+					"pin": pin,
+					"nickname": transformWifiString(nickname, false),
+					"timestamp": timestamp
+				};
+			})
+			.filter(item => item !== undefined);
+	}
+	return wlcProfiles;
+}
+function transformWifiString(str, encode = true) {
+	if (!str) return '';
 
-    if (!matches) return null;
-
-    let entries = matches.map(entry => {
-        let [ssid, key] = entry.split('&#60');
-        key = key.replace('&#62', '');
-        return { ssid, key };
-    });
-
-    let foundEntry = entries.find(entry => entry.ssid === targetSSID);
-    return foundEntry ? foundEntry.key : null;
+	if (encode) {
+		return str.replace(/</g, '&#60;').replace(/>/g, '&#62;');
+	} else {
+		return str.replace(/&#60;/g, '<').replace(/&#62;/g, '>');
+	}
 }
 
 function parseQueryString(queryString){

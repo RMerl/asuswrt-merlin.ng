@@ -433,6 +433,7 @@ var notification = {
 	clicking: 0,
 	sim_record: 0,
 	amas_newob: 0,
+	pd_low: 0,
 	redirectftp:function(){location.href = 'Advanced_AiDisk_ftp.asp';},
 	redirectsamba:function(){location.href = 'Advanced_AiDisk_samba.asp';},
 	redirectFeedback:function(){location.href = 'Advanced_Feedback.asp';},
@@ -472,7 +473,8 @@ var notification = {
 			notification.low_jffs,
 			notification.ie_legacy,
 			notification.s46_ports,
-			notification.amas_newob
+			notification.amas_newob,
+			notification.pd_low
 		].join(), 1000);
 												
 		clearInterval(notification.flashTimer);
@@ -575,7 +577,8 @@ var notification = {
 			!notification.low_jffs &&
 			!notification.ie_legacy &&
 			!notification.s46_ports &&
-			!notification.amas_newob
+			!notification.amas_newob &&
+			!notification.pd_low
 		){
 			window.localStorage.removeItem("notification_history");
 			cookie.unset("notification_history");
@@ -705,6 +708,18 @@ var notification = {
 			}
 			else{
 				notification.array[24] = "off";
+			}
+		}
+
+		notification.pd_low = 0;
+		if (isSupport("wisp")) {
+			var pd_low = '<% nvram_get("pd_low"); %>';
+			if (pd_low === '1' || pd_low === '2') {
+				notification.pd_low = 1;
+				notification.array[25] = 'noti_pd_low';
+				notification.desc[25] = `Due to insufficient power supply, it is recommended to use the included power adapter or a power adapter that supports the PD protocol. Please ensure that the required power output is 9V/2A.`;/* untranslated */
+				notification.action_desc[25] = "";
+				notification.clickCallBack[25] = "";
 			}
 		}
 		
@@ -879,7 +894,8 @@ var notification = {
 			notification.low_nvram ||
 			notification.low_jffs ||
 			notification.s46_ports ||
-			notification.amas_newob
+			notification.amas_newob ||
+			notification.pd_low
 		){
 			notification.stat = "on";
 			notification.flash = "on";
@@ -923,7 +939,8 @@ var notification = {
 			notification.low_nvram,
 			notification.low_jffs, 
 			notification.s46_ports,
-			notification.amas_newob
+			notification.amas_newob,
+			notification.pd_low
 			].join()){
 			notification.flashTimer = setInterval(function(){
 				tarObj.className = (tarObj.className == "notification_on") ? "notification_off" : "notification_on";
@@ -955,6 +972,7 @@ var notification = {
 		this.low_jffs = 0;
 		this.sim_record = 0;
 		this.amas_newob = 0;
+		this.pd_low = 0;
 		this.action_desc = [];
 		this.desc = [];
 		this.array = [];

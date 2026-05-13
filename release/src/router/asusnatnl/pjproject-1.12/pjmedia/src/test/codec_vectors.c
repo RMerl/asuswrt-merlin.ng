@@ -129,8 +129,10 @@ static int codec_test_encode(pjmedia_codec_mgr *mgr,
 
 	    cnt = fwrite(out_frame.buf, out_frame.size, 1, output);
 
-	    if (encoded_frame_len == 0)
+	    if (encoded_frame_len == 0) {
 		encoded_frame_len = out_frame.size;
+		}
+		(void) cnt;
 	}    
     }
 

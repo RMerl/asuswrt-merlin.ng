@@ -59,7 +59,8 @@ function encodeSafeString(input){
 
 function getUrlVar(key_name) {
 	var url = new URL(window.location.href); //- Safely parsing URLs using the URL API
-	var query = url.searchParams.toString(); // Get the query string
+	// var query = url.searchParams.toString(); // Get the query string
+	var query = url.searchParams.toString().replace(/\+/g, '%20');
 	var hashes = query.split('&');
 	var key_value = "";
 

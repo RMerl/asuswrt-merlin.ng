@@ -42,6 +42,7 @@ int nvram_set_server_status(const char* server, const int status, const char* st
 int nvram_set_aae_sip_connected(const char* aae_sip_connected);
 int nvram_set_aae_deviceticket_expired(const char* exp_time_str);
 int nvram_set_aae_userticket_expired(const char* exp_time_str);
+int nvram_set_aae_server_list(const char* key, void *server_list);
 int nvram_get_aae_pwd(char** aae_pwd);
 int nvram_get_aae_username(char** aae_username);
 int nvram_save_value(const char* name, const char* value);

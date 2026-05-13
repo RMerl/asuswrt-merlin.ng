@@ -351,13 +351,10 @@ int get_sdn_idx_form_apg(const char *papMac, const char *ifname, const int ifnam
 
 int get_brctl_macs(char * mac);
 
-int check_allwclientlist_json(const char *client_mac, const int opMode);
+int is_mac_in_allwclientlist(const char *client_mac, int opMode);
 
 int check_wrieless_info(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i, const int is_file, struct json_object *clients);
 
-void regularly_check_devices(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab);
-
-void check_clientlist_offline(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
 #ifdef RTCONFIG_MLO
 int check_mlo_info(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const int i, const int wireless_type, char *guest_network, char *client_mac, char *papMac, struct json_object *macObj, char *mlo_mac, int *is_mlo);
 #endif
@@ -370,8 +367,6 @@ void check_clients_from_ip_cmd(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_ta
 void check_dhcp_ip_online(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const char *mac, const char *ip_addr);
 
 int get_client_list();
-
-void check_brctl_mac_online(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
 
 int check_asus_device(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const int i);
 

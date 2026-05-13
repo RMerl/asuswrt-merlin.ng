@@ -445,6 +445,10 @@ process_item(const umem_env_item_t *item, const char *item_arg)
 	arg_process_t *processor;
 
 	switch (item->item_type) {
+	case ITEM_INVALID:
+		log_message("%s: %s: Invalid type.  Ignored\n",
+		    CURRENT, item->item_name);
+		return (1);
 	case ITEM_FLAG:
 	case ITEM_CLEARFLAG:
 	case ITEM_OPTUINT:

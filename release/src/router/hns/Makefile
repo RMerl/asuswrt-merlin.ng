@@ -19,12 +19,12 @@ endif
 
 OBJS    +=  hns_db.o hns_wrs_wbl.o hns_infected_cc.o
 
-ifeq ($(RTCONFIG_SOC_MT7988D),y)
-export FILE_NAME := "tm_hns_asus_zenwifi-bt6_standalone_2_1_0_2025_03_21"
+ifeq ($(or $(RTCONFIG_SOC_MT7988D),$(RTCONFIG_SOC_MT7987)),y)
+export FILE_NAME := "tm_hns_asus_zenwifi-bt6_standalone_2_1_0_2025_12_01"
 endif
 
 ifeq ($(BRCM_CHIP),6764)
-export FILE_NAME := "tm_hns_asus_rt-be58_go_standalone_2_1_0_2025_07_10"
+export FILE_NAME := "tm_hns_asus_rt-be58_go_standalone_2_1_0_2025_12_01"
 endif
 
 

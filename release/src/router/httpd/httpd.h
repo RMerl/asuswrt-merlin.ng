@@ -489,9 +489,6 @@ extern int check_AiMesh_whitelist(char *page);
 extern int ej_get_dnsprivacy_presets(int eid, webs_t wp, int argc, char_t **argv);
 #endif
 extern void __validate_apply_set_wl_var(char *nv, char *val) __attribute__((weak));
-#ifdef RTCONFIG_BWDPI
-extern int check_bwdpi_status_app_name(char *name);
-#endif
 
 /* web-*.c */
 extern int ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit);
@@ -650,5 +647,9 @@ extern void gen_random_string_v2(char *out, size_t len);
 extern int json_object_get_string_to_double(json_object *source_obj, char *target, char *output, int len);
 #ifdef RTCONFIG_BCM_AFC
 extern int find_afc_challenge(char *id, char *challenge);
+#endif
+extern int nvram_modify_log(char *name, char *new, char *old, struct json_object *nvram_modify_obj);
+#ifdef RTCONFIG_AI_SERVICE
+extern void do_set_AI_board_EULA_cgi(char *url, FILE *stream);
 #endif
 #endif /* _httpd_h_ */

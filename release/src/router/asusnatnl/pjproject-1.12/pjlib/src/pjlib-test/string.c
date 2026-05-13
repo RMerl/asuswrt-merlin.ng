@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  */
 #include <pj/string.h>
+#include <pj/assert.h>
+#include <pj/errno.h>
 #include <pj/pool.h>
 #include <pj/log.h>
 #include <pj/os.h>
@@ -290,6 +292,324 @@ static int strcmp_test(void)
 #undef STR_TEST
 }
 
+static int verify_strxcpy(const char *src, int dst_size, int exp_ret, 
+                          const char *exp_dst)
+{
+    char dst[6];
+    char GUARD = '@';
+    int i, ret;
+
+    PJ_ASSERT_RETURN(src && dst_size <= 5, -700);
+
+    memset(dst, GUARD, sizeof(dst));
+
+    ret = pj_ansi_strxcpy(dst, src, dst_size);
+
+    /* verify return value */
+    if (ret != exp_ret) {
+        PJ_LOG(3,("", "  strxcpy \"%s\", dst_size=%d: ret %d != %d",
+                  src, dst_size, ret, exp_ret));
+        return -704;
+    }
+
+    /* expected dst content */
+    if (exp_dst) {
+        if (strcmp(dst, exp_dst)) {
+            PJ_LOG(3,("", "  strxcpy \"%s\", dst_size=%d: dst content mismatch: \"%s\"!=\"%s\"",  
+                          src, dst_size, dst, exp_dst));
+            return -708;
+        }
+    }
+
+    /* verify not writing pass buffer */
+    for (i=exp_dst?strlen(exp_dst)+1:0; i<sizeof(dst); ++i) {
+        if (dst[i] != GUARD) {
+            PJ_LOG(3,("", "  strxcpy \"%s\", dst_size=%d: overflow at %d",
+                          src, dst_size, i));
+            return -710;
+        }
+    }
+
+    return 0;
+}
+
+static int strxcpy_test(void)
+{
+    int rc;
+#define CHECK_(src, dst_size, exp_ret, exp_dst)   \
+               rc = verify_strxcpy(src, dst_size, exp_ret, exp_dst); \
+               if (rc) return rc
+
+    CHECK_( "",     0, -PJ_ETOOBIG, NULL);
+    CHECK_( "a",    0, -PJ_ETOOBIG, NULL);
+
+    {
+        /* special test 1 (dst contains null) */
+        char dst[4];
+        pj_bzero(dst, sizeof(dst));
+        rc = pj_ansi_strxcpy(dst, "a", 1);
+        if (rc != -PJ_ETOOBIG) {
+            PJ_LOG(3,("", "  pj_ansi_strxcpy special test 1: ret %d!=%d",
+                    rc, -PJ_ETOOBIG));
+            return -700;
+        }
+    }
+
+    CHECK_( "",     1, 0, "");
+    CHECK_( "a",    1, -PJ_ETOOBIG, "");
+    CHECK_( "ab",   1, -PJ_ETOOBIG, "");
+    CHECK_( "abcd", 1, -PJ_ETOOBIG, "");
+
+    CHECK_( "abc",  2, -PJ_ETOOBIG, "a");
+    CHECK_( "ab",   2, -PJ_ETOOBIG, "a");
+    CHECK_( "a",    2, 1, "a");
+    CHECK_( "",     2, 0, "");
+
+    CHECK_( "abcd", 3, -PJ_ETOOBIG, "ab");
+    CHECK_( "abc",  3, -PJ_ETOOBIG, "ab");
+    CHECK_( "ab",   3, 2, "ab");
+    CHECK_( "a",    3, 1, "a");
+    CHECK_( "",     3, 0, "");
+
+    CHECK_( "abcde", 4, -PJ_ETOOBIG, "abc");
+    CHECK_( "abcd",  4, -PJ_ETOOBIG, "abc");
+    CHECK_( "abc",   4, 3, "abc");
+    CHECK_( "ab",    4, 2, "ab");
+    CHECK_( "a",     4, 1, "a");
+    CHECK_( "",      4, 0, "");
+
+    CHECK_( "abcdef", 5, -PJ_ETOOBIG, "abcd");
+    CHECK_( "abcde",  5, -PJ_ETOOBIG, "abcd");
+    CHECK_( "abcd",   5, 4, "abcd");
+    CHECK_( "abc",    5, 3, "abc");
+    CHECK_( "ab",     5, 2, "ab");
+    CHECK_( "a",      5, 1, "a");
+    CHECK_( "",       5, 0, "");
+
+#undef CHECK_
+
+    return 0;
+}
+
+static int verify_strxcpy2(const pj_str_t *src, int dst_size, int exp_ret,
+                           const char *exp_dst)
+{
+    char dst[6];
+    char GUARD = '@';
+    int i, ret;
+
+    PJ_ASSERT_RETURN(src && dst_size <= 5, -720);
+
+    memset(dst, GUARD, sizeof(dst));
+
+    ret = pj_ansi_strxcpy2(dst, src, dst_size);
+
+    /* verify return value */
+    if (ret != exp_ret) {
+        PJ_LOG(3,("", "  strxcpy2 \"%.*s\" slen=%ld, dst_size=%d: ret %d!=%d",
+                 (int)src->slen, src->ptr, src->slen, dst_size, ret, exp_ret));
+        return -724;
+    }
+
+    /* expected dst content */
+    if (exp_dst) {
+        if (strcmp(dst, exp_dst)) {
+            PJ_LOG(3,("", "  strxcpy2 \"%.*s\" slen=%ld, dst_size=%d: "
+                          "dst content mismatch: \"%s\"!=\"%s\"",  
+                          (int)src->slen, src->ptr, src->slen, dst_size, dst,
+                          exp_dst));
+            return -726;
+        }
+    }
+
+    /* verify not writing pass buffer */
+    for (i=dst_size; i<sizeof(dst); ++i) {
+        if (dst[i] != GUARD) {
+            PJ_LOG(3,("", "  strxcpy2 \"%.*s\" slen=%ld, dst_size=%d: "
+                          "overflow at %d (chr %d)",
+                          (int)src->slen, src->ptr, src->slen, dst_size, i,
+                          (char)(dst[i] & 0xFF)));
+            return -728;
+        }
+    }
+
+    return 0;
+}
+
+
+static int strxcpy2_test(void)
+{
+    pj_str_t src;
+    char nulls[6];
+    int rc;
+
+    pj_bzero(nulls, sizeof(nulls));
+
+#define CHECK2_(s, src_len, dst_size, exp_ret, exp_dst)   \
+                src.ptr = s; src.slen = src_len; \
+                rc = verify_strxcpy2(&src, dst_size, exp_ret, exp_dst); \
+                if (rc) return rc
+
+    CHECK2_( NULL,   0, 0, -PJ_ETOOBIG, NULL);
+    CHECK2_( "a!",   1, 0, -PJ_ETOOBIG, NULL);
+
+    CHECK2_( "abc!", 3, 1, -PJ_ETOOBIG, "");
+    CHECK2_( "ab!",  2, 1, -PJ_ETOOBIG, "");
+
+    /* note for test below: although src contains null and the strlen
+       of result (i.e. dst) is zero, strxcpy2 would still return 
+       -PJ_ETOOBIG because the required buffer size is assumed to
+       be 2 (one for the src->ptr content (although the content is a
+       null character), one for the null terminator)
+    */
+    CHECK2_( nulls,  1, 1, 0, "");
+    CHECK2_( "a!",   1, 1, -PJ_ETOOBIG, "");
+    CHECK2_( "a",    1, 1, -PJ_ETOOBIG, "");
+    CHECK2_( "",     0, 1, 0, "");
+    CHECK2_( NULL,   0, 1, 0, "");
+
+    CHECK2_( "abc",  3, 2, -PJ_ETOOBIG, "a");
+    CHECK2_( "ab",   2, 2, -PJ_ETOOBIG, "a");
+    CHECK2_( "a!",   1, 2, 1, "a");
+    CHECK2_( nulls,  1, 2, 0, "");
+    CHECK2_( "!",    0, 2, 0, "");
+    CHECK2_( NULL,   0, 2, 0, "");
+
+    CHECK2_( "abc",  3, 3, -PJ_ETOOBIG, "ab");
+    CHECK2_( "ab",   3, 3, 2, "ab");
+    CHECK2_( nulls,  3, 3, 0, "");
+    CHECK2_( "abc",  2, 3, 2, "ab");
+    CHECK2_( "ab",   2, 3, 2, "ab");
+    CHECK2_( "a",    2, 3, 1, "a");
+    CHECK2_( nulls,  2, 3, 0, "");
+    CHECK2_( "a",    1, 3, 1, "a");
+    CHECK2_( "",     1, 3, 0, "");
+    CHECK2_( "",     0, 3, 0, "");
+    CHECK2_( NULL,   0, 3, 0, "");
+
+    CHECK2_( "abcde",5, 4, -PJ_ETOOBIG, "abc");
+    CHECK2_( "abcd", 4, 4, -PJ_ETOOBIG, "abc");
+    CHECK2_( "abc",  4, 4, 3, "abc");
+    CHECK2_( "ab",   4, 4, 2, "ab");
+    CHECK2_( "a",    4, 4, 1, "a");
+    CHECK2_( nulls,  4, 4, 0, "");
+    CHECK2_( "abc",  3, 4, 3, "abc");
+    CHECK2_( "ab",   3, 4, 2, "ab");
+    CHECK2_( "ab",   2, 4, 2, "ab");
+    CHECK2_( "a",    2, 4, 1, "a");
+    CHECK2_( "",     2, 4, 0, "");
+    CHECK2_( nulls,  2, 4, 0, "");
+    CHECK2_( "a",    1, 4, 1, "a");
+    CHECK2_( nulls,  1, 4, 0, "");
+    CHECK2_( "a",    0, 4, 0, "");
+    CHECK2_( "",     0, 4, 0, "");
+    CHECK2_( NULL,   0, 4, 0, "");
+
+#undef CHECK2_
+
+    return 0;
+}
+
+
+static int verify_strxcat(const char *cdst, const char *src, int dst_size,
+                          int exp_ret, const char *exp_dst)
+{
+    char dst[6];
+    char GUARD = '@';
+    int i, ret;
+
+    PJ_ASSERT_RETURN(src && strlen(cdst) <= 4, -730);
+    PJ_ASSERT_RETURN(strlen(cdst) < dst_size ||
+                     (strlen(cdst)==0 && dst_size==0), -731);
+
+    memset(dst, GUARD, sizeof(dst));
+    if (dst_size) {
+        ret = pj_ansi_strxcpy(dst, cdst, dst_size);
+        PJ_ASSERT_RETURN(ret==strlen(cdst), -732);
+    }
+
+    ret = pj_ansi_strxcat(dst, src, dst_size);
+
+    /* verify return value */
+    if (ret != exp_ret) {
+        PJ_LOG(3,("", "  strxcat \"%s\", \"%s\", dst_size=%d: ret %d!=%d",
+                  cdst, src, dst_size, ret, exp_ret));
+        return -734;
+    }
+
+    /* expected dst content */
+    if (exp_dst) {
+        if (strcmp(dst, exp_dst)) {
+            PJ_LOG(3,("", "  strxcat \"%s\", \"%s\", dst_size=%d: "
+                          "dst content mismatch: \"%s\"!=\"%s\"",  
+                          cdst, src, dst_size, dst, exp_dst));
+            return -736;
+        }
+    }
+
+    /* verify not writing past buffer */
+    for (i=exp_dst?strlen(exp_dst)+1:0; i<sizeof(dst); ++i) {
+        if (dst[i] != GUARD) {
+            PJ_LOG(3,("", "  strxcat \"%s\", \"%s\", dst_size=%d: "
+                          "overflow at %d",
+                          cdst, src, dst_size, i));
+            return -738;
+        }
+    }
+
+    return 0;
+}
+
+
+static int strxcat_test(void)
+{
+    int rc;
+#define CHECK3_(dst, src, dst_size, exp_ret, exp_dst)   \
+               rc = verify_strxcat(dst, src, dst_size, exp_ret, exp_dst); \
+               if (rc) return rc
+
+    CHECK3_( "", "",     0, -PJ_ETOOBIG, NULL);
+    CHECK3_( "", "a",    0, -PJ_ETOOBIG, NULL);
+
+    CHECK3_( "", "",     1, 0, "");
+    CHECK3_( "", "a",    1, -PJ_ETOOBIG, "");
+
+    CHECK3_( "", "a",    2, 1, "a");
+    CHECK3_( "", "ab",   2, -PJ_ETOOBIG, "a");
+    CHECK3_( "0", "",    2, 1, "0");
+    CHECK3_( "0", "a",   2, -PJ_ETOOBIG, "0");
+
+    CHECK3_( "", "a",    3, 1, "a");
+    CHECK3_( "", "ab",   3, 2, "ab");
+    CHECK3_( "", "abc",  3, -PJ_ETOOBIG, "ab");
+    CHECK3_( "0", "",    3, 1, "0");
+    CHECK3_( "0", "a",   3, 2, "0a");
+    CHECK3_( "0", "ab",  3, -PJ_ETOOBIG, "0a");
+    CHECK3_( "01", "",   3, 2, "01");
+    CHECK3_( "01", "a",  3, -PJ_ETOOBIG, "01");
+    CHECK3_( "01", "ab", 3, -PJ_ETOOBIG, "01");
+
+    CHECK3_( "", "a",     4, 1, "a");
+    CHECK3_( "", "ab",    4, 2, "ab");
+    CHECK3_( "", "abc",   4, 3, "abc");
+    CHECK3_( "", "abcd",  4, -PJ_ETOOBIG, "abc");
+    CHECK3_( "0", "",     4, 1, "0");
+    CHECK3_( "0", "a",    4, 2, "0a");
+    CHECK3_( "0", "ab",   4, 3, "0ab");
+    CHECK3_( "0", "abc",  4, -PJ_ETOOBIG, "0ab");
+    CHECK3_( "01", "",    4, 2, "01");
+    CHECK3_( "01", "a",   4, 3, "01a");
+    CHECK3_( "01", "ab",  4, -PJ_ETOOBIG, "01a");
+    CHECK3_( "01", "abc", 4, -PJ_ETOOBIG, "01a");
+    CHECK3_( "012", "",   4, 3, "012");
+    CHECK3_( "012", "a",  4, -PJ_ETOOBIG, "012");
+    CHECK3_( "012", "ab", 4, -PJ_ETOOBIG, "012");
+    CHECK3_( "012", "abc",4, -PJ_ETOOBIG, "012");
+
+#undef CHECK3_
+    return 0;
+}
+
 int string_test(void)
 {
     const pj_str_t hello_world = { HELLO_WORLD, HELLO_WORLD_LEN };
@@ -425,6 +745,21 @@ int string_test(void)
     i = stricmp_test();
     if (i != 0)
 	return i;
+
+    /* strxcpy test */
+    i = strxcpy_test();
+    if (i != 0)
+        return i;
+
+    /* strxcpy2 test */
+    i = strxcpy2_test();
+    if (i != 0)
+        return i;
+
+    /* strxcat test */
+    i = strxcat_test();
+    if (i != 0)
+        return i;
 
     return 0;
 }

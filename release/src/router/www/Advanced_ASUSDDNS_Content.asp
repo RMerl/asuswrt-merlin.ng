@@ -19,7 +19,7 @@
 <script type="text/javascript" language="JavaScript" src="/validator.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=4"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=5"></script>
 <script type="text/javascript" src="/form.js"></script>
 <style type="text/css">
     * {
@@ -277,23 +277,23 @@ function init(){
 	setTimeout(show_warning_message, 1000);
 
 	if (ddns_enable_x == "1" && ddns_server_x.indexOf("WWW.ASUS.COM") != -1) {
-		const policyStatus = PolicyStatus()
-				.then(data => {
-					if (data.PP == 0 || data.PP_time == "") {
-						const policyModal = new PolicyModalComponent({
-							policy: "PP",
-							policyStatus: data,
-							agreeCallback: () => {
-								location.reload();
-							},
-							knowRiskCallback: () => {
-								alert(`<#ASUS_POLICY_Function_Confirm#>`);
-								location.reload();
-							}
-						});
-						policyModal.show();
-					}
-				});
+        PolicyStatus()
+            .then(data => {
+                if (data.PP < 1) {
+                    const policyModal = new PolicyModalComponent({
+                        policy: "PP",
+                        policyStatus: data,
+                        agreeCallback: () => {
+                            location.reload();
+                        },
+                        knowRiskCallback: () => {
+                            alert(`<#ASUS_POLICY_Function_Confirm#>`);
+                            location.reload();
+                        }
+                    });
+                    policyModal.show();
+                }
+            });
 	}
 
 	if(oauth_auth_status == "2"){
@@ -542,36 +542,36 @@ function get_cert_info(){
 }
 
 function apply_eula_check(){
-	const policyStatus = PolicyStatus()
-			.then(data => {
-				if (document.form.ddns_enable_x.value == "1" && document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1) {
-					if (data.PP == 0 || data.PP_time == "") {
-						const policyModal = new PolicyModalComponent({
-							policy: "PP",
-							policyStatus: data,
-							agreeCallback: () => {
-								$("#policy_popup_modal").remove();
-								applyRule();
-								PolicyStatus();
-							},
-							knowRiskCallback: () => {
-								alert(`<#ASUS_POLICY_Function_Confirm#>`);
-								$("#radio_ddns_enable").removeClass("on");
-								$('input[name="ddns_enable_x"][value="0"]').prop('checked', true);
-								change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '0')
-								$("#policy_popup_modal").remove();
-								PolicyStatus();
-							}
-						});
-						policyModal.show();
-						return false;
-					} else {
-						applyRule();
-					}
-				} else {
-					applyRule();
-				}
-			});
+    PolicyStatus()
+        .then(data => {
+            if (document.form.ddns_enable_x.value == "1" && document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1) {
+                if (data.PP < 1) {
+                    const policyModal = new PolicyModalComponent({
+                        policy: "PP",
+                        policyStatus: data,
+                        agreeCallback: () => {
+                            $("#policy_popup_modal").remove();
+                            applyRule();
+                            PolicyStatus();
+                        },
+                        knowRiskCallback: () => {
+                            alert(`<#ASUS_POLICY_Function_Confirm#>`);
+                            $("#radio_ddns_enable").removeClass("on");
+                            $('input[name="ddns_enable_x"][value="0"]').prop('checked', true);
+                            change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '0')
+                            $("#policy_popup_modal").remove();
+                            PolicyStatus();
+                        }
+                    });
+                    policyModal.show();
+                    return false;
+                } else {
+                    applyRule();
+                }
+            } else {
+                applyRule();
+            }
+        });
 }
 
 function applyRule(){

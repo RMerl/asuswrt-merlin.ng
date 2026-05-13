@@ -23,6 +23,7 @@
 #include <pj/ctype.h>
 #include <pj/rand.h>
 #include <pj/os.h>
+#include <pj/errno.h>
 
 #if PJ_FUNCTIONS_ARE_INLINED==0
 #  include <pj/string_i.h>
@@ -197,6 +198,74 @@ PJ_DEF(int) pj_utoa_pad( unsigned long val, char *buf, int min_dig, int pad)
     } while (buf < p);
 
     return len;
+}
+
+PJ_DEF(int) pj_ansi_strxcpy(char *dst, const char *src,
+                            pj_size_t dst_size)
+{
+    char *odst = dst;
+
+    PJ_ASSERT_RETURN(dst && src, -PJ_EINVAL);
+
+    if (dst_size==0)
+        return -PJ_ETOOBIG;
+
+    while (--dst_size && (*dst=*src) != 0) {
+        ++dst;
+        ++src;
+    }
+
+    if (!*dst && !*src) {
+        return dst-odst;
+    } else {
+        *dst = '\0';
+        return *src? -PJ_ETOOBIG : dst-odst;
+    }
+}
+
+PJ_DEF(int) pj_ansi_strxcpy2(char *dst, const pj_str_t *src,
+                             pj_size_t dst_size)
+{
+    char *odst = dst;
+    const char *ssrc, *esrc;
+
+    PJ_ASSERT_RETURN(dst && src && src->slen >= 0, -PJ_EINVAL);
+    if (dst_size==0)
+        return -PJ_ETOOBIG;
+
+    ssrc = src->ptr;
+    esrc = ssrc + src->slen;
+
+    while (ssrc < esrc && --dst_size && (*dst = *ssrc)!= 0) {
+        dst++;
+        ssrc++;
+    }
+
+    *dst = '\0';
+    if (ssrc==esrc || !*ssrc) {
+         return dst-odst;
+    } else {
+        return -PJ_ETOOBIG;
+    }
+}
+
+PJ_DEF(int) pj_ansi_strxcat(char *dst, const char *src, pj_size_t dst_size)
+{
+    pj_size_t dst_len;
+
+    PJ_ASSERT_RETURN(dst && src, -PJ_EINVAL);
+
+    if (dst_size==0)
+        return -PJ_ETOOBIG;
+
+    dst_len = pj_ansi_strlen(dst);
+    if (dst_len < dst_size) {
+        int rc = pj_ansi_strxcpy(dst+dst_len, src, dst_size-dst_len);
+        if (rc < 0)
+            return rc;
+        return dst_len + rc;
+    } else
+        return -PJ_ETOOBIG;
 }
 
 

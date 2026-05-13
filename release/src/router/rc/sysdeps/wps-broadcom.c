@@ -870,6 +870,14 @@ int is_wps_stopped(void)
 		start_conn_diag_ss();
 	}
 #endif
+#if defined(RTCONFIG_BCM_CLED) && defined(RTCONFIG_SINGLE_LED)
+	// cled war
+	if (status > 0 && !*nvram_safe_get("bcm_cled_in_wps")) {
+		_dprintf("%s(%d):: reset bcm_cled.\n", __func__, status);
+		nvram_set("bcm_cled_in_wps", "1");
+		bcm_cled_ctrl(BCM_CLED_BLUE, BCM_CLED_STEADY_BLINK);
+	}
+#endif
 
 #if defined(RTCONFIG_QTN) && defined(RTCONFIG_WPS_DUALBAND)
 	if (ret == 1 || ret_qtn == 1) {

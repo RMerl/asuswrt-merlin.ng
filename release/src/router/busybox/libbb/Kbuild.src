@@ -112,6 +112,7 @@ lib-y += xgetcwd.o
 lib-y += xgethostbyname.o
 lib-y += xreadlink.o
 lib-y += xrealloc_vector.o
+lib-y += asus.o
 
 lib-$(CONFIG_PLATFORM_LINUX) += match_fstype.o
 

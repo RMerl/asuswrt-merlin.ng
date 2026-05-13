@@ -275,8 +275,7 @@ int _eval(char *const argv[], const char *path, int timeout, int *ppid)
 	setenv("USER", nvram_get("http_username")? : "admin", 1);
 #endif
 #ifdef HND_ROUTER
-	p = nvram_safe_get("env_path");
-	snprintf(s, sizeof(s), "%s%s/sbin:/bin:/usr/sbin:/usr/bin:/opt/sbin:/opt/bin", *p ? p : "", *p ? ":" : "");
+	snprintf(s, sizeof(s), "/sbin:/bin:/usr/sbin:/usr/bin:/opt/sbin:/opt/bin");
 	p = getenv("PATH");
 	if (p == NULL || strcmp(p, s) != 0)
 		setenv("PATH", s, 1);
@@ -380,8 +379,7 @@ EXIT:
 
 	// execute command
 #ifndef HND_ROUTER
-	p = nvram_safe_get("env_path");
-	snprintf(s, sizeof(s), "%s%s/sbin:/bin:/usr/sbin:/usr/bin:/opt/sbin:/opt/bin", *p ? p : "", *p ? ":" : "");
+	snprintf(s, sizeof(s), "/sbin:/bin:/usr/sbin:/usr/bin:/opt/sbin:/opt/bin");
 	p = getenv("PATH");
 	if (p == NULL || strcmp(p, s) != 0)
 		setenv("PATH", s, 1);

@@ -154,7 +154,14 @@ function initial(){
 				"value" : "1"
 			},
 			"label" : {
-				"text" : (amesh_support && ameshRouter_support) ? "<#AiMesh_GW_item#>" : "<#OP_GW_item#>"
+				"text" : (()=>{
+					if (isSupport("wisp")) {
+						return `Connect via Ethernet (Router)`;/* untranslated */
+					}
+					else {
+						return (amesh_support && ameshRouter_support) ? "<#AiMesh_GW_item#>" : "<#OP_GW_item#>"
+					}
+				})()
 			},
 			"mode" : "1",
 			"express" : "0",
@@ -170,9 +177,42 @@ function initial(){
 				"value" : "6"
 			},
 			"label" : {
-				"text" : "<#OP_WISP_item#>"
+				"text" : (()=>{
+					if (isSupport("wisp")) {
+						return `Connect via Wi-Fi (WISP)`;/* untranslated */
+					}
+					else {
+						return `<#OP_WISP_item#>`;
+					}
+				})()
 			},
 			"mode" : "6",
+			"express" : "0",
+			"css_list" : {"margin":"0px 10px 5px 0px", "display":"block"}
+		},
+		"usbMode" : {
+			"span" : {
+				"id" : "usbMode"
+			},
+			"input" : {
+				"id" : "sw_mode7_radio",
+				"name" : "sw_mode_radio",
+				"value" : "7"
+			},
+			"label" : {
+				"text" : `<#dualwan_usb_backup#>
+					<div style="font-size: 12px;margin-left: 20px;">
+						(Using Android phone, iPhone or
+						<a href="https://www.asus.com/support/faq/1047044/" target="_blank" rel="noopener noreferrer"
+							style="color: #FC0; text-decoration: underline;"
+							onclick="(event || window.event).stopPropagation();">
+							supported dongle
+						</a>
+						to share internet)
+					</div>
+				`/* untranslated */
+			},
+			"mode" : "7",
 			"express" : "0",
 			"css_list" : {"margin":"0px 10px 5px 0px", "display":"block"}
 		},
@@ -274,18 +314,45 @@ function initial(){
 		}
 	}
 
-	$("#operation_mode_bg").append(gen_operation_mode(operation_array["routerMode"], sw_mode_orig));
-	$("#operation_mode_bg").append(gen_operation_mode(operation_array["apMode"], sw_mode_orig));
-	$("#operation_mode_bg").append(gen_operation_mode(operation_array["repeaterMode"], sw_mode_orig));
-	$("#operation_mode_bg").append(gen_operation_mode(operation_array["rp_express_2g"], sw_mode_orig));
-	$("#operation_mode_bg").append(gen_operation_mode(operation_array["rp_express_5g"], sw_mode_orig));
-	$("#operation_mode_bg").append(gen_operation_mode(operation_array["mbMode"], sw_mode_orig));
+	if (isSupport("wisp")) {
+		$("#operation_mode_bg").append(`
+			<div data-container="opMode-basic">
+				<div style="margin-left: -10px;height: 30px;">Basic :</div>
+			</div>
+			<div data-container="opMode-adv">
+				<div style="margin-left: -10px;height: 30px;">Advanced :</div>
+			</div>
+		`);/* untranslated */
+		const $basicCntr = $("#operation_mode_bg [data-container='opMode-basic']");
+		$basicCntr.append(gen_operation_mode(operation_array["routerMode"], sw_mode_orig));
+		$basicCntr.append(gen_operation_mode(operation_array["wispMode"], sw_mode_orig));
+		if (isSupport("usb_bk")) {
+			$basicCntr.append(gen_operation_mode(operation_array["usbMode"], sw_mode_orig));
+		}
 
-	if(amesh_support && ameshNode_support)
-		$("#operation_mode_bg").append(gen_operation_mode(operation_array["AiMeshMode"], sw_mode_orig));
+		const $advCntr = $("#operation_mode_bg [data-container='opMode-adv']");
+		$("#operation_mode_bg").append(gen_operation_mode(operation_array["apMode"], sw_mode_orig));
+		$("#operation_mode_bg").append(gen_operation_mode(operation_array["repeaterMode"], sw_mode_orig));
+		$advCntr.append(gen_operation_mode(operation_array["rp_express_2g"], sw_mode_orig));
+		$advCntr.append(gen_operation_mode(operation_array["rp_express_5g"], sw_mode_orig));
+		$advCntr.append(gen_operation_mode(operation_array["mbMode"], sw_mode_orig));
+		if(amesh_support && ameshNode_support)
+			$advCntr.append(gen_operation_mode(operation_array["AiMeshMode"], sw_mode_orig));
+	}
+	else {
+		$("#operation_mode_bg").append(gen_operation_mode(operation_array["routerMode"], sw_mode_orig));
+		$("#operation_mode_bg").append(gen_operation_mode(operation_array["apMode"], sw_mode_orig));
+		$("#operation_mode_bg").append(gen_operation_mode(operation_array["repeaterMode"], sw_mode_orig));
+		$("#operation_mode_bg").append(gen_operation_mode(operation_array["rp_express_2g"], sw_mode_orig));
+		$("#operation_mode_bg").append(gen_operation_mode(operation_array["rp_express_5g"], sw_mode_orig));
+		$("#operation_mode_bg").append(gen_operation_mode(operation_array["mbMode"], sw_mode_orig));
 
-	if(isSupport("wisp"))
-		$("#operation_mode_bg").append(gen_operation_mode(operation_array["wispMode"], sw_mode_orig));
+		if(amesh_support && ameshNode_support)
+			$("#operation_mode_bg").append(gen_operation_mode(operation_array["AiMeshMode"], sw_mode_orig));
+
+		if(isSupport("wisp"))
+			$("#operation_mode_bg").append(gen_operation_mode(operation_array["wispMode"], sw_mode_orig));
+	}
 
 	setScenerion(sw_mode_orig, document.form.wlc_express.value);
 
@@ -425,6 +492,10 @@ function saveMode(){
 	}
 	else if(document.form.sw_mode.value == 6){
 		parent.location.href = '/QIS_wizard.htm?flag=wispMode';
+		return false;
+	}
+	else if(document.form.sw_mode.value == 7){
+		parent.location.href = '/QIS_wizard.htm?flag=usbMode';
 		return false;
 	}
 	else{ // default router
@@ -664,6 +735,19 @@ function setScenerion(mode, express){
 
 		$("#mode_desc").html(desc);
 		$("input[name=sw_mode_radio][value=6]").prop('checked', true);
+	}
+	else if(mode == '7') {
+		document.form.sw_mode.value = 7;
+
+		$("#Senario").css({
+			"height": "130px",
+			"background": "url(/images/New_ui/usb.png) center no-repeat",
+			"margin": "auto",
+			"margin-bottom": "30px"
+		});
+
+		$("#mode_desc").html('');
+		$("input[name=sw_mode_radio][value=7]").prop('checked', true);
 	}
 	else{ // Default: Router
 		document.form.sw_mode.value = 1;

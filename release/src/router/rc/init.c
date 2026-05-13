@@ -725,6 +725,8 @@ wl_defaults(void)
 	pNic = nic_lan_ifnames;
 #endif
 
+	_dprintf("%s:: pd_low=%d\n", __func__, nvram_get_int("pd_low"));
+
 	if (!nvram_get("wl_country_code"))
 		nvram_set("wl_country_code", "");
 
@@ -2271,6 +2273,7 @@ misc_defaults(int restore_defaults)
 	nvram_unset("amas_status_service_ready");
 	nvram_unset("amas_misc_service_ready");
 	nvram_unset("amas_ssd_service_ready");
+	nvram_unset("amas_ready");
 #endif
 
 #if defined(RTAC66U) || defined(BCM4352)
@@ -20788,31 +20791,97 @@ int init_nvram(void)
 		nvram_set("wl_ifnames", "wl0 wl1");
 		nvram_set("wl0_vifnames", "wl0.1 wl0.2 wl0.3");
 		nvram_set("wl1_vifnames", "wl1.1 wl1.2 wl1.3");
+		nvram_set("wl0_txchain", "3");
+		nvram_set("wl1_txchain", "3");
+		nvram_set("wl0_hw_txchain", "3");
+		nvram_set("wl1_hw_txchain", "3");
+
+		if (nvram_get_int("pd_low_user")) {
+			pd_low = nvram_get_int("pd_low_user");
+			_dprintf("%s:: reset pd_low as %d\n", __func__, pd_low);
+		}
+		_dprintf("%s:: pd_low is %d, nvram(pd_low) is %d\n", __func__, pd_low, nvram_get_int("pd_low"));
 
 		if (pd_low > 0 || nvram_match("force_pd_low", "1")) {
-			_dprintf("DUT could be malfunction due low V. disable usb\n");
+			_dprintf("Dut could be malfunction due low V; disable usb & reset txchain, country\n");
 			nvram_set("pd_low", "1");
 			nvram_set("usb_enable", "0");
 			nvram_set("usb_storage", "0");
 
+			nvram_set("wl0_txchain", "1");
+			nvram_set("wl1_txchain", "1");
+			nvram_set("wl0_hw_txchain", "1");
+			nvram_set("wl1_hw_txchain", "1");
+			nvram_set("networkmap_enable", "0");
+
+			//nvram_set("territory_code", "EU/0");
+
 			if (pd_low == 2) {
-				_dprintf("DUT could be malfunction due low/off V.. disable wl\n");
+				_dprintf("DUT could be malfunction due low/off V.. allow wl\n");
 				nvram_set("pd_low", "2");
+				/*
 				nvram_set("wl0_radio", "0");
 				nvram_set("wl0.1_radio", "0");
 				nvram_set("wl1_radio", "0");
 				nvram_set("wl1.1_radio", "0");
+				*/
+				nvram_set("wl0_radio", "1");
+				nvram_set("wl0.1_radio", "1");
+				nvram_set("wl1_radio", "1");
+				nvram_set("wl1.1_radio", "1");
 
-				nvram_set("wl_ifnames", "");
-				nvram_set("wl0_vifnames", "");
-				nvram_set("wl1_vifnames", "");
-
-				nvram_set("networkmap_enable", "0");
+				nvram_set("wl_ifnames", "wl0 wl1");
+				nvram_set("wl0_vifnames", "wl0.1");
+				nvram_set("wl1_vifnames", "wl1.1");
 			}
-		} else if (nvram_get_int("pd_low") > 0) {
+			if (pd_low == 3) {
+				_dprintf("DUT could be malfunction due low/off V.. test mode (3): country\n");
+				nvram_set("pd_low", "3");
+
+				//nvram_set("territory_code", "EU/0");
+				nvram_set("wl0_radio", "1");
+				nvram_set("wl0.1_radio", "1");
+				nvram_set("wl1_radio", "1");
+				nvram_set("wl1.1_radio", "1");
+
+				nvram_set("wl_ifnames", "wl0 wl1");
+				nvram_set("wl0_vifnames", "wl0.1");
+				nvram_set("wl1_vifnames", "wl1.1");
+			}
+			if (pd_low == 4) {
+				_dprintf("DUT could be malfunction due low/off V.. test mode (4): country, 5g-off\n");
+				nvram_set("pd_low", "4");
+
+				//nvram_set("territory_code", "EU/0");
+				nvram_set("wl0_radio", "1");
+				nvram_set("wl0.1_radio", "1");
+				nvram_set("wl1_radio", "0");
+				nvram_set("wl1.1_radio", "0");
+
+				nvram_set("wl_ifnames", "wl0");
+				nvram_set("wl0_vifnames", "wl0.1");
+				nvram_set("wl1_vifnames", "");
+			}
+			if (pd_low == 5) {
+				_dprintf("DUT could be malfunction due low/off V.. test mode (5): country, 2g-off\n");
+				nvram_set("pd_low", "5");
+
+				//nvram_set("territory_code", "EU/0");
+				nvram_set("wl0_radio", "0");
+				nvram_set("wl0.1_radio", "0");
+				nvram_set("wl1_radio", "1");
+				nvram_set("wl1.1_radio", "1");
+
+				nvram_set("wl_ifnames", "wl1");
+				nvram_set("wl1_vifnames", "wl1.1");
+				nvram_set("wl0_vifnames", "");
+			}
+		} else if (nvram_get_int("pd_low") > 0 || pd_low == -1) {	// reset to normal
+			_dprintf("pd_low(%d), reset to normal pd service.\n", pd_low);
+
 			nvram_set("usb_enable", "1");
 			nvram_set("usb_storage", "1");
-			if (nvram_get_int("pd_low") == 2) {
+			if (nvram_get_int("pd_low") == 2 || pd_low == -1) {
 				nvram_set("wl0_radio", "1");
 				nvram_set("wl0.1_radio", "1");
 				nvram_set("wl1_radio", "1");
@@ -20821,6 +20890,8 @@ int init_nvram(void)
 				nvram_set("networkmap_enable", "1");
 			}
 			nvram_set("pd_low", "0");
+			nvram_unset("pd_low_user");
+			nvram_unset("last_load_wl");
 		}
 
 		nvram_set("lan_ifname", "br0");
@@ -24083,6 +24154,7 @@ int init_nvram2(void)
 	}
 
 	detect_vul_scan();
+	init_asus_pp_eula();
 
 	return 0;
 }  // end of init_nvram2
@@ -26509,6 +26581,12 @@ logmessage("ATE", "boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),
 #endif
 #ifdef RTCONFIG_BCMARM
 			misc_ioctrl();
+#endif
+#if defined(RTBE58_GO)
+			if (nvram_get_int("pd_low") > 0) {
+				nvram_set("last_load_wl", "2");
+				nvram_commit();
+			}
 #endif
 #if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 			system("rtpolicy auto ALL &> /dev/null");

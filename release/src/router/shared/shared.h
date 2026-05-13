@@ -5747,6 +5747,7 @@ enum{
 	ASUS_PP_CONFIG_TRANSFER = 5,
 	ASUS_PP_DDNS = 6,
 	ASUS_PP_AFC = 7,
+	ASUS_PP_LICENSE_UPDATE_V5 = 8,
 	ASUS_PP_MAX
 };
 
@@ -5754,6 +5755,7 @@ struct ASUS_PP_table {
 	char *name;
 	char *version;
 	int id;
+	int force_sign;
 };
 extern struct ASUS_PP_table ASUS_PP_t[];
 
@@ -5761,7 +5763,7 @@ extern int webapi_get_b(const int id, char *buf, size_t len);
 extern int get_ASUS_privacy_policy_state(const int id);
 extern int get_ASUS_privacy_policy(void);
 extern int get_ASUS_privacy_policy_ver(const int id);
-
+extern void init_asus_pp_eula(void);
 extern int adjust_62_nv_list(char *name);
 
 extern char *get_ddns_macaddr(void);
@@ -5819,4 +5821,9 @@ enum {
 };
 #endif
 
+extern int is_safe_app_name(const char *app_name);
+
+extern int safe_do_system(const char *fmt, ...);
+extern int safe_fork_do_system(const char *fmt, ...);
+extern int safe_do_system_to_file(const char *outfile, int append, const char *fmt, ...);
 #endif	/* !__SHARED_H__ */

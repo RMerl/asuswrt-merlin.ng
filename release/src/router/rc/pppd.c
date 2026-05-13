@@ -225,7 +225,8 @@ start_pppd(int unit)
 				fprintf(fp, "tx_only ");
 			fprintf(fp, "demand\n");
 		}
-		fprintf(fp, "persist\n");
+		else
+			fprintf(fp, "persist\n");
 	}
 
 	if (nvram_match(strcat_r(prefix, "pppoe_auth", tmp), "pap")) {

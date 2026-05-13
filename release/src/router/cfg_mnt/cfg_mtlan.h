@@ -39,6 +39,7 @@ extern json_object* gen_lan_port_cap(json_object *root);
 extern char* get_wificap_ifname_from_wlprefix(char *dut_mac, char *wlprefix, char *ret_ifname, size_t ifname_bsize);
 extern char* get_lancap_ifname_from_portindex(char *dut_mac, int port_index, char *ret_ifname, size_t ifname_bsize);
 extern int get_sdn_vid_by_ifname_used(char *dut_mac, char *ifname);
+extern int get_sdn_idx_by_band_idx(char *dut_mac, int band_idx);
 extern int num_of_no_used_vif_from_wificap(char *dut_mac, unsigned short wifi_band);
 extern int num_of_vif_used(char *dut_mac, unsigned short wifi_band);
 extern int num_of_wifi_band(char *dut_mac, unsigned short wifi_band);

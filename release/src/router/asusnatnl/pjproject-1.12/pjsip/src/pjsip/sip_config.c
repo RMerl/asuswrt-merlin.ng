@@ -27,7 +27,9 @@ pjsip_cfg_t pjsip_sip_cfg_var =
     {
        PJSIP_ALLOW_PORT_IN_FROMTO_HDR,
        0,
-       PJSIP_DONT_SWITCH_TO_TCP
+       PJSIP_DONT_SWITCH_TO_TCP,
+       PJSIP_FOLLOW_EARLY_MEDIA_FORK,
+       PJSIP_REQ_HAS_VIA_ALIAS
     },
 
     /* Transaction settings */

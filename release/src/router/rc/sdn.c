@@ -70,6 +70,13 @@ int handle_sdn_feature(const int sdn_idx, const unsigned long features, const in
 			restart_all_sdn = 0;
 		}
 
+		if (features & SDN_FEATURE_DNSMASQ)
+		{
+			// TBD: Handle LAN (exclude LAN as WAN) ports power down/up
+			// nvram_set_int("freeze_duck", 60);
+			// lanport_ctrl(0);
+		}
+
 		for (i = 0; i < mtl_sz; ++i)
 		{
 			if (features & SDN_FEATURE_ALL_FIREWALL)
@@ -226,6 +233,16 @@ int handle_sdn_feature(const int sdn_idx, const unsigned long features, const in
 			update_gre_by_sdn(pmtl, mtl_sz, restart_all_sdn);
 		}
 #endif
+		if (features & SDN_FEATURE_DNSMASQ)
+		{
+			if (!restart_all_sdn && ipv6_enabled())
+			{
+				start_dnsmasq(LAN_IN_SDN_IDX);
+			}
+			// TBD: Handle LAN (exclude LAN as WAN) ports power down/up
+			// nvram_set_int("freeze_duck", 5);
+			// lanport_ctrl(1);
+		}
 
 		FREE_MTLAN((void *)pmtl);
 		return 0;

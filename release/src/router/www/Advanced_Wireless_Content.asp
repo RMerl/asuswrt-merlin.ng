@@ -89,6 +89,7 @@
             let { dwb_mode, dwb_band } = httpApi.nvramGet(["dwb_mode", "dwb_band"]);
             let nbandListArray = nvram["wlnband_list"].split("&#60");
             let systemManipulable = objectDeepCopy(system);
+            const systemManipulableOri = objectDeepCopy(system);
             let brcmAfcSupport = false;
             let afc_positioningSupport = false;
 
@@ -204,11 +205,11 @@
                         afc_enable,
                         function () {
                             const policyStatus = PolicyStatus().then((data) => {
-                                if (data.PP <= 2 || data.PP_time == "") {
+                                if (data.PP <= 2 || data.PP_read === 0) {
                                     const policyModal = new PolicyModalComponent({
                                         policy: "PP",
                                         policyStatus: data,
-                                        singPPVersion: 4,
+                                        signPPVersion: 4,
                                         agreeCallback: () => {
                                             applyRule();
                                         },
@@ -3453,6 +3454,49 @@
                         targetObject.focus();
                         targetObject.select();
                         return false;
+                    }
+                }
+
+                // Check for WISP mode on Go series: warn about channel/BW changes
+                if (isSwMode("WISP") && based_modelid.endsWith("_GO")) {
+                    let channelOrBandwidthChanged = false;
+
+                    // Check if any channel or bandwidth settings changed
+                    const wlBandSeqOri = systemManipulableOri.wlBandSeq;
+                    for (let [key, value] of Object.entries(wlBandSeqOri)) {
+                        let originalBW = value.bandwidthValue;
+                        let originalChannel = value.channelValue;
+                        
+                        // Check bandwidth change
+                        let newBW = postObject[`${key}_bw`];
+                        if (newBW !== undefined && newBW !== originalBW) {
+                            channelOrBandwidthChanged = true;
+                            break;
+                        }
+                        
+                        // Check channel change
+                        if (isBRCMplatform) {
+                            // For BRCM platform, check chanspec
+                            let newChanspec = postObject[`${key}_chanspec`];
+                            if (newChanspec !== undefined && newChanspec !== originalChannel) {
+                                channelOrBandwidthChanged = true;
+                                break;
+                            }
+                        } else {
+                            // For non-BRCM platforms, check channel
+                            let newChannel = postObject[`${key}_channel`];
+                            if (newChannel !== undefined && newChannel !== originalChannel) {
+                                channelOrBandwidthChanged = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (channelOrBandwidthChanged) {
+                        // Warn user that changing wireless settings may disconnect from Parent WiFi AP
+                        if (!confirm("Changing the wireless settings may disconnect the connection to the Parent WiFi AP. Are you sure you want to change the settings?")) {
+                            return false;
+                        }
                     }
                 }
 

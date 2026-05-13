@@ -83,6 +83,16 @@ apply.welcome_rt = function(){
 	}
 }
 
+apply.welcome_usb = function(){
+	if(systemVariable.forceChangePw){
+		systemVariable.welcome_usb = true;
+		goTo.Login();
+	}
+	else{
+		goTo.usbMode();
+	}
+}
+
 apply.prelink = function(){
 	if(!systemVariable.forceChangePw){
 		if(isOriginSwMode("RP")){
@@ -263,6 +273,9 @@ apply.login = function(){
 			}
 			else if(systemVariable.welcome_rt){
 				goTo.rtMode();
+			}
+			else if(systemVariable.welcome_usb){
+				goTo.usbMode();
 			}
 			else if(qisPostData.hasOwnProperty("sw_mode")){
 				goTo.opMode();
@@ -1938,6 +1951,7 @@ abort.backToStartQIS = function(){
 		systemVariable.advSetting = false;
 		systemVariable.welcome_wisp = false;
 		systemVariable.welcome_rt = false;
+		systemVariable.welcome_usb = false;
 		goTo.loadPage("welcome", true);
 	}
 }
@@ -1989,7 +2003,7 @@ abort.login = function(){
 			postDataModel.remove(opModeObj);
 			if(isSupport("apMode_detwan") && isOriginSwMode("AP"))
 				abort.backToStartQIS();
-			else if(systemVariable.welcome_rt){
+			else if(systemVariable.welcome_rt || systemVariable.welcome_usb){
 				abort.backToStartQIS();
 			}
 			else
@@ -2094,13 +2108,20 @@ abort.wan = function(){
 		abort.wlcKey();
 	}
 	else if(qisPostData.hasOwnProperty("sw_mode") && !systemVariable.meshRole){
-		if(!systemVariable.advSetting && isSupport("wisp")){
+		if (location.search === "?flag=usbMode") {
+			window.history.back();
+		}
+		else if(!systemVariable.advSetting && isSupport("wisp")){
 			systemVariable.advSetting = false;
 			if(systemVariable.forceChangePw){
 				goTo.loadPage("login_name", true);
 			}
 			else{
 				systemVariable.welcome_rt = false;
+				systemVariable.welcome_usb = false;
+				if(!systemVariable.advSetting){
+					postDataModel.remove(opModeObj);
+				}
 				goTo.loadPage("welcome", true);
 			}
 		}
@@ -2422,6 +2443,15 @@ abort.wlcKey = function(){
 		systemVariable.selectedAP = {};
 		systemVariable.multiPAP.wlcOrder.pop();
 	}
+	else {
+		const unit = systemVariable.multiPAP.wlcOrder.pop();
+		if(unit != undefined){
+			systemVariable.multiPAP.wlcStatus["wlc" + unit + "_checked"] = false;
+			systemVariable.multiPAP.wlcStatus["wlc" + unit + "_manual"] = false;
+			systemVariable.multiPAP.wlcStatus["wlc" + unit + "_skip"] = false;
+			postDataModel.remove(wlcMultiObj["wlc" + unit]);
+		}
+	}
 	if(isSupport("concurrep") && systemVariable.wlc_pre_auth_checked){
 		while(systemVariable.multiPAP.wlcOrder.length > 0){
 			const unit = systemVariable.multiPAP.wlcOrder.pop();
@@ -2497,6 +2527,28 @@ abort.papList = function(){
 }
 
 abort.wireless = function(){
+	const prePage = systemVariable.historyPage[systemVariable.historyPage.length-2];
+	if (prePage == "papList_page") {//from papList_page->selecting open AP
+		const unit = systemVariable.multiPAP.wlcOrder.pop();
+		if(unit != undefined){
+			systemVariable.multiPAP.wlcStatus["wlc" + unit + "_checked"] = false;
+			systemVariable.multiPAP.wlcStatus["wlc" + unit + "_manual"] = false;
+			systemVariable.multiPAP.wlcStatus["wlc" + unit + "_skip"] = false;
+			postDataModel.remove(wlcMultiObj["wlc" + unit]);
+		}
+	}
+	else if (prePage == "wlcKey_setting") {//from papList_page->wlc Manual
+		const last_unit = systemVariable.multiPAP.wlcOrder.slice(-1)[0];
+		if(last_unit != undefined){
+			if (systemVariable.multiPAP.wlcStatus["wlc" + last_unit + "_manual"]) {
+				systemVariable.multiPAP.wlcOrder.pop();
+				systemVariable.multiPAP.wlcStatus["wlc" + last_unit + "_checked"] = false;
+				systemVariable.multiPAP.wlcStatus["wlc" + last_unit + "_manual"] = false;
+				systemVariable.multiPAP.wlcStatus["wlc" + last_unit + "_skip"] = false;
+				postDataModel.remove(wlcMultiObj["wlc" + last_unit]);
+			}
+		}
+	}
 	postDataModel.remove(generalObj);
 	postDataModel.remove(wirelessObj.wl0);
 	postDataModel.remove(wirelessObj.wl1);
@@ -3401,6 +3453,41 @@ goTo.rtMode = function(){
 	apply.manual();
 };
 
+goTo.usbMode = function(){
+	httpApi.log(systemVariable.qisSession, `Start USB mode QIS.`);
+
+	qisPostData.sw_mode = 1;
+	qisPostData.wlc_psta = 0;
+	qisPostData.wlc_dpsta = 0;
+	qisPostData.wlc_band = "";
+	qisPostData.mlo_rp = 0;
+	qisPostData.mlo_mb = 0;
+
+	systemVariable.opMode = "RT";
+	if(isSupport("amas")){
+		postDataModel.insert(aimeshObj);
+		qisPostData.cfg_master = "1";
+	}
+
+	if(systemVariable.advSetting && isSwModeChanged()){
+		postDataModel.insert(lanObj.general);
+		postDataModel.insert(lanObj.staticIp);
+		qisPostData.lan_proto = "static";
+		qisPostData.lan_dnsenable_x = "1";
+		var lan_info_rt = httpApi.nvramDefaultGet(["lan_ipaddr_rt", "lan_netmask_rt", "dhcp_start", "dhcp_end"],true);
+		qisPostData.lan_ipaddr = lan_info_rt.lan_ipaddr_rt;
+		qisPostData.lan_netmask = lan_info_rt.lan_netmask_rt;
+		qisPostData.lan_gateway = lan_info_rt.lan_ipaddr_rt;
+		qisPostData.dhcp_start = lan_info_rt.dhcp_start;
+		qisPostData.dhcp_end = lan_info_rt.dhcp_end;
+		qisPostData.lan_dns1_x = "";
+		qisPostData.lan_dns2_x = "";
+	}
+
+	$("#wlInputField").html("");
+	goTo.PhoneAsWAN();
+}
+
 goTo.rpMode = function(){
 	httpApi.log(systemVariable.qisSession, `Start RP mode QIS.`);
 
@@ -3431,6 +3518,7 @@ goTo.rpMode = function(){
 };
 
 goTo.wispMode = function(){
+	postDataModel.remove(wispObj);
 	postDataModel.insert(wispObj);
 
 	if(typeof login_mac_str == 'function' && systemVariable.macClone){
@@ -4230,7 +4318,7 @@ goTo.siteSurvey = function(){
 
 			var wlc_profile_list_array = httpApi.nvramGet(["wlc_profile_list"],1).wlc_profile_list.split("&#62");
 			for(var i in wlc_profile_list_array){
-				var targetSSID = wlc_profile_list_array[i].split("&#60")[0];
+				var targetSSID = wlc_profile_list_array[i].split("&#60")[1];
 				let targetIndex = siteSurveyResult.aplist.findIndex(
 					item => htmlEnDeCode.htmlEncode(decodeURIComponent(item[1])) === targetSSID
 				);
@@ -4333,9 +4421,13 @@ goTo.wlcKey = function(){
 	$("#wlcKey_setting .wlcKeyApply").html(`<#CTL_next#>`);
 	$("#wlcKey_setting .wlcKeyAbort").html(`<#CTL_prev#>`);
 
-	var existedKey = getKeyBySSID(systemVariable.selectedAP.ssid);
+	const existedKey = getWlcProfile({
+		"targetSSID": systemVariable.selectedAP.ssid,
+		"targetBand": systemVariable.selectedAP.unit,
+		"wlcProfiles": parseWlcProfileList()
+	});
 	if(existedKey){
-		$("#wlc_wifiKey").val(existedKey);
+		$("#wlc_wifiKey").val(existedKey?.key || "");
 		httpApi.log(systemVariable.qisSession, `The key for ${systemVariable.selectedAP.ssid} has been obtained.`);
 	}
 
@@ -5723,7 +5815,7 @@ goTo.skip_pap = function(){
 };
 
 goTo.lanIP_papList = function(){
-	update_wlc_profile_list(systemVariable.selectedAP.ssid, systemVariable.selectedAP.thekey)
+	update_wlc_profile_list(systemVariable.selectedAP);
 
 	var allPAPSet = true;
 	if((isSwMode("RP") && isSupport("concurrep")) || isSupport("SMARTREP") || isSupport("MB_mode_concurrep"))
@@ -5759,9 +5851,9 @@ goTo.EULA = function(){
 		apply.Policy();
 		return
 	}
-	const policyStatus = PolicyStatus()
+	PolicyStatus()
 		.then(data => {
-			if (data.EULA == "1") {
+			if (data.EULA_read == 1) {
 				goTo.PP();
 			} else {
 				const policy_page = document.querySelector('#policy_page');
@@ -5782,7 +5874,7 @@ goTo.PP = function () {
 		return
 	}
 
-	const policyStatus = PolicyStatus()
+	PolicyStatus()
 		.then(data => {
 			const policy_page = document.querySelector('#policy_page');
 			const qisPolicyPageComponent = new QisPolicyPageComponent({

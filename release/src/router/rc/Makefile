@@ -687,9 +687,12 @@ OBJS += arpreq.o
 OBJS += psta_monitor.o
 endif
 
-
 ifeq ($(RTCONFIG_NBR_RPT),y)
 OBJS += nbr_monitor.o
+endif
+
+ifeq ($(and $(RTCONFIG_BCMWL6),$(RTCONFIG_WISP)),y)
+OBJS += wlcmon.o
 endif
 
 ifeq ($(or $(RTCONFIG_BCMWL6),$(RTCONFIG_LANTIQ),$(RTCONFIG_QCA),$(RTCONFIG_REALTEK),$(RTCONFIG_RALINK)),y)
@@ -1431,6 +1434,10 @@ endif
 
 ifeq ($(RTCONFIG_NBR_RPT),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc nbr_monitor
+endif
+
+ifeq ($(and $(RTCONFIG_BCMWL6),$(RTCONFIG_WISP)),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc wlcmon
 endif
 
 ifeq ($(or $(RTCONFIG_BCMWL6),$(RTCONFIG_LANTIQ),$(RTCONFIG_QCA),$(RTCONFIG_REALTEK),$(RTCONFIG_RALINK)),y)

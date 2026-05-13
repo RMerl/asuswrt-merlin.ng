@@ -650,15 +650,35 @@ a{
 	display: table;
 	width: 100%
 }
+.apListTitle {
+	color: #007AFF;
+	font-size: 1.6em;
+	margin: 20px 0 0 0;
+	position: relative;
+}
 .apListDiv{
-	display: table-row;
+	display: flex;
+	align-items: center;
 	font-family: HelveticaNeueW10-45Ligh,Helvetica,Arial;
 	font-size: 2em;
-	color: #DBDBDB
+	color: #DBDBDB;
 }
 .ap_icon_container{
-	display: table-cell;
+	flex: 0 0 38px;
 	width: 38px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.ap_ssid {
+	flex: 1 1 0%;
+	min-width: 0;
+	padding-left: 20px;
+	color: #DBDBDB;
+	cursor: pointer;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 .ap_icon_container.middle{
 	vertical-align: middle;
@@ -712,11 +732,14 @@ a{
 	height: 32px;
 }
 .ap_ssid{
-	display: table-cell;
-	width: 80%;
+	flex: 1 1 0%;
+	min-width: 0;
 	padding-left: 20px;
 	color: #DBDBDB;
 	cursor: pointer;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 .ap_ssid_hover{
 	color: #007AFF !important;
@@ -727,6 +750,11 @@ a{
 	padding: 10px;
 	font-size: 0.5em;
 	border-radius: 10px;
+	margin-right: 12px;
+}
+.ap-icon-history-container {
+	margin-right: 6px;
+	display: flex;
 }
 .apListContainer.s2s_wlSetContainer .ap_band{
 	text-align: right;
@@ -1966,6 +1994,30 @@ a{
 	border: 3px solid transparent;
 	border-bottom-color: currentColor;
 	border-top-color: currentColor
+}
+.opMode-classification {
+	color: #007AFF;
+	font-size: 1.8em;
+	margin: 20px 0 0 25px;
+	position: relative;
+}
+.opMode-img {
+	height: 140px;
+	margin: auto;
+	width: 600px;
+	max-width: 600px;
+	background-size: contain;
+	background-position: center center;
+	background-repeat: no-repeat;
+}
+.opMode-img.rt {
+	background-image: url(../css/rt.png);
+}
+.opMode-img.wisp {
+	background-image: url(../css/re.png);
+}
+.opMode-img.usb {
+	background-image: url(../css/usb.png);
 }
 .wispMode {
 	display: none;

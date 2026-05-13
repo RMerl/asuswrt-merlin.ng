@@ -40,11 +40,13 @@
 		dbg("[BWSQL][%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
 	}
 
-#define BWSQL_LOG(fmt,args...) \
-	if(f_exists(BWDPI_SQLITE_DELOG) > 0) { \
-		char info[1024]; \
-		snprintf(info, sizeof(info), "echo \"[BWDPI_SQLITE]"fmt"\" >> /tmp/BWSQL.log", ##args); \
-		system(info); \
+#define BWSQL_LOG(fmt, args...) \
+	if (f_exists(BWDPI_SQLITE_DELOG) > 0) { \
+		FILE *fp = fopen("/tmp/BWSQL.log", "a"); \
+		if (fp) { \
+			fprintf(fp, "[BWDPI_SQLITE]" fmt "\n", ##args); \
+			fclose(fp); \
+		} \
 	}
 
 #define BWMON_DBG(fmt,args...) \
@@ -52,11 +54,13 @@
 		dbg("[BWMON][%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
 	}
 
-#define BWMON_LOG(fmt,args...) \
-	if(f_exists(BWDPI_MON_DELOG) > 0) { \
-		char info[1024]; \
-		snprintf(info, sizeof(info), "echo \"[BWMON]"fmt"\" >> /tmp/BWMON.log", ##args); \
-		system(info); \
+#define BWMON_LOG(fmt, args...) \
+	if (f_exists(BWDPI_MON_DELOG) > 0) { \
+		FILE *fp = fopen("/tmp/BWMON.log", "a"); \
+		if (fp) { \
+			fprintf(fp, "[BWMON]" fmt "\n", ##args); \
+			fclose(fp); \
+		} \
 	}
 
 #define BWSUP_DBG(fmt,args...) \

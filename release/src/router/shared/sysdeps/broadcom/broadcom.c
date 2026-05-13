@@ -2142,12 +2142,19 @@ void update_macfilter_relist()
 		foreach (word, wl_ifnames, next) {
 			SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
 
-#ifdef RTCONFIG_AMAS
-			if (nvram_get_int("re_mode") == 1)
-				snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
+			if (get_fh_if_prefix_by_unit(unit, prefix, sizeof(prefix))) {
+				trim_space(prefix);
+				strncat(prefix, "_", 1);
+			}
 			else
+			{
+#ifdef RTCONFIG_AMAS
+				if (nvram_get_int("re_mode") == 1)
+					snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
+				else
 #endif
-				snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+					snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+			}
 
 			strlcpy(wlif_name, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(wlif_name));
 			maclist = (struct maclist *)maclist_buf;

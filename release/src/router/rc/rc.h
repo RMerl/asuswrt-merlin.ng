@@ -2025,6 +2025,9 @@ extern int watchdog_main(int argc, char *argv[]);
 #ifdef RTCONFIG_CONNTRACK
 extern int pctime_main(int argc, char *argv[]);
 #endif
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_WISP)
+extern int wlcmon_main(int argc, char *argv[]);
+#endif
 extern int watchdog02_main(int argc, char *argv[]);
 #ifdef SW_DEVLED
 extern int sw_devled_main(int argc, char *argv[]);
@@ -2567,6 +2570,7 @@ extern int dsld_main(int argc, char **argv);
 //services.c
 void start_Tor_proxy(void);
 void stop_Tor_proxy(void);
+extern int write_etc_hosts();
 extern void write_static_leases(FILE *fp);
 #ifdef RTCONFIG_DHCP_OVERRIDE
 extern int restart_dnsmasq(int need_link_DownUp);
@@ -4143,6 +4147,11 @@ extern int realip_main(int argc, char *argv[]);
 
 #if defined(RTCONFIG_IG_SITE2SITE)
 extern int ig_s2s_client_main(int argc, char *argv[]);
+#endif
+
+#if defined(RTCONFIG_LIB_CODB) && defined(RTCONFIG_CONNDIAG) && defined(RTCONFIG_DNS_PING)
+extern void stop_dns_ping(void);
+extern void start_dns_ping(void);
 #endif
 
 void wl_apply_akm_by_auth_mode(int unit, int subunit, char *sp_prefix_auth);

@@ -26,9 +26,6 @@ void buf_put_rsa_priv_ossh(buffer *buf, const sign_key *akey) {
 	mp_int iqmp;
 
 	dropbear_assert(key != NULL);
-	if (!(key->p && key->q)) {
-		dropbear_exit("Pre-0.33 Dropbear keys cannot be converted to OpenSSH keys.\n");
-	}
 
 	m_mp_init(&iqmp);
 	/* iqmp = (q^-1) mod p */

@@ -1,3 +1,15 @@
+dropbear (2026.91-0.1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Matt Johnston <matt@ucc.asn.au>  Sun, 10 May 2026 22:51:57 +0800
+
+dropbear (2026.90-0.1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Matt Johnston <matt@ucc.asn.au>  Sun, 3 May 2026 22:51:57 +0800
+
 dropbear (2025.89-0.1) unstable; urgency=low
 
   * New upstream release.

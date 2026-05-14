@@ -171,3 +171,47 @@ out:
 	m_free(spec_copy);
 	return ret;
 }
+
+void print_algos(const char* algo) {
+	algo_type *list = NULL, *a = NULL;
+	int need_data = 0;
+
+	if (strcmp(algo, "kex") == 0) {
+		list = sshkex;
+		/* data = 0 kexes aren't algorithms */
+		need_data = 1;
+	} else if (strcmp(algo, "sig") == 0) {
+		list = sigalgs;
+	} else if (strcmp(algo, "cipher") == 0) {
+		list = sshciphers;
+	} else if (strcmp(algo, "mac") == 0) {
+		list = sshhashes;
+	} else if (strcmp(algo, "compress") == 0) {
+#ifndef DISABLE_ZLIB
+		if (opts.compression) {
+			list = ssh_compress;
+		} else {
+			list = ssh_nocompress;
+		}
+#else
+		list = ssh_nocompress;
+#endif
+	} else {
+		printf("kex\nsig\ncipher\nmac\ncompress\n");
+		if (strcmp(algo, "help") == 0) {
+			exit(0);
+		} else {
+			printf("Unknown -Q '%s'\n", algo);
+			exit(1);
+		}
+	}
+
+	for (a = list; a->name != NULL; a++) {
+		if (need_data && a->data == NULL) {
+			continue;
+		}
+		printf("%s\n", a->name);
+	}
+
+	exit(0);
+}

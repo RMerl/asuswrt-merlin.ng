@@ -221,6 +221,7 @@ update_progress_meter(int ignore)
 {
 	int save_errno;
 
+	(void)ignore;
 	save_errno = errno;
 
 	if (win_resized) {
@@ -273,6 +274,7 @@ stop_progress_meter(void)
 static void
 sig_winch(int sig)
 {
+	(void)sig;
 	win_resized = 1;
 }
 

@@ -24,7 +24,7 @@
 
 #include "includes.h"
 #include "ssh.h"
-#include "tcpfwd.h"
+#include "forward.h"
 #include "dbutil.h"
 #include "session.h"
 #include "buffer.h"
@@ -37,7 +37,7 @@
 
 static void cleanup_tcp(const struct Listener *listener) {
 
-	struct TCPListener *tcpinfo = (struct TCPListener*)(listener->typedata);
+	struct FwdListener *tcpinfo = (struct FwdListener*)(listener->typedata);
 
 	m_free(tcpinfo->sendaddr);
 	m_free(tcpinfo->listenaddr);
@@ -51,7 +51,7 @@ static void tcp_acceptor(const struct Listener *listener, int sock) {
 	struct sockaddr_storage sa;
 	socklen_t len;
 	char ipstring[NI_MAXHOST], portstring[NI_MAXSERV];
-	struct TCPListener *tcpinfo = (struct TCPListener*)(listener->typedata);
+	struct FwdListener *tcpinfo = (struct FwdListener*)(listener->typedata);
 
 	len = sizeof(sa);
 
@@ -71,13 +71,13 @@ static void tcp_acceptor(const struct Listener *listener, int sock) {
 		char* addr = NULL;
 		unsigned int port = 0;
 
-		if (tcpinfo->tcp_type == direct) {
+		if (tcpinfo->fwd_type == direct) {
 			/* "direct-tcpip" */
 			/* host to connect, port to connect */
 			addr = tcpinfo->sendaddr;
 			port = tcpinfo->sendport;
 		} else {
-			dropbear_assert(tcpinfo->tcp_type == forwarded);
+			dropbear_assert(tcpinfo->fwd_type == forwarded);
 			/* "forwarded-tcpip" */
 			/* address that was connected, port that was connected */
 			addr = tcpinfo->request_listenaddr;
@@ -103,7 +103,7 @@ static void tcp_acceptor(const struct Listener *listener, int sock) {
 	}
 }
 
-int listen_tcpfwd(struct TCPListener* tcpinfo, struct Listener **ret_listener) {
+int listen_tcpfwd(struct FwdListener* tcpinfo, struct Listener **ret_listener) {
 
 	char portstring[NI_MAXSERV];
 	int socks[DROPBEAR_MAX_SOCKS];
@@ -127,7 +127,7 @@ int listen_tcpfwd(struct TCPListener* tcpinfo, struct Listener **ret_listener) {
 	m_free(errstring);
 	
 	/* new_listener will close the socks if it fails */
-	listener = new_listener(socks, nsocks, CHANNEL_ID_TCPFORWARDED, tcpinfo, 
+	listener = new_listener(socks, nsocks, LISTENER_TYPE_TCPFORWARDED, tcpinfo,
 			tcp_acceptor, cleanup_tcp);
 
 	if (listener == NULL) {

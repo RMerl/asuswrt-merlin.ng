@@ -74,6 +74,7 @@ IMPORTANT: Some options will require "make clean" after changes */
 #define DROPBEAR_SVR_LOCALTCPFWD 1
 #define DROPBEAR_SVR_REMOTETCPFWD 1
 #define DROPBEAR_SVR_LOCALSTREAMFWD 1
+#define DROPBEAR_SVR_REMOTESTREAMFWD 1
 
 /* Enable Authentication Agent Forwarding */
 #define DROPBEAR_SVR_AGENTFWD 1
@@ -215,6 +216,11 @@ not as a server, due to concerns over its strength. Set to 0 to allow
 group1 in Dropbear server too */
 #define DROPBEAR_DH_GROUP1_CLIENTONLY 1
 
+/* Compression is disabled by default. Can be enabled at runtime
+ * with -o compression=yes
+ */
+#define DROPBEAR_CLI_COMPRESSION 0
+
 /* Control the memory/performance/compression tradeoff for zlib.
  * Set windowBits=8 for least memory usage, see your system's
  * zlib.h for full details.
@@ -303,6 +309,24 @@ group1 in Dropbear server too */
 /* -T server option overrides */
 #define MAX_AUTH_TRIES 10
 
+/* Maximum number of public key queries per session.
+ * Public key queries
+ * aren't a risk for brute forcing authentication, but can be a
+ * user enumeration/privacy concern if an attacker attempts
+ * to iterate known public keys such as those published by github.
+ *
+ * This limit has a trade-off. Having a smaller limit reduces the
+ * number of legitimate public keys that can be presented
+ * by a client/ssh agent.
+ * Assuming a 100ms session establishment time,
+ * MAX_UNAUTH_CLIENTS * MAX_PUBKEY_QUERIES / 0.1 = 750 queries/sec.
+ * That is still a a risk against a single host,
+ * but this limit may deter internet-wide scanning.
+ *
+ * If -T argument or MAX_AUTH_TRIES is larger that will be used instead.
+*/
+#define MAX_PUBKEY_QUERIES 15
+
 /* Change server process to user privileges after authentication. */
 #ifndef DROPBEAR_SVR_DROP_PRIVS
 /* Default is enabled. Should only be disabled if platforms are incompatible */
@@ -370,6 +394,10 @@ for runtime configuration please mail the Dropbear list */
 /* Ensure that data is received within IDLE_TIMEOUT seconds. This can
 be overridden at runtime with -I. 0 disables idle timeouts */
 #define DEFAULT_IDLE_TIMEOUT 0
+
+/* Disconnect after MAX_DURATION seconds. This can be overridden at
+runtime with -M. 0 disables this feature. */
+#define DEFAULT_MAX_DURATION 0
 
 /* The default path. This will often get replaced by the shell */
 #define DEFAULT_PATH "/usr/bin:/bin"

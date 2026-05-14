@@ -18,7 +18,7 @@ Following are generated files in the format `<target>: <generator>(<source>)`
 ```
 - configure: autoconf(configure.ac)
 - src/config.h.in: autoheader(configure.ac)
-- src/config.h: configure(src/config.h.in)
+- config.h: configure(src/config.h.in)
 - Makefile: configure(Makefile.in)
 - default_options_guard.h: make(default_options.h)
 ```

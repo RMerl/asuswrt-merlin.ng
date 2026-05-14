@@ -113,7 +113,8 @@ int buf_get_rsa_priv_key(buffer* buf, dropbear_rsa_key *key) {
 	}
 
 	if (buf->pos == buf->len) {
-		/* old Dropbear private keys didn't keep p and q, so we will ignore them*/
+		/* Keys without p or q are prior to Dropbear 0.33 from 2003. */
+		dropbear_exit("RSA key format is ancient");
 	} else {
 		m_mp_alloc_init_multi(&key->p, &key->q, NULL);
 
@@ -262,27 +263,34 @@ void buf_put_rsa_sign(buffer* buf, const dropbear_rsa_key *key,
 	DEF_MP_INT(rsa_tmp1);
 	DEF_MP_INT(rsa_tmp2);
 	DEF_MP_INT(rsa_tmp3);
+	DEF_MP_INT(rsa_phi_n);
+	DEF_MP_INT(rsa_b_tmp);
+	DEF_MP_INT(rsa_b_rand);
+	DEF_MP_INT(rsa_b_phi);
+	DEF_MP_INT(rsa_b_d);
 	
 	TRACE(("enter buf_put_rsa_sign"))
 	dropbear_assert(key != NULL);
 
-	m_mp_init_multi(&rsa_s, &rsa_tmp1, &rsa_tmp2, &rsa_tmp3, NULL);
+	m_mp_init_multi(&rsa_s, &rsa_tmp1, &rsa_tmp2, &rsa_tmp3,
+		&rsa_phi_n, &rsa_b_tmp, &rsa_b_rand, &rsa_b_phi, &rsa_b_d,
+		NULL);
 
 	rsa_pad_em(key, data_buf, &rsa_tmp1, sigtype);
 
 	/* the actual signing of the padded data */
 
 #if DROPBEAR_RSA_BLINDING
+	/* https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-rsa-guidance-08 */
 
-	/* With blinding, s = (r^(-1))((em)*r^e)^d mod n */
+	/* With base blinding, s = (r^(-1))((em)*r^e)^d mod n */
 
-	/* generate the r blinding value */
+	/* generate the r base blinding value */
 	/* rsa_tmp2 is r */
 	gen_random_mpint(key->n, &rsa_tmp2);
 
 	/* rsa_tmp1 is em */
 	/* em' = em * r^e mod n */
-
 	/* rsa_s used as a temp var*/
 	if (mp_exptmod(&rsa_tmp2, key->e, key->n, &rsa_s) != MP_OKAY) {
 		dropbear_exit("RSA error");
@@ -294,11 +302,43 @@ void buf_put_rsa_sign(buffer* buf, const dropbear_rsa_key *key,
 		dropbear_exit("RSA error");
 	}
 
-	/* rsa_tmp2 is em' */
-	/* s' = (em')^d mod n */
-	if (mp_exptmod(&rsa_tmp2, key->d, key->n, &rsa_tmp1) != MP_OKAY) {
+	/* exponent blinding, m = c^(d + b*phi(n)) mod n.
+	 * b is a 64-bit random value. */
+	mp_set_u64(&rsa_b_tmp, UINT64_MAX);
+	gen_random_mpint(&rsa_b_tmp, &rsa_b_rand);
+	/* phi(n) = phi(p*q) = phi(p) * phi(q) = (p-1)*(q-1) = n + 1 - p - q
+	 * since n = p*q, phi(prime) = prime-1. */
+	if (mp_add_d(key->n, 1, &rsa_phi_n) != MP_OKAY) {
 		dropbear_exit("RSA error");
 	}
+	/* rsa_b_d as a temporary */
+	if (mp_sub(&rsa_phi_n, key->p, &rsa_b_d) != MP_OKAY) {
+		dropbear_exit("RSA error");
+	}
+	if (mp_sub(&rsa_b_d, key->q, &rsa_phi_n) != MP_OKAY) {
+		dropbear_exit("RSA error");
+	}
+
+	/* b*phi(n) */
+	if (mp_mul(&rsa_b_rand, &rsa_phi_n, &rsa_b_tmp) != MP_OKAY) {
+		dropbear_exit("RSA error");
+	}
+	/* d + b*phi(n) */
+	if (mp_add(key->d, &rsa_b_tmp, &rsa_b_d) != MP_OKAY) {
+		dropbear_exit("RSA error");
+	}
+
+	/* rsa_tmp2 is em' */
+	/* s' = (em')^d mod n */
+	if (mp_exptmod(&rsa_tmp2, &rsa_b_d, key->n, &rsa_tmp1) != MP_OKAY) {
+		dropbear_exit("RSA error");
+	}
+
+	m_mp_burn(&rsa_phi_n);
+	m_mp_burn(&rsa_b_tmp);
+	m_mp_burn(&rsa_b_rand);
+	m_mp_burn(&rsa_b_phi);
+	m_mp_burn(&rsa_b_d);
 
 	/* rsa_tmp1 is s' */
 	/* rsa_tmp3 is r^(-1) mod n */
@@ -317,8 +357,10 @@ void buf_put_rsa_sign(buffer* buf, const dropbear_rsa_key *key,
 
 #endif /* DROPBEAR_RSA_BLINDING */
 
-	mp_clear_multi(&rsa_tmp1, &rsa_tmp2, &rsa_tmp3, NULL);
-	
+	mp_clear_multi(&rsa_tmp1, &rsa_tmp2, &rsa_tmp3,
+		&rsa_phi_n, &rsa_b_tmp, &rsa_b_rand, &rsa_b_phi, &rsa_b_d,
+		NULL);
+
 	/* create the signature to return */
 	name = signature_name_from_type(sigtype, &namelen);
 	buf_putstring(buf, name, namelen);

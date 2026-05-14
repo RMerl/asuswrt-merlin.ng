@@ -77,7 +77,7 @@ void handle_listeners(const fd_set * readfds) {
 /* acceptor(int fd, void* typedata) is a function to accept connections, 
  * cleanup(void* typedata) happens when cleaning up */
 struct Listener* new_listener(const int socks[], unsigned int nsocks,
-		int type, void* typedata, 
+		enum ListenerType type, void* typedata,
 		void (*acceptor)(const struct Listener* listener, int sock),
 		void (*cleanup)(const struct Listener*)) {
 
@@ -95,7 +95,7 @@ struct Listener* new_listener(const int socks[], unsigned int nsocks,
 		if (ses.listensize > MAX_LISTENERS) {
 			TRACE(("leave newlistener: too many already"))
 			for (j = 0; j < nsocks; j++) {
-				close(socks[i]);
+				close(socks[j]);
 			}
 			return NULL;
 		}
@@ -132,13 +132,13 @@ struct Listener* new_listener(const int socks[], unsigned int nsocks,
 
 /* Return the first listener which matches the type-specific comparison
  * function. Particularly needed for global requests, like tcp */
-struct Listener * get_listener(int type, const void* typedata,
+struct Listener * get_listener(enum ListenerType type, const void* typedata,
 		int (*match)(const void*, const void*)) {
 
 	unsigned int i;
-	struct Listener* listener;
 
-	for (i = 0, listener = ses.listeners[i]; i < ses.listensize; i++) {
+	for (i = 0; i < ses.listensize; i++) {
+		struct Listener* listener = ses.listeners[i];
 		if (listener && listener->type == type
 				&& match(typedata, listener->typedata)) {
 			return listener;

@@ -42,16 +42,19 @@ var months = [];
 
 
 if (isSupport("UI4")){
-	var labelsColor = "#1C1C1E";
-	var gridColor = "#CCC";
-	var ticksColor = "#1C1C1E";
-	var rxBackgroundColor = "#4C8FC0";
-	var rxBorderColor = "#000000";
-	var txBackgroundColor = "#4CC08F";
-	var txBorderColor = "#000000";
+	var labelsColor = getComputedStyle(document.documentElement).getPropertyValue("--wrt-text-primary");
+	var gridColor = (() => {
+		const v = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid-rgb').trim();
+		return v ? `rgba(${v}, 0.30)` : 'rgba(139,139,139,.5)';
+	})();
+	var ticksColor = getComputedStyle(document.documentElement).getPropertyValue("--wrt-text-primary");
+	var txBorderColor = `rgba(${getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-chart-1")})`;
+	var txBackgroundColor = `rgba(${getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-chart-1")}, 1)`;
+	var rxBorderColor = `rgba(${getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-chart-2")})`;
+	var rxBackgroundColor = `rgba(${getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-chart-2")}, 1)`;
 	var chartBackgroundColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-bg-card");
-	var tableLabelColor = "#006CE1";
-	var tableValueColor = "#1C1C1E";
+	var tableLabelColor = getComputedStyle(document.documentElement).getPropertyValue("--wrt-card-header-color");
+	var tableValueColor = getComputedStyle(document.documentElement).getPropertyValue("--wrt-text-primary");
 } else {
 	var labelsColor = "#CCC";
 	var gridColor = "#282828";

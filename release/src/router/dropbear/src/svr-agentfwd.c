@@ -60,28 +60,37 @@ int svr_agentreq(struct ChanSess * chansess) {
 		return DROPBEAR_FAILURE;
 	}
 
-	/* create listening socket */
-	fd = socket(PF_UNIX, SOCK_STREAM, 0);
-	if (fd < 0) {
-		goto fail;
+#if DROPBEAR_FUZZ
+	if (fuzz.fuzzing) {
+		fd = wrapfd_new_dummy();
 	}
+	else
+#endif
+	{
+		/* create listening socket */
+		fd = socket(PF_UNIX, SOCK_STREAM, 0);
+		if (fd < 0) {
+			goto fail;
+		}
 
-	/* create the unix socket dir and file */
-	if (bindagent(fd, chansess) == DROPBEAR_FAILURE) {
-		goto fail;
-	}
+		/* create the unix socket dir and file */
+		if (bindagent(fd, chansess) == DROPBEAR_FAILURE) {
+			goto fail;
+		}
 
-	/* listen */
-	if (listen(fd, 20) < 0) {
-		goto fail;
+		/* listen */
+		if (listen(fd, 20) < 0) {
+			goto fail;
+		}
 	}
 
 	/* set non-blocking */
 	setnonblocking(fd);
 
 	/* pass if off to listener */
-	chansess->agentlistener = new_listener( &fd, 1, 0, chansess, 
-								agentaccept, NULL);
+	chansess->agentlistener = new_listener( &fd, 1,
+		LISTENER_TYPE_DEFAULT, chansess,
+		agentaccept, NULL);
 
 	if (chansess->agentlistener == NULL) {
 		goto fail;

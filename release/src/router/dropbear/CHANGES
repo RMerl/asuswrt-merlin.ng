@@ -1,3 +1,101 @@
+2026.91 - 10 May 2026
+
+- scp: Fix test for disallowing -r with existing target directory. The logic
+  introduced in 2026.90 was incorrect, could also disallow non-recursive
+  transfers.
+
+- scp: Fix regression in 2026.90 building on older glibc or other libc.
+  reallocarray() was required, it is no longer needed.
+
+- Compression is now disabled by default for dbclient. A new -o compression option
+  can enable it. DROPBEAR_CLI_COMPRESSION in localoptions.h can change the default.
+  Enabling compression can be a security weakness in some
+  circumstances, as the size of network traffic may leak information
+  about the encrypted data.
+
+- Added '-Q' argument for dbclient and dropbear to query supported algorithms,
+  kex sig cipher mac compress
+
+2026.90 - 3 May 2026
+
+- Security: server: Fix ability to bypass an authorized_keys "forced_command"
+  option by an authenticated user, if Dropbear is running with "-t" option.
+  ("-t" is require both password and public key).
+  https://github.com/mkj/dropbear/commit/c60db6408178aaca0a8aacd017ac344a2cfb30c8
+  Reported by Jeremy Brown
+
+- Security: server: Open authorized_keys non-blocking. This avoids getting stuck
+  with special files, could allow denial of service from local users.
+  https://github.com/mkj/dropbear/commit/8b579571b5584847caf72345b9073b3b2a0467a7
+  Reported by Turistu
+
+- Security: scp: Add missed patch to fix CVE-2019-6111 allowing a malicious server
+  to overwrite unexpected files.
+  https://github.com/mkj/dropbear/commit/143291baca6ebb3407a0c25c85bd53bf041a6ab7
+  Patch from OpenSSH, reported missing by Asim Viladi Oglu Manizada @manizada
+
+  Note breaking change: "-r" is now disallowed when the target directory exists
+  (an additional change in Dropbear's version). If that's required an alternative
+  such as rsync could be used.
+  https://github.com/mkj/dropbear/commit/61bd0e3e6573277de17359763aa5827a189c8d7f
+
+- Security: scp: Clear setuid/setgid bits on received files.
+  https://github.com/mkj/dropbear/commit/443ccc1fd1b9a4e3747f6b5cd644b7af49064308
+  Patch from OpenSSH, tracked as CVE-2026-35385
+
+- Security: client/server: Fix close() of a file descriptor from an out-of-bounds
+  read. This seems dificult to exploit but may have unforseen effects.
+  https://github.com/mkj/dropbear/commit/067fd3846c425d1998c7c94d3feafe1f26b514eb
+  Reported by Ankit Singh and @j499261162
+
+- server: Add unix stream forwarding listener support (-R from the client)
+  Patch from Brian Dentino @bdentino
+
+- server: Add -M argument for maximum session duration.
+  Github PR #409 from Martin Schiller
+
+- server: Add permitlisten authorized_keys option
+  This allows limiting to a specific port.
+  Github PR #384 from Mitar
+
+- rsa: keys generated with dropbearkey 0.32 or earlier are no longer supported,
+  0.33 was released in 2003. RSA exponent blinding is implemented to reduce a
+  cache timing side channel. Side channel reported by Ciaran Mullan.
+
+- server: Limit the number of public key queries to 15.
+  This is a mitigation against internet-wide scanning of hosts for public keys.
+  It doesn't provide much mitigation against targeted enumeration on a
+  server, in that case public keys should not be treated as private.
+  Reported by HD Moore, details are in the SSHamble presentation.
+
+- server: Disallow client-sent signals when there is a forced command.
+  Some programs could have unexpected handling.
+  Reported by HD Moore in SSHamble presentation.
+
+- client: Don't attempt PTY requests for non-TTYs.
+  Github issue #385
+
+- server: Don't allow client-sent signals when Dropbear is built with
+  DROPBEAR_SVR_DROP_PRIVS = 0
+
+- server: Fix closing TCP remote listeners. This has never worked properly.
+  Github PR #414
+
+- server: Improve protocol correctness sending replies to tcpip forward
+  requests (-L from the client)
+
+- Fix some timeouts being delayed. Github PR #318
+
+- Improve manpage documentation for forced commands
+
+- Fix distclean of config.h and libtom*/Makefile
+
+- Add curve25519 checks required by rfc8032. These have no effect on SSH protocol
+  security.
+
+- Fix "ssh-connection" check, reported by Turistu in Github #397.
+  Has no effect on program function.
+
 2025.89 - 16 December 2025
 
 - Security: Avoid privilege escalation via unix stream forwarding in Dropbear
@@ -13,7 +111,7 @@
   "dropbear -c command".
 
   In previous affected releases running with "dropbear -j" (will also disable
-  TCP fowarding) or building with localoptions.h/distrooptions.h
+  TCP forwarding) or building with localoptions.h/distrooptions.h
   "#define DROPBEAR_SVR_LOCALSTREAMFWD 0" is a mitigation.
 
 - Security: Include scp fix for CVE-2019-6111. This allowed

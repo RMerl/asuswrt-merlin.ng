@@ -29,7 +29,7 @@
 #include "kex.h"
 #include "ssh.h"
 #include "packet.h"
-#include "tcpfwd.h"
+#include "forward.h"
 #include "channel.h"
 #include "dbrandom.h"
 #include "service.h"

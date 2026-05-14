@@ -156,7 +156,8 @@ Specify a comma separated list of authentication MACs to enable. Use \fI-m help\
 Can be used to give options in the format used by OpenSSH config file. This is
 useful for specifying options for which there is no separate command-line flag.
 For full details of the options listed below, and their possible values, see
-ssh_config(5).
+ssh_config(5). "yes"/"no" arguments also accept y/n.
+
 The following options have currently been implemented:
 
 .RS
@@ -166,6 +167,14 @@ Disable interactive prompts e.g. password prompts and host key confirmation. The
 .TP
 .B BindAddress
 Specify address and port on the local machine as the source address of the connection.
+.TP
+.B Compression
+Can be set to "yes" or "no". Default is no compression (with default
+build options). Enabling compression can be a security weakness in some
+circumstances, as the size of network traffic may leak information
+about the encrypted data.
+
+Compression will only be used when the server also supports it.
 .TP
 .B DisableTrivialAuth
 Disallow a server immediately
@@ -220,6 +229,11 @@ The specified command will be requested as a subsystem, used for sftp. Dropbear 
 .B \-b \fI[address][:port]
 Bind to a specific local address when connecting to the remote host. This can be used to choose from
 multiple outgoing interfaces. Either address or port (or both) can be given.
+
+.TP
+.B \-Q \fIalgo
+Query supported algorithms. Options are kex, sig, cipher, mac, compress
+
 .TP
 .B \-V
 Print the version

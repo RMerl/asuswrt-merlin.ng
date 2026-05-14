@@ -108,7 +108,8 @@ int x11req(struct ChanSess * chansess) {
 	/* listener code will handle the socket now.
 	 * No cleanup handler needed, since listener_remove only happens
 	 * from our cleanup anyway */
-	chansess->x11listener = new_listener( &fd, 1, 0, chansess, x11accept, NULL);
+	chansess->x11listener = new_listener( &fd, 1, LISTENER_TYPE_DEFAULT,
+		chansess, x11accept, NULL);
 	if (chansess->x11listener == NULL) {
 		goto fail;
 	}

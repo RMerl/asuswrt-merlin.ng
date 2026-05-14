@@ -163,20 +163,22 @@ then
         HND="_behnd"
 
 	# Must be done first, since we will add hnd_extra files later on
-	rsync -a --del release/src-rt-5.04behnd.4916/router-sysdep/ $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC --exclude "stress/Makefile" --exclude "wlc_types.h"
+	rsync -a --del release/src-rt-5.04behnd.4916/router-sysdep/ $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC --exclude "stress/Makefile" --exclude "wlc_types.h" --exclude "*.orig"
 
-	# bootloaders
-#	rsync -a --del release/src-rt-5.04behnd.4916/bootloaders/obj/ $REPO/release/src-rt-5.04behnd.4916/bootloaders/obj.$BUILD_NAME_LC
-	cp release/src-rt-5.04behnd.4916/bootloaders/u-boot-2019.07/net/*.o $REPO/release/src-rt-5.04behnd.4916/bootloaders/obj.$BUILD_NAME_LC/net/
-	cp release/src-rt-5.04behnd.4916/bootloaders/u-boot-2019.07/drivers/net/bcmbca/phy/dt_parsing.o $REPO/release/src-rt-5.04behnd.4916/bootloaders/obj.$BUILD_NAME_LC/drivers/net/bcmbca/phy/
-	cp release/src-rt-5.04behnd.4916/bootloaders/u-boot-2019.07/drivers/net/bcmbca/bcmbca_sysport_v2.o $REPO/release/src-rt-5.04behnd.4916/bootloaders/obj.$BUILD_NAME_LC/drivers/net/bcmbca/
+	# bootloaders - now largely handled by bootloaders-copy.sh.
+	cp release/src-rt-5.04behnd.4916/bootloaders/u-boot-2019.07/net/tftp.o $REPO/release/src-rt-5.04behnd.4916/bootloaders/obj.$BUILD_NAME_LC/net/
+### No longer unique?
+#	cp release/src-rt-5.04behnd.4916/bootloaders/u-boot-2019.07/drivers/net/bcmbca/phy/dt_parsing.o $REPO/release/src-rt-5.04behnd.4916/bootloaders/obj.$BUILD_NAME_LC/drivers/net/bcmbca/phy/
+## No longer exists, or only for a few models?
+#	cp release/src-rt-5.04behnd.4916/bootloaders/u-boot-2019.07/drivers/net/bcmbca/bcmbca_sysport_v2.o $REPO/release/src-rt-5.04behnd.4916/bootloaders/obj.$BUILD_NAME_LC/drivers/net/bcmbca/
+
 	cp release/src-rt-5.04behnd.4916/bootloaders/u-boot-2019.07/common/autoboot.o $REPO/release/src-rt-5.04behnd.4916/bootloaders/obj.$BUILD_NAME_LC/common/
 	cp release/src-rt-5.04behnd.4916/bootloaders/u-boot-2019.07/board/broadcom/bcmbca/*.o $REPO/release/src-rt-5.04behnd.4916/bootloaders/obj.$BUILD_NAME_LC/board/broadcom/bcmbca/
 
 	# Recent GPL don't have it in the SDK, but the wlexe/ version seem to usually be the same anyway
 	if [ -f "release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/main/src/wl/exe/prebuilt/wl" ]
 	then
-		cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/main/src/wl/exe/prebuilt/* $REPO/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/main/src/wl/exe/prebuilt/*
+		cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/main/src/wl/exe/prebuilt/* $REPO/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/main/src/wl/exe/prebuilt/
 	else
 		if [ "$BUILD_NAME" == "RT-BE58_GO" ]
 		then

@@ -21,6 +21,7 @@ Asuswrt-Merlin 3006.xxx Changelog
   - UPDATED: Merged with GPL 102_39995 (Other wifi 7 models).
   - UPDATED: OpenVPN to 2.7.4.
   - UPDATED: OpenSSL to 3.5.6 (GT-BE19000AI)
+  - UPDATED: dropbear to 2026.91.
   - CHANGED: VPN Status page can now detect running but
              non-connected WireGuard client tunnels, and
              report them as being in an error state.

@@ -102,3 +102,8 @@ void hash_process_mp(const struct ltc_hash_descriptor *hash_desc,
 	hash_desc->process(hs, buf->data, buf->len);
 	buf_burn_free(buf);
 }
+
+void m_mp_burn(mp_int *mp) {
+	m_burn(mp->dp, mp->alloc * sizeof(*mp->dp));
+	mp->used = 0;
+}

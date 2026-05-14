@@ -150,7 +150,6 @@ static void switch_keys() {
 		ses.keys->algo_kex = ses.newkeys->algo_kex;
 		ses.keys->algo_hostkey = ses.newkeys->algo_hostkey;
 		ses.keys->algo_signature = ses.newkeys->algo_signature;
-		ses.keys->allow_compress = 0;
 		m_free(ses.newkeys);
 		ses.newkeys = NULL;
 		kexinitialise();
@@ -208,7 +207,7 @@ static void kex_setup_compress(void) {
 	ses.compress_algos_s2c = ssh_nocompress;
 #else
 
-	if (!opts.allow_compress) {
+	if (!opts.compression) {
 		ses.compress_algos_c2s = ssh_nocompress;
 		ses.compress_algos_s2c = ssh_nocompress;
 		return;

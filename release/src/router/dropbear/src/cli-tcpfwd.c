@@ -24,7 +24,7 @@
 
 #include "includes.h"
 #include "dbutil.h"
-#include "tcpfwd.h"
+#include "forward.h"
 #include "channel.h"
 #include "runopts.h"
 #include "session.h"
@@ -107,13 +107,13 @@ static int cli_localtcp(const char* listenaddr,
 		const char* remoteaddr,
 		unsigned int remoteport) {
 
-	struct TCPListener* tcpinfo = NULL;
+	struct FwdListener* tcpinfo = NULL;
 	int ret;
 
 	TRACE(("enter cli_localtcp: %d %s %d", listenport, remoteaddr,
 				remoteport));
 
-	tcpinfo = (struct TCPListener*)m_malloc(sizeof(struct TCPListener));
+	tcpinfo = (struct FwdListener*)m_malloc(sizeof(struct FwdListener));
 
 	tcpinfo->sendaddr = m_strdup(remoteaddr);
 	tcpinfo->sendport = remoteport;
@@ -133,7 +133,7 @@ static int cli_localtcp(const char* listenaddr,
 	tcpinfo->listenport = listenport;
 
 	tcpinfo->chantype = &cli_chan_tcplocal;
-	tcpinfo->tcp_type = direct;
+	tcpinfo->fwd_type = direct;
 
 	ret = listen_tcpfwd(tcpinfo, NULL);
 

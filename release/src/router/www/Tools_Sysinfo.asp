@@ -107,9 +107,9 @@ if (isSupport("UI4")) {
 	backgroundColor6GHZ2 = "rgba(188, 128, 189, 0.2)";
 	borderColor6GHZ2 = "rgba(188, 128, 189, 1)";
 
-	labelsColor = "black";
-	ticksColor = "black";
-	canvasColor = "white";
+	labelsColor = getComputedStyle(document.documentElement).getPropertyValue("--wrt-text-primary");
+	ticksColor = getComputedStyle(document.documentElement).getPropertyValue("--wrt-text-primary");
+	canvasColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-bg-card");
 
 } else {
 	backgroundColorCPU = "rgba(0, 128, 191, 0.3)";
@@ -507,31 +507,31 @@ function update_temperatures(){
 					curr_coreTmp_6_raw = curr_coreTmp_wl2_raw;
 			}
 
-			code = "<span>2.4 GHz:</span> " + curr_coreTmp_24_raw;
+			code = "<span class='amng-highlight-color'>2.4 GHz:</span> " + curr_coreTmp_24_raw;
 			wifi24data.push(parseInt(curr_coreTmp_24_raw.replace("&deg;C", "")));
 
 			if (wl_info.band5g_2_support) {
-				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span>5 GHz-1: </span>" + curr_coreTmp_5_raw;;
-				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span>5 GHz-2: </span>" + curr_coreTmp_52_raw;
+				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span class='amng-highlight-color'>5 GHz-1: </span>" + curr_coreTmp_5_raw;
+				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span class='amng-highlight-color'>5 GHz-2: </span>" + curr_coreTmp_52_raw;
 				wifi51data.push(parseInt(curr_coreTmp_5_raw.replace("&deg;C", "")));
 				wifi52data.push(parseInt(curr_coreTmp_52_raw.replace("&deg;C", "")));
 			} else if (band5g_support) {
-				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span>5 GHz: </span>" + curr_coreTmp_5_raw;
+				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span class='amng-highlight-color'>5 GHz: </span>" + curr_coreTmp_5_raw;
 				wifi51data.push(parseInt(curr_coreTmp_5_raw.replace("&deg;C", "")));
 			}
 
 			if (wl_info.band6g_2_support) {
-				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span>6 GHz-1: </span>" + curr_coreTmp_6_raw;
-				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span>6 GHz-2: </span>" + curr_coreTmp_62_raw;
+				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span class='amng-highlight-color'>6 GHz-1: </span>" + curr_coreTmp_6_raw;
+				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span class='amng-highlight-color'>6 GHz-2: </span>" + curr_coreTmp_62_raw;
 				wifi6data.push(parseInt(curr_coreTmp_6_raw.replace("&deg;C", "")));
 				wifi62data.push(parseInt(curr_coreTmp_62_raw.replace("&deg;C", "")));
 			} else if (wl_info.band6g_support) {
-				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span>6 GHz: </span>" + curr_coreTmp_6_raw;
+				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span class='amng-highlight-color'>6 GHz: </span>" + curr_coreTmp_6_raw;
 				wifi6data.push(parseInt(curr_coreTmp_6_raw.replace("&deg;C", "")));
 			}
 
 			if (curr_cpuTemp != "") {
-				code +="&nbsp;&nbsp;-&nbsp;&nbsp;<span>CPU: </span>" + parseInt(curr_cpuTemp) +"&deg;C";
+				code +="&nbsp;&nbsp;-&nbsp;&nbsp;<span class='amng-highlight-color'>CPU: </span>" + parseInt(curr_cpuTemp) +"&deg;C";
 				cpudata.push(parseInt(curr_cpuTemp));
 			}
 			document.getElementById("temp_td").innerHTML = code;
@@ -549,15 +549,15 @@ function hwaccel_state(){
 	if (hnd_support) {
 		var cpu_model = "<% sysinfo("cpu.model"); %>";
 		if (cpu_model.search("BCM67") != -1)
-			code = "<span>Archer:</span> ";
+			code = "<span class='amng-highlight-color'>Archer:</span> ";
 		else
-			code = "<span>Runner:</span> ";
+			code = "<span class='amng-highlight-color'>Runner:</span> ";
 
 		var state = "<% sysinfo("hwaccel.runner"); %>";
 
 		code += state;
 
-		code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span>Flow Cache:</span> ";
+		code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span class='amng-highlight-color'>Flow Cache:</span> ";
 		state = "<% sysinfo("hwaccel.fc"); %>";
 
 		code += state;
@@ -605,32 +605,32 @@ function show_connstate(){
 			wlc_6_arr = wlc_2_arr;
 	}
 
-	document.getElementById("wlc_24_td").innerHTML = (!wifi7_support ? "<span>Associated: </span>" + wlc_24_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" : "") +
-	                                                 "<span>Authorized: </span>" + wlc_24_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
-	                                                 "<span>Authenticated: </span>" + wlc_24_arr[2];
+	document.getElementById("wlc_24_td").innerHTML = (!wifi7_support ? "<span class='amng-highlight-color'>Associated: </span>" + wlc_24_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" : "") +
+	                                                 "<span class='amng-highlight-color'>Authorized: </span>" + wlc_24_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+	                                                 "<span class='amng-highlight-color'>Authenticated: </span>" + wlc_24_arr[2];
 
 	if (band5g_support) {
-		document.getElementById("wlc_51_td").innerHTML = (!wifi7_support ? "<span>Associated: </span>" + wlc_51_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" : "") +
-		                                                 "<span>Authorized: </span>" + wlc_51_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
-		                                                 "<span>Authenticated: </span>" + wlc_51_arr[2];
+		document.getElementById("wlc_51_td").innerHTML = (!wifi7_support ? "<span class='amng-highlight-color'>Associated: </span>" + wlc_51_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" : "") +
+		                                                 "<span class='amng-highlight-color'>Authorized: </span>" + wlc_51_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		                                                 "<span class='amng-highlight-color'>Authenticated: </span>" + wlc_51_arr[2];
 	}
 
 	if (wl_info.band5g_2_support) {
-		document.getElementById("wlc_52_td").innerHTML = (!wifi7_support ? "<span>Associated: </span>" + wlc_52_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" : "") +
-		                                                 "<span>Authorized: </span>" + wlc_52_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
-		                                                 "<span>Authenticated: </span>" + wlc_52_arr[2];
+		document.getElementById("wlc_52_td").innerHTML = (!wifi7_support ? "<span class='amng-highlight-color'>Associated: </span>" + wlc_52_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" : "") +
+		                                                 "<span class='amng-highlight-color'>Authorized: </span>" + wlc_52_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		                                                 "<span class='amng-highlight-color'>Authenticated: </span>" + wlc_52_arr[2];
 	}
 
 	if (wl_info.band6g_support) {
-		document.getElementById("wlc_6_td").innerHTML = (!wifi7_support ? "<span>Associated: </span>" + wlc_6_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" : "") +
-		                                                "<span>Authorized: </span>" + wlc_6_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
-		                                                "<span>Authenticated: </span>" + wlc_6_arr[2];
+		document.getElementById("wlc_6_td").innerHTML = (!wifi7_support ? "<span class='amng-highlight-color'>Associated: </span>" + wlc_6_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" : "") +
+		                                                "<span class='amng-highlight-color'>Authorized: </span>" + wlc_6_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		                                                "<span class='amng-highlight-color'>Authenticated: </span>" + wlc_6_arr[2];
 	}
 
 	if (wl_info.band6g_2_support) {
-		document.getElementById("wlc_62_td").innerHTML = (!wifi7_support ? "<span>Associated: </span>" + wlc_62_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" : "") +
-		                                                 "<span>Authorized: </span>" + wlc_62_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
-		                                                 "<span>Authenticated: </span>" + wlc_62_arr[2];
+		document.getElementById("wlc_62_td").innerHTML = (!wifi7_support ? "<span class='amng-highlight-color'>Associated: </span>" + wlc_62_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" : "") +
+		                                                 "<span class='amng-highlight-color'>Authorized: </span>" + wlc_62_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		                                                 "<span class='amng-highlight-color'>Authenticated: </span>" + wlc_62_arr[2];
         }
 }
 
@@ -644,7 +644,7 @@ function show_memcpu(){
 	document.getElementById("mem_buffer_div").innerHTML = mem_stats_arr[2] + " MB";
 	document.getElementById("mem_cache_div").innerHTML = mem_stats_arr[3] + " MB";
 	if (parseInt(mem_stats_arr[5]) == 0) {
-		document.getElementById("mem_swap_total_div").innerHTML = "<span>No swap</span>";
+		document.getElementById("mem_swap_total_div").innerHTML = "<span class='hint-color'>No swap</span>";
 		document.getElementById("swap_div").style.display="none";
 	} else {
 		document.getElementById("mem_swap_total_div").innerHTML = mem_stats_arr[5] + " MB";
@@ -806,7 +806,7 @@ function show_aiboard_info() {
 					</tr>
 					<tr>
 						<th><#General_x_SystemUpTime_itemname#></th>
-						<td><span style="color: #FFF;" id="boot_days"></span> <span><#Day#></span> <span style="color: #FFF;" id="boot_hours"></span> <span><#Hour#></span> <span style="color: #FFF;" id="boot_minutes"></span> <span><#Minute#></span> <span style="color: #FFF;" id="boot_seconds"></span> <span><#Second#></span></td>
+						<td><span style="color: unset;" id="boot_days"></span> <span class='amng-highlight-color'><#Day#></span> <span style="color: unset;" id="boot_hours"></span> <span class='amng-highlight-color'><#Hour#></span> <span style="color: unset;" id="boot_minutes"></span> <span class='amng-highlight-color'><#Minute#></span> <span style="color: unset;" id="boot_seconds"></span> <span class='amng-highlight-color'><#Second#></span></td>
 					</tr>
 
 				</table>
@@ -842,27 +842,27 @@ function show_aiboard_info() {
 						<td>
 							<div class="memgrid">
 								<div class="memrow">
-									<span class="memlabel" style="color: #FFCC00;"> Total :</span>
+									<span class="memlabel amng-highlight-color"> Total :</span>
 									<span class="memvalue" id="mem_total_div"></span>
 								</div>
 								<div class="memrow">
-									<span class="memlabel" style="color: #FFCC00;">Used :</span>
+									<span class="memlabel amng-highlight-color">Used :</span>
 									<span class="memvalue" id="mem_used_div"></span>
 								</div>
 								<div class="memrow">
-									<span class="memlabel" style="color: #FFCC00;">Available :</span>
+									<span class="memlabel amng-highlight-color">Available :</span>
 									<span class="memvalue" id="mem_available_div"></span>
 								</div>
 								<div class="memrow">
-									<span class="memlabel" style="color: #FFCC00;">Free :</span>
+									<span class="memlabel amng-highlight-color">Free :</span>
 									<span class="memvalue" id="mem_free_div"></span>
 								</div>
 								<div class="memrow">
-									<span class="memlabel" style="color: #FFCC00;">Buffers :</span>
+									<span class="memlabel amng-highlight-color">Buffers :</span>
 									<span class="memvalue" id="mem_buffer_div"></span>
 								</div>
 								<div class="memrow">
-									<span class="memlabel" style="color: #FFCC00;">Cache :</span>
+									<span class="memlabel amng-highlight-color">Cache :</span>
 									<span class="memvalue" id="mem_cache_div"></span>
 								</div>
 							</div>
@@ -871,11 +871,11 @@ function show_aiboard_info() {
 						<td style="vertical-align:top;">
 							<div class="memgrid">
 								<div class="memrow">
-									<span class="memlabel" style="color: #FFCC00;">Total Swap :</span>
+									<span class="memlabel amng-highlight-color">Total Swap :</span>
 									<span class="memvalue" id="mem_swap_total_div"></span>
 								</div>
 								<div class="mewrow" id="swap_div">
-									<span class="memlabel" style="color: #FFCC00;">Used Swap :</span>
+									<span class="memlabel amng-highlight-color">Used Swap :</span>
 									<span class="memvalue" id="mem_swap_used_div"></span>
 								</div>
 							</div>

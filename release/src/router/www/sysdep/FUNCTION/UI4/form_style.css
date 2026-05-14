@@ -2195,6 +2195,13 @@ padding-top:1px;
 	color: #ef4444;
 	;
 }
+.amng-highlight-color {
+        color: #ef4444 !important;
+}
+.amng-secondary-color {
+        color: blue;
+}
+
 #cancelBtn, #applyBtn{
 	font-weight: bolder;
 	text-shadow: 1px 1px 0px black;

@@ -297,9 +297,9 @@ function show_ovpn_summary(refresh) {
 					routing += ' + killswitch';
 				break;
 			case "2":
-				var routing = '<span class="hint-color">VPN Director</span>';
+				var routing = '<span class="amng-highlight-color">VPN Director</span>';
 				if (ovpn_info.enforce == 1)
-					routing += ' + <span class="hint-color" ">killswitch</span>';
+					routing += ' + <span class="amng-highlight-color" ">killswitch</span>';
 				break;
 			default:
 				var routing = "unknown";
@@ -449,7 +449,7 @@ function show_vpndirector_rulelist() {
 	var code = "";
 	code += '<table width="100%" cellspacing="0" cellpadding="1" align="center" class="list_table" style="word-break:break-word;">';
 	if (vpndirector_rulelist_array.length == 0)
-		code += '<tr><td class="hint-color" colspan="6">No rules</td></tr>';
+		code += '<tr><td class="amng-highlight-color" colspan="6">No rules</td></tr>';
 	else {
 		vpndirector_rulelist_array.sort(sort_by_interface);
 
@@ -745,7 +745,7 @@ function applyRule() {
 			</td>
 		</tr>
 	</table>
-	<div class="hint-color" style="margin:10px 0px;">
+	<div class="amng-highlight-color" style="margin:10px 0px;">
 		* IP addresses can be entered in CIDR format (for example, 192.168.1.0/24).
 	</div>
 	<div style="margin-top:15px; justify-content: center; display:flex; flex-direction:row; gap:0.5em;">

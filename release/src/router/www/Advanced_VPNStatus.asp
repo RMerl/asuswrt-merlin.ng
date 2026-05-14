@@ -87,11 +87,11 @@ function refresh_vpn_data(){
 
 
 const state_srv_run = " - Running";
-const state_srv_stop = ` - <span style="background-color: transparent; color: ${(isSupport("UI4") ? "blue" : "white")};">Stopped</span>`;
+const state_srv_stop = ` - <span style="background-color: transparent; color: ${(isSupport("UI4") ? getComputedStyle(document.documentElement).getPropertyValue("--wrt-card-header-color") : "white")};">Stopped</span>`;
 const state_clnt_ced = " - Connected";
 const state_clnt_cing = " - Connecting...";
 const state_clnt_err = " - Error connecting";
-const state_clnt_disc = ` - <span style="background-color: transparent; color: ${(isSupport("UI4") ? "blue" : "white")};">Stopped</span>`;
+const state_clnt_disc = ` - <span style="background-color: transparent; color: ${(isSupport("UI4") ? getComputedStyle(document.documentElement).getPropertyValue("--wrt-card-header-color") : "white")};">Stopped</span>`;
 
 function display_vpn_data(){
 	if (openvpnd_support) {
@@ -120,7 +120,7 @@ function display_vpn_data(){
 
 			client_server = ` (${vpnstate[`${vpnprefix}_addr`].shorter(42)}` +
 							` - port ${vpnstate[`${vpnprefix}_port`]}/${vpnstate[`${vpnprefix}_proto`]})`;
-			client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? "blue" : "white")};">${vpnstate[`${vpnprefix}_desc`]}</span>`;
+			client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? getComputedStyle(document.documentElement).getPropertyValue("--wrt-card-header-color") : "white")};">${vpnstate[`${vpnprefix}_desc`]}</span>`;
 
 			switch (vpnstate[`${vpnprefix}_state`]) {
 				case "0":
@@ -543,7 +543,7 @@ function display_wg_data(){
 				desc = "<% nvram_get("wgc1_desc"); %>";
 				if (desc == "")
 					desc = "Client " + unit;
-				client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? "blue" : "white")};">${desc}</span>`;
+				client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? getComputedStyle(document.documentElement).getPropertyValue("--wrt-card-header-color") : "white")};">${desc}</span>`;
 				local_ip = wgc1_ip;
 				remote_ip = wgc1_rip;
 				break;
@@ -556,7 +556,7 @@ function display_wg_data(){
 				desc = "<% nvram_get("wgc2_desc"); %>";
 				if (desc == "")
 					desc = "Client " + unit;
-				client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? "blue" : "white")};">${desc}</span>`;
+				client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? getComputedStyle(document.documentElement).getPropertyValue("--wrt-card-header-color") : "white")};">${desc}</span>`;
 				local_ip = wgc2_ip;
 				remote_ip = wgc2_rip;
 				break;
@@ -569,7 +569,7 @@ function display_wg_data(){
 				desc = "<% nvram_get("wgc3_desc"); %>";
 				if (desc == "")
 					desc = "Client " + unit;
-				client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? "blue" : "white")};">${desc}</span>`;
+				client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? getComputedStyle(document.documentElement).getPropertyValue("--wrt-card-header-color") : "white")};">${desc}</span>`;
 				local_ip = wgc3_ip;
 				remote_ip = wgc3_rip;
 				break;
@@ -582,7 +582,7 @@ function display_wg_data(){
 				desc = "<% nvram_get("wgc4_desc"); %>";
 				if (desc == "")
 					desc = "Client " + unit;
-				client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? "blue" : "white")};">${desc}</span>`;
+				client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? getComputedStyle(document.documentElement).getPropertyValue("--wrt-card-header-color") : "white")};">${desc}</span>`;
 				local_ip = wgc4_ip;
 				remote_ip = wgc4_rip;
 				break;
@@ -595,7 +595,7 @@ function display_wg_data(){
 				desc = "<% nvram_get("wgc5_desc"); %>";
 				if (desc == "")
 					desc = "Client " + unit;
-				client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? "blue" : "white")};">${desc}</span>`;
+				client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? getComputedStyle(document.documentElement).getPropertyValue("--wrt-card-header-color") : "white")};">${desc}</span>`;
 				local_ip = wgc5_ip;
 				remote_ip = wgc5_rip;
 				break;

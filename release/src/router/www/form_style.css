@@ -2310,7 +2310,12 @@ padding-top:1px;
 .hint-color {
 	color: #FFCC00;
 }
-
+.amng-highlight-color {
+	color: #FFCC00;
+}
+.amng-secondary-color {
+	color: cyan;
+}
 #cancelBtn, #applyBtn {
 	font-weight: bolder;
 	text-shadow: 1px 1px 0px black;

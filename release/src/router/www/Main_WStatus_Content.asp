@@ -54,7 +54,9 @@ var dfs_statusarray0 = [], dfs_statusarray1 = [], dfs_statusarray2 = [];
 
 if (isSupport("UI4")){
 	var macFieldStyle = "";
-	var secondFieldStyle = "margin-top:-15px; color: blue;";
+	var secondFieldStyle = "margin-top:-15px; color: " + 
+		getComputedStyle(document.documentElement).getPropertyValue("--wrt-text-secondary") +
+		";";
 } else {
 	var macFieldStyle = "color: white;";
 	var secondFieldStyle = "margin-top:-15px; color: cyan;";
@@ -301,32 +303,33 @@ function generate_header(dataarray, title, dfs_statusarray) {
 	var time, formatted_time;
 
 	code = '<table width="100%" style="border: none;">';
-	code += '<thead><tr><span class="hint-color" style="font-size: 125%;">Wireless ' + title +'</span></tr></thead>';
-	code += '<tr><td colspan="2"><span class="hint-color">SSID: </span>' + dataarray[0] + '</td>';
-	code += '<td><span class="hint-color">BSSID: </span>' + dataarray[5] +'</td>';
-	code += '<td><span class="hint-color">Mode: </span>' + dataarray[7] + '</td>';
+	code += '<thead><tr><span class="amng-highlight-color" style="font-size: 125%;">Wireless ' + title +'</span></tr></thead>';
+	code += '<tr><td colspan="2"><span class="amng-highlight-color">SSID: </span>' + dataarray[0] + '</td>';
+	code += '<td><span class="amng-highlight-color">BSSID: </span>' + dataarray[5] +'</td>';
+	code += '<td><span class="amng-highlight-color">Mode: </span>' + dataarray[7] + '</td>';
 	code += '</tr>';
 
 	code += '<tr>';
-	code += '<td><span class="hint-color">Channel: </span>'+ dataarray[4] + '</td>';
+	code += '<td><span class="amng-highlight-color">Channel: </span>'+ dataarray[4] + '</td>';
 	if (dataarray[1] != 0)
-		code += '<td><span class="hint-color">RSSI: </span>' + dataarray[1] + ' dBm</td>';
+		code += '<td><span class="amng-highlight-color">RSSI: </span>' + dataarray[1] + ' dBm</td>';
 	else
 		code += '<td>&nbsp;</td>';
 	if (dataarray[2] != 0)
-		code += '<td><span class="hint-color">SNR: </span>' + dataarray[2] +' dB</td>';
+		code += '<td><span class="amng-highlight-color">SNR: </span>' + dataarray[2] +' dB</td>';
 	if (dataarray[3] != 0)
-		code += '<td><span class="hint-color">Noise: </span>' + dataarray[3] + ' dBm</td>';
-        if (dataarray[6] != -1)
-                code += '<td><span class="hint-color">Utilization: </span>'+ dataarray[6] + '%</td>';
+		code += '<td><span class="amng-highlight-color">Noise: </span>' + dataarray[3] + ' dBm</td>';
+	if (dataarray[6] != -1)
+		code += '<td><span class="amng-highlight-color">Utilization: </span>'+ dataarray[6] + '%</td>';
+
 	code += '</tr>';
 
 	if (dfs_statusarray.length > 1) {
-		code += '<tr><td colspan="2"><span class="hint-color">DFS State: </span>' + dfs_statusarray[0] + '</td>';
+		code += '<tr><td colspan="2"><span class="amng-highlight-color">DFS State: </span>' + dfs_statusarray[0] + '</td>';
 		time = parseInt(dfs_statusarray[1]);
 		formatted_time = Math.floor(time / 3600) + "h " + Math.floor(time / 60) % 60 + "m " + time % 60 + "s";
-		code += '<td><span class="hint-color">Time elapsed: </span>' + formatted_time + '</td>';
-		code += '<td><span class="hint-color">Channel cleared for radar: </span>' + dfs_statusarray[2] + '</td></tr>';
+		code += '<td><span class="amng-highlight-color">Time elapsed: </span>' + formatted_time + '</td>';
+		code += '<td><span class="amng-highlight-color">Channel cleared for radar: </span>' + dfs_statusarray[2] + '</td></tr>';
 	}
 
 	code += '</table>';
@@ -443,8 +446,8 @@ function hide_details_window(){
 									</table>
 									<br>
 									<div id="datablock"></div>
-									<div id="flags_mumimo_div" style="display:none;">Flags: <span style="color: #FFCC00;">P</span>=Powersave Mode, <span style="color: #FFCC00;">S</span>=Short GI, <span style="color: #FFCC00;">T</span>=STBC, <span style="color: #FFCC00;">M</span>=MU Beamforming, <span style="color: #FFCC00;">A</span>=Associated, <span style="color: #FFCC00;">U</span>=Authenticated</div>
-									<div id="flags_div">Flags: <span style="color: #FFCC00;">P</span>=Powersave Mode, <span style="color: #FFCC00;">S</span>=Short GI, <span style="color: #FFCC00;">T</span>=STBC, <span style="color: #FFCC00;">A</span>=Associated, <span style="color: #FFCC00;">U</span>=Authenticated</div>
+									<div id="flags_mumimo_div" style="display:none;">Flags: <span class="amng-highlight-color">P</span>=Powersave Mode, <span class="amng-highlight-color">S</span>=Short GI, <span class="amng-highlight-color">T</span>=STBC, <span class="amng-highlight-color">M</span>=MU Beamforming, <span class="amng-highlight-color">A</span>=Associated, <span class="amng-highlight-color">U</span>=Authenticated</div>
+									<div id="flags_div">Flags: <span class="amng-highlight-color">P</span>=Powersave Mode, <span class="amng-highlight-color">S</span>=Short GI, <span class="amng-highlight-color">T</span>=STBC, <span class="amng-highlight-color">A</span>=Associated, <span class="amng-highlight-color">U</span>=Authenticated</div>
 									<br>
 									<div class="apply_gen">
 										<input type="button" onClick="location.reload();" value="<#CTL_refresh#>" class="button_gen" >

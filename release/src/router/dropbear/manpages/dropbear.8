@@ -105,6 +105,11 @@ of 0 disables keepalives. If no response is received for 3 consecutive keepalive
 .B \-I \fIidle_timeout
 Disconnect the session if no traffic is transmitted or received for \fIidle_timeout\fR seconds.
 .TP
+.B \-M
+Set maximum session duration in seconds. All sessions will close after this time.
+If a compile-time setting was set (default is none), then setting \fI-M 0\fR will disable
+the session duration timeout.
+.TP
 .B \-z
 By default Dropbear will send network traffic with the \fBAF21\fR setting for QoS, letting network devices give it higher priority. Some devices may have problems with that, \fI-z\fR can be used to disable it.
 .TP
@@ -112,13 +117,27 @@ By default Dropbear will send network traffic with the \fBAF21\fR setting for Qo
 Set the number of authentication attempts allowed per connection. If unspecified the default is 10 (MAX_AUTH_TRIES)
 .TP
 .B \-c \fIforced_command
-Disregard the command provided by the user and always run \fIforced_command\fR. This also
+Disregard the command/shell provided by the user and always run \fIforced_command\fR. This also
 overrides any authorized_keys command= option. The original command is saved in the 
 SSH_ORIGINAL_COMMAND environment variable (see below).
+
+The forced command is started using the user's normal shell, the same as
+occurs for normal commands.
+
+Unix stream forwarding is disabled when a forced command is set, since that
+may allow a bypass of the forced command. Other SSH features such as TCP forwarding
+are still allowed by default - it may be desirable to disable those using \fI-j\fR or \fI-k\fR
+options when using forced command.
+
 .TP
 .B \-D \fIauthorized_keys_dir
 Specify the directory to use for authorized_keys files. The default is ~/.ssh , paths with
 a leading ~/ will be home directory expanded.
+
+.TP
+.B \-Q \fIalgo
+Query supported algorithms. Options are kex, sig, cipher, mac, compress
+
 .TP
 .B \-V
 Print the version
@@ -128,15 +147,22 @@ Print the version
 .TP
 Authorized Keys
 
-~/.ssh/authorized_keys can be set up to allow remote login with a RSA,
-ECDSA, Ed25519 or DSS
-key. Each line is of the form
+~/.ssh/authorized_keys can be set up to allow remote login with a
+Ed25519, RSA, or ECDSA key.
+The authorized_keys file and its containing ~/.ssh directory must only be
+writable by the user, otherwise Dropbear will not allow a login using public
+key authentication.
+
+
+Each line is of the form
 .TP
 [restrictions] ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIgAsp... [comment]
 
 and can be extracted from a Dropbear private host key with "dropbearkey -y". This is the same format as used by OpenSSH, though the restrictions are a subset (keys with unknown restrictions are ignored).
 Restrictions are comma separated, with double quotes around spaces in arguments.
 Available restrictions are:
+
+.RS
 
 .TP
 .B no-port-forwarding
@@ -168,13 +194,28 @@ port specification for matching any port. Hosts must be literal domain names or
 IP addresses.
 
 .TP
+.B permitlisten=\fR"\fIport\fR"
+Restrict remote port forwarding listeners to the given port.
+Multiple permitlisten="port" options separated by commas
+can be set in authorized_keys.
+Port can be 0 to allow the
+listen port to be dynamically allocated on the server.
+
+.TP
 .B command=\fR"\fIforced_command\fR"
 Disregard the command provided by the user and always run \fIforced_command\fR.
-The -c command line option overrides this.
+The -c command line option overrides this. See -c documentation for behaviour of
+forced commands.
 
-The authorized_keys file and its containing ~/.ssh directory must only be
-writable by the user, otherwise Dropbear will not allow a login using public
-key authentication.
+When using
+.B command=
+it is often desirable to also use
+.B restrict
+option to avoid other SSH features that may allow additional access.
+
+
+
+.RE
 
 .TP
 Host Key Files

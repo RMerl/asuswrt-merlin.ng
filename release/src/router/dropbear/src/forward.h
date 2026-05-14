@@ -21,14 +21,15 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
-#ifndef DROPBEAR_TCPFWD_H
-#define DROPBEAR_TCPFWD_H
+#ifndef DROPBEAR_FORWARD_H
+#define DROPBEAR_FORWARD_H
 
 #include "channel.h"
 #include "list.h"
 #include "listener.h"
 
-struct TCPListener {
+/* For TCP or stream listeners */
+struct FwdListener {
 
 	/* For a direct-tcpip request, it's the addr/port we want the other
 	 * end to connect to */
@@ -45,7 +46,9 @@ struct TCPListener {
 	char* interface;
 
 	const struct ChanType *chantype;
-	enum {direct, forwarded} tcp_type;
+	enum {direct, forwarded} fwd_type;
+	/* For Unix socket forwarding, this is the socket path */
+	char *socket_path;
 };
 
 /* A forwarding entry */
@@ -59,11 +62,25 @@ struct TCPFwdEntry {
 };
 
 /* Server */
-void recv_msg_global_request_remotetcp(void);
+void svr_recv_msg_global_request(void);
 
-extern const struct ChanType svr_chan_tcpdirect;
+#if DROPBEAR_SVR_REMOTESTREAMFWD
+int svr_cancelremotestreamlocal(void);
+int svr_remotestreamlocalreq(void);
+#endif
 
+#if DROPBEAR_SVR_LOCALSTREAMFWD
 extern const struct ChanType svr_chan_streamlocal;
+#endif
+
+#if DROPBEAR_SVR_REMOTETCPFWD
+int svr_remotetcpreq(int wantreply);
+int svr_cancelremotetcp(void);
+#endif
+
+#if DROPBEAR_SVR_LOCALTCPFWD
+extern const struct ChanType svr_chan_tcpdirect;
+#endif
 
 /* Client */
 void setup_localtcp(void);
@@ -73,9 +90,10 @@ void cli_recv_msg_request_success(void);
 void cli_recv_msg_request_failure(void);
 
 /* Common */
-int listen_tcpfwd(struct TCPListener* tcpinfo, struct Listener **ret_listener);
-
-/* A random identifier */
-#define CHANNEL_ID_TCPFORWARDED 0x43612c67
+int listen_tcpfwd(struct FwdListener* tcpinfo, struct Listener **ret_listener);
+#if DROPBEAR_SVR_REMOTESTREAMFWD
+int listen_streamlocal(struct FwdListener* tcpinfo, struct Listener **ret_listener);
+#define CHANNEL_ID_STREAMLOCALFORWARDED 0x53747265
+#endif
 
 #endif

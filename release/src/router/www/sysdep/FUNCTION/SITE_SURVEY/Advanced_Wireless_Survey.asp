@@ -45,12 +45,10 @@ var iserror = 0;
 var waitingTime = 120;
 
 if (isSupport("UI4")) {
-	var sortHighlightColor = "var(--primary-70)";
-	var spanColor = "blue;";
+	var sortHighlightColor = "rgb(var(--color-text-hint))";
 	var qualityScale = ["#C0392B;","#C0392B;","#F39C12;","#3498DB;","#27AE60;"];
 } else {
 	var sortHighlightColor = "#FC0";
-	var spanColor = "#FC0;";
 }
 
 function initial(){
@@ -150,11 +148,11 @@ function showSiteTable(){
 	htmlCode +='<table style="width:100%;" border="0" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="aplist_table">';
 
 	if(wlc_scan_state != 5){ // on scanning
-		htmlCode +=`<tr><th style="text-align:center;" colspan="5"><span style="color:${spanColor};line-height:25px;"><#APSurvey_action_searching_AP#></span>&nbsp;<img style="margin-top:10px;" src="/images/InternetScan.gif"></th></tr>`;
+		htmlCode +=`<tr><th style="text-align:center;" colspan="5"><span class="amng-highlight-color" style="line-height:25px;"><#APSurvey_action_searching_AP#></span>&nbsp;<img style="margin-top:10px;" src="/images/InternetScan.gif"></th></tr>`;
 	}
 	else{ // show ap list
 		if ((aplist.length) && (aplist[0].length == 0)) {
-			htmlCode +=`<tr><td style="text-align:center;" colspan="5"><span style="color:${spanColor};line-height:25px;"><#APSurvey_action_searching_noresult#></span>&nbsp;<img style="margin-top:10px;" src="/images/InternetScan.gif"></td></tr>`;
+			htmlCode +=`<tr><td style="text-align:center;" colspan="5"><span class="amng-highlight-color" style="line-height:25px;"><#APSurvey_action_searching_noresult#></span>&nbsp;<img style="margin-top:10px;" src="/images/InternetScan.gif"></td></tr>`;
 		}
 		else{
 			htmlCode += '<tr><th onclick="doSorter(1, \'str\', true);" style="cursor:pointer;text-align:left;' + addBorder(1) + '"><#Wireless_name#></th>';
@@ -177,7 +175,7 @@ function showSiteTable(){
 				//ssid
 				ssid_str = htmlEnDeCode.htmlEncode(decodeURIComponent(aplist[i][1]));
 				if (ssid_str == "")
-					ssid_str = `<span style="text-decoration:underline;font-style:italic;color:${spanColor}">[hidden]</span>`;
+					ssid_str = `<span class="amng-highlight-color" style="text-decoration:underline;font-style:italic">[hidden]</span>`;
 
 				if (isSupport("UI4"))
 					var popupHandler = `onclick="oui_query_full_vendor('${aplist[i][6].toUpperCase()}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}', STICKY,  CAPTION, ' ');"`;

@@ -7832,10 +7832,16 @@ pcre-8.12-clean:
 	-@$(MAKE) -C pcre-8.12 clean
 	@rm -f pcre-8.12/stamp-h1
 
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI6_SDK_20220329)
+PCRE_8_31_CONFIGURE_PREFIX := /usr
+else
+PCRE_8_31_CONFIGURE_PREFIX := $(STAGEDIR)/usr
+endif
+
 pcre-8.31/stamp-h1:
 	cd pcre-8.31 && \
 	CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD) CFLAGS="-Os -Wall $(EXTRACFLAGS)" LIBS="$(EXTRALDFLAGS)" \
-	./$(CONFIGURE) --prefix=$(STAGEDIR)/usr --disable-dependency-tracking
+	./$(CONFIGURE) --prefix=$(PCRE_8_31_CONFIGURE_PREFIX) --disable-dependency-tracking
 	touch $@
 	[ -d pcre-8.31/m4 ] || mkdir pcre-8.31/m4
 

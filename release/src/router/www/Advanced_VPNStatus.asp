@@ -57,6 +57,11 @@ var wgs_object = {};
 function initial(){
 	show_menu();
 
+	if (isSupport("UI4")) {
+		document.querySelector('.spinner').style.border = '3px solid var(--bg-loader-color)';
+		document.querySelector('.spinner').style.borderTopColor = 'var(--color-bg-loader)';
+	}
+
 	setTimeout("refresh_vpn_data()",1000);
 
 	if (ipsec_srv_support)

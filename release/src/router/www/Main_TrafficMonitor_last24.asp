@@ -114,6 +114,11 @@ if (isSupport("UI4")){
 AUTOLOGOUT_MAX_MINUTE = 0;
 
 function init(){
+	if (isSupport("UI4")) {
+		document.querySelector('.spinner').style.border = '3px solid var(--bg-loader-color)';
+		document.querySelector('.spinner').style.borderTopColor = 'var(--color-bg-loader)';
+	}
+
 	if (nvram.rstats_enable != '1') return;
 
 	if(bwdpi_support){

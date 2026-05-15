@@ -2196,10 +2196,10 @@ padding-top:1px;
 	;
 }
 .amng-highlight-color {
-        color: #ef4444 !important;
+        color: rgb(var(--color-text-hint)) !important;
 }
 .amng-secondary-color {
-        color: blue;
+        color: var(--wrt-text-secondary);
 }
 
 #cancelBtn, #applyBtn{

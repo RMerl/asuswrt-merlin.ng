@@ -54,12 +54,8 @@ var dfs_statusarray0 = [], dfs_statusarray1 = [], dfs_statusarray2 = [];
 
 if (isSupport("UI4")){
 	var macFieldStyle = "";
-	var secondFieldStyle = "margin-top:-15px; color: " + 
-		getComputedStyle(document.documentElement).getPropertyValue("--wrt-text-secondary") +
-		";";
 } else {
 	var macFieldStyle = "color: white;";
-	var secondFieldStyle = "margin-top:-15px; color: cyan;";
 }
 <% get_wl_status(); %>;
 
@@ -246,9 +242,9 @@ function generate_clients(clientsarray) {
 			}
 
 			if (hostname.length > 24) {		// Name
-				code +=`<br><span style="${secondFieldStyle}"${hostname}">${hostname.substring(0,20)}...</span></td>`;
+				code +=`<br><span class="amng-secondary-color" class="amng-secondary-color" style="margin-top:-15px;"${hostname}">${hostname.substring(0,20)}...</span></td>`;
 			} else {
-				code +=`<br><span style="${secondFieldStyle}">${htmlEnDeCode.htmlEncode(hostname)}</span></td>`;
+				code +=`<br><span class="amng-secondary-color" style="margin-top:-15px;">${htmlEnDeCode.htmlEncode(hostname)}</span></td>`;
 			}
 
 			ipaddr = client[1];
@@ -265,12 +261,12 @@ function generate_clients(clientsarray) {
 				else
 					popupHandler = `onclick="return overlib('${overlib_str}');" onmouseout="nd();"`;
 
-				code += `<br><span style="${secondFieldStyle} text-decoration:underline; cursor:pointer;" ${popupHandler}>IPv6 addresses</span></td>`;
+				code += `<br><span class="amng-secondary-color" style="margin-top:-15px; text-decoration:underline; cursor:pointer;" ${popupHandler}>IPv6 addresses</span></td>`;
 			} else
 				code += '<br></td>'; // IPv6
 
 			code += `<td style="text-align: right;">${client[5]} / ${client[6]} Mbps`;	// Rate
-			code += `<br><span style="${secondFieldStyle}">${client[4]} dBm</td>`;	// RSSI
+			code += `<br><span class="amng-secondary-color" style="margin-top:-15px;">${client[4]} dBm</td>`;	// RSSI
 			code += `<td style="text-align: right;vertical-align:top;">${client[7]}</td>`;	// Time
 
 			if (client[8] != "") {
@@ -281,7 +277,7 @@ function generate_clients(clientsarray) {
 				code += '<td>';
 			}
 			if (client[10] != "") {
-				code += `<br><span style="${secondFieldStyle}">${client[10]}</td>`;  // BW
+				code += `<br><span class="amng-secondary-color" style="margin-top:-15px;">${client[10]}</td>`;  // BW
 			} else {
 				code += '</td>';
 			}

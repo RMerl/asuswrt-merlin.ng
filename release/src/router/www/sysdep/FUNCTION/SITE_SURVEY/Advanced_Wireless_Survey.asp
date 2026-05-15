@@ -178,7 +178,7 @@ function showSiteTable(){
 					ssid_str = `<span class="amng-highlight-color" style="text-decoration:underline;font-style:italic">[hidden]</span>`;
 
 				if (isSupport("UI4"))
-					var popupHandler = `onclick="oui_query_full_vendor('${aplist[i][6].toUpperCase()}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}', STICKY,  CAPTION, ' ');"`;
+					var popupHandler = `onclick="return oui_query_full_vendor('${aplist[i][6].toUpperCase()}');"`;
 				else
 					var popupHandler = `onclick="oui_query_full_vendor('${aplist[i][6].toUpperCase()}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}');" onmouseout="nd();"`;
 

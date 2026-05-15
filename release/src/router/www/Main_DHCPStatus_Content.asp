@@ -73,7 +73,7 @@ function show_leases() {
 
 			overlib_str = "<p><#MAC_Address#>:</p>" + line[1];
 			if (isSupport("UI4"))
-				var popupHandler = `onclick="oui_query_full_vendor('${line[1].toUpperCase()}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}', STICKY,  CAPTION, ' ');"`;
+				var popupHandler = `onclick="oui_query_full_vendor('${line[1].toUpperCase()}');"`;
 			else
 				var popupHandler = `onclick="oui_query_full_vendor('${line[1].toUpperCase()}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}');" onmouseout="nd();"`;
 

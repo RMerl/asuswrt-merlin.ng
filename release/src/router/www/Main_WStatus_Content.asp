@@ -222,7 +222,7 @@ function generate_clients(clientsarray) {
 			mac = client[0];
 			overlib_str = "<p><#MAC_Address#>:</p>" + mac;
 			if (isSupport("UI4"))
-				popupHandler = `onclick="oui_query_full_vendor('${mac}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}', STICKY,  CAPTION, ' ');"`;
+				popupHandler = `onclick="oui_query_full_vendor('${mac}');"`;
 			else
 				popupHandler = `onclick="oui_query_full_vendor('${mac}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}');" onmouseout="nd();"`;
 
@@ -257,7 +257,7 @@ function generate_clients(clientsarray) {
 			if (client[3].length) {
 				overlib_str = client[3].replace(/,/g, "<br>");
 				if (isSupport("UI4"))
-					popupHandler = `onclick="return overlib('${overlib_str}', STICKY, CAPTION, ' ');"`;
+					popupHandler = `onclick="return showHintBox('${overlib_str}');"`;
 				else
 					popupHandler = `onclick="return overlib('${overlib_str}');" onmouseout="nd();"`;
 

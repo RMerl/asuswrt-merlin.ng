@@ -270,7 +270,7 @@ function drawGraph(ifname){
 					display: true,
 					type: 'linear',
 					min: 0,
-					max: maxSamples,
+					max: maxSamples - 1,
 					grid: { color: gridColor },
 					ticks: {
 						display: false,

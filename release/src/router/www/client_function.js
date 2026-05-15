@@ -4689,7 +4689,7 @@ function oui_query_full_vendor(mac){
 			overlibStrTmp += "<p><span>.....................................</span></p><p style='margin-top:5px'><#Manufacturer#> :</p>";
 			overlibStrTmp += clientList[mac].vendor;
 			if (isSupport("UI4"))
-				return overlib(overlibStrTmp, STICKY, CAPTION, " ");
+				return showHintBox(overlibStrTmp);
 			else
 				return overlib(overlibStrTmp);
 		}, 1);
@@ -4701,15 +4701,18 @@ function oui_query_full_vendor(mac){
 			else
 				var overlibStrTmp = "<p><#MAC_Address#>:</p>" + mac.toUpperCase();
 			$.getJSON("/ajax/ouiDB.json", function(data){
-				if(data != "" && data[queryStr] != undefined){
-					if(overlib.isOut) return nd();
+				if(data != "" && data[queryStr] != undefined) {
 					var vendor_name = data[queryStr].trim();
-					overlibStrTmp += "<p><span>.....................................</span></p><p style='margin-top:5px'><#Manufacturer#> :</p>";
-					overlibStrTmp += vendor_name;
-					if (isSupport("UI4"))
-						return overlib(overlibStrTmp, STICKY, CAPTION, " ");
-					else
-						return overlib(overlibStrTmp);
+				} else {
+					var vendor_name = "unknown";
+				}
+				overlibStrTmp += "<p><span>.....................................</span></p><p style='margin-top:5px'><#Manufacturer#> :</p>";
+				overlibStrTmp += vendor_name;
+				if (isSupport("UI4"))
+					return showHintBox(overlibStrTmp);
+				else {
+					if(overlib.isOut) return nd();
+					return overlib(overlibStrTmp);
 				}
 			});
 	}

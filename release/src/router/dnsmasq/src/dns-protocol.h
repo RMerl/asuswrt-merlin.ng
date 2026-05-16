@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2026 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,8 +22,34 @@
 #define IN6ADDRSZ       16
 #define INADDRSZ        4
 
+/* Dnsmasq handles domains names internally as NULL-terminated C strings.
+   The '.' characters in these strings are significant as label-seperators.
+   '.' and /0 characters _within_ labels are escaped and take up two
+   characters to allow labels to contain arbitrary characters.
+
+   The maximum length of a domain name in wire format is 255 bytes.
+   and the maximum length of this when coverted to a <label>.<label> string
+   is 253 characters. Reasoning: the wire format representation of a
+   label is one byte length followed by up to length characters so each of
+   these labels except the last takes the same space since the length is
+   replaced by the '.' seperator.
+   The last label doesn't have the "." so it takes one less character
+   and the terminating zero-length label takes no character either.
+
+   When we introduce the dnsmasq escaped format, the maximum length
+   of this representation is when there are the minimum number of labels,
+   since that gives us the maximum number of characters that may need
+   escaping. The minimum number of labels is four, so the overhead
+   is five bytes (four non-zero lengths plus the zero length terminator)
+   leaving a total of 250 characters in labels. If every one of these
+   is escaped and becomes two characters, that gives 500 characters,
+   plus the three '.' seperators between the four labels, for a total of
+   503 characters.
+*/
+#define MAXDNAME        255             /* Maximum size of a domain name in wire format */
+#define MAXDNAMESTR     503             /* Maximum size of dnsmasq c-string representaion of a domain name. */
+					   
 #define PACKETSZ	512		/* maximum packet size */
-#define MAXDNAME	1025		/* maximum presentation domain name */
 #define RRFIXEDSZ	10		/* #/bytes of fixed data in r record */
 #define MAXLABEL        63              /* maximum length of domain label */
 
@@ -185,10 +211,12 @@ struct dns_header {
 #define ADD_RDLEN(header, pp, plen, len) \
   (!CHECK_LEN(header, pp, plen, len) ? 0 : (((pp) += (len)), 1))
 
-/* Escape character in our presentation format for names.
+/* Escape character in our internal c-string format for names.
    Cannot be '.' or /000 and must be !isprint().
    Note that escaped chars are stored as
    <NAME_ESCAPE> <orig-char+1>
    to ensure that the escaped form of /000 doesn't include /000
 */
 #define NAME_ESCAPE 1
+#define IS_NAME_ESCAPE(x) ((x) == 0 || (x) == '.' || (x) == NAME_ESCAPE)
+

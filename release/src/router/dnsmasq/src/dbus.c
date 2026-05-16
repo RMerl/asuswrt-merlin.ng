@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2026 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -736,7 +736,7 @@ static void add_dict_entry(DBusMessageIter *container, const char *key, const ch
 
 static void add_dict_int(DBusMessageIter *container, const char *key, const unsigned int val)
 {
-  snprintf(daemon->namebuff, MAXDNAME, "%u", val);
+  snprintf(daemon->namebuff, MAXDNAMESTR, "%u", val);
   
   add_dict_entry(container, key, daemon->namebuff);
 }

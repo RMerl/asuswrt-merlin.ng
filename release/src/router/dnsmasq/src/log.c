@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2026 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -113,7 +113,7 @@ int log_start(struct passwd *ent_pw, int errfd)
       struct stat ls;
       if (getgid() == 0 && fstat(log_fd, &ls) == 0 && ls.st_gid == 0 &&
 	  (ls.st_mode & S_IWGRP) == 0)
-	(void)fchmod(log_fd, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+	(void)fchmod(log_fd, ls.st_mode | S_IWGRP);
       if (fchown(log_fd, ent_pw->pw_uid, -1) != 0)
 	ret = errno;
     }

@@ -1954,7 +1954,7 @@ handle_request(void)
 				char file_path[1024] = {0};
 
 				copy_request_path_without_query(file, file_path, sizeof(file_path));
-				if(!strstr(file_path, ".cgi") && !strstr(file_path, "syslog.txt") && !(strstr(file_path,"uploadIconFile.tar")) && !(strstr(file_path,"networkmap.tar")) && !(strstr(file_path,"backup_jffs*.tar")) && !(strstr(file_path,".CFG")) && !(strstr(file_path,".log")) && !check_if_file_exist(file_path)
+				if(!strstr(file_path, ".cgi") && !strstr(file_path, "syslog.txt") && !(strstr(file_path,"uploadIconFile.tar")) && !(strstr(file_path,"networkmap.tar")) && (fnmatch("backup_jffs*.tar",file,0) == FNM_NOMATCH) && !(strstr(file_path,".CFG")) && !(strstr(file_path,".log")) && !check_if_file_exist(file_path)
 
 #ifdef RTCONFIG_USB_MODEM
 						&& !strstr(file_path, "modemlog.txt")

@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2026 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -79,7 +79,9 @@ void build_server_array(void)
   for (serv = daemon->local_domains; serv; serv = serv->next, count++)
     daemon->serverarray[count] = serv;
   
-  qsort(daemon->serverarray, daemon->serverarraysz, sizeof(struct server *), order_qsort);
+  /* serverarray may be unallocated if we have no servers yet. */
+  if (daemon->serverarray)
+    qsort(daemon->serverarray, daemon->serverarraysz, sizeof(struct server *), order_qsort);
   
   /* servers need the location in the array to find all the whole
      set of equivalent servers from a pointer to a single one. */

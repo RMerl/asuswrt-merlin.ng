@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2026 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -135,13 +135,8 @@ int main (int argc, char **argv)
 #ifdef HAVE_DNSSEC
   if (option_bool(OPT_DNSSEC_VALID))
     {
-      /* Note that both /000 and '.' are allowed within labels. These get
-	 represented in presentation format using NAME_ESCAPE as an escape
-	 character. In theory, if all the characters in a name were /000 or
-	 '.' or NAME_ESCAPE then all would have to be escaped, so the 
-	 presentation format would be twice as long as the spec. */
-      daemon->keyname = safe_malloc((MAXDNAME * 2) + 1);
-      daemon->cname = safe_malloc((MAXDNAME * 2) + 1);
+      daemon->keyname = safe_malloc(MAXDNAMESTR + 1);
+      daemon->cname = safe_malloc(MAXDNAMESTR + 1);
       /* one char flag per possible RR in answer section (may get extended). */
       daemon->rr_status_sz = 64;
       daemon->rr_status = safe_malloc(sizeof(*daemon->rr_status) * daemon->rr_status_sz);
@@ -199,7 +194,7 @@ int main (int argc, char **argv)
       /* Must have at least a root trust anchor, or the DNSSEC code
 	 can loop forever. */
       for (ds = daemon->ds; ds; ds = ds->next)
-	if (ds->name[0] == 0)
+	if (ds->name && ds->name[0] == 0)
 	  break;
 
       if (!ds)
@@ -436,14 +431,6 @@ int main (int argc, char **argv)
       for (i = 0; i < daemon->max_procs; i++)
 	daemon->tcp_pipes[i] = -1;
     }
-
-#ifdef HAVE_INOTIFY
-  if ((daemon->port != 0 && !option_bool(OPT_NO_RESOLV)) ||
-      daemon->dynamic_dirs)
-    inotify_dnsmasq_init();
-  else
-    daemon->inotifyfd = -1;
-#endif
 
   if (daemon->dump_file)
 #ifdef HAVE_DUMPFILE
@@ -864,6 +851,14 @@ int main (int argc, char **argv)
     }
 #endif
 
+#ifdef HAVE_INOTIFY
+  if ((daemon->port != 0 && !option_bool(OPT_NO_RESOLV)) ||
+      daemon->dynamic_dirs)
+    inotify_dnsmasq_init(err_pipe[1]);
+  else
+    daemon->inotifyfd = -1;
+#endif
+  
    /* Don't start logging malloc before logging is set up. */
   daemon->log_malloc = option_bool(OPT_LOG_MALLOC);
   
@@ -946,9 +941,27 @@ int main (int argc, char **argv)
 	my_syslog(LOG_INFO, _("DNSSEC signature timestamps not checked until system time valid"));
 
       for (ds = daemon->ds; ds; ds = ds->next)
-	my_syslog(LOG_INFO,
-		  ds->digestlen == 0 ? _("configured with negative trust anchor for %s") : _("configured with trust anchor for %s keytag %u"),
-		  ds->name[0] == 0 ? "<root>" : ds->name, ds->keytag);
+	{
+	  struct ds_config *ds1;
+	  
+	  for (ds1 = ds->next; ds1; ds1 = ds1->next)
+	    if (strcmp(ds->name, ds1->name) == 0 &&
+		ds->digestlen == ds1->digestlen &&
+		(ds->digestlen == 0 ||
+		 (ds->algo == ds1->algo &&
+		  ds->keytag == ds1->keytag &&
+		  ds->digest_type == ds1->digest_type &&
+		  memcmp(ds->digest, ds1->digest, ds->digestlen) == 0)))
+	      {
+		ds->name = NULL; /* Mark as duplicate */
+		break;
+	      }
+	  
+	  if (ds->name)
+	    my_syslog(LOG_INFO,
+		      ds->digestlen == 0 ? _("configured with negative trust anchor for %s") : _("configured with trust anchor for %s keytag %u"),
+		      ds->name[0] == 0 ? "<root>" : ds->name, ds->keytag);
+	}
     }
 #endif
 
@@ -1367,8 +1380,6 @@ static void sig_handler(int sig)
 		  read_write(daemon->pipe_to_parent, (unsigned char *)(&daemon->forward_to_tcp), sizeof(daemon->forward_to_tcp), RW_WRITE);
 		  read_write(daemon->pipe_to_parent, (unsigned char *)(&daemon->forward_to_tcp->uid), sizeof(daemon->forward_to_tcp->uid), RW_WRITE);
 
-		  my_syslog(LOG_INFO, _("TCP process for DNSSEC validation timed out"));
-
 		  _exit(0);
 		}
 	    }
@@ -1450,8 +1461,6 @@ void send_event(int fd, int event, int data, char *msg)
     while (writev(fd, iov, msg ? 2 : 1) == -1 && errno == EINTR);
 }
 
-/* NOTE: the memory used to return msg is leaked: use msgs in events only
-   to describe fatal errors. */
 static int read_event(int fd, struct event_desc *evp, char **msg)
 {
   char *buf;
@@ -1461,12 +1470,22 @@ static int read_event(int fd, struct event_desc *evp, char **msg)
   
   *msg = NULL;
   
-  if (evp->msg_sz != 0 && 
-      (buf = malloc(evp->msg_sz + 1)) &&
-      read_write(fd, (unsigned char *)buf, evp->msg_sz, RW_READ))
+  if (evp->msg_sz != 0)
     {
-      buf[evp->msg_sz] = 0;
-      *msg = buf;
+      if (!(buf = whine_malloc(evp->msg_sz + 1)))
+	{
+	  int i;
+	  unsigned char a;
+	  
+	  /* Keep the stream synchronised if malloc fails. */
+	  for (i = 0; i < evp->msg_sz; i++)
+	    read_write(fd, &a, 1, RW_READ);
+	}
+      else if (read_write(fd, (unsigned char *)buf, evp->msg_sz, RW_READ))
+	{
+	  buf[evp->msg_sz] = 0;
+	  *msg = buf;
+	}
     }
 
   return 1;
@@ -1519,6 +1538,26 @@ static void fatal_event(struct event_desc *ev, char *msg)
       /* fall through */
     case EVENT_TIME_ERR:
       die(_("cannot create timestamp file %s: %s" ), msg, EC_BADCONF);
+
+      /* fall through */
+    case EVENT_LINK_ERR:
+      die(_("cannot access path %s: %s" ), msg, EC_MISC);
+
+       /* fall through */
+    case EVENT_INOTFY_ERR:
+      die(_("failed to create inotify: %s" ), NULL, EC_MISC);
+
+      /* fall through */
+    case EVENT_TMSL_ERR:
+      die(_("too many symlinks following %s"), msg, EC_MISC);
+
+      /* fall through */
+    case EVENT_RESOLV_ERR:
+      die(_("directory %s for resolv-file is missing, cannot poll"), msg, EC_MISC);
+
+      /* fall through */
+    case EVENT_IFILE_ERR:
+      die(_("failed to create inotify for %s: %s"), msg, EC_MISC);
     }
 }	
       
@@ -1528,9 +1567,6 @@ static void async_event(int pipe, time_t now)
   struct event_desc ev;
   int wstatus, i, check = 0;
   char *msg;
-  
-  /* NOTE: the memory used to return msg is leaked: use msgs in events only
-     to describe fatal errors. */
   
   if (read_event(pipe, &ev, &msg))
     switch (ev.event)
@@ -1637,7 +1673,6 @@ static void async_event(int pipe, time_t now)
       case EVENT_SCRIPT_LOG:
 	my_syslog(MS_SCRIPT | LOG_DEBUG, "%s", msg ? msg : "");
         free(msg);
-	msg = NULL;
 	break;
 
 	/* necessary for fatal errors in helper */

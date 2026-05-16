@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2026 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -253,7 +253,7 @@ int create_helper(int event_fd, int err_fd, uid_t uid, gid_t gid, long max_fd)
 	}
       
       /* supplied data may just exceed normal buffer (unlikely) */
-      if ((data.hostname_len + data.ed_len + data.clid_len) > MAXDNAME && 
+      if ((data.hostname_len + data.ed_len + data.clid_len) > MAXDNAMESTR && 
 	  !(alloc_buff = buf = malloc(data.hostname_len + data.ed_len + data.clid_len)))
 	continue;
       
@@ -261,8 +261,8 @@ int create_helper(int event_fd, int err_fd, uid_t uid, gid_t gid, long max_fd)
 		      data.hostname_len + data.ed_len + data.clid_len, RW_READ))
 	continue;
 
-      /* CLID into packet */
-      for (p = daemon->packet, i = 0; i < data.clid_len; i++)
+      /* CLID into packet: limit to 100 bytes to avoid overflowing buffer. */
+      for (p = daemon->packet, i = 0; i < data.clid_len && i < 100; i++)
 	{
 	  p += sprintf(p, "%.2x", buf[i]);
 	  if (i != data.clid_len - 1) 
@@ -740,9 +740,11 @@ static unsigned char *grab_extradata_lua(unsigned char *buf, unsigned char *end,
   if (!buf || (buf == end))
     return NULL;
 
-  for (next = buf; *next != 0; next++)
+  for (next = buf; ; next++)
     if (next == end)
       return NULL;
+    else if (*next == 0)
+      break;
   
   if (next != buf)
     {

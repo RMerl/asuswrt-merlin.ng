@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2026 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -47,24 +47,20 @@ static union all_addr del_addr;
 
 #if defined(HAVE_BSD_NETWORK) && !defined(__APPLE__)
 
-int arp_enumerate(void *parm, callback_t callback)
+static int arp_enumerate_family(int family, void *parm, callback_t callback)
 {
   int mib[6];
   size_t needed;
   char *next;
   struct rt_msghdr *rtm;
-  struct sockaddr_inarp *sin2;
   struct sockaddr_dl *sdl;
-  struct iovec buff;
+  static struct iovec buff = { NULL, 0 };
   int rc;
-
-  buff.iov_base = NULL;
-  buff.iov_len = 0;
 
   mib[0] = CTL_NET;
   mib[1] = PF_ROUTE;
   mib[2] = 0;
-  mib[3] = AF_INET;
+  mib[3] = family;
   mib[4] = NET_RT_FLAGS;
 #ifdef RTF_LLINFO
   mib[5] = RTF_LLINFO;
@@ -72,8 +68,8 @@ int arp_enumerate(void *parm, callback_t callback)
   mib[5] = 0;
 #endif	
   if (sysctl(mib, 6, NULL, &needed, NULL, 0) == -1 || needed == 0)
-    return 0;
-
+    return 1;  /* not a failure: unsupported or empty table */
+  
   while (1) 
     {
       if (!expand_buf(&buff, needed))
@@ -83,19 +79,49 @@ int arp_enumerate(void *parm, callback_t callback)
 	break;
       needed += needed / 8;
     }
+  
   if (rc == -1)
     return 0;
   
   for (next = buff.iov_base ; next < (char *)buff.iov_base + needed; next += rtm->rtm_msglen)
     {
       rtm = (struct rt_msghdr *)next;
-      sin2 = (struct sockaddr_inarp *)(rtm + 1);
-      sdl = (struct sockaddr_dl *)((char *)sin2 + SA_SIZE(sin2));
-      if (!callback.af_unspec(AF_INET, &sin2->sin_addr, LLADDR(sdl), sdl->sdl_alen, parm))
-	return 0;
+      if (family == AF_INET)
+	{
+	  struct sockaddr_inarp *sin2 = (struct sockaddr_inarp *)(rtm + 1);
+	  sdl = (struct sockaddr_dl *)((char *)sin2 + SA_SIZE(sin2));
+          if (!callback.af_unspec(AF_INET, &sin2->sin_addr,
+				  LLADDR(sdl), sdl->sdl_alen, parm))
+	    return 0;
+        }
+      else
+	{
+          struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)(rtm + 1);
+          sdl = (struct sockaddr_dl *)((char *)sin6 + SA_SIZE(sin6));
+          if (IN6_IS_ADDR_LINKLOCAL(&sin6->sin6_addr))
+            {
+              /* PF_ROUTE sysctl returns raw kernel structures with the interface
+		 index embedded in bytes 2-3 of link-local addresses. Extract it
+                 into sin6_scope_id per the KAME API contract before clearing. */
+	      sin6->sin6_scope_id =
+		((uint32_t)(sin6->sin6_addr.s6_addr[2]) << 8) | sin6->sin6_addr.s6_addr[3];
+	      sin6->sin6_addr.s6_addr[2] = 0;
+              sin6->sin6_addr.s6_addr[3] = 0;
+	    }
+          if (!callback.af_unspec(AF_INET6, &sin6->sin6_addr,
+                                  LLADDR(sdl), sdl->sdl_alen, parm))
+            return 0;
+        }
     }
-
+  
   return 1;
+}
+
+static int arp_enumerate(void *parm, callback_t callback)
+{
+  if (!arp_enumerate_family(AF_INET, parm, callback))
+    return 0;
+  return arp_enumerate_family(AF_INET6, parm, callback);
 }
 #endif /* defined(HAVE_BSD_NETWORK) && !defined(__APPLE__) */
 

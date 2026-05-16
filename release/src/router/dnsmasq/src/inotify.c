@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2026 Simon Kelley
  
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ static char *inotify_buffer;
    points to, made absolute if relative.
    If path doesn't exist or is not a symlink, return NULL.
    Return value is malloc'ed */
-static char *my_readlink(char *path)
+static char *my_readlink(int errfd, char *path)
 {
   ssize_t rc, size = 64;
   char *buf;
@@ -59,7 +59,10 @@ static char *my_readlink(char *path)
 	      return NULL;
 	    }
 	  else
-	    die(_("cannot access path %s: %s"), path, EC_MISC);
+	    {
+	      send_event(errfd, EVENT_LINK_ERR, errno, path);
+	      _exit(0);
+	    }
 	}
       else if (rc < size-1)
 	{
@@ -85,15 +88,18 @@ static char *my_readlink(char *path)
     }
 }
 
-void inotify_dnsmasq_init()
+void inotify_dnsmasq_init(int errfd)
 {
   struct resolvc *res;
   inotify_buffer = safe_malloc(INOTIFY_SZ);
   daemon->inotifyfd = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
   
   if (daemon->inotifyfd == -1)
-    die(_("failed to create inotify: %s"), NULL, EC_MISC);
-
+    {
+      send_event(errfd, EVENT_INOTFY_ERR, errno, NULL);
+      _exit(0);
+    }
+  
   if (daemon->port == 0 || option_bool(OPT_NO_RESOLV))
     return;
   
@@ -105,10 +111,13 @@ void inotify_dnsmasq_init()
       strcpy(path, res->name);
 
       /* Follow symlinks until we reach a non-symlink, or a non-existent file. */
-      while ((new_path = my_readlink(path)))
+      while ((new_path = my_readlink(errfd, path)))
 	{
 	  if (links-- == 0)
-	    die(_("too many symlinks following %s"), res->name, EC_MISC);
+	    {
+	      send_event(errfd, EVENT_TMSL_ERR, 0, res->name);
+	      _exit(0);
+	    }
 	  free(path);
 	  path = new_path;
 	}
@@ -124,12 +133,18 @@ void inotify_dnsmasq_init()
 	  *d = '/';
 	  
 	  if (res->wd == -1 && errno == ENOENT)
-	    die(_("directory %s for resolv-file is missing, cannot poll"), res->name, EC_MISC);
+	    {
+	      send_event(errfd, EVENT_RESOLV_ERR, 0, res->name);
+	      _exit(0);
+	    }
 	}	  
 	 
       if (res->wd == -1)
-	die(_("failed to create inotify for %s: %s"), res->name, EC_MISC);
-	
+	{
+	  send_event(errfd, EVENT_IFILE_ERR, errno, res->name);
+	  _exit(0);
+	}
+      	
     }
 }
 

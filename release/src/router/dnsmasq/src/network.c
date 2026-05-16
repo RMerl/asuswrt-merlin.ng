@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2026 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1702,7 +1702,7 @@ int reload_servers(char *fname)
   char *line;
   int gotone = 0;
 
-  /* buff happens to be MAXDNAME long... */
+  /* buff happens to be MAXDNAMESTR long... */
   if (!(f = fopen(fname, "r")))
     {
       my_syslog(LOG_ERR, _("failed to read %s: %s"), fname, strerror(errno));
@@ -1711,7 +1711,7 @@ int reload_servers(char *fname)
    
   mark_servers(SERV_FROM_RESOLV);
     
-  while ((line = fgets(daemon->namebuff, MAXDNAME, f)))
+  while ((line = fgets(daemon->namebuff, MAXDNAMESTR, f)))
     {
       union mysockaddr addr, source_addr;
       char *token = strtok(line, " \t\n\r");

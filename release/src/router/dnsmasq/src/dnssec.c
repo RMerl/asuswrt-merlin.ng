@@ -1,5 +1,5 @@
 /* dnssec.c is Copyright (c) 2012 Giovanni Bajo <rasky@develer.com>
-           and Copyright (c) 2012-2025 Simon Kelley
+           and Copyright (c) 2012-2026 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -144,7 +144,7 @@ static int is_check_date(unsigned long curtime)
    Init state->ip with the RR, and state->end with the end of same.
    Init state->op to NULL.
    Init state->desc to RR descriptor.
-   Init state->buff with a MAXDNAME * 2 buffer.
+   Init state->buff with a MAXDNAMESTR+1 buffer.
    
    After each call which returns 1, state->op points to the next byte of data.
    On returning 0, the end has been reached.
@@ -543,10 +543,14 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
 
 	   *ttl_out = ttl;
 	 }
-       
+
+      /* Don't trust rdlen not to be too small and give us a negative sig_len
+	 It has already been checked that it doesn't run us off the end
+	 of the packet. */
+      if ((sig_len = rdlen - (p - psav)) <= 0)
+	return STAT_BOGUS;
+
       sig = p;
-      sig_len = rdlen - (p - psav);
-              
       nsigttl = htonl(orig_ttl);
       
       hash->update(ctx, 18, psav);
@@ -656,7 +660,7 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
 	    }
 	}
      
-      hash->digest(ctx, hash->digest_size, digest);
+      nettle_digest_wrapper(hash, ctx, hash->digest_size, digest);
       
       /* namebuff used for workspace above, restore to leave unchanged on exit */
       p = (unsigned char*)(rrset[0]);
@@ -836,7 +840,7 @@ int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, ch
 		 rather then O(keys x DSs) */
 	      hash->update(ctx, (unsigned int)wire_len, (unsigned char *)name);
 	      hash->update(ctx, (unsigned int)rdlen, psave);
-	      hash->digest(ctx, hash->digest_size, digest);
+	      nettle_digest_wrapper(hash, ctx, hash->digest_size, digest);
 	      
 	      from_wire(name);
 
@@ -950,10 +954,7 @@ int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, ch
 			   
 			   a.log.keytag = keytag;
 			   a.log.algo = algo;
-			   if (algo_digest_name(algo))
-			     log_query(F_NOEXTRA | F_KEYTAG | F_UPSTREAM, name, &a, "DNSKEY keytag %hu, algo %hu", 0);
-			   else
-			     log_query(F_NOEXTRA | F_KEYTAG | F_UPSTREAM, name, &a, "DNSKEY keytag %hu, algo %hu (not supported)", 0);
+			   log_query(F_NOEXTRA | F_KEYTAG | F_UPSTREAM, name, &a, "DNSKEY keytag %hu, algo %hu", !algo_digest_name(algo));
 			 }
 		     }
 				  
@@ -1027,21 +1028,21 @@ int dnssec_validate_ds(time_t now, struct dns_header *header, size_t plen, char 
 		  (flags = in_arpa_name_2_addr(name, &a)) &&
 		  ((flags == F_IPV6 && private_net6(&a.addr6, 0)) || (flags == F_IPV4 && private_net(a.addr4, 0))))
 		{
-		  my_syslog(LOG_INFO, _("Insecure reply received for DS %s, assuming that's OK for a RFC-1918 address."), name);
+		  my_syslog(LOG_INFO, _("insecure reply received for DS %s, assuming that's OK for a RFC-1918 address"), name);
 		  neganswer = 1;
 		  nons = 0; /* If we're faking a DS, fake one with an NS. */
 		  neg_ttl = DNSSEC_ASSUMED_DS_TTL;
 		}
 	      else if (lookup_domain(name, F_DOMAINSRV, NULL, NULL))
 		{
-		  my_syslog(LOG_INFO, _("Insecure reply received for DS %s, assuming non-DNSSEC domain-specific server."), name);
+		  my_syslog(LOG_INFO, _("insecure reply received for DS %s, assuming non-DNSSEC domain-specific server"), name);
 		  neganswer = 1;
 		  nons = 0; /* If we're faking a DS, fake one with an NS. */
 		  neg_ttl = DNSSEC_ASSUMED_DS_TTL;
 		}
 	      else
 		{
-		  my_syslog(LOG_WARNING, _("Insecure DS reply received for %s, check domain configuration and upstream DNS server DNSSEC support"), name);
+		  my_syslog(LOG_WARNING, _("insecure DS reply received for %s, check domain configuration and upstream DNS server DNSSEC support"), name);
 		  log_query(F_NOEXTRA | F_UPSTREAM, name, NULL, "BOGUS DS - not secure", 0);
 		  return STAT_BOGUS | DNSSEC_FAIL_INDET; 
 		}
@@ -1101,7 +1102,7 @@ int dnssec_validate_ds(time_t now, struct dns_header *header, size_t plen, char 
 		  a.log.keytag = keytag;
 		  a.log.algo = algo;
 		  a.log.digest = digest;
-		  log_query(F_NOEXTRA | F_KEYTAG | F_UPSTREAM, name, &a, "DS for keytag %hu, algo %hu, digest %hu (not supported)", 0);
+		  log_query(F_NOEXTRA | F_KEYTAG | F_UPSTREAM, name, &a, "DS for keytag %hu, algo %hu, digest %hu", 1);
 		  neg_ttl = ttl;
 		} 
 	      else if ((key = blockdata_alloc((char*)p, rdlen - 4)))
@@ -1141,43 +1142,46 @@ int dnssec_validate_ds(time_t now, struct dns_header *header, size_t plen, char 
     }
   
   flags = F_FORWARD | F_DS | F_NEG | F_DNSSECOK;
-  
+
   if (neganswer)
     {
       if (RCODE(header) == NXDOMAIN)
 	flags |= F_NXDOMAIN;
       
-      /* We only cache validated DS records, DNSSECOK flag hijacked 
-	 to store presence/absence of NS. */
       if (nons)
 	{
 	  if (lookup_domain(name, F_DOMAINSRV, NULL, NULL))
 	    {
-	      my_syslog(LOG_WARNING, _("Negative DS reply without NS record received for %s, assuming non-DNSSEC domain-specific server."), name);
+	      my_syslog(LOG_WARNING, _("negative DS reply without NS record received for %s, assuming non-DNSSEC domain-specific server"), name);
 	      nons = 0;
+	      neg_ttl = DNSSEC_ASSUMED_DS_TTL;
 	    }
 	  else
 	    /* We only cache validated DS records, DNSSECOK flag hijacked 
 	       to store presence/absence of NS. */
 	    flags &= ~F_DNSSECOK;
 	}
+      
+      log_query(F_NOEXTRA | F_UPSTREAM, name, NULL,
+		servfail ? "SERVFAIL" : (nons ? "no DS/cut" : "no DS"), 0);
     }
-
+  
+  return cache_neg_ds(name, flags, class, now, neg_ttl);
+  
+}
+       
+int cache_neg_ds(char *name, int flags, int class, time_t now, int ttl)
+{
   cache_start_insert();
   
   /* Use TTL from NSEC for negative cache entries */
-  if (!cache_insert(name, NULL, class, now, neg_ttl, flags))
+  if (!cache_insert(name, NULL, class, now, ttl, flags))
     return STAT_ABANDONED;
   
   cache_end_insert();  
   
-  if (neganswer)
-    log_query(F_NOEXTRA | F_UPSTREAM, name, NULL,
-	      servfail ? "SERVFAIL" : (nons ? "no DS/cut" : "no DS"), 0);
-      
   return STAT_OK;
 }
-
 
 /* 4034 6.1 */
 static int hostname_cmp(const char *a, const char *b)
@@ -1243,15 +1247,23 @@ static int hostname_cmp(const char *a, const char *b)
     }
 }
 
+static int check_type_bitmap(unsigned char *p, int type)
+{
+  int offset = (type & 0xff) >> 3;
+  
+  if (p[0] == type >> 8 && p[1] > offset && (p[offset + 2] & (0x80 >> (type & 0x07))))
+    return 1;
+
+  return 0;
+}
+  
 /* returns 0 on success, or DNSSEC_FAIL_* value on failure. */
 static int prove_non_existence_nsec(struct dns_header *header, size_t plen, unsigned char **nsecs, unsigned char **labels, int nsec_count,
 				    char *workspace1_in, char *workspace2, char *name, int type, int *nons)
 {
   int i, rc, rdlen;
   unsigned char *p, *psave;
-  int offset = (type & 0xff) >> 3;
-  int mask = 0x80 >> (type & 0x07);
-
+  
   if (nons)
     *nons = 1;
   
@@ -1295,17 +1307,6 @@ static int prove_non_existence_nsec(struct dns_header *header, size_t plen, unsi
       /* rdlen is now length of type map, and p points to it 
 	 packet checked to be as long as rdlen implies in prove_non_existence() */
       
-      /* check that the first typemap is complete. */
-      if (rdlen < 2 || rdlen < p[1] + 2)
-	return DNSSEC_FAIL_BADPACKET;
-
-      /* RFC 6672 5.3.4.1. */
-#define DNAME_OFFSET (T_DNAME >> 3)
-#define DNAME_MASK (0x80 >> (T_DNAME & 0x07))
-      if (p[0] == 0 && (p[1] >= DNAME_OFFSET + 1) && (p[2 + DNAME_OFFSET] & DNAME_MASK) != 0 &&
-	  hostname_issubdomain(name, workspace1) == 1)
-	return DNSSEC_FAIL_NONSEC;
-      
       rc = hostname_cmp(workspace1, name);
       
       if (rc == 0)
@@ -1314,42 +1315,37 @@ static int prove_non_existence_nsec(struct dns_header *header, size_t plen, unsi
 	  if (type == T_NSEC || type == T_RRSIG)
 	    return 0;
 
-	  /* NSEC with the same name as the RR we're testing, check
-	     that the type in question doesn't appear in the type map */
-	  if (p[0] == 0 && p[1] >= 1)
-	    {
-	      /* If we can prove that there's no NS record, return that information. */
-	      if (nons && (p[2] & (0x80 >> T_NS)) != 0)
-		*nons = 0;
-	    
-	      /* A CNAME answer would also be valid, so if there's a CNAME is should 
-		 have been returned. */
-	      if ((p[2] & (0x80 >> T_CNAME)) != 0)
-		return DNSSEC_FAIL_NONSEC;
-	      
-	      /* If the SOA bit is set for a DS record, then we have the
-		 DS from the wrong side of the delegation. For the root DS, 
-		 this is expected. */
-	      if (name_labels != 0 && type == T_DS && (p[2] & (0x80 >> T_SOA)) != 0)
-		return DNSSEC_FAIL_NONSEC;
-	    }
-	  
 	  while (rdlen > 0)
 	    {
 	      if (rdlen < 2 || rdlen < p[1] + 2)
 		return DNSSEC_FAIL_BADPACKET;
 	      
-	      if (p[0] == type >> 8)
-		{
-		  /* Does the NSEC say our type exists? */
-		  if (offset < p[1] && (p[offset+2] & mask) != 0)
-		    return DNSSEC_FAIL_NONSEC;
-		  
-		  break; /* finished checking */
-		}
+	      /* If we can prove that there's no NS record, return that information. */
+	      if (nons && check_type_bitmap(p, T_NS))
+		*nons = 0;
 	      
-	      rdlen -= p[1];
-	      p +=  p[1];
+	      /* NSEC with the same name as the RR we're testing, check
+		 that the type in question doesn't appear in the type map */
+	      if (check_type_bitmap(p, type))
+		return DNSSEC_FAIL_NONSEC;
+
+	      /* A CNAME answer would also be valid, so if there's a CNAME it should 
+		 have been returned. */
+	      if (check_type_bitmap(p, T_CNAME))
+		return DNSSEC_FAIL_NONSEC;
+		  
+	      /* If the SOA bit is set for a DS record, then we have the
+		 DS from the wrong side of the delegation. For the root DS, 
+		 this is expected. */
+	      if (name_labels != 0 && type == T_DS && check_type_bitmap(p, T_SOA))
+		return DNSSEC_FAIL_NONSEC;
+	      
+	      /* RFC 6672 5.3.4.1. */
+	      if (check_type_bitmap(p, T_DNAME) && hostname_issubdomain(name, workspace1) == 1)
+		return DNSSEC_FAIL_NONSEC;
+	      
+	      rdlen -= p[1] + 2;
+	      p +=  p[1] + 2;
 	    }
 	  
 	  return 0;
@@ -1385,13 +1381,13 @@ static int hash_name(char *in, unsigned char **out, struct nettle_hash const *ha
  
   hash->update(ctx, to_wire(in), (unsigned char *)in);
   hash->update(ctx, salt_len, salt);
-  hash->digest(ctx, hash->digest_size, digest);
+  nettle_digest_wrapper(hash, ctx, hash->digest_size, digest);
 
   for(i = 0; i < iterations; i++)
     {
       hash->update(ctx, hash->digest_size, digest);
       hash->update(ctx, salt_len, salt);
-      hash->digest(ctx, hash->digest_size, digest);
+      nettle_digest_wrapper(hash, ctx, hash->digest_size, digest);
     }
    
   from_wire(in);
@@ -1423,7 +1419,10 @@ static int base32_decode(char *in, unsigned char *out)
 	    oc |= 1;
 	  mask = mask >> 1;
 	  if (((++on) & 7) == 0)
-	    *p++ = oc;
+	    {
+	      *p++ = oc;
+	      oc = 0;
+	    }
 	  oc = oc << 1;
 	}
     }
@@ -1434,6 +1433,7 @@ static int base32_decode(char *in, unsigned char *out)
   return p - out;
 }
 
+/* return 1 if we can prove record _doesn't_ exist */
 static int check_nsec3_coverage(struct dns_header *header, size_t plen, int digest_len, unsigned char *digest, int type,
 				char *workspace1, char *workspace2, unsigned char **nsecs, int nsec_count, int *nons, int name_labels)
 {
@@ -1470,50 +1470,35 @@ static int check_nsec3_coverage(struct dns_header *header, size_t plen, int dige
 		   we just need to check the type map. p points to the RR data for the record.
 		   Note we have packet length up to rdlen bytes checked. */
 		
-		int offset = (type & 0xff) >> 3;
-		int mask = 0x80 >> (type & 0x07);
-		
 		p += hash_len; /* skip next-domain hash */
 		rdlen -= p - psave;
-
-		/* check that the first typemap is complete. */
-		if (rdlen < 2 || rdlen < p[1] + 2)
-		  return DNSSEC_FAIL_BADPACKET;
 		
-		if (p[0] == 0 && p[1] >= 1)
-		  {
-		    /* If we can prove that there's no NS record, return that information. */
-		    if (nons && (p[2] & (0x80 >> T_NS)) != 0)
-		      *nons = 0;
-		    
-		    /* A CNAME answer would also be valid, so if there's a CNAME is should 
-		       have been returned. */
-		    if ((p[2] & (0x80 >> T_CNAME)) != 0)
-		      return 0;
-		    
-		    /* If the SOA bit is set for a DS record, then we have the
-		       DS from the wrong side of the delegation. For the root DS, 
-		       this is expected.  */
-		    if (name_labels != 0 && type == T_DS && (p[2] & (0x80 >> T_SOA)) != 0)
-		      return 0;
-		  }
-
 		while (rdlen > 0)
 		  {
 		    if (rdlen < 2 || rdlen < p[1] + 2)
-		      return DNSSEC_FAIL_BADPACKET;
+		      return 0;
+	      
+		    /* If we can prove that there's no NS record, return that information. */
+		    if (nons && check_type_bitmap(p, T_NS))
+		      *nons = 0;
 
-		    if (p[0] == type >> 8)
-		      {
-			/* Does the NSEC3 say our type exists? */
-			if (offset < p[1] && (p[offset+2] & mask) != 0)
-			  return 0;
-			
-			break; /* finished checking */
-		      }
-		    
-		    rdlen -= p[1];
-		    p +=  p[1];
+		    /* Does the NSEC3 say our type exists? */
+		    if (check_type_bitmap(p, type))
+		      return 0;
+
+		    /* A CNAME answer would also be valid, so if there's a CNAME it should 
+		       have been returned. */
+		    if (check_type_bitmap(p, T_CNAME))
+		      return 0;
+		  
+		    /* If the SOA bit is set for a DS record, then we have the
+		       DS from the wrong side of the delegation. For the root DS, 
+		       this is expected. */
+		    if (name_labels != 0 && type == T_DS && check_type_bitmap(p, T_SOA))
+		      return 0;
+	      
+		    rdlen -= p[1] + 2;
+		    p +=  p[1] + 2;
 		  }
 		
 		return 1;
@@ -1553,7 +1538,7 @@ static int prove_non_existence_nsec3(struct dns_header *header, size_t plen, uns
 {
   unsigned char *salt, *p, *digest;
   int digest_len, i, iterations, salt_len, base32_len, algo = 0;
-  struct nettle_hash const *hash;
+  struct nettle_hash const *hash = NULL;
   char *closest_encloser, *next_closest, *wildcard;
   
   if (nons)

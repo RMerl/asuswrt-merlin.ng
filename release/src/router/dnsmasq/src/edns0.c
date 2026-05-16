@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2026 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -103,7 +103,7 @@ unsigned char *find_pseudoheader(struct dns_header *header, size_t plen, size_t 
 size_t add_pseudoheader(struct dns_header *header, size_t plen, unsigned char *limit, 
 			int optno, unsigned char *opt, size_t optlen, int set_do, int replace)
 { 
-  unsigned char *lenp, *datap, *p, *udp_len, *buff = NULL;
+  unsigned char *lenp = NULL, *datap = NULL, *p, *udp_len, *buff = NULL;
   int rdlen = 0, is_sign, is_last;
   unsigned short flags = set_do ? 0x8000 : 0, rcode = 0;
 
@@ -469,6 +469,8 @@ int check_source(struct dns_header *header, size_t plen, unsigned char *pseudohe
      {
        GETSHORT(code, p);
        GETSHORT(len, p);
+       if (i + 4 + len > rdlen)
+	 break; /* malformed: option body extends beyond RDATA */
        if (code == EDNS0_OPTION_CLIENT_SUBNET)
 	 {
 	   if (peer)

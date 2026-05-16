@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2026 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -85,7 +85,8 @@ void dump_init(void)
       /* count existing records */
       while (read_write(daemon->dumpfd, (void *)&pcap_header, sizeof(pcap_header), RW_READ))
 	{
-	  lseek(daemon->dumpfd, pcap_header.incl_len, SEEK_CUR);
+	  if (lseek(daemon->dumpfd, pcap_header.incl_len, SEEK_CUR) == (off_t)-1)
+	    break;
 	  packet_count++;
 	}
     }

@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2026 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ static int read_leases(time_t now, FILE *leasestream)
 
      Check various buffers are big enough for the code below */
 
-#if (DHCP_BUFF_SZ < 255) || (MAXDNAME < 64) || (PACKETSZ+MAXDNAME+RRFIXEDSZ  < 764)
+#if (DHCP_BUFF_SZ < 255) || (MAXDNAMESTR < 64) || (PACKETSZ+MAXDNAME+RRFIXEDSZ  < 764)
 # error Buffer size breakage in leasefile parsing.
 #endif
 
@@ -73,7 +73,9 @@ static int read_leases(time_t now, FILE *leasestream)
 		if (lease)
 		  {
 		    opt_len = parse_hex(daemon->packet, (unsigned char *)daemon->packet, 255, NULL, NULL);
-		    
+		    if (opt_len < 0)
+		      continue;
+
 		    if (strcmp(daemon->dhcp_buff3, "vendorclass") == 0)
 		      lease_set_vendorclass(lease, (unsigned char *)daemon->packet, opt_len);
 		    else if (strcmp(daemon->dhcp_buff3, "agent-info") == 0)
@@ -99,6 +101,8 @@ static int read_leases(time_t now, FILE *leasestream)
 	    
 	    
 	    hw_len = parse_hex(daemon->dhcp_buff2, (unsigned char *)daemon->dhcp_buff2, DHCP_CHADDR_MAX, NULL, &hw_type);
+	    if (hw_len < 0)
+	      hw_len = 0;
 	    /* For backwards compatibility, no explicit MAC address type means ether. */
 	    if (hw_type == 0 && hw_len != 0)
 	      hw_type = ARPHRD_ETHER; 
@@ -131,7 +135,11 @@ static int read_leases(time_t now, FILE *leasestream)
 	  die (_("too many stored leases"), NULL, EC_MISC);
 
 	if (strcmp(daemon->packet, "*") != 0)
-	  clid_len = parse_hex(daemon->packet, (unsigned char *)daemon->packet, 255, NULL, NULL);
+	  {
+	    clid_len = parse_hex(daemon->packet, (unsigned char *)daemon->packet, 255, NULL, NULL);
+	    if (clid_len < 0)
+	      clid_len = 0;
+	  }
 	
 	lease_set_hwaddr(lease, (unsigned char *)daemon->dhcp_buff2, (unsigned char *)daemon->packet, 
 			 hw_len, hw_type, clid_len, now, 0);

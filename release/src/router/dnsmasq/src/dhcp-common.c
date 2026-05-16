@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2026 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -278,9 +278,9 @@ void log_tags(struct dhcp_netid *netid, u32 xid)
 	  
 	  if (!n)
 	    {
-	      strncat (s, netid->net, (MAXDNAME-1) - strlen(s));
+	      strncat (s, netid->net, MAXDNAMESTR - strlen(s));
 	      if (netid->next)
-		strncat (s, ", ", (MAXDNAME-1) - strlen(s));
+		strncat (s, ", ", MAXDNAMESTR - strlen(s));
 	    }
 	}
       my_syslog(MS_DHCP | LOG_INFO, _("%u tags: %s"), xid, s);
@@ -882,7 +882,7 @@ char *option_string(int prot, unsigned int opt, unsigned char *val, int opt_len,
 			 buf[j++] = c;
 		     }
 		    i = l;
-		    if (val[i] != 0 && j < buf_len)
+		    if (i < opt_len && val[i] != 0 && j < buf_len)
 		      buf[j++] = '.';
 		  }
 	      }
@@ -892,24 +892,23 @@ char *option_string(int prot, unsigned int opt, unsigned char *val, int opt_len,
 		unsigned char *p;
 
 		i = 0, j = 0;
-		while (1)
+		while (i + 2 <= opt_len)
 		  {
 		    p = &val[i];
 		    GETSHORT(len, p);
+		    if (i + 2 + len > opt_len)
+		      break; /* malformed: body extends beyond option */
 		    for (k = 0; k < len && j < buf_len; k++)
 		      {
 		       char c = *p++;
 		       if (isprint((unsigned char)c))
 			 buf[j++] = c;
 		     }
-		    i += len +2;
-		    if (i >= opt_len)
-		      break;
-
-		    if (j < buf_len)
+		    i += len + 2;
+		    if (i < opt_len && j < buf_len)
 		      buf[j++] = ',';
 		  }
-	      }	      
+	      }
 #endif
 	    else if ((ot[o].size & (OT_DEC | OT_TIME)) && opt_len != 0)
 	      {

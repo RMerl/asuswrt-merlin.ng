@@ -24,6 +24,26 @@ version 2.93
 	accepts a signed CNAME reply to a DS query as proof that no DS
 	exists at the domain. This fixes the DS/zone break detection logic.
 
+	Fix regression in 2.92 release which broke DHCPv6 when a DHCP
+	relay is in use. Many thanks to Jørgen Søvik for help
+	finding this bug.
+	
+	Modify the inotify implementation so that inotify watches are
+	only created after dnsmasq has changed permissions and userid.
+	This means that the permissions used when creating the watches
+	are the same as used for accessing watched files, which makes
+	more sense and avoids odd and confusing error conditions.
+	
+	Rework storage allocation for domain names.  This fixes a security
+	bug that can cause heap-overwrite with long domain names.
+	CVE-2026-2291 covers this and a simple patch for existing
+	releases was released with the CVE. This patch reworks the whole
+	code base to make it cleaner and less liable to future
+	confusions. Either upgrading to 2.93 or applying the patch
+	to earlier versions is sufficient to close the security hole.
+	Thanks to Andrew S. Fasano for spotting this problem in the
+	first place.
+	
 	
 version 2.92
         Redesign the interaction between DNSSEC validation and per-domain

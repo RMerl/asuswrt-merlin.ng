@@ -25060,12 +25060,7 @@ def_boot_reinit:
 #if defined(RTCONFIG_EXTPHY_BCM84880) && defined(BCM4908)
 	config_ext_wan_port();
 #endif
-/* Kludge - for WAN port incorrectly enabling EEE with some devices like Nokia ONTs */
-	int initial_val = nvram_get_int("ethctl_wan");
-	nvram_set_int("ethctl_wan", initial_val | 32);	// Restart interface during init
 	init_switch(); // for system dependent part
-	nvram_set_int("ethctl_wan", initial_val);
-/* Kludge */
 	upgrade_bootloader_v2();
 
 #if defined(RTCONFIG_SOC_IPQ40XX)

@@ -1419,18 +1419,6 @@ start_wan_if(int unit)
 	}
 #endif
 
-/* Kludge - just restarting at init time not always sufficient, so re-disable EEE */
-#ifdef RTCONFIG_HND_ROUTER_BE_4916
-	nvram_set("freeze_duck", "3");
-	char word[64], *next = NULL;
-	foreach(word, nvram_safe_get("wan_ifnames"), next) {
-		if(*word != '\0' && !strcmp(word, "eth0") || !strcmp(word, "eth5") || !strcmp(word, "eth6")){
-			eval("ethctl", word, "eee", "off");
-		}
-	}
-#endif
-/* Kludge */
-
 #if defined(BCM4912) && !defined(RTAX86U_PRO)
 	switch (get_wan_proto(prefix)) {
 	case WAN_V6PLUS:

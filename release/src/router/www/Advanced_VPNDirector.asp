@@ -22,20 +22,19 @@
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="form.js"></script>
 <style type="text/css">
-.contentM_qis{
+#rule_setting {
 	position:absolute;
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
+	border-radius: 6px;
 	z-index: 200;
 	display: none;
-	margin-left: 35%;
-	top: 280px;
-	width: 600px;
+	margin-left: auto;
+	margin-right: auto;
+	width: 600px !important;
+	height: auto;
+	max-width: 600px;
 	box-shadow: 1px 5px 10px #000;
 	font-size: 12px;
 	color: #FFFFFF;
-	padding: 20px;
 }
 .addRuleFrame {
 	margin-top: 5px;
@@ -48,7 +47,6 @@
 	line-height: 35px;
 	font-weight: bolder;
 	font-family: Arial, Verdana, Arial, Helvetica, sans-serif;
-	color: #FFFFFF;
 	font-size: 14px;
 }
 
@@ -552,6 +550,13 @@ function editRule(_mode, _this) {
 	$("#remoteIP_x").val("");
 
 	$("#saveRule").unbind("click");
+
+	if (isSupport("UI4")){
+		document.getElementById("rule_setting").className = "clientlist_viewlist";
+	} else {
+		document.getElementById("rule_setting").className = "pop_div_bg";
+	}
+
 	$("#rule_setting").fadeIn(300);
 	adjust_panel_block_top("rule_setting", 100);
 	cal_panel_block("rule_setting", 0.25);
@@ -702,55 +707,60 @@ function applyRule() {
 		<td width="10" align="center" valign="top">&nbsp;</td>
 	</tr>
 </table>
-<div id="rule_setting"  class="contentM_qis pop_div_bg">
-	<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
-		<thead>
-			<tr>
-				<td colspan="2"><#vpn_openvpn_CustomConf#></td>
-			</tr>
-		</thead>
-		<tr>
-			<th>Interface</th>
-			<td>
-				<select id="iface_x" class="input_option">
-				</select>
-			</td>
-		</tr>
-		<tr>
-			<th>Enable</th>
-			<td>
-				<input id="enable_x" type="checkbox" id="enable_x" checked="1"/>
-			</td>
-		</tr>
-			<th>Description</th>
-			<td>
-				<input type="text" maxlength="32" class="input_25_table" id="desc_x" onKeyPress="return validator.isString(this, event);" autocomplete="off" autocorrect="off" autocapitalize="off"/>
-				<span><#feedback_optional#></span>
-			</td>
-		</tr>
-		<tr>
-			<th>Local IP</th>
-			<td>
-				<input type="text" maxlength="18" class="input_18_table" id="localIP_x" align="left" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" style="float:left;" onClick="hideClients_Block();" autocomplete="off" autocorrect="off" autocapitalize="off">
-				<img id="pull_arrow" class="pull_arrow" height="16px;" src="/images/unfold_more.svg" align="right" onclick="pullLANIPList(this);" title="<#select_IP#>">
-				<div id="ClientList_Block" class="clientlist_dropdown" style="margin-left:2px;margin-top:27px;width:238px;"></div>
-				<span style="margin-left:3px; line-height:25px;"><#feedback_optional#></span>
-			</td>
-		</tr>
-		<tr>
-			<th>Remote IP</th>
-			<td>
-				<input type="text" maxlength="18" class="input_18_table" id="remoteIP_x" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off"/>
-				<span><#feedback_optional#></span>
-			</td>
-		</tr>
-	</table>
-	<div class="hint-color" style="margin:10px 0px;">
-		* IP addresses can be entered in CIDR format (for example, 192.168.1.0/24).
-	</div>
-	<div style="margin-top:15px; justify-content: center; display:flex; flex-direction:row; gap:0.5em;">
-		<input class="button_gen" type="button" onclick="cancelRule();" value="<#CTL_Cancel#>">
-		<input class="button_gen" type="button" id="saveRule" value="<#CTL_ok#>">
+<div id="rule_setting" class="pop_div_bg">
+	<div class="client_list">
+		<div style="padding:15px;">
+			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
+				<thead>
+					<tr>
+						<td colspan="2">Enter rule parameters</td>
+					</tr>
+				</thead>
+				<tr>
+					<th>Interface</th>
+					<td>
+						<select id="iface_x" class="input_option">
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<th>Enable</th>
+					<td>
+						<input id="enable_x" type="checkbox" id="enable_x" checked="1"/>
+					</td>
+				</tr>
+				<tr>
+					<th>Description</th>
+					<td>
+						<input type="text" maxlength="32" class="input_25_table" id="desc_x" onKeyPress="return validator.isString(this, event);" autocomplete="off" autocorrect="off" autocapitalize="off"/>
+						<span><#feedback_optional#></span>
+					</td>
+				</tr>
+				<tr>
+					<th>Local IP</th>
+					<td>
+						<input type="text" maxlength="18" class="input_18_table" id="localIP_x" align="left" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" style="float:left;" onClick="hideClients_Block();" autocomplete="off" autocorrect="off" autocapitalize="off">
+						<img id="pull_arrow" class="pull_arrow" height="16px;" src="/images/unfold_more.svg" align="right" onclick="pullLANIPList(this);" title="<#select_IP#>">
+						<div id="ClientList_Block" class="clientlist_dropdown" style="margin-left:2px;margin-top:27px;width:238px;"></div>
+						<span style="margin-left:3px; line-height:25px;"><#feedback_optional#></span>
+					</td>
+				</tr>
+				<tr>
+					<th>Remote IP</th>
+					<td>
+						<input type="text" maxlength="18" class="input_18_table" id="remoteIP_x" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off"/>
+						<span><#feedback_optional#></span>
+					</td>
+				</tr>
+			</table>
+			<div class="amng-highlight-color" style="margin:10px 0px;">
+				* IP addresses can be entered in CIDR format (for example, 192.168.1.0/24).
+			</div>
+			<div style="margin-top:15px; justify-content: center; display:flex; flex-direction:row; gap:0.5em;">
+				<input class="button_gen" type="button" onclick="cancelRule();" value="<#CTL_Cancel#>">
+				<input class="button_gen" type="button" id="saveRule" value="<#CTL_ok#>">
+			</div>
+		</div>
 	</div>
 </div>
 <div id="footer"></div>

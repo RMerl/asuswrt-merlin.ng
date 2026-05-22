@@ -137,6 +137,11 @@
         //check default username/password
         let defaultNamePasswd = httpApi.hookGet("check_acorpw") === "1" ? true : false;
 
+        const useUI4Redirect = (typeof isSupport === "function") && isSupport("UI4");
+        const scanLink = (asp, label) => useUI4Redirect
+            ? `<a href="javascript:void(0)" onclick="pageRedirect('settings','${asp}'); return false;">${label}</a>`
+            : `<a href='${asp}' target='_blank'>${label}</a>`;
+
         // password strength of wireless
         let score = httpApi.hookGet("check_passwd_strength-wl_key"),
             level = Math.floor(score / 20);
@@ -199,7 +204,7 @@
                                 ${defaultNamePasswd ? "button-danger" : "button-safe"}">
                                 ${
             defaultNamePasswd
-                ? "<a href='Advanced_System_Content.asp' target='_blank'><#checkbox_No#></a>"
+                ? scanLink("Advanced_System_Content.asp", "<#checkbox_No#>")
                 : "<#checkbox_Yes#>"
         }
                             </button>
@@ -240,7 +245,7 @@
                                 ${
             wlEncryptEnough
                 ? " <#PASS_score3#>"
-                : "<a href='Advanced_Wireless_Content.asp' target='_blank'><#PASS_score1#></a>"
+                : scanLink("Advanced_Wireless_Content.asp", "<#PASS_score1#>")
         }
                             </button>
                         </div>
@@ -256,7 +261,7 @@
                                 ${!wpsEnable ? "button-safe" : "button-warning"}">
 
                                 ${
-            !wpsEnable ? "<#checkbox_Yes#>" : "<a href='Advanced_WWPS_Content.asp' target='_blank'><#checkbox_No#></a>"
+            !wpsEnable ? "<#checkbox_Yes#>" : scanLink("Advanced_WWPS_Content.asp", "<#checkbox_No#>")
         }
                             </button>
                         </div>
@@ -271,7 +276,7 @@
                                 class="btn btn-sm mx-3 router-scan-button
                                 ${uPnpHasRisk ? "button-warning" : "button-safe"}">
                                 ${
-            uPnpHasRisk ? "<a href='" + redirectPage + "' target='_blank'><#checkbox_No#></a>" : "<#checkbox_Yes#>"
+            uPnpHasRisk ? scanLink(redirectPage, "<#checkbox_No#>") : "<#checkbox_Yes#>"
         }
                             </button>
                         </div>
@@ -287,7 +292,7 @@
                                 ${dmzEnable ? "button-warning" : "button-safe"}">
                                 ${
             dmzEnable
-                ? "<a href='Advanced_Exposed_Content.asp' target='_blank'><#checkbox_No#></a>"
+                ? scanLink("Advanced_Exposed_Content.asp", "<#checkbox_No#>")
                 : "<#checkbox_Yes#>"
         }
                             </button>
@@ -304,7 +309,7 @@
                                 ${portTriggerEnable ? "button-warning" : "button-safe"}">
                                 ${
             portTriggerEnable
-                ? "<a href='Advanced_PortTrigger_Content.asp' target='_blank'><#checkbox_No#></a>"
+                ? scanLink("Advanced_PortTrigger_Content.asp", "<#checkbox_No#>")
                 : "<#checkbox_Yes#>"
         }
                             </button>
@@ -321,7 +326,7 @@
                                 ${portForwardingEnable ? "button-warning" : "button-safe"}">
                                 ${
             portForwardingEnable
-                ? "<a href='Advanced_VirtualServer_Content.asp' target='_blank'><#checkbox_No#></a>"
+                ? scanLink("Advanced_VirtualServer_Content.asp", "<#checkbox_No#>")
                 : "<#checkbox_Yes#>"
         }
                             </button>
@@ -338,7 +343,7 @@
                                 ${accessFromWAN ? "button-warning" : "button-safe"}">
                                 ${
             accessFromWAN
-                ? "<a href='Advanced_System_Content.asp' target='_blank'><#checkbox_No#></a>"
+                ? scanLink("Advanced_System_Content.asp", "<#checkbox_No#>")
                 : "<#checkbox_Yes#>"
         }
                             </button>
@@ -355,7 +360,7 @@
                                 ${pingFromWAN ? "button-warning" : "button-safe"}">
                                 ${
             pingFromWAN
-                ? "<a href='Advanced_BasicFirewall_Content.asp' target='_blank'><#checkbox_No#></a>"
+                ? scanLink("Advanced_BasicFirewall_Content.asp", "<#checkbox_No#>")
                 : "<#checkbox_Yes#>"
         }
                             </button>
@@ -370,7 +375,7 @@
                                 type="button"
                                 class="btn btn-sm mx-3 router-scan-button
                                 ${ftpAnonymous ? "button-warning" : "button-safe"}">
-                                ${ftpAnonymous ? "<a href='Advanced_AiDisk_ftp.asp' target='_blank'><#checkbox_No#></a>" : "<#checkbox_Yes#>"}
+                                ${ftpAnonymous ? scanLink("Advanced_AiDisk_ftp.asp", "<#checkbox_No#>") : "<#checkbox_Yes#>"}
                             </button>
                         </div>
                     </div>
@@ -385,7 +390,7 @@
                                 ${sambaAnonymous ? "button-warning" : "button-safe"}">
                                 ${
             sambaAnonymous
-                ? "<a href='Advanced_AiDisk_samba.asp' target='_blank'><#checkbox_No#></a>"
+                ? scanLink("Advanced_AiDisk_samba.asp", "<#checkbox_No#>")
                 : "<#checkbox_Yes#>"
         }
                             </button>

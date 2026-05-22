@@ -108,7 +108,6 @@
 
 #accountMask{
 	/*background-image:url(/images/popup_bg.gif);*/
-	z-index:10;
 	position: absolute;
 	margin-left:1px;
 	width:182px;

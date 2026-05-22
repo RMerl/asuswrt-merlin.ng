@@ -147,6 +147,19 @@
 			setupWrapper();
 			setTimeout(function(){
 				iframe.find("body").hide().css("visibility", "visible").fadeIn();
+                iframe.find("iframe").each(function(){
+					var revealNested = function(frame){
+						try{
+							var doc = frame.contentDocument;
+							if(!doc || !doc.body) return;
+							doc.body.style.visibility = "visible";
+							$(doc).find("iframe").each(function(){ revealNested(this); });
+						}catch(e){}
+					};
+					var self = this;
+					revealNested(self);
+					$(self).on("load", function(){ revealNested(self); });
+				});
 			}, 1);
 
 			iframe.find("body").addClass("scaleBody");

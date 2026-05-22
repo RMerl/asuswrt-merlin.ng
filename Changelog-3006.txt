@@ -32,6 +32,9 @@ Asuswrt-Merlin 3006.xxx Changelog
            disabling ETag support for all .asp files.
   - FIXED: Cannot disable wifi 6 mode on Wifi 6 models (upstream
            issue)
+  - FIXED: Multiple minor CVE for OpenSSL 1.1: CVE-2026-28387,
+           CVE-2026-28388, CVE-2026-28389, and CVE-2026-28390
+           (backports by RSDNTWK)
   - REMOVED: Support for secret static key authentication
              from both OpenVPN clients and servers.  Deprecated
              since 2.7.0, and considered outdated in terms of

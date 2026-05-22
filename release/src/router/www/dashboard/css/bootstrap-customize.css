@@ -487,6 +487,11 @@ input:disabled {
     color: var(--wrt-input-disabled-color);
     border-color: var(--wrt-input-disabled-border);
 }
+
+input.remove_btn {
+    background-color: var(--wrt-btn-icon-active-color)!important;
+}
+
 /* Placeholder colors for inputs */
 input::placeholder { color: var(--wrt-input-placeholder); opacity: 1; }
 input::-webkit-input-placeholder { color: var(--wrt-input-placeholder); }

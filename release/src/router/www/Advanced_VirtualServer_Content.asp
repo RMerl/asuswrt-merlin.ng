@@ -23,20 +23,20 @@
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <style type="text/css">
-.contentM_qis{
+
+#profile_setting {
 	position:absolute;
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
+	border-radius: 6px;
 	z-index: 200;
 	display: none;
-	margin-left: 35%;
-	top: 290px;
-	width: 600px;
+	margin-left: auto;
+	margin-right: auto;
+	width: 600px !important;
+	height: auto;
+	max-width: 600px;
 	box-shadow: 1px 5px 10px #000;
 	font-size: 12px;
 	color: #FFFFFF;
-	padding: 20px;
 }
 
 .butten_gen_white{
@@ -197,7 +197,7 @@ function initial(){
 		$("#ftpPortConflict").show();
 		var text = httpApi.ftp_port_conflict_check.port_forwarding.hint;
 		text += "<br>";
-		text += "<a id='ftp_port_conflict_faq' href='" + usb_port_conflict_faq + "' target='_blank' style='text-decoration:underline;color:#FC0;'><#FAQ_Find#></a>";
+		text += "<a id='ftp_port_conflict_faq' href='" + usb_port_conflict_faq + "' target='_blank' class='amng-highlight-color' style='text-decoration:underline;'><#FAQ_Find#></a>";
 		$("#ftpPortConflict").html(text);
 	}
 }
@@ -463,7 +463,7 @@ function showvts_rulelist(_arrayData, _tableID) {
 	var code = "";
 	code += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" style="word-break:break-word;">';
 	if(_arrayData.length == 0)
-		code += '<tr><td style="color:#FFCC00;" colspan="8"><#IPConnection_VSList_Norule#></td></tr>';
+		code += '<tr><td class="amng-highlight-color" colspan="8"><#IPConnection_VSList_Norule#></td></tr>';
 	else {
 		for(var i = 0; i < _arrayData.length; i += 1) {
 			var eachValue = _arrayData[i];
@@ -614,6 +614,13 @@ function editProfile(_mode, _this) {
 	$("#vts_ipaddr_x").val("");
 	$("#vts_target_x").val("");
 	$("#saveProfile").unbind("click");
+
+	if (isSupport("UI4")){
+		document.getElementById("profile_setting").className = "profile_setting clientlist_viewlist";
+	} else {
+		document.getElementById("profile_setting").className = "profile_setting pop_div_bg";
+	}
+
 	$("#profile_setting").fadeIn(300);
 	if(top.webWrapper){
 		$("#saveProfile").addClass("butten_gen_white");
@@ -799,7 +806,7 @@ function saveProfile(_mode, _wanIdx, _rowIdx) {
 				$("#ftpPortConflict").show();
 				var text = httpApi.ftp_port_conflict_check.port_forwarding.hint;
 				text += "<br>";
-				text += "<a id='ftp_port_conflict_faq' href='" + usb_port_conflict_faq + "' target='_blank' style='text-decoration:underline;color:#FC0;'><#FAQ_Find#></a>";
+				text += "<a id='ftp_port_conflict_faq' href='" + usb_port_conflict_faq + "' target='_blank' class='amng-highlight-color' style='text-decoration:underline;'><#FAQ_Find#></a>";
 				$("#ftpPortConflict").html(text);
 
 				var hint = httpApi.ftp_port_conflict_check.port_forwarding.hint;
@@ -861,7 +868,7 @@ function cancelProfile() {
 								<div class="formfonttitle"><#menu5_3#> - <#menu5_3_4#></div>
 								<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 								<div>
-									<div id="ftpPortConflict" class="formfontdesc" style="display:none;color:#FFCC00;"></div>
+									<div id="ftpPortConflict" class="formfontdesc" class="amng-highlight-color" style="display:none;"></div>
 									<div class="formfontdesc">
 										<div><#IPConnection_VServerEnable_sectiondesc#></div>
 										<div><#FirewallConfig_Port80_itemdesc#></div>
@@ -870,7 +877,7 @@ function cancelProfile() {
 									</div>
 								</div>
 
-								<div class="formfontdesc hint-color" id="lb_note" style="color:#FFCC00; display:none;"><#lb_note_portForwarding#></div>
+								<div class="formfontdesc hint-color" id="lb_note" style="display:none;"><#lb_note_portForwarding#></div>
 
 								<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 									<thead>
@@ -915,7 +922,7 @@ function cancelProfile() {
 		<td width="10" align="center" valign="top">&nbsp;</td>
 	</tr>
 </table>
-<div id="profile_setting"  class="contentM_qis pop_div_bg">
+<div id="profile_setting"  class="pop_div_bg">
 	<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 		<thead>
 			<tr>
@@ -1001,7 +1008,7 @@ function cancelProfile() {
 			</td>
 		</tr>
 	</table>
-	<div style="color:#FC0;margin:10px 0px;">
+	<div class="amng-highlight-color" style="margin:10px 0px;">
 		* <#IPConnection_VSList_External_Port#>
 		<br>
 		<#IPConnection_VSList_External_Port_desc#>
@@ -1016,7 +1023,7 @@ function cancelProfile() {
 		<br>
 		<#IPConnection_VSList_SourceTarget_desc#>
 	</div>
-	<div style="margin-top:15px;text-align:center;display: flex; justify-content: center; margin: auto;">
+	<div style="margin-top:15px;padding-bottom:15px; text-align:center;display: flex; justify-content: center; margin: auto;">
 		<input class="button_gen" type="button" onclick="cancelProfile();" value="<#CTL_Cancel#>">
 		<input id="saveProfile" class="button_gen" type="button" value="<#CTL_ok#>">
 	</div>

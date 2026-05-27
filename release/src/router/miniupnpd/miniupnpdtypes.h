@@ -1,13 +1,14 @@
-/* $Id: miniupnpdtypes.h,v 1.4 2012/04/06 15:27:21 nanard Exp $ */
+/* $Id: miniupnpdtypes.h,v 1.8 2025/04/21 22:55:58 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2020 Thomas Bernard
+ * (c) 2006-2025 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 #ifndef MINIUPNPDTYPES_H_INCLUDED
 #define MINIUPNPDTYPES_H_INCLUDED
 
 #include "config.h"
+#include <sys/socket.h>	/* for AF_MAX */
 #include <netinet/in.h>
 #include <net/if.h>
 #include <sys/queue.h>

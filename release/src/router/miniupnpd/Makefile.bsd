@@ -1,4 +1,4 @@
-# $Id: Makefile.bsd,v 1.111 2025/03/30 22:36:04 nanard Exp $
+# $Id: Makefile.bsd,v 1.113 2025/04/08 21:28:42 nanard Exp $
 # MiniUPnP project
 # http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
 # Author: Thomas Bernard
@@ -84,31 +84,37 @@ ALLSRCS += $(SRCDIR)/bsd/getifstats.c
 ALLSRCS += $(SRCDIR)/bsd/ifacewatcher.c $(SRCDIR)/bsd/getroute.c
 
 .if $(FWNAME) == "pf"
-ALLOBJS += $(PFOBJS)
-ALLSRCS += $(PFOBJS:S/^/$(SRCDIR)\/pf\//:S/.o$/.c/)
+FWOBJS = $(PFOBJS)
+FWSRCS = $(PFOBJS:S/^/$(SRCDIR)\/pf\//:S/.o$/.c/)
 .elif $(FWNAME) == "ipfw"
-ALLOBJS += $(IPFWOBJS)
-ALLSRCS += $(IPFWOBJS:S/^/$(SRCDIR)\/ipfw\//:S/.o$/.c/)
+FWOBJS = $(IPFWOBJS)
+FWSRCS = $(IPFWOBJS:S/^/$(SRCDIR)\/ipfw\//:S/.o$/.c/)
 .else
-ALLOBJS += $(IPFOBJS)
-ALLSRCS += $(IPFOBJS:S/^/$(SRCDIR)\/ipf\//:S/.o$/.c/)
+FWOBJS = $(IPFOBJS)
+FWSRCS = $(IPFOBJS:S/^/$(SRCDIR)\/ipf\//:S/.o$/.c/)
 .endif
+ALLOBJS += $(FWOBJS)
+ALLSRCS += $(FWSRCS)
 
 TESTUPNPDESCGENOBJS = testupnpdescgen.o upnpdescgen.o
 TESTUPNPPERMISSIONSOBJS = testupnppermissions.o upnppermissions.o
-TESTGETIFADDROBJS = testgetifaddr.o getifaddr.o
+TESTGETIFADDROBJS = testgetifaddr.o getifaddr.o getconnstatus.o
 MINIUPNPDCTLOBJS = miniupnpdctl.o
 TESTASYNCSENDTOOBJS = testasyncsendto.o asyncsendto.o upnputils.o getroute.o
-TESTPORTINUSEOBJS = testportinuse.o portinuse.o getifaddr.o
+TESTPORTINUSEOBJS = testportinuse.o portinuse.o getifaddr.o upnputils.o \
+                    getroute.o
 TESTMINISSDPOBJS = testminissdp.o minissdp.o upnputils.o upnpglobalvars.o \
                    asyncsendto.o getroute.o
-TESTIFACEWATCHEROBJS = testifacewatcher.o ifacewatcher.o upnputils.o
+TESTIFACEWATCHEROBJS = testifacewatcher.o ifacewatcher.o upnputils.o \
+                       getroute.o
+TESTSTUNOBJS = teststun.o upnpstun.o upnputils.o getroute.o $(FWOBJS) \
+               getifaddr.o
 
 EXECUTABLES = miniupnpd testupnpdescgen testgetifstats \
               testupnppermissions miniupnpdctl \
               testgetifaddr testgetroute testasyncsendto \
               testportinuse testssdppktgen testminissdp \
-              testifacewatcher
+              testifacewatcher teststun
 
 .if $(OSNAME) != "Darwin"
 LIBS += -lkvm
@@ -213,6 +219,9 @@ testifacewatcher:	config.h $(TESTIFACEWATCHEROBJS)
 
 testssdppktgen:	testssdppktgen.o
 	$(CC) $(LDFLAGS) -o $@ $(.ALLSRC) $(LIBS)
+
+teststun: config.h $(TESTSTUNOBJS)
+	$(CC) $(LDFLAGS) -o $@ $(TESTSTUNOBJS) $(LIBS)
 
 # gmake :
 #	$(CC) $(CFLAGS) -o $@ $^

@@ -1,4 +1,4 @@
-/* $Id: getconnstatus.c,v 1.7 2025/04/03 21:11:35 nanard Exp $ */
+/* $Id: getconnstatus.c,v 1.8 2025/04/08 21:28:42 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * (c) 2011-2025 Thomas Bernard
@@ -11,16 +11,21 @@
 #include "getconnstatus.h"
 #include "getifaddr.h"
 
+/**
+ * Only #STATUS_UNCONFIGURED, #STATUS_DISCONNECTED and #STATUS_CONNECTED
+ */
 int
 get_wan_connection_status(const char * ifname)
 {
-	char addr[INET_ADDRSTRLEN];
-	int r;
-
-	/*! \todo we need a better implementation here.
-	 * I'm afraid it should be device specific */
-	r = getifaddr(ifname, addr, INET_ADDRSTRLEN, NULL, NULL);
-	return (r < 0) ? STATUS_DISCONNECTED : STATUS_CONNECTED;
+	switch(getifaddr(ifname, NULL, 0, NULL, NULL)) {
+	case GETIFADDR_OK:
+		return STATUS_CONNECTED;
+	case GETIFADDR_NO_ADDRESS:
+	case GETIFADDR_IF_DOWN:
+		return STATUS_DISCONNECTED;
+	default:
+		return STATUS_UNCONFIGURED;
+	}
 }
 
 const char *
@@ -31,22 +36,22 @@ get_wan_connection_status_str(const char * ifname)
 
 	status = get_wan_connection_status(ifname);
 	switch(status) {
-	case 0:
+	case STATUS_UNCONFIGURED:
 		str = "Unconfigured";
 		break;
-	case 1:
+	case STATUS_CONNECTING:
 		str = "Connecting";
 		break;
-	case 2:
+	case STATUS_CONNECTED:
 		str = "Connected";
 		break;
-	case 3:
+	case STATUS_PENDINGDISCONNECT:
 		str = "PendingDisconnect";
 		break;
-	case 4:
+	case STATUS_DISCONNECTING:
 		str = "Disconnecting";
 		break;
-	case 5:
+	case STATUS_DISCONNECTED:
 		str = "Disconnected";
 		break;
 	}

@@ -1,7 +1,7 @@
 /* $Id: testportinuse.c,v 1.3 2014/03/28 12:13:17 nanard Exp $ */
 /* MiniUPnP project
- * (c) 2014 Thomas Bernard
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
+ * (c) 2014-2025 Thomas Bernard
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 #include <stdio.h>
@@ -13,6 +13,11 @@
 #include "macros.h"
 #include "config.h"
 #include "portinuse.h"
+#include "upnpglobalvars.h"
+
+struct lan_addr_list lan_addrs;
+int runtime_flags = 0;
+time_t startup_time = 0;
 
 int main(int argc, char * * argv)
 {

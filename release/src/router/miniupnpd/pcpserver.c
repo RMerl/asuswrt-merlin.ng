@@ -434,10 +434,17 @@ static int parsePCPOption(uint8_t* pcp_buf, int remain, pcp_info_t *pcp_msg_info
 		pcp_msg_info->result_code = PCP_ERR_MALFORMED_OPTION;
 		return 0;
 	}
+	remain -= PCP_OPTION_HDR_SIZE;
 
-	option_length = READNU16(pcp_buf + 2) + 4;	/* len */
+	/* Option Length:  16 bits.  Indicates the length of the enclosed data,
+     * in octets.  Options with length of 0 are allowed.  Options that
+     * are not a multiple of 4 octets long are followed by one, two, or
+     * three 0 octets to pad their effective length in the packet to be a
+     * multiple of 4 octets.  The Option Length reflects the semantic
+     * length of the option, not including any padding octets. */
+	option_length = READNU16(pcp_buf + 2);
 
-	if (remain < option_length) {
+	if (remain < (int)option_length) {
 		pcp_msg_info->result_code = PCP_ERR_MALFORMED_OPTION;
 		return 0;
 	}
@@ -527,16 +534,16 @@ static int parsePCPOption(uint8_t* pcp_buf, int remain, pcp_info_t *pcp_msg_info
 #endif
 	default:
 		if (pcp_buf[0] < 128) {
-			syslog(LOG_ERR, "PCP: Unrecognized mandatory PCP OPTION: %d \n", (int)pcp_buf[0]);
+			syslog(LOG_ERR, "PCP: Unrecognized mandatory PCP OPTION: %d\n", (int)pcp_buf[0]);
 			/* Mandatory to understand */
 			pcp_msg_info->result_code = PCP_ERR_UNSUPP_OPTION;
-			remain = 0;
-			break;
+		} else {
+			syslog(LOG_INFO, "PCP: Unrecognized optional PCP OPTION: %d\n", (int)pcp_buf[0]);
 		}
-		/* TODO - log optional not understood options? */
 		break;
 	}
-	return option_length;
+	/* add header and pad to the next multiple of 4 octets */
+	return 4 + (((int)option_length + 3) & ~3);
 }
 
 
@@ -820,7 +827,7 @@ static void CreatePCPPeer(pcp_info_t *pcp_msg_info)
 	syslog(r == PCP_SUCCESS ? LOG_INFO : LOG_ERR,
 	       "PCP PEER: %s peer mapping %s %s:%hu(%hu)->%s:%hu '%s'",
 	       r == PCP_SUCCESS ? "added" : "failed to add",
-	       (pcp_msg_info->protocol==IPPROTO_TCP)?"TCP":"UDP",
+	       proto_itoa(pcp_msg_info->protocol),
 	       pcp_msg_info->mapped_str,
 	       pcp_msg_info->int_port,
 	       pcp_msg_info->ext_port,
@@ -891,13 +898,13 @@ static void DeletePCPPeer(pcp_info_t *pcp_msg_info)
 				syslog(LOG_ERR, "PCP PEER: failed to remove peer mapping");
 			} else {
 				syslog(LOG_INFO, "PCP PEER: %s port %hu peer mapping removed",
-				       proto2==IPPROTO_TCP?"TCP":"UDP", eport2);
+				       proto_itoa(proto2), eport2);
 			}
 			return;
 		}
 	if (r==-1) {
 		syslog(LOG_ERR, "PCP PEER: Failed to find PCP mapping internal port %hu, protocol %s",
-		       iport, (pcp_msg_info->protocol == IPPROTO_TCP)?"TCP":"UDP");
+		       iport, proto_itoa(pcp_msg_info->protocol));
 		pcp_msg_info->result_code = PCP_ERR_NO_RESOURCES;
 	}
 }
@@ -950,7 +957,7 @@ static int CreatePCPMap_NAT(pcp_info_t *pcp_msg_info)
 				pcp_msg_info->mapped_str, pcp_msg_info->int_port) > 0) {
 			syslog(LOG_INFO, "port %hu protocol %s already in use",
 			       pcp_msg_info->ext_port,
-			       (pcp_msg_info->protocol==IPPROTO_TCP)?"tcp":"udp");
+			       proto_itoa(pcp_msg_info->protocol));
 			pcp_msg_info->ext_port++;
 			if (pcp_msg_info->ext_port == 0) { /* skip port zero */
 				pcp_msg_info->ext_port++;
@@ -974,7 +981,7 @@ static int CreatePCPMap_NAT(pcp_info_t *pcp_msg_info)
 				}
 			} else {
 				syslog(LOG_INFO, "port %hu %s already redirected to %s:%hu, replacing",
-				       pcp_msg_info->ext_port, (pcp_msg_info->protocol==IPPROTO_TCP)?"tcp":"udp",
+				       pcp_msg_info->ext_port, proto_itoa(pcp_msg_info->protocol),
 				       iaddr_old, iport_old);
 				/* remove and then add again */
 				if (_upnp_delete_redir(pcp_msg_info->ext_port,
@@ -1026,7 +1033,7 @@ static int CreatePCPMap_FW(pcp_info_t *pcp_msg_info)
 		}
 		syslog(LOG_INFO, "updating pinhole %d to %s:%hu %s",
 		       uid, pcp_msg_info->mapped_str, pcp_msg_info->int_port,
-		       (pcp_msg_info->protocol == IPPROTO_TCP)?"TCP":"UDP");
+		       proto_itoa(pcp_msg_info->protocol));
 		r = upnp_update_inboundpinhole((unsigned short)uid, pcp_msg_info->lifetime);
 		return r >= 0 ? PCP_SUCCESS : PCP_ERR_NO_RESOURCES;
 	} else {
@@ -1090,7 +1097,7 @@ static void CreatePCPMap(pcp_info_t *pcp_msg_info)
 	syslog(r == PCP_SUCCESS ? LOG_INFO : LOG_ERR,
 	      "PCP MAP: %s mapping %s %hu->%s:%hu '%s'",
 	       r == PCP_SUCCESS ? "added" : "failed to add",
-	       (pcp_msg_info->protocol==IPPROTO_TCP)?"TCP":"UDP",
+	       proto_itoa(pcp_msg_info->protocol),
 	       pcp_msg_info->ext_port,
 	       pcp_msg_info->mapped_str,
 	       pcp_msg_info->int_port,
@@ -1130,7 +1137,7 @@ static void DeletePCPMap(pcp_info_t *pcp_msg_info)
 					/* nonce does not match */
 					pcp_msg_info->result_code = PCP_ERR_NOT_AUTHORIZED;
 					syslog(LOG_ERR, "Unauthorized to remove PCP mapping internal port %hu, protocol %s",
-					       iport, (pcp_msg_info->protocol == IPPROTO_TCP)?"TCP":"UDP");
+					       iport, proto_itoa(pcp_msg_info->protocol));
 					return;
 				} else {
 					r = _upnp_delete_redir(eport2, proto2);
@@ -1148,14 +1155,14 @@ static void DeletePCPMap(pcp_info_t *pcp_msg_info)
 						NULL /* lifetime */);
 		if (uid < 0) {
 			syslog(LOG_ERR, "Failed to find mapping to %s:%hu, protocol %s",
-			       pcp_msg_info->mapped_str, iport, (pcp_msg_info->protocol == IPPROTO_TCP)?"TCP":"UDP");
+			       pcp_msg_info->mapped_str, iport, proto_itoa(pcp_msg_info->protocol));
 			return;
 		} else {
 			if(0 != strcmp(desc, pcp_msg_info->desc)) {
 				/* nonce does not match */
 				pcp_msg_info->result_code = PCP_ERR_NOT_AUTHORIZED;
 				syslog(LOG_ERR, "Unauthorized to remove PCP mapping internal port %hu, protocol %s",
-				       iport, (pcp_msg_info->protocol == IPPROTO_TCP)?"TCP":"UDP");
+				       iport, proto_itoa(pcp_msg_info->protocol));
 				return;
 			} else {
 				r = upnp_delete_inboundpinhole(uid);
@@ -1170,7 +1177,7 @@ static void DeletePCPMap(pcp_info_t *pcp_msg_info)
 		       proto==IPPROTO_TCP?"TCP":"UDP", (pcp_msg_info->is_fw ? iport : eport2));
 	} else {
 		syslog(LOG_ERR, "Failed to remove PCP mapping to %s:%hu %s",
-		       pcp_msg_info->mapped_str, iport, (proto == IPPROTO_TCP)?"TCP":"UDP");
+		       pcp_msg_info->mapped_str, iport, proto_itoa(proto));
 		pcp_msg_info->result_code = PCP_ERR_NO_RESOURCES;
 	}
 }

@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id: configure,v 1.133 2025/01/25 21:22:24 nanard Exp $
+# $Id: configure,v 1.136 2025/04/21 22:56:48 nanard Exp $
 # vim: tabstop=4 shiftwidth=4 noexpandtab
 #
 # miniupnp daemon
@@ -458,7 +458,7 @@ case $OS_NAME in
 		;;
 	SunOS)
 		OS_FAMILY=BSD
-		MAKEFILE=Makefile.bsd
+		MAKEFILE=Makefile.sunos
 		echo "#define USE_IFACEWATCHER 1" >> ${CONFIGFILE}
 		FW=ipf
 		echo "#define LOG_PERROR 0" >> ${CONFIGFILE}
@@ -522,6 +522,11 @@ case $OS_NAME in
 					arch)
 						OS_URL=https://archlinux.org/
 						OS_VERSION=`uname -r`
+						;;
+					VoidLinux)
+						OS_URL=https://voidlinux.org/
+						# OS_VERSION=rolling (lsb_release -r -s)
+						# lsb_release -c -s => void
 						;;
 				esac
 			fi
@@ -595,6 +600,8 @@ case $OS_NAME in
 	Darwin)
 		MAKEFILE=Makefile.macosx
 		MAJORVER=`echo $OS_VERSION | cut -d. -f1`
+        # do not daemon() under macOS
+	    NO_BACKGROUND_NO_PIDFILE=1
 		echo "#define USE_IFACEWATCHER 1" >> ${CONFIGFILE}
 		# OS X switched to pf since 10.7 Lion (Darwin 11.0)
 		if [ $MAJORVER -ge 11 ] ; then
@@ -625,12 +632,16 @@ if [ "$OS_FAMILY" = "Linux" ] ; then
 	echo "TESTS = ${TESTS}" >> ${CONFIG_MK}
 fi
 
+# default value for UPnP description max length : 1024 bytes
+MINIUPNPD_DESC_SIZE=1024
+
 case $FW in
 	pf)
 		echo "#define USE_PF 1" >> ${CONFIGFILE}
 		if [ "$USE_LIBPFCTL" = "1" ] ; then
 			echo "#define USE_LIBPFCTL 1" >> ${CONFIGFILE}
 		fi
+        MINIUPNPD_DESC_SIZE=64
 		;;
 	ipf)
 		echo "#define USE_IPF 1" >> ${CONFIGFILE}
@@ -850,6 +861,9 @@ fi
 echo "Configuring compilation for [$OS_NAME] [$OS_VERSION] [$OS_MACHINE] with [$FW] firewall software."
 echo "Please edit config.h for more compilation options."
 
+echo "/* maximum size of UPnP description */" >> ${CONFIGFILE}
+echo "#define MINIUPNPD_DESC_SIZE ${MINIUPNPD_DESC_SIZE}" >> ${CONFIGFILE}
+
 # define SUPPORT_REMOTEHOST if the FW related code really supports setting
 # a RemoteHost
 if [ \( "$FW" = "nftables" \) -o \( "$FW" = "iptables" \) -o \( "$FW" = "pf" \) -o \( "$FW" = "ipfw" \) ] ; then
@@ -1046,13 +1060,19 @@ echo " * It can be disabled to save a few bytes. */" >> ${CONFIGFILE}
 echo "#define ENABLE_EVENTS" >> ${CONFIGFILE}
 echo "" >> ${CONFIGFILE}
 
-echo "/* include interface name in pf and ipf rules */" >> ${CONFIGFILE}
+echo "/* include interface name in pf, ipf and nftables rules */" >> ${CONFIGFILE}
 echo "#define USE_IFNAME_IN_RULES" >> ${CONFIGFILE}
 echo "" >> ${CONFIGFILE}
 
 echo "/* Experimental NFQUEUE support. */" >> ${CONFIGFILE}
 echo "/*#define ENABLE_NFQUEUE*/" >> ${CONFIGFILE}
 echo "" >> ${CONFIGFILE}
+
+if [ "$FW" = "nftables" ] ; then
+	echo "/* Add a counter to nftables rules */" >> ${CONFIGFILE}
+	echo "#define ENABLE_NFT_RULE_COUNTER" >> ${CONFIGFILE}
+	echo "" >> ${CONFIGFILE}
+fi
 
 echo "/* Enable to make MiniUPnPd more strict about UPnP conformance" >> ${CONFIGFILE}
 echo " * and the messages it receives from control points */" >> ${CONFIGFILE}
@@ -1146,6 +1166,10 @@ else
 	echo "/*#define USE_GETIFADDRS*/" >> ${CONFIGFILE}
 fi
 
+echo "/* uncomment if your libc is too old to include strndup() */" >> ${CONFIGFILE}
+echo "/*#define NO_STRNDUP */" >> ${CONFIGFILE}
+
+echo "" >> ${CONFIGFILE}
 echo "#endif /* ${CONFIGMACRO} */" >> ${CONFIGFILE}
 
 ${MV} ${CONFIGFILE} ${CONFIGFILE_FINAL}

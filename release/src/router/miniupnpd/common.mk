@@ -8,7 +8,7 @@ testgetifstats:	testgetifstats.o getifstats.o
 
 testupnppermissions:	testupnppermissions.o upnppermissions.o
 
-testgetifaddr:	testgetifaddr.o getifaddr.o
+testgetifaddr:	testgetifaddr.o getifaddr.o getconnstatus.o
 
 testgetroute:	testgetroute.o getroute.o upnputils.o
 

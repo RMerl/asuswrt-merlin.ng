@@ -26,6 +26,7 @@ CFLAGS += -fno-common
 CFLAGS += -D_XOPEN_SOURCE
 CFLAGS += -D_XOPEN_SOURCE_EXTENDED=1
 CFLAGS += -D__EXTENSIONS__
+CPPFLAGS += -I.
 CC = gcc
 RM = rm -f
 MV = mv
@@ -39,9 +40,9 @@ ARCH :sh = uname -m
 FWNAME = ipf
 
 # Solaris specific CFLAGS
-CFLAGS :sh += echo "-DSOLARIS2=`uname -r | cut -d. -f2`"
+CFLAGS += $(shell echo "-DSOLARIS2=`uname -r | cut -d. -f2`")
 # "amd64"
-CFLAGS += -m64 -mcmodel=kernel -mno-red-zone -ffreestanding
+CFLAGS += -m64
 # "sparc64"
 #CFLAGS += -m64 -mcmodel=medlow
 LDFLAGS += -m64
@@ -75,10 +76,11 @@ ALLOBJS += $(IPFOBJS)
 
 TESTUPNPDESCGENOBJS = testupnpdescgen.o upnpdescgen.o
 TESTUPNPPERMISSIONSOBJS = testupnppermissions.o upnppermissions.o
-TESTGETIFADDROBJS = testgetifaddr.o getifaddr.o
+TESTGETIFADDROBJS = testgetifaddr.o getifaddr.o getconnstatus.o
 MINIUPNPDCTLOBJS = miniupnpdctl.o
 TESTASYNCSENDTOOBJS = testasyncsendto.o asyncsendto.o upnputils.o bsd/getroute.o
-TESTPORTINUSEOBJS = testportinuse.o portinuse.o getifaddr.o
+TESTPORTINUSEOBJS = testportinuse.o portinuse.o getifaddr.o upnputils.o \
+                    bsd/getroute.o
 
 EXECUTABLES = miniupnpd testupnpdescgen testgetifstats \
               testupnppermissions miniupnpdctl \
@@ -196,7 +198,7 @@ config.h:	configure VERSION
 
 .SUFFIXES:	.o .c
 .c.o:
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 #	$(CC) $(CFLAGS) -c -o $(.TARGET) $(.IMPSRC)
 

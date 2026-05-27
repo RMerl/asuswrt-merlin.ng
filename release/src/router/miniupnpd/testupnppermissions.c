@@ -1,7 +1,7 @@
-/* $Id: testupnppermissions.c,v 1.3 2009/09/14 15:24:46 nanard Exp $ */
-/* (c) 2007-2015 Thomas Bernard
+/* $Id: testupnppermissions.c,v 1.5 2025/04/21 22:56:49 nanard Exp $ */
+/* (c) 2007-2025 Thomas Bernard
  * MiniUPnP Project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  */
 #include <stdio.h>
 #include <string.h>
@@ -10,7 +10,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "miniupnpdtypes.h"
 #include "upnppermissions.h"
+
+struct lan_addr_list lan_addrs;
+time_t startup_time = 0;
 
 void
 print_upnpperm(const struct upnpperm * p)

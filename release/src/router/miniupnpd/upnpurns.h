@@ -1,12 +1,15 @@
 /* $Id: upnpurns.h,v 1.1 2011/05/13 15:32:53 nanard Exp $ */
 /* MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2011 Thomas Bernard
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2006-2025 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
 #ifndef UPNPURNS_H_INCLUDED
 #define UPNPURNS_H_INCLUDED
+
+/*! \file upnpurns.h
+ * \brief UPnP IGD urns */
 
 #include "config.h"
 
@@ -37,4 +40,3 @@
 #endif
 
 #endif
-

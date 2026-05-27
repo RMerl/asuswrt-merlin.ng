@@ -1,4 +1,76 @@
-$Id: Changelog.txt,v 1.527 2025/04/03 21:24:39 nanard Exp $
+$Id: Changelog.txt,v 1.535 2025/04/26 13:07:53 nanard Exp $
+
+2026/05/02:
+  Free resources on start error
+  print usage on stdout or stderr depending on command line
+  increase maximum description length when possible (netfilter/nftables)
+  fix nfqueue code
+
+2026/04/13:
+  Re-enable port forwarding properly (broken in 2.3.10)
+
+2026/04/07:
+  Fix PCP option size parsing thanks to Sebastián Alba.
+
+2026/04/01:
+  Allow using ip/mask when IPv6 is compiled but disabled
+
+2026/03/31:
+  use a 8kB buffer for Netlink as recommended
+  fix URL parsing in upnpevents.c
+
+VERSION 2.3.10 : released on 2026/03/24
+
+2026/03/24:
+  fix missing fclose and potential double free in option file parsing
+
+2026/03/23:
+  upnphttp.c: fix removal of quotes in ParseHttpHeaders()
+  minixml.c: fix buffer read overflow
+
+2026/02/05:
+  Rewrite permission line parser
+
+2025/05/26:
+  Fix false negative filtered STUN CGNAT test result for
+    unsupported servers #825
+
+2025/05/24:
+  Fix Mac OS X 10.9 build
+
+2025/05/15:
+  build: teststun executable
+
+2025/04/28:
+  pf: fix delete_pinhole for openbsd. Was broken since miniupnpd 2.3.7
+
+2025/04/26
+  Fix parsing of interfaces names starting with a digit
+  nftables: add counter for DNAT rule (ENABLE_NFT_RULE_COUNTER in config.h)
+  nftables: improve scripts to support already existing tables
+
+VERSION 2.3.9 : released on 2025/04/22
+
+2025/04/22:
+  NFTables: don't apply iif to rules if USE_IFNAME_IN_RULES is disabled
+
+2025/04/16:
+  Restore the default behavior of update_ext_ip_addr_from_stun function,
+    and now setting ext_perform_stun=allow-filtered would allow failed
+    STUN CGNAT filter check to be ignored
+
+2025/04/10:
+  Unify naming scheme and rename to ext_allow_private_ipv4 for
+  ignore_private_ip_check
+  Remove the ability to disable port forwarding for
+  update_ext_ip_addr_from_stun function
+
+2025/04/08:
+  improve get_wan_connection_status()
+
+2025/04/07:
+  Add a ignore_private_ip_check option in the configuration file to enable
+    port forwarding even with a WAN IP address in a reserved/private subnet
 
 VERSION 2.3.8 : released on 2025/04/03
 

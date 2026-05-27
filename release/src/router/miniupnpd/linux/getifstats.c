@@ -148,7 +148,7 @@ getifstats(const char * ifname, struct ifdata * data)
 		if(fgets(line, sizeof(line), f)) {
 			i = atoi(line);	/* 65535 means unknown */
 			if(i > 0 && i < 65535)
-				data->baudrate = 1000000*i;
+				data->baudrate = 1000000L*i;
 		}
 		fclose(f);
 	} else {

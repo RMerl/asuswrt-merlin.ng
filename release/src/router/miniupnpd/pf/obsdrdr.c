@@ -563,9 +563,15 @@ delete_nat_rule(const char * ifname, unsigned short iport, int proto, in_addr_t 
 		       i, ntohs(RULE.src.port[0]), RULE.proto,
 		       RULE.src.addr.v.a.addr.v4.s_addr, iaddr);
 #endif /* TEST */
+#ifdef __APPLE__
+		if(iport == ntohs(RULE.src.xport.range.port[0])
+		 && RULE.proto == proto
+		 && iaddr == RULE.src.addr.v.a.addr.v4.s_addr)
+#else
 		if(iport == ntohs(RULE.src.port[0])
 		 && RULE.proto == proto
 		 && iaddr == RULE.src.addr.v.a.addr.v4.s_addr)
+#endif
 		{
 #ifdef USE_LIBPFCTL
 			/* to change with the libpfctl alternative to DIOCCHANGERULE */

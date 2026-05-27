@@ -1,7 +1,7 @@
 /* $Id: ifacewatcher.c,v 1.10 2019/10/02 22:02:02 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2020 Thomas Bernard
+ * (c) 2006-2026 Thomas Bernard
  *
  * ifacewatcher.c
  *
@@ -233,7 +233,10 @@ ProcessInterfaceDown(struct ifinfomsg *ifi)
 void
 ProcessInterfaceWatchNotify(int s)
 {
-	char buffer[4096];
+	/* https://www.kernel.org/doc/html/v6.1/userspace-api/netlink/intro.html#buffer-sizing
+	 * Netlink expects that the user buffer will be at least 8kB or a page
+	 * size of the CPU architecture, whichever is bigger */
+	char buffer[8192];
 	struct iovec iov;
 	struct msghdr hdr;
 	struct nlmsghdr *nlhdr;
@@ -261,6 +264,9 @@ ProcessInterfaceWatchNotify(int s)
 	{
 		syslog(LOG_ERR, "recvmsg(s, &hdr, 0): %m");
 		return;
+	}
+	if (hdr.msg_flags & MSG_TRUNC) {
+		syslog(LOG_WARNING, "NETLINK message truncated len=%d", len);
 	}
 
 	if(ext_if_name) {

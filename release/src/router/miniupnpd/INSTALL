@@ -8,6 +8,15 @@ If you find some outdated information in this documentation, please fix
 or report the issue on https://github.com/miniupnp/miniupnp or the web
 forum https://miniupnp.tuxfamily.org/
 
+Note : building from another directory than the source directory is now
+       supported. Instead of just
+       $ ./configure
+       It is possible to run configure from the directory of your choice :
+       $ mdir build
+       $ cd build
+       $ ../configure
+       It will populate the current directory with a Makefile, config.h, etc.
+
 ================================ *BSD/pf =================================
 To Build and Install :
 
@@ -38,12 +47,12 @@ To Build and Install :
 
 =========================== *BSD,*Solaris/ipf =============================
 
-configure tries to detect wether ipf or pf should be
+configure tries to detect whether ipf or pf should be
 used. If it fails, you can use ./configure --firewall=ipf
-Installation steps are allmost the same as with pf.
+Installation steps are almost the same as with pf.
 
 *Solaris users would be interested in reading informations from :
-http://blogs.sun.com/avalon/category/IPFilter
+https://web.archive.org/web/20110506013706/http://blogs.sun.com/avalon/category/IPFilter
 
 ============================= Mac OS X/ipfw ===============================
 
@@ -55,7 +64,7 @@ http://blogs.sun.com/avalon/category/IPFilter
 
 Starting with Mac OS X 10.7 Lion, pf replaced ipfw as the OS X firewall.
 also bsdmake is not available anymore.
-Make sure you have installed the Xcode commande line tools (from the
+Make sure you have installed the Xcode command line tools (from the
 Xcode Preferences menu or using 'xcode-select --install' command)
 
 You need to download xnu sources : https://opensource.apple.com/tarballs/xnu/
@@ -65,7 +74,7 @@ You need to download xnu sources : https://opensource.apple.com/tarballs/xnu/
 > INCLUDES="-I.../xnu/bsd -I.../xnu/libkern" make
 
 ============================ Linux/netfilter ==============================
-To Build and install :
+To build and install :
 
 - make sure you have libiptc available on your system :
   if you are using debian :

@@ -1,6 +1,6 @@
-/* $Id: natpmp.c,v 1.58 2022/10/16 06:03:56 nanard Exp $ */
+/* $Id: natpmp.c,v 1.60 2025/04/06 22:30:24 nanard Exp $ */
 /* MiniUPnP project
- * (c) 2007-2022 Thomas Bernard
+ * (c) 2007-2025 Thomas Bernard
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
@@ -109,7 +109,7 @@ static void FillPublicAddressResponse(unsigned char * resp, in_addr_t senderaddr
 			syslog(LOG_ERR, "Failed to get IP for interface %s", ext_if_name);
 			resp[3] = 3;	/* Network Failure (e.g. NAT box itself
 			                 * has not obtained a DHCP lease) */
-		} else if (addr_is_reserved(&addr)) {
+		} else if (!GETFLAG(ALLOWPRIVATEIPV4MASK) && addr_is_reserved(&addr)) {
 			resp[3] = 3;	/* Network Failure, box has not obtained
 			                   public IP address */
 		} else {
@@ -341,11 +341,11 @@ void ProcessIncomingNATPMPPacket(int s, unsigned char *msg_buff, int len,
 					} else if(eport == eport_first) { /* no eport available */
 						if(any_eport_allowed == 0) { /* all eports rejected by permissions */
 							syslog(LOG_ERR, "No allowed eport for NAT-PMP %hu %s->%s:%hu",
-							       eport, (proto==IPPROTO_TCP)?"tcp":"udp", senderaddrstr, iport);
+							       eport, proto_itoa(proto), senderaddrstr, iport);
 							resp[3] = 2;	/* Not Authorized/Refused */
 						} else { /* at least one eport allowed (but none available) */
 							syslog(LOG_ERR, "Failed to find available eport for NAT-PMP %hu %s->%s:%hu",
-							       eport, (proto==IPPROTO_TCP)?"tcp":"udp", senderaddrstr, iport);
+							       eport, proto_itoa(proto), senderaddrstr, iport);
 							resp[3] = 4;	/* Out of resources */
 						}
 						break;
@@ -359,7 +359,7 @@ void ProcessIncomingNATPMPPacket(int s, unsigned char *msg_buff, int len,
 #ifdef CHECK_PORTINUSE
 					if (port_in_use(ext_if_name, eport, proto, senderaddrstr, iport) > 0) {
 						syslog(LOG_INFO, "port %hu protocol %s already in use",
-						       eport, (proto==IPPROTO_TCP)?"tcp":"udp");
+						       eport, proto_itoa(proto));
 						eport++;
 						if(eport == 0) eport++; /* skip port zero */
 						continue;
@@ -389,13 +389,13 @@ void ProcessIncomingNATPMPPacket(int s, unsigned char *msg_buff, int len,
 					/* do the redirection */
 					timestamp = upnp_time() + lifetime;
 					snprintf(desc, sizeof(desc), "NAT-PMP %hu %s",
-					         eport, (proto==IPPROTO_TCP)?"tcp":"udp");
+					         eport, proto_itoa(proto));
 					/* TODO : check return code */
 					if(upnp_redirect_internal(NULL, eport, senderaddrstr,
 					                          iport, proto, desc,
 					                          timestamp) < 0) {
 						syslog(LOG_ERR, "Failed to add NAT-PMP %hu %s->%s:%hu '%s'",
-						       eport, (proto==IPPROTO_TCP)?"tcp":"udp", senderaddrstr, iport, desc);
+						       eport, proto_itoa(proto), senderaddrstr, iport, desc);
 						resp[3] = 3;  /* Failure */
 					}
 					break;

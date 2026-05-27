@@ -1,11 +1,14 @@
 /* $Id: upnpdescstrings.h,v 1.12 2024/03/02 10:50:42 nanard Exp $ */
 /* miniupnp project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2024 Thomas Bernard
+ * (c) 2006-2025 Thomas Bernard
  * This software is subject to the coditions detailed in
  * the LICENCE file provided within the distribution */
 #ifndef UPNPDESCSTRINGS_H_INCLUDED
 #define UPNPDESCSTRINGS_H_INCLUDED
+
+/*! \file upnpdescstrings.h
+ * \brief strings used in UPnP XML descriptions */
 
 #include "config.h"
 

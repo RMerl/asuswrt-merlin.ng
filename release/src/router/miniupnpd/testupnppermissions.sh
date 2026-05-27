@@ -7,24 +7,32 @@ RULEB_1="allow 1-20000 11.12.13.14/255.255.252.0 1234-1234"
 RULE_2="deny 55 21.22.23.24/17 555-559"
 RULEA_2="deny 55-55 15161718/ffff8000 555-559"
 RULEB_2="deny 55-55 21.22.23.24/255.255.128.0 555-559"
+RULE_3="allow 1024-65535X0.0.0.0/0 1024-65535 all"
+RULEA_3="BAD"
 
 i=1
 s=1
-./testupnppermissions "$RULE_1" "$RULE_2" | while read l;
+./testupnppermissions "$RULE_1" "$RULE_2" "$RULE_3" | while read l;
 do
 	if [ -z "$l" ]; then i=$(($i+1)); s=1; else
 		#echo "$i $s : checking '$l'"
 		case $s in
 			1)
-			val=$(eval echo "\${RULE_$i}")
-			if [ "$i '$val'" != "$l" ] ; then
+			rule=$(eval echo "\${RULE_$i}")
+			if [ "$i '$rule'" != "$l" ] ; then
 				exit $s
 			fi;;
 			2)
 			val=$(eval echo "\${RULEA_$i}")
-			if [ "Permission read successfully" = "$l" ] ; then
+			if [ "$val" = "BAD" ] ; then
+				if [ "Permission read failed, please check its correctness" != "$l" ] ; then
+					echo "\"$rule\" should be detected as invalid"
+					exit $s
+				fi
+			elif [ "Permission read successfully" = "$l" ] ; then
 				s=$(($s+1))
 			elif [ "perm rule added : $val" != "$l" ] ; then
+				echo "\"$rule\" should be successfully parsed"
 				exit $s
 			fi;;
 			3)

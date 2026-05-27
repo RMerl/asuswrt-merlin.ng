@@ -349,6 +349,8 @@ int delete_pinhole(unsigned short uid)
 			pr.ticket = ri.ticket;
 			pr.nr = i;
 			strlcpy(pr.anchor, anchor_name, MAXPATHLEN);
+#else /* USE_LIBPFCTL */
+			pr.action = PF_CHANGE_GET_TICKET;
 #endif /* USE_LIBPFCTL */
 			if(ioctl(dev, DIOCCHANGERULE, &pr) < 0) {
 				syslog(LOG_ERR, "ioctl(dev, DIOCCHANGERULE, ...) PF_CHANGE_GET_TICKET: %m");

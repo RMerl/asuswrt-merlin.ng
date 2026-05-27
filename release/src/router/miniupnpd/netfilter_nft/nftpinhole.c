@@ -1,7 +1,7 @@
-/* $Id: nftpinhole.c,v 1.8 2024/03/11 23:28:22 nanard Exp $ */
+/* $Id: nftpinhole.c,v 1.10 2025/04/26 12:58:38 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2012-2024 Thomas Bernard
+ * (c) 2012-2025 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -230,7 +230,6 @@ update_pinhole(unsigned short uid, unsigned int timestamp)
 	char desc[NFT_DESCR_SIZE];
 	char ifname[IFNAMSIZ];
 	char comment[NFT_DESCR_SIZE];
-	char * tmp_p;
 	uint32_t ext_if_indx;
 	int proto, res;
 	unsigned short iport, rport;

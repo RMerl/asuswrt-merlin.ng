@@ -1,6 +1,6 @@
 /* $Id: pcp_msg_struct.h,v 1.3 2013/12/16 16:02:19 nanard Exp $ */
 /* MiniUPnP project
- * Website : http://miniupnp.free.fr/
+ * Website : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author : Peter Tatrai
 
 Copyright (c) 2013 by Cisco Systems, Inc.
@@ -127,6 +127,9 @@ POSSIBILITY OF SUCH DAMAGE.
  * for processing information.  This is a long lifetime error.
  */
 
+/**
+ * Options are defined in RFC 6887 13.1, 13.2, 13.3
+ * and RFC 7652 5.4 to 5.11. */
 typedef enum pcp_options  {
     PCP_OPTION_3RD_PARTY = 1,
     PCP_OPTION_PREF_FAIL = 2,
@@ -134,6 +137,15 @@ typedef enum pcp_options  {
 #ifdef PCP_FLOWP
     PCP_OPTION_FLOW_PRIORITY = 4,  /*TODO: change it to correct value*/
 #endif
+	PCP_OPTION_NONCE = 4,
+	PCP_OPTION_AUTHENTICATION_TAG = 5,
+	PCP_OPTION_PA_AUTHENTICATION_TAG = 6,
+	PCP_OPTION_EAP_PAYLOAD = 7,
+	PCP_OPTION_PRF = 8,
+	PCP_OPTION_MAC_ALGORITHM = 9,
+	PCP_OPTION_SESSION_LIFETIME = 10,
+	PCP_OPTION_RECEIVED_PAK = 11,
+	PCP_OPTION_ID_INDICATOR = 12,
 } pcp_options_t;
 
 
@@ -272,7 +284,7 @@ typedef struct pcp_prefer_fail_option {
    uint8_t   next_data[0];
 } pcp_prefer_fail_option_t;
 #endif
-#define PCP_PREFER_FAIL_OPTION_SIZE (4)
+#define PCP_PREFER_FAIL_OPTION_SIZE (0)
 
 #if 0
 typedef struct pcp_3rd_party_option{
@@ -283,7 +295,7 @@ typedef struct pcp_3rd_party_option{
    uint8_t  next_data[0];
 } pcp_3rd_party_option_t;
 #endif
-#define PCP_3RD_PARTY_OPTION_SIZE (20)
+#define PCP_3RD_PARTY_OPTION_SIZE (16)
 
 #ifdef PCP_FLOWP
 #if 0
@@ -300,7 +312,7 @@ typedef struct pcp_flow_priority_option{
 } pcp_flow_priority_option_t;
 #endif
 #define PCP_DSCP_MASK ((1<<6)-1)
-#define PCP_FLOW_PRIORITY_OPTION_SIZE (8)
+#define PCP_FLOW_PRIORITY_OPTION_SIZE (4)
 #endif
 
 #if 0
@@ -314,6 +326,6 @@ typedef struct pcp_filter_option {
     struct in6_addr peer_ip;
 }pcp_filter_option_t;
 #endif
-#define PCP_FILTER_OPTION_SIZE (24)
+#define PCP_FILTER_OPTION_SIZE (20)
 
 #endif /* PCP_MSG_STRUCT_H_INCLUDED */

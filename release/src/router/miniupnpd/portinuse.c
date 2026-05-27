@@ -1,7 +1,7 @@
-/* $Id: portinuse.c,v 1.12 2020/11/04 21:29:50 nanard Exp $ */
+/* $Id: portinuse.c,v 1.14 2025/04/21 21:48:56 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
- * (c) 2007-2020 Thomas Bernard
+ * (c) 2007-2025 Thomas Bernard
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
@@ -48,6 +48,7 @@
 #include "upnpglobalvars.h"
 #include "getifaddr.h"
 #include "portinuse.h"
+#include "upnputils.h"
 
 #if defined(USE_NETFILTER)
 #include "netfilter/iptcrdr.h"
@@ -86,7 +87,7 @@ port_in_use(const char *if_name,
 	}
 
 	syslog(LOG_DEBUG, "Check protocol %s for port %u on ext_if %s %s, %08X",
-	    (proto==IPPROTO_TCP)?"tcp":"udp", eport, if_name,
+	    proto_itoa(proto), eport, if_name,
 	    ip_addr_str, (unsigned)ip_addr.s_addr);
 
 	/* Phase 1 : check for local sockets (would be listed by netstat) */

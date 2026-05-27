@@ -1,4 +1,4 @@
-/* $Id: upnputils.h,v 1.11 2025/04/03 21:11:35 nanard Exp $ */
+/* $Id: upnputils.h,v 1.13 2025/04/21 22:56:49 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * (c) 2011-2025 Thomas Bernard
@@ -53,6 +53,20 @@ time_t upnp_get_uptime(void);
  */
 int upnp_gettimeofday(struct timeval * tv);
 
+/*!
+ * convert the string "UDP" or "TCP" to IPPROTO_UDP and IPPROTO_UDP
+ * \param[in] protocol "UDP" or "TCP" (or "UDPLITE")
+ * \return IPPROTO_UDP or IPPROTO_TCP (or IPPROTO_UDPLITE)
+ */
+int proto_atoi(const char * protocol);
+
+/*!
+ * convert IPPROTO_UDP, IPPROTO_UDP, etc. to "UDP", "TCP"
+ * \param[in] proto IPPROTO_UDP or IPPROTO_TCP (or IPPROTO_UDPLITE)
+ * \return "UDP" or "TCP" (or "UDPLITE")
+ */
+const char * proto_itoa(int proto);
+
 /**
  * define portability macros
  */
@@ -77,5 +91,9 @@ static __inline size_t _sa_len(const struct sockaddr *addr)
 # define MAX(a,b) (((a)>(b))?(a):(b))
 #endif
 
-#endif
+#ifdef NO_STRNDUP
+char * strndup_impl(const char * str, size_t len);
+#define strndup strndup_impl
+#endif /* NO_STRNDUP */
 
+#endif

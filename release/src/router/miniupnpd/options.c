@@ -1,9 +1,9 @@
-/* $Id: options.c,v 1.45 2024/03/11 23:17:56 nanard Exp $ */
+/* $Id: options.c,v 1.46 2025/04/06 22:30:24 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * author: Ryan Wagoner
- * (c) 2006-2024 Thomas Bernard
+ * (c) 2006-2026 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -22,7 +22,7 @@
 #include "macros.h"
 
 #ifndef DISABLE_CONFIG_FILE
-struct option * ary_options = NULL;
+struct miniupnpd_option * ary_options = NULL;
 static char * string_repo = NULL;
 unsigned int num_options = 0;
 
@@ -35,6 +35,7 @@ static const struct {
 	{ UPNPEXT_IFNAME6, "ext_ifname6" },
 #endif
 	{ UPNPEXT_IP,	"ext_ip" },
+	{ UPNPEXT_ALLOW_PRIVATE_IPV4, "ext_allow_private_ipv4" },
 	{ UPNPEXT_PERFORM_STUN, "ext_perform_stun" },
 	{ UPNPEXT_STUN_HOST, "ext_stun_host" },
 	{ UPNPEXT_STUN_PORT, "ext_stun_port" },
@@ -141,11 +142,7 @@ readoptionsfile(const char * fname, int debug_flag)
 	if(!(hfile = fopen(fname, "r")))
 		return -1;
 
-	if(ary_options != NULL)
-	{
-		free(ary_options);
-		num_options = 0;
-	}
+	num_options = 0;
 
 	while(fgets(buffer, sizeof(buffer), hfile))
 	{
@@ -181,6 +178,7 @@ readoptionsfile(const char * fname, int debug_flag)
 			{
 				INIT_PRINT_ERR("memory allocation error. Permission line in file %s line %d\n",
 				        fname, linenum);
+				fclose(hfile);
 				return -1;
 			}
 			else
@@ -195,6 +193,7 @@ readoptionsfile(const char * fname, int debug_flag)
 				{
 					INIT_PRINT_ERR("parsing error file %s line %d : %s\n",
 					        fname, linenum, name);
+					fclose(hfile);
 					return -1;
 				}
 			}
@@ -209,6 +208,7 @@ readoptionsfile(const char * fname, int debug_flag)
 			{
 				INIT_PRINT_ERR("memory allocation error. DSCP line in file %s line %d\n",
 				        fname, linenum);
+				fclose(hfile);
 				return -1;
 			}
 			else
@@ -223,6 +223,7 @@ readoptionsfile(const char * fname, int debug_flag)
 				{
 					INIT_PRINT_ERR("parsing error file %s line %d : %s\n",
 					        fname, linenum, name);
+					fclose(hfile);
 					return -1;
 				}
 			}
@@ -233,6 +234,7 @@ readoptionsfile(const char * fname, int debug_flag)
 		{
 			INIT_PRINT_ERR("parsing error file %s line %d : %s\n",
 			        fname, linenum, name);
+			fclose(hfile);
 			return -1;
 		}
 
@@ -264,49 +266,42 @@ readoptionsfile(const char * fname, int debug_flag)
 		{
 			INIT_PRINT_ERR("invalid option in file %s line %d : %s=%s\n",
 			        fname, linenum, name, value);
+			fclose(hfile);
 			return -1;
 		}
-		else
+		tmp = realloc(ary_options, (num_options + 1) * sizeof(struct miniupnpd_option));
+		if(tmp == NULL)
 		{
-			tmp = realloc(ary_options, (num_options + 1) * sizeof(struct option));
-			if(tmp == NULL)
-			{
-				INIT_PRINT_ERR("memory allocation error. Option in file %s line %d.\n",
-				        fname, linenum);
-				return -1;
-			}
-			else
-			{
-				ary_options = tmp;
-				len = strlen(value) + 1;	/* +1 for terminating '\0' */
-				tmp = realloc(string_repo, string_repo_len + len);
-				if(tmp == NULL)
-				{
-					INIT_PRINT_ERR("memory allocation error, Option value in file %s line %d : %s=%s\n",
-					        fname, linenum, name, value);
-					return -1;
-				}
-				else
-				{
-					string_repo = tmp;
-					memcpy(string_repo + string_repo_len, value, len);
-					ary_options[num_options].id = id;
-					/* save the offset instead of the absolute address because realloc() could
-					 * change it */
-					ary_options[num_options].value = (const char *)string_repo_len;
-					num_options += 1;
-					string_repo_len += len;
-				}
-			}
+			INIT_PRINT_ERR("memory allocation error. Option in file %s line %d.\n",
+			        fname, linenum);
+			fclose(hfile);
+			return -1;
 		}
-
+		ary_options = tmp;
+		len = strlen(value) + 1;	/* +1 for terminating '\0' */
+		tmp = realloc(string_repo, string_repo_len + len);
+		if(tmp == NULL)
+		{
+			INIT_PRINT_ERR("memory allocation error, Option value in file %s line %d : %s=%s\n",
+			        fname, linenum, name, value);
+			fclose(hfile);
+			return -1;
+		}
+		string_repo = tmp;
+		memcpy(string_repo + string_repo_len, value, len);
+		ary_options[num_options].id = id;
+		/* save the offset instead of the absolute address because realloc() could
+		 * change it */
+		ary_options[num_options].value = (const char *)string_repo_len;
+		num_options += 1;
+		string_repo_len += len;
 	}
 
 	fclose(hfile);
 
 	for(i = 0; i < num_options; i++)
 	{
-		/* add start address of string_repo to get right pointer */
+		/* add start address of string_repo to get the right pointer */
 		ary_options[i].value = string_repo + (size_t)ary_options[i].value;
 	}
 

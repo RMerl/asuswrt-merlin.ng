@@ -1,7 +1,7 @@
-/* $Id: upnppermissions.c,v 1.20 2020/10/30 21:37:35 nanard Exp $ */
+/* $Id: upnppermissions.c,v 1.24 2025/04/21 22:56:49 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2023 Thomas Bernard
+ * (c) 2006-2026 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -21,11 +21,18 @@
 #include "config.h"
 #include "macros.h"
 #include "upnppermissions.h"
+#include "upnputils.h"
 
 static int
 isodigit(char c)
 {
 	return '0' <= c && c >= '7';
+}
+
+static int
+iseol(char c)
+{
+	return c == '\0' || c == '\n' || c == '\r';
 }
 
 static char
@@ -90,26 +97,94 @@ unescape_char(const char * s, int * seqlen)
 	return c;
 }
 
+/* greedy parser: try to match the longest sequence and do not
+ * check for terminators */
+
+static const char *
+get_sep(const char * s)
+{
+	if(!isspace(*s))
+		return NULL;
+	do
+		s++;
+	while(isspace(*s));
+	return (char *) s;
+}
+
+static const char *
+get_ushort(const char * s, u_short * val)
+{
+	char * end;
+	unsigned long val_ul;
+
+	if(!isdigit(*s))
+		return NULL;
+	val_ul = strtoul(s, &end, 10);
+	if(val_ul > 65535)
+		return NULL;
+	*val = (u_short)val_ul;
+
+	return end;
+}
+
+static const char *
+get_range(const char * s, u_short * begin, u_short * end)
+{
+	s = get_ushort(s, begin);
+	if(!s)
+		return NULL;
+
+	if(*s!='-')
+		*end = *begin;
+	else
+	{
+		s++;
+		s = get_ushort(s, end);
+		if(!s)
+			return NULL;
+		if(*begin > *end)
+			return NULL;
+	}
+	return s;
+}
+
+static const char *
+get_addr(const char * s, struct in_addr * addr, unsigned int * dot_cnt)
+{
+	size_t i;
+	char buf[64];
+
+	if(!isdigit(*s))
+		return NULL;
+
+	*dot_cnt = 0;
+	for(i = 0; isdigit(s[i]) || s[i] == '.';)
+	{
+		if(s[i] == '.')
+			(*dot_cnt)++;
+		buf[i] = s[i];
+		i++;
+		if (i > sizeof(buf) - 1)
+			return NULL;
+	}
+
+	buf[i] = '\0';
+	if(!inet_aton(buf, addr))
+		return NULL;
+
+	return s + i;
+}
+
 /* get_next_token(s, &token, raw)
  * put the unquoted/unescaped token in token and returns
  * a pointer to the begining of the next token
  * Do not unescape if raw is true */
-static char *
+static const char *
 get_next_token(const char * s, char ** token, int raw)
 {
 	char deli;
-	const char * end;
+	size_t len;
 
-	/* skip any whitespace */
-	for(; isspace(*s); s++)
-		if(*s == '\0' || *s == '\n')
-		{
-			if(token)
-				*token = NULL;
-			return (char *) s;
-		}
-
-	/* find the start */
 	if(*s == '"' || *s == '\'')
 	{
 		deli = *s;
@@ -118,85 +193,90 @@ get_next_token(const char * s, char ** token, int raw)
 	else
 		deli = 0;
 	/* find the end */
-	end = s;
-	for(; *end != '\0' && *end != '\n' && (deli ? *end != deli : !isspace(*end));
-	    end++)
-		if(*end == '\\')
+	for(len = 0; !iseol(s[len]) && (deli ? s[len] != deli : !isspace(s[len]));
+	    len++)
+		if(s[len] == '\\')
 		{
-			end++;
-			if(*end == '\0')
+			len++;
+			if(iseol(s[len]))
 				break;
 		}
 
 	/* save the token */
 	if(token)
 	{
-		unsigned int token_len;
-		unsigned int i;
-
-		token_len = end - s;
-		*token = strndup(s, token_len);
-		if(!*token)
-			return NULL;
-
-		for(i = 0; (*token)[i] != '\0'; i++)
-		{
-			int sequence_len;
-
-			if((*token)[i] != '\\')
-				continue;
-
-			if(raw && deli && (*token)[i + 1] != deli)
-				continue;
-			(*token)[i] = unescape_char(*token + i, &sequence_len);
-			memmove(*token + i + 1, *token + i + sequence_len,
-			        token_len - i - sequence_len);
-		}
-		if (i == 0)
-		{
-			/* behavior of realloc(p, 0) is implementation-defined, so better set it to NULL.
-			 * https://github.com/miniupnp/miniupnp/issues/652#issuecomment-1518922139 */
-			free(*token);
+		if(len == 0)
 			*token = NULL;
-		}
 		else
 		{
-			char * tmp = realloc(*token, i);
-			if (tmp != NULL)
-				*token = tmp;
+			unsigned int i;
+			unsigned int j;
+
+			char * tmp;
+			char * t;
+
+			t = malloc(len + 1);
+			if(!t)
+				return NULL;
+
+			if (raw)
+			{
+				memcpy(t, s, len);
+				j = len;
+			}
 			else
-				syslog(LOG_ERR, "%s: failed to reallocate to %u bytes",
-				       "get_next_token()", i);
+			{
+				for(i = 0, j = 0; i < len; j++)
+					if(s[i] != '\\')
+					{
+						t[j] = s[i];
+						i++;
+					}
+					else
+					{
+						int seqlen;
+						t[j] = unescape_char(s + i, &seqlen);
+						i += seqlen;
+						if (i > len)
+							break;
+					}
+
+				tmp = realloc(*token, j + 1);
+				if (tmp != NULL)
+					t = tmp;
+				else
+					syslog(LOG_ERR, "%s: failed to reallocate to %u bytes",
+					"get_next_token()", j + 1);
+			}
+			t[j] = '\0';
+			*token = t;
 		}
 	}
 
-	/* return the beginning of the next token */
-	if(deli && *end == deli)
-		end++;
-	while(isspace(*end))
-		end++;
-	return (char *) end;
+	s += len;
+	if(deli && *s == deli)
+		s++;
+	return s;
 }
 
 /* read_permission_line()
  * parse the a permission line which format is :
- * (deny|allow) [0-9]+(-[0-9]+) ip/mask [0-9]+(-[0-9]+) regex
+ * (deny|allow) [0-9]+(-[0-9]+)? ip(/mask)? [0-9]+(-[0-9]+)? (regex)?
  * ip/mask is either 192.168.1.1/24 or 192.168.1.1/255.255.255.0
  */
 int
 read_permission_line(struct upnpperm * perm,
-                     char * p)
+                     const char * p)
 {
-	char * q;
-	int n_bits;
-	int i;
+	unsigned int dot_cnt;
 
 	/* zero memory : see https://github.com/miniupnp/miniupnp/issues/652 */
 	memset(perm, 0, sizeof(struct upnpperm));
 
-	/* first token: (allow|deny) */
 	while(isspace(*p))
 		p++;
+
+	/* first token: (allow|deny) */
 	if(0 == memcmp(p, "allow", 5))
 	{
 		perm->type = UPNPPERM_ALLOW;
@@ -211,133 +291,61 @@ read_permission_line(struct upnpperm * perm,
 	{
 		return -1;
 	}
-	while(isspace(*p))
-		p++;
+
+	p = get_sep(p);
+	if(!p)
+		return -1;
 
 	/* second token: eport or eport_min-eport_max */
-	if(!isdigit(*p))
+	p = get_range(p, &perm->eport_min, &perm->eport_max);
+	if(!p)
 		return -1;
-	for(q = p; isdigit(*q); q++);
-	if(*q=='-')
-	{
-		*q = '\0';
-		i = atoi(p);
-		if(i > 65535)
-			return -1;
-		perm->eport_min = (u_short)i;
-		q++;
-		p = q;
-		while(isdigit(*q))
-			q++;
-		*q = '\0';
-		i = atoi(p);
-		if(i > 65535)
-			return -1;
-		perm->eport_max = (u_short)i;
-		if(perm->eport_min > perm->eport_max)
-			return -1;
-	}
-	else if(isspace(*q))
-	{
-		*q = '\0';
-		i = atoi(p);
-		if(i > 65535)
-			return -1;
-		perm->eport_min = perm->eport_max = (u_short)i;
-	}
+
+	p = get_sep(p);
+	if(!p)
+		return -1;
+
+	/* third token: ip/mask */
+	p = get_addr(p, &perm->address, &dot_cnt);
+	if(!p)
+		return -1;
+
+	if(*p!='/')
+		perm->mask.s_addr = 0xffffffffu;
 	else
 	{
-		return -1;
-	}
-	p = q + 1;
-	while(isspace(*p))
 		p++;
-
-	/* third token:  ip/mask */
-	if(!isdigit(*p))
-		return -1;
-	for(q = p; isdigit(*q) || (*q == '.'); q++);
-	if(*q=='/')
-	{
-		*q = '\0';
-		if(!inet_aton(p, &perm->address))
+		p = get_addr(p, &perm->mask, &dot_cnt);
+		if(!p)
 			return -1;
-		q++;
-		p = q;
-		while(isdigit(*q))
-			q++;
-		if(*q == '.')
+		/* inet_aton(): When only one part is given, the value is stored
+		 * directly in the network address without any byte
+		 * rearrangement. */
+		if(!dot_cnt)
 		{
-			while(*q == '.' || isdigit(*q))
-				q++;
-			if(!isspace(*q))
-				return -1;
-			*q = '\0';
-			if(!inet_aton(p, &perm->mask))
-				return -1;
-		}
-		else if(!isspace(*q))
-			return -1;
-		else
-		{
-			*q = '\0';
-			n_bits = atoi(p);
+			unsigned int n_bits = ntohl(perm->mask.s_addr);
 			if(n_bits > 32)
 				return -1;
-			perm->mask.s_addr = htonl(n_bits ? (0xffffffffu << (32 - n_bits)) : 0);
+			perm->mask.s_addr = !n_bits ? 0 : htonl(0xffffffffu << (32 - n_bits));
 		}
 	}
-	else if(isspace(*q))
-	{
-		*q = '\0';
-		if(!inet_aton(p, &perm->address))
-			return -1;
-		perm->mask.s_addr = 0xffffffffu;
-	}
-	else
-	{
+
+	p = get_sep(p);
+	if(!p)
 		return -1;
-	}
-	p = q + 1;
 
 	/* fourth token: iport or iport_min-iport_max */
-	while(isspace(*p))
-		p++;
-	if(!isdigit(*p))
+	p = get_range(p, &perm->iport_min, &perm->iport_max);
+	if(!p)
 		return -1;
-	for(q = p; isdigit(*q); q++);
-	if(*q=='-')
-	{
-		*q = '\0';
-		i = atoi(p);
-		if(i > 65535)
-			return -1;
-		perm->iport_min = (u_short)i;
-		q++;
-		p = q;
-		while(isdigit(*q))
-			q++;
-		*q = '\0';
-		i = atoi(p);
-		if(i > 65535)
-			return -1;
-		perm->iport_max = (u_short)i;
-		if(perm->iport_min > perm->iport_max)
-			return -1;
-	}
-	else if(isspace(*q) || *q == '\0')
-	{
-		*q = '\0';
-		i = atoi(p);
-		if(i > 65535)
-			return -1;
-		perm->iport_min = perm->iport_max = (u_short)i;
-	}
-	else
-	{
+
+	if(iseol(*p) || *p == '#')
+		goto end;
+	p = get_sep(p);
+	if(!p)
 		return -1;
-	}
-	p = q;
+	if(iseol(*p) || *p == '#')
+		goto end;
 
 	/* fifth token: (optional) regex */
 	p = get_next_token(p, &perm->re, 1);
@@ -380,6 +388,7 @@ read_permission_line(struct upnpperm * perm,
 		}
 	}
 
+end:
 #ifdef DEBUG
 	printf("perm rule added : %s %hu-%hu %08x/%08x %hu-%hu %s\n",
 	       (perm->type==UPNPPERM_ALLOW) ? "allow" : "deny",
@@ -426,8 +435,26 @@ write_permlist(int fd, const struct upnpperm * permary,
 		write(fd, buf, l);
 		if(perm->re)
 		{
-			write(fd, " ", 1);
-			write(fd, perm->re, strlen(perm->re));
+			const char * p;
+			write(fd, " \"", 2);
+			for(p = perm->re; *p != '\0'; p++)
+			{
+				if(*p == '"')
+				{
+					write(fd, "\\\"", 2);
+					continue;
+				}
+
+				if(*p == '\\')
+				{
+					write(fd, p, 1);
+					p++;
+					if(*p == '\0')
+						break;
+				}
+				write(fd, p, 1);
+			}
+			write(fd, "\"", 1);
 		}
 		write(fd, "\n", 1);
 	}

@@ -7,6 +7,13 @@
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
+/*! \file upnpstun.c
+ * \brief STUN client implementation
+ *
+ * - https://datatracker.ietf.org/doc/html/rfc3489 (obsolete)
+ * - https://datatracker.ietf.org/doc/html/rfc5389
+ * - https://datatracker.ietf.org/doc/html/rfc5780 (experimental)
+ */
 #include <sys/select.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -21,10 +28,7 @@
 #include <string.h>
 #include <errno.h>
 
-#ifndef TEST_LINUX_DEBUG_APP
 #include "config.h"
-#endif
-
 #include "upnputils.h"
 #include "upnpstun.h"
 
@@ -41,13 +45,8 @@
 #include "ipfw/ipfwrdr.h"
 #endif
 
-#ifdef TEST_LINUX_DEBUG_APP
-static int add_filter_rule2(const char *ifname, const char *rhost, const char *iaddr, unsigned short eport, unsigned short iport, int proto, const char *desc);
-static int delete_filter_rule(const char * ifname, unsigned short port, int proto);
-#define syslog(priority, format, ...) do { switch(priority) { case LOG_ERR: printf("Error: "); break; case LOG_WARNING: printf("Warning: "); } printf(format, ##__VA_ARGS__); putchar('\n'); } while (0)
-#endif
-
-/* Generate random STUN Transaction Id */
+/*! \brief Generate random STUN Transaction Id
+ * \param[out] transaction_id */
 static void generate_transaction_id(unsigned char transaction_id[12])
 {
 	size_t i;
@@ -56,7 +55,10 @@ static void generate_transaction_id(unsigned char transaction_id[12])
 		transaction_id[i] = random() & 255;
 }
 
-/* Create and fill STUN Binding Request */
+/*! \brief Create and fill STUN Binding Request
+ * \param[out] buffer
+ * \param[in] change_ip
+ * \param[in] change_port */
 static void fill_request(unsigned char buffer[28], int change_ip, int change_port)
 {
 	/* Type: Binding Request */
@@ -90,14 +92,18 @@ static void fill_request(unsigned char buffer[28], int change_ip, int change_por
 	buffer[27] = 0x00;
 
 	/* Change IP */
-	buffer[27] |= change_ip ? 0x4 : 0x00;
+	if (change_ip) buffer[27] |= 0x4;
 
 	/* Change Port */
-	buffer[27] |= change_port ? 0x2 : 0x00;
+	if (change_port) buffer[27] |= 0x2;
 }
 
-/* Resolve STUN host+port and return sockaddr_in structure */
-/* When port is 0 then use default STUN port */
+/*! \brief Resolve STUN host+port and return sockaddr_in structure
+ * When port is 0 then use default STUN port
+ * \param[in] stun_host
+ * \param[in] stun_port
+ * \param[out] sock_addr
+ * \return -1 for error */
 static int resolve_stun_host(const char *stun_host, unsigned short stun_port, struct sockaddr_in *sock_addr)
 {
 	int have_sock;
@@ -151,7 +157,9 @@ static int resolve_stun_host(const char *stun_host, unsigned short stun_port, st
 	return 0;
 }
 
-/* Create a new UDP socket for STUN connection and return file descriptor and local UDP port */
+/*! \brief Create a new UDP socket for STUN connection
+ * \param[out] local_port local UDP port
+ * \return file descriptor */
 static int stun_socket(unsigned short *local_port)
 {
 	int fd;
@@ -190,7 +198,13 @@ static int stun_socket(unsigned short *local_port)
 	return fd;
 }
 
-/* Receive STUN response message for specified Transaction Id and returns message and peer address */
+/*! \brief Receive STUN response message for specified Transaction Id
+ * \param[in] fd socket
+ * \param[out] buffer receiving buffer
+ * \param[in] transaction_id transaction id to check for
+ * \param[in] buffer_len receiving buffer length
+ * \param[out] peer_addr peer address
+ * \return message size or 0 for error */
 static size_t receive_stun_response(int fd, unsigned char *buffer, unsigned char transaction_id[12], size_t buffer_len, struct sockaddr_in *peer_addr)
 {
 	ssize_t len;
@@ -228,7 +242,14 @@ static size_t receive_stun_response(int fd, unsigned char *buffer, unsigned char
 	return len;
 }
 
-/* Wait for STUN response messages and try to receive them */
+/*! \brief Wait for STUN response messages and try to receive them
+ * \param[in] fds
+ * \param[in] transaction_ids
+ * \param[out] buffers
+ * \param[in] buffer_lens
+ * \param[out] peer_addrs
+ * \param[out] lens
+ * \return -1 for error, 0 for success */
 static int wait_for_stun_responses(int fds[4], unsigned char *transaction_ids[4], unsigned char *buffers[4], size_t buffers_lens[4], struct sockaddr_in peer_addrs[4], size_t lens[4])
 {
 	fd_set fdset;
@@ -279,7 +300,73 @@ static int wait_for_stun_responses(int fds[4], unsigned char *transaction_ids[4]
 	return 0;
 }
 
-/* Parse Mapped Address (with port) from STUN response message */
+/*! \brief Convert STUN Attribute type to name
+ * see :
+ * - RFC 3489 11.2 Message Attributes
+ * - RFC 5389 18.2 STUN Attribute Registry
+ * - RFC 5780 9.1 STUN Attribute Registry
+ * \param[in] attr_type 16 bits attribute type
+ * \return the attribute name */
+static const char * get_stun_attr_name(uint16_t attr_type)
+{
+	switch(attr_type) {
+	case 0x0001:	/* RFC 3489 */
+		return "MAPPED-ADDRESS";
+	case 0x0002:	/* RFC 3489, removed in RFC 5389 */
+		return "RESPONSE-ADDRESS";
+	case 0x0003:	/* RFC 3489, removed in RFC 5389, added again in RFC 5780*/
+		return "CHANGE-REQUEST";
+	case 0x0004:	/* RFC 3489, removed in RFC 5389 */
+		return "SOURCE-ADDRESS";
+	case 0x0005:	/* RFC 3489, removed in RFC 5389*/
+		return "CHANGED-ADDRESS";
+	case 0x0006:	/* RFC 3489 */
+		return "USERNAME";
+	case 0x0007:	/* RFC 3489, removed in RFC 5389 */
+		return "PASSWORD";
+	case 0x0008:	/* RFC 3489 */
+		return "MESSAGE-INTEGRITY";
+	case 0x0009:	/* RFC 3489 */
+		return "ERROR-CODE";
+	case 0x000a:	/* RFC 3489 */
+		return "UNKNOWN-ATTRIBUTES";
+	case 0x000b:	/* RFC 3489, removed in RFC 5389 */
+		return "REFLECTED-FROM";
+	case 0x0014:	/* RFC 5389 */
+		return "REALM";
+	case 0x0015:	/* RFC 5389 */
+		return "NONCE";
+	case 0x0020:	/* RFC 5389 */
+	case 0x8020:	/* Was XOR-MAPPED-ADDRESS (draft 2 of 2005) */
+		return "XOR-MAPPED-ADDRESS";
+	case 0x0026:	/* RFC 5780 */
+		return "PADDING";
+	case 0x0027:	/* RFC 5780 */
+		return "RESPONSE-PORT";
+
+	case 0x8022:	/* RFC 5389 */
+		return "SOFTWARE";
+	case 0x8023:	/* RFC 5389 */
+		return "ALTERNATE-SERVER";
+	case 0x8027:	/* RFC 5780 */
+		return "CACHE-TIMEOUT";
+	case 0x8028:	/* RFC 5389 */
+		return "FINGERPRINT";
+	case 0x802b:	/* RFC 5780 */
+		return "RESPONSE-ORIGIN";
+	case 0x802c:	/* RFC 5780 */
+		return "OTHER-ADDRESS";
+	default:
+		return "!UNKOWN!";
+	}
+}
+
+/*! \brief parse STUN response message
+ * Parse Mapped Address (with port) from STUN response message
+ * \param[in] buffer STUN message
+ * \param[in] len STUN message length
+ * \param[out] mapped_addr Mapped Address
+ * \return -1 for error, 0 for success */
 static int parse_stun_response(unsigned char *buffer, size_t len, struct sockaddr_in *mapped_addr)
 {
 	unsigned char *ptr, *end;
@@ -287,6 +374,7 @@ static int parse_stun_response(unsigned char *buffer, size_t len, struct sockadd
 	uint16_t attr_len;
 	int have_address;
 	int have_xor_mapped_address;
+	int have_other_address;
 
 	if (len < 20)
 		return -1;
@@ -310,6 +398,7 @@ static int parse_stun_response(unsigned char *buffer, size_t len, struct sockadd
 	end = buffer + len;
 	have_address = 0;
 	have_xor_mapped_address = 0;
+	have_other_address = 0;
 
 	while (ptr + 4 <= end) {
 
@@ -325,7 +414,7 @@ static int parse_stun_response(unsigned char *buffer, size_t len, struct sockadd
 		switch (attr_type) {
 		case 0x0001:	/* MAPPED-ADDRESS */
 		case 0x0020:	/* XOR-MAPPED-ADDRESS (RFC 5389) */
-		case 0x8020:	/* XOR-MAPPED-ADDRESS (2005 draft) */
+		case 0x8020:	/* Was XOR-MAPPED-ADDRESS (draft 2 of 2005) */
 			/* Mapped Address or XOR Mapped Address */
 			if (attr_len == 8 && ptr[1] == 1) {
 				/* IPv4 address */
@@ -341,7 +430,7 @@ static int parse_stun_response(unsigned char *buffer, size_t len, struct sockadd
 
 				syslog(LOG_DEBUG, "%s: %s %hhu.%hhu.%hhu.%hhu:%hu",
 				       "parse_stun_response",
-				       ((attr_type & 0x7fff) == 0x0020) ? "XOR-MAPPED-ADDRESS" : "MAPPED-ADDRESS",
+				       get_stun_attr_name(attr_type),
 				       ptr[4], ptr[5], ptr[6], ptr[7],
 				       (uint16_t)((ptr[2] << 8) + ptr[3]));
 
@@ -365,32 +454,40 @@ static int parse_stun_response(unsigned char *buffer, size_t len, struct sockadd
 			       attr_len - 4, ptr + 4);
 			}
 			break;
-		case 0x0004:	/* SOURCE-ADDRESS (RFC 3489) */
-		case 0x0005:	/* CHANGED-ADDRESS (RFC 3489) */
 		case 0x802b:	/* RESPONSE-ORIGIN (RFC 5780) */
+		case 0x0004:	/* Was SOURCE-ADDRESS (RFC 3489) */
 		case 0x802c:	/* OTHER-ADDRESS (RFC 5780) */
+		case 0x0005:	/* Was CHANGED-ADDRESS (RFC 3489) */
 			if (attr_len == 8 && ptr[1] == 1) {
+				if (attr_type == 0x802c || attr_type == 0x0005) have_other_address = 1;
 				syslog(LOG_DEBUG, "%s: %s %hhu.%hhu.%hhu.%hhu:%hu",
 				       "parse_stun_response",
-				       (attr_type == 0x0004) ? "SOURCE-ADDRESS" :
-				       (attr_type == 0x0005) ? "CHANGED-ADDRESS" :
-				       (attr_type == 0x802b) ? "RESPONSE-ORIGIN" : "OTHER-ADDRESS",
+				       get_stun_attr_name(attr_type),
 				       ptr[4], ptr[5], ptr[6], ptr[7],
 				       (uint16_t)((ptr[2] << 8) + ptr[3]));
 			}
 			break;
-		case 0x8022:	/* SOFTWARE (RFC 5780) */
+		case 0x8022:	/* SOFTWARE (RFC 5389) */
 			syslog(LOG_DEBUG, "%s: SOFTWARE %.*s", "parse_stun_response", attr_len, ptr);
 			break;
 		default:
-			syslog(LOG_WARNING, "%s: unknown attribute type 0x%04x (len=%hu)",
-			       "parse_stun_response", attr_type, attr_len);
+			/* Attributes 0x0000-0x7FFF are Comprehension-required */
+			syslog((attr_type & 0x8000) ? LOG_DEBUG : LOG_WARNING,
+			       "%s: ignored attribute type 0x%04x %s (len=%hu)",
+			       "parse_stun_response",
+			       attr_type, get_stun_attr_name(attr_type), attr_len);
 		}
 
 		ptr += attr_len;
 	}
 
-	return have_address ? 0 : -1;
+	if (!have_other_address && have_address) {
+		syslog(LOG_ERR, "STUN server not supported, not returning "
+			"OTHER-ADDRESS / support CHANGE-REQUEST's required for "
+			"endpoint-independent (1:1) CGNAT filtering tests per RFC 5780.");
+		return -1;
+	}
+	return (have_address && have_other_address) ? 0 : -1;
 }
 
 /* Perform main STUN operation, return external IP address and check
@@ -430,7 +527,10 @@ int perform_stun(const char *if_name, const char *if_addr, const char *stun_host
 			return -1;
 		}
 
-		fill_request(requests[i], i/2, i%2);
+		/* Determine unrestricted endpoint-independent (1:1) CGNAT in two STUN requests per RFC 5780 4.4 test I/II */
+		/* 1. Connectivity (binding, detect public IPv4), 2. CHANGE-REQUEST with change-IP and change-port set */
+		/* https://datatracker.ietf.org/doc/html/rfc5780#section-4.4 */
+		fill_request(requests[i], i, i);
 		transaction_ids[i] = requests[i]+8;
 	}
 
@@ -531,76 +631,3 @@ int perform_stun(const char *if_name, const char *if_addr, const char *stun_host
 	/* There is no filtering, so port forwarding would work fine */
 	return 0;
 }
-
-#ifdef TEST_LINUX_DEBUG_APP
-
-/* This linux test application for debugging purposes can be compiled as: */
-/* gcc upnpstun.c upnputils.o -o upnpstun -g3 -W -Wall -O2 -DTEST_LINUX_DEBUG_APP */
-
-#include <arpa/inet.h>
-#include <time.h>
-
-#include "upnpglobalvars.h"
-struct lan_addr_list lan_addrs;
-int runtime_flags = 0;
-time_t startup_time = 0;
-
-static int add_filter_rule2(const char *ifname, const char *rhost, const char *iaddr, unsigned short eport, unsigned short iport, int proto, const char *desc)
-{
-	char buffer[100];
-	ifname = ifname;
-	rhost = rhost;
-	iaddr = iaddr;
-	iport = iport;
-	desc = desc;
-	snprintf(buffer, sizeof(buffer), "/sbin/iptables -t filter -I INPUT -p %d --dport %hu -j ACCEPT", proto, eport);
-	printf("Executing: %s\n", buffer);
-	return system(buffer);
-}
-
-static int delete_filter_rule(const char * ifname, unsigned short port, int proto)
-{
-	char buffer[100];
-	ifname = ifname;
-	snprintf(buffer, sizeof(buffer), "/sbin/iptables -t filter -D INPUT -p %d --dport %hu -j ACCEPT", proto, port);
-	printf("Executing: %s\n", buffer);
-	return system(buffer);
-}
-
-int main(int argc, char *argv[])
-{
-	struct in_addr ext_addr;
-	int restrictive_nat;
-	int ret;
-	char str[INET_ADDRSTRLEN];
-
-	if (argc != 3 && argc != 2) {
-		printf("Usage: %s stun_host [stun_port]\n", argv[0]);
-		return 1;
-	}
-
-	if (geteuid() != 0) {
-		printf("You need to run this application as root\n");
-		return 1;
-	}
-
-	if (argc == 2)
-		argv[2] = "0";
-
-	srandom(time(NULL) * getpid());
-
-	ret = perform_stun(NULL, NULL, argv[1], atoi(argv[2]), &ext_addr, &restrictive_nat);
-	if (ret != 0) {
-		printf("STUN Failed: %s\n", strerror(errno));
-		return 1;
-	}
-
-	if (!inet_ntop(AF_INET, &ext_addr, str, INET_ADDRSTRLEN))
-		str[0] = 0;
-
-	printf("External IP address: %s\n", str);
-	printf("Restrictive NAT: %s\n", restrictive_nat ? "active (port forwarding impossible)" : "not used (ready for port forwarding)");
-	return 0;
-}
-
-#endif

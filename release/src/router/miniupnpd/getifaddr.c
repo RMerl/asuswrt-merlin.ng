@@ -1,8 +1,8 @@
-/* $Id: getifaddr.c,v 1.28 2022/02/19 18:58:25 nanard Exp $ */
+/* $Id: getifaddr.c,v 1.31 2025/04/08 21:28:42 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2024 Thomas Bernard
+ * (c) 2006-2025 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -16,6 +16,7 @@
 #include <net/if.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <errno.h>
 #if defined(sun)
 #include <sys/sockio.h>
 #endif
@@ -28,6 +29,9 @@
 #if defined(BCMARM)
 #include "ifaddrs.c"
 #endif
+#if defined(BCMARM)
+#include "ifaddrs.c"
+#endif
 
 int
 getifaddr(const char * ifname, char * buf, int len,
@@ -36,62 +40,66 @@ getifaddr(const char * ifname, char * buf, int len,
 #ifndef USE_GETIFADDRS
 	/* use ioctl SIOCGIFADDR. Works only for ip v4 */
 	/* SIOCGIFADDR struct ifreq *  */
-	int s;
+	int s, r;
 	struct ifreq ifr;
 	int ifrlen;
 	struct sockaddr_in * ifaddr;
 	ifrlen = sizeof(ifr);
 
 	if(!ifname || ifname[0]=='\0')
-		return -1;
+		return GETIFADDR_BAD_ARGS;
 	s = socket(PF_INET, SOCK_DGRAM, 0);
-	if(s < 0)
-	{
+	if(s < 0) {
 		syslog(LOG_ERR, "socket(PF_INET, SOCK_DGRAM): %m");
-		return -1;
+		return GETIFADDR_SOCKET_ERROR;
 	}
 	strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
 	ifr.ifr_name[IFNAMSIZ-1] = '\0';
-	if(ioctl(s, SIOCGIFFLAGS, &ifr, &ifrlen) < 0)
-	{
+	if(ioctl(s, SIOCGIFFLAGS, &ifr, &ifrlen) < 0) {
+		if (errno == ENXIO || errno == ENODEV) {
+			/* Device not configured */
+			r = GETIFADDR_DEVICE_NOT_CONFIGURED;
+		} else {
+			r = GETIFADDR_IOCTL_ERROR;
+		}
 		syslog(LOG_DEBUG, "ioctl(s, SIOCGIFFLAGS, ...): %m");
 		close(s);
-		return -1;
+		return r;
 	}
-	if ((ifr.ifr_flags & IFF_UP) == 0)
-	{
+	if ((ifr.ifr_flags & IFF_UP) == 0) {
 		syslog(LOG_DEBUG, "network interface %s is down", ifname);
 		close(s);
-		return -1;
+		return GETIFADDR_IF_DOWN;
 	}
 	strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
 	ifr.ifr_name[IFNAMSIZ-1] = '\0';
-	if(ioctl(s, SIOCGIFADDR, &ifr, &ifrlen) < 0)
-	{
+	if(ioctl(s, SIOCGIFADDR, &ifr, &ifrlen) < 0) {
+		if (errno == EADDRNOTAVAIL) {
+			/* Can't assign requested address */
+			r = GETIFADDR_NO_ADDRESS;
+		} else {
+			r = GETIFADDR_IOCTL_ERROR;
+		}
 		syslog(LOG_ERR, "ioctl(s, SIOCGIFADDR, ...): %m");
 		close(s);
-		return -1;
+		return r;
 	}
 	ifaddr = (struct sockaddr_in *)&ifr.ifr_addr;
 	if(addr) *addr = ifaddr->sin_addr;
-	if(buf)
-	{
-		if(!inet_ntop(AF_INET, &ifaddr->sin_addr, buf, len))
-		{
+	if(buf) {
+		if(!inet_ntop(AF_INET, &ifaddr->sin_addr, buf, len)) {
 			syslog(LOG_ERR, "inet_ntop(): %m");
 			close(s);
-			return -1;
+			return GETIFADDR_INET_NTOP_ERROR;
 		}
 	}
-	if(mask)
-	{
+	if(mask) {
 		strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
 		ifr.ifr_name[IFNAMSIZ-1] = '\0';
-		if(ioctl(s, SIOCGIFNETMASK, &ifr, &ifrlen) < 0)
-		{
+		if(ioctl(s, SIOCGIFNETMASK, &ifr, &ifrlen) < 0) {
 			syslog(LOG_ERR, "ioctl(s, SIOCGIFNETMASK, ...): %m");
 			close(s);
-			return -1;
+			return GETIFADDR_IOCTL_ERROR;
 		}
 #ifdef ifr_netmask
 		*mask = ((struct sockaddr_in *)&ifr.ifr_netmask)->sin_addr;
@@ -107,14 +115,12 @@ getifaddr(const char * ifname, char * buf, int len,
 	struct ifaddrs * candidate = NULL;
 
 	if(!ifname || ifname[0]=='\0')
-		return -1;
-	if(getifaddrs(&ifap)<0)
-	{
+		return GETIFADDR_BAD_ARGS;
+	if(getifaddrs(&ifap) < 0) {
 		syslog(LOG_ERR, "getifaddrs: %m");
-		return -1;
+		return GETIFADDR_GETIFADDRS_ERROR;
 	}
-	for(ife = ifap; ife; ife = ife->ifa_next)
-	{
+	for(ife = ifap; ife; ife = ife->ifa_next) {
 		/* skip other interfaces if one was specified */
 		if(ifname && (0 != strcmp(ifname, ife->ifa_name)))
 			continue;
@@ -140,26 +146,22 @@ getifaddr(const char * ifname, char * buf, int len,
 */
 		}
 	}
-	if(candidate)
-	{
-		if(buf)
-		{
+	if(candidate) {
+		if(buf) {
 			inet_ntop(candidate->ifa_addr->sa_family,
 			          &((struct sockaddr_in *)candidate->ifa_addr)->sin_addr,
 			          buf, len);
 		}
 		if(addr) *addr = ((struct sockaddr_in *)candidate->ifa_addr)->sin_addr;
 		if(mask) *mask = ((struct sockaddr_in *)candidate->ifa_netmask)->sin_addr;
-	}
-	else
-	{
+	} else {
 		syslog(LOG_WARNING, "no AF_INET address found for %s", ifname);
 		freeifaddrs(ifap);
-		return -1;
+		return GETIFADDR_NO_ADDRESS;
 	}
 	freeifaddrs(ifap);
 #endif
-	return 0;
+	return GETIFADDR_OK;
 }
 
 #ifdef ENABLE_PCP

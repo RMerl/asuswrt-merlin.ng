@@ -1,0 +1,7 @@
+{
+    "files.watcherExclude": {
+        "**/dev/amng/release/**/kernel-4.1/**": true,
+        "**/dev/amng/release/**/kernel-4.19/**": true,
+        "**/dev/amng/release/**/bcmdrivers/**": true
+    },
+}

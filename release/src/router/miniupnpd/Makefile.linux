@@ -88,7 +88,8 @@ ifeq ($(TESTS), 1)
 EXECUTABLES += testupnpdescgen testgetifstats \
                testupnppermissions testgetifaddr \
                testgetroute testasyncsendto testportinuse \
-               testssdppktgen testminissdp testifacewatcher
+               testssdppktgen testminissdp testifacewatcher \
+               teststun
 endif
 
 .PHONY:	all clean install dox
@@ -132,7 +133,10 @@ include $(SRCDIR)/check.mk
 include $(SRCDIR)/common.mk
 
 testportinuse:	testportinuse.o portinuse.o getifaddr.o \
-	iptcrdr.o
+	iptcrdr.o upnputils.o getroute.o
+
+teststun: teststun.o upnpstun.o \
+	iptcrdr.o upnputils.o getroute.o
 
 config.mk config.h:	$(SRCDIR)/configure $(SRCDIR)/VERSION
 	$(SHELL) $< $(CONFIG_OPTIONS)

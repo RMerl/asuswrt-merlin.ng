@@ -1,8 +1,8 @@
-/* $Id: miniupnpd.c,v 1.264 2024/06/22 18:14:08 nanard Exp $ */
+/* $Id: miniupnpd.c,v 1.268 2025/04/08 21:28:42 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2025 Thomas Bernard
+ * (c) 2006-2026 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -117,10 +117,17 @@ struct ctlelem {
 static struct nfq_handle *nfqHandle;
 static struct sockaddr_in ssdp;
 
+/* data for the callback */
+struct nfq_cb_data {
+	int sudp;
+	unsigned short http_port;
+	unsigned short https_port;
+};
+
 /* prototypes */
-static int nfqueue_cb( struct nfq_q_handle *qh, struct nfgenmsg *nfmsg, struct nfq_data *nfa, void *data) ;
-int identify_ip_protocol (char *payload);
-int get_udp_dst_port (char *payload);
+static int nfqueue_cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg, struct nfq_data *nfa, void *data);
+int identify_ip_protocol(const unsigned char *payload);
+int get_udp_dst_port(const unsigned char *payload);
 #endif	/* ENABLE_NFQUEUE */
 
 /* variables used by signals */
@@ -148,7 +155,7 @@ tomato_save(const char *fname)
 	unsigned short iport;
 	unsigned int leaseduration;
 	unsigned int timestamp;
-	char proto[4];
+	char proto[8];
 	char iaddr[32];
 	char desc[64];
 	char rhost[32];
@@ -541,7 +548,7 @@ ProcessIncomingHTTP(int shttpl, const char * protocol)
 
 #ifdef ENABLE_NFQUEUE
 
-int identify_ip_protocol(char *payload) {
+int identify_ip_protocol(const unsigned char *payload) {
     return payload[9];
 }
 
@@ -549,63 +556,55 @@ int identify_ip_protocol(char *payload) {
 /*
  * This function returns the destination port of the captured packet UDP
  */
-int get_udp_dst_port(char *payload) {
-        char *pkt_data_ptr = NULL;
-        pkt_data_ptr = payload + sizeof(struct ip);
+int get_udp_dst_port(const unsigned char *payload) {
+	/* Cast the UDP Header from the raw packet */
+	const struct udphdr *udp = (const struct udphdr *)(payload + sizeof(struct ip));
 
-    /* Cast the UDP Header from the raw packet */
-    struct udphdr *udp = (struct udphdr *) pkt_data_ptr;
-
-    /* get the dst port of the packet */
-    return(ntohs(udp->dest));
-
+	/* get the dst port of the packet */
+	return(ntohs(udp->dest));
 }
+
 static int
-OpenAndConfNFqueue(){
-
-        struct nfq_q_handle *myQueue;
-        struct nfnl_handle *netlinkHandle;
-
-        int fd = 0, e = 0;
+OpenAndConfNFqueue(struct nfq_cb_data * cb_data) {
+	struct nfq_q_handle *myQueue;
+	struct nfnl_handle *netlinkHandle;
+	int e;
 
 	inet_pton(AF_INET, "239.255.255.250", &(ssdp.sin_addr));
 
-        /* Get a queue connection handle from the module */
-        if (!(nfqHandle = nfq_open())) {
+	/* Get a queue connection handle from the module */
+	if (!(nfqHandle = nfq_open())) {
 		syslog(LOG_ERR, "Error in nfq_open(): %m");
-                return -1;
-        }
+		return -1;
+	}
 
-        /* Unbind the handler from processing any IP packets
-           Not totally sure why this is done, or if it's necessary... */
-        if ((e = nfq_unbind_pf(nfqHandle, AF_INET)) < 0) {
+	/* Unbind the handler from processing any IP packets
+	   Not totally sure why this is done, or if it's necessary... */
+	if ((e = nfq_unbind_pf(nfqHandle, AF_INET)) < 0) {
 		syslog(LOG_ERR, "Error in nfq_unbind_pf(): %m");
-                return -1;
-        }
+		return -1;
+	}
 
-        /* Bind this handler to process IP packets... */
-        if (nfq_bind_pf(nfqHandle, AF_INET) < 0) {
+	/* Bind this handler to process IP packets... */
+	if (nfq_bind_pf(nfqHandle, AF_INET) < 0) {
 		syslog(LOG_ERR, "Error in nfq_bind_pf(): %m");
-                return -1;
-        }
+		return -1;
+	}
 
-        /*      Install a callback on queue -Q */
-        if (!(myQueue = nfq_create_queue(nfqHandle,  nfqueue, &nfqueue_cb, NULL))) {
+	/*      Install a callback on queue -Q */
+	if (!(myQueue = nfq_create_queue(nfqHandle,  nfqueue, &nfqueue_cb, cb_data))) {
 		syslog(LOG_ERR, "Error in nfq_create_queue(): %m");
-                return -1;
-        }
+		return -1;
+	}
 
-        /*      Turn on packet copy mode */
-        if (nfq_set_mode(myQueue, NFQNL_COPY_PACKET, 0xffff) < 0) {
+	/*      Turn on packet copy mode */
+	if (nfq_set_mode(myQueue, NFQNL_COPY_PACKET, 0xffff) < 0) {
 		syslog(LOG_ERR, "Error setting packet copy mode (): %m");
-                return -1;
-        }
+		return -1;
+	}
 
-        netlinkHandle = nfq_nfnlh(nfqHandle);
-        fd = nfnl_fd(netlinkHandle);
-
-	return fd;
-
+	netlinkHandle = nfq_nfnlh(nfqHandle);
+	return nfnl_fd(netlinkHandle);
 }
 
 
@@ -615,24 +614,31 @@ static int nfqueue_cb(
                 struct nfq_data *nfa,
                 void *data) {
 
-	char	*pkt;
+	unsigned char *pkt;
 	struct nfqnl_msg_packet_hdr *ph;
+	struct nfq_cb_data * cb_data = (struct nfq_cb_data *)data;
 	ph = nfq_get_msg_packet_hdr(nfa);
 
 	if ( ph ) {
-
-		int id = 0, size = 0;
-		id = ntohl(ph->packet_id);
-
-		size = nfq_get_payload(nfa, &pkt);
-
-    		struct ip *iph = (struct ip *) pkt;
-
-		int id_protocol = identify_ip_protocol(pkt);
-
-		int dport = get_udp_dst_port(pkt);
-
+		struct ip *iph;
+		int id, size;
+		int id_protocol, dport;
 		int x = sizeof (struct ip) + sizeof (struct udphdr);
+
+		id = ntohl(ph->packet_id);
+		size = nfq_get_payload(nfa, &pkt);
+		if (size < 0) {
+			syslog(LOG_ERR, "nfq_get_payload failed");
+			return 1;
+		}
+		if (size < (int)(sizeof(struct ip) + sizeof(struct udphdr))) {
+			syslog(LOG_ERR, "nfq_get_payload too short: %d bytes", size);
+			return 1;
+		}
+
+		iph = (struct ip *) pkt;
+		id_protocol = identify_ip_protocol(pkt);
+		dport = get_udp_dst_port(pkt);
 
 		/* packets we are interested in are UDP multicast to 239.255.255.250:1900
 		 * and start with a data string M-SEARCH
@@ -648,16 +654,16 @@ static int nfqueue_cb(
 
 					struct udphdr *udp = (struct udphdr *) (pkt + sizeof(struct ip));
 
-					char *dd = pkt + x;
+					const char *dd = (char *)pkt + x;
 
 					struct sockaddr_in sendername;
 					sendername.sin_family = AF_INET;
 					sendername.sin_port = udp->source;
 					sendername.sin_addr.s_addr = iph->ip_src.s_addr;
 
-					/* printf("pkt found %s\n",dd);*/
-					ProcessSSDPData (sudp, dd, size - x,
-					                 &sendername, -1, (unsigned short) 5555);
+					/* @todo : use data to pass sudp and port/https_port */
+					ProcessSSDPData (cb_data->sudp, dd, size - x,
+					                 (struct sockaddr *)&sendername, -1, cb_data->http_port);
 				}
 			}
 		}
@@ -665,7 +671,7 @@ static int nfqueue_cb(
 		nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
 
 	} else {
-		syslog(LOG_ERR,"nfq_get_msg_packet_hdr failed");
+		syslog(LOG_ERR, "nfq_get_msg_packet_hdr failed");
 		return 1;
 		/* from nfqueue source: 0 = ok, >0 = soft error, <0 hard error */
 	}
@@ -673,17 +679,19 @@ static int nfqueue_cb(
 	return 0;
 }
 
-static void ProcessNFQUEUE(int fd){
+static void ProcessNFQUEUE(int fd) {
 	char buf[4096];
 
-	socklen_t len_r;
+	socklen_t len_r = sizeof(struct sockaddr_in);
 	struct sockaddr_in sendername;
-	len_r = sizeof(struct sockaddr_in);
 
-        int res = recvfrom(fd, buf, sizeof(buf), 0,
-			(struct sockaddr *)&sendername, &len_r);
-
-	nfq_handle_packet(nfqHandle, buf, res);
+	ssize_t res = recvfrom(fd, buf, sizeof(buf), 0,
+	                       (struct sockaddr *)&sendername, &len_r);
+	if (res < 0) {
+		syslog(LOG_ERR, "ProcessNFQUEUE recvfrom: %m");
+	} else {
+		nfq_handle_packet(nfqHandle, buf, res);
+	}
 }
 #endif
 
@@ -935,33 +943,59 @@ parselanaddr(struct lan_addr_s * lan_addr, const char * str, int debug_flag)
 	const char * p;
 	unsigned int n;
 	char tmp[16];
+	unsigned int dot_count = 0;
+	int only_digits_and_dots = 1;
 
 	memset(lan_addr, 0, sizeof(struct lan_addr_s));
 	p = str;
-	while(*p && *p != '/' && !isspace(*p))
+	while(*p && *p != '/' && !isspace(*p)) {
+		if (*p == '.')
+			dot_count++;
+		else if (!isdigit(*p))
+			only_digits_and_dots = 0;
 		p++;
+	}
 	n = p - str;
-	if(!isdigit(str[0]) && n < (int)sizeof(lan_addr->ifname))
-	{
-		/* not starting with a digit : suppose it is an interface name */
+	if(!only_digits_and_dots || dot_count != 3) {
+		/* not only digits and dots : suppose it is an interface name */
+		int r;
+		if (n >= (unsigned int)sizeof(lan_addr->ifname)) {
+			INIT_PRINT_ERR("interface name \"%.*s\" is too long (maximum is %d caracters)\n",
+			               n, str, (int)sizeof(lan_addr->ifname) - 1);
+			goto parselan_error;
+		}
 		memcpy(lan_addr->ifname, str, n);
 		lan_addr->ifname[n] = '\0';
-		if(getifaddr(lan_addr->ifname, lan_addr->str, sizeof(lan_addr->str),
-		             &lan_addr->addr, &lan_addr->mask) < 0) {
+		r = getifaddr(lan_addr->ifname, lan_addr->str, sizeof(lan_addr->str),
+		             &lan_addr->addr, &lan_addr->mask);
 #ifdef ENABLE_IPV6
-			fprintf(stderr, "interface \"%s\" has no IPv4 address\n", str);
-			syslog(LOG_NOTICE, "interface \"%s\" has no IPv4 address\n", str);
+		if(r == GETIFADDR_NO_ADDRESS) {
+			fprintf(stderr, "interface \"%s\" has no IPv4 address\n", lan_addr->ifname);
+			syslog(LOG_NOTICE, "interface \"%s\" has no IPv4 address\n", lan_addr->ifname);
 			lan_addr->str[0] = '\0';
 			lan_addr->addr.s_addr = htonl(0x00000000u);
 			lan_addr->mask.s_addr = htonl(0xffffffffu);
-#else /* ENABLE_IPV6 */
+		} else if(r != GETIFADDR_OK) {
+			INIT_PRINT_ERR("error getting address for interface %s\n", lan_addr->ifname);
 			goto parselan_error;
-#endif /* ENABLE_IPV6 */
 		}
-		/*printf("%s => %s\n", lan_addr->ifname, lan_addr->str);*/
-	}
-	else
-	{
+#else /* ENABLE_IPV6 */
+		if(r == GETIFADDR_NO_ADDRESS) {
+			INIT_PRINT_ERR("interface \"%s\" has no address\n", lan_addr->ifname);
+			goto parselan_error;
+		} else if (r == GETIFADDR_DEVICE_NOT_CONFIGURED) {
+			INIT_PRINT_ERR("interface \"%s\" is not configured\n", lan_addr->ifname);
+			goto parselan_error;
+		} else if (r == GETIFADDR_IF_DOWN) {
+			INIT_PRINT_ERR("interface \"%s\" is down\n", lan_addr->ifname);
+			goto parselan_error;
+		} else if(r != GETIFADDR_OK) {
+			INIT_PRINT_ERR("error getting address for interface %s\n", lan_addr->ifname);
+			goto parselan_error;
+		}
+#endif /* ENABLE_IPV6 */
+	} else { /* if(!only_digits_and_dots || dot_count != 3) */
+		/* only digits and 3 dots, so it looks like an IPv4 address */
 		if(n>15)
 			goto parselan_error;
 		memcpy(lan_addr->str, str, n);
@@ -1026,13 +1060,18 @@ parselanaddr(struct lan_addr_s * lan_addr, const char * str, int debug_flag)
 				return -1;
 			}
 			if(addr_is_reserved(&lan_addr->ext_ip_addr)) {
-				/* error */
-				INIT_PRINT_ERR("Error: option ext_ip address contains reserved / private address : %s\n", lan_addr->ext_ip_str);
-				return -1;
+				if (GETFLAG(ALLOWPRIVATEIPV4MASK)) {
+					syslog(LOG_WARNING, "IGNORED : option ext_ip address contains reserved / private address : %s", lan_addr->ext_ip_str);
+				} else {
+					/* error */
+					INIT_PRINT_ERR("Error: option ext_ip address contains reserved / private address : %s\n", lan_addr->ext_ip_str);
+					return -1;
+				}
 			}
 		}
 	}
 #else
+	/* add associated network interfaces (for bridges) */
 	while(*p) {
 		/* skip spaces */
 		while(*p && isspace(*p))
@@ -1070,13 +1109,6 @@ parselanaddr(struct lan_addr_s * lan_addr, const char * str, int debug_flag)
 			syslog(LOG_WARNING, "Cannot get index for network interface %s\n",
 			        lan_addr->ifname);
 		}
-	} else {
-#ifdef ENABLE_IPV6
-		INIT_PRINT_ERR("Error: please specify LAN network interface by name instead of IPv4 address : %s\n", str);
-		return -1;
-#else
-		syslog(LOG_NOTICE, "it is advised to use network interface name instead of %s", str);
-#endif
 	}
 	return 0;
 parselan_error:
@@ -1115,25 +1147,73 @@ int update_ext_ip_addr_from_stun(int init)
 		syslog(LOG_INFO, "Port forwarding is now enabled");
 	} else if ((init || !disable_port_forwarding) && restrictive_nat) {
 		if (addr_is_reserved(&if_addr)) {
-			syslog(LOG_WARNING, "STUN: ext interface %s with private IP address %s is now behind restrictive or symmetric NAT with public IP address %s which does not support port forwarding", ext_if_name, if_addr_str, ext_addr_str);
+			syslog(LOG_WARNING, "STUN: ext interface %s with private IP address %s is now possibly behind restrictive or symmetric NAT with public IP address %s which does not support port forwarding", ext_if_name, if_addr_str, ext_addr_str);
 			syslog(LOG_WARNING, "NAT on upstream router blocks incoming connections set by miniupnpd");
 			syslog(LOG_WARNING, "Turn off NAT on upstream router or change it to full-cone NAT 1:1 type");
 		} else {
 			syslog(LOG_WARNING, "STUN: ext interface %s has now public IP address %s but firewall filters incoming connections set by miniunnpd", ext_if_name, if_addr_str);
 			syslog(LOG_WARNING, "Check configuration of firewall on local machine and also on upstream router");
 		}
-		syslog(LOG_WARNING, "Port forwarding is now disabled");
+		if (!GETFLAG(ALLOWFILTEREDSTUNMASK)) {
+			syslog(LOG_WARNING, "Port forwarding is now disabled");
+			syslog(LOG_WARNING, "Set ext_perform_stun=allow-filtered if you still want to use port forwarding in current situation");
+		}
 	} else {
 		syslog(LOG_INFO, "STUN: ... done");
 	}
 
 	use_ext_ip_addr = ext_addr_str;
-	disable_port_forwarding = restrictive_nat;
+	if (!GETFLAG(ALLOWFILTEREDSTUNMASK))
+		disable_port_forwarding = restrictive_nat;
 	return 0;
 }
 
+/*! \brief check external IP address and update disable_port_forwarding
+ */
+static void update_disable_port_forwarding(void)
+{
+	char if_addr[INET_ADDRSTRLEN];
+	struct in_addr addr;
+	int r = getifaddr(ext_if_name, if_addr, INET_ADDRSTRLEN, &addr, NULL);
+	if (r < 0) {
+		switch(r) {
+		case GETIFADDR_DEVICE_NOT_CONFIGURED:
+			syslog(LOG_WARNING, "ext interface %s is not configured / no such device", ext_if_name);
+			break;
+		case GETIFADDR_IF_DOWN:
+			syslog(LOG_WARNING, "ext interface %s is down", ext_if_name);
+			break;
+		case GETIFADDR_NO_ADDRESS:
+			syslog(LOG_WARNING, "ext interface %s has no IPv4 address. Network is down", ext_if_name);
+			break;
+		default:
+			syslog(LOG_ERR, "Error getting IPv4 address for ext interface %s. Network is down", ext_if_name);
+		}
+		disable_port_forwarding = 1;
+	} else {
+		int reserved = addr_is_reserved(&addr);
+		if (!disable_port_forwarding && reserved) {
+			if (GETFLAG(ALLOWPRIVATEIPV4MASK)) {
+				syslog(LOG_WARNING, "IGNORED : Reserved / private IP address %s on ext interface %s", if_addr, ext_if_name);
+			} else {
+				syslog(LOG_WARNING, "Reserved / private IP address %s on ext interface %s: Port forwarding is impossible", if_addr, ext_if_name);
+				syslog(LOG_INFO, "You are probably behind NAT, enable option ext_perform_stun=yes to detect public IP address");
+				syslog(LOG_INFO, "Or use ext_ip= / -o option to declare public IP address");
+				syslog(LOG_INFO, "In case that miniupnpd is thinking that it's behind symmetric NAT while it actually is full-cone");
+				syslog(LOG_INFO, "You can set option ext_allow_private_ipv4=yes to enable port forwarding");
+				syslog(LOG_INFO, "But you may still need to configure stun server or ext_ip to make it work correctly");
+				syslog(LOG_INFO, "Public IP address is required by UPnP/PCP/PMP protocols and clients do not work without it");
+				disable_port_forwarding = 1;
+			}
+		} else if (disable_port_forwarding && !reserved) {
+			syslog(LOG_INFO, "Public IP address %s on ext interface %s: Port forwarding is enabled", if_addr, ext_if_name);
+			disable_port_forwarding = 0;
+		}
+	}
+}
+
 /* fill uuidvalue_wan and uuidvalue_wcd based on uuidvalue_igd */
-void complete_uuidvalues(void)
+static void complete_uuidvalues(void)
 {
 	size_t len;
 	len = strlen(uuidvalue_igd);
@@ -1159,6 +1239,112 @@ void complete_uuidvalues(void)
 	default:
 		uuidvalue_wcd[len-1]++;
 	}
+}
+
+void print_usage(FILE * out, const char * argv0) {
+	fprintf(out, "Usage:\n\t"
+	        "%s --version\n\t"
+	        "%s --help\n\t"
+	        "%s "
+#ifndef DISABLE_CONFIG_FILE
+			"[-f config_file] "
+#endif
+			"[-i ext_ifname] "
+#ifdef ENABLE_IPV6
+			"[-I ext_ifname6] [-4] "
+#endif
+			"[-o ext_ip]\n"
+#ifndef MULTIPLE_EXTERNAL_IP
+			"\t\t[-a listening_ip]"
+#else
+			"\t\t[-a listening_ip ext_ip]"
+#endif
+#ifdef ENABLE_HTTPS
+			" [-H https_port]"
+#endif
+			" [-p port] [-d] [-v]"
+#if defined(USE_PF) || defined(USE_IPF)
+			" [-L]"
+#endif
+			" [-U] [-S0]"
+#ifdef ENABLE_NATPMP
+			" [-N]"
+#endif
+			"\n"
+			/*"[-l logfile] " not functionnal */
+			"\t\t[-u uuid] [-s serial] [-m model_number] \n"
+			"\t\t[-t notify_interval] "
+#ifndef NO_BACKGROUND_NO_PIDFILE
+			"[-P pid_filename] "
+#endif
+#ifdef ENABLE_MANUFACTURER_INFO_CONFIGURATION
+			"[-z fiendly_name]"
+#endif
+			"\n\t\t[-B down up] [-w url] [-r clean_ruleset_interval]\n"
+#ifdef USE_PF
+                        "\t\t[-q queue] [-T tag]\n"
+#endif
+#ifdef ENABLE_NFQUEUE
+                        "\t\t[-Q queue] [-n name]\n"
+#endif
+			"\t\t[-A \"permission rule\"] [-b BOOTID]"
+#ifdef IGD_V2
+			" [-1]"
+#endif
+			"\n"
+	        "\nNotes:\n\tThere can be one or several listening_ips.\n"
+	        "\tNotify interval is in seconds. Default is 900 seconds.\n"
+#ifndef NO_BACKGROUND_NO_PIDFILE
+			"\tDefault pid file is '%s'.\n"
+#endif
+			"\tDefault config file is '%s'.\n"
+			"\t-d starts miniupnpd in foreground in debug mode.\n"
+#ifdef USE_SYSTEMD
+	                "\t-D starts miniupnpd in foreground as a systemd service.\n"
+#endif
+			"\t-o argument is either an IPv4 address or \"STUN:host[:port]\".\n"
+#ifdef ENABLE_IPV6
+			"\t-4 disable IPv6\n"
+#endif
+#if defined(USE_PF) || defined(USE_IPF)
+			"\t-L sets packet log in pf and ipf on.\n"
+#endif
+			"\t-S0 disable \"secure\" mode so clients can add mappings to other ips\n"
+			"\t-U causes miniupnpd to report system uptime instead "
+			"of daemon uptime.\n"
+#ifdef ENABLE_NATPMP
+#ifdef ENABLE_PCP
+			"\t-N enables NAT-PMP and PCP functionality.\n"
+#else
+			"\t-N enables NAT-PMP functionality.\n"
+#endif
+#endif
+			"\t-B sets bitrates reported by daemon in bits per second.\n"
+			"\t-w sets the presentation url. Default is http address on port 80\n"
+#ifdef USE_PF
+			"\t-q sets the ALTQ queue in pf.\n"
+			"\t-T sets the tag name in pf.\n"
+#endif
+#ifdef ENABLE_NFQUEUE
+			"\t-Q sets the queue number that is used by NFQUEUE.\n"
+			"\t-n sets the name of the interface(s) that packets will arrive on.\n"
+#endif
+			"\t-A use following syntax for permission rules :\n"
+			"\t  (allow|deny) (external port range) ip/mask (internal port range)\n"
+			"\texamples :\n"
+			"\t  \"allow 1024-65535 192.168.1.0/24 1024-65535\"\n"
+			"\t  \"deny 0-65535 0.0.0.0/0 0-65535\"\n"
+			"\t-b sets the value of BOOTID.UPNP.ORG SSDP header\n"
+#ifdef IGD_V2
+			"\t-1 force reporting IGDv1 in rootDesc *use with care*\n"
+#endif
+			"\t-v enables LOG_INFO messages, -vv LOG_DEBUG as well (default with -d)\n"
+			"\t-h / --help prints this help and quits.\n"
+	        "", argv0, argv0, argv0,
+#ifndef NO_BACKGROUND_NO_PIDFILE
+			pidfilename,
+#endif
+			DEFAULT_CONFIG);
 }
 
 /* init phase :
@@ -1197,11 +1383,8 @@ init(int argc, char * * argv, struct runtime_vars * v)
 	struct lan_addr_s * lan_addr;
 	struct lan_addr_s * lan_addr2;
 
-	/* only print usage if -h is used */
 	for(i=1; i<argc; i++)
 	{
-		if(0 == strcmp(argv[i], "-h") || 0 == strcmp(argv[i], "--help"))
-			goto print_usage;
 		if(0 == strcmp(argv[i], "-d"))
 			debug_flag = 1;
 #ifdef USE_SYSTEMD
@@ -1274,9 +1457,18 @@ init(int argc, char * * argv, struct runtime_vars * v)
 			case UPNPEXT_IP:
 				use_ext_ip_addr = ary_options[i].value;
 				break;
+			case UPNPEXT_ALLOW_PRIVATE_IPV4:
+				if(strcmp(ary_options[i].value, "yes") == 0)
+					SETFLAG(ALLOWPRIVATEIPV4MASK);
+				break;
 			case UPNPEXT_PERFORM_STUN:
 				if(strcmp(ary_options[i].value, "yes") == 0)
 					SETFLAG(PERFORMSTUNMASK);
+				else if(strcmp(ary_options[i].value, "allow-filtered") == 0)
+				{
+					SETFLAG(PERFORMSTUNMASK);
+					SETFLAG(ALLOWFILTEREDSTUNMASK);
+				}
 				break;
 			case UPNPEXT_STUN_HOST:
 				ext_stun_host = ary_options[i].value;
@@ -1890,6 +2082,20 @@ init(int argc, char * * argv, struct runtime_vars * v)
 		goto print_usage;
 	}
 
+	/* check for LAN network interface names */
+	for(lan_addr = lan_addrs.lh_first; lan_addr != NULL; lan_addr = lan_addr->list.le_next) {
+		if(lan_addr->ifname[0] == '\0') {
+#ifdef ENABLE_IPV6
+			if(!GETFLAG(IPV6DISABLEDMASK)) {
+				INIT_PRINT_ERR("Error: please specify LAN network interface by name instead of IPv4 address : %s\n", lan_addr->str);
+				return 1;
+			}
+#endif
+			syslog(LOG_NOTICE, "it is advised to use network interface name instead of %s",
+			       lan_addr->str);
+		}
+	}
+
 	/* IPv6 ifname is defaulted to same as IPv4 */
 #ifdef ENABLE_IPV6
 	if(!ext_if_name6)
@@ -1907,8 +2113,12 @@ init(int argc, char * * argv, struct runtime_vars * v)
 			return 1;
 		}
 		if (addr_is_reserved(&addr)) {
-			INIT_PRINT_ERR("Error: option ext_ip contains reserved / private address %s, not public routable\n", use_ext_ip_addr);
-			return 1;
+			if (GETFLAG(ALLOWPRIVATEIPV4MASK)) {
+				syslog(LOG_WARNING, "IGNORED : option ext_ip contains reserved / private address %s, not public routable", use_ext_ip_addr);
+			} else {
+				INIT_PRINT_ERR("Error: option ext_ip contains reserved / private address %s, not public routable\n", use_ext_ip_addr);
+				return 1;
+			}
 		}
 	}
 
@@ -2064,109 +2274,7 @@ init(int argc, char * * argv, struct runtime_vars * v)
 
 	return 0;
 print_usage:
-	fprintf(stderr, "Usage:\n\t"
-	        "%s --version\n\t"
-	        "%s --help\n\t"
-	        "%s "
-#ifndef DISABLE_CONFIG_FILE
-			"[-f config_file] "
-#endif
-			"[-i ext_ifname] "
-#ifdef ENABLE_IPV6
-			"[-I ext_ifname6] [-4] "
-#endif
-			"[-o ext_ip]\n"
-#ifndef MULTIPLE_EXTERNAL_IP
-			"\t\t[-a listening_ip]"
-#else
-			"\t\t[-a listening_ip ext_ip]"
-#endif
-#ifdef ENABLE_HTTPS
-			" [-H https_port]"
-#endif
-			" [-p port] [-d] [-v]"
-#if defined(USE_PF) || defined(USE_IPF)
-			" [-L]"
-#endif
-			" [-U] [-S0]"
-#ifdef ENABLE_NATPMP
-			" [-N]"
-#endif
-			"\n"
-			/*"[-l logfile] " not functionnal */
-			"\t\t[-u uuid] [-s serial] [-m model_number] \n"
-			"\t\t[-t notify_interval] "
-#ifndef NO_BACKGROUND_NO_PIDFILE
-			"[-P pid_filename] "
-#endif
-#ifdef ENABLE_MANUFACTURER_INFO_CONFIGURATION
-			"[-z fiendly_name]"
-#endif
-			"\n\t\t[-B down up] [-w url] [-r clean_ruleset_interval]\n"
-#ifdef USE_PF
-                        "\t\t[-q queue] [-T tag]\n"
-#endif
-#ifdef ENABLE_NFQUEUE
-                        "\t\t[-Q queue] [-n name]\n"
-#endif
-			"\t\t[-A \"permission rule\"] [-b BOOTID]"
-#ifdef IGD_V2
-			" [-1]"
-#endif
-			"\n"
-	        "\nNotes:\n\tThere can be one or several listening_ips.\n"
-	        "\tNotify interval is in seconds. Default is 900 seconds.\n"
-#ifndef NO_BACKGROUND_NO_PIDFILE
-			"\tDefault pid file is '%s'.\n"
-#endif
-			"\tDefault config file is '%s'.\n"
-			"\t-d starts miniupnpd in foreground in debug mode.\n"
-#ifdef USE_SYSTEMD
-	                "\t-D starts miniupnpd in foreground as a systemd service.\n"
-#endif
-			"\t-o argument is either an IPv4 address or \"STUN:host[:port]\".\n"
-#ifdef ENABLE_IPV6
-			"\t-4 disable IPv6\n"
-#endif
-#if defined(USE_PF) || defined(USE_IPF)
-			"\t-L sets packet log in pf and ipf on.\n"
-#endif
-			"\t-S0 disable \"secure\" mode so clients can add mappings to other ips\n"
-			"\t-U causes miniupnpd to report system uptime instead "
-			"of daemon uptime.\n"
-#ifdef ENABLE_NATPMP
-#ifdef ENABLE_PCP
-			"\t-N enables NAT-PMP and PCP functionality.\n"
-#else
-			"\t-N enables NAT-PMP functionality.\n"
-#endif
-#endif
-			"\t-B sets bitrates reported by daemon in bits per second.\n"
-			"\t-w sets the presentation url. Default is http address on port 80\n"
-#ifdef USE_PF
-			"\t-q sets the ALTQ queue in pf.\n"
-			"\t-T sets the tag name in pf.\n"
-#endif
-#ifdef ENABLE_NFQUEUE
-			"\t-Q sets the queue number that is used by NFQUEUE.\n"
-			"\t-n sets the name of the interface(s) that packets will arrive on.\n"
-#endif
-			"\t-A use following syntax for permission rules :\n"
-			"\t  (allow|deny) (external port range) ip/mask (internal port range)\n"
-			"\texamples :\n"
-			"\t  \"allow 1024-65535 192.168.1.0/24 1024-65535\"\n"
-			"\t  \"deny 0-65535 0.0.0.0/0 0-65535\"\n"
-			"\t-b sets the value of BOOTID.UPNP.ORG SSDP header\n"
-#ifdef IGD_V2
-			"\t-1 force reporting IGDv1 in rootDesc *use with care*\n"
-#endif
-			"\t-v enables LOG_INFO messages, -vv LOG_DEBUG as well (default with -d)\n"
-			"\t-h / --help prints this help and quits.\n"
-	        "", argv[0], argv[0], argv[0],
-#ifndef NO_BACKGROUND_NO_PIDFILE
-			pidfilename,
-#endif
-			DEFAULT_CONFIG);
+	print_usage(stderr, argv[0]);
 	return 1;
 }
 
@@ -2175,6 +2283,7 @@ print_usage:
 int
 main(int argc, char * * argv)
 {
+	int return_code = 0;
 	int i;
 	int shttpl = -1;	/* socket for HTTP */
 #if defined(V6SOCKETS_ARE_V6ONLY) && defined(ENABLE_IPV6)
@@ -2198,6 +2307,7 @@ main(int argc, char * * argv)
 #endif
 #ifdef ENABLE_NFQUEUE
 	int nfqh = -1;
+	struct nfq_cb_data nfqueue_data;
 #endif
 #ifdef USE_IFACEWATCHER
 	int sifacewatcher = -1;
@@ -2229,7 +2339,10 @@ main(int argc, char * * argv)
 #endif
 
 	for(i = 0; i < argc; i++) {
-		if(strcmp(argv[i], "version") == 0 || strcmp(argv[i], "--version") == 0) {
+		if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
+			print_usage(stdout, argv[0]);
+			return 0;
+		} else if(strcmp(argv[i], "version") == 0 || strcmp(argv[i], "--version") == 0) {
 			puts("miniupnpd " MINIUPNPD_VERSION
 #ifdef MINIUPNPD_GIT_REF
 			     " " MINIUPNPD_GIT_REF
@@ -2339,7 +2452,7 @@ main(int argc, char * * argv)
 #endif
 	   ) {
 		syslog(LOG_ERR, "Why did you run me anyway?");
-		return 0;
+		goto shutdown;
 	}
 
 	syslog(LOG_INFO, "version " MINIUPNPD_VERSION " starting%s%sext if %s BOOTID=%u",
@@ -2364,23 +2477,13 @@ main(int argc, char * * argv)
 	{
 		if (update_ext_ip_addr_from_stun(1) != 0) {
 			syslog(LOG_ERR, "Performing STUN failed. EXITING");
-			return 1;
+			return_code = 1;
+			goto shutdown;
 		}
 	}
 	else if (!use_ext_ip_addr)
 	{
-		char if_addr[INET_ADDRSTRLEN];
-		struct in_addr addr;
-		if (getifaddr(ext_if_name, if_addr, INET_ADDRSTRLEN, &addr, NULL) < 0) {
-			syslog(LOG_WARNING, "Cannot get IP address for ext interface %s. Network is down", ext_if_name);
-			disable_port_forwarding = 1;
-		} else if (addr_is_reserved(&addr)) {
-			syslog(LOG_INFO, "Reserved / private IP address %s on ext interface %s: Port forwarding is impossible", if_addr, ext_if_name);
-			syslog(LOG_INFO, "You are probably behind NAT, enable option ext_perform_stun=yes to detect public IP address");
-			syslog(LOG_INFO, "Or use ext_ip= / -o option to declare public IP address");
-			syslog(LOG_INFO, "Public IP address is required by UPnP/PCP/PMP protocols and clients do not work without it");
-			disable_port_forwarding = 1;
-		}
+		update_disable_port_forwarding();
 	}
 
 #ifdef DYNAMIC_OS_VERSION
@@ -2408,9 +2511,13 @@ main(int argc, char * * argv)
 		if(shttpl < 0)
 		{
 			syslog(LOG_ERR, "Failed to open socket for HTTP. EXITING");
-			return 1;
+			return_code = 1;
+			goto shutdown;
 		}
 		v.port = listen_port;
+#ifdef ENABLE_NFQUEUE
+		nfqueue_data.http_port = listen_port;
+#endif /* ENABLE_NFQUEUE */
 		syslog(LOG_NOTICE, "HTTP listening on port %d", v.port);
 #if defined(V6SOCKETS_ARE_V6ONLY) && defined(ENABLE_IPV6)
 		if(!GETFLAG(IPV6DISABLEDMASK))
@@ -2419,7 +2526,8 @@ main(int argc, char * * argv)
 			if(shttpl_v4 < 0)
 			{
 				syslog(LOG_ERR, "Failed to open socket for HTTP on port %d (IPv4). EXITING", v.port);
-				return 1;
+				return_code = 1;
+				goto shutdown;
 			}
 		}
 #endif /* V6SOCKETS_ARE_V6ONLY */
@@ -2434,16 +2542,21 @@ main(int argc, char * * argv)
 		if(shttpsl < 0)
 		{
 			syslog(LOG_ERR, "Failed to open socket for HTTPS. EXITING");
-			return 1;
+			return_code = 1;
+			goto shutdown;
 		}
 		v.https_port = listen_port;
+#ifdef ENABLE_NFQUEUE
+		nfqueue_data.https_port = listen_port;
+#endif /* ENABLE_NFQUEUE */
 		syslog(LOG_NOTICE, "HTTPS listening on port %d", v.https_port);
 #if defined(V6SOCKETS_ARE_V6ONLY) && defined(ENABLE_IPV6)
 		shttpsl_v4 =  OpenAndConfHTTPSocket(&listen_port, 0);
 		if(shttpsl_v4 < 0)
 		{
 			syslog(LOG_ERR, "Failed to open socket for HTTPS on port %d (IPv4). EXITING", v.https_port);
-			return 1;
+			return_code = 1;
+			goto shutdown;
 		}
 #endif /* V6SOCKETS_ARE_V6ONLY */
 #endif /* ENABLE_HTTPS */
@@ -2468,9 +2581,13 @@ main(int argc, char * * argv)
 			syslog(LOG_NOTICE, "Failed to open socket for receiving SSDP. Trying to use MiniSSDPd");
 			if(SubmitServicesToMiniSSDPD(lan_addrs.lh_first->str, v.port) < 0) {
 				syslog(LOG_ERR, "Failed to connect to MiniSSDPd. EXITING");
-				return 1;
+				return_code = 1;
+				goto shutdown;
 			}
 		}
+#ifdef ENABLE_NFQUEUE
+		nfqueue_data.sudp = sudp;
+#endif /* ENABLE_NFQUEUE */
 #ifdef ENABLE_IPV6
 		if(!GETFLAG(IPV6DISABLEDMASK))
 		{
@@ -2487,7 +2604,8 @@ main(int argc, char * * argv)
 		{
 			syslog(LOG_ERR, "Failed to open sockets for sending SSDP notify "
 		                "messages. EXITING");
-			return 1;
+			return_code = 1;
+			goto shutdown;
 		}
 
 #if defined(UPNP_STRICT) && defined(IGD_V2)
@@ -2560,11 +2678,12 @@ main(int argc, char * * argv)
 #endif
 
 #ifdef ENABLE_NFQUEUE
-	if ( nfqueue != -1 && n_nfqix > 0) {
-		nfqh = OpenAndConfNFqueue();
+	if (nfqueue != -1 && n_nfqix > 0) {
+		nfqh = OpenAndConfNFqueue(&nfqueue_data);
 		if(nfqh < 0) {
 			syslog(LOG_ERR, "Failed to open fd for NFQUEUE.");
-			return 1;
+			return_code = 1;
+			goto shutdown;
 		} else {
 			syslog(LOG_NOTICE, "Opened NFQUEUE %d",nfqueue);
 		}
@@ -2592,7 +2711,8 @@ main(int argc, char * * argv)
 	/* mcast ? unix ? */
 	if (pledge("stdio inet pf", NULL) < 0) {
 		syslog(LOG_ERR, "pledge(): %m");
-		return 1;
+		return_code = 1;
+		goto shutdown;
 	}
 #endif /* HAS_PLEDGE */
 #ifdef HAS_LIBCAP
@@ -2690,24 +2810,7 @@ main(int argc, char * * argv)
 			}
 			else if (!use_ext_ip_addr)
 			{
-				char if_addr[INET_ADDRSTRLEN];
-				struct in_addr addr;
-				if (getifaddr(ext_if_name, if_addr, INET_ADDRSTRLEN, &addr, NULL) < 0) {
-					syslog(LOG_WARNING, "Cannot get IP address for ext interface %s. Network is down", ext_if_name);
-					disable_port_forwarding = 1;
-				} else {
-					int reserved = addr_is_reserved(&addr);
-					if (!disable_port_forwarding && reserved) {
-						syslog(LOG_INFO, "Reserved / private IP address %s on ext interface %s: Port forwarding is impossible", if_addr, ext_if_name);
-						syslog(LOG_INFO, "You are probably behind NAT, enable option ext_perform_stun=yes to detect public IP address");
-						syslog(LOG_INFO, "Or use ext_ip= / -o option to declare public IP address");
-						syslog(LOG_INFO, "Public IP address is required by UPnP/PCP/PMP protocols and clients do not work without it");
-						disable_port_forwarding = 1;
-					} else if (disable_port_forwarding && !reserved) {
-						syslog(LOG_INFO, "Public IP address %s on ext interface %s: Port forwarding is enabled", if_addr, ext_if_name);
-						disable_port_forwarding = 0;
-					}
-				}
+				update_disable_port_forwarding();
 			}
 #ifdef ENABLE_NATPMP
 			if(GETFLAG(ENABLENATPMPMASK))
@@ -3368,5 +3471,5 @@ shutdown:
 	free(os_version);
 #endif
 	closelog();
-	return 0;
+	return return_code;
 }

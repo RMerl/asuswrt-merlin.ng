@@ -1,4 +1,4 @@
-/* $Id: getifaddr.h,v 1.12 2025/04/03 21:11:35 nanard Exp $ */
+/* $Id: getifaddr.h,v 1.13 2025/04/08 21:28:42 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
@@ -13,6 +13,24 @@
  * \brief get IP address of network interface
  */
 
+#define GETIFADDR_OK 0
+/*! \brief bad arguments */
+#define GETIFADDR_BAD_ARGS -1
+/*! \brief socket() call error */
+#define GETIFADDR_SOCKET_ERROR -2
+/*! \brief device not configure / no such device */
+#define GETIFADDR_DEVICE_NOT_CONFIGURED -3
+/*! \brief other error from ioctl() */
+#define GETIFADDR_IOCTL_ERROR -4
+/*! \brief network interface is down */
+#define GETIFADDR_IF_DOWN -5
+/*! \brief no IPv4 address for the network interface */
+#define GETIFADDR_NO_ADDRESS -6
+/*! \brief inet_ntop() call error */
+#define GETIFADDR_INET_NTOP_ERROR -7
+/*! \brief getifaddrs() call error */
+#define GETIFADDR_GETIFADDRS_ERROR -8
+
 struct in_addr;
 struct in6_addr;
 
@@ -24,7 +42,7 @@ struct in6_addr;
  * \param[in] len buf length
  * \param[out] addr ip v4 address
  * \param[out] mask ip v4 mask
- * \return 0 on success, -1 on failure */
+ * \return 0 on success, a negative value on failure */
 int
 getifaddr(const char * ifname, char * buf, int len,
           struct in_addr * addr, struct in_addr * mask);

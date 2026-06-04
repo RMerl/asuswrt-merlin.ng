@@ -638,7 +638,7 @@ function force_update() {
 	submitForm();
 }
 
-function show_ipv6update_setting(){
+function show_ipv6update_setting(v){
 	if(ipv6_service != "disabled" && v != "PUBYUN.COM")
 		showhide("ddns_ipv6update_tr", 1);
 	else
@@ -695,7 +695,7 @@ function ddns_load_body(){
                 document.getElementById("ddns_hostname_x").value = "<#asusddns_inputhint#>";
         }
 	inputCtrl(document.form.ddns_refresh_x, 1);
-		show_ipv6update_setting();
+		show_ipv6update_setting(document.form.ddns_server_x.value);
         change_ddns_setting(document.form.ddns_server_x.value);
 
 	    if(document.form.ddns_server_x.value == "WWW.ORAY.COM"){

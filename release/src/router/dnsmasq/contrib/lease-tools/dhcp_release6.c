@@ -233,31 +233,55 @@ struct dhcp6_packet create_release_packet(const char* iaid, const char* ip, cons
   return result;
 }
 
+static void copy_option_string(char *dst, size_t dst_len, const char *src, size_t src_len)
+{
+  if (dst_len == 0)
+    return;
+
+  if (src_len >= dst_len)
+    src_len = dst_len - 1;
+
+  memcpy(dst, src, src_len);
+  dst[src_len] = '\0';
+}
+
 uint16_t parse_iana_suboption(char* buf, size_t len)
 {
   size_t current_pos = 0;
   char option_value[1024];
   while (current_pos < len)
     {
+      if (len - current_pos < 2 * sizeof(uint16_t))
+        return UNSPEC_FAIL;
+
       uint16_t option_type, option_len;
       memcpy(&option_type,buf + current_pos, sizeof(uint16_t));
       memcpy(&option_len,buf + current_pos + sizeof(uint16_t), sizeof(uint16_t));
       option_type = ntohs(option_type);
       option_len = ntohs(option_len);
       current_pos += 2 * sizeof(uint16_t);
+      if (option_len > len - current_pos)
+        return UNSPEC_FAIL;
+
       if (option_type == STATUS_CODE)
 	{
 	  uint16_t status;
+	  if (option_len < sizeof(uint16_t))
+	    return UNSPEC_FAIL;
+
 	  memcpy(&status, buf + current_pos, sizeof(uint16_t));
 	  status = ntohs(status);
 	  if (status != SUCCESS)
 	    {
-	      memcpy(option_value, buf + current_pos + sizeof(uint16_t) , option_len - sizeof(uint16_t));
-	      option_value[option_len-sizeof(uint16_t)] ='\0';
+	      copy_option_string(option_value, sizeof(option_value),
+				 buf + current_pos + sizeof(uint16_t),
+				 option_len - sizeof(uint16_t));
 	      fprintf(stderr, "Error: %s\n", option_value);
             }
 	  return status;
         }
+
+      current_pos += option_len;
     }
 
   return -2;
@@ -266,6 +290,9 @@ uint16_t parse_iana_suboption(char* buf, size_t len)
 int16_t parse_packet(char* buf, size_t len)
 {
   int16_t ret = -1;
+  if (len < 4)
+    return UNSPEC_FAIL;
+
   uint8_t type = buf[0];
   /*skipping tx id. you need it, uncomment following line
     uint16_t tx_id = ntohs((buf[1] <<16) + (buf[2] <<8) + buf[3]);
@@ -277,20 +304,31 @@ int16_t parse_packet(char* buf, size_t len)
   char option_value[1024];
   while (current_pos < len)
     {
+      if (len - current_pos < 2 * sizeof(uint16_t))
+	return UNSPEC_FAIL;
+
       uint16_t option_type, option_len;
       memcpy(&option_type,buf + current_pos, sizeof(uint16_t));
       memcpy(&option_len,buf + current_pos + sizeof(uint16_t), sizeof(uint16_t));
       option_type = ntohs(option_type);
       option_len = ntohs(option_len);
       current_pos += 2 * sizeof(uint16_t);
+      if (option_len > len - current_pos)
+	return UNSPEC_FAIL;
+
       if (option_type == STATUS_CODE)
 	{
 	  uint16_t status;
+	  if (option_len < sizeof(uint16_t))
+	    return UNSPEC_FAIL;
+
 	  memcpy(&status, buf + current_pos, sizeof(uint16_t));
 	  status = ntohs(status);
 	  if (status != SUCCESS)
 	    {
-	      memcpy(option_value, buf + current_pos +sizeof(uint16_t) , option_len -sizeof(uint16_t));
+	      copy_option_string(option_value, sizeof(option_value),
+				 buf + current_pos + sizeof(uint16_t),
+				 option_len - sizeof(uint16_t));
 	      fprintf(stderr, "Error: %d %s\n", status, option_value);
 	      return status;
 	    }
@@ -301,6 +339,9 @@ int16_t parse_packet(char* buf, size_t len)
 
       if (option_type == IA_NA )
 	{
+	  if (option_len < 24)
+	    return UNSPEC_FAIL;
+
 	  uint16_t result = parse_iana_suboption(buf + current_pos +24, option_len -24);
 	  if (result)
 	    return result;

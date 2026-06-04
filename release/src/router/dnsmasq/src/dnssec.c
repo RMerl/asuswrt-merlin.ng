@@ -177,7 +177,7 @@ static int get_rdata(struct dns_header *header, size_t plen, struct rdata_state 
 	  if ((state->c = state->end - state->ip) != 0)
 	    {
 	      state->op = state->ip;
-	      state->ip = state->end;;
+	      state->ip = state->end;
 	    }
 	  else
 	    return 0;
@@ -189,24 +189,28 @@ static int get_rdata(struct dns_header *header, size_t plen, struct rdata_state 
 	  if (d == (u16)0)
 	    {
 	      /* domain-name, canonicalise */
-	      int len;
 	      
+	      /* If the name is malformed, or runs beyond the end of the RR, abort.
+		 under no circumstances should state->ip be beyond state->end since
+		 that will cause the run-out code above to turn the negative
+		 calculted length into a very large postive value for state->c
+		 and overrun the buffer. */
 	      if (!extract_name(header, plen, &state->ip, state->buff, EXTR_NAME_EXTRACT, 0) ||
-		  (len = to_wire(state->buff)) == 0)
-		continue;
-	      
-	      state->c = len;
+		  state->ip > state->end)
+		return 0;
+
+	      /* to_wire() always returns length > 0 */
+	      state->c = to_wire(state->buff);
 	      state->op = (unsigned char *)state->buff;
 	    }
 	  else
 	    {
-	      /* plain data preceding a domain-name, don't run off the end of the data */
-	      if ((state->end - state->ip) < d)
-		d = state->end - state->ip;
-	      
-	      if (d == 0)
-		continue;
-		  
+	      /* Plain data preceding a domain-name.
+		 Handle short RR, if there are no bytes left, return finished. */
+	      if ((state->end - state->ip) < d &&
+		  (d = state->end - state->ip) == 0)
+		return 0;
+				  
 	      state->op = state->ip;
 	      state->c = d;
 	      state->ip += d;
@@ -383,7 +387,7 @@ static int explore_rrset(struct dns_header *header, size_t plen, int class, int 
 		     an attacker using signatures made with the key of an unrelated 
 		     zone he controls. Note that the root key is always allowed.
 		     Ignore sigs which aren't valid */
-		  if (*daemon->workspacename == 0 || hostname_issubdomain(name, daemon->workspacename) != 0)
+		  if (*daemon->workspacename == 0 || hostname_issubdomain(daemon->workspacename, name) != 0)
 		    {
 		      if (gotkey)
 			{
@@ -2095,8 +2099,8 @@ int dnssec_validate_reply(time_t now, struct dns_header *header, size_t plen, ch
 		       CNAME must be <subdomain>.<dname>
 		       CNAME target must be <subdomain>.<dname_target>
 		       <subdomain>s must match for name and target. */ 
-		    if (hostname_issubdomain(daemon->cname, name) == 1 &&
-			hostname_issubdomain(daemon->workspacename, keyname) == 1 &&
+		    if (hostname_issubdomain(name, daemon->cname) == 1 &&
+			hostname_issubdomain(keyname, daemon->workspacename) == 1 &&
 			name_prefix_len == strlen(daemon->workspacename) - strlen(keyname))
 		      {
 			char save = daemon->cname[name_prefix_len];
@@ -2332,7 +2336,7 @@ int dnskey_keytag(int alg, int flags, unsigned char *key, int keylen)
     }
 }
 
-size_t dnssec_generate_query(struct dns_header *header, unsigned char *end, char *name,
+size_t dnssec_generate_query(struct dns_header *header, size_t outlen, char *name,
 			     int class, int id, int type)
 {
   unsigned char *p;
@@ -2356,7 +2360,7 @@ size_t dnssec_generate_query(struct dns_header *header, unsigned char *end, char
   PUTSHORT(type, p);
   PUTSHORT(class, p);
 
-  return add_do_bit(header, p - (unsigned char *)header, end);
+  return add_do_bit(header, p - (unsigned char *)header, outlen);
 }
 
 int errflags_to_ede(int status)

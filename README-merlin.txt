@@ -207,14 +207,14 @@ SmallNetBuilder forums (preferred method: https://www.snbforums.com/forums/asusw
 Website: https://www.asuswrt-merlin.net/
 Github: https://github.com/RMerl
 Email: merlin@asuswrt-merlin.net
+Twitter: https://twitter.com/RMerlinDev
 Mastodon: https://fosstodon.org/@RMerlin
 Bluesky: @asuswrt-merlin.net
 IRC: RMerlin in channel #asuswrt on Libera
 
 Download: https://www.asuswrt-merlin.net/download
 
-Development news will be posted on Mastodon and Bluesky, 
-and the support forums.
+Development news will be posted on social medias, and the support forums.
 You can also keep a closer eye on development as it happens,
 through the Github code repository.
 

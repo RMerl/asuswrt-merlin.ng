@@ -145,6 +145,8 @@ static void parseelt(struct xmlparser * p)
 				{
 					i = 0;
 					elementname = ++p->xml;
+					if (p->xml >= p->xmlend)
+						return;
 				}
 			}
 			if(i>0)

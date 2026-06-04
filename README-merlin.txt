@@ -207,6 +207,7 @@ SmallNetBuilder forums (preferred method: https://www.snbforums.com/forums/asusw
 Website: https://www.asuswrt-merlin.net/
 Github: https://github.com/RMerl
 Email: merlin@asuswrt-merlin.net
+Twitter: https://twitter.com/RMerlinDev
 Mastodon: https://fosstodon.org/@RMerlin
 Bluesky: @asuswrt-merlin.net
 IRC: RMerlin in channel #asuswrt on Libera

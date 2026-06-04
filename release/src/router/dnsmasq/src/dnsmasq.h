@@ -1469,7 +1469,7 @@ int in_zone(struct auth_zone *zone, char *name, char **cut);
 
 /* dnssec.c */
 #ifdef HAVE_DNSSEC
-size_t dnssec_generate_query(struct dns_header *header, unsigned char *end, char *name, int class, int id, int type);
+size_t dnssec_generate_query(struct dns_header *header, size_t outlen, char *name, int class, int id, int type);
 int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, char *name,
 			  char *keyname, int class, int *validate_count);
 int dnssec_validate_ds(time_t now, struct dns_header *header, size_t plen, char *name,
@@ -1518,6 +1518,7 @@ void *whine_malloc_real(const char *func, unsigned int line, size_t size);
 void *whine_realloc_real(const char *wrapper, const char *func, unsigned int line, void *ptr, size_t size);
 int expand_buf_real(const char *func, unsigned int line, struct iovec *iov, size_t size);
 int expand_workspace_real(const char *func, unsigned int line, unsigned char ***wkspc, int *szp, int new);
+int get_line_alloc(FILE *f, char **buffp, size_t *sizep);
 int sa_len(union mysockaddr *addr);
 int sockaddr_isequal(const union mysockaddr *s1, const union mysockaddr *s2);
 int sockaddr_isnull(const union mysockaddr *s);
@@ -1539,7 +1540,7 @@ int parse_hex(char *in, unsigned char *out, int maxlen,
 	      unsigned int *wildcard_mask, int *mac_type);
 int memcmp_masked(unsigned char *a, unsigned char *b, int len, 
 		  unsigned int mask);
-char *print_mac(char *buff, unsigned char *mac, int len);
+char *print_mac(unsigned char *mac, int len);
 int read_write(int fd, unsigned char *packet, int size, int rw);
 int read_writev(int fd, struct iovec *iov, int iovcnt, int rw);
 void close_fds(long max_fd, int spare1, int spare2, int spare3);
@@ -1944,11 +1945,11 @@ void from_wire(char *name);
 /* edns0.c */
 unsigned char *find_pseudoheader(struct dns_header *header, size_t plen,
 				   size_t *len, unsigned char **p, int *is_sign, int *is_last);
-size_t add_pseudoheader(struct dns_header *header, size_t plen, unsigned char *limit, 
+size_t add_pseudoheader(struct dns_header *header, size_t plen, size_t out_size, 
 			int optno, unsigned char *opt, size_t optlen, int set_do, int replace);
-size_t add_do_bit(struct dns_header *header, size_t plen, unsigned char *limit);
+size_t add_do_bit(struct dns_header *header, size_t plen, size_t outlen);
 void edns0_needs_mac(union mysockaddr *addr, time_t now);
-size_t add_edns0_config(struct dns_header *header, size_t plen, unsigned char *limit, 
+size_t add_edns0_config(struct dns_header *header, size_t plen, size_t outlen, 
 			union mysockaddr *source, time_t now, int *cacheable);
 int check_source(struct dns_header *header, size_t plen, unsigned char *pseudoheader, union mysockaddr *peer);
 
@@ -1971,7 +1972,7 @@ int lookup_domain(char *qdomain, int flags, int *lowout, int *highout);
 int filter_servers(int seed, int flags, int *lowout, int *highout);
 int is_local_answer(time_t now, int first, char *name);
 size_t make_local_answer(int flags, int gotname, size_t size, struct dns_header *header,
-			 char *name, char *limit, int first, int last, int ede);
+			 char *name, size_t limit, int first, int last, int ede);
 int server_samegroup(struct server *a, struct server *b);
 #ifdef HAVE_DNSSEC
 int dnssec_server(struct server *server, char *keyname, int is_ds, int *firstp, int *lastp);

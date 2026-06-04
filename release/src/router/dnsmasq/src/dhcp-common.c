@@ -936,11 +936,11 @@ char *option_string(int prot, unsigned int opt, unsigned char *val, int opt_len,
 	  trunc = 1;
 	  opt_len = 14;
 	}
-      print_mac(buf, val, opt_len);
+
+      *buf = 0;
+      strncat(buf, print_mac(val, opt_len), buf_len);
       if (trunc)
 	strncat(buf, "...", buf_len - strlen(buf));
-    
-
     }
 
   return ot[o].name ? ot[o].name : "";

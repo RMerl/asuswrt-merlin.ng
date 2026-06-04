@@ -1699,19 +1699,19 @@ void check_servers(int no_loop_check)
 int reload_servers(char *fname)
 {
   FILE *f;
-  char *line;
+  char *line = NULL;
+  size_t linesz = 0;
   int gotone = 0;
 
-  /* buff happens to be MAXDNAMESTR long... */
   if (!(f = fopen(fname, "r")))
     {
       my_syslog(LOG_ERR, _("failed to read %s: %s"), fname, strerror(errno));
       return 0;
     }
-   
+  
   mark_servers(SERV_FROM_RESOLV);
-    
-  while ((line = fgets(daemon->namebuff, MAXDNAMESTR, f)))
+  
+  while (get_line_alloc(f, &line, &linesz))
     {
       union mysockaddr addr, source_addr;
       char *token = strtok(line, " \t\n\r");

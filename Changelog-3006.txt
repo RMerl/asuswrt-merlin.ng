@@ -15,6 +15,9 @@ Asuswrt-Merlin 3006.xxx Changelog
          the server with TLS control set to "Encrypt Channel
          V2".  A new button will appear that can generate
          a new client key each time you click on it.
+  - NEW: CSV Import/Export feature on DHCP reservation page
+         (backported from Asuswrt 6.0 to other WIfi 6/7
+         models).
   - UPDATED: Merged with GPL 102_37538 (Wifi 6)
   - UPDATED: Merged with GPL 102_39127 (RT-BE58_Go)
   - UPDATED: Merged with GPL 102_41424 (GT-BE19000AI)
@@ -22,7 +25,8 @@ Asuswrt-Merlin 3006.xxx Changelog
   - UPDATED: OpenVPN to 2.7.4.
   - UPDATED: OpenSSL to 3.5.6 (GT-BE19000AI)
   - UPDATED: dropbear to 2026.91.
-  - UPDATED: dnsmasq to 2.93rc1
+  - UPDATED: dnsmasq to 2.93.
+  - UPDATED: miniupnpd to 2.3.10-64ef08a.
   - CHANGED: VPN Status page can now detect running but
              non-connected WireGuard client tunnels, and
              report them as being in an error state.
@@ -35,6 +39,8 @@ Asuswrt-Merlin 3006.xxx Changelog
   - FIXED: Multiple minor CVE for OpenSSL 1.1: CVE-2026-28387,
            CVE-2026-28388, CVE-2026-28389, and CVE-2026-28390
            (backports by RSDNTWK)
+  - FIXED: UPnP port forwards not working if port forwarding
+           or NAT weren't already enabled (patch from Asus)
   - REMOVED: Support for secret static key authentication
              from both OpenVPN clients and servers.  Deprecated
              since 2.7.0, and considered outdated in terms of

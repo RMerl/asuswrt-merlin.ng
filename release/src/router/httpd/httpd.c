@@ -371,6 +371,72 @@ void Debug2File(const char *path, const char *fmt, ...)
 	} else
 		fprintf(stderr, "Open %s Error!\n", path);
 }
+#else
+void Debug2String(int level, char *path, int conlog, int showtime, unsigned filesize, char *function_name, int function_line, const char *fmt, ...)
+{
+	int max_log = 5;
+	int len = 0, str_end = 0;
+	char *p_message = NULL, *log_message = NULL;
+	char message[2048] = {0}, tmp1[768] = {0}, tmp2[1024] = {0};
+	va_list args;
+
+	va_start(args, fmt);
+	len = vsnprintf(message, sizeof(message), fmt, args);
+	va_end(args);
+
+	p_message = message;
+
+	while(len > 0 && max_log > 0){
+
+		strlcpy(tmp1, p_message, sizeof(tmp1));
+		log_message = tmp1;
+		str_end	 = strlen(tmp1);
+
+		if(tmp1[str_end-1] != '\n'){
+			snprintf(tmp2, sizeof(tmp2), "%s\n", tmp1);
+			log_message = tmp2;
+		}
+
+		asusdebuglog(level, path, conlog, showtime, filesize, "[%s(%d)]:%s", function_name, function_line, log_message);
+
+		len = len - str_end;
+		max_log--;
+		p_message += str_end;
+	}
+}
+
+void security2log(int level, char *path, int conlog, int showtime, unsigned filesize, const char *fmt, ...)
+{
+	int max_log = 5;
+	int len = 0, str_end = 0;
+	char *p_message = NULL, *log_message = NULL;
+	char message[2048] = {0}, tmp1[768] = {0}, tmp2[1024] = {0};
+	va_list args;
+
+	va_start(args, fmt);
+	len = vsnprintf(message, sizeof(message), fmt, args);
+	va_end(args);
+
+	p_message = message;
+
+	while(len > 0 && max_log > 0){
+
+		strlcpy(tmp1, p_message, sizeof(tmp1));
+		log_message = tmp1;
+		str_end	 = strlen(tmp1);
+
+		if(tmp1[str_end-1] != '\n'){
+			snprintf(tmp2, sizeof(tmp2), "%s\n", tmp1);
+			log_message = tmp2;
+		}
+
+		asusdebuglog(level, path, conlog, showtime, filesize, "%s", log_message);
+
+		len = len - str_end;
+		max_log--;
+		p_message += str_end;
+	}
+}
 #endif
 
 void sethost(const char *host)

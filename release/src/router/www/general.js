@@ -488,10 +488,16 @@ function openLink(s){
 			tourl = "https://www.oray.com/";
 		else if (document.form.ddns_server_x.value == 'DOMAINS.GOOGLE.COM')
 			tourl = "https://domains.google/";
+		else if (document.form.ddns_server_x.value == 'CLOUDFLARE.COM')
+			tourl = "https://dash.cloudflare.com/sign-up";
 		else if (document.form.ddns_server_x.value == 'FREEDNS.AFRAID.ORG')
 			tourl = "https://freedns.afraid.org/signup/";
 		else if (document.form.ddns_server_x.value == 'FREEMYIP.COM')
 			tourl = "https://freemyip.com";
+		else if (document.form.ddns_server_x.value == 'PUBYUN.COM')
+			tourl = "https://www.pubyun.com";
+		else if (document.form.ddns_server_x.value == 'DNSPOD.COM')
+			tourl = "https://www.dnspod.cn";
 		else	tourl = "";
 		link = window.open(tourl, "DDNSLink","toolbar=yes,location=yes,directories=no,status=yes,menubar=yes,scrollbars=yes,resizable=yes,copyhistory=no,width=640,height=480");
 	}

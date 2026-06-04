@@ -2899,3 +2899,8 @@ config RTCONFIG_DIS_HASH_KEY_GEN_CHECK
 config RTCONFIG_SECURE_BY_DEFAULT
 	bool "secure setting in default"
 	default y
+
+config RTCONFIG_ZASSOC_B4ACS
+	bool "Zero maxassoc before auto channel select"
+	depends on RTCONFIG_HND_ROUTER_AX
+	default n

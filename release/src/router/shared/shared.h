@@ -4974,19 +4974,22 @@ enum{
 };
 
 enum{
-	ASUS_PP_AUTOUPGRADE,
-	ASUS_PP_ASD,
-	ASUS_PP_AHS,
-	ASUS_PP_ACCOUNT_BINDING,
-	ASUS_PP_CONFIG_TRANSFER,
-	ASUS_PP_DDNS,
-	ASUS_PP_MAX,
+	ASUS_PP_AUTOUPGRADE = 1,
+	ASUS_PP_ASD = 2,
+	ASUS_PP_AHS = 3,
+	ASUS_PP_ACCOUNT_BINDING = 4,
+	ASUS_PP_CONFIG_TRANSFER = 5,
+	ASUS_PP_DDNS = 6,
+	ASUS_PP_AFC = 7,
+	ASUS_PP_LICENSE_UPDATE_V5 = 8,
+	ASUS_PP_MAX
 };
 
 struct ASUS_PP_table {
 	char *name;
 	char *version;
 	int id;
+	int force_sign;
 };
 extern struct ASUS_PP_table ASUS_PP_t[];
 
@@ -4994,6 +4997,7 @@ extern int webapi_get_b(const int id, char *buf, size_t len);
 extern int get_ASUS_privacy_policy_state(const int id);
 extern int get_ASUS_privacy_policy(void);
 extern int get_ASUS_privacy_policy_ver(const int id);
+extern void init_asus_pp_eula(void);
 extern char *rfctime(const time_t *timep, char *ts_string, int len);
 extern void update_ntp_ts(time_t bf_time, int ntp_diff_ts);
 extern int validate_rc_service(const char *value);
@@ -5048,5 +5052,7 @@ enum {
 	GU_REASON_BLOCK       = 3   // gu is blocked
 };
 #endif
+
+extern int is_safe_app_name(const char *app_name);
 
 #endif	/* !__SHARED_H__ */

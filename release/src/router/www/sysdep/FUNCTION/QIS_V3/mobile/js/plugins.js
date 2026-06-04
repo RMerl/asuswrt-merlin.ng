@@ -1756,7 +1756,7 @@ var getRestartService = function(){
 		actionScript.push("restart_cfgsync");
 	}
 
-	if(!restart_net && isWANChanged()){
+	if(!restart_net && isWANChanged() && !qisPostData.hasOwnProperty("ipv6_service")){
 		restart_wan_if = 1;
 		actionScript.push("restart_wan_if " + systemVariable.ethWanIf);
 	}

@@ -471,6 +471,9 @@ static void msg_nmbd_send_packet(struct messaging_context *msg,
 
 static void process(void)
 {
+	int req = 0, maxlog;
+	const char *oname = "/var/log/log.nmbd.old";
+	struct stat st;
 	bool run_election;
 
 	while( True ) {
@@ -664,6 +667,19 @@ static void process(void)
 
 		/* free up temp memory */
 		TALLOC_FREE(frame);
+
+		/* rotate /var/log/log.nmbd per 10 minutes. */
+		if ((req++ % 60) == 0) {
+			req = 1;
+			if (!stat("/var/log/log.nmbd", &st)
+			 && st.st_size > (16 * 1024)) {
+				if (!rename("/var/log/log.nmbd", oname)
+				 && !reopen_logs_internal()) {
+					/* We failed to reopen a log - continue using the old name. */
+					rename(oname, "/var/log/log.nmbd");
+				}
+			}
+		}
 	}
 }
 

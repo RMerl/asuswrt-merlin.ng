@@ -148,7 +148,7 @@ function initial(){
 			default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("AiDisk")[0]);
 	}
 
-	if(!printer_support || noprinter_support || re_mode == "1"){
+	if(!printer_support || noprinter_support){
 		if(default_apps_array.getIndexByValue2D("<#Network_Printer_Server#>") != -1)
 			default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("<#Network_Printer_Server#>")[0]);
 	}

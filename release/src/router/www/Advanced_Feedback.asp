@@ -995,11 +995,6 @@ function diag_change_service_list_all() {
 		$inputHtml2.attr({"name" : "dblog_service_list"});
 		$inputHtml2.val(_value);
 		$inputHtml2.click(function() {
-			if(this.checked) {
-				if(!confirm("<#feedback_WiFi_DHD_log_confirm#>")){
-					$(".dblog_service_item.dhd").children().prop("checked", false);
-				}
-			}
 			diag_change_service_list();
 		});
 
@@ -1014,13 +1009,6 @@ function diag_change_service_list_all() {
 			$(".dblog_service_item.wifi").after(gen_appendix_option(16, "<#feedback_WiFi_DHD_log#>", "dhd"));
 		}
 		$("input[name=dblog_service_list]").prop("checked", true);
-
-		if(dhdlog_support && $(".dblog_service_item.dhd").children().prop("checked")) {
-			if(!confirm("<#feedback_WiFi_DHD_log_confirm#>")){
-				$(".dblog_service_item.all").children().prop("checked", false);
-				$(".dblog_service_item.dhd").children().prop("checked", false);
-			}
-		}
 	}
 	else {
 		$("input[name=dblog_service_list]").prop("checked", false);
@@ -1075,11 +1063,6 @@ function diag_tune_service_option() {
 		$inputHtml2.attr({"name" : "dblog_service_list"});
 		$inputHtml2.val(_value);
 		$inputHtml2.click(function() {
-			if(this.checked) {
-				if(!confirm("<#feedback_WiFi_DHD_log_confirm#>")){
-					$(".dblog_service_item.dhd").children().prop("checked", false);
-				}
-			}
 			diag_change_service_list();
 		});
 

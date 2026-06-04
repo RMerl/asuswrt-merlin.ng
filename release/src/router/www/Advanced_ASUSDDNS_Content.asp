@@ -639,7 +639,7 @@ function force_update() {
 }
 
 function show_ipv6update_setting(){
-	if(ipv6_service != "disabled")
+	if(ipv6_service != "disabled" && v != "PUBYUN.COM")
 		showhide("ddns_ipv6update_tr", 1);
 	else
 		showhide("ddns_ipv6update_tr", 0);
@@ -1119,7 +1119,7 @@ function change_ddns_setting(v){
 				inputCtrl(document.form.ddns_username_x, 1);
 			inputCtrl(document.form.ddns_passwd_x, 1);
 			var disable_wild = 0;
-			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM")
+			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM" || v == "PUBYUN.COM" || v == "DNSPOD.CN" || v == "CLOUDFLARE.COM")
 				var disable_wild = 1;
 			else
 				var disable_wild = 0;
@@ -1584,6 +1584,7 @@ function clear_cert_key(){
 						<option value="" selected><#Select_menu_default#></option>
 						<option value="WWW.ASUS.COM" <% nvram_match("ddns_server_x", "WWW.ASUS.COM","selected"); %>>WWW.ASUS.COM</option>
 						<option value="DOMAINS.GOOGLE.COM" <% nvram_match("ddns_server_x", "DOMAINS.GOOGLE.COM","selected"); %>>DOMAINS.GOOGLE.COM</option>
+						<option value="CLOUDFLARE.COM" <% nvram_match("ddns_server_x", "CLOUDFLARE.COM","selected"); %>>CLOUDFLARE.COM</option>
 						<option value="WWW.DYNDNS.ORG" <% nvram_match("ddns_server_x", "WWW.DYNDNS.ORG","selected"); %>>WWW.DYNDNS.ORG</option>
 						<option value="WWW.DYNDNS.ORG(CUSTOM)" <% nvram_match("ddns_server_x", "WWW.DYNDNS.ORG(CUSTOM)","selected"); %>>WWW.DYNDNS.ORG(CUSTOM)</option>
 						<option value="WWW.DYNDNS.ORG(STATIC)" <% nvram_match("ddns_server_x", "WWW.DYNDNS.ORG(STATIC)","selected"); %>>WWW.DYNDNS.ORG(STATIC)</option>
@@ -1597,6 +1598,8 @@ function clear_cert_key(){
 						<option value="WWW.NAMECHEAP.COM" <% nvram_match("ddns_server_x", "WWW.NAMECHEAP.COM","selected"); %>>WWW.NAMECHEAP.COM</option>
 						<option value="FREEDNS.AFRAID.ORG" <% nvram_match("ddns_server_x", "FREEDNS.AFRAID.ORG","selected"); %>>FREEDNS.AFRAID.ORG</option>
 						<option value="FREEMYIP.COM" <% nvram_match("ddns_server_x", "FREEMYIP.COM","selected"); %>>FREEMYIP.COM</option>
+						<option value="PUBYUN.COM" <% nvram_match("ddns_server_x", "PUBYUN.COM","selected"); %>>PUBYUN.COM</option>
+						<option value="DNSPOD.CN" <% nvram_match("ddns_server_x", "DNSPOD.CN","selected"); %>>DNSPOD.CN</option>
 						<option value="CUSTOM" <% nvram_match("ddns_server_x", "CUSTOM","selected");  %>>Custom</option>
 					</select>
 					<input id="deregister_btn" class="button_gen" style="display: none; margin-left: 5px;" type="button" value="<#CTL_Deregister#>"/>

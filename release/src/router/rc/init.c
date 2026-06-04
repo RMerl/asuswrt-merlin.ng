@@ -497,7 +497,7 @@ misc_ioctrl(void)
 #if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(RTAX5400)
 			wan_phy_led_pinmux(0);
 #endif
-			led_control(LED_WAN_NORMAL, LED_ON);
+			led_control(LED_WAN_NORMAL, nvram_get_int("AllLED") ? LED_ON : LED_OFF);
 #endif
 			return;
 #endif
@@ -516,7 +516,7 @@ misc_ioctrl(void)
 				if (nvram_get_int("wanduck_down"))
 					return;
 
-				led_control(LED_WAN, LED_ON);
+				led_control(LED_WAN, nvram_get_int("AllLED") ? LED_ON : LED_OFF);
 #ifdef HND_ROUTER
 #ifndef GTAC2900
 #if defined(RTAX58U_V2) || defined(GTAX6000) || defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(RTAX5400)
@@ -536,11 +536,12 @@ misc_ioctrl(void)
 #if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(RTAX5400)
 				wan_phy_led_pinmux(0);
 #else
-				led_control(LED_WAN_NORMAL, LED_ON);
+				led_control(LED_WAN_NORMAL, nvram_get_int("AllLED") ? LED_ON : LED_OFF);
 #endif
 			}
 #endif
 #endif
+			if (!nvram_get_int("AllLED")) setAllLedOff();
 			break;
 #if defined(RTAX86U_PRO)
 		case MODEL_RTAX86U_PRO:
@@ -19073,6 +19074,9 @@ int init_nvram2(void)
 	amas_set_misc_info(MISC_INFO_RCSUPPORT, get_rcSupport_count(amas_rc_count, sizeof(amas_rc_count)));
 #endif /* AMAS */
 #endif /* CFGSYNC */
+#ifdef RTCONFIG_AMAS
+	nvram_unset("cp_restart");
+#endif
 #if defined(RTCONFIG_WIFI_DRV_DISABLE) /* for IPQ40XX */
 	if (nvram_match("disableWifiDrv_fac", "1"))
 		nvram_set("lyra_disable_wifi_drv", "1");
@@ -19247,6 +19251,7 @@ int init_nvram2(void)
 	}
 
 	detect_vul_scan();
+	init_asus_pp_eula();
 
 	return 0;
 }  // end of init_nvram2

@@ -4789,6 +4789,10 @@ start_ddns(char *caller, int isAidisk)
 		service = "default@freedns.afraid.org";
 	else if (strcmp(server, "FREEMYIP.COM") == 0)
 		service = "default@freemyip.com";
+	else if (strcmp(server, "PUBYUN.COM") == 0)
+		service = "dyndns@3322.org";
+	else if (strcmp(server, "DNSPOD.CN") == 0)
+		service = "dnspod.cn";
 	else if (strcmp(server, "WWW.TUNNELBROKER.NET") == 0) {
 		service = "default@tunnelbroker.net";
 		eval("iptables", "-t", "filter", "-D", "INPUT", "-p", "icmp", "-s", "66.220.2.74", "-j", "ACCEPT");
@@ -4833,6 +4837,8 @@ start_ddns(char *caller, int isAidisk)
 	}
 	else if (strcmp(server, "DOMAINS.GOOGLE.COM") == 0)
 		service = "default@domains.google.com";
+	else if (strcmp(server, "CLOUDFLARE.COM") == 0)
+		service = "cloudflare.com";
 #endif
 	else if (strcmp(server, "WWW.ORAY.COM") == 0) {
 		service = "peanuthull", asus_ddns = 2;
@@ -5366,16 +5372,6 @@ start_syslogd(void)
 			syslogd_argv[argc++] = "1024";
 		else
 #endif
-#ifdef RTCONFIG_HND_ROUTER
-#ifdef RTCONFIG_DBLOG
-		if(nvram_match("dblog_adj_syslog", "1"))
-		{
-			syslogd_argv[argc++] = "1024";
-			nvram_set("dblog_adj_syslog", "0");
-		}
-		else
-#endif /* RTCONFIG_DBLOG */
-#endif /* RTCONFIG_HND_ROUTER */
 		syslogd_argv[argc++] = nvram_safe_get("log_size");
 	}
 	if (nvram_invmatch("log_level", "")) {

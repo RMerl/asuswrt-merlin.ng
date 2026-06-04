@@ -364,7 +364,7 @@ apply.pppoe = function(){
 				httpApi.nvramSet((function(){
 					qisPostData.action_mode = "apply";
 					qisPostData.rc_service = "restart_wan_if " + systemVariable.ethWanIf;
-					if(!qisPostData.hasOwnProperty("ipv6_service")){
+					if(qisPostData.hasOwnProperty("ipv6_service")){
 						qisPostData.rc_service += ";restart_dnsmasq";
 					}
 					return qisPostData;
@@ -4198,7 +4198,10 @@ goTo.Wireless = function(){
 	}
 
 	if(systemVariable.productid.indexOf('EBG') != '-1'){
-		apply.submitQIS();
+		if(qisPostData.wan_proto == "pppoe"){
+            $(".btn_pppoe_apply").html(Get_Component_btnLoading);
+        }
+        setTimeout("apply.submitQIS()", (qisPostData.wan_proto == "pppoe")? 15000:1);
 	}else{
 		goTo.loadPage("wireless_setting", false);
 	}

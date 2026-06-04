@@ -196,7 +196,7 @@ download_acc() {
 
     if [ "$?" != "0" ];then
         echo "Failed: curl (-L) -s -k ${plugin_url} -o ${1} ||
-            wget -q --no-check-certificate $plugin_url -O ${1}"
+            wget -q $plugin_url -O ${1}"
         # Clean up
         [ -f "$1" ] && rm "${1}"
         return 1

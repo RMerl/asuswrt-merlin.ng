@@ -290,8 +290,6 @@ handler_t basic_authentication_handler(server *srv, connection *con, plugin_data
 		}
 
 		if( do_account_authentication(user->ptr, pass->ptr) != 1 ){
-		//if( smbc_acc_account_authentication(con, user->ptr, pass->ptr) != 1 ){
-		//if( strcmp(user->ptr, webav_user)!=0 || strcmp(pass->ptr, webav_pass)!=0 ){
 
 			//- login failed.
 			
@@ -351,6 +349,7 @@ handler_t basic_authentication_handler(server *srv, connection *con, plugin_data
 		
 		if(con->smb_info){
 			con->smb_info->login_count = 0;
+			con->smb_info->is_authed = 1;
 		}
 
 		if(!get_account_from_smb_info){

@@ -272,6 +272,45 @@ void ascii_to_char(const char *output, const char *input){
 	ascii_to_char_safe(output, input, outlen);
 }
 
+/*
+ * Check whether app_name is "safe" (not likely to cause command/SQL injection).
+ *
+ * Rules:
+ *   - Must not be NULL
+ *   - Length must be between 1 and 64
+ *   - Allowed characters:
+ *       A-Z, a-z, 0-9, space, '_', '-', '.'
+ *
+ * Return:
+ *   1 : Safe (acceptable)
+ *   0 : Unsafe (contains suspicious characters / empty / too long)
+ */
+int is_safe_app_name(const char *app_name)
+{
+	size_t i, len;
+
+	if (!app_name)
+		return 0;
+
+	len = strlen(app_name);
+	if (len == 0 || len > 64)
+		return 0;
+
+	for (i = 0; i < len; i++) {
+		unsigned char c = (unsigned char)app_name[i];
+
+		if (isalnum(c))          // A-Z, a-z, 0-9
+			continue;
+		if (c == ' ' || c == '_' || c == '-' || c == '.' || c == '/' || c == '(' || c == ')' || c == ':')
+			continue;
+
+		// Any other character is considered unsafe (potential injection vector)
+		return 0;
+	}
+
+	return 1;
+}
+
 const char *find_word(const char *buffer, const char *word)
 {
 	const char *p, *q;

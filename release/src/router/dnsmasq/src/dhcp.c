@@ -925,7 +925,8 @@ void dhcp_read_ethers(void)
 {
   FILE *f = fopen(ETHERSFILE, "r");
   unsigned int flags;
-  char *buff = daemon->namebuff;
+  size_t linesz = 0;
+  char *line = NULL;
   char *ip, *cp;
   struct in_addr addr;
   unsigned char hwaddr[ETHER_ADDR_LEN];
@@ -958,22 +959,22 @@ void dhcp_read_ethers(void)
 	up = &config->next;
     }
 
-  while (fgets(buff, MAXDNAMESTR, f))
+  while (get_line_alloc(f, &line, &linesz))
     {
       char *host = NULL;
       
       lineno++;
       
-      while (strlen(buff) > 0 && isspace((unsigned char)buff[strlen(buff)-1]))
-	buff[strlen(buff)-1] = 0;
+      while (strlen(line) > 0 && isspace((unsigned char)line[strlen(line)-1]))
+	line[strlen(line)-1] = 0;
       
-      if ((*buff == '#') || (*buff == '+') || (*buff == 0))
+      if ((*line == '#') || (*line == '+') || (*line == 0))
 	continue;
       
-      for (ip = buff; *ip && !isspace((unsigned char)*ip); ip++);
+      for (ip = line; *ip && !isspace((unsigned char)*ip); ip++);
       for(; *ip && isspace((unsigned char)*ip); ip++)
 	*ip = 0;
-      if (!*ip || parse_hex(buff, hwaddr, ETHER_ADDR_LEN, NULL, NULL) != ETHER_ADDR_LEN)
+      if (!*ip || parse_hex(line, hwaddr, ETHER_ADDR_LEN, NULL, NULL) != ETHER_ADDR_LEN)
 	{
 	  my_syslog(MS_DHCP | LOG_ERR, _("bad line at %s line %d"), ETHERSFILE, lineno); 
 	  continue;

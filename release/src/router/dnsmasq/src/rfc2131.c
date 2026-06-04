@@ -1317,7 +1317,7 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 		  unsigned char *mac = extended_hwaddr(ltmp->hwaddr_type, ltmp->hwaddr_len,
 						       ltmp->hwaddr, ltmp->clid_len, ltmp->clid, &len);
 		  my_syslog(MS_DHCP | LOG_WARNING, _("not using configured address %s because it is leased to %s"),
-			    daemon->addrbuff, print_mac(daemon->namebuff, mac, len));
+			    daemon->addrbuff, print_mac(mac, len));
 		}
 	      else
 		{
@@ -1541,7 +1541,7 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 		{
 		  inet_ntop(AF_INET, &ltmp->addr, daemon->addrbuff, ADDRSTRLEN);
 		  my_syslog(MS_DHCP | LOG_INFO, _("abandoning lease to %s of %s"),
-			    print_mac(daemon->namebuff, ltmp->hwaddr, ltmp->hwaddr_len), 
+			    print_mac(ltmp->hwaddr, ltmp->hwaddr_len), 
 			    daemon->addrbuff);
 		  lease = ltmp;
 		}
@@ -1922,16 +1922,18 @@ static void add_extradata_opt(struct dhcp_lease *lease, unsigned char *opt)
 static void log_packet(char *type, void *addr, unsigned char *ext_mac, 
 		       int mac_len, char *interface, char *string, char *err, u32 xid)
 {
+  char *mac = "";
+
   if (!err && !option_bool(OPT_LOG_OPTS) && option_bool(OPT_QUIET_DHCP))
     return;
   
-  daemon->addrbuff[0] = daemon->namebuff[0] = 0;
+  daemon->addrbuff[0] = 0;
   
   if (addr)
     inet_ntop(AF_INET, addr, daemon->addrbuff, ADDRSTRLEN);
   
   if (ext_mac)
-    print_mac(daemon->namebuff, ext_mac, mac_len);
+    mac = print_mac(ext_mac, mac_len);
   
   if (option_bool(OPT_LOG_OPTS))
     my_syslog(MS_DHCP | LOG_INFO, "%u %s(%s) %s%s%s%s%s%s",
@@ -1940,7 +1942,7 @@ static void log_packet(char *type, void *addr, unsigned char *ext_mac,
 	      interface, 
 	      daemon->addrbuff,
 	      addr ? " " : "",
-	      daemon->namebuff,
+	      mac,
 	      ext_mac ? " " : "",
 	      string ? string : "",
 	      err ? err : "");
@@ -1950,16 +1952,16 @@ static void log_packet(char *type, void *addr, unsigned char *ext_mac,
 	      interface, 
 	      daemon->addrbuff,
 	      addr ? " " : "",
-	      daemon->namebuff,
+	      mac,
 	      ext_mac ? " " : "",
 	      string ? string : "",
 	      err ? err : "");
   
 #ifdef HAVE_UBUS
   if (!strcmp(type, "DHCPACK"))
-    ubus_event_bcast("dhcp.ack", daemon->namebuff, addr ? daemon->addrbuff : NULL, string, interface);
+    ubus_event_bcast("dhcp.ack", mac, addr ? daemon->addrbuff : NULL, string, interface);
   else if (!strcmp(type, "DHCPRELEASE"))
-    ubus_event_bcast("dhcp.release", daemon->namebuff, addr ? daemon->addrbuff : NULL, string, interface);
+    ubus_event_bcast("dhcp.release", mac, addr ? daemon->addrbuff : NULL, string, interface);
 #endif
 }
 

@@ -215,11 +215,8 @@ void icmp6_packet(time_t now)
 	  if (opt_sz == 0 || opt_sz > rem)
 	    return; /* Bad packet */
 	  
-	  if (p[0] == ICMP6_OPT_SOURCE_MAC && ((opt_sz - 2) * 3 - 1 < MAXDNAMESTR))
-	    {
-	      print_mac(daemon->namebuff, &p[2], opt_sz - 2);
-	      mac = daemon->namebuff;
-	    }
+	  if (p[0] == ICMP6_OPT_SOURCE_MAC)
+	    mac = print_mac(&p[2], opt_sz - 2);
 	}
       
       if (!option_bool(OPT_QUIET_RA))

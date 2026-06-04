@@ -448,7 +448,7 @@ int private_net6(struct in6_addr *a, int ban_localhost)
     (IN6_IS_ADDR_LOOPBACK(a) && ban_localhost) ||    /* RFC 6303 4.3 */
     IN6_IS_ADDR_LINKLOCAL(a) ||   /* RFC 6303 4.5 */
     IN6_IS_ADDR_SITELOCAL(a) ||
-    ((unsigned char *)a)[0] == 0xfd ||   /* RFC 6303 4.4 */
+    (((unsigned char *)a)[0] & 0xfe) == 0xfc || /* RFC 4196 3.1 */
     ((u32 *)a)[0] == htonl(0x20010db8); /* RFC 6303 4.6 */
 }
 

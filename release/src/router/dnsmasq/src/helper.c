@@ -533,18 +533,12 @@ int create_helper(int event_fd, int err_fd, uid_t uid, gid_t gid, long max_fd)
 		close(pipeout[0]);
 	      else
 		{
-		  while (fgets(daemon->packet, daemon->packet_buff_sz, fp))
-		    {
-		      /* do not include new lines, log will append them */
-		      size_t len = strlen(daemon->packet);
-		      if (len > 0)
-			{
-			  --len;
-			  if (daemon->packet[len] == '\n')
-			    daemon->packet[len] = 0;
-			}
-		      send_event(event_fd, EVENT_SCRIPT_LOG, 0, daemon->packet);
-		    }
+		  char *line = NULL;
+		  size_t linesz = 0;
+		  
+		  while (get_line_alloc(fp, &line, &linesz))
+		    send_event(event_fd, EVENT_SCRIPT_LOG, 0, line);
+		    
 		  fclose(fp);
 		}
 	    }

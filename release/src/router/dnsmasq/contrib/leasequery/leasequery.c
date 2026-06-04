@@ -331,9 +331,15 @@ static char *print_mac(char *buff, unsigned char *mac, int len)
   if (len == 0)
     sprintf(p, "<null>");
   else
-    for (i = 0; i < len; i++)
-      p += sprintf(p, "%.2x%s", mac[i], (i == len - 1) ? "" : ":");
-  
+    {
+      /* Server-controlled lengths (e.g. BOOTREPLY hlen) must not be trusted
+	 to fit the destination buffer; cap at the actual chaddr field size. */
+      if (len > DHCP_CHADDR_MAX)
+	len = DHCP_CHADDR_MAX;
+      for (i = 0; i < len; i++)
+	p += sprintf(p, "%.2x%s", mac[i], (i == len - 1) ? "" : ":");
+    }
+
   return buff;
 }
 

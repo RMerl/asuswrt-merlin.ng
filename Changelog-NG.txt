@@ -37,6 +37,12 @@ Asuswrt-Merlin Changelog
            update routing rules.
   - FIXED: Security issue on the Site Survey page
            (reported by Sasha Romijn).
+  - FIXED: UPnP port forwards not working if port forwarding
+           or NAT weren't already enabled (patch from Asus)
+  - FIXED: hostname missing from hosts file (regression from
+           GPL merge)
+  - FIXED: ntpd stops answering after a few days (workaround
+           by restarting it every 24 hours)
   - REMOVED: Support for secret static key authentication
              from both OpenVPN clients and servers.  Deprecated
              since 2.7.0, and considered outdated in terms of

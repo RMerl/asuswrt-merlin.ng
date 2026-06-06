@@ -1617,6 +1617,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	FILE *fp;
 	char lan_class[32];
 	char name[PATH_MAX];
+	char tmp[32];
 	int wan_unit;
 #ifdef RTCONFIG_MULTIWAN_CFG
 	int wanx_rules = 0;
@@ -1726,6 +1727,11 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	}
 #endif
 #endif
+
+	/* Add rule to jump to VUPNP chain when UPNP is enabled*/
+	snprintf(tmp, sizeof(tmp), "wan%d_upnp_enable", wan_primary_ifunit());
+	if (nvram_get_int(tmp) == 1)
+		fprintf(fp, "-A PREROUTING -j VUPNP\n");
 
 	/* VSERVER chain */
 	if (inet_addr_(wan_ip)) {
@@ -5539,6 +5545,12 @@ TRACE_PT("writing Parental Control\n");
 
 	/* Drop the wrong state, INVALID, packets */
 	fprintf(fp, "-A FORWARD -m state --state INVALID -j %s\n", logdrop);
+
+	/* Add rule to jump to FUPNP chain when upnp is enabled */
+	snprintf(tmp, sizeof(tmp), "wan%d_upnp_enable", wan_primary_ifunit());
+	if (nvram_get_int(tmp) == 1)
+		fprintf(fp, "-A FORWARD -j FUPNP\n");
+
 //#if 0
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled()) {

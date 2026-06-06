@@ -1866,8 +1866,10 @@ endif
 ifeq ($(RTCONFIG_HTTPS),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rsasign_check
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rsarootca_check
-ifeq ($(RTCONFIG_FRS_FEEDBACK),y)
+ifeq ($(RTCONFIG_FRS_LIVE_UPDATE),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc firmware_check_update
+endif
+ifeq ($(RTCONFIG_FRS_FEEDBACK),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc sendfeedback
 endif
 endif

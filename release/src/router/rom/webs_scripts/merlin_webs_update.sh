@@ -4,6 +4,13 @@ wget_options="-q -t 2 -T 30"
 
 fwsite="https://fwupdate.asuswrt-merlin.net"
 
+# Check through FRS first for aiboard models
+AI_BOARD=$(nvram get rc_support|grep -i ai_support)
+if [ "$AI_BOARD" != "" ] && [ -f /sbin/firmware_check_update ]; then
+	firmware_check_update
+fi
+# After that, overwrite main fw values with those from our own server
+
 nvram set webs_state_update=0 # INITIALIZING
 nvram set webs_state_flag=0   # 0: Don't do upgrade  1: Do upgrade
 nvram set webs_state_error=0

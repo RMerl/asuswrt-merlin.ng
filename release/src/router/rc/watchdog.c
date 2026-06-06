@@ -239,6 +239,7 @@ static int btn_count_setup_second = 0;
 static int btn_pressed_toggle_radio = 0;
 #endif
 static long ddns_update_timer = 0;
+static long ntpd_timer = 0;
 
 #if defined(RTCONFIG_WIRELESS_SWITCH) && defined(RTCONFIG_DSL)
 // for WLAN sw init, only for slide switch
@@ -11649,6 +11650,14 @@ wdp:
 	feedback_check();
 #endif /* RTCONFIG_FRS_FEEDBACK */
 	infosvr_check();
+#if RTCONFIG_NTPD
+	if (++ntpd_timer >= DAY_PERIOD) {
+		ntpd_timer = 0;
+		logmessage("ntpd", "Daily service restart");
+		stop_ntpd();
+		start_ntpd();
+	}
+#endif
 }
 
 #if ! (defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK))

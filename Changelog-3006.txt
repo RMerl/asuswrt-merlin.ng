@@ -36,8 +36,10 @@ Asuswrt-Merlin 3006.xxx Changelog
            disabling ETag support for all .asp files.
   - FIXED: Cannot disable wifi 6 mode on Wifi 6 models (upstream
            issue)
-  - FIXED: Multiple minor CVE for OpenSSL 1.1: CVE-2026-28387,
-           CVE-2026-28388, CVE-2026-28389, and CVE-2026-28390
+  - FIXED: Multiple CVE for OpenSSL 1.1: CVE-2026-7383, 
+		   CVE-2026-9076, CVE-2026-28387, CVE-2026-28388,
+		   CVE-2026-28389, CVE-2026-28390, CVE-2026-34180,
+		   CVE-2026-42766 and CVE-2026-45447
            (backports by RSDNTWK)
   - FIXED: UPnP port forwards not working if port forwarding
            or NAT weren't already enabled (patch from Asus)

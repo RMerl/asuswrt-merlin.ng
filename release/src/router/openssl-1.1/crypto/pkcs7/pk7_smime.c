@@ -212,7 +212,8 @@ int PKCS7_verify(PKCS7 *p7, STACK_OF(X509) *certs, X509_STORE *store,
     char *buf = NULL;
     int i, j = 0, k, ret = 0;
     BIO *p7bio = NULL;
-    BIO *tmpin = NULL, *tmpout = NULL;
+    BIO *tmpout = NULL;
+	BIO *next = NULL;
 
     if (!p7) {
         PKCS7err(PKCS7_F_PKCS7_VERIFY, PKCS7_R_INVALID_NULL_POINTER);
@@ -290,26 +291,7 @@ int PKCS7_verify(PKCS7 *p7, STACK_OF(X509) *certs, X509_STORE *store,
             /* Check for revocation status here */
         }
 
-    /*
-     * Performance optimization: if the content is a memory BIO then store
-     * its contents in a temporary read only memory BIO. This avoids
-     * potentially large numbers of slow copies of data which will occur when
-     * reading from a read write memory BIO when signatures are calculated.
-     */
-
-    if (indata && (BIO_method_type(indata) == BIO_TYPE_MEM)) {
-        char *ptr;
-        long len;
-        len = BIO_get_mem_data(indata, &ptr);
-        tmpin = (len == 0) ? indata : BIO_new_mem_buf(ptr, len);
-        if (tmpin == NULL) {
-            PKCS7err(PKCS7_F_PKCS7_VERIFY, ERR_R_MALLOC_FAILURE);
-            goto err;
-        }
-    } else
-        tmpin = indata;
-
-    if ((p7bio = PKCS7_dataInit(p7, tmpin)) == NULL)
+    if ((p7bio = PKCS7_dataInit(p7, indata)) == NULL)
         goto err;
 
     if (flags & PKCS7_TEXT) {
@@ -360,11 +342,11 @@ int PKCS7_verify(PKCS7 *p7, STACK_OF(X509) *certs, X509_STORE *store,
  err:
     X509_STORE_CTX_free(cert_ctx);
     OPENSSL_free(buf);
-    if (tmpin == indata) {
-        if (indata)
-            BIO_pop(p7bio);
+    while (p7bio != NULL && p7bio != indata) {
+        next = BIO_pop(p7bio);
+        BIO_free(p7bio);
+        p7bio = next;
     }
-    BIO_free_all(p7bio);
     sk_X509_free(signers);
     return ret;
 }

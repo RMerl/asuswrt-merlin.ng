@@ -197,7 +197,7 @@ static void parseelt(struct xmlparser * p)
 							if ((p->xml + 1) >= p->xmlend)
 								return;
 						}
-						if(i>0 && p->datafunc && *(p->xml + 1) == '/')
+						if(i>0 && p->datafunc && (p->xml + 1) < p->xmlend && *(p->xml + 1) == '/')
 							p->datafunc(p->data, data, i);
 					}
 				}

@@ -45,8 +45,6 @@ int start_ntpd(void)
 		return 0;
 	}
 
-	stop_ntpd();
-
 	if (!nvram_match("ntp_server0", ""))
 		ntpd_argv[index - 1] = nvram_safe_get("ntp_server0");
 

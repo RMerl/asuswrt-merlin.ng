@@ -1395,7 +1395,7 @@ function genWANSoption(){
 					<tr id="ipv6_ipaddr_r">
 						<th><#ipv6_lan_addr#></th>	<!-- for other ipv6 proto -->
 		     		<td>
-						  <div id="ipv6_ipaddr_span" name="ipv6_ipaddr_span" style="color:#FFFFFF;margin-left:8px;"></div>
+						  <div id="ipv6_ipaddr_span" name="ipv6_ipaddr_span" style="margin-left:8px;"></div>
 		     		</td>
 		     	</tr>				  
 				  
@@ -1408,7 +1408,7 @@ function genWANSoption(){
 					<tr id="ipv6_prefix_length_r">
 						<th><#Prefix_lan_Length#></th>
 						<td>
-						  <div id="ipv6_prefix_length_span" name="ipv6_prefix_length_span" style="color:#FFFFFF;margin-left:8px;"></div>
+						  <div id="ipv6_prefix_length_span" name="ipv6_prefix_length_span" style="margin-left:8px;"></div>
 		     		</td>
 		     	</tr>
 		     			
@@ -1421,7 +1421,7 @@ function genWANSoption(){
 					<tr id="ipv6_prefix_r">
 						<th><#IPv6_lan_Prefix#></th>
 		     		<td>
-						  <div id="ipv6_prefix_span" name="ipv6_prefix_span" style="color:#FFFFFF;margin-left:8px;"></div>
+						  <div id="ipv6_prefix_span" name="ipv6_prefix_span" style="margin-left:8px;"></div>
 						</td>
 					</tr>		     	     	
 		     	

@@ -132,7 +132,7 @@ int blockdata_expand(struct blockdata *block, size_t oldlen, char *data, size_t 
   /* find size of current final block */
   for (b = block; oldlen > KEYBLOCK_LEN && b;  b = b->next, oldlen -= KEYBLOCK_LEN);
 
-  /* chain to short for length, something is broken */
+  /* chain too short for length, something is broken */
   if (oldlen > KEYBLOCK_LEN)
     {
       blockdata_free(block);

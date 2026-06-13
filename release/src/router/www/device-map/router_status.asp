@@ -72,7 +72,7 @@ $(document).ready(function(){
 	    detect_CPU_RAM();
     }
 	update_traffic();
-	if(isSupport("ledg")){
+	if(isSupport("ledg") && based_modelid != "RT-BE96U"){
 		$("#light_effect_tab").show();
 	}  
 

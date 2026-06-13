@@ -93,7 +93,7 @@
                 }
 
                 // AURA RGB
-                if (lightEffectSupoort) {
+                if (lightEffectSupoort && based_modelid != "RT-BE96U") {
                     document.querySelector("#light_effect_tab").style.display = "";
                 }
 

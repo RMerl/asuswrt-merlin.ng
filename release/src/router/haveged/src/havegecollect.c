@@ -174,7 +174,7 @@ H_COLLECT *havege_ndcreate(/* RETURN: NULL on failure          */
       h_ctxt->havege_tests      = 0;
       h_ctxt->havege_extra      = 0;
       h_ctxt->havege_tics       = p+szBuffer;
-      
+
       /** An intermediate walk table twice the size of the L1 cache is allocated
        ** for use in permuting time stamp readings. The is meant to exercise
        ** processor TLBs.
@@ -193,7 +193,7 @@ H_COLLECT *havege_ndcreate(/* RETURN: NULL on failure          */
 #endif
          {
             H_UINT t0=0;
-            
+
             (void)havege_gather(h_ctxt);           /* first sample   */
             t0 = HTICK1;
             for(i=1;i<MININITRAND;i++)

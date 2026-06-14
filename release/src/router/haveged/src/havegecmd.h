@@ -40,7 +40,7 @@ extern "C" {
 #define ASCII_ACK                "\x6"    /* ASCII acknowledge */
 #define ASCII_NAK                "\x15"   /* ASCII negative acknowledge */
 #define ASCII_STX                "\x2"    /* ASCII start of text */
-  
+
 #ifndef SOCK_CLOEXEC
 #define SOCK_CLOEXEC 0
 #endif
@@ -48,6 +48,8 @@ extern "C" {
 #ifndef SOCK_NONBLOCK
 #define SOCK_NONBLOCK 0
 #endif
+
+#define SEM_NAME "haveged_sem"
 
 /**
  * Open and listen on a UNIX socket to get command from there

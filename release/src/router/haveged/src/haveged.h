@@ -1,7 +1,7 @@
 /**
  ** Simple entropy harvester based upon the havege RNG
  **
- ** Copyright 2018-2022 Jirka Hladky hladky DOT jiri AT gmail DOT com
+ ** Copyright 2018-2026 Jirka Hladky hladky DOT jiri AT gmail DOT com
  ** Copyright 2009-2014 Gary Wuertz gary@issiweb.com
  **
  ** This program is free software: you can redistribute it and/or modify
@@ -48,14 +48,20 @@ struct pparams  {
    char           *version;         /* Our version                                  */
    char           *watermark;       /* path to write_wakeup_threshold               */
    char           *command;         /* command which will be send/received          */
+   H_UINT         time_interval;    /* Time interval in seconds to add entropy unconditionally */
   };
 /**
  * Buffer size used when not running as daemon
  */
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
 #define   APP_BUFF_SIZE    1024
 #define   INPUT_DEFAULT    "data"
 #define   OUTPUT_DEFAULT   "sample"
 #define   PID_DEFAULT      "/var/run/haveged.pid"
+#define   TIME_INTERVAL    60
+#define   PSELECT_TIMEOUT  2
 /**
  * Setup options (for app)
  */

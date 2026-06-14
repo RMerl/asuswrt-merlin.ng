@@ -19,6 +19,7 @@ PrivateDevices=true
 # We can *not* set PrivateNetwork=true to allow command mode (chroot when included in initramfs)
 #PrivateNetwork=true
 ProtectSystem=full
+ReadWritePaths=/dev/shm
 ProtectHome=true
 ProtectHostname=true
 ProtectKernelLogs=true

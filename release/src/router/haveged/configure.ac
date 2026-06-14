@@ -3,14 +3,14 @@
 ## Minimum Autoconf version
 
 AC_PREREQ([2.59])
-AC_INIT([haveged],[1.9.18])
+AC_INIT([haveged],[1.9.22])
 AC_CONFIG_AUX_DIR(config)
 AC_USE_SYSTEM_EXTENSIONS
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE([subdir-objects no-dependencies])
 AC_CONFIG_SRCDIR([src/haveged.c])
 AC_CHECK_TYPES([uint32_t, uint8_t])
-HA_LDFLAGS=""
+HA_LDFLAGS="-pthread"
 
 ##libtool_start##
 LT_INIT
@@ -72,8 +72,7 @@ AC_ARG_ENABLE(threads,
    AS_HELP_STRING([--enable-threads=[no/yes]],[Enable threads [default=no]]),
    , enable_threads="no")
 if test "x$enable_threads" = "xyes"; then
-   AC_DEFINE(NUMBER_CORES, 4, [Define maxium number of collection threads])
-   HA_LDFLAGS="-pthread"
+   AC_DEFINE(NUMBER_CORES, 4, [Define maximum number of collection threads])
 else
    AC_DEFINE(NUMBER_CORES, 1, [Define to single collection thread])
 fi
@@ -88,7 +87,7 @@ if test "x$enable_tune" = "xyes"; then
 elif test "x$enable_tune" = "xcpuid"; then
    AC_DEFINE(TUNING_CPUID_ENABLE, 1, [Define to 1 to tune with host cpuid])
 elif test "x$enable_tune" = "xvfs"; then
-   AC_DEFINE(TUNING_VFS_ENABLE, 1, [Define to 1 to tune wiht host vfs])
+   AC_DEFINE(TUNING_VFS_ENABLE, 1, [Define to 1 to tune with host vfs])
 fi
 
 ## Checks for programs.
@@ -153,7 +152,7 @@ else
       daemon_type="none"
    ;;
   esac
-fi 
+fi
 
 ## Match host to havegedef macros
 case "$host" in

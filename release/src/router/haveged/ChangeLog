@@ -1,3 +1,23 @@
+v1.9.22 (May 21, 2026) [Jirka Hladky]
+* Add ReadWritePaths=/dev/shm to systemd service for semaphore creation
+  under ProtectSystem=full sandboxing
+
+v1.9.21 (May 14, 2026) [Jirka Hladky]
+* Fix privilege escalation via command socket (CVE-2026-41054)
+* Check peer credentials before reading command (CVE-2026-41054)
+* Handle failing opening of semaphore [Werner Fink]
+* Fix /dev/shm permissions to use sticky bit [Dirk Müller]
+* Use chmod after mkdir to ensure correct /dev/shm permissions
+* Update libtool: add lib64 search paths, remove dead code
+
+v1.9.20 (Apr 29, 2026) [Jirka Hladky]
+* Only warn when creating of named semaphore fails
+* Creating /dev/shm if its not existing, otherwise haveged fails to start
+* Fixed several typos
+
+v1.9.19 (Oct 02, 2024) [Jirka Hladky]
+* Added --time_interval N to add entropy unconditionally every N seconds
+
 v1.9.18 (Apr 09, 2022) [Jirka Hladky]
 * Round bits up and target full pool size [Jason A. Donenfeld]
 * Specify right kernel commit in README [Jason A. Donenfeld]

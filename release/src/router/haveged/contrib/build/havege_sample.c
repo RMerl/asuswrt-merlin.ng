@@ -59,7 +59,7 @@ int main(void) {
       fprintf(stderr, "ERROR: havege_create: unrecognized test setup: %s", havege_parameters.testSpec);
     else fprintf(stderr, "ERROR: havege_create has returned %d\n",rc);
     if (H_NOHANDLE!=rc)
-      havege_destroy(havage_state);
+      havege_destroy(havege_state);
     return 1;
     }
   rc = havege_run(havege_state);

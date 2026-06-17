@@ -49,6 +49,7 @@
 #define RDD_ETH_TM_RATE_LIMITER_VALID_SIZE                        RDD_DS_TM_RATE_LIMITER_VALID_SIZE
 #define RDD_ETH_TM_RATE_LIMITER_BUDGET_VALID_PTR                  RDD_DS_TM_RATE_LIMITER_BUDGET_VALID_PTR
 #define RDD_ETH_TM_RATE_LIMITER_BUDGET_VALID_SIZE                 RDD_DS_TM_RATE_LIMITER_BUDGET_VALID_SIZE
+#define RDD_ETH_TM_RATE_LIMITER_FORCE_WAKEUP_PTR                  RDD_DS_TM_RATE_LIMITER_FORCE_WAKEUP_PTR
 #define RDD_ETH_TM_SCHEDULER_POOL_PTR                             RDD_DS_TM_SCHEDULER_POOL_PTR
 #define RDD_ETH_TM_SCHEDULER_TABLE_PTR                            RDD_DS_TM_SCHEDULER_TABLE_PTR
 #define RDD_ETH_TM_SCHEDULER_TABLE_SIZE                           RDD_DS_TM_SCHEDULER_TABLE_SIZE
@@ -67,6 +68,7 @@
 #define RDD_PON_TM_RATE_LIMITER_VALID_SIZE                        RDD_US_TM_RATE_LIMITER_VALID_SIZE
 #define RDD_PON_TM_RATE_LIMITER_BUDGET_VALID_PTR                  RDD_US_TM_RATE_LIMITER_BUDGET_VALID_PTR
 #define RDD_PON_TM_RATE_LIMITER_BUDGET_VALID_SIZE                 RDD_US_TM_RATE_LIMITER_BUDGET_VALID_SIZE
+#define RDD_PON_TM_RATE_LIMITER_FORCE_WAKEUP_PTR                  RDD_US_TM_RATE_LIMITER_FORCE_WAKEUP_PTR
 #define RDD_PON_TM_SCHEDULER_POOL_PTR                             RDD_US_TM_SCHEDULER_POOL_PTR
 #define RDD_PON_TM_SCHEDULER_TABLE_PTR                            RDD_US_TM_SCHEDULER_TABLE_PTR
 #define RDD_PON_TM_SCHEDULER_TABLE_SIZE                           RDD_US_TM_SCHEDULER_TABLE_SIZE
@@ -152,6 +154,7 @@ typedef struct
     uint32_t qm_queue_start;
     uint32_t qm_queue_end;
     uint8_t  bbh_bound;
+    uint8_t *rl_force_wakeup_p;
 } rdd_tm_entity_info;
 
 /* generic API to get\set any scheduler_descriptor */

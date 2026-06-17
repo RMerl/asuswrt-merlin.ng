@@ -3368,21 +3368,6 @@ void dump_RDD_SECONDARY_SCHEDULER_DESCRIPTOR(bdmf_session_handle session, unsign
 
 }
 
-void dump_RDD_FPM_POOL_NUMBER(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register FPM_POOL_NUMBER\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 2, 6, (r));
-	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 0, 2, (r));
-	bdmf_session_print(session, "\tpool_number              = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
 void dump_RDD_AQM_QUEUE_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -3728,17 +3713,17 @@ void dump_RDD_PACKETS_AND_BYTES(bdmf_session_handle session, unsigned char *p)
 
 }
 
-void dump_RDD_BUFMNG_DESCRIPTOR_ENTRY(bdmf_session_handle session, unsigned char *p)
+void dump_RDD_FPM_POOL_NUMBER(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register BUFMNG_DESCRIPTOR_ENTRY\n");
+	bdmf_session_print(session, "  Register FPM_POOL_NUMBER\n");
 
-	MREAD_8((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tbufmng_idx               = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 2, 6, (r));
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_8((uint8_t *)(p) + 1, (r));
-	bdmf_session_print(session, "\tbufmng_drop_cntr_idx     = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 0, 2, (r));
+	bdmf_session_print(session, "\tpool_number              = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 }
@@ -4119,6 +4104,21 @@ void dump_RDD_UPDATE_FIFO_ENTRY(bdmf_session_handle session, unsigned char *p)
 
 }
 
+void dump_RDD_BUFMNG_DESCRIPTOR_ENTRY(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register BUFMNG_DESCRIPTOR_ENTRY\n");
+
+	MREAD_8((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tbufmng_idx               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 1, (r));
+	bdmf_session_print(session, "\tbufmng_drop_cntr_idx     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
 void dump_RDD_BUFMNG_STATUS_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -4142,6 +4142,17 @@ void dump_RDD_BUFMNG_STATUS_ENTRY(bdmf_session_handle session, unsigned char *p)
 		j++;
 	}
 	bdmf_session_print(session, "\n");
+}
+
+void dump_RDD_VPORT_TO_RL_OVERHEAD_ENTRY(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register VPORT_TO_RL_OVERHEAD_ENTRY\n");
+
+	MREAD_8((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\trl_overhead              = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
 }
 
 void dump_RDD_SCHEDULER_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
@@ -4254,13 +4265,21 @@ void dump_RDD_NAT_CACHE_CFG(bdmf_session_handle session, unsigned char *p)
 
 }
 
-void dump_RDD_VPORT_TO_RL_OVERHEAD_ENTRY(bdmf_session_handle session, unsigned char *p)
+void dump_RDD_SPDSVC_WLAN_GEN_PARAMS(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register VPORT_TO_RL_OVERHEAD_ENTRY\n");
+	bdmf_session_print(session, "  Register SPDSVC_WLAN_GEN_PARAMS\n");
 
-	MREAD_8((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\trl_overhead              = 0x%08x", (unsigned int)r);
+	MREAD_32((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tcomplete_tracked         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\ttx_copies                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 8, (r));
+	bdmf_session_print(session, "\tspdsvc_free_idx          = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 }
@@ -4333,21 +4352,29 @@ void dump_RDD_AQM_QUEUE_TIMER_DESCRIPTOR(bdmf_session_handle session, unsigned c
 
 }
 
-void dump_RDD_SPDSVC_WLAN_GEN_PARAMS(bdmf_session_handle session, unsigned char *p)
+void dump_RDD_DEBUG_PRINT_INFO(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register SPDSVC_WLAN_GEN_PARAMS\n");
+	bdmf_session_print(session, "  Register DEBUG_PRINT_INFO\n");
 
 	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tcomplete_tracked         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\taddr_low                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\ttx_copies                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\taddr_high                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_16((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tspdsvc_free_idx          = 0x%08x", (unsigned int)r);
+	MREAD_32((uint8_t *)(p) + 8, (r));
+	bdmf_session_print(session, "\tsize                     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 12, (r));
+	bdmf_session_print(session, "\ttable_id                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_32((uint8_t *)(p) + 12, 0, 24, (r));
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 }
@@ -4411,33 +4438,6 @@ void dump_RDD_FPM_GLOBAL_CFG(bdmf_session_handle session, unsigned char *p)
 
 	MREAD_8((uint8_t *)(p) + 27, (r));
 	bdmf_session_print(session, "\tfpm_token_num_pool3      = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_DEBUG_PRINT_INFO(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register DEBUG_PRINT_INFO\n");
-
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\taddr_low                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\taddr_high                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tsize                     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 12, (r));
-	bdmf_session_print(session, "\ttable_id                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_32((uint8_t *)(p) + 12, 0, 24, (r));
-	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 }
@@ -7229,6 +7229,29 @@ void dump_RDD_BUFFER_CONG_MGT(bdmf_session_handle session, unsigned char *p)
 
 }
 
+void dump_RDD_BBH_TX_WAKE_UP_DATA_ENTRY(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register BBH_TX_WAKE_UP_DATA_ENTRY\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 3, 5, (r));
+	bdmf_session_print(session, "\treserved0                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_32((uint8_t *)(p), 8, 19, (r));
+	bdmf_session_print(session, "\tbytes_in_bbh             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 3, (r));
+	bdmf_session_print(session, "\tqueue                    = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
 void dump_RDD_BUFFER_CONG_Q_OCCUPANCY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -7240,6 +7263,25 @@ void dump_RDD_BUFFER_CONG_Q_OCCUPANCY(bdmf_session_handle session, unsigned char
 
 	MREAD_32((uint8_t *)(p) + 4, (r));
 	bdmf_session_print(session, "\tbyte_cnt                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void dump_RDD_TX_EXCEPTION_ENTRY(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register TX_EXCEPTION_ENTRY\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 2, 6, (r));
+	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 1, 1, (r));
+	bdmf_session_print(session, "\tdbg_stat_en              = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 0, 1, (r));
+	bdmf_session_print(session, "\tvlan_cntr_en             = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 }
@@ -7266,25 +7308,6 @@ void dump_RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY(bdmf_session_handle sess
 	bdmf_session_print(session, "\n");
 }
 
-void dump_RDD_TX_EXCEPTION_ENTRY(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register TX_EXCEPTION_ENTRY\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 2, 6, (r));
-	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 1, 1, (r));
-	bdmf_session_print(session, "\tdbg_stat_en              = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 0, 1, (r));
-	bdmf_session_print(session, "\tvlan_cntr_en             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
 void dump_RDD_CODEL_BIAS_SLOPE(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -7296,29 +7319,6 @@ void dump_RDD_CODEL_BIAS_SLOPE(bdmf_session_handle session, unsigned char *p)
 
 	MREAD_16((uint8_t *)(p) + 2, (r));
 	bdmf_session_print(session, "\tslope                    = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_BBH_TX_WAKE_UP_DATA_ENTRY(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register BBH_TX_WAKE_UP_DATA_ENTRY\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 3, 5, (r));
-	bdmf_session_print(session, "\treserved0                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_32((uint8_t *)(p), 8, 19, (r));
-	bdmf_session_print(session, "\tbytes_in_bbh             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 3, (r));
-	bdmf_session_print(session, "\tqueue                    = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 }

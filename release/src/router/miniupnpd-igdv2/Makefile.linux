@@ -1,0 +1,158 @@
+# $Id: Makefile.linux,v 1.113 2025/03/30 22:36:04 nanard Exp $
+# MiniUPnP project
+# (c) 2006-2025 Thomas Bernard
+# http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+# Author : Thomas Bernard
+# for use with GNU Make
+#
+# options can be passed to configure through CONFIG_OPTIONS :
+# $ CONFIG_OPTIONS="--ipv6 --igd2" make
+#
+# To install use :
+# $ DESTDIR=/dummyinstalldir make install
+# or :
+# $ INSTALLPREFIX=/usr/local make install
+# or :
+# $ make install
+# (default INSTALLPREFIX is /usr)
+#
+# if your system hasn't iptables libiptc headers and binary correctly
+# installed, you need to get iptables sources from http://netfilter.org/
+# ./configure them and build them then miniupnpd will build using :
+# $ IPTABLESPATH=/path/to/iptables-1.4.1 make
+#
+CONFIG_OPTIONS ?= $(shell cat .configure.cache)
+ifeq ($(filter --firewall=iptables,$(CONFIG_OPTIONS)),)
+CONFIG_OPTIONS += --firewall=iptables
+endif
+
+# Make sucks, prove me wrong
+, := ,
+ifeq ($(filter -D_FORTIFY_SOURCE=% -Wp$(,)-D_FORTIFY_SOURCE=%,$(CPPFLAGS) $(CFLAGS)),)
+CPPFLAGS += -D_FORTIFY_SOURCE=2
+endif
+CPPFLAGS += -D_GNU_SOURCE
+
+#CFLAGS = -O -g -DDEBUG
+CFLAGS ?= -Os
+CFLAGS += -fno-strict-aliasing
+CFLAGS += -fno-common
+CFLAGS += $(if $(QCA),-fno-stack-protector,-fstack-protector) -fPIE
+CPPFLAGS += -D_GNU_SOURCE
+CFLAGS += -Wall
+CFLAGS += -Wextra -Wstrict-prototypes -Wdeclaration-after-statement
+CFLAGS += $(EXTRACFLAGS)
+#CFLAGS += -Wno-missing-field-initializers
+#CFLAGS += -ansi	# iptables headers does use typeof which is a gcc extension
+LDFLAGS += -Wl,-z,now -Wl,-z,relro -pie
+CC ?= gcc
+RM = rm -f
+INSTALL = install
+STRIP ?= strip
+CP = cp
+DOXYGEN ?= doxygen
+
+DEPDIR := .depend
+DEPFLAGS = -MMD -MP -MF $(@:%.o=$(DEPDIR)/%.d) -MT $@
+# -M : with system headers, -MM : without
+
+INSTALLPREFIX ?= $(PREFIX)/usr
+ETCDIR ?= $(PREFIX)/etc
+SBINDIR ?= $(INSTALLPREFIX)/sbin
+MANDIR ?= $(INSTALLPREFIX)/share/man
+LIBDIR ?= $(INSTALLPREFIX)/lib
+
+CONFIGDIR = $(ETCDIR)/miniupnpd
+INITDIR = $(ETCDIR)/init.d
+SYSTEMDUNITDIR = $(LIBDIR)/systemd/system
+
+include config.mk
+include $(SRCDIR)/gitrev.mk
+include $(SRCDIR)/objects.mk
+
+# sources in netfilter/ directory
+NETFILTEROBJS = iptcrdr.o iptpinhole.o nfct_get.o
+
+ALLOBJS = $(BASEOBJS) $(LNXOBJS) $(NETFILTEROBJS) $(OTHEROBJS)
+
+NETFILTER_SCRIPTS = $(addprefix $(SRCDIR)/netfilter/, \
+	iptables_init.sh iptables_removeall.sh \
+	ip6tables_init.sh ip6tables_removeall.sh \
+	miniupnpd_functions.sh)
+
+#LDLIBS += -lnfnetlink
+
+EXECUTABLES = miniupnpd miniupnpdctl
+
+ifeq ($(TESTS), 1)
+EXECUTABLES += testupnpdescgen testgetifstats \
+               testupnppermissions testgetifaddr \
+               testgetroute testasyncsendto testportinuse \
+               testssdppktgen testminissdp testifacewatcher \
+               teststun
+endif
+
+.PHONY:	all clean install dox
+
+all:	$(EXECUTABLES)
+
+clean:
+	$(RM) $(ALLOBJS)
+	$(RM) -r $(DEPDIR)
+	$(RM) $(EXECUTABLES)
+	$(RM) validateupnppermissions validategetifaddr validatessdppktgen
+	$(RM) validateversion
+	$(RM) -r dox/
+
+install:	miniupnpd $(SRCDIR)/miniupnpd.8 $(SRCDIR)/miniupnpd.conf \
+		$(NETFILTER_SCRIPTS) \
+		$(SRCDIR)/linux/miniupnpd.init.d.script \
+		$(SRCDIR)/linux/miniupnpd.iptables.service
+	$(STRIP) miniupnpd
+	$(INSTALL) -D -m 0755 miniupnpd -t $(DESTDIR)$(SBINDIR)
+	$(INSTALL) -D -m 0755 $(NETFILTER_SCRIPTS) -t $(DESTDIR)$(CONFIGDIR)
+	$(INSTALL) -D -m 0644 -b $(SRCDIR)/miniupnpd.conf -t $(DESTDIR)$(CONFIGDIR)
+	sed -i -e "s/^uuid=[-0-9a-f]*/uuid=$(shell $(UUIDBIN))/" $(DESTDIR)$(CONFIGDIR)/miniupnpd.conf
+ifneq ($(USE_SYSTEMD),)
+	$(INSTALL) -D -m 0644 $(SRCDIR)/linux/miniupnpd.iptables.service $(DESTDIR)$(SYSTEMDUNITDIR)/miniupnpd.service
+	sed -r \
+		-e "s|%BINDIR%|$(SBINDIR)|" \
+		-e "s|%CONFIGDIR%|$(CONFIGDIR)|" \
+		-i $(DESTDIR)/$(SYSTEMDUNITDIR)/miniupnpd.service
+	sed -r \
+		-e "s|(#lease_file)=.*|\1=/var/lib/miniupnpd/upnp.leases|" \
+		-i $(DESTDIR)/$(CONFIGDIR)/miniupnpd.conf
+else
+	$(INSTALL) -D -m 0755 $(SRCDIR)/linux/miniupnpd.init.d.script $(DESTDIR)$(INITDIR)/miniupnpd
+endif
+	$(INSTALL) -D -m 0644 $(SRCDIR)/miniupnpd.8 -t $(DESTDIR)$(MANDIR)/man8
+	gzip -f $(DESTDIR)$(MANDIR)/man8/miniupnpd.8
+
+include $(SRCDIR)/check.mk
+
+include $(SRCDIR)/common.mk
+
+testportinuse:	testportinuse.o portinuse.o getifaddr.o \
+	iptcrdr.o upnputils.o getroute.o
+
+teststun: teststun.o upnpstun.o \
+	iptcrdr.o upnputils.o getroute.o
+
+config.mk config.h:	$(SRCDIR)/configure $(SRCDIR)/VERSION
+	$(SHELL) $< $(CONFIG_OPTIONS)
+
+%.o:	$(SRCDIR)/%.c $(DEPDIR)/%.d | $(DEPDIR)
+	$(CC) -c $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $< -o $@
+
+%.o:	$(SRCDIR)/linux/%.c $(DEPDIR)/%.d | $(DEPDIR)
+	$(CC) -c $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $< -o $@
+
+%.o:	$(SRCDIR)/netfilter/%.c $(DEPDIR)/%.d | $(DEPDIR)
+	$(CC) -c $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $< -o $@
+
+
+DEPFILES := $(ALLOBJS:%.o=$(DEPDIR)/%.d)
+$(DEPDIR): ; @mkdir -p $@
+$(DEPFILES):
+
+-include $(wildcard $(DEPFILES))

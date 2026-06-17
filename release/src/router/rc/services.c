@@ -7716,7 +7716,7 @@ void start_upnp(void)
 					"serial=%s\n"
 					"uuid=%s\n"
 #ifdef RTCONFIG_IGD2
-					"lease_file6=/tmp/upnp.leases6\n"
+					"%s\n"
 #endif
 					"lease_file=%s\n",
 					get_wan_ifname(unit),
@@ -7738,6 +7738,9 @@ void start_upnp(void)
 					"ASUS Wireless Router",
 					get_productid(),
 					nvram_get("serial_no") ? : serial, uuid,
+#ifdef RTCONFIG_IGD2
+					nvram_get_int("upnp_pinhole_enable") ? "lease_file6=/tmp/upnp.leases6" : "",
+#endif
 					"/tmp/upnp.leases");
 
 				if (nvram_get_int("upnp_clean")) {
@@ -7912,8 +7915,8 @@ void start_upnp(void)
 				use_custom_config("upnp", "/etc/upnp/config");
 				run_postconf("upnp", "/etc/upnp/config");
 #ifdef RTCONFIG_IGD2
-				if (!nvram_get_int("upnp_pinhole_enable"))
-					xstart("miniupnpd", "-f", "/etc/upnp/config", "-1");
+				if (nvram_get_int("upnp_pinhole_enable"))
+					xstart("miniupnpd-igdv2", "-f", "/etc/upnp/config");
 				else
 #endif
 					xstart("miniupnpd", "-f", "/etc/upnp/config");
@@ -7934,6 +7937,10 @@ void stop_upnp(void)
 	}
 
 	killall_tk("miniupnpd");
+#ifdef RTCONFIG_IGD2
+	killall_tk("miniupnpd-igdv2");
+#endif
+
 #ifdef RTCONFIG_AUPNPC
 	stop_aupnpc();
 #endif

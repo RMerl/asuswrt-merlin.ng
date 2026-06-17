@@ -1,0 +1,26 @@
+[Unit]
+Description=Lightweight UPnP IGD daemon
+Documentation=man:miniupnpd(8)
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+ExecStart=/bin/sh -c 'exec %BINDIR%/miniupnpd -D \
+	-f %CONFIGDIR%/miniupnpd.conf \
+	-p /run/miniupnpd/miniupnpd.pid \
+	-u "$(systemd-id128 --uuid machine-id)" "$@" \
+' - $MINIUPNPD_ARGS
+ExecStartPre=%CONFIGDIR%/iptables_init.sh
+ExecStopPost=%CONFIGDIR%/iptables_removeall.sh
+
+Environment=MINIUPNPD_ARGS=
+EnvironmentFile=-/etc/conf.d/miniupnpd
+
+StateDirectory=miniupnpd
+RuntimeDirectory=miniupnpd
+ConfigurationDirectory=miniupnpd
+PIDFile=/run/miniupnpd/miniupnpd.pid
+
+[Install]
+WantedBy=multi-user.target

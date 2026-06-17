@@ -171,18 +171,41 @@ int ASN1_mbstring_ncopy(ASN1_STRING **out, const unsigned char *in, int len,
         break;
 
     case MBSTRING_BMP:
+        if (nchar > INT_MAX / 2) {
+            ASN1err(ASN1_F_ASN1_MBSTRING_NCOPY, ASN1_R_STRING_TOO_LONG);
+            if (free_out) {
+                ASN1_STRING_free(dest);
+                *out = NULL;
+            }
+            return -1;
+        }
         outlen = nchar << 1;
         cpyfunc = cpy_bmp;
         break;
 
     case MBSTRING_UNIV:
+        if (nchar > INT_MAX / 4) {
+            ASN1err(ASN1_F_ASN1_MBSTRING_NCOPY, ASN1_R_STRING_TOO_LONG);
+            if (free_out) {
+                ASN1_STRING_free(dest);
+                *out = NULL;
+            }
+            return -1;
+        }
         outlen = nchar << 2;
         cpyfunc = cpy_univ;
         break;
 
     case MBSTRING_UTF8:
         outlen = 0;
-        traverse_string(in, len, inform, out_utf8, &outlen);
+        ret = traverse_string(in, len, inform, out_utf8, &outlen);
+        if (ret < 0) { /* error already raised in out_utf8() */
+            if (free_out) {
+                ASN1_STRING_free(dest);
+                *out = NULL;
+            }
+            return -1;
+        }
         cpyfunc = cpy_utf8;
         break;
     }
@@ -256,9 +279,19 @@ static int in_utf8(unsigned long value, void *arg)
 
 static int out_utf8(unsigned long value, void *arg)
 {
-    int *outlen;
+    int *outlen, len;
+
+    len = UTF8_putc(NULL, -1, value);
+    if (len <= 0) {
+        ASN1err(ASN1_F_ASN1_MBSTRING_NCOPY, ASN1_R_INVALID_UTF8STRING);
+        return len;
+    }
     outlen = arg;
-    *outlen += UTF8_putc(NULL, -1, value);
+    if (*outlen > INT_MAX - len) {
+        ASN1err(ASN1_F_ASN1_MBSTRING_NCOPY, ASN1_R_STRING_TOO_LONG);
+        return -1;
+    }
+    *outlen += len;
     return 1;
 }
 

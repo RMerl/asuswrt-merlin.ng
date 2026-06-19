@@ -16,13 +16,14 @@ Asuswrt-Merlin Changelog
          V2".  A new button will appear that can generate
          a new client key each time you click on it.
   - UPDATED: Merged with GPL 388_25633.
-  - UPDATED: dnsmasq to 2.93.
+  - UPDATED: dnsmasq to 2.93 + some backports.
   - UPDATED: OpenVPN to 2.7.4.
   - UPDATED: tor to 0.4.8.22.
   - UPDATED: curl to 8.17 (backport from 102_39848).
   - UPDATED: wget to 1.25 (backport from 102_39848).
   - UPDATED: dropbear to 2026.91.
-  - UPDATED: miniupnpd to 2.3.10-64ef08a.
+  - UPDATED: miniupnpd to 2.3.10-42965d7.
+  - UPDATED: haveged to 1.9.22.
   - CHANGED: Added new 2024 DNSSEC trust anchor, which will
              start being used in October 2026.
   - CHANGED: VPN Status page can now detect running but
@@ -30,9 +31,11 @@ Asuswrt-Merlin Changelog
              report them as being in an error state.
   - FIXED: Multiple minor CVE for OpenSSL 1.1: CVE-2025-68160,
            CVE-2025-69418, CVE-2025-69419, CVE-2025-69420,
-           CVE-2025-69421, CVE-2026-22795, CVE-2026-22796
-           CVE-2026-28387, CVE-2026-28388, CVE-2026-28389
-           and CVE-2026-28390 (backports by RSDNTWK)
+           CVE-2025-69421, CVE-2026-22795, CVE-2026-22796,
+           CVE-2026-28387, CVE-2026-28388, CVE-2026-28389,
+           CVE-2026-7383, CVE-2026-9076, CVE-2026-34180,
+           CVE-2026-42766 and CVE-2026-45447 (backports
+           by RSDNTWK)
   - FIXED: Starting a client through VPNDirector would fail to
            update routing rules.
   - FIXED: Security issue on the Site Survey page

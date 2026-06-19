@@ -27,6 +27,7 @@ Asuswrt-Merlin 3006.xxx Changelog
   - UPDATED: dropbear to 2026.91.
   - UPDATED: dnsmasq to 2.93 + some backports.
   - UPDATED: miniupnpd to 2.3.10-64ef08a.
+  - UPDATED: haveged to 1.9.22.
   - CHANGED: VPN Status page can now detect running but
              non-connected WireGuard client tunnels, and
              report them as being in an error state.

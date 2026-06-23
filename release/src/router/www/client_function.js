@@ -2775,7 +2775,7 @@ function exportClientListLog() {
 	switch (clienlistViewMode) {
 		case "All" :
 			var all_list_merge_offline = [];
-			
+
 			for(let i = 0; i < clientList.length; i += 1) {
 				all_list_merge_offline.push([
 					clientList[clientList[i]].internetState,
@@ -2837,7 +2837,7 @@ function exportClientListLog() {
 
 		if (navigator.msSaveBlob) { // IE10
 			return navigator.msSaveBlob(new Blob([content], { type: mimeType }), fileName);
-		} 
+		}
 		else if ('download' in a) { //html5 A[download]
 			a.href = 'data:' + mimeType + ',' + encodeURIComponent(content);
 			a.setAttribute('download', fileName);
@@ -2847,7 +2847,7 @@ function exportClientListLog() {
 				document.getElementById("clientlist_viewlist_content").removeChild(a);
 			}, 66);
 			return true;
-		} 
+		}
 		else { //do iframe dataURL download (old ch+FF):
 			var f = document.createElement('iframe');
 			document.getElementById("clientlist_viewlist_content").appendChild(f);
@@ -2924,29 +2924,7 @@ const create_clientlist_card = (title, id) => {
 	return cardCode;
 };
 function create_clientlist_listview() {
-	all_list = [];
-	$.each(isWL_map, function(index, value){
-		if(index == "0")
-			wired_list = [];
-		else
-			wl_list["wl"+index+""] = [];
-	});
-	if(smart_connect_version != ""){
-		sc_list = [];
-	}
-	if(isSupport("amas")){
-		if(isSupport("mtlancfg")){
-			$.each(sdn_rl_for_clientlist, function(index, sdn_all_rl){
-					if(sdn_all_rl.sdn_rl.idx == "0" || sdn_all_rl.sdn_rl.sdn_name == "MAINBH")
-						return true;
-					sdn_list["sdn"+sdn_all_rl.sdn_rl.idx+""] = [];
-			});
-		}
-		else{
-			for(var i=1; i<isSupport("mssid_count")+1; i++)
-				gn_list["gn"+i+""] = [];
-		}
-	}
+	_rebuild_clientlist_arrays();
 
 	var divObj = document.createElement("div");
 	divObj.setAttribute("id","clientlist_viewlist_block");
@@ -3089,82 +3067,9 @@ function create_clientlist_listview() {
 				cal_panel_block_clientList("clientlist_viewlist_content", 0.045);
 			}
 		}
-	}	
+	}
 
 	document.getElementById("clientlist_viewlist_content").onclick = function() {show_clientlist_view_block();}
-
-	//copy clientList to each sort array
-	genClientList();
-	for(let i = 0; i < clientList.length; i += 1) {
-		if(clientList[clientList[i]].isOnline) {
-			let tempArray = [
-				clientList[clientList[i]].internetState,
-				clientList[clientList[i]].vendor || clientList[clientList[i]].vendor || `Loading manufacturer..`,
-				clientList[clientList[i]].nickName || clientList[clientList[i]].name,
-				clientList[clientList[i]].ip,
-				clientList[clientList[i]].mac,
-				clientList[clientList[i]].rssi,
-				clientList[clientList[i]].curTx,
-				clientList[clientList[i]].curRx,
-				clientList[clientList[i]].wlConnectTime,
-				clientList[clientList[i]].isWL,
-				clientList[clientList[i]].vendor,
-				clientList[clientList[i]].type,
-				clientList[clientList[i]].macRepeat,
-				clientList[clientList[i]].isGN,
-				clientList[clientList[i]].sdn_idx,
-				clientList[clientList[i]].isUserUplaodImg,
-				clientList[clientList[i]].ip6,
-				clientList[clientList[i]].ip6_prefix,
-				clientList[clientList[i]].mlo,
-				clientList[clientList[i]].isASUS
-			];
-
-			switch (clienlistViewMode) {
-				case "All" :
-					all_list.push(tempArray);
-					break;
-				case "ByInterface" :
-					if(isSupport("amas")){
-						if(isSupport("mtlancfg")){
-								if(clientList[clientList[i]].sdn_idx > 0)
-									sdn_list["sdn"+clientList[clientList[i]].sdn_idx+""].push(tempArray);
-								else if(clientList[clientList[i]].isWL == 0)
-									wired_list.push(tempArray);
-								else{
-									wl_list["wl"+clientList[clientList[i]].isWL+""].push(tempArray);
-									if(smart_connect_version != ""){
-										sc_list.push(tempArray);
-									}
-								}
-						}
-						else{
-							if(clientList[clientList[i]].isWL != 0 && clientList[clientList[i]].isGN != "")
-								gn_list["gn"+clientList[clientList[i]].isGN+""].push(tempArray);
-							else if(clientList[clientList[i]].isWL == 0)
-								wired_list.push(tempArray);
-							else{
-								wl_list["wl"+clientList[clientList[i]].isWL+""].push(tempArray);
-								if(smart_connect_version != ""){
-									sc_list.push(tempArray);
-								}
-							}
-						}
-					}
-					else{
-						if(clientList[clientList[i]].isWL == 0)
-							wired_list.push(tempArray);
-						else{
-							wl_list["wl"+clientList[clientList[i]].isWL+""].push(tempArray);
-							if(smart_connect_version != ""){
-								sc_list.push(tempArray);
-							}
-						}
-					}
-					break;
-			}
-		}
-	}
 
 	if(clienlistViewMode == "All") {
 		if(!sorter.all_display) {
@@ -3282,32 +3187,6 @@ function drawClientListBlock(objID) {
 				sortArray = gn_list[objID.substr(0, 3)];
 		}
 	}
-	const listViewProfile = function (_profile) {
-		if (_profile == null)
-			_profile = new Array(20).fill("");
-
-		this.internetState = _profile[0];
-		this.deviceTypeName = _profile[1];
-		this.name = _profile[2];
-		this.ip = _profile[3];
-		this.mac = _profile[4];
-		this.rssi = _profile[5];
-		this.curTx = _profile[6];
-		this.curRx = _profile[7];
-		this.wlConnectTime = _profile[8];
-		this.isWL = _profile[9];
-		this.vendor = _profile[10];
-		this.type = _profile[11];
-		this.macRepeat = _profile[12];
-		this.isGN = _profile[13];
-		this.sdn_idx = _profile[14];
-		this.isUserUplaodImg = _profile[15];
-		this.ip6 = _profile[16];
-		this.ip6_prefix = _profile[17];
-		this.mlo = _profile[18];
-		this.isASUS = _profile[19];
-	}
-
 	if (document.getElementById("clientlist_" + objID + "_Block") != null) {
 		if (document.getElementById("tb_" + objID) != null) {
 			removeElement(document.getElementById("tb_" + objID));
@@ -3315,8 +3194,6 @@ function drawClientListBlock(objID) {
 		const obj_width = ["7%", "7%", "25%", "20%", "15%", "8%", "8%", "10%"];
 		const wl_colspan = obj_width.length;
 		let clientListCode = "";
-		//user icon
-		let listView_userIconBase64 = "NoIcon";
 
 		clientListCode += `<table width='100%' cellspacing='0' cellpadding='0' align='center' class='list_table' id='tb_${objID}'>`;
 
@@ -3339,152 +3216,180 @@ function drawClientListBlock(objID) {
 		if (sortArray.length == 0) {
 			clientListCode += `<tr id='tr_${objID}'><td class='hintColor' colspan='${wl_colspan}'><#IPConnection_VSList_Norule#></td></tr>`;
 		} else {
-			clientlist_sort = new Array();
-			for (var i = 0; i < sortArray.length; i += 1) {
-				clientlist_sort.push(new listViewProfile(sortArray[i]));
+			for (let j = 0; j < sortArray.length; j += 1) {
+				clientListCode += _buildClientListRowHtml(sortArray[j], objID);
 			}
+		}
+		clientListCode += `</tbody>`;
+		clientListCode += "</table>";
+		document.getElementById("clientlist_" + objID + "_Block").innerHTML = clientListCode;
+		addEvents(objID);
+	}
+}
 
-			for (var j = 0; j < clientlist_sort.length; j += 1) {
-				clientListCode += "<tr>";
+function _hashClientListRow(profileArray) {
+	const str = JSON.stringify(profileArray);
+	let h = 5381;
+	for (let i = 0; i < str.length; i++) {
+		h = ((h << 5) + h) ^ str.charCodeAt(i);
+	}
+	return (h >>> 0).toString(16);
+}
 
-				let internetStateCss = "";
-				let internetStateTip = "";
-				if (clientlist_sort[j].internetState) {
-					internetStateCss = "bg-active";
-					internetStateTip = "Allow Internet access";
-				} else {
-					internetStateCss = "bg-block";
-					internetStateTip = "Block Internet access";
-				}
+function _buildClientListRowHtml(profileArray, objID) {
+	const p = {
+		internetState: profileArray[0],
+		deviceTypeName: profileArray[1],
+		name: profileArray[2],
+		ip: profileArray[3],
+		mac: profileArray[4],
+		rssi: profileArray[5],
+		curTx: profileArray[6],
+		curRx: profileArray[7],
+		wlConnectTime: profileArray[8],
+		isWL: profileArray[9],
+		vendor: profileArray[10],
+		type: profileArray[11],
+		macRepeat: profileArray[12],
+		isGN: profileArray[13],
+		sdn_idx: profileArray[14],
+		isUserUplaodImg: profileArray[15],
+		ip6: profileArray[16],
+		ip6_prefix: profileArray[17],
+		mlo: profileArray[18],
+		isASUS: profileArray[19]
+	};
 
-				//Interface
-				let clientInterfaceCode = '';
-				if (!(isSwMode('mb') || isSwMode('ew'))) {
-					let rssi_t = 0;
-					if (clientlist_sort[j].isWL == "0")
-						rssi_t = "wired";
-					else
-						rssi_t = client_convRSSI(clientlist_sort[j].rssi);
-					let radioIcon_css = "radio-icon";
-					if ((clientlist_sort[j].isGN != "" && clientlist_sort[j].isGN != undefined) || (isSupport("mtlancfg") && clientlist_sort[j].sdn_idx > 0)) {
-						radioIcon_css += " GN";
-					}
-					clientInterfaceCode += `<div class='interface_container'><div class='${radioIcon_css} radio-${rssi_t}'></div>`;
-					if (clientlist_sort[j].isWL != 0 || (isSupport("mtlancfg") && clientlist_sort[j].sdn_idx > 0)) {
-						let band_text = isWL_map[clientlist_sort[j].isWL]["text"];
-						if (isSupport("mlo") && (clientlist_sort[j].mlo == "1")) band_text = `MLO`;
-						clientInterfaceCode += `<div class='band_block'>${band_text}</div>`;
-					}
-					clientInterfaceCode += "</div>";
-					clientListCode += `<td class='client-list-sm' align='center'>${clientInterfaceCode}</td>`;
-				}
+	const rowHash = _hashClientListRow(profileArray);
+	let rowHtml = `<tr data-mac='${p.mac}' data-rowhash='${rowHash}'>`;
 
-				//Icon
-				let clientIconCode = '';
+	let internetStateCss = "";
+	let internetStateTip = "";
+	if (p.internetState) {
+		internetStateCss = "bg-active";
+		internetStateTip = "Allow Internet access";
+	} else {
+		internetStateCss = "bg-block";
+		internetStateTip = "Block Internet access";
+	}
 
-				if (isSupport("usericon")) {
-					if (clientListViewMacUploadIcon[clientlist_sort[j].mac] == undefined) {
-						const clientMac = clientlist_sort[j].mac.replace(/\:/g, "");
-						listView_userIconBase64 = getUploadIcon(clientMac);
-						clientListViewMacUploadIcon[clientlist_sort[j].mac] = listView_userIconBase64;
-					} else {
-						listView_userIconBase64 = clientListViewMacUploadIcon[clientlist_sort[j].mac];
-					}
-				}
+	let clientInterfaceCode = '';
+	if (!(isSwMode('mb') || isSwMode('ew'))) {
+		let rssi_t = 0;
+		if (p.isWL == "0")
+			rssi_t = "wired";
+		else
+			rssi_t = client_convRSSI(p.rssi);
+		let radioIcon_css = "radio-icon";
+		if ((p.isGN != "" && p.isGN != undefined) || (isSupport("mtlancfg") && p.sdn_idx > 0)) {
+			radioIcon_css += " GN";
+		}
+		clientInterfaceCode += `<div class='interface_container'><div class='${radioIcon_css} radio-${rssi_t}'></div>`;
+		if (p.isWL != 0 || (isSupport("mtlancfg") && p.sdn_idx > 0)) {
+			let band_text = isWL_map[p.isWL]["text"];
+			if (isSupport("mlo") && (p.mlo == "1")) band_text = `MLO`;
+			clientInterfaceCode += `<div class='band_block'>${band_text}</div>`;
+		}
+		clientInterfaceCode += "</div>";
+		rowHtml += `<td class='client-list-sm' align='center'>${clientInterfaceCode}</td>`;
+	}
 
-				clientIconCode += "<div class='client_icon'>";
+	let listView_userIconBase64 = "NoIcon";
+	if (isSupport("usericon")) {
+		if (clientListViewMacUploadIcon[p.mac] == undefined) {
+			const clientMac = p.mac.replace(/\:/g, "");
+			listView_userIconBase64 = getUploadIcon(clientMac);
+			clientListViewMacUploadIcon[p.mac] = listView_userIconBase64;
+		} else {
+			listView_userIconBase64 = clientListViewMacUploadIcon[p.mac];
+		}
+	}
 
-				if (listView_userIconBase64 != "NoIcon") {
-					clientIconCode += "<div title='" + clientlist_sort[j].deviceTypeName + "'>";
-					if (clientlist_sort[j].isUserUplaodImg) {
-						clientIconCode += '<img class="imgUserIcon" src="' + listView_userIconBase64 + '">';
-					} else {
-						clientIconCode += '<div class="imgUserIcon"><i class="type" style="--svg:url(' + listView_userIconBase64 + ')"></i></div>';
-					}
-					clientIconCode += "</div>";
-				} else if (clientlist_sort[j].type != "0" || clientlist_sort[j].vendor == "") {
-					var icon_type = "type" + clientlist_sort[j].type;
-					clientIconCode += "<div style='cursor:default;' class='clientIcon_no_hover' title='" + clientlist_sort[j].deviceTypeName + "'><i class='" + icon_type + "'></i>";
-					if (clientlist_sort[j].type == "36")
-						clientIconCode += "<div class='flash'></div>";
-					clientIconCode += "</div>";
-				} else if (clientlist_sort[j].vendor != "") {
-					const vendorIconClassName = getVendorIconClassName(clientlist_sort[j].vendor.toLowerCase());
-					if (vendorIconClassName != "" && !isSupport("sfp4m")) {
-						clientIconCode += `<div class='vendorIcon_no_hover' title='${clientlist_sort[j].deviceTypeName}'><i class='vendor-icon ${vendorIconClassName}'></i></div>`;
-					} else {
-						var icon_type = "type" + clientlist_sort[j].type;
-						clientIconCode += `<div class='clientIcon_no_hover' title='${clientlist_sort[j].deviceTypeName}'><i class='${icon_type}'></i></div>`;
-					}
-				}
-				clientIconCode += `<span class='rounded-circle internet_status ${internetStateCss}' title='${internetStateTip}'></span>`;
+	let clientIconCode = "<div class='client_icon'>";
+	if (listView_userIconBase64 != "NoIcon") {
+		clientIconCode += "<div title='" + htmlEnDeCode.htmlEncode(p.deviceTypeName) + "'>";
+		if (p.isUserUplaodImg) {
+			clientIconCode += '<img class="imgUserIcon" src="' + listView_userIconBase64 + '">';
+		} else {
+			clientIconCode += '<div class="imgUserIcon"><i class="type" style="--svg:url(' + listView_userIconBase64 + ')"></i></div>';
+		}
+		clientIconCode += "</div>";
+	} else if (p.type != "0" || p.vendor == "") {
+		const icon_type = "type" + p.type;
+		clientIconCode += "<div style='cursor:default;' class='clientIcon_no_hover' title='" + htmlEnDeCode.htmlEncode(p.deviceTypeName) + "'><i class='" + icon_type + "'></i>";
+		if (p.type == "36")
+			clientIconCode += "<div class='flash'></div>";
+		clientIconCode += "</div>";
+	} else if (p.vendor != "") {
+		const vendorIconClassName = getVendorIconClassName(p.vendor.toLowerCase());
+		if (vendorIconClassName != "" && !isSupport("sfp4m")) {
+			clientIconCode += `<div class='vendorIcon_no_hover' title='${htmlEnDeCode.htmlEncode(p.deviceTypeName)}'><i class='vendor-icon ${vendorIconClassName}'></i></div>`;
+		} else {
+			const icon_type = "type" + p.type;
+			clientIconCode += `<div class='clientIcon_no_hover' title='${htmlEnDeCode.htmlEncode(p.deviceTypeName)}'><i class='${icon_type}'></i></div>`;
+		}
+	}
+	clientIconCode += `<span class='rounded-circle internet_status ${internetStateCss}' title='${internetStateTip}'></span>`;
+	if (p.macRepeat > 1) {
+		clientIconCode += `<span class="mac-repeat" onmouseover="return overlib('${p.macRepeat} clients are connecting to <% nvram_get("productid"); %> through this device.');" onmouseout="nd();">${p.macRepeat}</span>`;
+	}
+	clientIconCode += `</div>`;
+	rowHtml += `<td class='IE8HACK client-list-sm' align='center'>${clientIconCode}</td>`;
 
-				if (clientlist_sort[j].macRepeat > 1) {
-					clientIconCode += `<span class="mac-repeat" onmouseover="return overlib('${clientlist_sort[j].macRepeat} clients are connecting to <% nvram_get("productid"); %> through this device.');" onmouseout="nd();">${clientlist_sort[j].macRepeat}</span>`;
-				}
+	let txRate = "-";
+	let rxRate = "-";
+	let accessTime = "-";
+	if (isSupport("stainfo") && !(isSwMode('mb') || isSwMode('ew'))) {
+		if (p.isWL != 0) {
+			txRate = (p.curTx == "") ? "-" : p.curTx;
+			rxRate = (p.curRx == "") ? "-" : p.curRx;
+		}
+		if (p.wlConnectTime == "00:00:00" || p.wlConnectTime == "") {
+			accessTime = "-";
+		} else {
+			accessTime = p.wlConnectTime;
+		}
+	}
 
-				clientIconCode += `</div>`;
-				clientListCode += `<td class='IE8HACK client-list-sm' align='center'>`;
-				clientListCode += clientIconCode;
-				clientListCode += "</td>";
+	const clientIpGroupCode = (p.ip != "0.0.0.0") ? `<div>${p.ip}</div>` : ``;
+	const clientIpLinkCode = (p.ip != "0.0.0.0") ? `${p.ip}` : `[${p.ip6}]`;
+	const clientNameEnCode = htmlEnDeCode.htmlEncode(p.name);
+	const isWebServer = !!(clientList[p.mac] && clientList[p.mac].isWebServer);
+	const ipMethod = (clientList[p.mac] && clientList[p.mac].ipMethod) || "";
 
-
-				let txRate = "-";
-				let rxRate = "-";
-				let accessTime = "-";
-				if (isSupport("stainfo") && !(isSwMode('mb') || isSwMode('ew'))) {
-					if (clientlist_sort[j].isWL != 0) {
-						txRate = (clientlist_sort[j].curTx == "") ? "-" : clientlist_sort[j].curTx;
-						rxRate = (clientlist_sort[j].curRx == "") ? "-" : clientlist_sort[j].curRx;
-					} else {
-						txRate = "-";
-						rxRate = "-";
-					}
-					if (clientlist_sort[j].wlConnectTime == "00:00:00" || clientlist_sort[j].wlConnectTime == "") {
-						accessTime = "-";
-					} else {
-						accessTime = clientlist_sort[j].wlConnectTime;
-					}
-				}
-
-				const clientIpGroupCode = (clientlist_sort[j].ip != "0.0.0.0") ? `<div>${clientlist_sort[j].ip}</div>` : ``;
-				const clientIpLinkCode = (clientlist_sort[j].ip != "0.0.0.0") ? `${clientlist_sort[j].ip}` : `[${clientlist_sort[j].ip6}]`;
-
-				//Width < 960
-				var clientNameEnCode = htmlEnDeCode.htmlEncode(clientlist_sort[j].name);
-				clientListCode += `
-                    <td class='client-list-lg'>
-					    <div class='client_info'>
-					        <div class='client_info_main'>
-					            <div class='client_info_text'>
-					                <div class='client-name'>
-					                    <div class='clientName' onclick='editClientName(this);'>${clientNameEnCode}</div>
-					                    <input type='text' value='${clientNameEnCode}' class='input-client-name' maxlength='32' onblur='saveClientName(this, ${clientlist_sort[j].type}, "${clientlist_sort[j].mac}");'>
+	rowHtml += `
+                <td class='client-list-lg'>
+				    <div class='client_info'>
+				        <div class='client_info_main'>
+				            <div class='client_info_text'>
+				                <div class='client-name'>
+				                    <div class='clientName' onclick='editClientName(this);'>${clientNameEnCode}</div>
+				                    <input type='text' value='${clientNameEnCode}' class='input-client-name' maxlength='32' onblur='saveClientName(this, ${p.type}, "${p.mac}");'>
                                     </div>
                                     <div class='client-ip'>`;
-				clientListCode += (clientList[clientlist_sort[j].mac].isWebServer) ? `
-					<a class='link' href='http://${clientIpLinkCode}' target='_blank'>
-						<div class="client-ip-group">
-							${clientIpGroupCode}
-							<div style="font-size: 0.75em;" title="<#IPv6_wan_addr#>">${clientlist_sort[j].ip6_prefix}</div>
-							<div style="font-size: 0.75em;" title="WAN IPv6 Link-Local">${clientlist_sort[j].ip6}</div>
-						</div>
-					</a>`
-					: `
+	rowHtml += isWebServer ? `
+				<a class='link' href='http://${clientIpLinkCode}' target='_blank'>
 					<div class="client-ip-group">
 						${clientIpGroupCode}
-						<div style="font-size: 0.75em;" title="<#IPv6_wan_addr#>">${clientlist_sort[j].ip6_prefix}</div>
-						<div style="font-size: 0.75em;" title="WAN IPv6 Link-Local">${clientlist_sort[j].ip6}</div>
-					</div>`;
-				if ((isSwMode("RT") || isSwMode("WISP"))) {
-					clientListCode += `<span class="ipMethodTag" onmouseover="return overlib('${ipState[clientList[clientlist_sort[j].mac].ipMethod]}')" onmouseout="nd();">${clientList[clientlist_sort[j].mac].ipMethod}</span>`
-				}
-				clientListCode += `</div>`;
-				clientListCode += `<div class='client-mac'>${clientlist_sort[j].mac}</div>`;
-				clientListCode += `</div>`;
-				clientListCode += `<div class='client_info_right'>${clientInterfaceCode}${clientIconCode}</div>`;
-				clientListCode += `</div>`;
-				clientListCode += `
+						<div style="font-size: 0.75em;" title="<#IPv6_wan_addr#>">${p.ip6_prefix}</div>
+						<div style="font-size: 0.75em;" title="WAN IPv6 Link-Local">${p.ip6}</div>
+					</div>
+				</a>`
+		: `
+				<div class="client-ip-group">
+					${clientIpGroupCode}
+					<div style="font-size: 0.75em;" title="<#IPv6_wan_addr#>">${p.ip6_prefix}</div>
+					<div style="font-size: 0.75em;" title="WAN IPv6 Link-Local">${p.ip6}</div>
+				</div>`;
+	if ((isSwMode("RT") || isSwMode("WISP")) && ipMethod) {
+		rowHtml += `<span class="ipMethodTag" onmouseover="return overlib('${ipState[ipMethod]}')" onmouseout="nd();">${ipMethod}</span>`;
+	}
+	rowHtml += `</div>`;
+	rowHtml += `<div class='client-mac'>${p.mac}</div>`;
+	rowHtml += `</div>`;
+	rowHtml += `<div class='client_info_right'>${clientInterfaceCode}${clientIconCode}</div>`;
+	rowHtml += `</div>`;
+	rowHtml += `
 					<div class='client_info_bottom'>
 						<div class='client_info_detail_block'>
 							<div class='client_info_detail_title'>TX</div>
@@ -3500,51 +3405,193 @@ function drawClientListBlock(objID) {
 						</div>
 						<div class='client_info_icon_more' onclick='showClientInfoMore(this)'></div>
 					</div>`;
-				clientListCode += `</div></div>`;
-				clientListCode += `
+	rowHtml += `</div></div>`;
+	rowHtml += `
 					<div class='client_info_more' style='display: none;'>
 						<div class='client_info_more_detail'>
 							<div class='client_info_detail_block'><div class='client_info_detail_title'>TX</div>${txRate} Mbps</div><div class='client_info_detail_block'><div class='client_info_detail_title'>RX</div>${rxRate} Mbps</div><div class='client_info_detail_block'><div class='client_info_detail_title'><#Access_Time#></div>${accessTime}</div></div><div class='client_info_more_close' onclick='closeClientInfoMore(this)'></div></div></td>`;
 
-				//Width >= 960
-				clientListCode += `<td class='client-list-xl text-left'>
+	rowHtml += `<td class='client-list-xl text-left'>
 					<div class='clientName' onclick='editClientName(this);'>${clientNameEnCode}</div>
-					<input type='text' value='${clientNameEnCode}' class='input-client-name' maxlength='32' onblur='saveClientName(this, ${clientlist_sort[j].type}, "${clientlist_sort[j].mac}");'>
+					<input type='text' value='${clientNameEnCode}' class='input-client-name' maxlength='32' onblur='saveClientName(this, ${p.type}, "${p.mac}");'>
 					</td>`;
-				clientListCode += `
+	rowHtml += `
 					<td class='client-list-xl text-left'>
 						<div class="client-ip">`;
-				clientListCode += (clientList[clientlist_sort[j].mac].isWebServer)
-					? `
+	rowHtml += isWebServer
+		? `
 					<a class='link' href='http://${clientIpLinkCode}' target='_blank'>
 						<div class="client-ip-group">
 							${clientIpGroupCode}
-							<div style="font-size: 0.75em;" title="<#IPv6_wan_addr#>">${clientlist_sort[j].ip6_prefix}</div>
-							<div style="font-size: 0.75em;" title="WAN IPv6 Link-Local">${clientlist_sort[j].ip6}</div>
+							<div style="font-size: 0.75em;" title="<#IPv6_wan_addr#>">${p.ip6_prefix}</div>
+							<div style="font-size: 0.75em;" title="WAN IPv6 Link-Local">${p.ip6}</div>
 						</div>
 					</a>` : `
 					<div class="client-ip-group">
 						${clientIpGroupCode}
-						<div style="font-size: 0.75em;" title="<#IPv6_wan_addr#>">${clientlist_sort[j].ip6_prefix}</div>
-						<div style="font-size: 0.75em;" title="WAN IPv6 Link-Local">${clientlist_sort[j].ip6}</div>
+						<div style="font-size: 0.75em;" title="<#IPv6_wan_addr#>">${p.ip6_prefix}</div>
+						<div style="font-size: 0.75em;" title="WAN IPv6 Link-Local">${p.ip6}</div>
 					</div>`;
-				if ((isSwMode("RT") || isSwMode("WISP"))) {
-					clientListCode += `<span class="ipMethodTag" onmouseover="return overlib('${ipState[clientList[clientlist_sort[j].mac].ipMethod]}')" onmouseout="nd();">${clientList[clientlist_sort[j].mac].ipMethod}</span>`
-				}
-
-				clientListCode += `</div></td>`;
-				clientListCode += `
-					<td class='client-list-xl'>${clientlist_sort[j].mac}</td>
+	if ((isSwMode("RT") || isSwMode("WISP")) && ipMethod) {
+		rowHtml += `<span class="ipMethodTag" onmouseover="return overlib('${ipState[ipMethod]}')" onmouseout="nd();">${ipMethod}</span>`;
+	}
+	rowHtml += `</div></td>`;
+	rowHtml += `
+					<td class='client-list-xl'>${p.mac}</td>
 					<td class='client-list-sm'>${txRate}</td>
 					<td class='client-list-sm'>${rxRate}</td>
 					<td class='client-list-sm'>${accessTime}</td>`;
-				clientListCode += "</tr>";
+	rowHtml += "</tr>";
+
+	return rowHtml;
+}
+
+function _rebuild_clientlist_arrays() {
+	all_list = [];
+	$.each(isWL_map, function(index, value){
+		if(index == "0")
+			wired_list = [];
+		else
+			wl_list["wl"+index+""] = [];
+	});
+	if(smart_connect_version != "") {
+		sc_list = [];
+	}
+	if(isSupport("amas")) {
+		if(isSupport("mtlancfg")) {
+			$.each(sdn_rl_for_clientlist, function(index, sdn_all_rl){
+				if(sdn_all_rl.sdn_rl.idx == "0" || sdn_all_rl.sdn_rl.sdn_name == "MAINBH")
+					return true;
+				sdn_list["sdn"+sdn_all_rl.sdn_rl.idx+""] = [];
+			});
+		}
+		else {
+			for(let i=1; i<isSupport("mssid_count")+1; i++)
+				gn_list["gn"+i+""] = [];
+		}
+	}
+
+	genClientList();
+	for(let i = 0; i < clientList.length; i += 1) {
+		const c = clientList[clientList[i]];
+		if(!c || !c.isOnline) continue;
+		const tempArray = [
+			c.internetState, c.vendor || `Loading manufacturer..`,
+			c.nickName || c.name, c.ip, c.mac, c.rssi, c.curTx, c.curRx,
+			c.wlConnectTime, c.isWL, c.vendor, c.type, c.macRepeat, c.isGN,
+			c.sdn_idx, c.isUserUplaodImg, c.ip6, c.ip6_prefix, c.mlo, c.isASUS
+		];
+
+		if (clienlistViewMode === "All") {
+			all_list.push(tempArray);
+		} else if (clienlistViewMode === "ByInterface") {
+			if (isSupport("amas")) {
+				if (isSupport("mtlancfg")) {
+					if (c.sdn_idx > 0)
+						sdn_list["sdn"+c.sdn_idx+""].push(tempArray);
+					else if (c.isWL == 0)
+						wired_list.push(tempArray);
+					else {
+						wl_list["wl"+c.isWL+""].push(tempArray);
+						if (smart_connect_version != "")
+							sc_list.push(tempArray);
+					}
+				} else {
+					if (c.isWL != 0 && c.isGN != "")
+						gn_list["gn"+c.isGN+""].push(tempArray);
+					else if (c.isWL == 0)
+						wired_list.push(tempArray);
+					else {
+						wl_list["wl"+c.isWL+""].push(tempArray);
+						if (smart_connect_version != "")
+							sc_list.push(tempArray);
+					}
+				}
+			} else {
+				if (c.isWL == 0)
+					wired_list.push(tempArray);
+				else {
+					wl_list["wl"+c.isWL+""].push(tempArray);
+					if (smart_connect_version != "")
+						sc_list.push(tempArray);
+				}
 			}
 		}
-		clientListCode += `</tbody>`;
-		clientListCode += "</table>";
-		document.getElementById("clientlist_" + objID + "_Block").innerHTML = clientListCode;
-		addEvents(objID);
+	}
+}
+
+function _diffClientListBlock(objID, sortArray) {
+	const tableEl = document.getElementById("tb_" + objID);
+	if (!tableEl) return;
+	const tbody = tableEl.querySelector("tbody");
+	if (!tbody) return;
+
+	const obj_width = ["7%", "7%", "25%", "20%", "15%", "8%", "8%", "10%"];
+	const placeholderId = `tr_${objID}`;
+
+	if (!sortArray || sortArray.length === 0) {
+		Array.from(tbody.querySelectorAll('tr[data-mac]')).forEach(tr => tr.remove());
+		if (!document.getElementById(placeholderId)) {
+			tbody.innerHTML = `<tr id='${placeholderId}'><td class='hintColor' colspan='${obj_width.length}'><#IPConnection_VSList_Norule#></td></tr>`;
+		}
+		return;
+	}
+
+	const placeholder = document.getElementById(placeholderId);
+	if (placeholder) placeholder.remove();
+
+	const newDataMap = new Map();
+	for (const arr of sortArray) {
+		if (arr && arr[4]) newDataMap.set(arr[4], arr);
+	}
+
+	const existingRows = Array.from(tbody.querySelectorAll('tr[data-mac]'));
+	for (const row of existingRows) {
+		const mac = row.getAttribute('data-mac');
+		if (!newDataMap.has(mac)) {
+			row.remove();
+			continue;
+		}
+		const newArr = newDataMap.get(mac);
+		const newHash = _hashClientListRow(newArr);
+		const oldHash = row.getAttribute('data-rowhash');
+		if (oldHash !== newHash) {
+			row.outerHTML = _buildClientListRowHtml(newArr, objID);
+		}
+		newDataMap.delete(mac);
+	}
+
+	let appendHtml = '';
+	for (const newArr of newDataMap.values()) {
+		appendHtml += _buildClientListRowHtml(newArr, objID);
+	}
+	if (appendHtml) {
+		tbody.insertAdjacentHTML('beforeend', appendHtml);
+	}
+}
+
+function _diffAllVisibleClientListBlocks() {
+	if (clienlistViewMode === "All") {
+		_diffClientListBlock("all_list", all_list);
+		return;
+	}
+	_diffClientListBlock("wired_list", wired_list);
+	for (const key of Object.keys(wl_list)) {
+		_diffClientListBlock(key + "_list", wl_list[key]);
+	}
+	if (smart_connect_version != "" && typeof sc_list !== "undefined") {
+		_diffClientListBlock("sc_list", sc_list);
+	}
+	if (isSupport("amas")) {
+		if (isSupport("mtlancfg")) {
+			for (const key of Object.keys(sdn_list)) {
+				_diffClientListBlock(key + "_list", sdn_list[key]);
+			}
+		} else {
+			for (const key of Object.keys(gn_list)) {
+				_diffClientListBlock(key + "_list", gn_list[key]);
+			}
+		}
 	}
 }
 
@@ -3585,23 +3632,26 @@ var updateClientListView_timer = null;
 function updateClientListView(){
 	$.ajax({
 		url: '/update_clients.asp',
-		dataType: 'script', 
-		error: function(xhr) {
-			setTimeout("updateClientListView();", 1000);
+		dataType: 'script',
+		error: function(){
+			clearTimeout(updateClientListView_timer);
+			updateClientListView_timer = setTimeout(updateClientListView, 1000);
 		},
-		success: function(response){
-			if(document.getElementById("clientlist_viewlist_content").style.display != "none") {
-				if((isJsonChanged(originData, originDataTmp) || originData.fromNetworkmapd == "") && !edit_client_name_flag && !slideFlag){
-					create_clientlist_listview();
-					sorterClientList();
+		success: function(){
+			const content = document.getElementById("clientlist_viewlist_content");
+			if(content && content.style.display != "none"){
+				if(!edit_client_name_flag && !slideFlag){
+					_rebuild_clientlist_arrays();
+					_diffAllVisibleClientListBlocks();
 					if(parent.show_client_status != undefined)
 						parent.show_client_status(totalClientNum.online);
 				}
 				clearTimeout(updateClientListView_timer);
-				updateClientListView_timer = setTimeout("updateClientListView();", 3000);
+				updateClientListView_timer = setTimeout(updateClientListView, 10 * 1000);
 			}
-			else
+			else{
 				clearTimeout(updateClientListView_timer);
+			}
 		}
 	});
 }

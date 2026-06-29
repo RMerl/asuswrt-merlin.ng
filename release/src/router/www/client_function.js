@@ -2441,6 +2441,8 @@ var sorter = {
 
 		const tableHeader = document.querySelectorAll(`#tr_${clickItem}_list_title th`)[clickIndex];
 
+		if (!tableHeader) return;
+
 		if (clickSortingMethod === "increase") {
 			tableHeader.classList.add('active-top');
 		} else {
@@ -2976,8 +2978,6 @@ function create_clientlist_listview() {
 			code += create_clientlist_card("<#Clientlist_All_List#>", "all");
 			break;
 		case "ByInterface" :
-
-			code += create_clientlist_card("<#tm_wired#>", "wired");
 
 			var wl_map = {"2.4 GHz": "1",  "5 GHz": "2", "5 GHz-1": "2", "5 GHz-2": "3", "6 GHz": "4", "6 GHz-1": "4", "6 GHz-2": "5"};
 			var smart_connect_x = httpApi.nvramGet(["smart_connect_x"]).smart_connect_x;

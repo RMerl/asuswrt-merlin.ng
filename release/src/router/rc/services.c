@@ -2852,13 +2852,17 @@ void add_ip6_lanaddr(void)
 	char ip[INET6_ADDRSTRLEN + 4];
 #endif
 	const char *p;
+	int prefix_len;
 
 #ifdef RTCONFIG_MULTILAN_CFG
 	p = _add_ip6_lansdnaddr();
 #else
 	p = ipv6_router_address(NULL);
 	if (*p) {
-		snprintf(ip, sizeof(ip), "%s/%d", p, nvram_get_int(ipv6_nvname("ipv6_prefix_length")) ? : 64);
+		prefix_len = nvram_get_int(ipv6_nvname("ipv6_prefix_length"));
+		if (prefix_len <= 56)
+			prefix_len = 64;
+		snprintf(ip, sizeof(ip), "%s/%d", p, prefix_len);
 		eval("ip", "-6", "addr", "add", ip, "dev", nvram_safe_get("lan_ifname"));
 		if (!nvram_match(ipv6_nvname("ipv6_rtr_addr"), (char*)p))
 			nvram_set(ipv6_nvname("ipv6_rtr_addr"), (char*)p);

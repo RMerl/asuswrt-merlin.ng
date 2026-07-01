@@ -38,6 +38,19 @@ Asuswrt-Merlin 3006.xxx Changelog
              IGDv2 support is still problematic for some
              clients, and cannot be fully disabled at
              run time.
+  - CHANGED: dhcpc-event script will now be run after the event
+             occured rather than before, allowing it to modify
+             what was applied to the router configuration.
+  - CHANGED: If you get an IPv6 prefix smaller than /56, assign
+             that whole prefix to the LAN.  56 and larger will
+             only assign a /64, to be in line with how Guest
+             Network work.
+             Stock firmware would always assign the whole prefix
+             despite dnsmasq only advertising a /64, and
+             previous Asuswrt-Merlin would always assign a /64
+             (which leaves for example a /60 largely unused).
+             You can still manually subnet a /64 our of a /56
+             to a client, only a route need to be manually added.
   - FIXED: Some webui pages may fail to properly show recent
            changes after clicking on Apply (an outdated
            cached version would be shown instead).  Fixed by
@@ -57,7 +70,7 @@ Asuswrt-Merlin 3006.xxx Changelog
   - FIXED: Client list would redraw every few seconds on
            Firefox (patch from Asus).
   - FIXED: If you had a /56 IPv6 prefix, Guest Networks wouldn't
-           get a /64 subnet out of it when enabling IPv6 on
+           allocate a /64 subnet out of it when enabling IPv6 on
            them.
   - REMOVED: Support for secret static key authentication
              from both OpenVPN clients and servers.  Deprecated

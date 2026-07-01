@@ -823,7 +823,7 @@ leasefail(void)
 int
 udhcpc_wan(int argc, char **argv)
 {
-	run_custom_script("dhcpc-event", 0, argv[1], "4");
+	int ret = 0;
 
 	if(argv[1] && !strstr(argv[1], "leasefail"))
 		_dprintf("%s:: %s\n", __func__, argv[1]);
@@ -832,16 +832,18 @@ udhcpc_wan(int argc, char **argv)
 		return EINVAL;
 	}
 	else if (strstr(argv[1], "deconfig"))
-		return deconfig(0);
+		ret = deconfig(0);
 	else if (strstr(argv[1], "bound"))
-		return bound(0);
+		ret = bound(0);
 	else if (strstr(argv[1], "renew"))
-		return renew();
+		ret = renew();
 	else if (strstr(argv[1], "leasefail"))
-		return leasefail();
+		ret = leasefail();
 /*	else if (strstr(argv[1], "nak")) */
 
-	return 0;
+	run_custom_script("dhcpc-event", 0, argv[1], "4");
+
+	return ret;
 }
 
 int
@@ -1382,10 +1384,9 @@ renew_lan(void)
 int
 udhcpc_lan(int argc, char **argv)
 {
+	int ret = EINVAL;
+
 	_dprintf("%s:: %s\n", __FUNCTION__, argv[1] ? : "");
-
-        run_custom_script("dhcpc-event", 0, argv[1], NULL);
-
 	if (!argv[1])
 		return EINVAL;
 	else if (strstr(argv[1], "deconfig")) {
@@ -1393,12 +1394,12 @@ udhcpc_lan(int argc, char **argv)
 		if (nvram_get_int("re_mode") == 1)
 			logmessage("dhcp client", "deconfig");
 #endif
-		return deconfig_lan();
+		ret = deconfig_lan();
 	}
 	else if (strstr(argv[1], "bound"))
-		return bound_lan();
+		ret = bound_lan();
 	else if (strstr(argv[1], "renew"))
-		return renew_lan();
+		ret = renew_lan();
 #if defined(RTCONFIG_AMAS)
 	else if (strstr(argv[1], "leasefail")) {
 		if (nvram_get_int("re_mode") == 1)
@@ -1407,7 +1408,9 @@ udhcpc_lan(int argc, char **argv)
 #endif
 /*	else if (strstr(argv[1], "nak")) */
 
-	return EINVAL;
+	run_custom_script("dhcpc-event", 0, argv[1], NULL);
+
+	return ret;
 }
 
 // -----------------------------------------------------------------------------
@@ -2289,28 +2292,29 @@ ra_updated6(char *wan_ifname)
 
 int dhcp6c_wan(int argc, char **argv)
 {
-
-	if (argv[2]) run_custom_script("dhcpc-event", 0, argv[2], "6");
+	int ret = 0;
 
 	if (!argv[1] || !argv[2])
 		return EINVAL;
 	else if (strcmp(argv[2], "started") == 0)
-		return deconfig6(argv[1], 0);
+		ret = deconfig6(argv[1], 0);
 	else if ( strcmp(argv[2], "stopped") == 0)
-		return deconfig6(argv[1], 1);
+		ret = deconfig6(argv[1], 1);
 	else if ( strcmp(argv[2], "unbound") == 0)
-		return deconfig6(argv[1], 2);		
+		ret = deconfig6(argv[1], 2);
 	else if (strcmp(argv[2], "bound") == 0)
-		return bound6(argv[1], 1);
+		ret = bound6(argv[1], 1);
 	else if (strcmp(argv[2], "updated") == 0 ||
 		 strcmp(argv[2], "rebound") == 0)
-		return bound6(argv[1], 2);
+		ret = bound6(argv[1], 2);
 	else if (strcmp(argv[2], "informed") == 0)
-		return bound6(argv[1], 0);
+		ret = bound6(argv[1], 0);
 	else if (strcmp(argv[2], "ra-updated") == 0)
-		return ra_updated6(argv[1]);
+		ret = ra_updated6(argv[1]);
 
-	return 0;
+	run_custom_script("dhcpc-event", 0, argv[2], "6");
+
+	return ret;
 }
 
 int

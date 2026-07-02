@@ -1390,7 +1390,8 @@ The server id <tt class="docutils literal">n</tt> must be a value between -128 a
 DNS server options it must be between 0 and 127. The server id is used
 to group options and also for ordering the list of configured DNS servers;
 lower numbers come first. DNS servers being pushed to a client replace
-already configured DNS servers with the same server id.</p>
+already configured DNS servers with the same server id. Only the group of
+options corresponding to the lowest server id is applied.</p>
 <p>The <tt class="docutils literal">address</tt> option configures the IPv4 and / or IPv6 address(es) of
 the DNS server. Up to eight addresses can be specified per DNS server.
 Optionally a port can be appended after a colon. IPv6 addresses need to
@@ -1411,10 +1412,22 @@ to be valid. All the other options can be omitted.</p>
 <p>Note that not all options may be supported on all platforms. As soon support
 for different systems is implemented, information will be added here how
 unsupported options are treated.</p>
-<p class="last">The <tt class="docutils literal"><span class="pre">--dns</span></tt> option will eventually obsolete the <tt class="docutils literal"><span class="pre">--dhcp-option</span></tt> directive.
+<p>The <tt class="docutils literal"><span class="pre">--dns</span></tt> option will eventually obsolete the <tt class="docutils literal"><span class="pre">--dhcp-option</span></tt> directive.
 Until then it will replace configuration at the places <tt class="docutils literal"><span class="pre">--dhcp-option</span></tt> puts it,
 so that <tt class="docutils literal"><span class="pre">--dns</span></tt> overrides <tt class="docutils literal"><span class="pre">--dhcp-option</span></tt>. Thus, <tt class="docutils literal"><span class="pre">--dns</span></tt> can be used today
 to migrate from <tt class="docutils literal"><span class="pre">--dhcp-option</span></tt>.</p>
+<p>Windows only:</p>
+<ol class="last arabic simple">
+<li>If tap-windows6 is in use, dns servers are set by DHCP by default.
+In this case only <tt class="docutils literal"><span class="pre">--dns</span> <span class="pre">search-domains</span></tt> and <tt class="docutils literal"><span class="pre">--dns</span> server n address ..</tt>
+with the lowest value of <tt class="docutils literal">n</tt> are interpreted. All other <tt class="docutils literal"><span class="pre">--dns</span></tt> options
+are ignored. Use of the dco driver is the recommended way to make use of these
+new features.</li>
+<li>If <tt class="docutils literal"><span class="pre">--dns</span> server n <span class="pre">resolve-domains</span></tt> is in use, the DNS server addresses
+corresponding to <tt class="docutils literal">n</tt> are set on the interface only if <tt class="docutils literal"><span class="pre">search-domains</span></tt> is
+also specified.  Otherwise these DNS addresses are used only for NRPT rules for
+split-DNS.</li>
+</ol>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--explicit-exit-notify <var>n</var></span></kbd></td>
@@ -1701,6 +1714,17 @@ seconds before failing.</p>
 <p class="last">By default, <tt class="docutils literal"><span class="pre">--resolv-retry</span> infinite</tt> is enabled. You can disable by
 setting n=0.</p>
 </td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--preresolve</span></kbd></td>
+<td><p class="first">Resolve configured <tt class="docutils literal"><span class="pre">--remote</span></tt>, <tt class="docutils literal"><span class="pre">--local</span></tt>, <tt class="docutils literal"><span class="pre">--http-proxy</span></tt>, and
+<tt class="docutils literal"><span class="pre">--socks-proxy</span></tt> hostnames at startup before opening the connection.</p>
+<p class="last">The resolved addresses are cached and reused for reconnects, so OpenVPN
+will not re-resolve these hostnames after the initial connection attempt.
+This can help configurations where DNS is unavailable while the VPN is
+down, but can be counter-productive for dynamic DNS names or when roaming
+between networks where address family availability changes, such as
+DNS64/NAT64.</p>
+</td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--single-session</span></kbd></td>
 </tr>
@@ -1918,7 +1942,9 @@ failure in the case of the Invalid/Expired auth-token with the
 external-auth option unless the client could authenticate in another
 acceptable way (e.g. client certificate), otherwise returning success
 will lead to authentication bypass (as does returning success on a wrong
-password from a script).</p>
+password from a script). In the case that Expired token is accepted
+the token will keep the session id and start time from the original
+(expired) token.</p>
 <p class="last"><strong>Note:</strong> the username for <tt class="docutils literal"><span class="pre">--auth-gen-token</span></tt> can be overridden by
 <tt class="docutils literal"><span class="pre">--override-username</span></tt>. In this case the client will be pushed also the
 <tt class="docutils literal"><span class="pre">--auth-token-user</span></tt> option and an auth token that is valid for that
@@ -3781,8 +3807,9 @@ to IPv6 (as opposed to IPv6 and IPv4) when a IPv6 socket is opened.</p>
 <tr><td class="option-group">
 <kbd><span class="option">--float</span></kbd></td>
 <td><p class="first">Allow remote peer to change its IP address and/or port number, such as
-due to DHCP (this is the default if <tt class="docutils literal"><span class="pre">--remote</span></tt> is not used).
-<tt class="docutils literal"><span class="pre">--float</span></tt> when specified with <tt class="docutils literal"><span class="pre">--remote</span></tt> allows an OpenVPN session
+due to DHCP or NAT mappings changing. <tt class="docutils literal"><span class="pre">--float</span></tt> only works when
+using UDP transport.</p>
+<p><tt class="docutils literal"><span class="pre">--float</span></tt> when specified with <tt class="docutils literal"><span class="pre">--remote</span></tt> allows an OpenVPN session
 to initially connect to a peer at a known address, however if packets
 arrive from a new address and pass all authentication tests, the new
 address will take control of the session. This is useful when you are

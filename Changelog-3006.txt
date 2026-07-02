@@ -22,7 +22,7 @@ Asuswrt-Merlin 3006.xxx Changelog
   - UPDATED: Merged with GPL 102_39127 (RT-BE58_Go)
   - UPDATED: Merged with GPL 102_41424 (GT-BE19000AI)
   - UPDATED: Merged with GPL 102_39995 (Other wifi 7 models).
-  - UPDATED: OpenVPN to 2.7.4.
+  - UPDATED: OpenVPN to 2.7.5.
   - UPDATED: OpenSSL to 3.5.7 (GT-BE19000AI)
   - UPDATED: dropbear to 2026.91.
   - UPDATED: dnsmasq to 2.93 + some backports.

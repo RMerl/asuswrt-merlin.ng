@@ -1200,7 +1200,8 @@ The server id \fBn\fP must be a value between \-128 and 127. For pushed
 DNS server options it must be between 0 and 127. The server id is used
 to group options and also for ordering the list of configured DNS servers;
 lower numbers come first. DNS servers being pushed to a client replace
-already configured DNS servers with the same server id.
+already configured DNS servers with the same server id. Only the group of
+options corresponding to the lowest server id is applied.
 .sp
 The \fBaddress\fP option configures the IPv4 and / or IPv6 address(es) of
 the DNS server. Up to eight addresses can be specified per DNS server.
@@ -1232,6 +1233,21 @@ The \fB\-\-dns\fP option will eventually obsolete the \fB\-\-dhcp\-option\fP dir
 Until then it will replace configuration at the places \fB\-\-dhcp\-option\fP puts it,
 so that \fB\-\-dns\fP overrides \fB\-\-dhcp\-option\fP\&. Thus, \fB\-\-dns\fP can be used today
 to migrate from \fB\-\-dhcp\-option\fP\&.
+.sp
+Windows only:
+.INDENT 7.0
+.IP 1. 3
+If tap\-windows6 is in use, dns servers are set by DHCP by default.
+In this case only \fB\-\-dns search\-domains\fP and \fB\-\-dns server n address ..\fP
+with the lowest value of \fBn\fP are interpreted. All other \fB\-\-dns\fP options
+are ignored. Use of the dco driver is the recommended way to make use of these
+new features.
+.IP 2. 3
+If \fB\-\-dns server n resolve\-domains\fP is in use, the DNS server addresses
+corresponding to \fBn\fP are set on the interface only if \fBsearch\-domains\fP is
+also specified.  Otherwise these DNS addresses are used only for NRPT rules for
+split\-DNS.
+.UNINDENT
 .TP
 .BI \-\-explicit\-exit\-notify \ n
 In UDP client mode or point\-to\-point mode, send server/peer an exit
@@ -1591,6 +1607,17 @@ Set \fBn\fP to \fBinfinite\fP to retry indefinitely.
 By default, \fB\-\-resolv\-retry infinite\fP is enabled. You can disable by
 setting n=0.
 .TP
+.B  \-\-preresolve
+Resolve configured \fB\-\-remote\fP, \fB\-\-local\fP, \fB\-\-http\-proxy\fP, and
+\fB\-\-socks\-proxy\fP hostnames at startup before opening the connection.
+.sp
+The resolved addresses are cached and reused for reconnects, so OpenVPN
+will not re\-resolve these hostnames after the initial connection attempt.
+This can help configurations where DNS is unavailable while the VPN is
+down, but can be counter\-productive for dynamic DNS names or when roaming
+between networks where address family availability changes, such as
+DNS64/NAT64.
+.TP
 .B  \-\-single\-session
 After initially connecting to a remote peer, disallow any new
 connections. Using this option means that a remote peer cannot connect,
@@ -1842,7 +1869,9 @@ failure in the case of the Invalid/Expired auth\-token with the
 external\-auth option unless the client could authenticate in another
 acceptable way (e.g. client certificate), otherwise returning success
 will lead to authentication bypass (as does returning success on a wrong
-password from a script).
+password from a script). In the case that Expired token is accepted
+the token will keep the session id and start time from the original
+(expired) token.
 .sp
 \fBNote:\fP the username for \fB\-\-auth\-gen\-token\fP can be overridden by
 \fB\-\-override\-username\fP\&. In this case the client will be pushed also the
@@ -4073,7 +4102,9 @@ to IPv6 (as opposed to IPv6 and IPv4) when a IPv6 socket is opened.
 .TP
 .B  \-\-float
 Allow remote peer to change its IP address and/or port number, such as
-due to DHCP (this is the default if \fB\-\-remote\fP is not used).
+due to DHCP or NAT mappings changing. \fB\-\-float\fP only works when
+using UDP transport.
+.sp
 \fB\-\-float\fP when specified with \fB\-\-remote\fP allows an OpenVPN session
 to initially connect to a peer at a known address, however if packets
 arrive from a new address and pass all authentication tests, the new

@@ -216,7 +216,8 @@ configuration.
   DNS server options it must be between 0 and 127. The server id is used
   to group options and also for ordering the list of configured DNS servers;
   lower numbers come first. DNS servers being pushed to a client replace
-  already configured DNS servers with the same server id.
+  already configured DNS servers with the same server id. Only the group of
+  options corresponding to the lowest server id is applied.
 
   The ``address`` option configures the IPv4 and / or IPv6 address(es) of
   the DNS server. Up to eight addresses can be specified per DNS server.
@@ -248,6 +249,19 @@ configuration.
   Until then it will replace configuration at the places ``--dhcp-option`` puts it,
   so that ``--dns`` overrides ``--dhcp-option``. Thus, ``--dns`` can be used today
   to migrate from ``--dhcp-option``.
+
+  Windows only:
+
+  #. If tap-windows6 is in use, dns servers are set by DHCP by default.
+     In this case only ``--dns search-domains`` and ``--dns server n address ..``
+     with the lowest value of ``n`` are interpreted. All other ``--dns`` options
+     are ignored. Use of the dco driver is the recommended way to make use of these
+     new features.
+
+  #. If ``--dns server n resolve-domains`` is in use, the DNS server addresses
+     corresponding to ``n`` are set on the interface only if ``search-domains`` is
+     also specified.  Otherwise these DNS addresses are used only for NRPT rules for
+     split-DNS.
 
 --explicit-exit-notify n
   In UDP client mode or point-to-point mode, send server/peer an exit
@@ -553,6 +567,17 @@ configuration.
 
   By default, ``--resolv-retry infinite`` is enabled. You can disable by
   setting n=0.
+
+--preresolve
+  Resolve configured ``--remote``, ``--local``, ``--http-proxy``, and
+  ``--socks-proxy`` hostnames at startup before opening the connection.
+
+  The resolved addresses are cached and reused for reconnects, so OpenVPN
+  will not re-resolve these hostnames after the initial connection attempt.
+  This can help configurations where DNS is unavailable while the VPN is
+  down, but can be counter-productive for dynamic DNS names or when roaming
+  between networks where address family availability changes, such as
+  DNS64/NAT64.
 
 --single-session
   After initially connecting to a remote peer, disallow any new

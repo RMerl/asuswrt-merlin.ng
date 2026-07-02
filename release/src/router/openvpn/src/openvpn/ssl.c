@@ -1623,9 +1623,9 @@ tls_session_update_crypto_params_do_work(struct tls_multi *multi, struct tls_ses
 
     if (dco_enabled(options))
     {
-        /* dco_set_peer() must be called if either keepalive or
-         * mssfix are set to update in-kernel config */
-        if (options->ping_send_timeout || frame->mss_fix)
+        /* dco_set_peer() must be called if either keepalive, ping, ping-restart,
+         * ping-exit or mssfix are set to update in-kernel config */
+        if (options->ping_send_timeout || options->ping_rec_timeout || frame->mss_fix)
         {
             int ret = dco_set_peer(dco, multi->dco_peer_id, options->ping_send_timeout,
                                    options->ping_rec_timeout, frame->mss_fix);
@@ -3161,6 +3161,12 @@ check_session_buf_not_used(struct buffer *to_link, struct tls_session *session)
                     "still in use (tls_wrap.work.data)");
         goto used;
     }
+    if (session->tls_wrap_reneg.work.data == dataptr)
+    {
+        msg(M_INFO, "Warning buffer of freed TLS session is "
+                    "still in use (tls_wrap_reneg.work.data)");
+        goto used;
+    }
 
     for (int i = 0; i < KS_SIZE; i++)
     {
@@ -3193,6 +3199,12 @@ check_session_buf_not_used(struct buffer *to_link, struct tls_session *session)
 
                 goto used;
             }
+        }
+        if (ks->ack_write_buf.data == dataptr)
+        {
+            msg(M_INFO, "Warning buffer of freed TLS session is still in use (session->key[%d].ack_write_buf)", i);
+
+            goto used;
         }
     }
     return;
@@ -3701,8 +3713,7 @@ tls_pre_decrypt(struct tls_multi *multi, const struct link_socket_actual *from, 
             goto error;
         }
 
-        if (!read_control_auth(buf, tls_session_get_tls_wrap(session, key_id), from, session->opt,
-                               true))
+        if (!read_control_auth(buf, tls_session_get_tls_wrap(session, key_id), from, session->opt))
         {
             goto error;
         }
@@ -3760,7 +3771,7 @@ tls_pre_decrypt(struct tls_multi *multi, const struct link_socket_actual *from, 
         if (op == P_CONTROL_SOFT_RESET_V1 && ks->state >= S_GENERATED_KEYS)
         {
             if (!read_control_auth(buf, tls_session_get_tls_wrap(session, key_id), from,
-                                   session->opt, false))
+                                   session->opt))
             {
                 goto error;
             }
@@ -3789,8 +3800,8 @@ tls_pre_decrypt(struct tls_multi *multi, const struct link_socket_actual *from, 
                 do_burst = true;
             }
 
-            if (!read_control_auth(buf, tls_session_get_tls_wrap(session, key_id), from,
-                                   session->opt, initial_packet))
+            if (!read_control_auth(buf, tls_session_get_tls_wrap(session, key_id),
+                                   from, session->opt))
             {
                 /* if an initial packet in read_control_auth, we rather
                  * error out than anything else */

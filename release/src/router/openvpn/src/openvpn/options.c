@@ -176,6 +176,7 @@ static const char usage_message[] =
     "--resolv-retry n: If hostname resolve fails for --remote, retry\n"
     "                  resolve for n seconds before failing (disabled by default).\n"
     "                  Set n=\"infinite\" to retry indefinitely.\n"
+    "--preresolve    : Resolve configured --remote, --local, and proxy hostnames at startup.\n"
     "--float         : Allow remote to change its IP address/port, such as through\n"
     "                  DHCP (this is the default if --remote is not used).\n"
     "--ipchange cmd  : Run command cmd on remote ip address initial\n"
@@ -1541,7 +1542,18 @@ show_http_proxy_options(const struct http_proxy_options *o)
 void
 options_detach(struct options *o)
 {
+    /* The options struct carries two gc_arena's (one generic and one specific
+     * to the DNS settings), which the by-value options
+     * copy in inherit_context_child()/inherit_context_top() shares with the
+     * source.
+     *
+     * Detach both (i.e. re-initialize them), otherwise child's call of
+     * gc_free() (or context teardown) would free allocations the source
+     * context still references, leading to a use-after-free (and subsequent
+     * double-free).
+     */
     gc_detach(&o->gc);
+    gc_detach(&o->dns_options.gc);
     o->routes = NULL;
     o->client_nat = NULL;
     clone_push_list(o);
@@ -2503,8 +2515,13 @@ options_postprocess_verify_ce(const struct options *options, const struct connec
             msg(M_USAGE, USAGE_VALID_SERVER_PROTOS);
         }
 #if PORT_SHARE
+        bool has_tcp = false;
+        for (int i = 0; i < ce->local_list->len && !has_tcp; i++)
+        {
+            has_tcp = (ce->local_list->array[i]->proto == PROTO_TCP_SERVER);
+        }
         if ((options->port_share_host || options->port_share_port)
-            && (ce->proto != PROTO_TCP_SERVER))
+            && !has_tcp)
         {
             msg(M_USAGE, "--port-share only works in TCP server mode "
                          "(--proto values of tcp-server, tcp4-server, or tcp6-server)");
@@ -6415,26 +6432,28 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
     else if (streq(p[0], "tun-mtu") && p[1] && !p[3])
     {
         VERIFY_PERMISSION(OPT_P_PUSH_MTU | OPT_P_CONNECTION);
-        options->ce.tun_mtu = positive_atoi(p[1], msglevel);
-        options->ce.tun_mtu_defined = true;
-        if (p[2])
+        if (atoi_constrained(p[1], &options->ce.tun_mtu, "tun-mtu", TUN_MTU_MIN, TUN_MTU_MAX, msglevel))
         {
-            options->ce.occ_mtu = positive_atoi(p[2], msglevel);
-        }
-        else
-        {
-            options->ce.occ_mtu = 0;
+            options->ce.tun_mtu_defined = true;
+            if (p[2])
+            {
+                atoi_constrained(p[2], &options->ce.occ_mtu, "tun-mtu occ-mtu", TUN_MTU_MIN, TUN_MTU_MAX, msglevel);
+            }
+            else
+            {
+                options->ce.occ_mtu = 0;
+            }
         }
     }
     else if (streq(p[0], "tun-mtu-max") && p[1] && !p[2])
     {
         VERIFY_PERMISSION(OPT_P_MTU | OPT_P_CONNECTION);
-        atoi_constrained(p[1], &options->ce.tun_mtu_max, p[0], TUN_MTU_MAX_MIN, 65536, msglevel);
+        atoi_constrained(p[1], &options->ce.tun_mtu_max, p[0], TUN_MTU_MAX_MIN, TUN_MTU_MAX, msglevel);
     }
     else if (streq(p[0], "tun-mtu-extra") && p[1] && !p[2])
     {
         VERIFY_PERMISSION(OPT_P_MTU | OPT_P_CONNECTION);
-        if (atoi_constrained(p[1], &options->ce.tun_mtu_extra, p[0], 0, 65536, msglevel))
+        if (atoi_constrained(p[1], &options->ce.tun_mtu_extra, p[0], 0, TUN_MTU_MAX, msglevel))
         {
             options->ce.tun_mtu_extra_defined = true;
         }

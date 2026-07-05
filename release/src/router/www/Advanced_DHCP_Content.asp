@@ -772,8 +772,9 @@ function exportCSV(){
 		if(item.mac != "" && item.ip != "")
 			csv += `${item.mac},${item.ip},${item.dns},${item.hostname}\n`;
 	});
+	const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
 	var hiddenElement = document.createElement('a');
-	hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+	hiddenElement.href = URL.createObjectURL(blob);
 	hiddenElement.target = '_blank';
 	hiddenElement.download = 'dhcp_manual_list.csv';
 	hiddenElement.click();

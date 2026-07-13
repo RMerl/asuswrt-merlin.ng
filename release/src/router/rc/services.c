@@ -24738,6 +24738,10 @@ ddns_custom_updated_main(int argc, char *argv[])
 	if ((argc == 2 && !strcmp(argv[1], "1")) || (argc == 1)) {
 		nvram_set("ddns_status", "1");
 		nvram_set("ddns_updated", "1");
+#ifdef RTCONFIG_IPV6
+		if (nvram_get_int("ddns_ipv6_update"))
+			nvram_set("ddns_ipv6_updated", "1");
+#endif
 		nvram_set("ddns_return_code", "200");
 		nvram_set("ddns_return_code_chk", "200");
 		nvram_set("ddns_server_x_old", nvram_safe_get("ddns_server_x"));

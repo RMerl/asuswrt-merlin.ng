@@ -948,10 +948,10 @@ parselanaddr(struct lan_addr_s * lan_addr, const char * str, int debug_flag)
 
 	memset(lan_addr, 0, sizeof(struct lan_addr_s));
 	p = str;
-	while(*p && *p != '/' && !isspace(*p)) {
+	while(*p && *p != '/' && !isspace((unsigned char)*p)) {
 		if (*p == '.')
 			dot_count++;
-		else if (!isdigit(*p))
+		else if (!isdigit((unsigned char)*p))
 			only_digits_and_dots = 0;
 		p++;
 	}
@@ -1013,12 +1013,12 @@ parselanaddr(struct lan_addr_s * lan_addr, const char * str, int debug_flag)
 	if(*p == '/')
 	{
 		const char * q = ++p;
-		while(*p && isdigit(*p))
+		while(*p && isdigit((unsigned char)*p))
 			p++;
 		if(*p=='.')
 		{
 			/* parse mask in /255.255.255.0 format */
-			while(*p && (*p=='.' || isdigit(*p)))
+			while(*p && (*p=='.' || isdigit((unsigned char)*p)))
 				p++;
 			n = p - q;
 			if(n >= sizeof(tmp))
@@ -1044,12 +1044,12 @@ parselanaddr(struct lan_addr_s * lan_addr, const char * str, int debug_flag)
 	}
 #ifdef MULTIPLE_EXTERNAL_IP
 	/* skip spaces */
-	while(*p && isspace(*p))
+	while(*p && isspace((unsigned char)*p))
 		p++;
 	if(*p) {
 		/* parse the exteral IP address to associate with this subnet */
 		n = 0;
-		while(p[n] && !isspace(*p))
+		while(p[n] && !isspace((unsigned char)*p))
 			n++;
 		if(n<=15) {
 			memcpy(lan_addr->ext_ip_str, p, n);
@@ -1074,12 +1074,12 @@ parselanaddr(struct lan_addr_s * lan_addr, const char * str, int debug_flag)
 	/* add associated network interfaces (for bridges) */
 	while(*p) {
 		/* skip spaces */
-		while(*p && isspace(*p))
+		while(*p && isspace((unsigned char)*p))
 			p++;
 		if(*p) {
 			unsigned int index;
 			n = 0;
-			while(p[n] && !isspace(p[n]) && n < sizeof(tmp)) {
+			while(p[n] && !isspace((unsigned char)p[n]) && n < sizeof(tmp)) {
 				tmp[n] = p[n];
 				n++;
 			}

@@ -77,7 +77,7 @@ unescape_char(const char * s, int * seqlen)
 		case '?':  c = '?';  break;
 		*/
 		case 'x':
-			if(isxdigit(s[1]) && isxdigit(s[2]))
+			if(isxdigit((unsigned char)s[1]) && isxdigit((unsigned char)s[2]))
 			{
 				c = (hex2chr(s[1]) << 4) + hex2chr(s[2]);
 				len = 4;
@@ -103,11 +103,11 @@ unescape_char(const char * s, int * seqlen)
 static const char *
 get_sep(const char * s)
 {
-	if(!isspace(*s))
+	if(!isspace((unsigned char)*s))
 		return NULL;
 	do
 		s++;
-	while(isspace(*s));
+	while(isspace((unsigned char)*s));
 	return (char *) s;
 }
 
@@ -117,7 +117,7 @@ get_ushort(const char * s, u_short * val)
 	char * end;
 	unsigned long val_ul;
 
-	if(!isdigit(*s))
+	if(!isdigit((unsigned char)*s))
 		return NULL;
 	val_ul = strtoul(s, &end, 10);
 	if(val_ul > 65535)
@@ -148,29 +148,50 @@ get_range(const char * s, u_short * begin, u_short * end)
 	return s;
 }
 
+/*! \brief parse a IPv4 address or mask
+ * it is either 4 numbers separated with 3 dots,
+ * or a number between 0 and 32 for the mask
+ * \param[in] s input string
+ * \param[out] add parsed address/mask
+ * \return the updated string pointer or NULL for errors */
 static const char *
-get_addr(const char * s, struct in_addr * addr, unsigned int * dot_cnt)
+get_addr_or_mask(const char * s, struct in_addr * addr)
 {
 	size_t i;
 	char buf[64];
+	unsigned int dot_cnt = 0;
 
-	if(!isdigit(*s))
+	if(!isdigit((unsigned char)*s))
 		return NULL;
 
-	*dot_cnt = 0;
-	for(i = 0; isdigit(s[i]) || s[i] == '.';)
+	for(i = 0; isdigit((unsigned char)s[i]) || s[i] == '.';)
 	{
 		if(s[i] == '.')
-			(*dot_cnt)++;
+			dot_cnt++;
 		buf[i] = s[i];
 		i++;
 		if (i > sizeof(buf) - 1)
 			return NULL;
 	}
-
 	buf[i] = '\0';
-	if(!inet_aton(buf, addr))
+
+	if(dot_cnt == 3)
+	{
+		if(!inet_aton(buf, addr))
+			return NULL;
+	}
+	else if (dot_cnt == 0)
+	{
+		int n_bits = atoi(buf);
+		if (n_bits >= 32 || n_bits < 0)
+			return NULL;
+		addr->s_addr = !n_bits ? 0 : htonl(0xffffffffu << (32 - n_bits));
+	}
+	else
+	{
+		/* neither an IPv4 nor a number of bits */
 		return NULL;
+	}
 
 	return s + i;
 }
@@ -193,7 +214,7 @@ get_next_token(const char * s, char ** token, int raw)
 	else
 		deli = 0;
 	/* find the end */
-	for(len = 0; !iseol(s[len]) && (deli ? s[len] != deli : !isspace(s[len]));
+	for(len = 0; !iseol(s[len]) && (deli ? s[len] != deli : !isspace((unsigned char)s[len]));
 	    len++)
 		if(s[len] == '\\')
 		{
@@ -268,12 +289,10 @@ int
 read_permission_line(struct upnpperm * perm,
                      const char * p)
 {
-	unsigned int dot_cnt;
-
 	/* zero memory : see https://github.com/miniupnp/miniupnp/issues/652 */
 	memset(perm, 0, sizeof(struct upnpperm));
 
-	while(isspace(*p))
+	while(isspace((unsigned char)*p))
 		p++;
 
 	/* first token: (allow|deny) */
@@ -306,7 +325,7 @@ read_permission_line(struct upnpperm * perm,
 		return -1;
 
 	/* third token: ip/mask */
-	p = get_addr(p, &perm->address, &dot_cnt);
+	p = get_addr_or_mask(p, &perm->address);
 	if(!p)
 		return -1;
 
@@ -315,19 +334,9 @@ read_permission_line(struct upnpperm * perm,
 	else
 	{
 		p++;
-		p = get_addr(p, &perm->mask, &dot_cnt);
+		p = get_addr_or_mask(p, &perm->mask);
 		if(!p)
 			return -1;
-		/* inet_aton(): When only one part is given, the value is stored
-		 * directly in the network address without any byte
-		 * rearrangement. */
-		if(!dot_cnt)
-		{
-			unsigned int n_bits = ntohl(perm->mask.s_addr);
-			if(n_bits > 32)
-				return -1;
-			perm->mask.s_addr = !n_bits ? 0 : htonl(0xffffffffu << (32 - n_bits));
-		}
 	}
 
 	p = get_sep(p);

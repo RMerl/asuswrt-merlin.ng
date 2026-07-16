@@ -150,12 +150,14 @@ InitSSL_upnphttp(struct upnphttp * h)
 	if(h->ssl == NULL) {
 		syslog(LOG_ERR, "SSL_new() failed");
 		syslogsslerr();
-		abort();
+		h->state = EToDelete;
+		return;
 	}
 	if(!SSL_set_fd(h->ssl, h->socket)) {
 		syslog(LOG_ERR, "SSL_set_fd() failed");
 		syslogsslerr();
-		abort();
+		h->state = EToDelete;
+		return;
 	}
 	r = SSL_accept(h->ssl); /* start the handshaking */
 	if(r < 0) {
@@ -165,7 +167,8 @@ InitSSL_upnphttp(struct upnphttp * h)
 		if(err != SSL_ERROR_WANT_READ && err != SSL_ERROR_WANT_WRITE) {
 			syslog(LOG_ERR, "SSL_accept() failed");
 			syslogsslerr();
-			abort();
+			h->state = EToDelete;
+			return;
 		}
 	}
 }

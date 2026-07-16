@@ -1,5 +1,10 @@
 $Id: Changelog.txt,v 1.535 2025/04/26 13:07:53 nanard Exp $
 
+2026/06/16:
+  nftables: Avoid building too long rule with
+    nftnl_rule_nlmsg_build_payload() by triming description to 256 chars.
+  HTTPS: Do not abort on SSL errors
+
 2026/06/10:
   Fix heap overflow in PinholeVerification()
 

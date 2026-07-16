@@ -4,7 +4,7 @@
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * (c) 2015 Tomofumi Hayashi
  * (c) 2019 Paul Chambers
- * (c) 2019-2025 Thomas Bernard
+ * (c) 2019-2026 Thomas Bernard
  *
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution.
@@ -59,6 +59,12 @@
 #define log_debug(args...)	syslog(LOG_DEBUG, args)
 #endif
 
+#ifndef MIN
+#define MIN(x,y) (((x)<(y))?(x):(y))
+#endif
+
+/* maximum length of USERDATA, used for description */
+#define NFTNL_RULE_USERDATA_MAX_LEN 256
 
 #define RULE_CACHE_INVALID  0
 #define RULE_CACHE_VALID    1
@@ -920,8 +926,9 @@ rule_set_snat(uint8_t family, uint8_t proto,
 	nftnl_rule_set_str(r, NFTNL_RULE_CHAIN, nft_postrouting_chain);
 
 	if (descr != NULL && *descr != '\0') {
+		uint32_t len = strlen(descr);
 		nftnl_rule_set_data(r, NFTNL_RULE_USERDATA,
-							descr, strlen(descr));
+							descr, MIN(len, NFTNL_RULE_USERDATA_MAX_LEN));
 	}
 
 	/* Destination IP */
@@ -996,8 +1003,9 @@ rule_set_dnat(uint8_t family, const char * ifname, uint8_t proto,
 	nftnl_rule_set_str(r, NFTNL_RULE_CHAIN, nft_prerouting_chain);
 
 	if (descr != NULL && *descr != '\0') {
+		uint32_t len = strlen(descr);
 		nftnl_rule_set_data(r, NFTNL_RULE_USERDATA,
-							descr, strlen(descr));
+							descr, MIN(len, NFTNL_RULE_USERDATA_MAX_LEN));
 	}
 
 	if (handle != NULL) {
@@ -1159,8 +1167,9 @@ rule_set_filter_common(struct nftnl_rule *r, uint8_t family, const char * ifname
 	nftnl_rule_set_str(r, NFTNL_RULE_CHAIN, nft_forward_chain);
 
 	if (descr != NULL && *descr != '\0') {
+		uint32_t len = strlen(descr);
 		nftnl_rule_set_data(r, NFTNL_RULE_USERDATA,
-							descr, strlen(descr));
+							descr, MIN(len, NFTNL_RULE_USERDATA_MAX_LEN));
 	}
 
 	if (handle != NULL) {
@@ -1400,20 +1409,23 @@ struct mnl_nlmsg_batch *
 start_batch(char *buf, size_t buf_size)
 {
 	struct mnl_nlmsg_batch *result;
-	mnl_seq = time(NULL);
 
 	if (mnl_sock == NULL) {
 		log_error("netlink not connected");
-		result = NULL;
-	} else {
-		result = mnl_nlmsg_batch_start(buf, buf_size);
-		if (result != NULL) {
-			nft_mnl_batch_put(mnl_nlmsg_batch_current(result),
-							  NFNL_MSG_BATCH_BEGIN, mnl_seq++);
-			mnl_nlmsg_batch_next(result);
-		}
+		return NULL;
 	}
-
+	mnl_seq = time(NULL);
+	result = mnl_nlmsg_batch_start(buf, buf_size);
+	if (result == NULL) {
+		syslog(LOG_ERR, "%s: mnl_nlmsg_batch_start(%p, %lu) returned NULL",
+		       "start_batch", buf, (unsigned long)buf_size);
+		return NULL;
+	}
+	nft_mnl_batch_put(mnl_nlmsg_batch_current(result),
+					  NFNL_MSG_BATCH_BEGIN, mnl_seq++);
+	if (!mnl_nlmsg_batch_next(result)) {
+		syslog(LOG_ERR, "%s: mnl_nlmsg_batch_next returned false", "start_batch");
+	}
 	return result;
 }
 

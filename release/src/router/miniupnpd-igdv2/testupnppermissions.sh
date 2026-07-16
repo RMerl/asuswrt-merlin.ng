@@ -9,10 +9,14 @@ RULEA_2="deny 55-55 15161718/ffff8000 555-559"
 RULEB_2="deny 55-55 21.22.23.24/255.255.128.0 555-559"
 RULE_3="allow 1024-65535X0.0.0.0/0 1024-65535 all"
 RULEA_3="BAD"
+RULE_4="allow 1024-65535 1.2.3/16 1024-65535 all"
+RULEA_4="BAD"
+RULE_5="allow 1024-65535 1.2.3.4/44 1024-65535 all"
+RULEA_5="BAD"
 
 i=1
 s=1
-./testupnppermissions "$RULE_1" "$RULE_2" "$RULE_3" | while read l;
+./testupnppermissions "$RULE_1" "$RULE_2" "$RULE_3" "$RULE_4" "$RULE_5" | while read l;
 do
 	if [ -z "$l" ]; then i=$(($i+1)); s=1; else
 		#echo "$i $s : checking '$l'"

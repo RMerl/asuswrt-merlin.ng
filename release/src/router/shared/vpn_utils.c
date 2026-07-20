@@ -508,6 +508,11 @@ void hnd_skip_wg_all_lan(int add)
 	char path[128] = {0};
 	char buf[512] = {0};
 	char net[64] = {0}, *next = NULL;
+#ifdef RTCONFIG_IPV6
+	char ipv6_network[64] = {0};
+	const char *ipv6_prefix;
+	int ipv6_prefix_length;
+#endif
 
 	snprintf(path, sizeof(path), "%s/all_%s", WG_DIR_CONF, WG_NAME_SKIP_NET);
 
@@ -522,13 +527,20 @@ void hnd_skip_wg_all_lan(int add)
 		hnd_skip_wg_network(add, buf);
 		f_write_string(path, buf, 0, 0);
 
-#if 0//RTCONFIG_IPV6
+
+#ifdef RTCONFIG_IPV6
 		int v6_service = get_ipv6_service();
 		int dhcp_pd = nvram_get_int(ipv6_nvname("ipv6_dhcp_pd"));
+		ipv6_prefix = nvram_safe_get(ipv6_nvname("ipv6_prefix"));
+		ipv6_prefix_length = nvram_get_int(ipv6_nvname("ipv6_prefix_length"));
 		if ((v6_service == IPV6_NATIVE_DHCP && dhcp_pd)
 		 || v6_service == IPV6_6IN4 || v6_service == IPV6_MANUAL) {
-			snprintf(buf, sizeof(buf), ",%s/%d", nvram_safe_get(ipv6_nvname("ipv6_prefix")), nvram_get_int(ipv6_nvname("ipv6_prefix_length")));
-			f_write_string(path, buf, FW_APPEND, 0);
+			if (is_valid_ip6(ipv6_prefix) && ipv6_prefix_length >= 0 && ipv6_prefix_length <= 128) {
+				snprintf(ipv6_network, sizeof(ipv6_network), "%s/%d", ipv6_prefix, ipv6_prefix_length);
+				hnd_skip_wg_network(add, ipv6_network);
+				snprintf(buf, sizeof(buf), ",%s", ipv6_network);
+				f_write_string(path, buf, FW_APPEND, 0);
+			}
 		}
 #endif
 	}

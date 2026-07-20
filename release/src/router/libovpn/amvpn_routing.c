@@ -36,16 +36,60 @@
 #include "openvpn_control.h"
 #include "openvpn_setup.h"
 #include "amvpn_routing.h"
+#include "vpndirector_utils.h"
 
 
-// Remove all rules pointing to a specific client table
-// If unit is 0, then remove rules targetting main (i.e. WAN)
-void amvpn_clear_routing_rules(int unit, vpndir_proto_t proto) {
+static void _amvpn_clear_routing_rules_family(int unit, const char *target_table, int ipv6, int verb)
+{
 	FILE *fp;
-	char buffer[128], buffer2[128], buffer3[128];
-	int prio, verb = 3;
-	char table[12], *lookup;
-	char target_table[12];
+	char command[64], line[128], table[12], *lookup;
+	int prio;
+
+	if (ipv6)
+		strlcpy(command, "/usr/sbin/ip -6 rule show", sizeof(command));
+	else
+		strlcpy(command, "/usr/sbin/ip rule show", sizeof(command));
+
+	fp = popen(command, "r");
+	if (!fp)
+		return;
+
+	while (fgets(line, sizeof(line), fp) != NULL) {
+		size_t line_len = strlen(line);
+		if (line_len && line[line_len - 1] == '\n')
+			line[line_len - 1] = '\0';
+
+		if (sscanf(line, "%d", &prio) != 1)
+			continue;
+
+		if ((prio < VPNDIR_PRIO_BASE) ||
+		    (prio > (VPNDIR_PRIO_BASE + (OVPN_CLIENT_MAX + WG_CLIENT_MAX) + VPNDIR_PRIO_MAX_RULES +
+		             (OVPN_CLIENT_MAX * VPNDIR_PRIO_MAX_RULES) + (WG_CLIENT_MAX * VPNDIR_PRIO_MAX_RULES))))
+			continue;
+
+		if ((lookup = strstr(line, "lookup")) == NULL)
+			continue;
+
+		if (sscanf(lookup, "lookup %11s", table) != 1 || strcmp(table, target_table))
+			continue;
+
+		if (ipv6)
+			snprintf(command, sizeof(command), "/usr/sbin/ip -6 rule del prio %d", prio);
+		else
+			snprintf(command, sizeof(command), "/usr/sbin/ip rule del prio %d", prio);
+		if (verb >= 6)
+			logmessage("vpndirector", "Removed IPv%d rule %d", ipv6 ? 6 : 4, prio);
+		system(command);
+	}
+
+	pclose(fp);
+}
+
+// Remove all rules pointing to a specific client table.
+// If unit is 0, then remove rules targeting main (i.e. WAN).
+void amvpn_clear_routing_rules(int unit, vpndir_proto_t proto) {
+	int verb = 3;
+	char buffer[32], target_table[12];
 
 	if (proto == VPNDIR_PROTO_OPENVPN) {
 		snprintf(buffer, sizeof (buffer), "vpn_client%d_verb", unit);
@@ -58,49 +102,21 @@ void amvpn_clear_routing_rules(int unit, vpndir_proto_t proto) {
 		return;
 	}
 
-	snprintf(buffer, sizeof (buffer), "/usr/sbin/ip rule show > /tmp/vpnrules%d_tmp", unit);
-	system(buffer);
-
-	snprintf(buffer, sizeof (buffer), "/tmp/vpnrules%d_tmp", unit);
-	fp = fopen(buffer, "r");
-	if (fp) {
-		if (unit == 0)
-			strlcpy(target_table, "main", sizeof (target_table));
-		else if (proto == VPNDIR_PROTO_OPENVPN)
-			snprintf(target_table, sizeof (target_table), "ovpnc%d", unit);
+	if (unit == 0)
+		strlcpy(target_table, "main", sizeof(target_table));
+	else if (proto == VPNDIR_PROTO_OPENVPN)
+		snprintf(target_table, sizeof(target_table), "ovpnc%d", unit);
 #ifdef RTCONFIG_WIREGUARD
-		else if (proto == VPNDIR_PROTO_WIREGUARD)
-			snprintf(target_table, sizeof (target_table), "wgc%d", unit);
+	else if (proto == VPNDIR_PROTO_WIREGUARD)
+		snprintf(target_table, sizeof(target_table), "wgc%d", unit);
 #endif
-		while (fgets(buffer2, sizeof(buffer2), fp) != NULL) {
-			if (buffer2[strlen(buffer2)-1] == '\n')
-				buffer2[strlen(buffer2)-1] = '\0';
+	else
+		return;
 
-			if (sscanf(buffer2, "%u", &prio) != 1)
-				continue;
-
-			// Only remove rules within our official range
-			// max = base + 10 all + (200 wan) + (5 * 200 ovpn) + (5 * 200 wg)
-			if ((prio < VPNDIR_PRIO_BASE) ||
-			     (prio > (VPNDIR_PRIO_BASE + (OVPN_CLIENT_MAX + WG_CLIENT_MAX) + VPNDIR_PRIO_MAX_RULES + (OVPN_CLIENT_MAX * VPNDIR_PRIO_MAX_RULES) + (WG_CLIENT_MAX * VPNDIR_PRIO_MAX_RULES))))
-				continue;
-
-			if ((lookup = strstr(buffer2, "lookup")) == NULL)
-				continue;
-
-			if (sscanf(lookup, "lookup %11s", table) != 1)
-				continue;
-			if (strcmp(table, target_table))
-				continue;
-
-			snprintf(buffer3, sizeof (buffer3), "/usr/sbin/ip rule del prio %d", prio);
-			if (verb >= 6)
-				logmessage("vpndirector", "Removed rule %d", prio);
-			system(buffer3);
-		}
-		fclose(fp);
-	}
-	unlink(buffer);
+	_amvpn_clear_routing_rules_family(unit, target_table, 0, verb);
+#ifdef RTCONFIG_IPV6
+	_amvpn_clear_routing_rules_family(unit, target_table, 1, verb);
+#endif
 
 #if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X)) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 	// Remove all bypass for this unit
@@ -261,13 +277,47 @@ void amvpn_set_routing_rules(int unit, vpndir_proto_t proto) {
 }
 
 
+static void _amvpn_add_routing_rule(vpndir_addr_family_t family, const char *source,
+	const char *destination, const char *table, int priority)
+{
+	char priority_str[12];
+
+	snprintf(priority_str, sizeof(priority_str), "%d", priority);
+	if (family == VPNDIR_ADDR_IPV6) {
+		if (source && destination)
+			eval("/usr/sbin/ip", "-6", "rule", "add", "from", (char *)source, "to", (char *)destination,
+				"table", (char *)table, "priority", priority_str);
+		else if (source)
+			eval("/usr/sbin/ip", "-6", "rule", "add", "from", (char *)source,
+				"table", (char *)table, "priority", priority_str);
+		else if (destination)
+			eval("/usr/sbin/ip", "-6", "rule", "add", "to", (char *)destination,
+				"table", (char *)table, "priority", priority_str);
+		else
+			eval("/usr/sbin/ip", "-6", "rule", "add", "table", (char *)table, "priority", priority_str);
+	} else {
+		if (source && destination)
+			eval("/usr/sbin/ip", "rule", "add", "from", (char *)source, "to", (char *)destination,
+				"table", (char *)table, "priority", priority_str);
+		else if (source)
+			eval("/usr/sbin/ip", "rule", "add", "from", (char *)source,
+				"table", (char *)table, "priority", priority_str);
+		else if (destination)
+			eval("/usr/sbin/ip", "rule", "add", "to", (char *)destination,
+				"table", (char *)table, "priority", priority_str);
+		else
+			eval("/usr/sbin/ip", "rule", "add", "table", (char *)table, "priority", priority_str);
+	}
+}
+
 void _write_routing_rules(int unit, char *rules, int verb, vpndir_proto_t proto) {
 	char *buffer_tmp, *buffer_tmp2, *rule;
-	char buffer[128], table[16];
+	char table[16];
 	int ruleprio, vpnprio, wanprio;
 	char *enable, *desc, *target, *src, *dst;
-	char srcstr[64], dststr[64];
+	vpndir_addr_family_t source_family, destination_family, rule_family;
 #if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X)) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+	char buffer[128];
 	int ret;
 	char bypass_filename[64];
 #endif
@@ -312,8 +362,19 @@ void _write_routing_rules(int unit, char *rules, int verb, vpndir_proto_t proto)
 		else
 			continue;
 
-		if (*src && strcmp(src, "0.0.0.0")) {
-			snprintf(srcstr, sizeof (srcstr), "from %s", src);
+		source_family = vpndir_address_family(src);
+		destination_family = vpndir_address_family(dst);
+		rule_family = vpndir_rule_address_family(src, dst);
+		if (rule_family == VPNDIR_ADDR_INVALID) {
+			logmessage("vpndirector", "Skipping invalid or mixed-family rule %s", desc);
+			continue;
+		}
+		if (proto == VPNDIR_PROTO_OPENVPN && rule_family == VPNDIR_ADDR_IPV6) {
+			logmessage("vpndirector", "Skipping IPv6 OpenVPN rule %s: the OpenVPN routing table is IPv4-only", desc);
+			continue;
+		}
+
+		if (source_family != VPNDIR_ADDR_ANY) {
 #if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X)) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 			if ((proto == VPNDIR_PROTO_WIREGUARD) && (!strncmp(target,"WGC", 3))) {
 				snprintf(bypass_filename, sizeof (bypass_filename), "/etc/wg/vpndirector%d", unit);
@@ -335,7 +396,6 @@ void _write_routing_rules(int unit, char *rules, int verb, vpndir_proto_t proto)
 #endif
 		}
 		else {
-			*srcstr = '\0';
 #if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X)) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 			if ((proto == VPNDIR_PROTO_WIREGUARD) && (!strncmp(target,"WGC", 3))) {
 				snprintf(bypass_filename, sizeof (bypass_filename), "/etc/wg/vpndirector%d", unit);
@@ -347,24 +407,36 @@ void _write_routing_rules(int unit, char *rules, int verb, vpndir_proto_t proto)
 #endif
 		}
 
-		if (*dst && strcmp(dst, "0.0.0.0"))
-			snprintf(dststr, sizeof (dststr), "to %s", dst);
-		else
-			*dststr = '\0';
-
-		snprintf(buffer, sizeof (buffer), "/usr/sbin/ip rule add %s %s table %s priority %d",
-				                                   srcstr, dststr, table, ruleprio);
-
 		if (verb >= 3)
 			logmessage("vpndirector","Routing %s from %s to %s through %s", desc, (*src ? src : "any"), (*dst ? dst : "any"), table);
 
-		system(buffer);
+		if (rule_family == VPNDIR_ADDR_ANY) {
+			_amvpn_add_routing_rule(VPNDIR_ADDR_IPV4, NULL, NULL, table, ruleprio);
+#ifdef RTCONFIG_IPV6
+			if (proto != VPNDIR_PROTO_OPENVPN && ipv6_enabled())
+				_amvpn_add_routing_rule(VPNDIR_ADDR_IPV6, NULL, NULL, table, ruleprio);
+#endif
+		} else if (rule_family == VPNDIR_ADDR_IPV4) {
+			_amvpn_add_routing_rule(VPNDIR_ADDR_IPV4,
+				source_family == VPNDIR_ADDR_IPV4 ? src : NULL,
+				destination_family == VPNDIR_ADDR_IPV4 ? dst : NULL, table, ruleprio);
+		}
+#ifdef RTCONFIG_IPV6
+		else if (ipv6_enabled()) {
+			_amvpn_add_routing_rule(VPNDIR_ADDR_IPV6,
+				source_family == VPNDIR_ADDR_IPV6 ? src : NULL,
+				destination_family == VPNDIR_ADDR_IPV6 ? dst : NULL, table, ruleprio);
+		}
+#endif
 	}
 	free(buffer_tmp);
 }
 
 inline void _flush_routing_cache() {
-        system("/usr/sbin/ip route flush cache");
+	system("/usr/sbin/ip route flush cache");
+#ifdef RTCONFIG_IPV6
+	system("/usr/sbin/ip -6 route flush cache");
+#endif
 }
 
 
@@ -801,6 +873,42 @@ void wgc_set_exclusive_dns(int unit) {
    the rules.
 */
 
+static void _amvpn_clear_killswitch_priority(int priority)
+{
+	char command[256];
+
+	snprintf(command, sizeof(command), "ip rule show priority %d | while read -r rule; do ip rule del priority %d; done", priority, priority);
+	system(command);
+#ifdef RTCONFIG_IPV6
+	snprintf(command, sizeof(command), "ip -6 rule show priority %d | while read -r rule; do ip -6 rule del priority %d; done", priority, priority);
+	system(command);
+#endif
+}
+
+static void _amvpn_add_killswitch_source(vpndir_addr_family_t family, const char *source, const char *priority)
+{
+	if (family == VPNDIR_ADDR_IPV6)
+		eval("ip", "-6", "rule", "add", "from", (char *)source, "priority", (char *)priority, "prohibit");
+	else
+		eval("ip", "rule", "add", "from", (char *)source, "priority", (char *)priority, "prohibit");
+}
+
+static void _amvpn_add_killswitch_destination(vpndir_addr_family_t family, const char *destination, const char *priority)
+{
+	if (family == VPNDIR_ADDR_IPV6)
+		eval("ip", "-6", "rule", "add", "to", (char *)destination, "priority", (char *)priority, "prohibit");
+	else
+		eval("ip", "rule", "add", "to", (char *)destination, "priority", (char *)priority, "prohibit");
+}
+
+static void _amvpn_add_killswitch_lan(vpndir_addr_family_t family, const char *priority)
+{
+	if (family == VPNDIR_ADDR_IPV6)
+		eval("ip", "-6", "rule", "add", "from", "all", "iif", nvram_safe_get("lan_ifname"), "priority", (char *)priority, "prohibit");
+	else
+		eval("ip", "rule", "add", "from", "all", "iif", nvram_safe_get("lan_ifname"), "priority", (char *)priority, "prohibit");
+}
+
 void amvpn_clear_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname) {
 	int prio, verb = 3;
 	char buffer[256], prio_str[6];
@@ -816,20 +924,18 @@ void amvpn_clear_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifna
 		snprintf(buffer, sizeof (buffer), "vpn_client%d_verb", unit);
 		verb = nvram_get_int(buffer);
 
-		// Delete as many priority "prio" as there are rules of that priority
-		snprintf(buffer, sizeof (buffer), "ip rule show priority %d | while read -r rule; do ip rule del priority %d; done", prio, prio);
+		// Delete as many rules at this priority as exist, in both address families.
+		_amvpn_clear_killswitch_priority(prio);
 		if (verb > 3)
 			logmessage("openvpn-routing", "Clearing killswitch for OpenVPN unit %d", unit);
-		system(buffer);
 #ifdef RTCONFIG_WIREGUARD
 	} else if (proto == VPNDIR_PROTO_WIREGUARD) {
 		prio = VPNDIR_PRIO_KS_WIREGUARD + unit - 1;
 
-		// Delete as many priority "prio" as there are rules of that priority
-		snprintf(buffer, sizeof (buffer), "ip rule show priority %d | while read -r rule; do ip rule del priority %d; done", prio, prio);
+		// Delete as many rules at this priority as exist, in both address families.
+		_amvpn_clear_killswitch_priority(prio);
 		if (verb > 3)
 			logmessage("openvpn-routing", "Clearing killswitch for WireGuard unit %d", unit);
-		system(buffer);
 #endif
 	}
 
@@ -876,6 +982,7 @@ void amvpn_set_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname
 	char *buffer_tmp, *buffer_tmp2, *rule;
 	char *enable, *desc, *target, *src, *dst;
 	int killswitch, rgw, verb = 3;
+	vpndir_addr_family_t source_family, destination_family, rule_family;
 #ifdef RTCONFIG_MULTILAN_CFG
 	int vpnc_idx, i;
 	MTLAN_T *pmtl = NULL;
@@ -900,7 +1007,7 @@ void amvpn_set_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname
 			return;
 
 		if (rgw == OVPN_RGW_ALL) {
-			eval("ip", "rule", "add", "from", "all", "iif", nvram_safe_get("lan_ifname"), "priority", prio_str, "prohibit");
+			_amvpn_add_killswitch_lan(VPNDIR_ADDR_IPV4, prio_str);
 			if (verb > 3)
 				logmessage("openvpn-routing","Setting global killswitch rule for OpenVPN client %d", unit);
 		} else if (rgw == OVPN_RGW_POLICY) {
@@ -918,11 +1025,23 @@ void amvpn_set_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname
 				if (!strcmp(target,"WAN"))
 					continue;
 
-				if (!strncmp(target, "OVPN", 4) && *src && strcmp(src, "0.0.0.0")) {
-					// Create deny rule
-					eval("ip", "rule", "add", "from", src, "priority", prio_str, "prohibit");
-					if (verb > 3)
-						logmessage("openvpn-routing","Setting killswitch rule for %s", src);
+				source_family = vpndir_address_family(src);
+				destination_family = vpndir_address_family(dst);
+				rule_family = vpndir_rule_address_family(src, dst);
+				if (!strncmp(target, "OVPN", 4) && rule_family != VPNDIR_ADDR_INVALID && rule_family != VPNDIR_ADDR_IPV6) {
+					if (source_family != VPNDIR_ADDR_ANY) {
+						_amvpn_add_killswitch_source(source_family, src, prio_str);
+						if (verb > 3)
+							logmessage("openvpn-routing", "Setting killswitch rule for %s", src);
+					} else if (destination_family != VPNDIR_ADDR_ANY) {
+						_amvpn_add_killswitch_destination(destination_family, dst, prio_str);
+						if (verb > 3)
+							logmessage("openvpn-routing", "Setting killswitch rule for destination %s", dst);
+					} else {
+						_amvpn_add_killswitch_lan(VPNDIR_ADDR_IPV4, prio_str);
+						if (verb > 3)
+							logmessage("openvpn-routing", "Setting global killswitch rule for OpenVPN client %d", unit);
+					}
 				}
 			}
 			free(buffer_tmp);
@@ -982,11 +1101,27 @@ void amvpn_set_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname
 			if (!strcmp(target,"WAN"))
 				continue;
 
-			if (!strncmp(target, "WGC", 3) && *src && strcmp(src, "0.0.0.0")) {
-				// Create deny rule
-				eval("ip", "rule", "add", "from", src, "priority", prio_str, "prohibit");
-				if (verb > 3)
-					logmessage("openvpn-routing","Setting killswitch rule for %s", src);
+			source_family = vpndir_address_family(src);
+			destination_family = vpndir_address_family(dst);
+			rule_family = vpndir_rule_address_family(src, dst);
+			if (!strncmp(target, "WGC", 3) && rule_family != VPNDIR_ADDR_INVALID) {
+				if (source_family != VPNDIR_ADDR_ANY) {
+					_amvpn_add_killswitch_source(source_family, src, prio_str);
+					if (verb > 3)
+						logmessage("openvpn-routing", "Setting killswitch rule for %s", src);
+				} else if (destination_family != VPNDIR_ADDR_ANY) {
+					_amvpn_add_killswitch_destination(destination_family, dst, prio_str);
+					if (verb > 3)
+						logmessage("openvpn-routing", "Setting killswitch rule for destination %s", dst);
+				} else {
+					_amvpn_add_killswitch_lan(VPNDIR_ADDR_IPV4, prio_str);
+#ifdef RTCONFIG_IPV6
+					if (ipv6_enabled())
+						_amvpn_add_killswitch_lan(VPNDIR_ADDR_IPV6, prio_str);
+#endif
+					if (verb > 3)
+						logmessage("openvpn-routing", "Setting global killswitch rule for WireGuard client %d", unit);
+				}
 			}
 		}
 		free(buffer_tmp);

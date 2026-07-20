@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <stdlib.h>
 #include "rc.h"
 
 #define WG_DIR_CONF    "/etc/wg"
@@ -121,7 +122,7 @@ static int _wg_resolv_ep(const char* ep_addr, char* buf, size_t len)
 
 static void _wg_client_ep_route_add(char* prefix, int table)
 {
-	char table_str[8] = {0};
+	char table_str[12] = {0};
 	char wan_gateway[16] = {0};
 	char wan6_gateway[64] = {0};
 	char wan_ifname[8] = {0};
@@ -157,11 +158,11 @@ static void _wg_client_ep_route_add(char* prefix, int table)
 	{
 		v6 = is_valid_ip6(addr);
 		if (table > 0)
-			eval("ip", "route", "add", addr,
+			eval("ip", v6 ? "-6" : "-4", "route", "add", addr,
 				"via", v6 ? wan6_gateway : wan_gateway,
 				"dev", v6 ? wan6_ifname : wan_ifname, "table", table_str);
 		else
-			eval("ip", "route", "add", addr,
+			eval("ip", v6 ? "-6" : "-4", "route", "add", addr,
 				"via", v6 ? wan6_gateway : wan_gateway,
 				"dev", v6 ? wan6_ifname : wan_ifname);
 	}
@@ -176,21 +177,23 @@ static void _wg_client_ep_route_add(char* prefix, int table)
 
 static void _wg_client_ep_route_del(char* prefix, int table)
 {
-	char table_str[8] = {0};
+	char table_str[12] = {0};
 	char buf[1024] = {0};
 	char addr[64] = {0};
 	char* p = NULL;
 	int unit = 1;
+	int v6 = 0;
 
 	snprintf(table_str, sizeof(table_str), "%d", table);
 	snprintf(buf, sizeof(buf), "%s", nvram_pf_safe_get(prefix, "ep_addr_r"));
 
 	foreach(addr, buf, p)
 	{
+		v6 = is_valid_ip6(addr);
 		if (table > 0)
-			eval("ip", "route", "del", addr, "table", table_str);
+			eval("ip", v6 ? "-6" : "-4", "route", "del", addr, "table", table_str);
 		else
-			eval("ip", "route", "del", addr);
+			eval("ip", v6 ? "-6" : "-4", "route", "del", addr);
 	}
 
 	// VPNDirector - update all other client tables
@@ -225,10 +228,12 @@ static void _wg_config_route(char* prefix, char* ifname, int table)
 	char aips[4096] = {0};
 	char buf[128] = {0};
 	char *p = NULL;
-	char table_str[8] = {0};
+	char table_str[12] = {0};
+	int v6 = 0;
 #if !defined(RTCONFIG_MULTILAN_CFG)
 	FILE *fp = NULL;
-	char cmd[256] = {0};
+	char *route_line = NULL;
+	size_t route_line_len = 0;
 #endif
 
 	snprintf(table_str, sizeof(table_str), "%d", table);
@@ -237,19 +242,54 @@ static void _wg_config_route(char* prefix, char* ifname, int table)
 	if (table > 0)
 	{// copy from main
 		eval("ip", "route", "flush", "table", table_str);
-		system("ip route show table main > /tmp/route_tmp");
-		fp = fopen("/tmp/route_tmp", "r");
+		fp = popen("ip route show table main", "r");
 		if(fp)
 		{
-			while(fgets(buf, sizeof(buf), fp))
+			while(getline(&route_line, &route_line_len, fp) != -1)
 			{
-				snprintf(cmd, sizeof(cmd), "ip route add %s table %d ", trim_r(buf), table);
-				//_dprintf("[%s]\n", cmd);
-				system(cmd);
+				char *route = trim_r(route_line);
+				size_t command_len = strlen(route) + 32;
+				char *command = malloc(command_len);
+
+				if (command) {
+					snprintf(command, command_len, "ip route add %s table %d", route, table);
+					system(command);
+					free(command);
+				}
 			}
-			fclose(fp);
+			free(route_line);
+			route_line = NULL;
+			route_line_len = 0;
+			pclose(fp);
 		}
-		unlink("/tmp/route_tmp");
+
+		eval("ip", "-6", "route", "flush", "table", table_str);
+		fp = popen("ip -6 route show table main", "r");
+		if(fp)
+		{
+			while(getline(&route_line, &route_line_len, fp) != -1)
+			{
+				char *route = trim_r(route_line);
+				size_t command_len;
+				char *command;
+
+				if (!strncmp(route, "default", 7))
+					continue;
+
+				command_len = strlen(route) + 35;
+				command = malloc(command_len);
+				if (command) {
+					snprintf(command, command_len, "ip -6 route add %s table %d", route, table);
+					system(command);
+					free(command);
+				}
+			}
+			free(route_line);
+			route_line = NULL;
+			route_line_len = 0;
+			pclose(fp);
+		}
+		eval("ip", "-6", "route", "replace", "unreachable", "default", "table", table_str);
 	}
 #endif
 
@@ -282,18 +322,19 @@ static void _wg_config_route(char* prefix, char* ifname, int table)
 			while (dst[i])
 			{
 				if (table > 0)
-					eval("ip", "route", "add", dst[i], "dev", ifname, "table", table_str);
+					eval("ip", "-6", "route", "add", dst[i], "dev", ifname, "table", table_str);
 				else
-					eval("ip", "route", "add", dst[i], "dev", ifname);
+					eval("ip", "-6", "route", "add", dst[i], "dev", ifname);
 				i++;
 			}
 		}
 		else
 		{
+			v6 = strchr(buf, ':') != NULL;
 			if (table > 0)
-				eval("ip", "route", "add", buf, "dev", ifname, "table", table_str);
+				eval("ip", v6 ? "-6" : "-4", "route", "add", buf, "dev", ifname, "table", table_str);
 			else
-				eval("ip", "route", "add", buf, "dev", ifname);
+				eval("ip", v6 ? "-6" : "-4", "route", "add", buf, "dev", ifname);
 		}
 	}
 }
@@ -1775,6 +1816,8 @@ void stop_wgc(int unit)
 	// VPNDirector - flushing table
 	amvpn_clear_routing_rules(unit, VPNDIR_PROTO_WIREGUARD);
 	snprintf(buffer, sizeof (buffer),"/usr/sbin/ip route flush table wgc%d", unit);
+	system(buffer);
+	snprintf(buffer, sizeof (buffer),"/usr/sbin/ip -6 route flush table wgc%d", unit);
 	system(buffer);
 
 	/// dns

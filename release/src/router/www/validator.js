@@ -13,6 +13,40 @@ var validator = {
 		}
 	},
 
+	ipv6cidr: function(obj){
+		var value = obj.value;
+		var slash = value.indexOf('/');
+		var address = value;
+		var prefix;
+
+		if (value == "")
+			return true;
+
+		if (slash >= 0) {
+			if (value.indexOf('/', slash + 1) >= 0)
+				return false;
+			address = value.substring(0, slash);
+			prefix = value.substring(slash + 1);
+			if (!/^(0|[1-9][0-9]{0,2})$/.test(prefix) || parseInt(prefix, 10) > 128)
+				return false;
+		}
+
+		return address == "::" || validator.isLegal_ipv6({value: address}, 1);
+	},
+
+	ipcidr: function(obj){
+		if (obj.value.indexOf(':') >= 0) {
+			if (validator.ipv6cidr(obj))
+				return true;
+			alert(obj.value+" is not valid. Please enter a valid IPv4 or IPv6 address, optionally in CIDR format.");
+			obj.focus();
+			obj.select();
+			return false;
+		}
+
+		return validator.ipv4cidr(obj);
+	},
+
 	account: function(string_obj, flag){
 		var invalid_char = "";
 

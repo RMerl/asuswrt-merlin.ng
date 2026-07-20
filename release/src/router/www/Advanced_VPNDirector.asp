@@ -589,17 +589,26 @@ function saveRule(_mode, _rowIdx) {
 	if (!Block_chars(document.getElementById("desc_x"), ["<" ,">" ,"'" ,"%"]))
 		return false;
 
-	if (!validator.ipv4cidr(document.getElementById("remoteIP_x")) ||
-	    !validator.ipv4cidr(document.getElementById("localIP_x"))) {
+	if (!validator.ipcidr(document.getElementById("remoteIP_x")) ||
+	    !validator.ipcidr(document.getElementById("localIP_x"))) {
+		return false;
+	}
+
+	var localIP = $("#localIP_x").val();
+	var remoteIP = $("#remoteIP_x").val();
+	var interface = $("#iface_x").val();
+
+	if (interface.indexOf("OVPN") == 0 && (localIP.indexOf(":") >= 0 || remoteIP.indexOf(":") >= 0)) {
+		alert("IPv6 VPN Director rules are supported by WireGuard clients, not OpenVPN clients.");
 		return false;
 	}
 
 	var ruleArray = new Array();
 	ruleArray["enable"] = ($("#enable_x").prop("checked") ? 1 : 0);
 	ruleArray["description"] = ($("#desc_x").val() != undefined ? $("#desc_x").val() : "");
-	ruleArray["localIP"] = ($("#localIP_x").val() != undefined ? $("#localIP_x").val() : "");
-	ruleArray["remoteIP"] = ($("#remoteIP_x").val() != undefined ? $("#remoteIP_x").val() : "");
-	ruleArray["interface"] = $("#iface_x").val();
+	ruleArray["localIP"] = localIP;
+	ruleArray["remoteIP"] = remoteIP;
+	ruleArray["interface"] = interface;
 
 	if (_mode == "new")
 		vpndirector_rulelist_array.push(ruleArray);
@@ -739,7 +748,7 @@ function applyRule() {
 				<tr>
 					<th>Local IP</th>
 					<td>
-						<input type="text" maxlength="18" class="input_18_table" id="localIP_x" align="left" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" style="float:left;" onClick="hideClients_Block();" autocomplete="off" autocorrect="off" autocapitalize="off">
+						<input type="text" maxlength="49" class="input_25_table" id="localIP_x" align="left" style="float:left;" onClick="hideClients_Block();" autocomplete="off" autocorrect="off" autocapitalize="off">
 						<img id="pull_arrow" class="pull_arrow" height="16px;" src="/images/unfold_more.svg" align="right" onclick="pullLANIPList(this);" title="<#select_IP#>">
 						<div id="ClientList_Block" class="clientlist_dropdown" style="margin-left:2px;margin-top:27px;width:238px;"></div>
 						<span style="margin-left:3px; line-height:25px;"><#feedback_optional#></span>
@@ -748,13 +757,13 @@ function applyRule() {
 				<tr>
 					<th>Remote IP</th>
 					<td>
-						<input type="text" maxlength="18" class="input_18_table" id="remoteIP_x" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off"/>
+						<input type="text" maxlength="49" class="input_25_table" id="remoteIP_x" autocomplete="off" autocorrect="off" autocapitalize="off"/>
 						<span><#feedback_optional#></span>
 					</td>
 				</tr>
 			</table>
 			<div class="amng-highlight-color" style="margin:10px 0px;">
-				* IP addresses can be entered in CIDR format (for example, 192.168.1.0/24).
+				* IPv4 and IPv6 addresses can be entered in CIDR format (for example, 192.168.1.0/24 or 2001:db8::/64).
 			</div>
 			<div style="margin-top:15px; justify-content: center; display:flex; flex-direction:row; gap:0.5em;">
 				<input class="button_gen" type="button" onclick="cancelRule();" value="<#CTL_Cancel#>">

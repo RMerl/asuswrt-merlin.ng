@@ -83,6 +83,16 @@ const samplesMax = 2880;
 const updateInt = 30;
 const showBitrate = 1;
 
+function chartTime(index) {
+	var time = new Date(
+		Date.now() -
+		(samplesMax - index - 1) * updateInt * 1000
+	);
+
+	return time.getHours().toString().padStart(2, "0") + ":" +
+		time.getMinutes().toString().padStart(2, "0");
+}
+
 if (isSupport("UI4")){
 	var labelsColor = "#1C1C1E";
 	var gridColor = "#CCC";
@@ -215,9 +225,6 @@ function update_traffic(){
 
 
 function drawGraph(ifname){
-	var now = new Date();
-	var currentHour = now.getHours();
-
 	if (chartObj[ifname].obj != undefined) {
 		chartObj[ifname].obj.update();
 		return;
@@ -268,20 +275,7 @@ function drawGraph(ifname){
 					bodySpacing: 6,
 					callbacks: {
 						title: function(tooltipItems) {
-						// tooltipItems is an array, take the first item
-							var item = tooltipItems[0];
-							var sampleIndex = item.dataIndex;
-
-						// Calculate hours and minutes
-							const totalMinutesAgo = (samplesMax - sampleIndex - 1) * (updateInt / 60);
-							const tooltipTime = new Date();
-							tooltipTime.setHours(now.getHours() - Math.floor(totalMinutesAgo / 60));
-							tooltipTime.setMinutes(now.getMinutes() - (totalMinutesAgo % 60));
-
-						// Format HH:MM
-							const hh = tooltipTime.getHours().toString().padStart(2, '0');
-							const mm = tooltipTime.getMinutes().toString().padStart(2, '0');
-							return "Time: " + hh + ":" + mm;
+							return "Time: " + chartTime(tooltipItems[0].dataIndex);
 						},
 						label: function(context) {
 							var label = context.dataset.label || '';
@@ -320,13 +314,38 @@ function drawGraph(ifname){
 					min: 0,
 					max: samplesMax,
 					grid: { color: gridColor },
+
+					afterBuildTicks: function(scale) {
+						var now = new Date();
+						var hour = new Date(now);
+
+						hour.setMinutes(0, 0, 0);
+
+						var hourIndex =
+							samplesMax - 1 -
+							(now - hour) / (updateInt * 1000);
+
+						var first = Math.ceil(
+							(scale.min - hourIndex) / samplesPerHour
+						);
+
+						var last = Math.floor(
+							(scale.max - hourIndex) / samplesPerHour
+						);
+
+						scale.ticks = [];
+
+						for (var i = first; i <= last; i++) {
+							scale.ticks.push({
+								value: hourIndex + i * samplesPerHour
+							});
+						}
+					},
+
 					ticks: {
 						color: ticksColor,
-						stepSize: samplesPerHour,
 						callback: function(value) {
-							var hourOffset = Math.floor(value / samplesPerHour);
-							var labelHour = (currentHour - (24 - hourOffset)) % 24;
-							return (labelHour < 0 ? labelHour + 24 : labelHour) + ":00";
+							return chartTime(value);
 						}
 					}
 				},

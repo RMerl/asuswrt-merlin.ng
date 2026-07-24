@@ -1,61 +1,84 @@
-.TH dropbearkey 1
-.SH NAME
-dropbearkey \- create private keys for the use with dropbear(8) or dbclient(1)
-.SH SYNOPSIS
-.B dropbearkey
-\-t
-.I type
-\-f
-.I file
-[\-s
-.IR bits ]
-[\-y]
-.SH DESCRIPTION
-.B dropbearkey
+.Dd February 1, 2023
+.Dt DROPBEARKEY 1
+.Os
+.Sh NAME
+.Nm dropbearkey
+.Nd create private keys for the use with
+.Xr dropbear 8
+or
+.Xr dbclient 1
+.Sh SYNOPSIS
+.Nm
+.Fl t
+.Ar type
+.Fl f
+.Ar file
+.Op Fl s Ar bits
+.Op Fl y
+.Sh DESCRIPTION
+.Nm dropbearkey
 generates a
-\fIRSA\fR, \fIDSS\fR, \fIECDSA\fR, or \fIEd25519\fR
+.Dv RSA , DSS , ECDSA ,
+or
+.Dv Ed25519
 format SSH private key, and saves it to a file for the use with the
 Dropbear client or server.
-Note that 
+Note that
 some SSH implementations
-use the term "DSA" rather than "DSS", they mean the same thing.
-.SH OPTIONS
-.TP
-.B \-t \fItype
+use the term
+.Dq DSA
+rather than
+.Dq DSS ,
+they mean the same thing.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl t Ar type
 Type of key to generate.
 Must be one of
-.I rsa
-.I ecdsa
-.I ed25519
+.Cm rsa ,
+.Cm ecdsa ,
+.Cm ed25519 ,
 or
-.IR dss .
-.TP
-.B \-f \fIfile
+.Cm dss .
+.It Fl f Ar file
 Write the secret key to the file
-\fIfile\fR. For client authentication ~/.ssh/id_dropbear is loaded by default
-.TP
-.B \-s \fIbits
+.Ar file .
+For client authentication
+.Pa ~/.ssh/id_dropbear
+is loaded by default
+.It Fl s Ar bits
 Set the key size to
-.I bits
-bits, should be multiple of 8 (optional). 
-.TP
-.B \-y
-Just print the publickey and fingerprint for the private key in \fIfile\fR.
-.SH NOTES
-The program dropbearconvert(1) can be used to convert between Dropbear and OpenSSH key formats.
-.P
-Dropbear does not support encrypted keys. 
-.SH EXAMPLE
+.Ar bits
+bits, should be multiple of 8 (optional).
+.It Fl y
+Just print the publickey and fingerprint for the private key in
+.Ar file .
+.El
+.Sh NOTES
+The program
+.Xr dropbearconvert 1
+can be used to convert between Dropbear and OpenSSH key formats.
+.Pp
+Dropbear does not support encrypted keys.
+.Sh EXAMPLES
 generate a host-key:
- # dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key
-
-extract a public key suitable for authorized_keys from private key:
- # dropbearkey -y -f id_rsa | grep "^ssh-rsa " >> authorized_keys
-.SH AUTHOR
-Matt Johnston (matt@ucc.asn.au).
-.br
-Gerrit Pape (pape@smarden.org) wrote this manual page.
-.SH SEE ALSO
-dropbear(8), dbclient(1), dropbearconvert(1)
-.P
-https://matt.ucc.asn.au/dropbear/dropbear.html
+.Bd -literal -offset indent
+# dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key
+.Ed
+.Pp
+extract a public key suitable for
+.Pa authorized_keys
+from private key:
+.Bd -literal -offset indent
+# dropbearkey -y -f id_rsa | grep "^ssh-rsa " >> authorized_keys
+.Ed
+.Sh SEE ALSO
+.Xr dbclient 1 ,
+.Xr dropbearconvert 1 ,
+.Xr dropbear 8
+.Pp
+.Lk https://matt.ucc.asn.au/dropbear/dropbear.html
+.Sh AUTHORS
+.An Matt Johnston Aq Mt matt@ucc.asn.au .
+.An Gerrit Pape Aq Mt pape@smarden.org
+wrote this manual page.

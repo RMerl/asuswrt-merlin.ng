@@ -174,8 +174,8 @@ void login_write (struct logininfo *li);
 int login_log_entry(struct logininfo *li);
 
 /* produce various forms of the line filename */
-char *line_fullname(char *dst, const char *src, size_t dstsize);
-char *line_stripname(char *dst, const char *src, size_t dstsize);
-char *line_abbrevname(char *dst, const char *src, size_t dstsize);
+char *line_fullname(char *dst, const char *src, unsigned int dstsize);
+char *line_stripname(char *dst, const char *src, int dstsize);
+char *line_abbrevname(char *dst, const char *src, int dstsize);
 
 #endif /* DROPBEAR_HAVE_LOGINREC_H_ */

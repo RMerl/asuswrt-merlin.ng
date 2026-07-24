@@ -532,8 +532,7 @@ void svr_switch_user(void) {
 
 #if DROPBEAR_SVR_DROP_PRIVS
 		/* Retain utmp saved group so that wtmp/utmp can be written */
-		int ret = utmp_gid(&svr_ses.utmp_gid);
-		if (ret == DROPBEAR_SUCCESS) {
+		if (utmp_gid(&svr_ses.utmp_gid) == DROPBEAR_SUCCESS) {
 			/* Set saved gid to utmp so that it can be
 			 * restored for login_logout() etc. This saved
 			 * group is cleared by the OS on execve() */

@@ -372,7 +372,7 @@ login_utmp_only(struct logininfo *li)
 /* line_fullname(): add the leading '/dev/' if it doesn't exist make
  * sure dst has enough space, if not just copy src (ugh) */
 char *
-line_fullname(char *dst, const char *src, size_t dstsize)
+line_fullname(char *dst, const char *src, unsigned int dstsize)
 {
 	memset(dst, '\0', dstsize);
 	if ((strncmp(src, "/dev/", 5) == 0) || (dstsize < (strlen(src) + 5))) {
@@ -386,7 +386,7 @@ line_fullname(char *dst, const char *src, size_t dstsize)
 
 /* line_stripname(): strip the leading '/dev' if it exists, return dst */
 char *
-line_stripname(char *dst, const char *src, size_t dstsize)
+line_stripname(char *dst, const char *src, int dstsize)
 {
 	memset(dst, '\0', dstsize);
 	if (strncmp(src, "/dev/", 5) == 0)
@@ -403,7 +403,7 @@ line_stripname(char *dst, const char *src, size_t dstsize)
  * NOTE: use strncpy because we do NOT necessarily want zero
  * termination */
 char *
-line_abbrevname(char *dst, const char *src, size_t dstsize)
+line_abbrevname(char *dst, const char *src, int dstsize)
 {
 	size_t len;
 

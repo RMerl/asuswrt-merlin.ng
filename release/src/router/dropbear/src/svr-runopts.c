@@ -85,9 +85,7 @@ static void printhelp(const char * progname) {
 					"-s		Disable password logins\n"
 					"-g		Disable password logins for root\n"
 					"-B		Allow blank password logins\n"
-#if DEPRECATED_TWO_FACTOR
 					"-t		Enable two-factor authentication (both password and public key required)\n"
-#endif
 #endif
 					"-T		Maximum authentication tries (default %d)\n"
 #if DROPBEAR_SVR_LOCALANYFWD
@@ -346,11 +344,9 @@ void svr_getopts(int argc, char ** argv) {
 				case 'B':
 					svr_opts.allowblankpass = 1;
 					break;
-#if DEPRECATED_TWO_FACTOR
 				case 't':
 					svr_opts.multiauthmethod = 1;
 					break;
-#endif
 #else
 				case 's':
 				case 'g':

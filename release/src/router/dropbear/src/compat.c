@@ -269,7 +269,7 @@ static char **initshells() {
 		if (*cp == '#' || *cp == '\0')
 			continue;
 		*sp++ = cp;
-		while (!isspace(*cp) && *cp != '#' && *cp != '\0')
+		while (!ascii_isspace(*cp) && *cp != '#' && *cp != '\0')
 			cp++;
 		*cp++ = '\0';
 	}

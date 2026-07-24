@@ -416,7 +416,7 @@ static struct openssh_key *load_openssh_key(const char *filename)
 				goto error;
 			}
 			*p++ = '\0';
-			while (*p && isspace((unsigned char)*p)) p++;
+			while (*p && ascii_isspace(*p)) p++;
 			if (!strcmp(buffer, "Proc-Type")) {
 				if (p[0] != '4' || p[1] != ',') {
 					errmsg = "Proc-Type is not 4 (only 4 is supported)";
@@ -1075,9 +1075,9 @@ static int openssh_write(const char *filename, sign_key *key,
 	if (strlen(filename) == 1 && filename[0] == '-') {
 		fp = stdout;
 	} else {
-		fp = NULL;
 		int fd = open(filename, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW,
 			S_IRUSR | S_IWUSR);
+		fp = NULL;
 		if (fd >= 0) {
 			fp = fdopen(fd, "wb"); /* ensure Unix line endings */
 		}

@@ -438,7 +438,7 @@ void printhex(const char * label, const unsigned char * buf, int len) {
 		fprintf(stderr, "  ");
 		for (i = 0; i < linelen; i++) {
 			char c = buf[j+i];
-			if (!isprint(c)) {
+			if (!ascii_isprint(c)) {
 				c = '.';
 			}
 			fputc(c, stderr);

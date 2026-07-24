@@ -51,7 +51,6 @@
 #include <unistd.h>
 #include <syslog.h>
 #include <netdb.h>
-#include <ctype.h>
 #include <stdarg.h>
 #include <dirent.h>
 #include <time.h>
@@ -149,6 +148,7 @@
 #endif
 
 #include "compat.h"
+#include "dbctype.h"
 
 #ifndef HAVE_U_INT8_T
 typedef unsigned char u_int8_t;

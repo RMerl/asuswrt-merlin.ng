@@ -28,6 +28,10 @@ def test_from_openssh(request, tmp_path, keytype, keyformat):
 	if kt == 'dss' and keyformat is None:
 		pytest.skip("dss doesn't support openssh format")
 
+	if kt == 'ed25519' and keyformat == "PEM":
+		# openssh 10.3 PEM fails, earlier is silently ignored
+		pytest.skip("ed25519 doesn't support PEM format")
+
 	os_kt = kt
 	if os_kt == 'dss':
 		# OpenSSH calls it 'dsa', Dropbear calls it 'dss'

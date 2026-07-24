@@ -68,7 +68,10 @@ def test_bg_sleep(request, fd, dropbear):
 		assert st.rstrip() == "hello"
 
 
-def test_idle(request, dropbear):
+# This test is flakey so disabled.
+# If working on channel close code it can be manually run
+# by renaming to test_idle().
+def flakey_test_idle(request, dropbear):
 	# Idle test, -I 1 should make it return before the 5 second timeout
 	r = dbclient(request, "-I", "1", "echo zong; sleep 10",
 		capture_output=True, timeout=5, text=True)

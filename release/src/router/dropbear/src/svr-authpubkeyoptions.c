@@ -359,7 +359,8 @@ svr_parse_pubkey_options(buffer *options_buf, int line_num, const char* filename
 					 * port="*" isn't supported either, since it only is useful
 					 * with a host: part. */
 
-					if (m_str_to_uint(spec, &entry->port) == DROPBEAR_SUCCESS) {
+					if (m_str_to_uint(spec, &entry->port) == DROPBEAR_SUCCESS
+						&& entry->port <= 65535) {
 						valid_option = 1;
 						TRACE(("remote forwarding allows listening on port %u",
 								entry->port));

@@ -736,7 +736,7 @@ enable_pam
 enable_openpty
 enable_syslog
 enable_shadow
-enable_plugin
+enable_plugin_deprecated
 enable_fuzz
 enable_bundled_libtom
 enable_lastlog
@@ -5838,22 +5838,33 @@ fi
 
 
 # Plugin support will be removed soon. Open a github issue if you're using it.
-# Check whether --enable-plugin was given.
-if test ${enable_plugin+y}
+# Check whether --enable-plugin-deprecated was given.
+if test ${enable_plugin_deprecated+y}
 then :
-  enableval=$enable_plugin;
+  enableval=$enable_plugin_deprecated;
+		if test "x$enableval" = "xyes"; then
 
 printf "%s\n" "#define DROPBEAR_PLUGIN 1" >>confdefs.h
 
-		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Enabling support for External Public Key Authentication" >&5
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Enabling support for External Public Key Authentication" >&5
 printf "%s\n" "$as_me: Enabling support for External Public Key Authentication" >&6;}
-		DROPBEAR_PLUGIN=1
+			DROPBEAR_PLUGIN=1
+		else
+
+printf "%s\n" "#define DROPBEAR_PLUGIN 0" >>confdefs.h
+
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Disabling support for External Public Key Authentication" >&5
+printf "%s\n" "$as_me: Disabling support for External Public Key Authentication" >&6;}
+			DROPBEAR_PLUGIN=0
+		fi
 
 else $as_nop
 
 
 printf "%s\n" "#define DROPBEAR_PLUGIN 0" >>confdefs.h
 
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Disabling support for External Public Key Authentication" >&5
+printf "%s\n" "$as_me: Disabling support for External Public Key Authentication" >&6;}
 		DROPBEAR_PLUGIN=0
 
 

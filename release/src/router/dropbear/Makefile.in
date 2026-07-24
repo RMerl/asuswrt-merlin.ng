@@ -44,7 +44,7 @@ _COMMONOBJS=dbutil.o buffer.o dbhelpers.o \
 		atomicio.o compat.o fake-rfc2553.o \
 		ltc_prng.o ecc.o ecdsa.o sk-ecdsa.o crypto_desc.o \
 		curve25519.o ed25519.o sk-ed25519.o \
-		dbmalloc.o \
+		dbmalloc.o dbctype.o \
 		gensignkey.o gendss.o genrsa.o gened25519.o
 COMMONOBJS = $(patsubst %,$(OBJ_DIR)/%,$(_COMMONOBJS))
 
@@ -74,7 +74,7 @@ KEYOBJS = $(patsubst %,$(OBJ_DIR)/%,$(_KEYOBJS))
 _CONVERTOBJS=dropbearconvert.o keyimport.o signkey_ossh.o
 CONVERTOBJS = $(patsubst %,$(OBJ_DIR)/%,$(_CONVERTOBJS))
 
-_SCPOBJS=scp.o progressmeter.o atomicio.o scpmisc.o compat.o
+_SCPOBJS=scp.o progressmeter.o atomicio.o scpmisc.o compat.o dbctype.o
 SCPOBJS = $(patsubst %,$(OBJ_DIR)/%,$(_SCPOBJS))
 
 ifeq (@DROPBEAR_FUZZ@, 1)

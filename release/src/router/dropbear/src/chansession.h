@@ -67,7 +67,6 @@ struct ChanSess {
 	char * x11authprot;
 	char * x11authcookie;
 	unsigned int x11screennum;
-	unsigned char x11singleconn;
 #endif
 
 #if DROPBEAR_SVR_AGENTFWD

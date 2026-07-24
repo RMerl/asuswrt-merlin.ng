@@ -1,3 +1,48 @@
+2026.94 - 23 July 2026
+
+- Fix scp build failure regression from 2026.93
+  The new ascii_isdigit() etc wasn't linked.
+
+- Print square brackets around ipv6 addresses with ports, eg
+  [2a00:f10:400:2:1c00:bcff:fe00:1c6]:22
+  Patch from Seo Suchan
+
+- Support longer paths in scp.
+
+- Avoid some build warnings, add increase github action coverage of
+  config options.
+
+2026.93 - 21 July 2026
+
+Note >> for compatibility/configuration changes
+
+- Security: Fix a use-after-free in X11 forwarding that could possibly lead
+  to memory corruption. This is vulnerable to authenticated users if X11
+  forwarding is enabled. By default X11 forwarding is not built.
+  In 2026.89 the server is running as the authenticated user for X11
+  forwarding, in earlier versions it runs as root.
+  This removes X11 "single connection" which has probably never been used.
+  Reported by @peter-pe
+  https://github.com/mkj/dropbear/commit/882f83806d5e133037cd28e954a878984ef7b9c4
+
+- >> "permitlisten" authorized_keys lines will now be ignored if
+  the port is invalid (>65535). From Basavaraj S Maneppagol.
+
+- >> In 2026.92, the configure option --enable-plugin-deprecated
+  wasn't correctly renamed. This is now implemented.
+  Patch from Alexander Dahl
+
+- Two factor auth "-t" is no longer deprecated, it will be kept.
+  The "DEPRECATED_TWO_FACTOR" option is ignored, and no longer required.
+
+- Fix out of bounds read during utmp/wtmp log file handling, reported by
+  Basavaraj S Maneppagol.
+
+- More robust handling of ascii inputs for some platforms.
+  From Basavaraj S Maneppagol
+
+- Convert manpages to mdoc format, from shrub
+
 2026.92 - 6 July 2026
 
 Note >> for compatibility/configuration changes
@@ -8,7 +53,8 @@ Note >> for compatibility/configuration changes
 
 - >> Two factor auth "-t" has been deprecated, it now requires
   a configuration option DEPRECATED_TWO_FACTOR.
-  Planned to be removed in future.
+  [Updated 16 July: This is no longer planned to be removed, future releases
+  will ignore DEPRECATED_TWO_FACTOR and always enable it, like previously]
 
 - Security: server: Don't allow -B (accept blank password) with
   -t (two factor auth). If run with -t and -B a user configured with a

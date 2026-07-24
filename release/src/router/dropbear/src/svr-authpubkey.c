@@ -422,7 +422,7 @@ static int checkpubkey_line(buffer* line, int line_num, const char* filename,
 		}
 		/* We have an allowlist - authorized_keys lines can't be fully trusted,
 		some shell scripts may do unsafe things with env var values */
-		if (!(isalnum(c) || strchr(".,_-+@", c))) {
+		if (!(ascii_isalnum(c) || strchr(".,_-+@", c))) {
 			TRACE(("Not setting SSH_PUBKEYINFO, special characters"))
 			infolen = 0;
 			break;

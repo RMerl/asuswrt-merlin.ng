@@ -105,7 +105,12 @@ static void main_inetd() {
 	if (svr_opts.reexec_childpipe < 0) {
 		/* In case our inetd was lax in logging source addresses */
 		get_socket_address(0, NULL, NULL, &host, &port, 0);
-			dropbear_log(LOG_INFO, "Child connection from %s:%s", host, port);
+			if (strchr(host, ':') != NULL) {
+				dropbear_log(LOG_INFO, "Child connection from [%s]:%s", host, port);
+			} else {
+				dropbear_log(LOG_INFO, "Child connection from %s:%s", host, port);
+			}
+
 		m_free(host);
 		m_free(port);
 
@@ -326,7 +331,12 @@ static void main_noinetd(int argc, char ** argv, const char* multipath) {
 
 				/* child */
 				getaddrstring(&remoteaddr, NULL, &remote_port, 0);
-				dropbear_log(LOG_INFO, "Child connection from %s:%s", remote_host, remote_port);
+				if (strchr(remote_host, ':') != NULL) {
+					dropbear_log(LOG_INFO, "Child connection from [%s]:%s", remote_host, remote_port);
+				} else {
+					dropbear_log(LOG_INFO, "Child connection from %s:%s", remote_host, remote_port);
+				}
+
 				m_free(remote_host);
 				m_free(remote_port);
 

@@ -75,7 +75,7 @@ pamConvFunc(int num_msg,
 	/* Make the string lowercase. */
 	msg_len = strlen(compare_message);
 	for (i = 0; i < msg_len; i++) {
-		compare_message[i] = tolower(compare_message[i]);
+		compare_message[i] = ascii_tolower(compare_message[i]);
 	}
 
 	/* If the string ends with ": ", remove the space. 
@@ -295,25 +295,25 @@ void svr_auth_pam(int valid_user) {
 	}
 
 	if (svr_opts.multiauthmethod && (ses.authstate.authtypes & ~AUTH_TYPE_PASSWORD)) {
-			/* successful PAM password authentication, but extra auth required */
-			dropbear_log(LOG_NOTICE,
-					"PAM password auth succeeded for '%s' from %s, extra auth required",
-					ses.authstate.pw_name,
-					svr_ses.addrstring);
-			ses.authstate.authtypes &= ~AUTH_TYPE_PASSWORD; /* PAM password auth ok, delete the method flag */
-			send_msg_userauth_failure(1, 0);  /* Send partial success */
-		} else {
-			/* successful authentication */
-			dropbear_log(LOG_NOTICE, "PAM password auth succeeded for '%s' from %s",
-				ses.authstate.pw_name,
-				svr_ses.addrstring);
+		/* successful PAM password authentication, but extra auth required */
+		dropbear_log(LOG_NOTICE,
+				"PAM password auth succeeded for '%s' from %s, extra auth required",
+ 				ses.authstate.pw_name,
+ 				svr_ses.addrstring);
+		ses.authstate.authtypes &= ~AUTH_TYPE_PASSWORD; /* PAM password auth ok, delete the method flag */
+		send_msg_userauth_failure(1, 0);  /* Send partial success */
+	} else {
+		/* successful authentication */
+		dropbear_log(LOG_NOTICE, "PAM password auth succeeded for '%s' from %s",
+			ses.authstate.pw_name,
+			svr_ses.addrstring);
 #ifdef SECURITY_NOTIFY
 			SEND_PTCSRV_EVENT(PROTECTION_SERVICE_SSH,
 				RPT_SUCCESS, svr_ses.hoststring,
 				"From dropbear , LOGIN SUCCESS(authpam)");
 #endif
-			send_msg_userauth_success();
-		}
+		send_msg_userauth_success();
+	}
 	
 cleanup:
 	if (password != NULL) {

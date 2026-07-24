@@ -1,59 +1,69 @@
-.TH dropbearconvert 1
-.SH NAME
-dropbearconvert \- convert between Dropbear and OpenSSH private key formats
-.SH SYNOPSIS
-.B dropbearconvert
-.I input_type
-.I output_type
-.I input_file
-.I output_file
-.SH DESCRIPTION
-.B Dropbear
+.Dd February 1, 2023
+.Dt DROPBEARCONVERT 1
+.Os
+.Sh NAME
+.Nm dropbearconvert
+.Nd convert between Dropbear and OpenSSH private key formats
+.Sh SYNOPSIS
+.Nm
+.Ar input_type
+.Ar output_type
+.Ar input_file
+.Ar output_file
+.Sh DESCRIPTION
+Dropbear
 and
-.B OpenSSH
+OpenSSH
 SSH implementations have different private key formats.
-.B dropbearconvert
+.Nm dropbearconvert
 can convert between the two.
-.P
+.Pp
 Dropbear uses the same SSH public key format as OpenSSH, it can be extracted
 from a private key by using
-.B dropbearkey \-y
-.P
-Encrypted private keys are not supported, use ssh-keygen(1) to decrypt them
+.Nm dropbearkey
+.Fl y
+.Pp
+Encrypted private keys are not supported, use
+.Xr ssh-keygen 1
+to decrypt them
 first.
-.SH ARGUMENTS
-.TP
-.I input_type
+.Sh ARGUMENTS
+.Bl -tag -width Ds
+.It Ar input_type
 Either
-.I dropbear
+.Cm dropbear
 or
-.I openssh
-.TP
-.I output_type
+.Cm openssh
+.It Ar output_type
 Either
-.I dropbear
+.Cm dropbear
 or
-.I openssh
-.TP
-.I input_file
+.Cm openssh
+.It Ar input_file
 An existing Dropbear or OpenSSH private key file
-.TP
-.I output_file
-The path to write the converted private key file. For client authentication ~/.ssh/id_dropbear is loaded by default
-.SH SUPPORTED FORMATS
-.B dropbearconvert
-can read OpenSSH format files, and older PEM format files (
-.B ssh-keygen
-.I -m PEM
-).
-.B dropbearconvert
+.It Ar output_file
+The path to write the converted private key file. For client authentication
+.Pa ~/.ssh/id_dropbear
+is loaded by default
+.El
+.Sh SUPPORTED FORMATS
+.Nm dropbearconvert
+can read OpenSSH format files, and older PEM format files
+.Po
+.Nm ssh-keygen
+.Fl m Ar PEM
+.Pc .
+.Nm dropbearconvert
 will write OpenSSH format files, usable with OpenSSH 6.5 and later.
 Reading OpenSSH format DSS files or PKCS8 files is not currently supported.
-.SH EXAMPLE
- # dropbearconvert openssh dropbear ~/.ssh/id_rsa ~/.ssh/id_dropbear
-.SH AUTHOR
-Matt Johnston (matt@ucc.asn.au).
-.SH SEE ALSO
- dropbearkey(1), ssh-keygen(1)
-.P
-https://matt.ucc.asn.au/dropbear/dropbear.html
+.Sh EXAMPLES
+.Bd -literal -offset indent
+# dropbearconvert openssh dropbear ~/.ssh/id_rsa ~/.ssh/id_dropbear
+.Ed
+.Sh SEE ALSO
+.Xr dropbearkey 1 ,
+.Xr ssh-keygen 1
+.Pp
+.Lk https://matt.ucc.asn.au/dropbear/dropbear.html
+.Sh AUTHORS
+.An Matt Johnston Aq Mt matt@ucc.asn.au .

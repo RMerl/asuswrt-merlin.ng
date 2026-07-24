@@ -943,6 +943,8 @@ next:			if (fd != -1) {
 #ifdef PROGRESS_METER
 		if (showprogress)
 			start_progress_meter(curfile, stb.st_size, &statbytes);
+#else
+        (void)statbytes;
 #endif
 		/* Keep writing after an error so that we stay sync'd up. */
 		for (haderr = i = 0; i < stb.st_size; i += bp->cnt) {
@@ -1027,7 +1029,10 @@ rsource(char *name, struct stat *statp)
 			run_err("%s/%s: name too long", name, dp->d_name);
 			continue;
 		}
-		(void) snprintf(path, sizeof path, "%s/%s", name, dp->d_name);
+		if (snprintf(path, sizeof path, "%s/%s", name, dp->d_name) >= (int)(sizeof path)) {
+			// Unreachable, checked above. This avoids -Wformat-truncation.
+			abort();
+		}
 		vect[0] = path;
 		source(1, vect);
 	}
@@ -1211,7 +1216,7 @@ sink(int argc, char **argv, const char *src)
 		if (*cp++ != ' ')
 			SCREWUP("mode not delimited");
 
-		for (size = 0; isdigit(*cp);)
+		for (size = 0; ascii_isdigit(*cp);)
 			size = size * 10 + (*cp++ - '0');
 		if (*cp++ != ' ')
 			SCREWUP("size not delimited");
@@ -1297,6 +1302,8 @@ bad:			run_err("%s: %s", np, strerror(errno));
 #ifdef PROGRESS_METER
 		if (showprogress)
 			start_progress_meter(curfile, size, &statbytes);
+#else
+        (void)statbytes;
 #endif
 		for (count = i = 0; i < size; i += 4096) {
 			amt = 4096;
@@ -1498,7 +1505,7 @@ okname(char *cp0)
 		c = (int)*cp;
 		if (c & 0200)
 			goto bad;
-		if (!isalpha(c) && !isdigit(c)) {
+		if (!ascii_isalpha(c) && !ascii_isdigit(c)) {
 			switch (c) {
 			case '\'':
 			case '"':

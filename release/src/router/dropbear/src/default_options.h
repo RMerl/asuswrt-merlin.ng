@@ -407,8 +407,6 @@ runtime with -M. 0 disables this feature. */
    since they don't seem to be used much. Open a github issue if you
    want to keep them.
  */
-/* Server "-t" two factor auth */
-#define DEPRECATED_TWO_FACTOR 0
 
 /* Plugins are set with configure --enable-plugin-deprecated */
 

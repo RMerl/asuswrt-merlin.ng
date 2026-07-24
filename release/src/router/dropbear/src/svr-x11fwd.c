@@ -50,7 +50,7 @@ xauth_valid_string(const char *s)
 	size_t i;
 
 	for (i = 0; s[i] != '\0'; i++) {
-		if (!isalnum(s[i]) &&
+		if (!ascii_isalnum(s[i]) &&
 		    s[i] != '.' && s[i] != ':' && s[i] != '/' &&
 		    s[i] != '-' && s[i] != '_') {
 			return DROPBEAR_FAILURE;
@@ -65,6 +65,7 @@ xauth_valid_string(const char *s)
 int x11req(struct ChanSess * chansess) {
 
 	int fd = -1;
+	int x11singleconn;
 
 	if (!svr_pubkey_allows_x11fwd()) {
 		return DROPBEAR_FAILURE;
@@ -75,10 +76,15 @@ int x11req(struct ChanSess * chansess) {
 		return DROPBEAR_FAILURE;
 	}
 
-	chansess->x11singleconn = buf_getbool(ses.payload);
+	x11singleconn = buf_getbool(ses.payload);
 	chansess->x11authprot = buf_getstring(ses.payload, NULL);
 	chansess->x11authcookie = buf_getstring(ses.payload, NULL);
 	chansess->x11screennum = buf_getint(ses.payload);
+
+	if (x11singleconn) {
+		TRACE(("singleconn not supported"));
+		goto fail;
+	}
 
 	if (xauth_valid_string(chansess->x11authprot) == DROPBEAR_FAILURE ||
 		xauth_valid_string(chansess->x11authcookie) == DROPBEAR_FAILURE) {
@@ -127,24 +133,18 @@ fail:
 
 /* accepts a new X11 socket */
 /* returns DROPBEAR_FAILURE or DROPBEAR_SUCCESS */
-static void x11accept(const struct Listener* listener, int sock) {
+static void x11accept(const struct Listener* UNUSED(listener), int sock) {
 
 	int fd;
 	struct sockaddr_in addr;
 	socklen_t len;
 	int ret;
-	struct ChanSess * chansess = (struct ChanSess *)(listener->typedata);
 
 	len = sizeof(addr);
 
 	fd = accept(sock, (struct sockaddr*)&addr, &len);
 	if (fd < 0) {
 		return;
-	}
-
-	/* if single-connection we close it up */
-	if (chansess->x11singleconn) {
-		x11cleanup(chansess);
 	}
 
 	ret = send_msg_channel_open_x11(fd, &addr);

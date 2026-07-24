@@ -125,6 +125,12 @@ void svr_session(int sock, int childpipe) {
 	len = strlen(host) + strlen(port) + 2;
 	svr_ses.addrstring = m_malloc(len);
 	snprintf(svr_ses.addrstring, len, "%s:%s", host, port);
+	/* bracket is needed if it's IPv6 address */
+	if (strchr(host, ':') != NULL) {
+		snprintf(svr_ses.addrstring, len, "[%s]:%s", host, port);
+	} else {
+		snprintf(svr_ses.addrstring, len, "%s:%s", host, port);
+	}
 #ifdef SECURITY_NOTIFY
 	svr_ses.hoststring = host;
 #else

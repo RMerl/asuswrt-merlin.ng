@@ -270,7 +270,7 @@ struct dropbear_progress_connection *connect_streamlocal(const char* localpath,
 	/*
 	 * Fake up a struct addrinfo for AF_UNIX connections.
 	 * remove_connect() must check ai_family
-	 * and use m_free() not freeaddirinfo() for AF_UNIX.
+	 * and use m_free() not freeaddrinfo() for AF_UNIX.
 	 */
 	c->res = m_malloc(sizeof(*c->res) + sizeof(*sunaddr));
 	c->res->ai_addr = (struct sockaddr *)(c->res + 1);

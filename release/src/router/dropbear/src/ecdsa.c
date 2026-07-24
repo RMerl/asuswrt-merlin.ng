@@ -103,7 +103,7 @@ ecc_key *buf_get_ecdsa_pub_key(buffer* buf) {
 	}
 
 	for (curve = dropbear_ecc_curves; *curve; curve++) {
-		if (memcmp(identifier, (char*)(*curve)->name, strlen((char*)(*curve)->name)) == 0) {
+		if (strcmp((char*)identifier, (*curve)->name) == 0) {
 			break;
 		}
 	}

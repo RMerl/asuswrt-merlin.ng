@@ -376,8 +376,6 @@ static void cli_finished() {
 	TRACE(("cli_finished()"))
 
 	session_cleanup();
-	fprintf(stderr, "Connection to %s@%s:%s closed.\n", cli_opts.username,
-			cli_opts.remotehost, cli_opts.remoteport);
 	exit(cli_ses.retval);
 }
 
@@ -422,10 +420,17 @@ void cli_dropbear_exit(int exitcode, const char* format, va_list param) {
 	if (!ses.init_done) {
 		snprintf(fullmsg, sizeof(fullmsg), "Exited: %s", exitmsg);
 	} else {
-		snprintf(fullmsg, sizeof(fullmsg), 
+		if (strchr(cli_opts.remotehost, ':') != NULL) {
+			snprintf(fullmsg, sizeof(fullmsg), 
+				"Connection to %s@[%s]:%s exited: %s", 
+				cli_opts.username, cli_opts.remotehost, 
+				cli_opts.remoteport, exitmsg);
+		} else {
+			snprintf(fullmsg, sizeof(fullmsg), 
 				"Connection to %s@%s:%s exited: %s", 
 				cli_opts.username, cli_opts.remotehost, 
 				cli_opts.remoteport, exitmsg);
+		}
 	}
 
 	/* Do the cleanup first, since then the terminal will be reset */

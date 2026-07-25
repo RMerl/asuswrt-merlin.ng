@@ -21,8 +21,8 @@ Asuswrt-Merlin Changelog
   - UPDATED: tor to 0.4.8.22.
   - UPDATED: curl to 8.17 (backport from 102_39848).
   - UPDATED: wget to 1.25 (backport from 102_39848).
-  - UPDATED: dropbear to 2026.92.
-  - UPDATED: miniupnpd to 2.3.10-42965d7.
+  - UPDATED: dropbear to 2026.94.
+  - UPDATED: miniupnpd to 2.3.10-g91eeeae.
   - UPDATED: haveged to 1.9.22.
   - CHANGED: Added new 2024 DNSSEC trust anchor, which will
              start being used in October 2026.
@@ -39,6 +39,8 @@ Asuswrt-Merlin Changelog
   - CHANGED: dhcpc-event script will now be run after the event
              occured rather than before, allowing it to modify
              what was applied to the router configuration.
+  - CHANGED: Tweaks to temperature and last 24 traffic charts
+             (Joel Samson)
   - FIXED: Multiple minor CVE for OpenSSL 1.1: CVE-2025-68160,
            CVE-2025-69418, CVE-2025-69419, CVE-2025-69420,
            CVE-2025-69421, CVE-2026-22795, CVE-2026-22796,
@@ -57,6 +59,8 @@ Asuswrt-Merlin Changelog
   - FIXED: ntpd stops answering after a few days (workaround
            by restarting it every 24 hours)
   - FIXED: Option to show/hide DHCP events was missing.
+  - FIXED: IPv6 DDNS update would repeat when using a custom
+           script (dave14305)
   - REMOVED: Support for secret static key authentication
              from both OpenVPN clients and servers.  Deprecated
              since 2.7.0, and considered outdated in terms of

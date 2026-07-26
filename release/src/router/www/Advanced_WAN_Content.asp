@@ -2995,7 +2995,7 @@ function get_default_wan_name(){
 					</td>
 				</tr>
 				<tr style="display:none">
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,6);"><#WANPPPAuthText#></a></th>
+					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,29);"><#WANPPPAuthText#></a></th>
 					<td align="left">
 						<select class="input_option" name="wan_pppoe_auth">
 						<option value="" <% nvram_match("wan_pppoe_auth", "", "selected"); %>><#Auto#></option>

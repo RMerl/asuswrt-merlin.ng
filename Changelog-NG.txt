@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-3004.388.12 (xx-xxx-2026)
+3004.388.12 (31-July-2026)
   - NOTE: There has been important changes to OpenVPN, some
           necessary with the update to OpenVPN 2.7.  Make
           sure you read the details below, especially if

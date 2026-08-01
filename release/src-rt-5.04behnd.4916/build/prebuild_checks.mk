@@ -133,9 +133,11 @@ endif
 		echo "ERROR: openssl is required "; \
 		exit 1; \
 	else \
-		sslver=`openssl version | cut -d " " -f2 | sed 's/[^0-9]*//g'`; \
-		if [[ sslver -lt 100 ]]; then \
-			echo "ERROR: openssl version must be 1.0.0a or greater "; \
+		sslver=`openssl version | awk '{print $$2}'`; \
+		sslmajor=`echo "$$sslver" | cut -d. -f1`; \
+		sslminor=`echo "$$sslver" | cut -d. -f2`; \
+		if [ "$$sslmajor" -lt 3 ] || { [ "$$sslmajor" -eq 3 ] && [ "$$sslminor" -lt 5 ]; }; then \
+			echo "ERROR: OpenSSL 3.5 or newer is required (found $$sslver)"; \
 			exit 1; \
 		fi; \
 	fi

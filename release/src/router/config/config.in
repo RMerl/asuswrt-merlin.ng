@@ -2607,13 +2607,10 @@ config RTCONFIG_MSSID_PRELINK
 
 choice
 	prompt "SSL library"
-	default RTCONFIG_OPENSSL10
+	default RTCONFIG_OPENSSL35
 
-config RTCONFIG_OPENSSL10
-	bool "OpenSSL 1.0.x"
-
-config RTCONFIG_OPENSSL11
-	bool "OpenSSL 1.1.x"
+config RTCONFIG_OPENSSL35
+	bool "OpenSSL 3.5 LTS (with OpenSSL 1.1 ABI compatibility)"
 
 endchoice
 

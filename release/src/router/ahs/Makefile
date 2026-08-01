@@ -18,7 +18,7 @@ ifeq ($(RTCONFIG_HTTPS),y)
 CFLAGS += -I$(TOP)/curl/include
 LDFLAGS += -L$(TOP)/curl/lib/.libs -lcurl
 CFLAGS += -I$(TOP)/openssl/include
-LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl $(if $(RTCONFIG_OPENSSL11),-lpthread,)
+LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl $(if $(RTCONFIG_OPENSSL35),-lpthread,)
 ifeq ($(RTCONFIG_TR069),y)
 CFLAGS += -I$(TOP)/libssh2/include -I$(TOP)/zlib/include
 LDFLAGS += -L$(TOP)/libssh2/src/.libs -lssh2 -L$(TOP)/zlib -lz

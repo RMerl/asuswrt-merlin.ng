@@ -215,7 +215,7 @@ endif
 
 ifeq ($(RTCONFIG_HTTPS),y)
 CFLAGS += -I$(TOP)/openssl/include
-LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl $(if $(RTCONFIG_OPENSSL11),-lpthread,)
+LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl $(if $(RTCONFIG_OPENSSL35),-lpthread,)
 endif
 
 ifeq ($(RTCONFIG_GTBOOSTER),y)

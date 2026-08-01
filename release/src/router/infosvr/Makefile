@@ -15,9 +15,19 @@
 
 include ../common.mak
 
+ifeq ($(RTCONFIG_OPENSSL35),y)
+OPENSSL_CFLAGS_NATIVE := -I$(TOP)/openssl/include
+OPENSSL_LIBS_NATIVE := -L$(TOP)/openssl -Wl,-rpath-link,$(TOP)/openssl -l:libcrypto.so.3 -l:libssl.so.3
+OPENSSL_LIBS_SHIM := -L$(TOP)/openssl11-compat -Wl,-rpath-link,$(TOP)/openssl11-compat -l:libcrypto.so.1.1 -l:libssl.so.1.1
+else
+OPENSSL_CFLAGS_NATIVE := -I$(TOP)/openssl/include
+OPENSSL_LIBS_NATIVE := -L$(TOP)/openssl -lcrypto -lssl
+OPENSSL_LIBS_SHIM :=
+endif
+
 CFLAGS  += -I. -I$(TOP)/shared  -I$(SRCBASE)/include -Wall
 ifeq ($(RTCONFIG_AMAS),y)
-CFLAGS += -I$(TOP)/openssl/include
+CFLAGS += $(OPENSSL_CFLAGS_NATIVE)
 CFLAGS += -I$(TOP)/json-c
 endif
 CFLAGS += $(PRIVATE_EXTRACFLAGS)
@@ -39,7 +49,7 @@ LDFLAGS += -lgcc_s
 endif
 
 ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
+LDFLAGS += $(OPENSSL_LIBS_NATIVE)
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 ifeq ($(RTCONFIG_LLDPD_1_0_11),y)
 LLDPD_DIR = $(TOP)/lldpd-1.0.11
@@ -48,6 +58,7 @@ LLDPD_DIR = $(TOP)/lldpd-0.9.8
 endif
 CFLAGS += -I$(TOP)/amas-utils -I$(TOP)/shared/sysdeps/amas -pthread
 LDFLAGS += -L$(TOP)/amas-utils -lamas-utils -lpthread
+LDFLAGS += $(OPENSSL_LIBS_SHIM)
 LDFLAGS += -L$(LLDPD_DIR)/src/lib/.libs -llldpctl -L$(STAGEDIR)/usr/lib/ -ljansson
 endif
 

@@ -1,5 +1,15 @@
 include ../common.mak
 
+ifeq ($(RTCONFIG_OPENSSL35),y)
+OPENSSL_CFLAGS_NATIVE := -I$(TOP)/openssl/include
+OPENSSL_LIBS_NATIVE := -L$(TOP)/openssl -Wl,-rpath-link,$(TOP)/openssl -l:libcrypto.so.3 -l:libssl.so.3
+OPENSSL_LIBS_SHIM := -L$(TOP)/openssl11-compat -Wl,-rpath-link,$(TOP)/openssl11-compat -l:libcrypto.so.1.1 -l:libssl.so.1.1
+else
+OPENSSL_CFLAGS_NATIVE := -I$(TOP)/openssl/include
+OPENSSL_LIBS_NATIVE := -L$(TOP)/openssl -lcrypto -lssl
+OPENSSL_LIBS_SHIM :=
+endif
+
 ifeq ($(KPATH_37_OR_ABOVE),y)
 CFLAGS += -I$(KDIR)/include
 else
@@ -10,7 +20,7 @@ CFLAGS += $(if $(KPATH_37_OR_ABOVE),$(if $(and $(RTCONFIG_QCA),$(RTCONFIG_MUSL_L
 CFLAGS += -Wall $(if $(RTCONFIG_DEBUG),-g,-Os) $(EXTRACFLAGS) -ffunction-sections -fdata-sections
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE) -I$(SRCBASE)/include -I./include -I$(TOP)/networkmap -I$(TOP)/networkmap/api
 CFLAGS += -I./sysdeps
-CFLAGS += -I$(TOP)/openssl/include
+CFLAGS += $(OPENSSL_CFLAGS_NATIVE)
 CFLAGS += -I$(TOP)/json-c
 
 LDFLAGS += -ffunction-sections -fdata-sections -Wl,--gc-sections
@@ -18,7 +28,7 @@ LDFLAGS += -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshare
 ifeq ($(RTCONFIG_BCM_502L07P2),y)
 LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
 endif
-LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
+LDFLAGS += $(OPENSSL_LIBS_NATIVE)
 LDFLAGS += -lpthread
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 LDFLAGS += -lm
@@ -41,6 +51,7 @@ LLDPD_DIR = $(TOP)/lldpd-0.9.8
 endif
 CFLAGS += -I$(TOP)/amas-utils -I$(TOP)/shared/sysdeps/amas
 LDFLAGS += -L$(TOP)/amas-utils -lamas-utils
+LDFLAGS += $(OPENSSL_LIBS_SHIM)
 LDFLAGS += -L$(LLDPD_DIR)/src/lib/.libs -llldpctl -L$(STAGEDIR)/usr/lib/ -ljansson
 ifeq ($(RTCONFIG_AVBLCHAN),y)
 CFLAGS += -DAVBLCHAN

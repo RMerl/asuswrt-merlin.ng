@@ -1,5 +1,15 @@
 include ../.config
 
+ifeq ($(RTCONFIG_OPENSSL35),y)
+OPENSSL_CFLAGS_NATIVE := -I$(TOP)/openssl/include
+OPENSSL_LIBS_NATIVE := -L$(TOP)/openssl -Wl,-rpath-link,$(TOP)/openssl -l:libcrypto.so.3 -l:libssl.so.3
+OPENSSL_LIBS_SHIM := -L$(TOP)/openssl11-compat -Wl,-rpath-link,$(TOP)/openssl11-compat -l:libcrypto.so.1.1 -l:libssl.so.1.1
+else
+OPENSSL_CFLAGS_NATIVE := -I$(TOP)/openssl/include
+OPENSSL_LIBS_NATIVE := -L$(TOP)/openssl -lcrypto -lssl
+OPENSSL_LIBS_SHIM :=
+endif
+
 EXEC = networkmap
 OBJS = JSON_checker.o function.o connections.o sm.o download.o shared_func.o protect_name.o networkmap.o
 OBJS += amas/cfg_client_lookup.o
@@ -85,14 +95,14 @@ CFLAGS += -I$(TOP)/httpd
 CFLAGS += -I$(TOP)/bwdpi_dep/bwdpi
 endif
 
-CFLAGS += -I$(TOP)/openssl/include
+CFLAGS += $(OPENSSL_CFLAGS_NATIVE)
 ifeq ($(RTCONFIG_AMAS),y)
 CFLAGS += -I$(TOP)/json-c
 endif
 
 LDFLAGS += -lm -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram${BCMEX} -lnvram -L$(TOP)/json-c/.libs -ljson-c
 LDFLAGS += -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram 
-LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
+LDFLAGS += $(OPENSSL_LIBS_NATIVE)
 
 ifeq ($(RTCONFIG_BCM_502L07P2),y)
 LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
@@ -121,7 +131,7 @@ ifeq ($(RTCONFIG_PERMISSION_MANAGEMENT),y)
 CFLAGS += -I$(TOP)/sqlCipher
 CFLAGS += -I$(TOP)/PMS_DBapis
 CFLAGS += -I$(TOP)/openssl/include/openssl
-LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
+LDFLAGS += $(OPENSSL_LIBS_NATIVE)
 LDFLAGS += -L $(TOP)/sqlCipher/.libs -lsqlcipher
 LDFLAGS += -L$(TOP)/PMS_DBapis -lpms_sql
 endif
@@ -165,8 +175,11 @@ LLDPD_DIR = $(TOP)/lldpd-0.9.8
 endif
 CFLAGS += -I$(TOP)/amas-utils -I$(TOP)/shared/sysdeps/amas -pthread
 LDFLAGS += -L$(TOP)/amas-utils -lamas-utils -lpthread
+LDFLAGS += $(OPENSSL_LIBS_SHIM)
 LDFLAGS += -L$(LLDPD_DIR)/src/lib/.libs -llldpctl -L$(STAGEDIR)/usr/lib/ -ljansson
 endif
+
+LDFLAGS += $(OPENSSL_LIBS_SHIM)
 
 ifeq ($(RTCONFIG_TRUSTZONE),y)
 LDFLAGS += -L$(TOP)/ateed/ -latee

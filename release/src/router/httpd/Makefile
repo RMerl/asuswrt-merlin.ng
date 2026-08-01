@@ -219,9 +219,9 @@ endif
 LIBS += -lm
 
 ifeq ($(RTCONFIG_PUSH_EMAIL),y)
-ifeq ($(RTCONFIG_OPENSSL11),y)
-CFLAGS += -I$(TOP)/openssl-1.1/include
-LIBS += -L$(TOP)/openssl-1.1 -lcrypto -lssl -ldl
+ifeq ($(RTCONFIG_OPENSSL35),y)
+CFLAGS += -I$(TOP)/openssl-3.5/include
+LIBS += -L$(TOP)/openssl-3.5 -lcrypto -lssl -ldl
 else
 CFLAGS += -I$(TOP)/openssl/include
 LIBS += -L$(TOP)/openssl -lcrypto -lssl -ldl
@@ -262,9 +262,9 @@ endif
 
 ifeq ($(RTCONFIG_HTTPS),y)
 CFLAGS += -I$(TOP)/mssl
-ifeq ($(RTCONFIG_OPENSSL11),y)
-CFLAGS += -I$(TOP)/openssl-1.1/include
-LIBS += -L$(TOP)/openssl-1.1 -lssl -lcrypto -ldl
+ifeq ($(RTCONFIG_OPENSSL35),y)
+CFLAGS += -I$(TOP)/openssl-3.5/include
+LIBS += -L$(TOP)/openssl-3.5 -lssl -lcrypto -ldl
 else
 CFLAGS += -I$(TOP)/openssl/include
 LIBS += -L$(TOP)/openssl -lssl -lcrypto -ldl
@@ -275,8 +275,8 @@ endif
 ifeq ($(RTCONFIG_OPENVPN),y)
 CFLAGS += -I$(TOP)/libovpn
 LIBS += -L$(TOP)/libovpn -lovpn
-ifeq ($(RTCONFIG_OPENSSL11),y)
-LIBS += -L$(TOP)/openssl-1.1 -lssl -lcrypto -ldl
+ifeq ($(RTCONFIG_OPENSSL35),y)
+LIBS += -L$(TOP)/openssl-3.5 -lssl -lcrypto -ldl
 else
 LIBS += -L$(TOP)/openssl -lssl -lcrypto -ldl
 endif

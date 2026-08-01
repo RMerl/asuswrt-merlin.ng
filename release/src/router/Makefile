@@ -801,12 +801,10 @@ export BUSYBOX ?= busybox
 export BUSYBOX_DIR := $(BUSYBOX)
 endif
 
-ifeq ($(RTCONFIG_OPENSSL11),y)
-OPENSSL := openssl-1.1
-else ifeq ($(RTCONFIG_OPENSSL10),y)
-OPENSSL := openssl-1.0
+ifeq ($(RTCONFIG_OPENSSL35),y)
+OPENSSL := openssl-3.5
 else
-$(error OpenSSL is not defined)
+$(error OpenSSL 3.5 LTS is required)
 endif
 
 ifeq ($(HND_ROUTER_AX_6756),y)
@@ -3791,100 +3789,50 @@ HOSTCONFIG_OPENSSL:= linux-aarch64
 endif
 endif
 
-openssl-1.1/Makefile:
-	cd openssl-1.1 && \
+openssl-3.5/Makefile:
+	cd openssl-3.5 && \
 	./Configure $(HOSTCONFIG_OPENSSL) --prefix=/usr --openssldir=/etc --cross-compile-prefix=' ' \
 	$(if $(filter y,$(RTCONFIG_SFP) $(RTCONFIG_4M_SFP) $(RTCONFIG_8M_SFP)),-Os,-O2) \
 	$(if $(RTCONFIG_DEBUG),-g) \
-	-ffunction-sections -fdata-sections -Wl,--gc-sections \
+	-ffunction-sections -fdata-sections -Wl,--gc-sections -Wl,-z,now \
 	$(if $(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126),$(if $(filter $(PROFILE_KARCH),armhfp),no-asm,)) \
-	shared $(OPENSSL_CIPHERS) no-err no-async --api=1.0.0 \
+	shared $(OPENSSL_CIPHERS) no-err no-async \
 	no-aria no-sm2 no-sm3 no-sm4 \
 	--with-rand-seed=devrandom \
 	$(if $(filter y,$(RTCONFIG_WTFAST)),-DRTCONFIG_WTFAST,) \
 	$(PRIORITY_CHACHA)
-	@$(MAKE) -C openssl-1.1 depend
-	@$(MAKE) -C openssl-1.1 clean
+	@$(MAKE) -C openssl-3.5 clean
 	@touch $@
 
-openssl-1.1: openssl-1.1/Makefile
-	$(MAKE) -C openssl-1.1 $(PARALLEL_BUILD) && $(MAKE) $@-stage
+openssl-3.5: openssl-3.5/Makefile
+	$(MAKE) -C openssl-3.5 $(PARALLEL_BUILD) && $(MAKE) $@-stage
 
-openssl-1.1-clean:
-	[ ! -f openssl-1.1/Makefile ] || $(MAKE) -C openssl-1.1 clean
-	@rm -f openssl-1.1/Makefile
+openssl-3.5-clean:
+	[ ! -f openssl-3.5/Makefile ] || $(MAKE) -C openssl-3.5 clean
+	@rm -f openssl-3.5/Makefile
+	@$(MAKE) -C openssl11-compat clean
 
-openssl-1.1-install:
-ifneq ($(wildcard openssl-1.1/Makefile),)
-	install -D openssl-1.1/libcrypto.so.1.1 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.1.1
-	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.1.1)
+openssl-3.5-install:
+ifneq ($(wildcard openssl-3.5/Makefile),)
+	install -D openssl-3.5/libcrypto.so.3 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.3
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.3)
 ifeq ($(or $(RTCONFIG_WEBDAV),$(RTCONFIG_FTP_SSL),$(RTCONFIG_OPENVPN),$(RTCONFIG_HTTPS)),y)
-	install -D openssl-1.1/libssl.so.1.1 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.1
-	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.1)
+	install -D openssl-3.5/libssl.so.3 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.3
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.3)
 endif
-ifeq ($(RTCONFIG_OPENSSL11),y)
-	cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libcrypto.so && ln -sf libcrypto.so.1.1 libcrypto.so
-	[ ! -f $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.1 ] || \
-		cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libssl.so && ln -sf libssl.so.1.1 libssl.so
-	install -D openssl-1.1/apps/openssl $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
+	cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && ln -sf libcrypto.so.3 libcrypto.so
+	[ ! -f $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.3 ] || \
+		cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && ln -sf libssl.so.3 libssl.so
+	install -D openssl-3.5/apps/openssl $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
 	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl)
 	chmod 0500 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
-endif
-ifeq ($(RTCONFIG_HNS),y)
-	[ ! -f $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.1 ] || \
-		cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && ln -sf libssl.so.1.1 libssl.so.1.0.0
+	$(MAKE) -C openssl11-compat INSTALLDIR=$(INSTALLDIR) INSTALLSUBDIR=$(INSTALLSUBDIR) install
 endif
 endif
 
-openssl-1.1-stage:
-ifeq ($(RTCONFIG_OPENSSL11),y)
-	$(MAKE) -C openssl-1.1 install_sw DESTDIR=$(STAGEDIR)
-else
-	@true
-endif
-
-openssl-1.0/Makefile:
-	cd openssl-1.0 && \
-	./Configure $(HOSTCONFIG) -DOPENSSL_NO_BUF_FREELISTS --prefix=/usr --openssldir=/etc/ssl --cross-compile-prefix=' ' \
-	$(if $(filter y,$(RTCONFIG_SFP) $(RTCONFIG_4M_SFP) $(RTCONFIG_8M_SFP)),-Os,-O2) \
-	-ffunction-sections -fdata-sections -Wl,--gc-sections -Wa,--noexecstack \
-	$(if $(filter y,$(RTCONFIG_WTFAST)),-DRTCONFIG_WTFAST,) \
-	shared $(OPENSSL_CIPHERS) no-ssl2 no-err
-	@$(MAKE) -C openssl-1.0 depend
-	@$(MAKE) -C openssl-1.0 clean
-	@touch $@
-
-openssl-1.0: openssl-1.0/Makefile
-	$(MAKE) -C openssl-1.0 && $(MAKE) $@-stage
-
-openssl-1.0-clean:
-	[ ! -f openssl-1.0/Makefile ] || $(MAKE) -C openssl-1.0 clean
-	@rm -f openssl-1.0/Makefile
-
-openssl-1.0-install:
-ifneq ($(wildcard openssl-1.0/Makefile),)
-	install -D openssl-1.0/libcrypto.so.1.0.0 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.1.0.0
-	$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.1.0.0
-ifeq ($(or $(RTCONFIG_WEBDAV),$(RTCONFIG_FTP_SSL),$(RTCONFIG_OPENVPN),$(RTCONFIG_HTTPS)),y)
-	install -D openssl-1.0/libssl.so.1.0.0 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.0.0
-	$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.0.0
-endif
-ifeq ($(RTCONFIG_OPENSSL10),y)
-	cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libcrypto.so && ln -sf libcrypto.so.1.0.0 libcrypto.so
-	[ ! -f $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.0.0 ] || \
-		cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libssl.so && ln -sf libssl.so.1.0.0 libssl.so
-	install -D openssl-1.0/apps/openssl $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
-	$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
-	chmod 0500 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
-endif
-endif
-
-openssl-1.0-stage:
-ifeq ($(RTCONFIG_OPENSSL10),y)
-	$(MAKE) -C openssl-1.0 install_sw INSTALL_PREFIX=$(STAGEDIR)
-else
-	@true
-endif
+openssl-3.5-stage:
+	$(MAKE) -C openssl-3.5 install_sw DESTDIR=$(STAGEDIR)
+	$(MAKE) -C openssl11-compat DESTDIR=$(STAGEDIR) stage
 
 mbedtls:
 	$(MAKE) -C $@ SHARED=1 no_test && $(MAKE) $@-stage
@@ -4224,7 +4172,7 @@ getdns/build/Makefile:
 		-DCMAKE_INSTALL_PREFIX:PATH=/usr \
 		-DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_SKIP_RPATH=TRUE \
 		-DCMAKE_C_FLAGS="-Os -DNDEBUG -ffunction-sections -fdata-sections $(EXTRACFLAGS)" \
-		-DCMAKE_EXE_LINKER_FLAGS="-Wl,--gc-sections $(EXTRALDFLAGS) $(if $(RTCONFIG_OPENSSL11),-lpthread,)" \
+		-DCMAKE_EXE_LINKER_FLAGS="-Wl,--gc-sections $(EXTRALDFLAGS) $(if $(RTCONFIG_OPENSSL35),-lpthread,)" \
 		-DENABLE_STATIC=TRUE -DENABLE_SHARED=FALSE -DENABLE_GOST=FALSE \
 		-DBUILD_GETDNS_QUERY=FALSE \
 		-DBUILD_GETDNS_SERVER_MON=FALSE \
@@ -5414,7 +5362,7 @@ inadyn/Makefile: inadyn/configure
 		confuse_CFLAGS="-I$(STAGEDIR)/usr/include" \
 		confuse_LIBS="-L$(STAGEDIR)/usr/lib -lconfuse" \
 		OpenSSL_CFLAGS="-I$(STAGEDIR)/usr/include" \
-		OpenSSL_LIBS="-L$(STAGEDIR)/usr/lib -lcrypto -lssl $(if $(RTCONFIG_OPENSSL11),-lpthread,)" \
+		OpenSSL_LIBS="-L$(STAGEDIR)/usr/lib -lcrypto -lssl $(if $(RTCONFIG_OPENSSL35),-lpthread,)" \
 		CFLAGS="-Wall -Os -I$(TOP)/shared -I$(SRCBASE)/include -DASUSWRT $(if $(RTCONFIG_IPV6),-DUSE_IPV6,) $(if $(RTCONFIG_LETSENCRYPT),-DASUSWRT_LE,)  $(if $(RTCONFIG_ASUSDDNS_ACCOUNT_BASE),-DRTCONFIG_ASUSDDNS_ACCOUNT_BASE,) \
 			-I$(STAGEDIR)/usr/include  -ffunction-sections -fdata-sections $(EXTRACFLAGS)" \
 		LDFLAGS="-L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -L$(TOP)/shared $(EXTRA_NV_LDFLAGS) $(if $(BCM_502L07P2),-L$(TOP_PLATFORM)/ethctl_lib) \
@@ -6440,7 +6388,7 @@ else
 	install -D wtfast/wtfslhd/prebuilt$(BCMEX)$(EX7)/wtfslhd $(INSTALLDIR)/wtfast/usr/sbin/wtfslhd
 	$(STRIP) $(INSTALLDIR)/wtfast/usr/sbin/wtfslhd
 endif
-ifeq ($(RTCONFIG_OPENSSL11),y)
+ifeq ($(RTCONFIG_OPENSSL35),y)
 	install -d $(INSTALLDIR)/wtfast/usr/lib
 ifeq ($(HND_ROUTER),y)
 	cd $(INSTALLDIR)/wtfast/usr/lib && ln -sf libcrypto.so.1.1 libcrypto.so.1.0.0
@@ -8187,13 +8135,13 @@ fb_wifi-clean:
 libssh2/Makefile:
 	@$(SEP)
 	cd libssh2 && $(CONFIGURE) --prefix=/usr CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) --enable-shared --enable-static \
-	$(if $(RTCONFIG_OPENSSL11)$(RTCONFIG_OPENSSL10),--with-libssl-prefix=$(STAGEDIR)/usr,--without-openssl) \
+	$(if $(RTCONFIG_OPENSSL35),--with-libssl-prefix=$(STAGEDIR)/usr,--without-openssl) \
 	--with-libz-prefix=$(STAGEDIR)/usr \
 	--with-libgcrypt-prefix=$(TOP)/libgcrypt-1.5.1 \
 	--disable-examples-build \
 	CFLAGS="-O2 -Wall -ffunction-sections -fdata-sections -fPIC -I$(STAGEDIR)/usr/include -I$(TOP)/libgcrypt-1.5.1/src -I$(SRCBASE)/router/openssl/include" \
 	LDFLAGS="-ldl -Wl,-rpath=$(STAGEDIR)/usr/lib,--gc-sections $(LDFLAGS) -L$(STAGEDIR)/usr/lib -lz -L$(SRCBASE)/router/openssl -lcrypto -L$(TOP)/libgcrypt-1.5.1/src/.libs" && \
-	LIBS="-lcrypto (if $(RTCONFIG_OPENSSL11),-lpthread,) -fPIC" 
+	LIBS="-lcrypto $(if $(RTCONFIG_OPENSSL35),-lpthread,) -fPIC"
 
 libssh2: libgcrypt-1.5.1 zlib libssh2/Makefile
 	@$(SEP)
@@ -8229,7 +8177,7 @@ curl/Makefile: curl/configure
 		--disable-doh --disable-netrc --disable-dnsshuffle \
 		--without-libpsl \
 		$(if $(RTCONFIG_TR069),--with-libssh2=$(STAGEDIR)/usr,--without-zlib) \
-		$(if $(RTCONFIG_OPENSSL11)$(RTCONFIG_OPENSSL10),--with-ssl=$(TOP)/openssl --with-ca-fallback,--without-ssl) \
+		$(if $(RTCONFIG_OPENSSL35),--with-ssl=$(TOP)/openssl --with-ca-fallback,--without-ssl) \
 		$(if $(RTCONFIG_MBEDTLS),--with-mbedtls=$(STAGEDIR)/usr,--without-mbedtls) \
 		$(if $(RTCONFIG_WOLFSSL),--with-wolfssl=$(STAGEDIR)/usr,--without-wolfssl) \
 		--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
@@ -8239,11 +8187,11 @@ curl/Makefile: curl/configure
 		LDFLAGS="-Wl$(if $(RTCONFIG_TR069),$(comma)-rpath-link=$(STAGEDIR)/usr/lib,),--gc-sections \
 			   -Wl$(if $(RTCONFIG_TR069),$(comma)-rpath=$(STAGEDIR)/usr/lib,),--gc-sections \
 			   $(LDFLAGS) -L$(STAGEDIR)/usr/lib" \
-		LIBS="-ldl $(if $(RTCONFIG_OPENSSL11),-lssl -lcrypto -lpthread,) \
+		LIBS="-ldl $(if $(RTCONFIG_OPENSSL35),-lssl -lcrypto -lpthread,) \
 			   $(if $(RTCONFIG_MBEDTLS),-lmbedcrypto -lmbedx509 -lmbedtls,) \
 			   $(if $(RTCONFIG_WOLFSSL),-lwolfssl,)"
 
-curl: $(if $(RTCONFIG_OPENSSL11)$(RTCONFIG_OPENSSL10),openssl,) $(if $(RTCONFIG_TR069),libssh2,) $(if $(RTCONFIG_MBEDTLS),mbedtls,) $(if $(RTCONFIG_WOLFSSL),wolfssl,) curl/Makefile
+curl: $(if $(RTCONFIG_OPENSSL35),openssl,) $(if $(RTCONFIG_TR069),libssh2,) $(if $(RTCONFIG_MBEDTLS),mbedtls,) $(if $(RTCONFIG_WOLFSSL),wolfssl,) curl/Makefile
 	@$(SEP)
 # temporary curl-7.21.7 path compatibility
 	[ "$(notdir $(realpath $curl-7.21.7))" = "$@" ] || (rm -f curl-7.21.7 && ln -s $@ curl-7.21.7)
@@ -8894,7 +8842,7 @@ email-3.1.3/Makefile: openssl
 	$(CONFIGURE) --with-ssl --sysconfdir=/etc \
 		CFLAGS="-Os -Wall -I$(STAGEDIR)/usr/include $(EMAIL_CFLAGS_EXT)" \
 		LDFLAGS="-L$(SRCBASE)/router/openssl" \
-		LIBS="-lcrypto -lssl $(if $(RTCONFIG_QCA),-ldl,) $(if $(RTCONFIG_OPENSSL11),-lpthread,)"
+		LIBS="-lcrypto -lssl $(if $(RTCONFIG_QCA),-ldl,) $(if $(RTCONFIG_OPENSSL35),-lpthread,)"
 endif
 
 email-3.1.3: email-3.1.3/Makefile
@@ -11762,5 +11710,3 @@ $(obj-y) $(obj-n) $(obj-clean) $(obj-install): dummy
 .PHONY: all clean distclean mrproper install package image
 .PHONY: conf mconf oldconf kconf kmconf config menuconfig oldconfig
 .PHONY: dummy libnet libpcap
-
-

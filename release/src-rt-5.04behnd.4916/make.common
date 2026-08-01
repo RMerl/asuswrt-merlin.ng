@@ -20,6 +20,16 @@ ifeq ($(BUILD_DIR),)
 BUILD_DIR = $(HND_SRC)
 endif
 
+# All kernel, BusyBox, BDK, and host-tool consumers use the single firmware
+# OpenSSL policy.  Keep this here rather than in individual target configs so
+# inherited profiles cannot silently select an older OpenSSL release.
+OPENSSL35 := y
+OPENSSL_VERSION := 3.5.7
+OPENSSL_MAJOR_VERSION := 3
+OPENSSL_MINOR_VERSION := 5
+OPENSSL_PATCH_VERSION := 7
+export OPENSSL35 OPENSSL_VERSION OPENSSL_MAJOR_VERSION OPENSSL_MINOR_VERSION OPENSSL_PATCH_VERSION
+
 include $(BUILD_DIR)/version.make
 
 # GNUMAKEFLAGS := --output-sync=recurse

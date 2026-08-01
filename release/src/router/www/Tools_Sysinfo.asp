@@ -890,7 +890,7 @@ function show_aiboard_info() {
 									<span class="memlabel" style="color: #FFCC00;">Total Swap :</span>
 									<span class="memvalue" id="mem_swap_total_div"></span>
 								</div>
-								<div class="mewrow" id="swap_div">
+								<div class="memrow" id="swap_div">
 									<span class="memlabel" style="color: #FFCC00;">Used Swap :</span>
 									<span class="memvalue" id="mem_swap_used_div"></span>
 								</div>

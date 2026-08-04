@@ -1260,6 +1260,8 @@ void ovpn_write_static_key(ovpn_sconf_t *sconf, int unit) {
 			generate = 1;
 		if (sconf->tlscrypt == OVPN_TLS_CRYPT_V1 && !strcasestr(buffer, OVPN_PEM_HEADER_CRYPT_V1))
 			generate = 1;
+		if ((sconf->direction == 0 || sconf->direction == 1 || sconf->direction == 2) && !strcasestr(buffer, OVPN_PEM_HEADER_CRYPT_V1))
+			generate = 1;
 	} else {
 		generate = 1;
 	}

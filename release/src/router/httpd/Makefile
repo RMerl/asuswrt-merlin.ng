@@ -278,6 +278,10 @@ endif
 CFLAGS += -I$(TOP)/json-c
 LIBS += -L$(TOP)/json-c/.libs -ljson-c
 
+ifeq ($(RTCONFIG_OPENSSL35),y)
+LIBS += -L$(TOP)/openssl11-compat -l:libcrypto.so.1.1 -l:libssl.so.1.1
+endif
+
 ifeq ($(RTCONFIG_HNS),y)
 CFLAGS += -I$(TOP)/sqlite
 CFLAGS += -I$(TOP)/hns

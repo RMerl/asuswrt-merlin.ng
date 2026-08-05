@@ -2604,6 +2604,9 @@ config RTCONFIG_OPENSSL10
 config RTCONFIG_OPENSSL11
 	bool "OpenSSL 1.1.x"
 
+config RTCONFIG_OPENSSL35
+	bool "OpenSSL 3.5.x"
+
 endchoice
 
 config RTCONFIG_NO_PTHREAD_TIMEDWAIT

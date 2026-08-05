@@ -1041,7 +1041,7 @@ LLDPD_DIR = $(TOP)/lldpd-1.0.11
 else
 LLDPD_DIR = $(TOP)/lldpd-0.9.8
 endif
-LDFLAGS += -L$(TOP)/amas-utils -lamas-utils -lpthread -L$(LLDPD_DIR)/src/lib/.libs -llldpctl -L$(STAGEDIR)/usr/lib/ -ljansson
+LDFLAGS += -L$(TOP)/amas-utils -lamas-utils -lpthread -L$(LLDPD_DIR)/src/lib/.libs -llldpctl -L$(STAGEDIR)/usr/lib/ -ljansson $(if $(RTCONFIG_OPENSSL35),-L$(TOP)/openssl11-compat -l:libcrypto.so.1.1 -l:libssl.so.1.1,)
 CFLAGS += -I$(TOP)/amas-utils -I$(TOP)/shared/sysdeps/amas -D_REENTRANT -pthread -DPTHREAD_STACK_SIZE_128K -DUSE_GET_TLV_SUPPORT_MAC
 OBJS += amas_wlcconnect.o
 OBJS += amas_bhctrl.o

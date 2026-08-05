@@ -252,6 +252,10 @@ endif
 CFLAGS += -I$(TOP)/json-c
 LIBS += -L$(TOP)/json-c/.libs -ljson-c
 
+ifeq ($(RTCONFIG_OPENSSL35),y)
+LIBS += -L$(TOP)/openssl11-compat -l:libcrypto.so.1.1 -l:libssl.so.1.1
+endif
+
 ifeq ($(RTCONFIG_BWDPI),y)
 LIBS += -L$(TOP)/bwdpi_source/asus -lbwdpi
 LIBS += -L$(TOP)/bwdpi_source/asus_sql -lbwdpi_sql

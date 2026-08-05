@@ -1529,7 +1529,12 @@ define RouterOptions
 		sed -i "/RTCONFIG_INTERNETCTRL/d" $(1); \
 		echo "RTCONFIG_INTERNETCTRL=y" >>$(1); \
 	fi;
-	if [ "$(OPENSSL)" = "11" -o "$(OPENSSL11)" = "y" ]; then \
+	if [ "$(OPENSSL)" = "35" -o "$(OPENSSL35)" = "y" ]; then \
+		sed -i "/RTCONFIG_OPENSSL/d" $(1); \
+		echo "# RTCONFIG_OPENSSL10 is not set" >>$(1); \
+		echo "# RTCONFIG_OPENSSL11 is not set" >>$(1); \
+		echo "RTCONFIG_OPENSSL35=y" >>$(1); \
+	elif [ "$(OPENSSL)" = "11" -o "$(OPENSSL11)" = "y" ]; then \
 		sed -i "/RTCONFIG_OPENSSL/d" $(1); \
 		echo "# RTCONFIG_OPENSSL10 is not set" >>$(1); \
 		echo "RTCONFIG_OPENSSL11=y" >>$(1); \
@@ -6524,4 +6529,3 @@ get_extendno:
 .PHONY: dummy
 .PHONY: pre_tools
 .PHONY: get_extendno
-

@@ -699,6 +699,8 @@ ifeq ($(RTCONFIG_OPENSSL11),y)
 OPENSSL := openssl-1.1
 else ifeq ($(RTCONFIG_OPENSSL10),y)
 OPENSSL := openssl-1.0
+else ifeq ($(RTCONFIG_OPENSSL35),y)
+OPENSSL := openssl-3.5
 else
 $(error OpenSSL is not defined)
 endif
@@ -3237,6 +3239,51 @@ else
 	@true
 endif
 
+openssl11-compat:
+	@$(MAKE) -C $@
+
+openssl11-compat-clean:
+	@$(MAKE) -C openssl11-compat clean
+
+openssl-3.5/Makefile:
+	cd openssl-3.5 && \
+	./Configure $(HOSTCONFIG) --prefix=/usr --openssldir=/etc --cross-compile-prefix=' ' \
+		$(if $(filter y,$(RTCONFIG_SFP) $(RTCONFIG_4M_SFP) $(RTCONFIG_8M_SFP)),-Os,-O2) \
+		$(if $(RTCONFIG_DEBUG),-g) \
+		-ffunction-sections -fdata-sections -Wl,--gc-sections \
+		shared $(OPENSSL_CIPHERS) no-async no-tests no-docs --api=1.1.1 \
+		no-aria no-sm2 no-sm3 no-sm4 --with-rand-seed=devrandom
+	@$(MAKE) -C openssl-3.5 depend
+	@$(MAKE) -C openssl-3.5 clean
+	@touch $@
+
+openssl-3.5: openssl-3.5/Makefile
+	$(MAKE) -C openssl-3.5 && $(MAKE) $@-stage
+
+openssl-3.5-clean:
+	[ ! -f openssl-3.5/Makefile ] || $(MAKE) -C openssl-3.5 clean
+	@rm -f openssl-3.5/Makefile
+
+openssl-3.5-install:
+	install -D openssl-3.5/libcrypto.so.3 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.3
+	install -D openssl-3.5/libssl.so.3 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.3
+	install -D openssl-3.5/apps/openssl $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
+	install -D openssl-3.5/providers/legacy.so $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/ossl-modules/legacy.so
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.3)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.3)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/ossl-modules/legacy.so)
+	chmod 0500 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
+	cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libcrypto.so && ln -sf libcrypto.so.3 libcrypto.so
+	cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libssl.so && ln -sf libssl.so.3 libssl.so
+
+openssl-3.5-stage:
+ifeq ($(RTCONFIG_OPENSSL35),y)
+	$(MAKE) -C openssl-3.5 install_sw DESTDIR=$(STAGEDIR)
+else
+	@true
+endif
+
 openssl-1.0/Makefile:
 	cd openssl-1.0 && \
 	./Configure $(HOSTCONFIG) -DOPENSSL_NO_BUF_FREELISTS --prefix=/usr --openssldir=/etc/ssl --cross-compile-prefix=' ' \
@@ -3342,6 +3389,7 @@ wb-install:
 
 rc: shared libev-4.33 $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) libdisk $(if $(RTCONFIG_LIB_CODB),libcodb) $(if $(RTCONFIG_FBWIFI),fb_wifi) $(if $(RTCONFIG_QTN),libqcsapi_client) $(if $(CONFIG_LIBBCM),libbcm) $(if $(RTCONFIG_BWDPI),bwdpi_source) $(if $(RTCONFIG_USB_SMS_MODEM),smspdu) $(if $(RTCONFIG_HND_ROUTER),bcm_flashutil bcm_util bcm_boardctl) $(if $(RTCONFIG_OPENVPN),libovpn) $(if $(RTCONFIG_LANTIQ),libfapi-0.1) $(if $(RTCONFIG_CFGSYNC), $(CFGSYNC_PKG) $(if $(RTCONFIG_AMAS), amas-utils) $(if $(RTCONFIG_LANTIQ),hostapd-2.6)) json-c $(if $(or $(RTCONFIG_FRS_LIVE_UPDATE),$(RTCONFIG_FRS_FEEDBACK),$(RTCONFIG_URLFW),$(RTCONFIG_SOFTWIRE46)), curl) $(if $(and $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(and $(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(and $(RTCONFIG_HND_ROUTER_AX_6710),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(and $(RTCONFIG_BCM_502L07P2),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(RTCONFIG_BRCM_HOSTAPD),wpa_supplicant-2.7) $(if $(RTCONFIG_MXL371X),mxl371x_sdk) libwebapi
 	@$(SEP)
+	$(if $(RTCONFIG_OPENSSL35),$(MAKE) -C openssl11-compat install,)
 # Dig into our collection of prebuilt objects based on model
 	@-rm -f rc/prebuild/*.o || true
 	@-cp -f rc/prebuild/$(BUILD_NAME)/* rc/prebuild/
@@ -7074,7 +7122,7 @@ curl/Makefile: curl/configure
 		--disable-doh --disable-netrc --disable-dnsshuffle \
 		--without-libpsl \
 		$(if $(RTCONFIG_TR069),--with-libssh2=$(STAGEDIR)/usr,--without-zlib) \
-		$(if $(RTCONFIG_OPENSSL11)$(RTCONFIG_OPENSSL10),--with-ssl=$(TOP)/openssl --with-ca-fallback,--without-ssl) \
+		$(if $(OPENSSL),--with-ssl=$(STAGEDIR)/usr --with-ca-fallback,--without-ssl) \
 		$(if $(RTCONFIG_MBEDTLS),--with-mbedtls=$(STAGEDIR)/usr,--without-mbedtls) \
 		$(if $(RTCONFIG_WOLFSSL),--with-wolfssl=$(STAGEDIR)/usr,--without-wolfssl) \
 		--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
@@ -10206,5 +10254,3 @@ $(obj-y) $(obj-n) $(obj-clean) $(obj-install): dummy
 .PHONY: all clean distclean mrproper install package image
 .PHONY: conf mconf oldconf kconf kmconf config menuconfig oldconfig
 .PHONY: dummy libnet libpcap
-
-

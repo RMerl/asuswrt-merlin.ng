@@ -628,6 +628,9 @@ you will get a weird feedback loop.</p>
 </div>
 <div class="section" id="example-1-a-simple-tunnel-without-security-not-recommended">
 <h2>Example 1: A simple tunnel without security (not recommended)</h2>
+<p>Since <code>tun</code> is the default device type, <tt class="docutils literal"><span class="pre">--dev</span></tt> is optional; when it
+is omitted OpenVPN creates a dynamically-named <tt class="docutils literal">tunX</tt> device. The examples
+below still name the device (<tt class="docutils literal"><span class="pre">--dev</span> tun1</tt>) explicitly for clarity.</p>
 <p>On bob:</p>
 <pre class="literal-block">
 openvpn --remote alice.example.com --dev tun1 \

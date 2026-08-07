@@ -710,7 +710,7 @@ tls_crypt_v2_unwrap_checks(void **state)
     assert_true(tls_crypt_v2_extract_client_key(&tmp, &wrap_ctx, &tls_options));
     tls_wrap_free(&wrap_ctx);
 
-
+#ifndef _WIN32
     /* Use /bin/true as verify script */
     script_security_set(2);
     tls_options.tls_crypt_v2_verify_script = "/usr/bin/true";
@@ -722,11 +722,17 @@ tls_crypt_v2_unwrap_checks(void **state)
 
     tls_options.tmp_dir = "/tmp";
 
-    /* Since we override rand_bytes the tmpfile name is non-random as well */
-    const char *non_random_tmpfile = "/tmp/openvpn_tls_crypt_v2_metadata__706050403020100706050403020100.tmp";
-    unlink(non_random_tmpfile);
+    /* Since we override rand_bytes the tmpfile name is non-random as well.
+     * Build the expected name via the same code path as
+     * platform_create_temp_file() */
+    char non_random_tmpfile[128];
+    snprintf(non_random_tmpfile, sizeof(non_random_tmpfile),
+             PACKAGE "_tls_crypt_v2_metadata__%08" PRIx64 "%08" PRIx64 ".tmp",
+             get_random(), get_random());
+    const char *tmpfile_path = platform_gen_path(tls_options.tmp_dir, non_random_tmpfile, &ctx->gc);
+    unlink(tmpfile_path);
 
-    expect_string(__wrap_buffer_write_file, filename, non_random_tmpfile);
+    expect_string(__wrap_buffer_write_file, filename, tmpfile_path);
 
     /* We do not write the first byte (type) to the file but rather to a
      * metadata_type environment variable */
@@ -747,7 +753,7 @@ tls_crypt_v2_unwrap_checks(void **state)
         tls_options.tls_crypt_v2_verify_script = "/bin/false";
     }
 
-    expect_string(__wrap_buffer_write_file, filename, non_random_tmpfile);
+    expect_string(__wrap_buffer_write_file, filename, tmpfile_path);
     expect_memory(__wrap_buffer_write_file, pem, buf_bptr(&expected_metadata), buf_len(&expected_metadata));
     will_return(__wrap_buffer_write_file, true);
 
@@ -755,8 +761,8 @@ tls_crypt_v2_unwrap_checks(void **state)
     assert_false(tls_crypt_v2_extract_client_key(&tmp, &wrap_ctx, &tls_options));
     tls_wrap_free(&wrap_ctx);
 
-
     tls_options.tls_crypt_v2_verify_script = NULL;
+#endif
 
     /* An outdated time should fail */
     tmp = create_client_key_input(ctx, 31);

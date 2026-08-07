@@ -137,19 +137,133 @@ x509_username_field_ext_supported(const char *fieldname)
     return false;
 }
 
+static const char *
+fieldname_to_oid(const char *fieldname)
+{
+    if (strcmp(fieldname, "C") == 0)
+    {
+        return MBEDTLS_OID_AT_COUNTRY;
+    }
+    else if (strcmp(fieldname, "ST") == 0)
+    {
+        return MBEDTLS_OID_AT_STATE;
+    }
+    else if (strcmp(fieldname, "LOCALITY") == 0)
+    {
+        return MBEDTLS_OID_AT_LOCALITY;
+    }
+    else if (strcmp(fieldname, "O") == 0)
+    {
+        return MBEDTLS_OID_AT_ORGANIZATION;
+    }
+    else if (strcmp(fieldname, "OU") == 0)
+    {
+        return MBEDTLS_OID_AT_ORG_UNIT;
+    }
+    else if (strcmp(fieldname, "CN") == 0)
+    {
+        return MBEDTLS_OID_AT_CN;
+    }
+    else if (strcmp(fieldname, "GN") == 0)
+    {
+        return MBEDTLS_OID_AT_GIVEN_NAME;
+    }
+    else if (strcmp(fieldname, "SN") == 0)
+    {
+        return MBEDTLS_OID_AT_SUR_NAME;
+    }
+    else if (strcmp(fieldname, "initials") == 0)
+    {
+        return MBEDTLS_OID_AT_INITIALS;
+    }
+    else if (strcmp(fieldname, "pseudonym") == 0)
+    {
+        return MBEDTLS_OID_AT_PSEUDONYM;
+    }
+    else if (strcmp(fieldname, "title") == 0)
+    {
+        return MBEDTLS_OID_AT_TITLE;
+    }
+    else if (strcmp(fieldname, "generationQualifier") == 0)
+    {
+        return MBEDTLS_OID_AT_GENERATION_QUALIFIER;
+    }
+    else if (strcmp(fieldname, "postalAddress") == 0)
+    {
+        return MBEDTLS_OID_AT_POSTAL_ADDRESS;
+    }
+    else if (strcmp(fieldname, "postalCode") == 0)
+    {
+        return MBEDTLS_OID_AT_POSTAL_CODE;
+    }
+    else if (strcmp(fieldname, "emailAddress") == 0)
+    {
+        return MBEDTLS_OID_PKCS9_EMAIL;
+    }
+    else if (strcmp(fieldname, "uid") == 0)
+    {
+        return MBEDTLS_OID_AT_UNIQUE_IDENTIFIER;
+    }
+    else if (strcmp(fieldname, "dnQualifier") == 0)
+    {
+        return MBEDTLS_OID_AT_DN_QUALIFIER;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
 result_t
 backend_x509_get_username(char *cn, size_t cn_len, char *x509_username_field, mbedtls_x509_crt *cert)
 {
-    mbedtls_x509_name *name;
+    ASSERT(cn != NULL && cn_len > 0 && cert != NULL);
 
-    ASSERT(cn != NULL);
+    if (x509_username_field == NULL)
+    {
+        goto fail;
+    }
 
-    name = &cert->subject;
+    if (strcmp(x509_username_field, "serialNumber") == 0)
+    {
+        if (cn_len < 2)
+        {
+            goto fail;
+        }
+        cn[0] = '0';
+        cn[1] = 'x';
+        size_t cn_index = 2;
+        bool leading_zeros = true;
+        for (size_t i = 0; i < cert->serial.len; i++)
+        {
+            uint8_t serial_byte = cert->serial.p[i];
+            if (leading_zeros && serial_byte == 0)
+            {
+                continue;
+            }
+            leading_zeros = false;
+            if (cn_index > cn_len - 3)
+            {
+                goto fail;
+            }
+            snprintf(&cn[cn_index], cn_len - cn_index, "%02X", serial_byte);
+            cn_index += 2;
+        }
+        return SUCCESS;
+    }
 
-    /* Find common name */
+    const char *field_oid = fieldname_to_oid(x509_username_field);
+    if (field_oid == NULL)
+    {
+        goto fail;
+    }
+
+    /* Find field_oid in the subject name. */
+    mbedtls_x509_name *name = &cert->subject;
     while (name != NULL)
     {
-        if (0 == memcmp(name->oid.p, MBEDTLS_OID_AT_CN, MBEDTLS_OID_SIZE(MBEDTLS_OID_AT_CN)))
+        if (strlen(field_oid) == name->oid.len
+            && 0 == memcmp(name->oid.p, field_oid, name->oid.len))
         {
             break;
         }
@@ -160,22 +274,23 @@ backend_x509_get_username(char *cn, size_t cn_len, char *x509_username_field, mb
     /* Not found, return an error if this is the peer's certificate */
     if (name == NULL)
     {
-        return FAILURE;
+        goto fail;
     }
 
-    /* Found, extract CN */
-    if (cn_len > name->val.len)
+    /* Check that we have room in the buffer, including the terminating '/0' byte. */
+    if (cn_len <= name->val.len)
     {
-        memcpy(cn, name->val.p, name->val.len);
-        cn[name->val.len] = '\0';
+        goto fail;
     }
-    else
-    {
-        memcpy(cn, name->val.p, cn_len);
-        cn[cn_len - 1] = '\0';
-    }
+
+    memcpy(cn, name->val.p, name->val.len);
+    cn[name->val.len] = '\0';
 
     return SUCCESS;
+
+fail:
+    cn[0] = '\0';
+    return FAILURE;
 }
 
 #if MBEDTLS_VERSION_NUMBER >= 0x04000000

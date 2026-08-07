@@ -207,7 +207,7 @@ struct link_socket
     int mtu; /* OS discovered MTU, or 0 if unknown */
 
 #define SF_USE_IP_PKTINFO    (1 << 0)
-#define SF_TCP_NODELAY       (1 << 1)
+#define SF_TCP_NODELAY       (1 << 1) /* unused: flag always enabled */
 #define SF_PORT_SHARE        (1 << 2)
 #define SF_HOST_RANDOMIZE    (1 << 3)
 #define SF_GETADDRINFO_DGRAM (1 << 4)
@@ -389,8 +389,6 @@ void set_actual_address(struct link_socket_actual *actual, struct addrinfo *ai);
 void link_socket_bad_outgoing_addr(void);
 
 void setenv_trusted(struct env_set *es, const struct link_socket_info *info);
-
-bool link_socket_update_flags(struct link_socket *sock, unsigned int sockflags);
 
 void link_socket_update_buffer_sizes(struct link_socket *sock, int rcvbuf, int sndbuf);
 

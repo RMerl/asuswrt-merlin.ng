@@ -2642,15 +2642,6 @@ do_deferred_options(struct context *c, const unsigned int found, const bool is_u
         }
     }
 
-    if (found & OPT_P_SOCKFLAGS)
-    {
-        msg(D_PUSH, "OPTIONS IMPORT: --socket-flags option modified");
-        for (int i = 0; i < c->c1.link_sockets_num; i++)
-        {
-            link_socket_update_flags(c->c2.link_sockets[i], c->options.sockflags);
-        }
-    }
-
     if (found & OPT_P_PERSIST)
     {
         msg(D_PUSH, "OPTIONS IMPORT: --persist options modified");

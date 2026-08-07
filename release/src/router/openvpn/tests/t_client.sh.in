@@ -214,7 +214,7 @@ get_ifconfig_route()
     # except Linux and MacOS
     case $UNAME in
 	Linux)
-            if [ -x /usr/bin/resolvectl ] ; then
+            if [ -x /usr/bin/resolvectl -a -d /run/systemd/system ] ; then
                 echo "-- linux resolvectl --"
                 resolvectl status
             else

@@ -3860,7 +3860,9 @@ UDP multicast stream which requires fragmentation.</p>
 keepalive interval timeout
 </pre>
 <p>Send ping once every <tt class="docutils literal">interval</tt> seconds, restart if ping is not received
-for <tt class="docutils literal">timeout</tt> seconds.</p>
+for <tt class="docutils literal">timeout</tt> seconds. Both values are limited to 86400 seconds. Since the
+server-side timeout is doubled, <tt class="docutils literal">timeout</tt> is limited to 43200 seconds in
+server mode.</p>
 <p>This option can be used on both client and server side, but it is enough
 to add this on the server side as it will push appropriate <tt class="docutils literal"><span class="pre">--ping</span></tt>
 and <tt class="docutils literal"><span class="pre">--ping-restart</span></tt> options to the client. If used on both server and
@@ -4014,6 +4016,7 @@ option.</td></tr>
 sent for at least <tt class="docutils literal">n</tt> seconds (specify <tt class="docutils literal"><span class="pre">--ping</span></tt> on both peers to
 cause ping packets to be sent in both directions since OpenVPN ping
 packets are not echoed like IP ping packets).</p>
+<p>The maximum value for <tt class="docutils literal">n</tt> is 86400 seconds.</p>
 <p>This option has two intended uses:</p>
 <ol class="arabic simple">
 <li>Compatibility with stateful firewalls. The periodic ping will ensure
@@ -4030,6 +4033,7 @@ using the <tt class="docutils literal"><span class="pre">--ping-exit</span></tt>
 ping or other packet from remote. This option can be combined with
 <tt class="docutils literal"><span class="pre">--inactive</span></tt>, <tt class="docutils literal"><span class="pre">--ping</span></tt> and <tt class="docutils literal"><span class="pre">--ping-exit</span></tt> to create a two-tiered
 inactivity disconnect.</p>
+<p>The maximum value for <tt class="docutils literal">n</tt> is 86400 seconds.</p>
 <p>For example,</p>
 <pre class="literal-block">
 openvpn [options...] --inactive 3600 --ping 10 --ping-exit 60
@@ -4044,6 +4048,7 @@ data is exchanged.</p>
 <tr><td>&nbsp;</td><td><p class="first">Similar to <tt class="docutils literal"><span class="pre">--ping-exit</span></tt>, but trigger a <code>SIGUSR1</code> restart after
 <tt class="docutils literal">n</tt> seconds pass without reception of a ping or other packet from
 remote.</p>
+<p>The maximum value for <tt class="docutils literal">n</tt> is 86400 seconds.</p>
 <p>This option is useful in cases where the remote peer has a dynamic IP
 address and a low-TTL DNS name is used to track the IP address using a
 service such as <a class="reference external" href="https://www.nsupdate.info/">https://www.nsupdate.info/</a> + a dynamic DNS client such as
@@ -4210,22 +4215,19 @@ session is terminated.</p>
 kernel to send tunnel packets immediately over the TCP connection without
 trying to group several smaller packets into a larger packet.  This can
 result in a considerably improvement in latency.</p>
-<p class="last">This option is pushable from server to client, and should be used on
-both client and server for maximum effect.</p>
+<p class="last">Since OpenVPN 2.7.6 <code>TCP_NODELAY</code> is enabled by default on every TCP
+socket, so specifying it here is no longer necessary.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--tcp-nodelay</span></kbd></td>
-<td><p class="first">This macro sets the <code>TCP_NODELAY</code> socket flag on the server as well
-as pushes it to connecting clients. The <code>TCP_NODELAY</code> flag disables
-the Nagle algorithm on TCP sockets causing packets to be transmitted
-immediately with low latency, rather than waiting a short period of time
-in order to aggregate several packets into a larger containing packet.
-In VPN applications over TCP, <code>TCP_NODELAY</code> is generally a good
-latency optimization.</p>
+<td><p class="first"><code>TCP_NODELAY</code> is enabled by default on every TCP socket. In
+<tt class="docutils literal"><span class="pre">--mode</span> server</tt> this option additionally pushes
+<tt class="docutils literal"><span class="pre">socket-flags</span> TCP_NODELAY</tt> to connecting clients, so that clients older
+than 2.7.6 get it too. The option can be removed once such clients are no
+longer in use.</p>
 <p>The macro expands as follows:</p>
 <pre class="last literal-block">
 if mode server:
-    socket-flags TCP_NODELAY
     push &quot;socket-flags TCP_NODELAY&quot;
 </pre>
 </td></tr>
@@ -4310,6 +4312,9 @@ server-side firewall rule.</p>
 <td><p class="first">TUN/TAP virtual network device which can be <code>tunX</code>, <code>tapX</code>,
 <code>null</code> or an arbitrary name string (<code>X</code> can be omitted for
 a dynamic device.)</p>
+<p>If neither <tt class="docutils literal"><span class="pre">--dev</span></tt> nor <tt class="docutils literal"><span class="pre">--dev-type</span></tt> is specified, OpenVPN defaults to
+<code>tun</code>, i.e. it creates a dynamically-named <code>tunX</code> device and
+runs a layer-3 tunnel.</p>
 <p>See examples section below for an example on setting up a TUN device.</p>
 <p>You must use either tun devices on both ends of the connection or tap
 devices on both ends. You cannot mix them, as they represent different

@@ -775,7 +775,7 @@ free_certificate(openvpn_x509_cert_t *cert)
 static openvpn_x509_cert_t *
 get_certificate(const char *cert_str)
 {
-    BIO *in = BIO_new_mem_buf((char *)cert1, -1);
+    BIO *in = BIO_new_mem_buf((char *)cert_str, -1);
     assert_non_null(in);
     X509 *cert = PEM_read_bio_X509(in, NULL, NULL, NULL);
     assert_non_null(cert);
@@ -790,10 +790,37 @@ free_certificate(openvpn_x509_cert_t *cert)
 }
 #endif
 
+/* Generated with:
+ * openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:secp384r1 -keyout - -noenc -sha256 -days 3650 \
+ * -subj '/CN=ovpn-test-secp384r1/O=OpenVPN Unit Test Example Corp./OU=Cert Details Dept.'
+ * -addext 'subjectAltName=DNS:unittest.example.com' -addext 'extendedKeyUsage=clientAuth' */
+static const char *cert_details_test_cert =
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIICkzCCAhqgAwIBAgIUKDsZM+PApGdaD2QF9iYaxoFJAkowCgYIKoZIzj0EAwIw\n"
+    "ZTEcMBoGA1UEAwwTb3Zwbi10ZXN0LXNlY3AzODRyMTEoMCYGA1UECgwfT3BlblZQ\n"
+    "TiBVbml0IFRlc3QgRXhhbXBsZSBDb3JwLjEbMBkGA1UECwwSQ2VydCBEZXRhaWxz\n"
+    "IERlcHQuMB4XDTI2MDcwNzEwNTIxNloXDTM2MDcwNDEwNTIxNlowZTEcMBoGA1UE\n"
+    "AwwTb3Zwbi10ZXN0LXNlY3AzODRyMTEoMCYGA1UECgwfT3BlblZQTiBVbml0IFRl\n"
+    "c3QgRXhhbXBsZSBDb3JwLjEbMBkGA1UECwwSQ2VydCBEZXRhaWxzIERlcHQuMHYw\n"
+    "EAYHKoZIzj0CAQYFK4EEACIDYgAEOlKoQVk+wbBD6V/6kg+/oHfqF0Dq08LlCL+B\n"
+    "om4RhutG99QDrow251Ps+Ds/7LQYYRA8+hHyEFrmGM+j2o6KhS5K2uA6dIZL4zLK\n"
+    "vl0NeF2M61Z8tt/IjrFZd+CrEANco4GKMIGHMB0GA1UdDgQWBBSEyG6m+QdWazeg\n"
+    "0CHN7q0edJlqMjAfBgNVHSMEGDAWgBSEyG6m+QdWazeg0CHN7q0edJlqMjAPBgNV\n"
+    "HRMBAf8EBTADAQH/MB8GA1UdEQQYMBaCFHVuaXR0ZXN0LmV4YW1wbGUuY29tMBMG\n"
+    "A1UdJQQMMAoGCCsGAQUFBwMCMAoGCCqGSM49BAMCA2cAMGQCMCyK7aQcyKGW8BWQ\n"
+    "UOYqbJUJZJcviP6ACgJRzK6pgkqt9gY0E0Tb00Qh6D5dBV5i3wIwCMhSgpVJxDrc\n"
+    "pRfligoK8bmv4HEgnV6BDeoDYd41WVMpE9u1issQDHY0SnWC7d9q\n"
+    "-----END CERTIFICATE-----\n";
+const char *const cert_details_cname = "ovpn-test-secp384r1";
+const char *const cert_details_org = "OpenVPN Unit Test Example Corp.";
+const char *const cert_details_org_unit = "Cert Details Dept.";
+const char *const cert_details_serial_number = "229677570263950905252266749734450551528150860362";
+const char *const cert_details_serial_number_hex = "0x283B1933E3C0A4675A0F6405F6261AC68149024A";
+
 void
 crypto_test_print_cert_details(void **state)
 {
-    openvpn_x509_cert_t *cert = get_certificate(cert1);
+    openvpn_x509_cert_t *cert = get_certificate(cert_details_test_cert);
     struct gc_arena gc = gc_new();
 
     const char *fp = backend_x509_get_serial_hex(cert, &gc);
@@ -801,29 +828,57 @@ crypto_test_print_cert_details(void **state)
     /* we messed this up between TLS libraries. But let's at least notice in
      * the future ...*/
 #if defined(ENABLE_CRYPTO_MBEDTLS)
-    assert_string_equal(fp, "82:6B:DD:CC:BD:E5:5E:B7:08:F1:2D:68:00:3C:24:DE");
+    assert_string_equal(fp, "28:3B:19:33:E3:C0:A4:67:5A:0F:64:05:F6:26:1A:C6:81:49:02:4A");
 #else
-    assert_string_equal(fp, "82:6b:dd:cc:bd:e5:5e:b7:08:f1:2d:68:00:3c:24:de");
+    assert_string_equal(fp, "28:3b:19:33:e3:c0:a4:67:5a:0f:64:05:f6:26:1a:c6:81:49:02:4a");
 #endif
 
     const char *sn = backend_x509_get_serial(cert, &gc);
-    assert_string_equal(sn, "173359713849739808110610111821055272158");
+    assert_string_equal(sn, cert_details_serial_number);
 
     char username[TLS_USERNAME_LEN + 1] = { 0 }; /* null-terminated */
 
-    int ret = backend_x509_get_username(username, sizeof(username), "CN",
-                                        cert);
+    int ret = backend_x509_get_username(username, sizeof(username), "CN", cert);
 
-    assert_string_equal(username, "ovpn-test-ec1");
+    assert_string_equal(username, cert_details_cname);
     assert_int_equal(ret, SUCCESS);
 
-#ifndef ENABLE_CRYPTO_MBEDTLS
-    /* mbed TLS does not implement this */
-    ret = backend_x509_get_username(username, sizeof(username), "serialNumber",
-                                    cert);
+    ret = backend_x509_get_username(username, sizeof(username), "serialNumber", cert);
     assert_int_equal(ret, SUCCESS);
-    assert_string_equal(username, "0x826BDDCCBDE55EB708F12D68003C24DE");
-#endif
+    assert_string_equal(username, cert_details_serial_number_hex);
+
+    ret = backend_x509_get_username(username, sizeof(username), "O", cert);
+
+    assert_string_equal(username, cert_details_org);
+    assert_int_equal(ret, SUCCESS);
+
+    ret = backend_x509_get_username(username, sizeof(username), "OU", cert);
+
+    assert_string_equal(username, cert_details_org_unit);
+    assert_int_equal(ret, SUCCESS);
+
+    /* Check that FAILURE is returned if a field does not exist. */
+    ret = backend_x509_get_username(username, sizeof(username), "SN", cert);
+    assert_int_equal(ret, FAILURE);
+
+    /* Check that FAILURE is returned for invalid field names. */
+    ret = backend_x509_get_username(username, sizeof(username), "invalidField", cert);
+    assert_int_equal(ret, FAILURE);
+
+    /* Check that FAILURE is returned if the output buffer is too small. Do this separately
+     * for a subject field and for the serial number, because these are different code paths.
+     *
+     * First case: Can't fit all characters. */
+    ret = backend_x509_get_username(username, strlen(cert_details_cname) / 2, "CN", cert);
+    assert_int_equal(ret, FAILURE);
+    ret = backend_x509_get_username(username, strlen(cert_details_serial_number_hex) / 2, "serialNumber", cert);
+    assert_int_equal(ret, FAILURE);
+
+    /* Second case: Can fit the characters but not the terminating '\0'. */
+    ret = backend_x509_get_username(username, strlen(cert_details_cname), "CN", cert);
+    assert_int_equal(ret, FAILURE);
+    ret = backend_x509_get_username(username, strlen(cert_details_serial_number_hex), "serialNumber", cert);
+    assert_int_equal(ret, FAILURE);
 
     gc_free(&gc);
     free_certificate(cert);

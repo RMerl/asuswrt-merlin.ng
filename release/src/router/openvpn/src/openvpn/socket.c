@@ -516,34 +516,6 @@ socket_set_mark(socket_descriptor_t sd, int mark)
 #endif
 }
 
-static bool
-socket_set_flags(socket_descriptor_t sd, unsigned int sockflags)
-{
-    /* SF_TCP_NODELAY doesn't make sense for dco-win */
-    if ((sockflags & SF_TCP_NODELAY) && (!(sockflags & SF_DCO_WIN)))
-    {
-        return socket_set_tcp_nodelay(sd, 1);
-    }
-    else
-    {
-        return true;
-    }
-}
-
-bool
-link_socket_update_flags(struct link_socket *sock, unsigned int sockflags)
-{
-    if (sock && socket_defined(sock->sd))
-    {
-        sock->sockflags |= sockflags;
-        return socket_set_flags(sock->sd, sock->sockflags);
-    }
-    else
-    {
-        return false;
-    }
-}
-
 void
 link_socket_update_buffer_sizes(struct link_socket *sock, int rcvbuf, int sndbuf)
 {
@@ -1485,8 +1457,12 @@ link_socket_init_phase1(struct context *c, int sock_index, int mode)
 static void
 phase2_set_socket_flags(struct link_socket *sock)
 {
-    /* set misc socket parameters */
-    socket_set_flags(sock->sd, sock->sockflags);
+    /* TCP_NODELAY is enabled by default on every TCP socket; dco-win is
+     * skipped as it manages its own socket */
+    if (proto_is_tcp(sock->info.proto) && !(sock->sockflags & SF_DCO_WIN))
+    {
+        socket_set_tcp_nodelay(sock->sd, 1);
+    }
 
     /* set socket to non-blocking mode */
     set_nonblock(sock->sd);

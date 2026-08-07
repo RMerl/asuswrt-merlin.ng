@@ -1,6 +1,7 @@
 Asuswrt-Merlin 3006.xxx Changelog
 =================================
 3006.102.xx (xx-xxx-2026)
+  - UPDATED: OpenVPN to 2.7.6.
   - CHANGED: When downgrading an OVPN server from TLS Encrypt V2
              mode to tls auth mode, the V2 key will be replaced
              with an appropriate V1 key.

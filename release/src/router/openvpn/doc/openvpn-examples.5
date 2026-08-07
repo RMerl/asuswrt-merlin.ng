@@ -350,6 +350,10 @@ that is part of your local subnet for either of the tunnel endpoints,
 you will get a weird feedback loop.
 .SS Example 1: A simple tunnel without security (not recommended)
 .sp
+Since \fBtun\fP is the default device type, \fB\-\-dev\fP is optional; when it
+is omitted OpenVPN creates a dynamically\-named \fBtunX\fP device. The examples
+below still name the device (\fB\-\-dev tun1\fP) explicitly for clarity.
+.sp
 On bob:
 .INDENT 0.0
 .INDENT 3.5

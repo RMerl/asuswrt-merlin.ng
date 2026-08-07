@@ -1473,9 +1473,9 @@ read_key_file(struct key2 *key2, const char *file, const unsigned int flags)
                     hex_byte[hb_index++] = c;
                     if (hb_index == 2)
                     {
-                        uint8_t u;
-                        ASSERT(sscanf((const char *)hex_byte, "%" SCNx8, &u) == 1);
-                        *out++ = u;
+                        unsigned int u;
+                        ASSERT(sscanf((const char *)hex_byte, "%2x", &u) == 1);
+                        *out++ = (uint8_t)u;
                         hb_index = 0;
                         if (++count == keylen)
                         {

@@ -4173,7 +4173,9 @@ keepalive interval timeout
 .UNINDENT
 .sp
 Send ping once every \fBinterval\fP seconds, restart if ping is not received
-for \fBtimeout\fP seconds.
+for \fBtimeout\fP seconds. Both values are limited to 86400 seconds. Since the
+server\-side timeout is doubled, \fBtimeout\fP is limited to 43200 seconds in
+server mode.
 .sp
 This option can be used on both client and server side, but it is enough
 to add this on the server side as it will push appropriate \fB\-\-ping\fP
@@ -4364,6 +4366,8 @@ sent for at least \fBn\fP seconds (specify \fB\-\-ping\fP on both peers to
 cause ping packets to be sent in both directions since OpenVPN ping
 packets are not echoed like IP ping packets).
 .sp
+The maximum value for \fBn\fP is 86400 seconds.
+.sp
 This option has two intended uses:
 .INDENT 7.0
 .IP 1. 3
@@ -4383,6 +4387,8 @@ ping or other packet from remote. This option can be combined with
 \fB\-\-inactive\fP, \fB\-\-ping\fP and \fB\-\-ping\-exit\fP to create a two\-tiered
 inactivity disconnect.
 .sp
+The maximum value for \fBn\fP is 86400 seconds.
+.sp
 For example,
 .INDENT 7.0
 .INDENT 3.5
@@ -4401,6 +4407,8 @@ data is exchanged.
 Similar to \fB\-\-ping\-exit\fP, but trigger a \fBSIGUSR1\fP restart after
 \fBn\fP seconds pass without reception of a ping or other packet from
 remote.
+.sp
+The maximum value for \fBn\fP is 86400 seconds.
 .sp
 This option is useful in cases where the remote peer has a dynamic IP
 address and a low\-TTL DNS name is used to track the IP address using a
@@ -4597,17 +4605,15 @@ kernel to send tunnel packets immediately over the TCP connection without
 trying to group several smaller packets into a larger packet.  This can
 result in a considerably improvement in latency.
 .sp
-This option is pushable from server to client, and should be used on
-both client and server for maximum effect.
+Since OpenVPN 2.7.6 \fBTCP_NODELAY\fP is enabled by default on every TCP
+socket, so specifying it here is no longer necessary.
 .TP
 .B  \-\-tcp\-nodelay
-This macro sets the \fBTCP_NODELAY\fP socket flag on the server as well
-as pushes it to connecting clients. The \fBTCP_NODELAY\fP flag disables
-the Nagle algorithm on TCP sockets causing packets to be transmitted
-immediately with low latency, rather than waiting a short period of time
-in order to aggregate several packets into a larger containing packet.
-In VPN applications over TCP, \fBTCP_NODELAY\fP is generally a good
-latency optimization.
+\fBTCP_NODELAY\fP is enabled by default on every TCP socket. In
+\fB\-\-mode server\fP this option additionally pushes
+\fBsocket\-flags TCP_NODELAY\fP to connecting clients, so that clients older
+than 2.7.6 get it too. The option can be removed once such clients are no
+longer in use.
 .sp
 The macro expands as follows:
 .INDENT 7.0
@@ -4615,7 +4621,6 @@ The macro expands as follows:
 .sp
 .EX
 if mode server:
-    socket\-flags TCP_NODELAY
     push \(dqsocket\-flags TCP_NODELAY\(dq
 .EE
 .UNINDENT
@@ -4713,6 +4718,10 @@ server\-side firewall rule.
 TUN/TAP virtual network device which can be \fBtunX\fP, \fBtapX\fP,
 \fBnull\fP or an arbitrary name string (\fBX\fP can be omitted for
 a dynamic device.)
+.sp
+If neither \fB\-\-dev\fP nor \fB\-\-dev\-type\fP is specified, OpenVPN defaults to
+\fBtun\fP, i.e. it creates a dynamically\-named \fBtunX\fP device and
+runs a layer\-3 tunnel.
 .sp
 See examples section below for an example on setting up a TUN device.
 .sp

@@ -74,7 +74,9 @@ the local and the remote host.
      keepalive interval timeout
 
   Send ping once every ``interval`` seconds, restart if ping is not received
-  for ``timeout`` seconds.
+  for ``timeout`` seconds. Both values are limited to 86400 seconds. Since the
+  server-side timeout is doubled, ``timeout`` is limited to 43200 seconds in
+  server mode.
 
   This option can be used on both client and server side, but it is enough
   to add this on the server side as it will push appropriate ``--ping``
@@ -247,6 +249,8 @@ the local and the remote host.
   cause ping packets to be sent in both directions since OpenVPN ping
   packets are not echoed like IP ping packets).
 
+  The maximum value for ``n`` is 86400 seconds.
+
   This option has two intended uses:
 
   (1)  Compatibility with stateful firewalls. The periodic ping will ensure
@@ -264,6 +268,8 @@ the local and the remote host.
   ``--inactive``, ``--ping`` and ``--ping-exit`` to create a two-tiered
   inactivity disconnect.
 
+  The maximum value for ``n`` is 86400 seconds.
+
   For example,
   ::
 
@@ -277,6 +283,8 @@ the local and the remote host.
   Similar to ``--ping-exit``, but trigger a :code:`SIGUSR1` restart after
   ``n`` seconds pass without reception of a ping or other packet from
   remote.
+
+  The maximum value for ``n`` is 86400 seconds.
 
   This option is useful in cases where the remote peer has a dynamic IP
   address and a low-TTL DNS name is used to track the IP address using a
@@ -465,23 +473,20 @@ the local and the remote host.
   trying to group several smaller packets into a larger packet.  This can
   result in a considerably improvement in latency.
 
-  This option is pushable from server to client, and should be used on
-  both client and server for maximum effect.
+  Since OpenVPN 2.7.6 :code:`TCP_NODELAY` is enabled by default on every TCP
+  socket, so specifying it here is no longer necessary.
 
 --tcp-nodelay
-  This macro sets the :code:`TCP_NODELAY` socket flag on the server as well
-  as pushes it to connecting clients. The :code:`TCP_NODELAY` flag disables
-  the Nagle algorithm on TCP sockets causing packets to be transmitted
-  immediately with low latency, rather than waiting a short period of time
-  in order to aggregate several packets into a larger containing packet.
-  In VPN applications over TCP, :code:`TCP_NODELAY` is generally a good
-  latency optimization.
+  :code:`TCP_NODELAY` is enabled by default on every TCP socket. In
+  ``--mode server`` this option additionally pushes
+  ``socket-flags TCP_NODELAY`` to connecting clients, so that clients older
+  than 2.7.6 get it too. The option can be removed once such clients are no
+  longer in use.
 
   The macro expands as follows:
   ::
 
      if mode server:
-         socket-flags TCP_NODELAY
          push "socket-flags TCP_NODELAY"
 
 --max-packet-size size

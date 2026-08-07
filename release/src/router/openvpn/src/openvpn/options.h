@@ -56,6 +56,8 @@
 #define OPTION_PARM_SIZE 256
 #define OPTION_LINE_SIZE 256
 
+#define PING_TIMEOUT_MAX 86400 /* one day (in seconds) */
+
 extern const char title_string[];
 
 /* certain options are saved before --pull modifications are applied */

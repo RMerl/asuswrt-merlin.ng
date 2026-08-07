@@ -383,12 +383,20 @@ if (BUILD_TESTING)
     find_package(cmocka CONFIG)
     if (TARGET cmocka::cmocka)
         set(CMOCKA_LIBRARIES cmocka::cmocka)
+        get_target_property(CMOCKA_INCLUDE_DIRS cmocka::cmocka INTERFACE_INCLUDE_DIRECTORIES)
     else ()
         pkg_search_module(cmocka cmocka REQUIRED IMPORTED_TARGET)
         set(CMOCKA_LIBRARIES PkgConfig::cmocka)
+        set(CMOCKA_INCLUDE_DIRS ${cmocka_INCLUDE_DIRS})
     endif ()
-    set(CMAKE_REQUIRED_LIBRARIES ${CMOCKA_LIBRARIES})
+    # cmocka_version.h exists since cmocka 2.0; its absence selects the
+    # cmocka 1.x compat shims in test_common.h. Detecting a header only needs
+    # the include path - do NOT add cmocka to CMAKE_REQUIRED_LIBRARIES, as that
+    # makes check_include_files link the shared library, which can fail in the
+    # probe for unrelated reasons and wrongly mis-detect cmocka 2.x as < 2.0.
+    set(CMAKE_REQUIRED_INCLUDES ${CMOCKA_INCLUDE_DIRS})
     check_include_files(cmocka_version.h HAVE_CMOCKA_VERSION_H)
+    unset(CMAKE_REQUIRED_INCLUDES)
 endif ()
 
 configure_file(config.h.cmake.in config.h)
@@ -811,7 +819,6 @@ if (BUILD_TESTING)
 
     target_sources(test_mbuf PRIVATE
         tests/unit_tests/openvpn/mock_get_random.c
-        src/openvpn/buffer.c
         src/openvpn/mbuf.c
         )
 

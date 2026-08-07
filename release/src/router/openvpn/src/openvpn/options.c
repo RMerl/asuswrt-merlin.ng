@@ -190,7 +190,8 @@ static const char usage_message[] =
     " or --socks-proxy"
     " is used).\n"
     "--nobind        : Do not bind to local address and port.\n"
-    "--dev tunX|tapX : tun/tap device (X can be omitted for dynamic device.\n"
+    "--dev tunX|tapX : tun/tap device (X can be omitted for dynamic device).\n"
+    "                  Defaults to \"tun\" if neither --dev nor --dev-type is given.\n"
     "--dev-type dt   : Which device type are we using? (dt = tun or tap) Use\n"
     "                  this option only if the tun/tap device used with --dev\n"
     "                  does not begin with \"tun\" or \"tap\".\n"
@@ -487,8 +488,8 @@ static const char usage_message[] =
     "                  virtual address table to v.\n"
     "--bcast-buffers n : Allocate n broadcast buffers.\n"
     "--tcp-queue-limit n : Maximum number of queued TCP output packets.\n"
-    "--tcp-nodelay   : Macro that sets TCP_NODELAY socket flag on the server\n"
-    "                  as well as pushes it to connecting clients.\n"
+    "--tcp-nodelay   : In server mode, push TCP_NODELAY to clients (it is\n"
+    "                  enabled by default on the local socket).\n"
     "--learn-address cmd : Run command cmd to validate client virtual addresses.\n"
     "--connect-freq n s : Allow a maximum of n new connections per s seconds.\n"
     "--connect-freq-initial n s : Allow a maximum of n replies for initial connections attempts per s seconds.\n"
@@ -611,7 +612,9 @@ static const char usage_message[] =
     "                : Use --show-tls to see a list of supported TLS ciphers (suites).\n"
     "--tls-cert-profile p : Set the allowed certificate crypto algorithm profile\n"
     "                  (default=legacy).\n"
+#ifndef ENABLE_CRYPTO_MBEDTLS
     "--providers l   : A list l of OpenSSL providers to load.\n"
+#endif
     "--tls-timeout n : Packet retransmit timeout on TLS control channel\n"
     "                  if no ACK from remote within n seconds (default=%d).\n"
     "--reneg-bytes n : Renegotiate data chan. key after n bytes sent and recvd.\n"
@@ -806,6 +809,7 @@ init_options(struct options *o)
     gc_init(&o->dns_options.gc);
 
     o->mode = MODE_POINT_TO_POINT;
+    o->dev = "tun";
     o->topology = TOP_UNDEF;
     o->ce.proto = PROTO_UDP;
     o->ce.af = AF_UNSPEC;
@@ -2629,6 +2633,13 @@ options_postprocess_verify_ce(const struct options *options, const struct connec
             MUST_BE_UNDEF(vlan_accept, "vlan-accept");
             MUST_BE_UNDEF(vlan_pvid, "vlan-pvid");
         }
+
+        if (options->server_flags & SF_TCP_NODELAY_HELPER)
+        {
+            msg(M_INFO, "NOTE: TCP_NODELAY is always enabled locally; "
+                        "--tcp-nodelay is now only useful to push the flag to "
+                        "clients older than 2.7.6.");
+        }
     }
     else
     {
@@ -2659,9 +2670,7 @@ options_postprocess_verify_ce(const struct options *options, const struct connec
         MUST_BE_FALSE(options->ssl_flags & SSLF_AUTH_USER_PASS_OPTIONAL, "auth-user-pass-optional");
         if (options->server_flags & SF_TCP_NODELAY_HELPER)
         {
-            msg(M_WARN, "WARNING: setting tcp-nodelay on the client side will not "
-                        "affect the server. To have TCP_NODELAY in both direction use "
-                        "tcp-nodelay in the server configuration instead.");
+            msg(M_WARN, "DEPRECATED OPTION: --tcp-nodelay is always enabled on clients");
         }
         MUST_BE_UNDEF(auth_user_pass_verify_script, "auth-user-pass-verify");
         MUST_BE_UNDEF(auth_token_generate, "auth-gen-token");
@@ -6541,11 +6550,9 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
         VERIFY_PERMISSION(OPT_P_SOCKFLAGS);
         for (j = 1; j < MAX_PARMS && p[j]; ++j)
         {
-            if (streq(p[j], "TCP_NODELAY"))
-            {
-                options->sockflags |= SF_TCP_NODELAY;
-            }
-            else
+            /* TCP_NODELAY is enabled by default; the flag is still accepted
+             * for backwards compatibility but no longer has any effect */
+            if (!streq(p[j], "TCP_NODELAY"))
             {
                 msg(msglevel, "unknown socket flag: %s", p[j]);
             }
@@ -6795,24 +6802,29 @@ add_option(struct options *options, char *p[], bool is_inline, const char *file,
     else if (streq(p[0], "keepalive") && p[1] && p[2] && !p[3])
     {
         VERIFY_PERMISSION(OPT_P_GENERAL);
-        options->keepalive_ping = atoi_warn(p[1], msglevel);
-        options->keepalive_timeout = atoi_warn(p[2], msglevel);
+        atoi_constrained(p[1], &options->keepalive_ping, "keepalive ping",
+                         1, PING_TIMEOUT_MAX, msglevel);
+        atoi_constrained(p[2], &options->keepalive_timeout, "keepalive timeout",
+                         1, PING_TIMEOUT_MAX, msglevel);
     }
     else if (streq(p[0], "ping") && p[1] && !p[2])
     {
         VERIFY_PERMISSION(OPT_P_TIMER);
-        options->ping_send_timeout = positive_atoi(p[1], msglevel);
+        atoi_constrained(p[1], &options->ping_send_timeout, p[0],
+                         0, PING_TIMEOUT_MAX, msglevel);
     }
     else if (streq(p[0], "ping-exit") && p[1] && !p[2])
     {
         VERIFY_PERMISSION(OPT_P_TIMER);
-        options->ping_rec_timeout = positive_atoi(p[1], msglevel);
+        atoi_constrained(p[1], &options->ping_rec_timeout, p[0],
+                         0, PING_TIMEOUT_MAX, msglevel);
         options->ping_rec_timeout_action = PING_EXIT;
     }
     else if (streq(p[0], "ping-restart") && p[1] && !p[2])
     {
         VERIFY_PERMISSION(OPT_P_TIMER);
-        options->ping_rec_timeout = positive_atoi(p[1], msglevel);
+        atoi_constrained(p[1], &options->ping_rec_timeout, p[0],
+                         0, PING_TIMEOUT_MAX, msglevel);
         options->ping_rec_timeout_action = PING_RESTART;
     }
     else if (streq(p[0], "ping-timer-rem") && !p[1])

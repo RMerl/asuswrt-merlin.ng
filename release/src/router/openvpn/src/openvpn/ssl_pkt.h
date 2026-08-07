@@ -207,7 +207,6 @@ void write_control_auth(struct tls_session *session, struct key_state *ks, struc
  * @param ctx               control channel security context
  * @param from              incoming link socket address
  * @param opt               tls options struct for the session
- * @param initial_packet    whether this is the initial packet for the connection
  * @return                  if the packet was successfully processed
  */
 bool read_control_auth(struct buffer *buf, struct tls_wrap_ctx *ctx,

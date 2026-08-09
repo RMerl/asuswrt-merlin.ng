@@ -247,7 +247,7 @@ parse_line (const char *line, char *p[], const int n, const int line_num)
 	}
 	if (state != STATE_INITIAL)
 	{
-		logmessage ("OVPN", "Options error: Residual parse state (%d) in %d", line_num);
+		logmessage ("OVPN", "Options error: Residual parse state (%d) in %d", state, line_num);
 		return 0;
 	}
 

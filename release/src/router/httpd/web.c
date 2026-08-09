@@ -1251,7 +1251,6 @@ ej_nvram_get(int eid, webs_t wp, int argc, char_t **argv)
 //	char sid_dummy = "",
 	int from_app = 0;
 	char name_tmp[50] = {0};
-	char buffer[8000];
 #if defined(RTCONFIG_NVRAM_ENCRYPT)
 	char dec_passwd[CKN_STR8192] = {0};
 #endif

@@ -25,6 +25,8 @@
  * for Asuswrt-Merlin's OpenVPN support.
  */
 
+#define _GNU_SOURCE
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
@@ -1247,7 +1249,6 @@ void ovpn_write_dh(ovpn_sconf_t *sconf, int unit) {
 void ovpn_write_static_key(ovpn_sconf_t *sconf, int unit) {
 	char filename[256];
 	char buffer[4096];
-	char cmd[128];
 	int generate = 0;
 	char *keytype;
 
@@ -1300,8 +1301,6 @@ char* ovpn_generate_client_key(ovpn_type_t type, int unit, char *buffer, int len
 	char server_key_file[256];
 	char client_key_file[256];
 	FILE *fp;
-	char cmd[512];
-	int ret;
 
 	ovpn_get_runtime_filename(OVPN_TYPE_SERVER, unit, OVPN_SERVER_STATIC, server_key_file, sizeof(server_key_file));
 

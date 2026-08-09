@@ -27265,14 +27265,20 @@ static void do_CoBrand_img(char *url, FILE *stream)
 	char lowercase_pid[32] = {0};
 	char *p;
 
+	if (dotPosition == NULL){
+		free(odmpid);
+		free(productid);
+		return;
+	}
+
 	p = odmpid;
-	for(i = 0; i < strlen(odmpid); i++){
+	for(i = 0; i < strlen(odmpid) && i < sizeof(lowercase_pid)-1; i++){
 		lowercase_pid[i] = tolower(*p);
 		p++;
 	}
 	*p = '\0';
 
-	sprintf(file_extension, "%s", dotPosition);
+	snprintf(file_extension, sizeof(file_extension), "%s", dotPosition);
 	*dotPosition = '\0';
 
 	if(strlen(odmpid) > 0 && strcmp(odmpid, productid))

@@ -686,7 +686,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 
 	}
 
-	retval += websWrite(wp, result);
+	retval += websWrite(wp, "%s", result);
 	return retval;
 }
 

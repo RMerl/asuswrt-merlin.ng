@@ -3914,34 +3914,44 @@ int set_crt_parsed(const char *name, char *file_path)
 #else
 	FILE *fp=fopen(file_path, "r");
 	char buffer[8000] = {0};
-	char buffer2[256] = {0};
+	char line[256] = {0};
 	char *p = buffer;
+	int used = 0, len;
 
-	if(fp) {
-		while(fgets(buffer, sizeof(buffer), fp)) {
-			if(!strncmp(buffer, "-----BEGIN", 10))
-				break;
-		}
-		if(feof(fp)) {
-			fclose(fp);
-			return -EINVAL;
-		}
-		p += strlen(buffer);
-		//if( *(p-1) == '\n' )
-			//*(p-1) = '>';
-		while(fgets(buffer2, sizeof(buffer2), fp)) {
-			strncpy(p, buffer2, strlen(buffer2));
-			p += strlen(buffer2);
-			//if( *(p-1) == '\n' )
-				//*(p-1) = '>';
-		}
-		*p = '\0';
-		nvram_set(name, buffer);
-		fclose(fp);
-		return 0;
-	}
-	else
+	if (!fp)
 		return -ENOENT;
+
+	while(fgets(line, sizeof(line), fp)) {
+		if(!strncmp(line, "-----BEGIN", 10))
+			break;
+	}
+	if(feof(fp)) {
+		fclose(fp);
+		return -EINVAL;
+	}
+
+	len = strlen(line);
+	memcpy(p, line, len);
+	p += len;
+	used += len;
+
+	while(fgets(line, sizeof(line), fp)) {
+		len = strlen(line);
+		if (used + len + 1 > sizeof(buffer)) {
+			fclose(fp);
+			return -E2BIG;
+		}
+		memcpy(p, line, len);
+		used += len;
+		p += len;
+	}
+	*p = '\0';
+	nvram_set(name, buffer);
+
+	fclose(fp);
+	return 0;
+}
+
 #endif
 }
 #endif

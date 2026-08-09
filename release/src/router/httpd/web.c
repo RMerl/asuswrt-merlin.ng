@@ -111,6 +111,7 @@ typedef unsigned long long u64;
 #include "openvpn_options.h"
 #include "openvpn_config.h"
 #include "amvpn_routing.h"
+#include "openvpn_setup.h"
 #endif
 
 #include <net/if.h>

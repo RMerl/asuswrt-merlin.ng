@@ -1507,13 +1507,13 @@ remove_dups(char *inlist, int inlist_size)
 			}
 			else
 			{
-				strncat(outlist, " ", inlist_size - strlen(outlist));
-				strncat(outlist, name, inlist_size - strlen(outlist));
+				strncat(outlist, " ", inlist_size - strlen(outlist) - 1);
+				strncat(outlist, name, inlist_size - strlen(outlist) - 1);
 			}
 		}
 	}
 
-	strncpy(inlist, outlist, inlist_size);
+	strlcpy(inlist, outlist, inlist_size);
 
 	free(outlist);
 	return inlist;

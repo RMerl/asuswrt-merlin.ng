@@ -10534,9 +10534,9 @@ endif
 
 fdt-install: fdt
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/fdt/dtc$(DTC_VER)) $(wildcard fdt/dtc$(DTC_VER))))
-	$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/fdt/dtc$(DTC_VER) install
+	$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/fdt/dtc$(DTC_VER) PREFIX=$(INSTALLDIR)/fdt/dtc$(DTC_VER) install
 ifeq ($(HND_ROUTER_BE_4916),y)
-	rm -f ~/bin/dtc
+	rm -f $(INSTALLDIR)/fdt/dtc$(DTC_VER)/bin/dtc
 endif
 
 # .PHONY : fdt

@@ -27078,7 +27078,10 @@ static void do_CoBrand_img(char *url, FILE *stream)
 	char path[128] = {0}, file_extension[32] = {0};
 	char *dotPosition = strstr(url, ".");
 
-	sprintf(file_extension, "%s", dotPosition);
+	if (dotPosition == NULL)
+		return;
+
+	snprintf(file_extension, sizeof(file_extension), "%s", dotPosition);
 
 	*dotPosition = '\0';
 	if(!strcmp(get_productid(), "GT-BE96") &&

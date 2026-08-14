@@ -10048,7 +10048,7 @@ libimobiledevice-1.3.0/Makefile:
 	$(MAKE) libimobiledevice-1.3.0-configure
 
 libimobiledevice-1.3.0: libimobiledevice-1.3.0/Makefile
-	$(MAKE) -C $@ && $(MAKE) $@-stage
+	$(MAKE) -C $@ $(PARALLEL_BUILD) && $(MAKE) $@-stage
 
 libimobiledevice-1.3.0-install: libimobiledevice-1.3.0
 	install -D libimobiledevice-1.3.0/tools/idevicebackup $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicebackup

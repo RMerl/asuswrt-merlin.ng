@@ -4145,7 +4145,7 @@ function change_wizard(o, id){
 										</tr>
 										<tr style="display:none">
 											<th>
-												<a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,6);"><#WANPPPAuthText#></a>
+												<a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,29);"><#WANPPPAuthText#></a>
 											</th>
 											<td>
 												<select class="input_option" name="wan_pppoe_auth">

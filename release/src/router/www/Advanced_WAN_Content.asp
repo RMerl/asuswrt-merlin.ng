@@ -1330,17 +1330,16 @@ function fixed_change_wan_type(wan_type){
 		else{
 			document.form.wan_ppp_echo.value = default_ppp_echo;
 		}		
+		ppp_echo_control();
 	}else if(wan_type == "pptp" || wan_type == "l2tp"){
 		if(wan_type == original_wan_type){
 			document.form.wan_ppp_echo.value = original_ppp_echo;
 		}
 		else{
 			document.form.wan_ppp_echo.value = default_ppp_echo;
-			
 		}
+		ppp_echo_control();
 	}
-	ppp_echo_control();
-
 }
 
 function change_wan_dhcp_enable(flag){

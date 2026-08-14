@@ -372,9 +372,12 @@ static char *get_netstat_nat_option(const int opt)
 	x = 0;
 	memset(&Info, 0, sizeof(Info));
 	
+	if (!opt)
+		return "";
+
 	for(i = 0; i < MAX_NETSTAT_NAT_OPTIONS_NUM; i++) {
 		if ((opt & (1 << i)) && !x) {
-			snprintf(Info, sizeof(Info), "%s", netst_natInfo[i].option);
+			snprintf(Info, sizeof(Info), "-%s", netst_natInfo[i].option);
 			x = 1;
 			continue;
 		}
@@ -433,7 +436,7 @@ static int do_netstat_nat(void *rInfo)
 		snprintf(dsthost, sizeof(dsthost), "-d %s", req->dsthost);
 	}
 	
-	snprintf(cmd, sizeof(cmd), "netstat-nat -%s %s %s %s %s > %s 2>&1 && echo 'XU6J03M6' >> %s &", 
+	snprintf(cmd, sizeof(cmd), "netstat-nat %s %s %s %s %s > %s 2>&1 && echo 'XU6J03M6' >> %s &", 
 				    get_netstat_nat_option(req->netst), sort, proto, srchost, dsthost,
 				    result_path, result_path);
 	MyDBG("Cmd: %s\n", cmd);

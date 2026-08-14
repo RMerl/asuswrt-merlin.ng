@@ -7606,7 +7606,14 @@ easy-rsa-clean:
 easy-rsa-install:
 	@$(SEP)
 	mkdir -p $(TARGETDIR)/rom/$(EX_ROM)/easy-rsa
+ifeq ($(or $(RTCONFIG_OPENSSL30),$(RTCONFIG_OPENSSL35)),y)
+	mkdir -p $(TARGETDIR)/rom/$(EX_ROM)/easy-rsa/x509-types
+	install easy-rsa/easyrsa3/easyrsa $(TARGETDIR)/rom/$(EX_ROM)/easy-rsa
+	install easy-rsa/easyrsa3/openssl-easyrsa.cnf $(TARGETDIR)/rom/$(EX_ROM)/easy-rsa
+	install easy-rsa/easyrsa3/x509-types/* $(TARGETDIR)/rom/$(EX_ROM)/easy-rsa/x509-types
+else
 	install easy-rsa/2.0/* $(TARGETDIR)/rom/$(EX_ROM)/easy-rsa
+endif
 
 openvpn: shared $(if $(BCM_502L07P2),ethctl_lib) openssl lzo$(LZO_VER) libcap-ng openpam zlib openvpn/Makefile
 	$(MAKE) -C $@ $(PARALLEL_BUILD)

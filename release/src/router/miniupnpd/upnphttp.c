@@ -1230,7 +1230,7 @@ BuildResp2_upnphttp(struct upnphttp * h, int respcode,
                     const char * body, int bodylen)
 {
 	int r = BuildHeader_upnphttp(h, respcode, respmsg, bodylen);
-	if(body && (r >= 0)) {
+	if(body && (bodylen > 0) && (r >= 0)) {
 		memcpy(h->res_buf + h->res_buflen, body, bodylen);
 		h->res_buflen += bodylen;
 	}

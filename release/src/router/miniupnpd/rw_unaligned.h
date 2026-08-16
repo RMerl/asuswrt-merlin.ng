@@ -1,7 +1,7 @@
 /* $Id: rw_unaligned.h,v 1.2 2025/04/03 21:11:35 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2012-2022 Thomas Bernard
+ * (c) 2012-2026 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -27,7 +27,7 @@
  * \return 32 bits word */
 INLINE uint32_t readnu32(const uint8_t * p)
 {
-	return (p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3]);
+	return ((uint32_t)p[0] << 24 | (uint32_t)p[1] << 16 | (uint32_t)p[2] << 8 | (uint32_t)p[3]);
 }
 #define READNU32(p) readnu32(p)
 /*! \brief read 2 bytes to a 16bits word
@@ -35,7 +35,7 @@ INLINE uint32_t readnu32(const uint8_t * p)
  * \return 16 bits word */
 INLINE uint16_t readnu16(const uint8_t * p)
 {
-	return (p[0] << 8 | p[1]);
+	return ((uint16_t)p[0] << 8 | (uint16_t)p[1]);
 }
 #define READNU16(p) readnu16(p)
 /*! \brief write 32bits to 4 bytes

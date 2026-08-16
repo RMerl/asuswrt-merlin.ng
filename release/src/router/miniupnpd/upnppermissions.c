@@ -183,7 +183,7 @@ get_addr_or_mask(const char * s, struct in_addr * addr)
 	else if (dot_cnt == 0)
 	{
 		int n_bits = atoi(buf);
-		if (n_bits >= 32 || n_bits < 0)
+		if (n_bits > 32 || n_bits < 0)
 			return NULL;
 		addr->s_addr = !n_bits ? 0 : htonl(0xffffffffu << (32 - n_bits));
 	}

@@ -486,6 +486,16 @@ int add_nat_rule(const char * ifname,
 }
 
 
+/* action of the rules created by add_nat_rule(), used to select the
+ * ruleset to scan when looking for a rule to delete.
+ * The kernel maps the rule action to a ruleset number, so PF_NAT selects
+ * PF_RULESET_NAT while PF_PASS selects PF_RULESET_FILTER. */
+#ifndef PF_NEWSTYLE
+#define NAT_RULE_ACTION	PF_NAT
+#else
+#define NAT_RULE_ACTION	PF_PASS	/* or PF_MATCH as we dont expect outbound packets to be blocked */
+#endif
+
 /*
  * returns:  0 : OK
  *          -1 : ERROR
@@ -511,7 +521,7 @@ delete_nat_rule(const char * ifname, unsigned short iport, int proto, in_addr_t 
 		return -1;
 	}
 #ifdef USE_LIBPFCTL
-	if(pfctl_get_rules_info(dev, &ri, PF_PASS, anchor_name) < 0)
+	if(pfctl_get_rules_info(dev, &ri, NAT_RULE_ACTION, anchor_name) < 0)
 	{
 		syslog(LOG_ERR, "pfctl_get_rules_info: %m");
 		return -1;
@@ -543,7 +553,7 @@ delete_nat_rule(const char * ifname, unsigned short iport, int proto, in_addr_t 
 	for(i=0; i<n; i++)
 	{
 #ifdef USE_LIBPFCTL
-		if(pfctl_get_rule(dev, i, ri.ticket, anchor_name, PF_PASS, &rule, anchor_call) < 0)
+		if(pfctl_get_rule(dev, i, ri.ticket, anchor_name, NAT_RULE_ACTION, &rule, anchor_call) < 0)
 		{
 			syslog(LOG_ERR, "pfctl_get_rule(): %m");
 			r = -1;

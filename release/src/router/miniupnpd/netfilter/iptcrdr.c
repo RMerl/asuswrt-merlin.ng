@@ -241,16 +241,20 @@ get_redirect_desc(unsigned short eport, int proto,
 	{
 		if(p->eport == eport && p->proto == (short)proto)
 		{
-			if(desc)
+			if(desc) {
 				strncpy(desc, p->str, desclen);
+				desc[desclen-1] = '\0';
+			}
 			if(timestamp)
 				*timestamp = p->timestamp;
 			return;
 		}
 	}
 	/* if no description was found, return miniupnpd as default */
-	if(desc)
+	if(desc) {
 		strncpy(desc, "miniupnpd", desclen);
+		desc[desclen-1] = '\0';
+	}
 	if(timestamp)
 		*timestamp = 0;
 }

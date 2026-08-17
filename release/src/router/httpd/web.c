@@ -25572,6 +25572,9 @@ static void do_CoBrand_png(char *url, FILE *stream)
     char path[128] = {0};
     char *dotPng = strstr(url, ".png");
 
+    if (dotPng == NULL)
+        return;
+
     *dotPng = '\0';
     if(brand > 0)
         snprintf(path, sizeof(path), "%s_%d.png", url, brand);

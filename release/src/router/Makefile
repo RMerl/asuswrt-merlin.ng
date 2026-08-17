@@ -9176,8 +9176,7 @@ endif
 	$(MAKE) -C $(TOPX_DIR)/dtc-1.5.1 EXTRA_CFLAGS="-I$(TOP)/libyaml/include" LDFLAGS="-L$(TOP)/libyaml/src/.libs"
 
 fdt-install: fdt
-	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/fdt/dtc-1.5.1) $(wildcard fdt/dtc-1.5.1)))
-	$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/fdt/dtc-1.5.1 install
+	@true
 
 # .PHONY : fdt
 

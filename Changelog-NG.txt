@@ -1,6 +1,20 @@
 Asuswrt-Merlin Changelog
 ========================
 
+3004.388.12_1 (xx-xxx-2026)
+  - UPDATED: OpenVPN to 2.7.6.
+  - UPDATED: miniupnpd to 2.3.11.
+  - CHANGED: When downgrading an OVPN server from TLS Encrypt V2
+             mode to tls auth mode, the V2 key will be replaced
+             with an appropriate V1 key.
+  - FIXED: Cannot connect to gaming servers if a game forwards
+           a port through UPnP (3006.102.8 regression)
+  - FIXED: A couple of potential security issues in httpd and
+           ipsec cert handling
+  - FIXED: netstat-nat would return an empty list if no option
+           is selected on the Netool webui interface
+
+
 3004.388.12 (31-July-2026)
   - NOTE: There has been important changes to OpenVPN, some
           necessary with the update to OpenVPN 2.7.  Make

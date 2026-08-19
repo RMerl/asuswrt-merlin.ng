@@ -7,6 +7,8 @@
 #ifndef _IPT_ROUTE_H_target
 #define _IPT_ROUTE_H_target
 
+#include <sys/types.h>
+
 #define IPT_ROUTE_IFNAMSIZ 16
 
 struct ipt_route_target_info {

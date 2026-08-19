@@ -1,6 +1,8 @@
 #ifndef _IPT_TRIGGER_H_target
 #define _IPT_TRIGGER_H_target
 
+#include <sys/types.h>
+
 #define TRIGGER_TIMEOUT 600	/* 600 secs */
 
 enum ipt_trigger_type

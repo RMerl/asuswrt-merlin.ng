@@ -25,6 +25,8 @@
 #ifndef _IPT_WEBMON_H
 #define _IPT_WEBMON_H
 
+#include <stdint.h>
+
 
 #define WEBMON_MAX_IPS           256
 #define WEBMON_MAX_IP_RANGES      16

@@ -1,6 +1,8 @@
 #ifndef _IPT_TOS_H_target
 #define _IPT_TOS_H_target
 
+#include <sys/types.h>
+
 #ifndef IPTOS_NORMALSVC
 #define IPTOS_NORMALSVC 0
 #endif

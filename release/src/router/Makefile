@@ -3826,6 +3826,14 @@ openssl-3.5-install:
 	chmod 0500 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
 	cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libcrypto.so && ln -sf libcrypto.so.3 libcrypto.so
 	cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libssl.so && ln -sf libssl.so.3 libssl.so
+ifeq ($(RTCONFIG_HNS),y)
+	# HNS vendor binaries retain OpenSSL 1.0.0 SONAMEs.  Resolve those names
+	# through the 1.1 ABI shim instead of shipping another OpenSSL codebase.
+	cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && \
+		rm -f libcrypto.so.1.0.0 libssl.so.1.0.0 && \
+		ln -sf libcrypto.so.1.1 libcrypto.so.1.0.0 && \
+		ln -sf libssl.so.1.1 libssl.so.1.0.0
+endif
 
 openssl-1.1/Makefile:
 	cd openssl-1.1 && \

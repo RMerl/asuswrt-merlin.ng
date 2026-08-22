@@ -1,6 +1,15 @@
 Asuswrt-Merlin Changelog
 ========================
 
+3004.388.13 (xx-xxx-xxxx)
+  - NEW: Migrated all devices to OpenSSL 3.5 (except GT-BE19000AI,
+         which was already on that version).
+         To work around closed source components linked against
+         OpenSSL 1.1.1, a shim was developped to pretend being
+         the openssl 1.1.1 library, redirecting calls to the
+         actual 3.5.x library.  (RSDNTWK)
+
+
 3004.388.12_2 (20-Aug-2026)
   - UPDATED: OpenVPN to 2.7.6.
   - UPDATED: miniupnpd to 2.3.11.

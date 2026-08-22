@@ -38,30 +38,31 @@ BUILD_ROGUI=y
 #BGTAC2900=y
 #BAC68V4=y
 
-#BAX88=y
-#BGTAX11000=y
-
 #BAX56=y
-#BAX58=y
 
-#BAX86=y
-#BAX68=y
-#BGTAXE11000=y
+BAX88=y
+BGTAX11000=y
 
-#BGTAX6000=y
-#BXT12=y
-#BGTAXE16000=y
-#BGTAX11000_PRO=y
-#BAX86_PRO=y
-#BAX88_PRO=y
+BAX58=y
 
-#BBE96=y
-#BGTBE98PRO=y
-#BBE88=y
-#BBE86=y
-#BBE92=y
-#BBE58GO=y
-#BGTBE19000AI=y
+BAX86=y
+BAX68=y
+BGTAXE11000=y
+
+BGTAX6000=y
+BXT12=y
+BGTAXE16000=y
+BGTAX11000_PRO=y
+BAX86_PRO=y
+BAX88_PRO=y
+
+BBE96=y
+BGTBE98PRO=y
+BBE88=y
+BBE86=y
+BBE92=y
+BBE58GO=y
+BGTBE19000AI=y
 
 ### Branches for each model
 BRANCH_AC68=386_x
@@ -101,16 +102,20 @@ BRANCH_GTBE19000AI=asuswrt6
 
 ### Paths
 # Store built images there
-STAGE_LOC="$HOME/images"
+STAGE_LOC="/media/sf_Share/images"
 
 # Copy built images there
 # Copy is done using scp, so it can be an ssh location
 #FINAL_LOC=""
 #FINAL_LOC=admin@router.asus.com:/mnt/sda1/Share
-FINAL_LOC=/media/sf_Share
+#FINAL_LOC="/media/sf_Share/images"
+FINAL_LOC=""
 
 # Location of the original source code
-SRC_LOC="$HOME/dev/amng"
+SRC_LOC="/workspace/dev/amng"
+
+# Location for each model's build trees
+BUILD_LOC="/workspace/build"
 
 ### End config
 
@@ -122,7 +127,7 @@ build_fw()
 	SDKPATH="$2"
 	FWPATH="$1"
 	echo "*** $(date +%R) - Starting building $FWMODEL..."
-	cd "$HOME/$FWPATH/$SDKPATH" || exit 1
+	cd "$BUILD_LOC/$FWPATH/$SDKPATH" || exit 1
 	if make "$FWMODEL" > "output.txt" 2>&1; then
 		cd image || exit
 		if [ "$FWMODEL" = "rt-ac86u" ] || [ "$FWMODEL" = "gt-ac2900" ] || [ "$FWMODEL" = "rt-ax88u" ] || [ "$FWMODEL" = "gt-ax11000" ] ; then
@@ -161,10 +166,12 @@ build_fw()
 			CHANGELOG="Changelog-NG.txt"
 		elif [[ "$FWNAME" == *"3006_102"* ]]; then
 			CHANGELOG="Changelog-3006.txt"
+		elif [[ "$FWNAME" == *"900"* ]]; then
+			echo "Test build, no changelog"
 		else
 			CHANGELOG="Changelog-386.txt"
 		fi
-		cp $HOME/$FWPATH/$CHANGELOG $STAGE_LOC/
+		cp $BUILD_LOC/$FWPATH/$CHANGELOG $STAGE_LOC/
 
 		zip -qj "$STAGE_LOC/$ZIPNAME" "$FWNAME" "$STAGE_LOC/README-merlin.txt" "$STAGE_LOC/$CHANGELOG" "sha256sum.sha256" 2>/dev/null
 		echo "*** $(date +%R) - Done building $FWMODEL!"
@@ -219,14 +226,14 @@ clean_tree()
 
 	if [ "$RSYNC_TREE" = "y" ]; then
 		echo "*** $(date +%R) - Updating $FWMODEL tree..."
-		rsync -a --del "$SRC_LOC/" "$HOME/$FWPATH"
+		rsync -a --del "$SRC_LOC/" "$BUILD_LOC/$FWPATH"
 	elif [ "$RSYNC_TREE" = "btrfs" ]; then
 		echo "*** $(date +%R) - Copying $FWMODEL tree..."
-		rm -rf "$HOME/$FWPATH"
-		cp -ar --reflink=auto "$SRC_LOC" "$HOME/$FWPATH"
+		rm -rf "$BUILD_LOC/$FWPATH"
+		cp -ar --reflink=auto "$SRC_LOC" "$BUILD_LOC/$FWPATH"
 	fi
 
-	cd "$HOME/$FWPATH" || exit 1
+	cd "$BUILD_LOC/$FWPATH" || exit 1
 	echo "*** $(date +%R) - $FWMODEL code ready."
 }
 
@@ -234,6 +241,7 @@ clean_tree()
 
 echo "--- $(date +%R) - Global cleanup..."
 mkdir -p "$STAGE_LOC/backup"
+mv -n "$STAGE_LOC"/sha256sums-ng.txt "$STAGE_LOC"/sha256sums-ng-$(date +%Y%m%d).txt
 mv "$STAGE_LOC"/* "$STAGE_LOC/backup/" 2>/dev/null
 cp "$SRC_LOC/README-merlin.txt" "$STAGE_LOC/"
 cp "$SRC_LOC"/Changelog*.txt "$STAGE_LOC/"
@@ -332,137 +340,111 @@ echo "--- $(date +%R) - Launching all builds"
 if [ "$BGTBE19000AI" = "y" ]; then
 	build_fw amng.gtbe19000ai release/src-rt-5.04behnd.4916 gt-be19000ai &
 fi
-sleep 15
 
 if [ "$BBE58GO" = "y" ]; then
 	build_fw amng.be58go release/src-rt-5.04behnd.4916 rt-be58_go &
-	sleep 15
 fi
 
 if [ "$BBE92" = "y" ]; then
 	build_fw amng.be92 release/src-rt-5.04behnd.4916 rt-be92u &
-	sleep 15
 fi
 
 if [ "$BBE88" = "y" ]; then
 	build_fw amng.be88 release/src-rt-5.04behnd.4916 rt-be88u &
-	sleep 15
 fi
 if [ "$BBE86" = "y" ]; then
 	build_fw amng.be86 release/src-rt-5.04behnd.4916 rt-be86u &
-	sleep 15
 fi
 
 if [ "$BGTBE98PRO" = "y" ]; then
 	build_fw amng.gtbe98pro release/src-rt-5.04behnd.4916 gt-be98_pro &
-	sleep 15
 fi
 
 if [ "$BBE96" = "y" ]; then
         build_fw amng.be96 release/src-rt-5.04behnd.4916 rt-be96u &
-	sleep 15
 fi
 
 if [ "$BGTAX6000" = "y" ]; then
 	build_fw amng.gtax6000 release/src-rt-5.04axhnd.675x gt-ax6000 &
-	sleep 15
 fi
 
 if [ "$BXT12" = "y" ]; then
 	build_fw amng.xt12 release/src-rt-5.04axhnd.675x xt12 &
-	sleep 15
 fi
 
 if [ "$BAX86_PRO" = "y" ]; then
 	build_fw amng.ax86pro release/src-rt-5.04axhnd.675x rt-ax86u_pro &
-	sleep 15
 fi
 
 if [ "$BAX88_PRO" = "y" ]; then
 	build_fw amng.ax88pro release/src-rt-5.04axhnd.675x rt-ax88u_pro &
-	sleep 15
 fi
 
 if [ "$BGTAX11000_PRO" = "y" ]; then
 	build_fw amng.gtax11000pro release/src-rt-5.04axhnd.675x gt-ax11000_pro &
-	sleep 15
 fi
 
 if [ "$BGTAXE16000" = "y" ]; then
 	build_fw amng.gtaxe16000 release/src-rt-5.04axhnd.675x gt-axe16000 &
-	sleep 15
 fi
 
 if [ "$BAC86" = "y" ]; then
 	build_fw amng.ac86 release/src-rt-5.02hnd rt-ac86u &
-	sleep 15
 fi
 
 if [ "$BGTAC2900" = "y" ]; then
 	build_fw amng.gt2900 release/src-rt-5.02hnd gt-ac2900 &
-	sleep 15
 fi
 
 if [ "$BAX88" = "y" ]; then
 	build_fw amng.ax88 release/src-rt-5.02axhnd rt-ax88u &
-	sleep 15
 fi
 
 if [ "$BGTAX11000" = "y" ]; then
 	build_fw amng.gtax11000 release/src-rt-5.02axhnd gt-ax11000 &
-	sleep 15
 fi
 
 if [ "$BGTAXE11000" = "y" ]; then
 	build_fw amng.gtaxe11000 release/src-rt-5.02L.07p2axhnd gt-axe11000 &
-	sleep 15
 fi
 
 if [ "$BAC68V4" = "y" ]; then
 	build_fw amng.ac68v4 release/src-rt-5.02L.07p2axhnd rt-ac68u_v4 &
-	sleep 15
 fi
 
 if [ "$BAX58" = "y" ]; then
 	build_fw amng.ax58 release/src-rt-5.02axhnd.675x rt-ax58u &
-	sleep 15
 fi
 
 if [ "$BAX56" = "y" ]; then
 	build_fw amng.ax56 release/src-rt-5.02axhnd.675x rt-ax56u &
-	sleep 15
 fi
 
 if [ "$BAX86" = "y" ]; then
 	build_fw amng.ax86 release/src-rt-5.02L.07p2axhnd rt-ax86u &
-	sleep 15
 fi
 
 if [ "$BAX68" = "y" ]; then
 	build_fw amng.ax68 release/src-rt-5.02L.07p2axhnd rt-ax68u &
-	sleep 15
 fi
 
 if [ "$BAC68" = "y" ]; then
 	build_fw amng.ac68 release/src-rt-6.x.4708 rt-ac68u &
-	sleep 15
 fi
 
 if [ "$BAC3100" = "y" ]; then
 	build_fw amng.ac3100 release/src-rt-7.14.114.x/src rt-ac3100 &
-	sleep 15
 fi
 
 if [ "$BAC88" = "y" ]; then
 	build_fw amng.ac88 release/src-rt-7.14.114.x/src rt-ac88u &
-	sleep 15
 fi
 
 if [ "$BAC5300" = "y" ]; then
 	build_fw amng.ac5300 release/src-rt-7.14.114.x/src rt-ac5300 &
-	sleep 15
 fi
 
+sleep 3
 echo "--- $(date +%R) - All builds launched, please wait..."
 
 wait
@@ -471,7 +453,7 @@ wait
 if [ "$BAC68" = "y" ] && [ "$BAC68V4" = "y" ] && [ $"$COMBINED" = "y" ]
 then
         echo "--- $(date +%R) - Building combined RT-AC68U image..."
-        cd "$HOME/amng.ac68/release/src-rt-6.x.4708"
+        cd "$BUILD_LOC/amng.ac68/release/src-rt-6.x.4708"
         make rt-ac68u-combine_image BCM=y IMAGEDIR=$STAGE_LOC > "output.txt" 2>&1;
 
 	cd "$STAGE_LOC"
@@ -485,7 +467,6 @@ fi
 
 echo
 cd "$STAGE_LOC" || exit 1
-mv -n sha256sums-ng.txt sha256sums-ng-$(date +%Y%m%d).txt
 sha256sum *.trx  | unix2dos >> sha256sums-ng.txt
 sha256sum *.w  | unix2dos >> sha256sums-ng.txt
 sha256sum *.pkgtb  | unix2dos >> sha256sums-ng.txt

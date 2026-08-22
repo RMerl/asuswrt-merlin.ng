@@ -43,7 +43,8 @@ ifneq ($(MAKECMDGOALS),clean)
 # List of dirs to search for apps and libs
 # TODO: replace all occurances of INSTALL_DIR with BCM_FSINSTALL_DIR
 SEARCH_DIRS := $(BCM_FSINSTALL_DIR)/bin $(BCM_FSINSTALL_DIR)/sbin \
-               $(BCM_FSINSTALL_DIR)/lib $(BCM_FSINSTALL_DIR)/usr
+               $(BCM_FSINSTALL_DIR)/lib $(BCM_FSINSTALL_DIR)/usr \
+               $(BCM_FSINSTALL_DIR)/hns/usr
 
 # Get list of all 32 bit apps and libs to scan
 APPSLIBS32 := $(shell find -L $(SEARCH_DIRS) -type f | file -f - \
@@ -124,6 +125,8 @@ EXP_TOOLCHAIN_LIBS32 := $(shell for j in $(SHLIBS32); do if test -n "$$(find -L 
                                ; then echo ""; else echo $$j; fi; done;)
 EXP_TOOLCHAIN_LIBS32 := $(shell for j in $(EXP_TOOLCHAIN_LIBS32); do if test -n "$$(find -L $(INSTALL_DIR)/usr/lib/$(INSTALL_SUFFIX32) -name $$j)" \
                                ; then echo ""; else echo $$j; fi; done;)
+EXP_TOOLCHAIN_LIBS32 := $(shell for j in $(EXP_TOOLCHAIN_LIBS32); do if test -n "$$(find -L $(INSTALL_DIR)/hns/usr -name $$j)" \
+                               ; then echo ""; else echo $$j; fi; done;)
 ifneq ($(BUILD_PRPL_FEEDS),)
 EXP_TOOLCHAIN_LIBS32 := $(shell for j in $(EXP_TOOLCHAIN_LIBS32); do if test -n "$$(find -L $(INSTALL_DIR)/opt/prplos/usr -name $$j)" \
                                ; then echo ""; else echo $$j; fi; done;)
@@ -192,6 +195,8 @@ SHLIBS64 += $(EXTRALIBS64)
 EXP_TOOLCHAIN_LIBS64 := $(shell for j in $(SHLIBS64); do if test -n "$$(find -L $(INSTALL_DIR)/usr/lib -name $$j)" \
                                ; then echo ""; else echo $$j; fi; done;)
 EXP_TOOLCHAIN_LIBS64 := $(shell for j in $(EXP_TOOLCHAIN_LIBS64); do if test -n "$$(find -L $(INSTALL_DIR)/usr/lib/$(INSTALL_SUFFIX64) -name $$j)" \
+                               ; then echo ""; else echo $$j; fi; done;)
+EXP_TOOLCHAIN_LIBS64 := $(shell for j in $(EXP_TOOLCHAIN_LIBS64); do if test -n "$$(find -L $(INSTALL_DIR)/hns/usr -name $$j)" \
                                ; then echo ""; else echo $$j; fi; done;)
 
 # Get full paths for toolchain libs

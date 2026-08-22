@@ -68,6 +68,7 @@ install: all
 	@cp -f prebuild/shn_ctrl $(INSTALLDIR)/hns/usr/sbin/
 	@cp -f prebuild/ufwd $(INSTALLDIR)/hns/usr/sbin/
 	@cp -f prebuild/libcrypto.so.1.0.0 $(INSTALLDIR)/hns/usr/lib/
+	@cp -f prebuild/libssl.so.1.0.0 $(INSTALLDIR)/hns/usr/lib/
 	@cp -f prebuild/libDpiWrapper.so $(INSTALLDIR)/hns/usr/lib/
 	@cp -f prebuild/libjsoncpp.so.0.10.5 $(INSTALLDIR)/hns/usr/lib/
 	@cp -f prebuild/libptn_handler.so $(INSTALLDIR)/hns/usr/lib/

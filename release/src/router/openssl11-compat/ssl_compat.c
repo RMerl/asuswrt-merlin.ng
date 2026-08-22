@@ -5,10 +5,12 @@
 #include <stdlib.h>
 
 #define SSL_CTX_set_options SSL_CTX_set_options__openssl3_decl
+#define SSL_set_options SSL_set_options__openssl3_decl
 #include <openssl/crypto.h>
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 #undef SSL_CTX_set_options
+#undef SSL_set_options
 
 #ifdef SSL_get_peer_certificate
 #undef SSL_get_peer_certificate
@@ -56,8 +58,36 @@ static void *ssl_shutdown_sym;
 static void *ssl_write_sym;
 static void *tls_client_method_sym;
 static void *tls_server_method_sym;
+static void *tls_method_sym;
+static void *dtls_method_sym;
+static void *dtls_server_method_sym;
+static void *tlsv1_method_sym;
+static void *tlsv1_server_method_sym;
 static void *openssl_init_ssl_sym;
 static void *ssl_get1_peer_certificate_sym;
+static void *ssl_cipher_get_id_sym;
+static void *ssl_cipher_get_name_sym;
+static void *ssl_ctx_load_verify_locations_sym;
+static void *ssl_ctx_set_cookie_generate_cb_sym;
+static void *ssl_ctx_set_cookie_verify_cb_sym;
+static void *ssl_ctx_set_default_passwd_cb_sym;
+static void *ssl_ctx_set_default_passwd_cb_userdata_sym;
+static void *ssl_ctx_set_verify_depth_sym;
+static void *ssl_do_handshake_sym;
+static void *ssl_get_certificate_sym;
+static void *ssl_get_ciphers_sym;
+static void *ssl_get_current_cipher_sym;
+static void *ssl_get_ex_data_sym;
+static void *ssl_get_ex_data_x509_store_ctx_idx_sym;
+static void *ssl_is_init_finished_sym;
+static void *ssl_renegotiate_sym;
+static void *ssl_renegotiate_pending_sym;
+static void *ssl_set_accept_state_sym;
+static void *ssl_set_bio_sym;
+static void *ssl_set_cipher_list_sym;
+static void *ssl_set_connect_state_sym;
+static void *ssl_set_ex_data_sym;
+static void *ssl_set_options_sym;
 
 static const char *compat_getenv(const char *name)
 {
@@ -144,6 +174,10 @@ static void *ssl_handle(void)
 		compat_fatal("dlopen(libssl.so.3) failed", dlerror());
 
 	validate_ssl_handle(loaded, crypto_handle);
+	/* libssl.so.3 retains its dependency reference; release our validation
+	 * reference before publishing or discarding the SSL handle. */
+	dlclose(crypto_handle);
+	crypto_handle = NULL;
 
 	expected = NULL;
 	if (!__atomic_compare_exchange_n(&ssl_handle_cache, &expected, loaded, 0,
@@ -208,8 +242,36 @@ static void preload_ssl_symbols(void)
 	(void)ssl_sym(&ssl_write_sym, "SSL_write");
 	(void)ssl_sym(&tls_client_method_sym, "TLS_client_method");
 	(void)ssl_sym(&tls_server_method_sym, "TLS_server_method");
+	(void)ssl_sym(&tls_method_sym, "TLS_method");
+	(void)ssl_sym(&dtls_method_sym, "DTLS_method");
+	(void)ssl_sym(&dtls_server_method_sym, "DTLS_server_method");
+	(void)ssl_sym(&tlsv1_method_sym, "TLSv1_method");
+	(void)ssl_sym(&tlsv1_server_method_sym, "TLSv1_server_method");
 	(void)ssl_sym(&openssl_init_ssl_sym, "OPENSSL_init_ssl");
 	(void)ssl_sym(&ssl_get1_peer_certificate_sym, "SSL_get1_peer_certificate");
+	(void)ssl_sym(&ssl_cipher_get_id_sym, "SSL_CIPHER_get_id");
+	(void)ssl_sym(&ssl_cipher_get_name_sym, "SSL_CIPHER_get_name");
+	(void)ssl_sym(&ssl_ctx_load_verify_locations_sym, "SSL_CTX_load_verify_locations");
+	(void)ssl_sym(&ssl_ctx_set_cookie_generate_cb_sym, "SSL_CTX_set_cookie_generate_cb");
+	(void)ssl_sym(&ssl_ctx_set_cookie_verify_cb_sym, "SSL_CTX_set_cookie_verify_cb");
+	(void)ssl_sym(&ssl_ctx_set_default_passwd_cb_sym, "SSL_CTX_set_default_passwd_cb");
+	(void)ssl_sym(&ssl_ctx_set_default_passwd_cb_userdata_sym, "SSL_CTX_set_default_passwd_cb_userdata");
+	(void)ssl_sym(&ssl_ctx_set_verify_depth_sym, "SSL_CTX_set_verify_depth");
+	(void)ssl_sym(&ssl_do_handshake_sym, "SSL_do_handshake");
+	(void)ssl_sym(&ssl_get_certificate_sym, "SSL_get_certificate");
+	(void)ssl_sym(&ssl_get_ciphers_sym, "SSL_get_ciphers");
+	(void)ssl_sym(&ssl_get_current_cipher_sym, "SSL_get_current_cipher");
+	(void)ssl_sym(&ssl_get_ex_data_sym, "SSL_get_ex_data");
+	(void)ssl_sym(&ssl_get_ex_data_x509_store_ctx_idx_sym, "SSL_get_ex_data_X509_STORE_CTX_idx");
+	(void)ssl_sym(&ssl_is_init_finished_sym, "SSL_is_init_finished");
+	(void)ssl_sym(&ssl_renegotiate_sym, "SSL_renegotiate");
+	(void)ssl_sym(&ssl_renegotiate_pending_sym, "SSL_renegotiate_pending");
+	(void)ssl_sym(&ssl_set_accept_state_sym, "SSL_set_accept_state");
+	(void)ssl_sym(&ssl_set_bio_sym, "SSL_set_bio");
+	(void)ssl_sym(&ssl_set_cipher_list_sym, "SSL_set_cipher_list");
+	(void)ssl_sym(&ssl_set_connect_state_sym, "SSL_set_connect_state");
+	(void)ssl_sym(&ssl_set_ex_data_sym, "SSL_set_ex_data");
+	(void)ssl_sym(&ssl_set_options_sym, "SSL_set_options");
 }
 
 static void __attribute__((constructor)) preload_ssl_compat(void)
@@ -258,6 +320,11 @@ WRAP1(int, SSL_shutdown, ssl_shutdown_sym, SSL *, ssl)
 WRAP3(int, SSL_write, ssl_write_sym, SSL *, ssl, const void *, buf, int, num)
 WRAP0(const SSL_METHOD *, TLS_client_method, tls_client_method_sym)
 WRAP0(const SSL_METHOD *, TLS_server_method, tls_server_method_sym)
+WRAP0(const SSL_METHOD *, TLS_method, tls_method_sym)
+WRAP0(const SSL_METHOD *, DTLS_method, dtls_method_sym)
+WRAP0(const SSL_METHOD *, DTLS_server_method, dtls_server_method_sym)
+WRAP0(const SSL_METHOD *, TLSv1_method, tlsv1_method_sym)
+WRAP0(const SSL_METHOD *, TLSv1_server_method, tlsv1_server_method_sym)
 
 COMPAT_EXPORT unsigned long SSL_CTX_set_options(SSL_CTX *ctx, unsigned long op)
 {
@@ -280,4 +347,49 @@ COMPAT_EXPORT X509 *SSL_get_peer_certificate(const SSL *ssl)
 	typedef X509 *(*fn_t)(const SSL *);
 
 	return ((fn_t)ssl_sym(&ssl_get1_peer_certificate_sym, "SSL_get1_peer_certificate"))(ssl);
+}
+
+WRAP1(uint32_t, SSL_CIPHER_get_id, ssl_cipher_get_id_sym, const SSL_CIPHER *, c)
+WRAP1(const char *, SSL_CIPHER_get_name, ssl_cipher_get_name_sym, const SSL_CIPHER *, c)
+WRAP3(int, SSL_CTX_load_verify_locations, ssl_ctx_load_verify_locations_sym, SSL_CTX *, ctx, const char *, ca_file, const char *, ca_dir)
+WRAP2(void, SSL_CTX_set_default_passwd_cb, ssl_ctx_set_default_passwd_cb_sym, SSL_CTX *, ctx, pem_password_cb *, cb)
+WRAP2(void, SSL_CTX_set_default_passwd_cb_userdata, ssl_ctx_set_default_passwd_cb_userdata_sym, SSL_CTX *, ctx, void *, u)
+WRAP2(void, SSL_CTX_set_verify_depth, ssl_ctx_set_verify_depth_sym, SSL_CTX *, ctx, int, depth)
+WRAP1(int, SSL_do_handshake, ssl_do_handshake_sym, SSL *, ssl)
+WRAP1(X509 *, SSL_get_certificate, ssl_get_certificate_sym, const SSL *, ssl)
+WRAP1(STACK_OF(SSL_CIPHER) *, SSL_get_ciphers, ssl_get_ciphers_sym, const SSL *, ssl)
+WRAP1(const SSL_CIPHER *, SSL_get_current_cipher, ssl_get_current_cipher_sym, const SSL *, ssl)
+WRAP2(void *, SSL_get_ex_data, ssl_get_ex_data_sym, const SSL *, ssl, int, idx)
+WRAP0(int, SSL_get_ex_data_X509_STORE_CTX_idx, ssl_get_ex_data_x509_store_ctx_idx_sym)
+WRAP1(int, SSL_is_init_finished, ssl_is_init_finished_sym, const SSL *, ssl)
+WRAP1(int, SSL_renegotiate, ssl_renegotiate_sym, SSL *, ssl)
+WRAP1(int, SSL_renegotiate_pending, ssl_renegotiate_pending_sym, const SSL *, ssl)
+WRAPV1(SSL_set_accept_state, ssl_set_accept_state_sym, SSL *, ssl)
+WRAP3(void, SSL_set_bio, ssl_set_bio_sym, SSL *, ssl, BIO *, rbio, BIO *, wbio)
+WRAP2(int, SSL_set_cipher_list, ssl_set_cipher_list_sym, SSL *, ssl, const char *, str)
+WRAPV1(SSL_set_connect_state, ssl_set_connect_state_sym, SSL *, ssl)
+WRAP3(int, SSL_set_ex_data, ssl_set_ex_data_sym, SSL *, ssl, int, idx, void *, data)
+
+COMPAT_EXPORT void SSL_CTX_set_cookie_generate_cb(SSL_CTX *ctx,
+	int (*cb)(SSL *, unsigned char *, unsigned int *))
+{
+	typedef void (*fn_t)(SSL_CTX *, int (*)(SSL *, unsigned char *, unsigned int *));
+	((fn_t)ssl_sym(&ssl_ctx_set_cookie_generate_cb_sym, "SSL_CTX_set_cookie_generate_cb"))(ctx, cb);
+}
+
+COMPAT_EXPORT void SSL_CTX_set_cookie_verify_cb(SSL_CTX *ctx,
+	int (*cb)(SSL *, const unsigned char *, unsigned int))
+{
+	typedef void (*fn_t)(SSL_CTX *, int (*)(SSL *, const unsigned char *, unsigned int));
+	((fn_t)ssl_sym(&ssl_ctx_set_cookie_verify_cb_sym, "SSL_CTX_set_cookie_verify_cb"))(ctx, cb);
+}
+
+COMPAT_EXPORT unsigned long SSL_set_options(SSL *ssl, unsigned long options)
+{
+	typedef uint64_t (*fn_t)(SSL *, uint64_t);
+	uint64_t ret;
+
+	ret = ((fn_t)ssl_sym(&ssl_set_options_sym, "SSL_set_options"))(ssl,
+		(uint64_t)options);
+	return (unsigned long)ret;
 }

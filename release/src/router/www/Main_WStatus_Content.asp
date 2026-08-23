@@ -186,6 +186,7 @@ function generate_clients(clientsarray) {
 	var nmapentry;
 	var guestheader = "";
 	var popupHandler;
+	var mainBSS = 0;
 
 	if (isSupport("UI4")){
 		var guestBackgroundColor = "background-color: #EEEEEE;";
@@ -213,15 +214,19 @@ function generate_clients(clientsarray) {
 			// Display a new Guest header?
 			if (client[12] != "" && client[12] != guestheader) {
 				guestheader = client[12];
-				if (sw_mode == "2") {
-					code += `<tr><th colspan="6" style="height:20px; ${guestBackgroundColor}"><span class="hint-color" style="font-weight:bolder;">Local Clients: </span> ${guestheader}`;
+				if (client[12] == "Main BSS") {
+					code += `<tr><th colspan="6" style="height:20px; ${guestBackgroundColor}"><span class="hint-color" style="font-weight:bolder;">Link</span>`;
+					mainBSS = 1;
 				} else {
 					code += `<tr><th colspan="6" style="height:20px; ${guestBackgroundColor}"><span class="hint-color" style="font-weight:bolder;">Guest Network: </span> ${guestheader}`;
-					if (client[13] != "") {
-						code += '<span style="float:right;"><span class="hint-color" style="font-weight:bolder;">VLAN: </span> ' + client[13] + '</span>';
-					}
+				}
+				if (client[13] != "") {
+					code += '<span style="float:right;"><span class="hint-color" style="font-weight:bolder;">VLAN: </span> ' + client[13] + '</span>';
 				}
 				code += '</th></tr>';
+			} else if (client[12] == "" && mainBSS == 1) {
+				code += `<tr><th colspan="6" style="height:20px; ${guestBackgroundColor}"><span class="hint-color" style="font-weight:bolder;">Local Clients</span>`;
+				mainBSS = 0;
 			}
 			code += '<tr>';
 
@@ -324,7 +329,6 @@ function generate_header(dataarray, title, dfs_statusarray) {
 		code += '<td><span class="amng-highlight-color">Noise: </span>' + dataarray[3] + ' dBm</td>';
 	if (dataarray[6] != -1)
 		code += '<td><span class="amng-highlight-color">Utilization: </span>'+ dataarray[6] + '%</td>';
-
 	code += '</tr>';
 
 	if (dfs_statusarray.length > 1) {

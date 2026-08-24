@@ -3881,6 +3881,14 @@ openssl11-compat:
 openssl11-compat-clean:
 	@$(MAKE) -C openssl11-compat clean
 
+.PHONY: openssl10-compat openssl10-compat-clean
+
+openssl10-compat:
+	@$(MAKE) -C $@
+
+openssl10-compat-clean:
+	@$(MAKE) -C openssl10-compat clean
+
 openssl-3.5/Makefile:
 	cd openssl-3.5 && \
 	./Configure $(HOSTCONFIG_OPENSSL) --prefix=/usr --openssldir=/etc --cross-compile-prefix=' ' \
@@ -9124,6 +9132,10 @@ bwdpi_source-install: bwdpi_source
 
 hns:
 	cd hns && CC=$(CC) && $(MAKE) all
+
+ifeq ($(and $(RTCONFIG_HNS),$(RTCONFIG_OPENSSL35)),y)
+hns: openssl10-compat
+endif
 
 hns-clean:
 	cd hns && $(MAKE) clean

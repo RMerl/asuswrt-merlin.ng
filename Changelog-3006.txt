@@ -8,6 +8,11 @@ Asuswrt-Merlin 3006.xxx Changelog
          OpenSSL 1.1.1, a shim was developped to pretend being
          the openssl 1.1.1 library, redirecting calls to the
          actual 3.5.x library.  (RSDNTWK)
+  - NEW: Wireless Log will now report infos for Repeater,
+         Media Bridge and WISP upstream link
+  - FIXED: Wireless Log not working while in WISP mode.
+  - FIXED: Wireless Log issues while in Repeater and
+           Media Bridge modes.
 
 
 3006.102.8_4 (20-Aug-2026)

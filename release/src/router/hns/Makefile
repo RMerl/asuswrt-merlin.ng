@@ -67,8 +67,13 @@ install: all
 	@cp -f prebuild/hns_cli $(INSTALLDIR)/hns/usr/sbin/
 	@cp -f prebuild/shn_ctrl $(INSTALLDIR)/hns/usr/sbin/
 	@cp -f prebuild/ufwd $(INSTALLDIR)/hns/usr/sbin/
+ifeq ($(RTCONFIG_OPENSSL35),y)
+	@install -m 755 $(TOP)/openssl10-compat/libcrypto.so.1.0.0 $(INSTALLDIR)/hns/usr/lib/
+	@install -m 755 $(TOP)/openssl10-compat/libssl.so.1.0.0 $(INSTALLDIR)/hns/usr/lib/
+else
 	@cp -f prebuild/libcrypto.so.1.0.0 $(INSTALLDIR)/hns/usr/lib/
 	@cp -f prebuild/libssl.so.1.0.0 $(INSTALLDIR)/hns/usr/lib/
+endif
 	@cp -f prebuild/libDpiWrapper.so $(INSTALLDIR)/hns/usr/lib/
 	@cp -f prebuild/libjsoncpp.so.0.10.5 $(INSTALLDIR)/hns/usr/lib/
 	@cp -f prebuild/libptn_handler.so $(INSTALLDIR)/hns/usr/lib/

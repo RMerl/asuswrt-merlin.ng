@@ -10,6 +10,7 @@ Asuswrt-Merlin 3006.xxx Changelog
          actual 3.5.x library.  (RSDNTWK)
   - NEW: Wireless Log will now report infos for Repeater,
          Media Bridge and WISP upstream link
+  - UPDATED: amtm to 7.0 (decoderman)
   - FIXED: Wireless Log not working while in WISP mode.
   - FIXED: Wireless Log issues while in Repeater and
            Media Bridge modes.

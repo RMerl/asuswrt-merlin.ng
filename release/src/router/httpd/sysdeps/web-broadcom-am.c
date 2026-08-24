@@ -405,24 +405,21 @@ ej_wl_unit_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		ret += websWrite(wp, "\"Stations\"");
 		noclients = 1;
 	}
-	else if (nvram_match(strcat_r(prefix, "mode", tmp), "wet"))
-	{
-#ifdef RTCONFIG_WIRELESSREPEATER
-		if ((nvram_get_int("sw_mode") == SW_MODE_REPEATER)
-			&& (nvram_get_int("wlc_band") == unit))
-			sprintf(prefix, "wl%d.%d_", unit, 1);
-#endif
-		ret += websWrite(wp, "\"Repeater ( SSID local: %s )\"", nvram_safe_get(strcat_r(prefix, "ssid", tmp)));
-	}
 #ifdef RTCONFIG_PROXYSTA
-	else if (nvram_match(strcat_r(prefix, "mode", tmp), "psta"))
+	else if ((sw_mode() == SW_MODE_AP) &&
+		     (nvram_get_int("wlc_psta") == 1) &&
+		     (nvram_get_int("wlc_band") == unit))
 	{
-		if ((nvram_get_int("sw_mode") == SW_MODE_AP) &&
-			(nvram_get_int("wlc_psta") == 1) &&
-			(nvram_get_int("wlc_band") == unit))
 		ret += websWrite(wp, "\"Media Bridge\"");
 	}
 #endif
+	else if (nvram_match(strcat_r(prefix, "mode", tmp), "wet"))
+	{
+		if (nvram_get_int("wlc_band") == unit)
+			sprintf(prefix, "wl%d.%d_", unit, 1);
+
+		ret += websWrite(wp, "\"Repeater ( SSID local: %s )\"", nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))));
+	}
 
 // Close dataarray
 	ret += websWrite(wp, "];\n");

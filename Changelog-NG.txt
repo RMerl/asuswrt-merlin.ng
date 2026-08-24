@@ -8,6 +8,7 @@ Asuswrt-Merlin Changelog
          OpenSSL 1.1.1, a shim was developped to pretend being
          the openssl 1.1.1 library, redirecting calls to the
          actual 3.5.x library.  (RSDNTWK)
+  - UPDATED: amtm to 7.0 (decoderman)
 
 
 3004.388.12_2 (20-Aug-2026)

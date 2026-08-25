@@ -3245,6 +3245,14 @@ openssl11-compat:
 openssl11-compat-clean:
 	@$(MAKE) -C openssl11-compat clean
 
+.PHONY: openssl10-compat openssl10-compat-clean
+
+openssl10-compat:
+	@$(MAKE) -C $@
+
+openssl10-compat-clean:
+	@$(MAKE) -C openssl10-compat clean
+
 openssl-3.5/Makefile:
 	cd openssl-3.5 && \
 	./Configure $(HOSTCONFIG) --prefix=/usr --openssldir=/etc --cross-compile-prefix=' ' \
@@ -5395,6 +5403,10 @@ wtfast-configure:
 wtfast:
 	@true
 
+ifeq ($(and $(RTCONFIG_WTFAST),$(RTCONFIG_OPENSSL35)),y)
+wtfast: openssl10-compat
+endif
+
 wtfast-install:
 ifeq ($(RTCONFIG_QCA),y)
 	$(info FIXME wtfast)
@@ -5405,7 +5417,9 @@ else
 	install -D wtfast/wtfslhd/prebuilt$(BCMEX)$(EX7)/wtfslhd $(INSTALLDIR)/wtfast/usr/sbin/wtfslhd
 	$(STRIP) $(INSTALLDIR)/wtfast/usr/sbin/wtfslhd
 endif
-ifeq ($(RTCONFIG_OPENSSL11),y)
+ifeq ($(RTCONFIG_OPENSSL35),y)
+	$(MAKE) -C openssl10-compat INSTALLDIR=$(INSTALLDIR)/wtfast install
+else ifeq ($(RTCONFIG_OPENSSL11),y)
 	install -d $(INSTALLDIR)/wtfast/usr/lib
 ifeq ($(HND_ROUTER),y)
 	cd $(INSTALLDIR)/wtfast/usr/lib && ln -sf libcrypto.so.1.1 libcrypto.so.1.0.0

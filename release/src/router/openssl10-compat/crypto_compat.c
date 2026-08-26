@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* Keep the OpenSSL 3 declarations out of the legacy public ABI. */
 #define CRYPTO_malloc CRYPTO_malloc__openssl3_decl
@@ -53,6 +54,43 @@ static const char *compat_getenv(const char *name)
 #endif
 }
 
+/* HND rc exports this fixed system-only search path to every service. */
+static int trusted_hnd_library_path(const char *value)
+{
+	static const char *const trusted_dirs[] = {
+		"/lib",
+		"/usr/lib",
+		"/lib/aarch64",
+	};
+	const char *component;
+
+	if (value == NULL || *value == '\0')
+		return 1;
+
+	for (component = value;;) {
+		const char *end = component;
+		size_t length;
+		size_t i;
+
+		while (*end != '\0' && *end != ':')
+			++end;
+		length = (size_t)(end - component);
+		if (length == 0)
+			return 0;
+
+		for (i = 0; i < sizeof(trusted_dirs) / sizeof(trusted_dirs[0]); ++i) {
+			if (strlen(trusted_dirs[i]) == length &&
+			    memcmp(component, trusted_dirs[i], length) == 0)
+				break;
+		}
+		if (i == sizeof(trusted_dirs) / sizeof(trusted_dirs[0]))
+			return 0;
+		if (*end == '\0')
+			return 1;
+		component = end + 1;
+	}
+}
+
 static void reject_unsafe_openssl_env(void)
 {
 	static const char *const env_names[] = {
@@ -62,7 +100,6 @@ static void reject_unsafe_openssl_env(void)
 		"OPENSSL_ENGINES",
 		"LD_PRELOAD",
 		"LD_AUDIT",
-		"LD_LIBRARY_PATH",
 		"LD_ORIGIN_PATH",
 		"LD_DEBUG",
 		"LD_DEBUG_OUTPUT",
@@ -71,7 +108,13 @@ static void reject_unsafe_openssl_env(void)
 		"LD_HWCAP_MASK",
 		"LD_DYNAMIC_WEAK",
 	};
+	const char *library_path;
 	size_t i;
+
+	library_path = compat_getenv("LD_LIBRARY_PATH");
+	if (!trusted_hnd_library_path(library_path))
+		compat_fatal("refusing unsafe loader search path from environment",
+			"LD_LIBRARY_PATH");
 
 	for (i = 0; i < sizeof(env_names) / sizeof(env_names[0]); ++i) {
 		const char *value = compat_getenv(env_names[i]);

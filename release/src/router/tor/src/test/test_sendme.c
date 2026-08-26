@@ -7,6 +7,7 @@
 #define NETWORKSTATUS_PRIVATE
 #define SENDME_PRIVATE
 #define RELAY_PRIVATE
+#define RELAY_CELL_PRIVATE
 
 #include "core/or/circuit_st.h"
 #include "core/or/or_circuit_st.h"
@@ -152,26 +153,28 @@ test_v1_build_cell(void *arg)
   smartlist_add(circ->sendme_last_digests, tor_memdup(digest, sizeof(digest)));
 
   /* SENDME v1 payload is 3 bytes + 20 bytes digest. See spec. */
-  ret = build_cell_payload_v1(digest, payload);
+  ret = build_cell_payload_v1(digest, 20, payload);
   tt_int_op(ret, OP_EQ, 23);
 
   /* Validation. */
 
   /* An empty payload means SENDME version 0 thus valid. */
-  tt_int_op(sendme_is_valid(circ, payload, 0), OP_EQ, true);
+  tt_int_op(sendme_is_valid(circ, NULL, payload, 0), OP_EQ, true);
   /* Current phoney digest should have been popped. */
   tt_int_op(smartlist_len(circ->sendme_last_digests), OP_EQ, 0);
 
   /* An unparseable cell means invalid. */
   setup_full_capture_of_logs(LOG_INFO);
-  tt_int_op(sendme_is_valid(circ, (const uint8_t *) "A", 1), OP_EQ, false);
+  tt_int_op(sendme_is_valid(circ, NULL, (const uint8_t *) "A", 1),
+            OP_EQ, false);
   expect_log_msg_containing("Unparseable SENDME cell received. "
                             "Closing circuit.");
   teardown_capture_of_logs();
 
   /* No cell digest recorded for this. */
   setup_full_capture_of_logs(LOG_INFO);
-  tt_int_op(sendme_is_valid(circ, payload, sizeof(payload)), OP_EQ, false);
+  tt_int_op(sendme_is_valid(circ, NULL, payload, sizeof(payload)),
+            OP_EQ, false);
   expect_log_msg_containing("We received a SENDME but we have no cell digests "
                             "to match. Closing circuit.");
   teardown_capture_of_logs();
@@ -181,66 +184,26 @@ test_v1_build_cell(void *arg)
   sendme_record_cell_digest_on_circ(circ, NULL);
   tt_int_op(smartlist_len(circ->sendme_last_digests), OP_EQ, 1);
   setup_full_capture_of_logs(LOG_INFO);
-  tt_int_op(sendme_is_valid(circ, payload, sizeof(payload)), OP_EQ, false);
+  tt_int_op(sendme_is_valid(circ, NULL, payload, sizeof(payload)),
+            OP_EQ, false);
   /* After a validation, the last digests is always popped out. */
   tt_int_op(smartlist_len(circ->sendme_last_digests), OP_EQ, 0);
   expect_log_msg_containing("SENDME v1 cell digest do not match.");
   teardown_capture_of_logs();
 
   /* Record the cell digest into the circuit, cell should validate. */
-  memcpy(or_circ->crypto.sendme_digest, digest, sizeof(digest));
+  memcpy(or_circ->crypto.c.tor1.sendme_digest, digest, sizeof(digest));
   circ->package_window = CIRCWINDOW_INCREMENT + 1;
   sendme_record_cell_digest_on_circ(circ, NULL);
   tt_int_op(smartlist_len(circ->sendme_last_digests), OP_EQ, 1);
-  tt_int_op(sendme_is_valid(circ, payload, sizeof(payload)), OP_EQ, true);
+  tt_int_op(sendme_is_valid(circ, NULL, payload, sizeof(payload)),
+            OP_EQ, true);
   /* After a validation, the last digests is always popped out. */
   tt_int_op(smartlist_len(circ->sendme_last_digests), OP_EQ, 0);
 
  done:
   crypto_digest_free(cell_digest);
   circuit_free_(circ);
-}
-
-static void
-test_cell_payload_pad(void *arg)
-{
-  size_t pad_offset, payload_len, expected_offset;
-
-  (void) arg;
-
-  /* Offset should be 0, not enough room for padding. */
-  payload_len = RELAY_PAYLOAD_SIZE;
-  pad_offset = get_pad_cell_offset(payload_len);
-  tt_int_op(pad_offset, OP_EQ, 0);
-  tt_int_op(CELL_PAYLOAD_SIZE - pad_offset, OP_LE, CELL_PAYLOAD_SIZE);
-
-  /* Still no room because we keep 4 extra bytes. */
-  pad_offset = get_pad_cell_offset(payload_len - 4);
-  tt_int_op(pad_offset, OP_EQ, 0);
-  tt_int_op(CELL_PAYLOAD_SIZE - pad_offset, OP_LE, CELL_PAYLOAD_SIZE);
-
-  /* We should have 1 byte of padding. Meaning, the offset should be the
-   * CELL_PAYLOAD_SIZE minus 1 byte. */
-  expected_offset = CELL_PAYLOAD_SIZE - 1;
-  pad_offset = get_pad_cell_offset(payload_len - 5);
-  tt_int_op(pad_offset, OP_EQ, expected_offset);
-  tt_int_op(CELL_PAYLOAD_SIZE - pad_offset, OP_LE, CELL_PAYLOAD_SIZE);
-
-  /* Now some arbitrary small payload length. The cell size is header + 10 +
-   * extra 4 bytes we keep so the offset should be there. */
-  expected_offset = RELAY_HEADER_SIZE + 10 + 4;
-  pad_offset = get_pad_cell_offset(10);
-  tt_int_op(pad_offset, OP_EQ, expected_offset);
-  tt_int_op(CELL_PAYLOAD_SIZE - pad_offset, OP_LE, CELL_PAYLOAD_SIZE);
-
-  /* Data length of 0. */
-  expected_offset = RELAY_HEADER_SIZE + 4;
-  pad_offset = get_pad_cell_offset(0);
-  tt_int_op(pad_offset, OP_EQ, expected_offset);
-  tt_int_op(CELL_PAYLOAD_SIZE - pad_offset, OP_LE, CELL_PAYLOAD_SIZE);
-
- done:
-  ;
 }
 
 static void
@@ -275,9 +238,11 @@ static void
 test_package_payload_len(void *arg)
 {
   (void)arg;
-  /* this is not a real circuit: it only has the fields needed for this
-   * test. */
-  circuit_t *c = tor_malloc_zero(sizeof(circuit_t));
+  or_circuit_t *or_circ = or_circuit_new(0, NULL);
+  crypt_path_t *cpath = NULL;
+  circuit_t *c = TO_CIRCUIT(or_circ);
+
+  or_circ->relay_cell_format = RELAY_CELL_FORMAT_V0;
 
   /* check initial conditions. */
   circuit_reset_sendme_randomness(c);
@@ -288,15 +253,16 @@ test_package_payload_len(void *arg)
   /* We have a bunch of cells before we need to send randomness, so the first
    * few can be packaged full. */
   int initial = c->send_randomness_after_n_cells;
-  size_t n = connection_edge_get_inbuf_bytes_to_package(10000, 0, c);
+  size_t n = connection_edge_get_inbuf_bytes_to_package(10000, 0, c, cpath);
   tt_uint_op(RELAY_PAYLOAD_SIZE, OP_EQ, n);
-  n = connection_edge_get_inbuf_bytes_to_package(95000, 1, c);
+  n = connection_edge_get_inbuf_bytes_to_package(95000, 1, c, cpath);
   tt_uint_op(RELAY_PAYLOAD_SIZE, OP_EQ, n);
   tt_int_op(c->send_randomness_after_n_cells, OP_EQ, initial - 2);
 
   /* If package_partial isn't set, we won't package a partially full cell at
    * all. */
-  n = connection_edge_get_inbuf_bytes_to_package(RELAY_PAYLOAD_SIZE-1, 0, c);
+  n = connection_edge_get_inbuf_bytes_to_package(RELAY_PAYLOAD_SIZE-1, 0,
+                                                 c, cpath);
   tt_int_op(n, OP_EQ, 0);
   /* no change in our state, since nothing was sent. */
   tt_assert(! c->have_sent_sufficiently_random_cell);
@@ -305,13 +271,15 @@ test_package_payload_len(void *arg)
   /* If package_partial is set and the partial cell is not going to have
    * _enough_ randomness, we package it, but we don't consider ourselves to
    * have sent a sufficiently random cell. */
-  n = connection_edge_get_inbuf_bytes_to_package(RELAY_PAYLOAD_SIZE-1, 1, c);
+  n = connection_edge_get_inbuf_bytes_to_package(RELAY_PAYLOAD_SIZE-1, 1,
+                                                 c, cpath);
   tt_int_op(n, OP_EQ, RELAY_PAYLOAD_SIZE-1);
   tt_assert(! c->have_sent_sufficiently_random_cell);
   tt_int_op(c->send_randomness_after_n_cells, OP_EQ, initial - 3);
 
   /* Make sure we set have_set_sufficiently_random_cell as appropriate. */
-  n = connection_edge_get_inbuf_bytes_to_package(RELAY_PAYLOAD_SIZE-64, 1, c);
+  n = connection_edge_get_inbuf_bytes_to_package(RELAY_PAYLOAD_SIZE-64, 1,
+                                                 c, cpath);
   tt_int_op(n, OP_EQ, RELAY_PAYLOAD_SIZE-64);
   tt_assert(c->have_sent_sufficiently_random_cell);
   tt_int_op(c->send_randomness_after_n_cells, OP_EQ, initial - 4);
@@ -320,7 +288,7 @@ test_package_payload_len(void *arg)
    * sent a sufficiently random cell, we will not force this one to have a gap.
    */
   c->send_randomness_after_n_cells = 0;
-  n = connection_edge_get_inbuf_bytes_to_package(10000, 1, c);
+  n = connection_edge_get_inbuf_bytes_to_package(10000, 1, c, cpath);
   tt_int_op(n, OP_EQ, RELAY_PAYLOAD_SIZE);
   /* Now these will be reset. */
   tt_assert(! c->have_sent_sufficiently_random_cell);
@@ -329,7 +297,7 @@ test_package_payload_len(void *arg)
 
   /* What would happen if we hadn't sent a sufficiently random cell? */
   c->send_randomness_after_n_cells = 0;
-  n = connection_edge_get_inbuf_bytes_to_package(10000, 1, c);
+  n = connection_edge_get_inbuf_bytes_to_package(10000, 1, c, cpath);
   const size_t reduced_payload_size = RELAY_PAYLOAD_SIZE - 4 - 16;
   tt_int_op(n, OP_EQ, reduced_payload_size);
   /* Now these will be reset. */
@@ -341,55 +309,12 @@ test_package_payload_len(void *arg)
    * package_partial==0 should mean we accept that many bytes.
    */
   c->send_randomness_after_n_cells = 0;
-  n = connection_edge_get_inbuf_bytes_to_package(reduced_payload_size, 0, c);
+  n = connection_edge_get_inbuf_bytes_to_package(reduced_payload_size, 0,
+                                                 c, cpath);
   tt_int_op(n, OP_EQ, reduced_payload_size);
 
  done:
-  tor_free(c);
-}
-
-/* Check that circuit_sendme_is_next works with a window of 1000,
- * and a sendme_inc of 100 (old school tor compat) */
-static void
-test_sendme_is_next1000(void *arg)
-{
- (void)arg;
- tt_int_op(circuit_sendme_cell_is_next(1000, 100), OP_EQ, 0);
- tt_int_op(circuit_sendme_cell_is_next(999, 100), OP_EQ, 0);
- tt_int_op(circuit_sendme_cell_is_next(901, 100), OP_EQ, 1);
-
- tt_int_op(circuit_sendme_cell_is_next(900, 100), OP_EQ, 0);
- tt_int_op(circuit_sendme_cell_is_next(899, 100), OP_EQ, 0);
- tt_int_op(circuit_sendme_cell_is_next(801, 100), OP_EQ, 1);
-
- tt_int_op(circuit_sendme_cell_is_next(101, 100), OP_EQ, 1);
- tt_int_op(circuit_sendme_cell_is_next(100, 100), OP_EQ, 0);
- tt_int_op(circuit_sendme_cell_is_next(99, 100), OP_EQ, 0);
- tt_int_op(circuit_sendme_cell_is_next(1, 100), OP_EQ, 1);
- tt_int_op(circuit_sendme_cell_is_next(0, 100), OP_EQ, 0);
-
-done:
- ;
-}
-
-/* Check that circuit_sendme_is_next works with a window of 31 */
-static void
-test_sendme_is_next(void *arg)
-{
- (void)arg;
- tt_int_op(circuit_sendme_cell_is_next(1000, 31), OP_EQ, 0);
- tt_int_op(circuit_sendme_cell_is_next(970, 31), OP_EQ, 1);
- tt_int_op(circuit_sendme_cell_is_next(969, 31), OP_EQ, 0);
-
- /* deliver_window should never get this low, but test anyway */
- tt_int_op(circuit_sendme_cell_is_next(9, 31), OP_EQ, 1);
- tt_int_op(circuit_sendme_cell_is_next(8, 31), OP_EQ, 0);
- tt_int_op(circuit_sendme_cell_is_next(7, 31), OP_EQ, 0);
- tt_int_op(circuit_sendme_cell_is_next(1, 31), OP_EQ, 0);
- tt_int_op(circuit_sendme_cell_is_next(0, 31), OP_EQ, 0);
-
- done:
-  ;
+  circuit_free(c);
 }
 
 struct testcase_t sendme_tests[] = {
@@ -399,13 +324,9 @@ struct testcase_t sendme_tests[] = {
     NULL, NULL },
   { "v1_build_cell", test_v1_build_cell, TT_FORK,
     NULL, NULL },
-  { "cell_payload_pad", test_cell_payload_pad, TT_FORK,
-    NULL, NULL },
   { "cell_version_validation", test_cell_version_validation, TT_FORK,
     NULL, NULL },
   { "package_payload_len", test_package_payload_len, 0, NULL, NULL },
-  { "sendme_is_next1000", test_sendme_is_next1000, 0, NULL, NULL },
-  { "sendme_is_next", test_sendme_is_next, 0, NULL, NULL },
 
   END_OF_TESTCASES
 };

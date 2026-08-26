@@ -46,7 +46,6 @@ ENABLE_GCC_WARNING("-Wredundant-decls")
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef OPENSSL_1_1_API
 #define X509_get_notBefore_const(cert) \
     X509_get0_notBefore(cert)
 #define X509_get_notAfter_const(cert) \
@@ -59,12 +58,6 @@ ENABLE_GCC_WARNING("-Wredundant-decls")
 #define X509_get_notAfter(cert) \
     X509_getm_notAfter(cert)
 #endif
-#else /* !defined(OPENSSL_1_1_API) */
-#define X509_get_notBefore_const(cert) \
-  ((const ASN1_TIME*) X509_get_notBefore((X509 *)cert))
-#define X509_get_notAfter_const(cert) \
-  ((const ASN1_TIME*) X509_get_notAfter((X509 *)cert))
-#endif /* defined(OPENSSL_1_1_API) */
 
 /** Return a newly allocated X509 name with commonName <b>cname</b>. */
 static X509_NAME *
@@ -329,11 +322,7 @@ tor_tls_cert_is_valid(int severity,
   cert_key = X509_get_pubkey(cert->cert);
   if (check_rsa_1024 && cert_key) {
     RSA *rsa = EVP_PKEY_get1_RSA(cert_key);
-#ifdef OPENSSL_1_1_API
     if (rsa && RSA_bits(rsa) == 1024) {
-#else
-    if (rsa && BN_num_bits(rsa->n) == 1024) {
-#endif
       key_ok = 1;
     } else {
       log_fn(severity, LD_CRYPTO, "Invalid certificate: Key is not RSA1024.");

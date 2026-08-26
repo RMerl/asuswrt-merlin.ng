@@ -360,7 +360,7 @@ http_get_header(const char *headers, const char *which)
   const char *cp = headers;
   while (cp) {
     if (!strcasecmpstart(cp, which)) {
-      char *eos;
+      const char *eos;
       cp += strlen(which);
       if ((eos = strchr(cp,'\r')))
         return tor_strndup(cp, eos-cp);

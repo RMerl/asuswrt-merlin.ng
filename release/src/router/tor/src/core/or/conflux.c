@@ -6,6 +6,7 @@
  * \brief Conflux multipath core algorithms
  */
 
+#include "core/or/relay_msg.h"
 #define TOR_CONFLUX_PRIVATE
 
 #include "core/or/or.h"
@@ -34,8 +35,19 @@ static inline uint64_t cwnd_sendable(const circuit_t *on_circ,
                                      uint64_t in_usec, uint64_t our_usec);
 
 /* Track the total number of bytes used by all ooo_q so it can be used by the
- * OOM handler to assess. */
+ * OOM handler to assess.
+ *
+ * When adding or subtracting to this value, use conflux_msg_alloc_cost(). */
 static uint64_t total_ooo_q_bytes = 0;
+
+/**
+ * Return the total number of required allocated to store `msg`.
+ */
+size_t
+conflux_msg_alloc_cost(conflux_msg_t *msg)
+{
+  return msg->msg->length + sizeof(conflux_msg_t) + sizeof(relay_msg_t);
+}
 
 /**
  * Determine if we should multiplex a specific relay command or not.
@@ -169,7 +181,8 @@ uint64_t
 conflux_get_circ_bytes_allocation(const circuit_t *circ)
 {
   if (circ->conflux) {
-    return smartlist_len(circ->conflux->ooo_q) * sizeof(conflux_cell_t);
+    return smartlist_len(circ->conflux->ooo_q) * sizeof(void*)
+      + circ->conflux->ooo_q_alloc_cost;
   }
   return 0;
 }
@@ -196,6 +209,28 @@ conflux_handle_oom(size_t bytes_to_remove)
   log_info(LD_CIRC, "OOM handler triggered. OOO queus allocation: %" PRIu64,
            total_ooo_q_bytes);
   return 0;
+}
+
+/** Free all cells in the ooo_q of the given cfx which updates the
+ * total_ooo_q_bytes.
+ *
+ * Must be called before freeing the queue itself. */
+void
+conflux_clear_ooo_q(conflux_t *cfx)
+{
+  tor_assert(cfx);
+  tor_assert(cfx->ooo_q);
+
+  SMARTLIST_FOREACH(cfx->ooo_q, conflux_msg_t *, msg, {
+    size_t cost = conflux_msg_alloc_cost(msg);
+    if (BUG(cost > total_ooo_q_bytes)) {
+      total_ooo_q_bytes = 0;
+    } else {
+      total_ooo_q_bytes -= cost;
+    }
+    conflux_relay_msg_free(msg);
+  });
+  smartlist_clear(cfx->ooo_q);
 }
 
 /**
@@ -400,7 +435,7 @@ conflux_decide_circ_cwndrtt(const conflux_t *cfx)
   const conflux_leg_t *leg = NULL;
 
   /* Can't get here without any legs. */
-  tor_assert(!CONFLUX_NUM_LEGS(cfx));
+  tor_assert(CONFLUX_NUM_LEGS(cfx));
 
   /* Find the leg with the minimum RTT.*/
   CONFLUX_FOR_EACH_LEG_BEGIN(cfx, l) {
@@ -504,9 +539,6 @@ conflux_decide_circ_for_send(conflux_t *cfx,
       tor_assert(cfx->prev_leg);
       tor_assert(cfx->curr_leg);
 
-      uint64_t relative_seq = cfx->prev_leg->last_seq_sent -
-                              cfx->curr_leg->last_seq_sent;
-
       if (cfx->curr_leg->last_seq_sent > cfx->prev_leg->last_seq_sent) {
         /* Having incoherent sequence numbers, log warn about it but rate limit
          * it to every hour so we avoid redundent report. */
@@ -520,6 +552,9 @@ conflux_decide_circ_for_send(conflux_t *cfx,
                                    END_CIRC_REASON_TORPROTOCOL);
         return NULL;
       }
+
+      uint64_t relative_seq = cfx->prev_leg->last_seq_sent -
+                              cfx->curr_leg->last_seq_sent;
 
       /* On failure to send the SWITCH, we close everything. This means we have
        * a protocol error or the sending failed and the circuit is closed. */
@@ -698,8 +733,8 @@ conflux_queue_cmp(const void *a, const void *b)
 {
   // Compare a and b as conflux_cell_t using the seq field, and return a
   // comparison result such that the lowest seq is at the head of the pqueue.
-  const conflux_cell_t *cell_a = a;
-  const conflux_cell_t *cell_b = b;
+  const conflux_msg_t *cell_a = a;
+  const conflux_msg_t *cell_b = b;
 
   tor_assert(cell_a);
   tor_assert(cell_b);
@@ -750,12 +785,11 @@ circuit_ccontrol(const circuit_t *circ)
  */
 int
 conflux_process_switch_command(circuit_t *in_circ,
-                               crypt_path_t *layer_hint, cell_t *cell,
-                               relay_header_t *rh)
+                               crypt_path_t *layer_hint,
+                               const relay_msg_t *msg)
 {
   tor_assert(in_circ);
-  tor_assert(cell);
-  tor_assert(rh);
+  tor_assert(msg);
 
   conflux_t *cfx = in_circ->conflux;
   uint32_t relative_seq;
@@ -799,7 +833,7 @@ conflux_process_switch_command(circuit_t *in_circ,
     return -1;
   }
 
-  relative_seq = conflux_cell_parse_switch(cell, rh->length);
+  relative_seq = conflux_cell_parse_switch(msg);
 
   /*
    * We have to make sure that the switch command is truely
@@ -834,7 +868,7 @@ conflux_process_switch_command(circuit_t *in_circ,
   /* Mark this data as validated for controlport and vanguards
    * dropped cell handling */
   if (CIRCUIT_IS_ORIGIN(in_circ)) {
-    circuit_read_valid_data(TO_ORIGIN_CIRCUIT(in_circ), rh->length);
+    circuit_read_valid_data(TO_ORIGIN_CIRCUIT(in_circ), msg->length);
   }
 
   return 0;
@@ -848,8 +882,8 @@ conflux_process_switch_command(circuit_t *in_circ,
  * to streams, false otherwise.
  */
 bool
-conflux_process_cell(conflux_t *cfx, circuit_t *in_circ,
-                     crypt_path_t *layer_hint, cell_t *cell)
+conflux_process_relay_msg(conflux_t *cfx, circuit_t *in_circ,
+                          crypt_path_t *layer_hint, const relay_msg_t *msg)
 {
   // TODO-329-TUNING: Temporarily validate legs here. We can remove
   // this after tuning is complete.
@@ -887,26 +921,35 @@ conflux_process_cell(conflux_t *cfx, circuit_t *in_circ,
     circuit_mark_for_close(in_circ, END_CIRC_REASON_INTERNAL);
     return false;
   } else {
-    uint32_t n_bytes_in_q = smartlist_len(cfx->ooo_q) * sizeof(conflux_cell_t);
-    if (n_bytes_in_q >= conflux_params_get_max_oooq()) {
+    /* Both cost and param are in bytes. */
+    if (cfx->ooo_q_alloc_cost >= conflux_params_get_max_oooq()) {
       /* Log rate limit every hour. In heavy DDoS scenario, this could be
        * triggered many times so avoid the spam. */
       static ratelim_t rlimit = RATELIM_INIT(60 * 60);
       log_fn_ratelim(&rlimit, LOG_WARN, LD_CIRC,
                      "Conflux OOO queue is at maximum. Currently at "
-                     "%u bytes, maximum allowed is %u bytes. Closing.",
-                     n_bytes_in_q, conflux_params_get_max_oooq());
+                     "%"TOR_PRIuSZ " bytes, maximum allowed is %u bytes. "
+                     "Closing.",
+                     cfx->ooo_q_alloc_cost, conflux_params_get_max_oooq());
       circuit_mark_for_close(in_circ, END_CIRC_REASON_RESOURCELIMIT);
       return false;
     }
-    conflux_cell_t *c_cell = tor_malloc_zero(sizeof(conflux_cell_t));
-    c_cell->seq = leg->last_seq_recv;
-
-    memcpy(&c_cell->cell, cell, sizeof(cell_t));
+    conflux_msg_t *c_msg = tor_malloc_zero(sizeof(conflux_msg_t));
+    c_msg->seq = leg->last_seq_recv;
+    /* Notice the copy here. Reason is that we don't have ownership of the
+     * message. If we wanted to pull that off, we would need to change the
+     * whole calling stack and unit tests on either not touching it after this
+     * function indicates that it has taken it or never allocate it from the
+     * stack. This is simpler and less error prone but might show up in our
+     * profile (maybe?). The Maze is serious. It needs to be respected. */
+    c_msg->msg = relay_msg_copy(msg);
+    size_t cost = conflux_msg_alloc_cost(c_msg);
 
     smartlist_pqueue_add(cfx->ooo_q, conflux_queue_cmp,
-            offsetof(conflux_cell_t, heap_idx), c_cell);
-    total_ooo_q_bytes += sizeof(cell_t);
+                         offsetof(conflux_msg_t, heap_idx), c_msg);
+
+    total_ooo_q_bytes += cost;
+    cfx->ooo_q_alloc_cost += cost;
 
     /* This cell should not be processed yet, and the queue is not ready
      * to process because the next absolute seqnum has not yet arrived */
@@ -920,11 +963,10 @@ conflux_process_cell(conflux_t *cfx, circuit_t *in_circ,
  * Returns the cell as a conflux_cell_t, or NULL if the queue is empty
  * or has a hole.
  */
-conflux_cell_t *
-conflux_dequeue_cell(circuit_t *circ)
+conflux_msg_t *
+conflux_dequeue_relay_msg(circuit_t *circ)
 {
-  conflux_cell_t *top = NULL;
-
+  conflux_msg_t *top = NULL;
   /* Related to #41162. This is really a consequence of the C-tor maze.
    * The function above can close a circuit without returning an error
    * due to several return code ignored. Auditting all of the cell code
@@ -962,11 +1004,25 @@ conflux_dequeue_cell(circuit_t *circ)
    * pop and return it. */
   if (top->seq == cfx->last_seq_delivered+1) {
     smartlist_pqueue_pop(cfx->ooo_q, conflux_queue_cmp,
-                         offsetof(conflux_cell_t, heap_idx));
-    total_ooo_q_bytes -= sizeof(cell_t);
+                         offsetof(conflux_msg_t, heap_idx));
+
+    size_t cost = conflux_msg_alloc_cost(top);
+    total_ooo_q_bytes -= cost;
+    cfx->ooo_q_alloc_cost -= cost;
+
     cfx->last_seq_delivered++;
     return top;
   } else {
     return NULL;
+  }
+}
+
+/** Free a given conflux msg object. */
+void
+conflux_relay_msg_free_(conflux_msg_t *msg)
+{
+  if (msg) {
+    relay_msg_free(msg->msg);
+    tor_free(msg);
   }
 }

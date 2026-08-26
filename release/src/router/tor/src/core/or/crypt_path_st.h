@@ -12,21 +12,22 @@
 #ifndef CRYPT_PATH_ST_H
 #define CRYPT_PATH_ST_H
 
-#include "core/or/relay_crypto_st.h"
-struct crypto_dh_t;
+#include "core/crypto/relay_crypto_st.h"
+#include "core/crypto/onion_crypto.h"
 
 #define CRYPT_PATH_MAGIC 0x70127012u
 
 struct fast_handshake_state_t;
 struct ntor_handshake_state_t;
-struct crypto_dh_t;
 struct onion_handshake_state_t {
   /** One of `ONION_HANDSHAKE_TYPE_*`.  Determines which member of the union
    * is accessible. */
   uint16_t tag;
+  /** Initial circuit parameters (selected during first stage of negotiation;
+   * may be changed based on response from relay). */
+  circuit_params_t chosen_params;
   union {
     struct fast_handshake_state_t *fast;
-    struct crypto_dh_t *tap;
     struct ntor_handshake_state_t *ntor;
     struct ntor3_handshake_state_t *ntor3;
   } u;
@@ -55,9 +56,6 @@ struct crypt_path_t {
   /** Current state of the handshake as performed with the OR at this
    * step. */
   onion_handshake_state_t handshake_state;
-  /** Diffie-hellman handshake state for performing an introduction
-   * operations */
-  struct crypto_dh_t *rend_dh_handshake_state;
 
   /** Negotiated key material shared with the OR at this step. */
   char rend_circ_nonce[DIGEST_LEN];/* KH in tor-spec.txt */
@@ -87,6 +85,9 @@ struct crypt_path_t {
 
   /** Congestion control info */
   struct congestion_control_t *ccontrol;
+
+  /** Format to use when exchanging relay cells with this relay. */
+  relay_cell_fmt_t relay_cell_format;
 
   /*********************** Private members ****************************/
 

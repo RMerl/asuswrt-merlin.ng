@@ -319,6 +319,7 @@ evdns_get_orig_address(const struct evdns_server_request *req,
     break;
   case RESOLVED_TYPE_ERROR:
   case RESOLVED_TYPE_ERROR_TRANSIENT:
+  case RESOLVED_TYPE_NOERROR:
      /* Addr doesn't matter, since we're not sending it back in the reply.*/
     return addr;
   default:
@@ -379,6 +380,8 @@ dnsserv_resolved(entry_connection_t *conn,
     tor_free(ans);
   } else if (answer_type == RESOLVED_TYPE_ERROR) {
     err = DNS_ERR_NOTEXIST;
+  } else if (answer_type == RESOLVED_TYPE_NOERROR) {
+    err = DNS_ERR_NONE;
   } else { /* answer_type == RESOLVED_TYPE_ERROR_TRANSIENT */
     err = DNS_ERR_SERVERFAILED;
   }

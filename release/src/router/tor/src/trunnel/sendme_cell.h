@@ -8,12 +8,11 @@
 #include <stdint.h>
 #include "trunnel.h"
 
-#define TRUNNEL_SENDME_V1_DIGEST_LEN 20
 #if !defined(TRUNNEL_OPAQUE) && !defined(TRUNNEL_OPAQUE_SENDME_CELL)
 struct sendme_cell_st {
   uint8_t version;
   uint16_t data_len;
-  uint8_t data_v1_digest[TRUNNEL_SENDME_V1_DIGEST_LEN];
+  TRUNNEL_DYNARRAY_HEAD(, uint8_t) data_v1_digest;
   uint8_t trunnel_error_code_;
 };
 #endif
@@ -71,11 +70,11 @@ uint16_t sendme_cell_get_data_len(const sendme_cell_t *inp);
  * 'inp' on failure.
  */
 int sendme_cell_set_data_len(sendme_cell_t *inp, uint16_t val);
-/** Return the (constant) length of the array holding the
- * data_v1_digest field of the sendme_cell_t in 'inp'.
+/** Return the length of the dynamic array holding the data_v1_digest
+ * field of the sendme_cell_t in 'inp'.
  */
 size_t sendme_cell_getlen_data_v1_digest(const sendme_cell_t *inp);
-/** Return the element at position 'idx' of the fixed array field
+/** Return the element at position 'idx' of the dynamic array field
  * data_v1_digest of the sendme_cell_t in 'inp'.
  */
 uint8_t sendme_cell_get_data_v1_digest(sendme_cell_t *inp, size_t idx);
@@ -83,19 +82,29 @@ uint8_t sendme_cell_get_data_v1_digest(sendme_cell_t *inp, size_t idx);
  * pointer
  */
 uint8_t sendme_cell_getconst_data_v1_digest(const sendme_cell_t *inp, size_t idx);
-/** Change the element at position 'idx' of the fixed array field
+/** Change the element at position 'idx' of the dynamic array field
  * data_v1_digest of the sendme_cell_t in 'inp', so that it will hold
  * the value 'elt'.
  */
 int sendme_cell_set_data_v1_digest(sendme_cell_t *inp, size_t idx, uint8_t elt);
-/** Return a pointer to the TRUNNEL_SENDME_V1_DIGEST_LEN-element array
- * field data_v1_digest of 'inp'.
+/** Append a new element 'elt' to the dynamic array field
+ * data_v1_digest of the sendme_cell_t in 'inp'.
+ */
+int sendme_cell_add_data_v1_digest(sendme_cell_t *inp, uint8_t elt);
+/** Return a pointer to the variable-length array field data_v1_digest
+ * of 'inp'.
  */
 uint8_t * sendme_cell_getarray_data_v1_digest(sendme_cell_t *inp);
 /** As sendme_cell_get_data_v1_digest, but take and return a const
  * pointer
  */
 const uint8_t  * sendme_cell_getconstarray_data_v1_digest(const sendme_cell_t *inp);
+/** Change the length of the variable-length array field
+ * data_v1_digest of 'inp' to 'newlen'.Fill extra elements with 0.
+ * Return 0 on success; return -1 and set the error code on 'inp' on
+ * failure.
+ */
+int sendme_cell_setlen_data_v1_digest(sendme_cell_t *inp, size_t newlen);
 
 
 #endif

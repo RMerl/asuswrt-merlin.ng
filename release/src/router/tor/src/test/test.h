@@ -122,6 +122,7 @@ extern struct testcase_t controller_tests[];
 extern struct testcase_t crypto_ope_tests[];
 extern struct testcase_t crypto_openssl_tests[];
 extern struct testcase_t crypto_rng_tests[];
+extern struct testcase_t crypto_cgo_tests[];
 extern struct testcase_t crypto_tests[];
 extern struct testcase_t dirauth_port_tests[];
 extern struct testcase_t dir_handle_get_tests[];

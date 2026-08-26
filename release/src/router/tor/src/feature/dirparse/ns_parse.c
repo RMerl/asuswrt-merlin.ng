@@ -1604,7 +1604,7 @@ networkstatus_parse_vote_from_string(const char *s,
       id_hexdigest = tok->args[1];
       sk_hexdigest = tok->args[2];
       a = crypto_digest_algorithm_parse_name(algname);
-      if (a<0) {
+      if (a < 0 || a >= N_COMMON_DIGEST_ALGORITHMS) {
         log_warn(LD_DIR, "Unknown digest algorithm %s; skipping",
                  escaped(algname));
         continue;

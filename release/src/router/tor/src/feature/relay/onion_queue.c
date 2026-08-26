@@ -42,17 +42,13 @@
 
 /* In seconds. */
 #define ONION_QUEUE_WAIT_CUTOFF_DEFAULT 5
-#define ONION_QUEUE_WAIT_CUTOFF_MIN 0
+#define ONION_QUEUE_WAIT_CUTOFF_MIN 1
 #define ONION_QUEUE_WAIT_CUTOFF_MAX INT32_MAX
 
 /* In msec. */
 #define ONION_QUEUE_MAX_DELAY_DEFAULT 1750
 #define ONION_QUEUE_MAX_DELAY_MIN 1
 #define ONION_QUEUE_MAX_DELAY_MAX INT32_MAX
-
-#define NUM_NTORS_PER_TAP_DEFAULT 10
-#define NUM_NTORS_PER_TAP_MIN 1
-#define NUM_NTORS_PER_TAP_MAX 100000
 
 /** Type for a linked list of circuits that are waiting for a free CPU worker
  * to process a waiting onion handshake. */
@@ -84,16 +80,8 @@ static int ol_entries[MAX_QUEUE_IDX+1];
 static void onion_queue_entry_remove(onion_queue_t *victim);
 
 /** Consensus parameters. */
-static int32_t ns_num_ntors_per_tap = NUM_NTORS_PER_TAP_DEFAULT;
 static time_t ns_onion_queue_wait_cutoff = ONION_QUEUE_WAIT_CUTOFF_DEFAULT;
 static uint32_t ns_onion_queue_max_delay = ONION_QUEUE_MAX_DELAY_DEFAULT;
-
-/** Return the number of ntors per tap from the cached parameter. */
-static inline int32_t
-get_num_ntors_per_tap(void)
-{
-  return ns_num_ntors_per_tap;
-}
 
 /** Return the onion queue wait cutoff value from the cached parameter. */
 static inline time_t
@@ -146,8 +134,12 @@ have_room_for_onionskin(uint16_t type)
   const or_options_t *options = get_options();
   int num_cpus;
   uint64_t max_onion_queue_delay;
-  uint64_t tap_usec, ntor_usec;
-  uint64_t ntor_during_tap_usec, tap_during_ntor_usec;
+  uint64_t ntor_usec;
+
+  /* We never allow TAP. */
+  if (type == ONION_HANDSHAKE_TYPE_TAP) {
+    return 0;
+  }
 
   /* If we've got fewer than 50 entries, we always have room for one more. */
   if (ol_entries[type] < 50)
@@ -164,44 +156,15 @@ have_room_for_onionskin(uint16_t type)
   /* Compute how many microseconds we'd expect to need to clear all
    * onionskins in various combinations of the queues. */
 
-  /* How long would it take to process all the TAP cells in the queue? */
-  tap_usec  = estimated_usec_for_onionskins(
-                                    ol_entries[ONION_HANDSHAKE_TYPE_TAP],
-                                    ONION_HANDSHAKE_TYPE_TAP) / num_cpus;
-
   /* How long would it take to process all the NTor cells in the queue? */
   ntor_usec = estimated_usec_for_onionskins(
                                     ol_entries[ONION_HANDSHAKE_TYPE_NTOR],
                                     ONION_HANDSHAKE_TYPE_NTOR) / num_cpus;
 
-  /* How long would it take to process the tap cells that we expect to
-   * process while draining the ntor queue? */
-  tap_during_ntor_usec  = estimated_usec_for_onionskins(
-    MIN(ol_entries[ONION_HANDSHAKE_TYPE_TAP],
-        ol_entries[ONION_HANDSHAKE_TYPE_NTOR] / get_num_ntors_per_tap()),
-                                    ONION_HANDSHAKE_TYPE_TAP) / num_cpus;
-
-  /* How long would it take to process the ntor cells that we expect to
-   * process while draining the tap queue? */
-  ntor_during_tap_usec  = estimated_usec_for_onionskins(
-    MIN(ol_entries[ONION_HANDSHAKE_TYPE_NTOR],
-        ol_entries[ONION_HANDSHAKE_TYPE_TAP] * get_num_ntors_per_tap()),
-                                    ONION_HANDSHAKE_TYPE_NTOR) / num_cpus;
-
   /* See whether that exceeds MaxOnionQueueDelay. If so, we can't queue
    * this. */
   if (type == ONION_HANDSHAKE_TYPE_NTOR &&
-      (ntor_usec + tap_during_ntor_usec) / 1000 > max_onion_queue_delay)
-    return 0;
-
-  if (type == ONION_HANDSHAKE_TYPE_TAP &&
-      (tap_usec + ntor_during_tap_usec) / 1000 > max_onion_queue_delay)
-    return 0;
-
-  /* If we support the ntor handshake, then don't let TAP handshakes use
-   * more than 2/3 of the space on the queue. */
-  if (type == ONION_HANDSHAKE_TYPE_TAP &&
-      tap_usec / 1000 > max_onion_queue_delay * 2 / 3)
+      (ntor_usec / 1000) > max_onion_queue_delay)
     return 0;
 
   return 1;
@@ -292,38 +255,7 @@ onion_pending_add(or_circuit_t *circ, create_cell_t *onionskin)
 static uint16_t
 decide_next_handshake_type(void)
 {
-  /* The number of times we've chosen ntor lately when both were available. */
-  static int recently_chosen_ntors = 0;
-
-  if (!ol_entries[ONION_HANDSHAKE_TYPE_NTOR])
-    return ONION_HANDSHAKE_TYPE_TAP; /* no ntors? try tap */
-
-  if (!ol_entries[ONION_HANDSHAKE_TYPE_TAP]) {
-
-    /* Nick wants us to prioritize new tap requests when there aren't
-     * any in the queue and we've processed k ntor cells since the last
-     * tap cell. This strategy is maybe a good idea, since it starves tap
-     * less in the case where tap is rare, or maybe a poor idea, since it
-     * makes the new tap cell unfairly jump in front of ntor cells that
-     * got here first. In any case this edge case will only become relevant
-     * once tap is rare. We should reevaluate whether we like this decision
-     * once tap gets more rare. */
-    if (ol_entries[ONION_HANDSHAKE_TYPE_NTOR] &&
-        recently_chosen_ntors <= get_num_ntors_per_tap())
-      ++recently_chosen_ntors;
-
-    return ONION_HANDSHAKE_TYPE_NTOR; /* no taps? try ntor */
-  }
-
-  /* They both have something queued. Pick ntor if we haven't done that
-   * too much lately. */
-  if (++recently_chosen_ntors <= get_num_ntors_per_tap()) {
-    return ONION_HANDSHAKE_TYPE_NTOR;
-  }
-
-  /* Else, it's time to let tap have its turn. */
-  recently_chosen_ntors = 0;
-  return ONION_HANDSHAKE_TYPE_TAP;
+  return ONION_HANDSHAKE_TYPE_NTOR;
 }
 
 /** Remove the highest priority item from ol_list[] and return it, or
@@ -445,10 +377,4 @@ onion_consensus_has_changed(const networkstatus_t *ns)
                             ONION_QUEUE_WAIT_CUTOFF_DEFAULT,
                             ONION_QUEUE_WAIT_CUTOFF_MIN,
                             ONION_QUEUE_WAIT_CUTOFF_MAX);
-
-  ns_num_ntors_per_tap =
-    networkstatus_get_param(ns, "NumNTorsPerTAP",
-                            NUM_NTORS_PER_TAP_DEFAULT,
-                            NUM_NTORS_PER_TAP_MIN,
-                            NUM_NTORS_PER_TAP_MAX);
 }

@@ -49,8 +49,7 @@
 
 #ifndef _WIN32
 
-/** Maximum number of file descriptors, if we cannot get it via sysconf() */
-#define DEFAULT_MAX_FD 256
+#include "lib/fdio/fdio.h"
 
 /** Internal state for Unix handles. */
 struct process_unix_handle_t {
@@ -140,7 +139,7 @@ process_unix_exec(process_t *process)
   unix_process = process_get_unix_process(process);
 
   /* Create standard in pipe. */
-  retval = pipe(stdin_pipe);
+  retval = tor_pipe_cloexec(stdin_pipe);
 
   if (-1 == retval) {
     log_warn(LD_PROCESS,
@@ -152,7 +151,7 @@ process_unix_exec(process_t *process)
   }
 
   /* Create standard out pipe. */
-  retval = pipe(stdout_pipe);
+  retval = tor_pipe_cloexec(stdout_pipe);
 
   if (-1 == retval) {
     log_warn(LD_PROCESS,
@@ -168,7 +167,7 @@ process_unix_exec(process_t *process)
   }
 
   /* Create standard error pipe. */
-  retval = pipe(stderr_pipe);
+  retval = tor_pipe_cloexec(stderr_pipe);
 
   if (-1 == retval) {
     log_warn(LD_PROCESS,

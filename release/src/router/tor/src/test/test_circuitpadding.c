@@ -24,6 +24,7 @@
 #include "core/or/circuitpadding.h"
 #include "core/or/circuitpadding_machines.h"
 #include "core/or/extendinfo.h"
+#include "core/or/relay_msg.h"
 #include "core/mainloop/netstatus.h"
 #include "core/crypto/relay_crypto.h"
 #include "core/or/protover.h"
@@ -172,11 +173,16 @@ circuit_package_relay_cell_mock(cell_t *cell, circuit_t *circ,
                            const char *filename, int lineno)
 {
   (void)cell; (void)on_stream; (void)filename; (void)lineno;
+  relay_msg_t *msg = NULL;
+
+  msg = relay_msg_decode_cell(RELAY_CELL_FORMAT_V0, cell);
+  if (! msg)
+    goto done;
 
   if (circ == client_side) {
     if (cell->payload[0] == RELAY_COMMAND_PADDING_NEGOTIATE) {
       // Deliver to relay
-      circpad_handle_padding_negotiate(relay_side, cell);
+      circpad_handle_padding_negotiate(relay_side, msg);
     } else {
 
       int is_target_hop = circpad_padding_is_from_expected_hop(circ,
@@ -190,7 +196,7 @@ circuit_package_relay_cell_mock(cell_t *cell, circuit_t *circ,
 
       // Receive padding cell at middle
       circpad_deliver_recognized_relay_cell_events(relay_side,
-              cell->payload[0], NULL);
+                                                   msg->command, NULL);
     }
     n_client_cells++;
   } else if (circ == relay_side) {
@@ -199,11 +205,11 @@ circuit_package_relay_cell_mock(cell_t *cell, circuit_t *circ,
     if (cell->payload[0] == RELAY_COMMAND_PADDING_NEGOTIATED) {
       // XXX: blah need right layer_hint..
       if (deliver_negotiated)
-        circpad_handle_padding_negotiated(client_side, cell,
+        circpad_handle_padding_negotiated(client_side, msg,
                                           TO_ORIGIN_CIRCUIT(client_side)
                                              ->cpath->next);
     } else if (cell->payload[0] == RELAY_COMMAND_PADDING_NEGOTIATE) {
-      circpad_handle_padding_negotiate(client_side, cell);
+      circpad_handle_padding_negotiate(client_side, msg);
     } else {
       // No need to pretend a padding cell was sent: This event is
       // now emitted internally when the circuitpadding code sends them.
@@ -211,7 +217,7 @@ circuit_package_relay_cell_mock(cell_t *cell, circuit_t *circ,
 
       // Receive padding cell at client
       circpad_deliver_recognized_relay_cell_events(client_side,
-              cell->payload[0],
+              msg->command,
               TO_ORIGIN_CIRCUIT(client_side)->cpath->next);
     }
 
@@ -219,6 +225,7 @@ circuit_package_relay_cell_mock(cell_t *cell, circuit_t *circ,
   }
 
  done:
+  relay_msg_free(msg);
   timers_advance_and_run(1);
   return 0;
 }
@@ -1251,7 +1258,7 @@ test_circuitpadding_wronghop(void *arg)
    */
   (void)arg;
   uint32_t read_bw = 0, overhead_bw = 0;
-  cell_t cell;
+  relay_msg_t msg;
   signed_error_t ret;
   origin_circuit_t *orig_client;
   int64_t actual_mocked_monotime_start;
@@ -1331,17 +1338,21 @@ test_circuitpadding_wronghop(void *arg)
             orig_client->n_overhead_read_circ_bw);
 
   /* 2. Test padding negotiated not handled from hops 1,3 */
-  ret = circpad_handle_padding_negotiated(client_side, &cell,
+  memset(&msg, 0, sizeof(msg));
+  ret = circpad_handle_padding_negotiated(client_side, &msg,
           TO_ORIGIN_CIRCUIT(client_side)->cpath);
   tt_int_op(ret, OP_EQ, -1);
 
-  ret = circpad_handle_padding_negotiated(client_side, &cell,
+  ret = circpad_handle_padding_negotiated(client_side, &msg,
           TO_ORIGIN_CIRCUIT(client_side)->cpath->next->next);
   tt_int_op(ret, OP_EQ, -1);
 
   /* 3. Garbled negotiated cell */
-  memset(&cell, 255, sizeof(cell));
-  ret = circpad_handle_padding_negotiated(client_side, &cell,
+  memset(&msg, 0, sizeof(msg));
+  uint8_t buf[99];
+  memset(buf, 0xff, 99);
+  msg.body = buf;
+  ret = circpad_handle_padding_negotiated(client_side, &msg,
           TO_ORIGIN_CIRCUIT(client_side)->cpath->next);
   tt_int_op(ret, OP_EQ, -1);
 
@@ -1350,7 +1361,7 @@ test_circuitpadding_wronghop(void *arg)
   overhead_bw = orig_client->n_overhead_read_circ_bw;
   relay_send_command_from_edge(0, relay_side,
                                RELAY_COMMAND_PADDING_NEGOTIATE,
-                               (void*)cell.payload,
+                               "xyz",
                                (size_t)3, NULL);
   tt_int_op(read_bw, OP_EQ,
             orig_client->n_delivered_read_circ_bw);
@@ -1371,12 +1382,12 @@ test_circuitpadding_wronghop(void *arg)
   tt_int_op(n_client_cells, OP_EQ, 2);
 
   /* 6. Sending negotiated command to relay does nothing */
-  ret = circpad_handle_padding_negotiated(relay_side, &cell, NULL);
+  ret = circpad_handle_padding_negotiated(relay_side, &msg, NULL);
   tt_int_op(ret, OP_EQ, -1);
 
   /* 7. Test garbled negotiated cell (bad command 255) */
-  memset(&cell, 0, sizeof(cell));
-  ret = circpad_handle_padding_negotiate(relay_side, &cell);
+  relay_msg_clear(&msg);
+  ret = circpad_handle_padding_negotiate(relay_side, &msg);
   tt_int_op(ret, OP_EQ, -1);
   tt_int_op(n_client_cells, OP_EQ, 2);
 
@@ -1434,6 +1445,7 @@ test_circuitpadding_wronghop(void *arg)
   UNMOCK(circuitmux_attach_circuit);
   nodes_free();
   testing_disable_reproducible_rng();
+  relay_msg_clear(&msg);
 }
 
 void
@@ -1576,7 +1588,7 @@ simulate_single_hop_extend(circuit_t *client, circuit_t *mid_relay,
 {
   char whatevs_key[CPATH_KEY_MATERIAL_LEN];
   char digest[DIGEST_LEN];
-  tor_addr_t addr;
+  tor_addr_t addr = TOR_ADDR_NULL;
 
   // Pretend a non-padding cell was sent
   circpad_cell_event_nonpadding_sent(client);
@@ -1608,10 +1620,11 @@ simulate_single_hop_extend(circuit_t *client, circuit_t *mid_relay,
 
   hop->extend_info = extend_info_new(
           padding ? "padding" : "non-padding",
-          digest, NULL, NULL, NULL,
+          digest, NULL, NULL,
           &addr, padding, NULL, false);
 
-  cpath_init_circuit_crypto(hop, whatevs_key, sizeof(whatevs_key), 0, 0);
+  cpath_init_circuit_crypto(RELAY_CRYPTO_ALG_TOR1, hop,
+                            whatevs_key, sizeof(whatevs_key));
 
   hop->package_window = circuit_initial_package_window();
   hop->deliver_window = CIRCWINDOW_START;
@@ -3100,17 +3113,18 @@ static void
 test_circuitpadding_ignore_non_padding_cells(void *arg)
 {
   int retval;
-  relay_header_t rh;
 
   (void) arg;
 
   client_side = (circuit_t *)origin_circuit_new();
   client_side->purpose = CIRCUIT_PURPOSE_C_CIRCUIT_PADDING;
 
-  rh.command = RELAY_COMMAND_BEGIN;
+  relay_msg_t msg;
+  memset(&msg, 0, sizeof(msg));
+  msg.command = RELAY_COMMAND_BEGIN;
 
   setup_full_capture_of_logs(LOG_INFO);
-  retval = handle_relay_cell_command(NULL, client_side, NULL, NULL, &rh, 0);
+  retval = handle_relay_msg(&msg, client_side, NULL, NULL, 0);
   tt_int_op(retval, OP_EQ, 0);
   expect_log_msg_containing("Ignored cell");
 

@@ -58,13 +58,16 @@ Home page:
 
 Download new versions:
 
-- https://www.torproject.org/download/download.html
+- https://www.torproject.org/download/tor
 
-Documentation, including links to installation and setup instructions:
+How to verify Tor source:
 
-- https://www.torproject.org/docs/documentation.html
+- https://support.torproject.org/little-t-tor/
 
-Frequently Asked Questions:
+Documentation and Frequently Asked Questions:
 
-- https://www.torproject.org/docs/faq.html
+- https://support.torproject.org/
 
+How to run a Tor relay:
+
+- https://community.torproject.org/relay/ 

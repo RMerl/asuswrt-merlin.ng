@@ -930,6 +930,15 @@ hibernate_begin_shutdown(void)
 }
 
 /**
+ * Return true iff we are currently shutting down.
+ */
+MOCK_IMPL(int,
+we_are_shutting_down,(void))
+{
+  return hibernate_state == HIBERNATE_STATE_EXITING;
+}
+
+/**
  * Return true iff we are currently hibernating -- that is, if we are in
  * any non-live state.
  */

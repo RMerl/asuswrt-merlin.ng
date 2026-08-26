@@ -50,12 +50,12 @@ TOR_UTIL_LIBS = \
 	src/lib/libtor-sandbox.a \
 	src/lib/libtor-container.a \
 	src/lib/libtor-net.a \
-	src/lib/libtor-thread.a \
 	src/lib/libtor-memarea.a \
 	src/lib/libtor-math.a \
 	src/lib/libtor-meminfo.a \
 	src/lib/libtor-osinfo.a \
 	src/lib/libtor-log.a \
+	src/lib/libtor-thread.a \
 	src/lib/libtor-lock.a \
 	src/lib/libtor-fdio.a \
 	src/lib/libtor-string.a \
@@ -86,13 +86,13 @@ TOR_UTIL_TESTING_LIBS = \
 	src/lib/libtor-sandbox-testing.a \
 	src/lib/libtor-container-testing.a \
 	src/lib/libtor-net-testing.a \
-	src/lib/libtor-thread-testing.a \
 	src/lib/libtor-memarea-testing.a \
 	src/lib/libtor-math-testing.a \
 	src/lib/libtor-meminfo-testing.a \
 	src/lib/libtor-osinfo-testing.a \
 	src/lib/libtor-term-testing.a \
 	src/lib/libtor-log-testing.a \
+	src/lib/libtor-thread-testing.a \
 	src/lib/libtor-lock-testing.a \
 	src/lib/libtor-fdio-testing.a \
 	src/lib/libtor-string-testing.a \
@@ -112,7 +112,8 @@ TOR_CRYPTO_LIBS = \
 	src/lib/libtor-tls.a \
 	src/lib/libtor-crypt-ops.a \
 	$(LIBKECCAK_TINY) \
-	$(LIBDONNA)
+	$(LIBDONNA) \
+        $(LIBPOLYVAL)
 
 if BUILD_MODULE_POW
 TOR_CRYPTO_LIBS += $(EQUIX_LIBS)
@@ -126,6 +127,7 @@ TOR_CRYPTO_TESTING_LIBS = \
 	src/lib/libtor-crypt-ops-testing.a \
 	$(LIBKECCAK_TINY) \
 	$(LIBDONNA) \
+        $(LIBPOLYVAL) \
 	$(EQUIX_LIBS)
 endif
 

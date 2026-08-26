@@ -24,7 +24,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import codecs, os, sys
+import io, os, sys
 
 import metrics
 import util
@@ -64,7 +64,7 @@ TOR_TOPDIR = None
 #######################################################
 
 def open_file(fname):
-    return codecs.open(fname, 'r', encoding='utf-8')
+    return io.open(fname, 'r', encoding='utf-8')
 
 def consider_file_size(fname, f):
     """Consider the size of 'f' and yield an FileSizeItem for it.

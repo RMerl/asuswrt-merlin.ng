@@ -6,7 +6,7 @@
 /* All assert failures are fatal */
 #undef ALL_BUGS_ARE_FATAL
 
-/* # for 0.4.8.22 Approximate date when this software was released. (Updated
+/* # for 0.4.9.11 Approximate date when this software was released. (Updated
    when the version changes.) */
 #undef APPROX_RELEASE_DATE
 
@@ -143,9 +143,6 @@
 
 /* Define to 1 if you have the <errno.h> header file. */
 #undef HAVE_ERRNO_H
-
-/* Define to 1 if you have the `ERR_load_KDF_strings' function. */
-#undef HAVE_ERR_LOAD_KDF_STRINGS
 
 /* Define to 1 if you have the `evdns_base_get_nameserver_addr' function. */
 #undef HAVE_EVDNS_BASE_GET_NAMESERVER_ADDR
@@ -384,6 +381,9 @@
 /* Define to 1 if you have the <net/pfvar.h> header file. */
 #undef HAVE_NET_PFVAR_H
 
+/* Define to 1 if you have the <openssl/engine.h> header file. */
+#undef HAVE_OPENSSL_ENGINE_H
+
 /* Define to 1 if you have the `pipe' function. */
 #undef HAVE_PIPE
 
@@ -444,32 +444,11 @@
 /* Define to 1 if the system has the type `ssize_t'. */
 #undef HAVE_SSIZE_T
 
-/* Define to 1 if you have the `SSL_CIPHER_find' function. */
-#undef HAVE_SSL_CIPHER_FIND
-
-/* Define to 1 if you have the `SSL_CTX_set1_groups_list' function. */
-#undef HAVE_SSL_CTX_SET1_GROUPS_LIST
-
 /* Define to 1 if you have the `SSL_CTX_set_security_level' function. */
 #undef HAVE_SSL_CTX_SET_SECURITY_LEVEL
 
-/* Define to 1 if you have the `SSL_get_client_ciphers' function. */
-#undef HAVE_SSL_GET_CLIENT_CIPHERS
-
-/* Define to 1 if you have the `SSL_get_client_random' function. */
-#undef HAVE_SSL_GET_CLIENT_RANDOM
-
-/* Define to 1 if you have the `SSL_get_server_random' function. */
-#undef HAVE_SSL_GET_SERVER_RANDOM
-
-/* Define to 1 if you have the `SSL_SESSION_get_master_key' function. */
-#undef HAVE_SSL_SESSION_GET_MASTER_KEY
-
 /* Define to 1 if you have the `SSL_set_ciphersuites' function. */
 #undef HAVE_SSL_SET_CIPHERSUITES
-
-/* Define to 1 if `state' is a member of `SSL'. */
-#undef HAVE_SSL_STATE
 
 /* Define to 1 if you have the `statvfs' function. */
 #undef HAVE_STATVFS
@@ -530,10 +509,6 @@
 
 /* Define to 1 if `sin_len' is a member of `struct sockaddr_in'. */
 #undef HAVE_STRUCT_SOCKADDR_IN_SIN_LEN
-
-/* Define to 1 if `get_cipher_by_char' is a member of `struct ssl_method_st'.
-   */
-#undef HAVE_STRUCT_SSL_METHOD_ST_GET_CIPHER_BY_CHAR
 
 /* Define to 1 if `tcpi_snd_mss' is a member of `struct tcp_info'. */
 #undef HAVE_STRUCT_TCP_INFO_TCPI_SND_MSS
@@ -640,9 +615,6 @@
 /* Define to 1 if you have the `timingsafe_memcmp' function. */
 #undef HAVE_TIMINGSAFE_MEMCMP
 
-/* Define to 1 if you have the `TLS_method' function. */
-#undef HAVE_TLS_METHOD
-
 /* Compiled with tracing support */
 #undef HAVE_TRACING
 
@@ -697,6 +669,9 @@
 /* Define to 1 iff malloc(0) returns a pointer */
 #undef MALLOC_ZERO_WORKS
 
+/* whether nss defines ecdh_hybrid key exchange. */
+#undef NSS_HAS_ECDH_HYBRID
+
 /* Define to 1 iff memset(0) sets pointers to NULL */
 #undef NULL_REP_IS_ZERO_BYTES
 
@@ -747,9 +722,6 @@
 
 /* The size of `pid_t', as computed by sizeof. */
 #undef SIZEOF_PID_T
-
-/* The size of `SHA_CTX', as computed by sizeof. */
-#undef SIZEOF_SHA_CTX
 
 /* The size of `short', as computed by sizeof. */
 #undef SIZEOF_SHORT

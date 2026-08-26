@@ -605,7 +605,7 @@ STATIC entry_guard_restriction_t *guard_create_exit_restriction(
 STATIC entry_guard_restriction_t *guard_create_dirserver_md_restriction(void);
 
 STATIC entry_guard_restriction_t * guard_create_conflux_restriction(
-                   const origin_circuit_t *circ);
+                   const origin_circuit_t *circ, const uint8_t *exit_id);
 
 STATIC void entry_guard_restriction_free_(entry_guard_restriction_t *rst);
 #define entry_guard_restriction_free(rst)  \

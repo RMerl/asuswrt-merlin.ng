@@ -241,7 +241,7 @@ reachability_warnings_callback(time_t now, const or_options_t *options)
           log_warn(LD_CONFIG,
                    "Your server has not managed to confirm reachability for "
                    "its ORPort(s) at %s%s%s. Relays do not publish "
-                   "descriptors until their ORPort and DirPort are "
+                   "descriptors until their ORPort(s) are "
                    "reachable. Please check your firewalls, ports, address, "
                    "/etc/hosts file, etc.",
                    where4?where4:"",

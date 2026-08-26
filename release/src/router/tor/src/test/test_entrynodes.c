@@ -24,6 +24,7 @@
 #include "feature/dirclient/dirclient.h"
 #include "feature/client/entrynodes.h"
 #include "feature/nodelist/nodelist.h"
+#include "feature/nodelist/nodefamily.h"
 #include "feature/nodelist/networkstatus.h"
 #include "core/or/policies.h"
 #include "feature/nodelist/routerlist.h"
@@ -1942,8 +1943,10 @@ test_entry_guard_select_for_circuit_no_confirmed(void *arg)
   tt_ptr_op(g2, OP_EQ, g);
 
   /* But if we impose a restriction, we don't get the same guard */
+  get_options_mutable()->EnforceDistinctSubnets = 0;
   rst = guard_create_exit_restriction((uint8_t*)g->identity);
   g2 = select_entry_guard_for_circuit(gs, GUARD_USAGE_TRAFFIC, rst, &state);
+  tt_assert(g2);
   tt_ptr_op(g2, OP_NE, g);
 
  done:
@@ -2320,6 +2323,75 @@ test_entry_guard_select_for_circuit_highlevel_primary_retry(void *arg)
   guard_selection_free(gs);
   circuit_guard_state_free(guard);
   circuit_guard_state_free(guard2);
+}
+
+static void
+test_entry_guard_select_for_circuit_exit_family_restriction(void *arg)
+{
+  (void) arg;
+  entry_guard_restriction_t *rst = NULL;
+  entry_guard_restriction_t *rst2 = NULL;
+  guard_selection_t *gs = guard_selection_new("default", GS_TYPE_NORMAL);
+  int retval;
+  unsigned state = 9999;
+
+  /* Create our circuit */
+  circuit_t *circ = dummy_origin_circuit_new(30);
+  origin_circuit_t *oc = TO_ORIGIN_CIRCUIT(circ);
+  oc->build_state = tor_malloc_zero(sizeof(cpath_build_state_t));
+
+  /* First pick the exit and pin it on the build_state */
+  retval = onion_pick_cpath_exit(oc, NULL);
+  tt_int_op(retval, OP_EQ, 0);
+
+  /* Then pick a guard */
+  entry_guards_update_primary(gs);
+  entry_guard_t *g = select_entry_guard_for_circuit(gs, GUARD_USAGE_TRAFFIC,
+                                                    NULL, &state);
+
+  tt_assert(g);
+  tt_assert(g->is_primary);
+  tt_uint_op(state, OP_EQ, GUARD_CIRC_STATE_USABLE_ON_COMPLETION);
+  tt_i64_op(g->last_tried_to_connect, OP_EQ, approx_time());
+
+  /* Add the guard and the exit to each others' families */
+  get_options_mutable()->EnforceDistinctSubnets = 0;
+  const char* exit_id =
+      (const char*)build_state_get_exit_rsa_id(oc->build_state);
+  const node_t *exit = node_get_by_id(exit_id);
+  const node_t *guard = node_get_by_id(g->identity);
+  exit->md->family = nodefamily_parse((const char*)g->nickname,
+          node_get_rsa_id_digest(exit),0);
+  guard->md->family =
+      nodefamily_parse((const char*)exit->rs->nickname,
+              node_get_rsa_id_digest(guard),0);
+  tt_assert(nodefamily_contains_nickname(exit->md->family,
+              (const char*)g->nickname));
+
+  /* We should get a different guard, after adding the exit restriction */
+  rst = guard_create_exit_restriction((const uint8_t*)exit_id);
+  entry_guard_t *g2 =
+      select_entry_guard_for_circuit(gs, GUARD_USAGE_TRAFFIC, rst, &state);
+  tt_assert(g2);
+  tt_assert(g2->is_primary);
+  tt_uint_op(state, OP_EQ, GUARD_CIRC_STATE_USABLE_ON_COMPLETION);
+  tt_i64_op(g2->last_tried_to_connect, OP_EQ, approx_time());
+  tt_ptr_op(g2, OP_NE, g);
+
+  /* Now check that conflux circuits satisfy the exit family restriction */
+  rst2 = guard_create_conflux_restriction(oc, (const uint8_t*)exit_id);
+  g2 = select_entry_guard_for_circuit(gs, GUARD_USAGE_TRAFFIC, rst2, &state);
+  tt_assert(g2);
+  tt_assert(g2->is_primary);
+  tt_uint_op(state, OP_EQ, GUARD_CIRC_STATE_USABLE_ON_COMPLETION);
+  tt_i64_op(g2->last_tried_to_connect, OP_EQ, approx_time());
+  tt_ptr_op(g2, OP_NE, g);
+
+ done:
+  circuit_free_(circ);
+  guard_selection_free(gs);
+  entry_guard_restriction_free(rst);
+  entry_guard_restriction_free(rst2);
 }
 
 static void
@@ -3199,6 +3271,7 @@ struct testcase_t entrynodes_tests[] = {
   BFN_TEST(select_for_circuit_highlevel_primary),
   BFN_TEST(select_for_circuit_highlevel_confirm_other),
   BFN_TEST(select_for_circuit_highlevel_primary_retry),
+  BFN_TEST(select_for_circuit_exit_family_restriction),
   BFN_TEST(select_and_cancel),
   BFN_TEST(drop_guards),
   BFN_TEST(outdated_dirserver_exclusion),

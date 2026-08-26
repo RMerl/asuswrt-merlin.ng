@@ -23,7 +23,7 @@
  *
  * 28/06/2017: This value was increased from 16 MB to 20 MB after we introduced
  * LZMA support in Tor (0.3.1.1-alpha). We limit our LZMA coder to 16 MB, but
- * liblzma have a small overhead that we need to compensate for to avoid being
+ * liblzma has a small overhead that we need to compensate for to avoid being
  * killed by the sandbox.
  */
 #define MALLOC_MP_LIM (20*1024*1024)
@@ -123,6 +123,15 @@
 
 #ifdef M_SYSCALL
 #define SYSCALL_NAME_DEBUGGING
+#endif
+
+/**
+ * On newer architectures Linux provides a standardized, generic set of system
+ * calls (defined in Linux's include/uapi/asm-generic/unistd.h), which omits a
+ * number of legacy calls used by glibc on other platforms.
+ */
+#if defined(__aarch64__) || defined(__riscv)
+#define ARCH_USES_GENERIC_SYSCALLS
 #endif
 
 /**Determines if at least one sandbox is active.*/
@@ -263,8 +272,9 @@ static int filter_nopar_gen[] = {
 #ifdef __NR_sigreturn
     SCMP_SYS(sigreturn),
 #endif
+#if defined(__NR_stat)
     SCMP_SYS(stat),
-#if defined(__i386__) && defined(__NR_statx)
+#elif defined(__i386__) && defined(__NR_statx)
     SCMP_SYS(statx),
 #endif
     SCMP_SYS(uname),
@@ -278,6 +288,10 @@ static int filter_nopar_gen[] = {
 #ifdef __NR_stat64
     // getaddrinfo uses this..
     SCMP_SYS(stat64),
+#endif
+#ifdef __NR_lstat64
+    // glob uses this on i386 with glibc 2.36+
+    SCMP_SYS(lstat64),
 #endif
 
 #ifdef __NR_getrandom
@@ -318,7 +332,7 @@ static int filter_nopar_gen[] = {
 };
 
 /* opendir is not a syscall but it will use either open or openat. We do not
- * want the decision to allow open/openat to be the callers reponsability, so
+ * want the decision to allow open/openat to be the callers responsibility, so
  * we create a phony syscall number for opendir and sb_opendir will choose the
  * correct syscall. */
 #define PHONY_OPENDIR_SYSCALL -2
@@ -335,6 +349,8 @@ static int filter_nopar_gen[] = {
   seccomp_rule_add((ctx),(act),(call),3,(f1),(f2),(f3))
 #define seccomp_rule_add_4(ctx,act,call,f1,f2,f3,f4)      \
   seccomp_rule_add((ctx),(act),(call),4,(f1),(f2),(f3),(f4))
+#define seccomp_rule_add_5(ctx,act,call,f1,f2,f3,f4,f5)       \
+  seccomp_rule_add((ctx),(act),(call),4,(f1),(f2),(f3),(f4),(f5))
 
 static const char *sandbox_get_interned_string(const char *str);
 
@@ -516,18 +532,33 @@ is_libc_at_least(int major, int minor)
 static int
 libc_uses_openat_for_open(void)
 {
+#ifdef __NR_open
   return is_libc_at_least(2, 26);
+#else
+  return 1;
+#endif /* defined(__NR_open) */
 }
 
+/* Calls to opendir() cannot be filtered by the sandbox when built with fragile
+ * hardening for an architecture that uses Linux's generic syscall interface,
+ * so prevent a compiler warning by omitting this function along with
+ * sb_opendir(). */
+#if !(defined(ENABLE_FRAGILE_HARDENING) && defined(ARCH_USES_GENERIC_SYSCALLS))
 /* Return true if we think we're running with a libc that uses openat for the
  * opendir function on linux. */
 static int
 libc_uses_openat_for_opendir(void)
 {
+#ifdef __NR_open
   // libc 2.27 and above or between 2.15 (inclusive) and 2.22 (exclusive)
   return is_libc_at_least(2, 27) ||
          (is_libc_at_least(2, 15) && !is_libc_at_least(2, 22));
+#else
+  return 1;
+#endif /* defined(__NR_open) */
 }
+#endif /* !(defined(ENABLE_FRAGILE_HARDENING) &&
+            defined(ARCH_USES_GENERIC_SYSCALLS)) */
 
 /** Allow a single file to be opened.  If <b>use_openat</b> is true,
  * we're using a libc that remaps all the opens into openats. */
@@ -557,10 +588,25 @@ sb_open(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
   int use_openat = libc_uses_openat_for_open();
 
 #ifdef ENABLE_FRAGILE_HARDENING
-  /* AddressSanitizer uses the "open" syscall to access information about the
-   * running process via the filesystem, so that call must be allowed without
+  /* AddressSanitizer uses either the "open" or the "openat" syscall (depending
+   * on the architecture) to access information about the running process via
+   * the filesystem, so the appropriate call must be allowed without
    * restriction or the sanitizer will be unable to execute normally when the
    * process terminates. */
+#ifdef ARCH_USES_GENERIC_SYSCALLS
+  rc = seccomp_rule_add_1(ctx, SCMP_ACT_ALLOW, SCMP_SYS(openat),
+      SCMP_CMP_LOWER32_EQ(0, AT_FDCWD));
+  if (rc != 0) {
+    log_err(LD_BUG,"(Sandbox) failed to add openat syscall, received "
+        "libseccomp error %d", rc);
+    return rc;
+  }
+
+  /* The "open" syscall is not defined on this architecture, so any other
+   * requests to open files will necessarily use "openat" as well and there is
+   * no need to consider any additional rules. */
+  return 0;
+#else
   rc = seccomp_rule_add_0(ctx, SCMP_ACT_ALLOW, SCMP_SYS(open));
   if (rc != 0) {
     log_err(LD_BUG,"(Sandbox) failed to add open syscall, received "
@@ -572,7 +618,8 @@ sb_open(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
    * there is no need to consider any additional rules. */
   if (!use_openat)
     return 0;
-#endif
+#endif /* defined(ARCH_USES_GENERIC_SYSCALLS) */
+#endif /* defined(ENABLE_FRAGILE_HARDENING) */
 
   // for each dynamic parameter filters
   for (elem = filter; elem != NULL; elem = elem->next) {
@@ -592,31 +639,7 @@ sb_open(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
   return 0;
 }
 
-static int
-sb_chmod(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
-{
-  int rc;
-  sandbox_cfg_t *elem = NULL;
-
-  // for each dynamic parameter filters
-  for (elem = filter; elem != NULL; elem = elem->next) {
-    smp_param_t *param = elem->param;
-
-    if (param != NULL && param->prot == 1 && param->syscall
-        == SCMP_SYS(chmod)) {
-      rc = seccomp_rule_add_1(ctx, SCMP_ACT_ALLOW, SCMP_SYS(chmod),
-            SCMP_CMP_STR(0, SCMP_CMP_EQ, param->value));
-      if (rc != 0) {
-        log_err(LD_BUG,"(Sandbox) failed to add chmod syscall, received "
-            "libseccomp error %d", rc);
-        return rc;
-      }
-    }
-  }
-
-  return 0;
-}
-
+#ifdef ARCH_USES_GENERIC_SYSCALLS
 static int
 sb_fchmodat(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 {
@@ -642,8 +665,60 @@ sb_fchmodat(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 
   return 0;
 }
+#else
+static int
+sb_chmod(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
+{
+  int rc;
+  sandbox_cfg_t *elem = NULL;
 
-#ifdef __i386__
+  // for each dynamic parameter filters
+  for (elem = filter; elem != NULL; elem = elem->next) {
+    smp_param_t *param = elem->param;
+
+    if (param != NULL && param->prot == 1 && param->syscall
+        == SCMP_SYS(chmod)) {
+      rc = seccomp_rule_add_1(ctx, SCMP_ACT_ALLOW, SCMP_SYS(chmod),
+            SCMP_CMP_STR(0, SCMP_CMP_EQ, param->value));
+      if (rc != 0) {
+        log_err(LD_BUG,"(Sandbox) failed to add chmod syscall, received "
+            "libseccomp error %d", rc);
+        return rc;
+      }
+    }
+  }
+
+  return 0;
+}
+#endif /* defined(ARCH_USES_GENERIC_SYSCALLS) */
+
+#if defined(ARCH_USES_GENERIC_SYSCALLS)
+static int
+sb_fchownat(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
+{
+  int rc;
+  sandbox_cfg_t *elem = NULL;
+
+  // for each dynamic parameter filters
+  for (elem = filter; elem != NULL; elem = elem->next) {
+    smp_param_t *param = elem->param;
+
+    if (param != NULL && param->prot == 1 && param->syscall
+        == SCMP_SYS(fchownat)) {
+      rc = seccomp_rule_add_2(ctx, SCMP_ACT_ALLOW, SCMP_SYS(fchownat),
+          SCMP_CMP_LOWER32_EQ(0, AT_FDCWD),
+          SCMP_CMP_STR(1, SCMP_CMP_EQ, param->value));
+      if (rc != 0) {
+        log_err(LD_BUG,"(Sandbox) failed to add fchownat syscall, received "
+            "libseccomp error %d", rc);
+        return rc;
+      }
+    }
+  }
+
+  return 0;
+}
+#elif defined(__i386__)
 static int
 sb_chown32(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 {
@@ -693,34 +768,9 @@ sb_chown(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 
   return 0;
 }
-#endif /* defined(__i386__) */
+#endif /* defined(ARCH_USES_GENERIC_SYSCALLS) || defined(__i386__) */
 
-static int
-sb_fchownat(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
-{
-  int rc;
-  sandbox_cfg_t *elem = NULL;
-
-  // for each dynamic parameter filters
-  for (elem = filter; elem != NULL; elem = elem->next) {
-    smp_param_t *param = elem->param;
-
-    if (param != NULL && param->prot == 1 && param->syscall
-        == SCMP_SYS(fchownat)) {
-      rc = seccomp_rule_add_2(ctx, SCMP_ACT_ALLOW, SCMP_SYS(fchownat),
-          SCMP_CMP_LOWER32_EQ(0, AT_FDCWD),
-          SCMP_CMP_STR(1, SCMP_CMP_EQ, param->value));
-      if (rc != 0) {
-        log_err(LD_BUG,"(Sandbox) failed to add fchownat syscall, received "
-            "libseccomp error %d", rc);
-        return rc;
-      }
-    }
-  }
-
-  return 0;
-}
-
+#if defined(__NR_rename)
 /**
  * Function responsible for setting up the rename syscall for
  * the seccomp filter sandbox.
@@ -751,7 +801,7 @@ sb_rename(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 
   return 0;
 }
-
+#elif defined(__NR_renameat)
 /**
  * Function responsible for setting up the renameat syscall for
  * the seccomp filter sandbox.
@@ -784,7 +834,53 @@ sb_renameat(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 
   return 0;
 }
+#else
+/**
+ * Function responsible for setting up the renameat2 syscall for
+ * the seccomp filter sandbox.
+ */
+static int
+sb_renameat2(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
+{
+  int rc;
+  sandbox_cfg_t *elem = NULL;
 
+  // for each dynamic parameter filters
+  for (elem = filter; elem != NULL; elem = elem->next) {
+    smp_param_t *param = elem->param;
+
+    if (param != NULL && param->prot == 1 &&
+        param->syscall == SCMP_SYS(renameat2)) {
+
+      rc = seccomp_rule_add_5(ctx, SCMP_ACT_ALLOW, SCMP_SYS(renameat2),
+            SCMP_CMP_LOWER32_EQ(0, AT_FDCWD),
+            SCMP_CMP_STR(1, SCMP_CMP_EQ, param->value),
+            SCMP_CMP_LOWER32_EQ(2, AT_FDCWD),
+            SCMP_CMP_STR(3, SCMP_CMP_EQ, param->value2),
+            SCMP_CMP(4, SCMP_CMP_EQ, 0));
+      if (rc != 0) {
+        log_err(LD_BUG,"(Sandbox) failed to add renameat2 syscall, received "
+            "libseccomp error %d", rc);
+        return rc;
+      }
+    }
+  }
+
+  return 0;
+}
+#endif /* defined(__NR_rename) || defined(__NR_renameat) */
+
+/* If Tor is built with fragile hardening for an architecture that uses Linux's
+ * generic syscall interface a rule allowing the "openat" syscall without
+ * restriction will have already been added by sb_open(), so there is no need
+ * to consider adding additional, more restrictive rules here as they will
+ * simply be ignored.
+ *
+ * Also, since the "open" syscall is not defined on these architectures, glibc
+ * will necessarily use "openat" for its implementation of opendir() as well.
+ * This means neither of the following two functions will have any effect and
+ * both can be omitted. */
+#if !(defined(ENABLE_FRAGILE_HARDENING) && defined(ARCH_USES_GENERIC_SYSCALLS))
 /**
  * Function responsible for setting up the openat syscall for
  * the seccomp filter sandbox.
@@ -840,6 +936,8 @@ sb_opendir(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 
   return 0;
 }
+#endif /* !(defined(ENABLE_FRAGILE_HARDENING) &&
+            defined(ARCH_USES_GENERIC_SYSCALLS)) */
 
 #ifdef ENABLE_FRAGILE_HARDENING
 /**
@@ -859,9 +957,17 @@ sb_ptrace(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
   if (rc)
     return rc;
 
+  /* AddressSanitizer uses "PTRACE_GETREGSET" on AArch64 (ARM64) and
+   * System/390, "PTRACE_GETREGS" everywhere else. */
+#if defined(__aarch64__) || defined(__s390__)
+  rc = seccomp_rule_add_2(ctx, SCMP_ACT_ALLOW, SCMP_SYS(ptrace),
+      SCMP_CMP(0, SCMP_CMP_EQ, PTRACE_GETREGSET),
+      SCMP_CMP(1, SCMP_CMP_EQ, pid));
+#else
   rc = seccomp_rule_add_2(ctx, SCMP_ACT_ALLOW, SCMP_SYS(ptrace),
       SCMP_CMP(0, SCMP_CMP_EQ, PTRACE_GETREGS),
       SCMP_CMP(1, SCMP_CMP_EQ, pid));
+#endif /* defined(__aarch64__) || defined(__s390__) */
   if (rc)
     return rc;
 
@@ -1351,6 +1457,40 @@ sb_mremap(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
   return 0;
 }
 
+#ifdef ARCH_USES_GENERIC_SYSCALLS
+/**
+ * Function responsible for setting up the newfstatat syscall for
+ * the seccomp filter sandbox.
+ */
+static int
+sb_newfstatat(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
+{
+  int rc = 0;
+
+  sandbox_cfg_t *elem = NULL;
+
+  // for each dynamic parameter filters
+  for (elem = filter; elem != NULL; elem = elem->next) {
+    smp_param_t *param = elem->param;
+
+    if (param != NULL && param->prot == 1 && (param->syscall == SCMP_SYS(open)
+        || param->syscall == PHONY_OPENDIR_SYSCALL
+        || param->syscall == SCMP_SYS(newfstatat))) {
+      rc = seccomp_rule_add_2(ctx, SCMP_ACT_ALLOW, SCMP_SYS(newfstatat),
+          SCMP_CMP_LOWER32_EQ(0, AT_FDCWD),
+          SCMP_CMP_STR(1, SCMP_CMP_EQ, param->value));
+      if (rc != 0) {
+        log_err(LD_BUG,"(Sandbox) failed to add newfstatat syscall, received "
+            "libseccomp error %d", rc);
+        return rc;
+      }
+    }
+  }
+
+  return 0;
+}
+#endif /* defined(ARCH_USES_GENERIC_SYSCALLS) */
+
 #ifdef __NR_stat64
 /**
  * Function responsible for setting up the stat64 syscall for
@@ -1409,22 +1549,33 @@ static sandbox_filter_func_t filter_func[] = {
 #ifdef __NR_mmap2
     sb_mmap2,
 #endif
-#ifdef __i386__
+#if defined(ARCH_USES_GENERIC_SYSCALLS)
+    sb_fchownat,
+#elif defined(__i386__)
     sb_chown32,
 #else
     sb_chown,
 #endif
-    sb_fchownat,
-    sb_chmod,
+#if defined(ARCH_USES_GENERIC_SYSCALLS)
     sb_fchmodat,
+#else
+    sb_chmod,
+#endif
     sb_open,
+#if !(defined(ENABLE_FRAGILE_HARDENING) && defined(ARCH_USES_GENERIC_SYSCALLS))
     sb_openat,
     sb_opendir,
+#endif
 #ifdef ENABLE_FRAGILE_HARDENING
     sb_ptrace,
 #endif
+#if defined(__NR_rename)
     sb_rename,
+#elif defined(__NR_renameat)
     sb_renameat,
+#else
+    sb_renameat2,
+#endif
 #ifdef __NR_fcntl64
     sb_fcntl64,
 #endif
@@ -1434,7 +1585,9 @@ static sandbox_filter_func_t filter_func[] = {
     sb_flock,
     sb_futex,
     sb_mremap,
-#ifdef __NR_stat64
+#if defined(ARCH_USES_GENERIC_SYSCALLS)
+    sb_newfstatat,
+#elif defined(__NR_stat64)
     sb_stat64,
 #endif
 
@@ -1690,27 +1843,31 @@ new_element(int syscall, char *value)
   return new_element2(syscall, value, NULL);
 }
 
-#ifdef __i386__
-#define SCMP_chown SCMP_SYS(chown32)
-#elif defined(__aarch64__) && defined(__LP64__)
+#if defined(ARCH_USES_GENERIC_SYSCALLS)
 #define SCMP_chown SCMP_SYS(fchownat)
+#elif defined(__i386__)
+#define SCMP_chown SCMP_SYS(chown32)
 #else
 #define SCMP_chown SCMP_SYS(chown)
 #endif
 
-#if defined(__aarch64__) && defined(__LP64__)
+#if defined(ARCH_USES_GENERIC_SYSCALLS)
 #define SCMP_chmod SCMP_SYS(fchmodat)
 #else
 #define SCMP_chmod SCMP_SYS(chmod)
 #endif
 
-#if defined(__aarch64__) && defined(__LP64__)
+#if defined(__NR_rename)
+#define SCMP_rename SCMP_SYS(rename)
+#elif defined(__NR_renameat)
 #define SCMP_rename SCMP_SYS(renameat)
 #else
-#define SCMP_rename SCMP_SYS(rename)
+#define SCMP_rename SCMP_SYS(renameat2)
 #endif
 
-#ifdef __NR_stat64
+#if defined(ARCH_USES_GENERIC_SYSCALLS)
+#define SCMP_stat SCMP_SYS(newfstatat)
+#elif defined(__NR_stat64)
 #define SCMP_stat SCMP_SYS(stat64)
 #else
 #define SCMP_stat SCMP_SYS(stat)
@@ -1866,6 +2023,25 @@ add_noparam_filter(scmp_filter_ctx ctx)
     rc = seccomp_rule_add_0(ctx, SCMP_ACT_ALLOW, SCMP_SYS(newfstatat));
     if (rc != 0) {
       log_err(LD_BUG,"(Sandbox) failed to add newfstatat() syscall; "
+          "received libseccomp error %d", rc);
+      return rc;
+    }
+#elif defined(__NR_fstatat64)
+    // On i386, glibc uses fstatat64 instead of newfstatat.
+    // This is needed for glob() and stat() operations on 32-bit systems.
+    rc = seccomp_rule_add_0(ctx, SCMP_ACT_ALLOW, SCMP_SYS(fstatat64));
+    if (rc != 0) {
+      log_err(LD_BUG,"(Sandbox) failed to add fstatat64() syscall; "
+          "received libseccomp error %d", rc);
+      return rc;
+    }
+#endif
+#if defined(__i386__) && defined(__NR_statx)
+    // On i386 with glibc 2.33+, statx may be used for time64 support.
+    // glob() in glibc 2.36+ uses statx for directory traversal.
+    rc = seccomp_rule_add_0(ctx, SCMP_ACT_ALLOW, SCMP_SYS(statx));
+    if (rc != 0) {
+      log_err(LD_BUG,"(Sandbox) failed to add statx() syscall; "
           "received libseccomp error %d", rc);
       return rc;
     }

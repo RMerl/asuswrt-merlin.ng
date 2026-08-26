@@ -144,7 +144,17 @@ struct circuit_t {
    * For example, position 2 (starting at 0) means that we've received 300
    * cells so the 300th cell digest is kept at index 2.
    *
-   * At maximum, this list contains 200 bytes plus the smartlist overhead. */
+   * At maximum, this list contains 200 bytes plus the smartlist overhead.
+   *
+   * The elements in this list are always of length SENDME_TAG_LEN_TOR1
+   * (== DIGEST_LEN, == 20).  The actual digests stored in those elements
+   * may be smaller, however, if another relay crypto algorithm is in use.
+   **/
+  /* Note that this is a per-circuit field, although logically it might make
+   * more sense for it to be a per-hop field.  That doesn't matter in C tor,
+   * since we don't send more than a single window of cells to any given
+   * relay except for the exit.
+   */
   smartlist_t *sendme_last_digests;
 
   /** Temporary field used during circuits_handle_oom. */

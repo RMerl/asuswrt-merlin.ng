@@ -77,12 +77,10 @@ typedef struct crypto_digest_checkpoint_t {
 } crypto_digest_checkpoint_t;
 
 /** A set of all the digests we commonly compute, taken on a single
- * string.  Any digests that are shorter than 512 bits are right-padded
- * with 0 bits.
+ * string. This used to support 512-bit digests but now we allow only
+ * 256-bit at most (see tickets 17795 and 41267).
  *
- * Note that this representation wastes 44 bytes for the SHA1 case, so
- * don't use it for anything where we need to allocate a whole bunch at
- * once.
+ * Note that this representation wastes 12 bytes for the SHA1 case.
  **/
 typedef struct {
   /** An array of digest outputs, one for each "common" digest algorithm. */

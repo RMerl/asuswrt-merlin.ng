@@ -12,6 +12,8 @@
 #ifndef TOR_ROUTERPARSE_H
 #define TOR_ROUTERPARSE_H
 
+#include "lib/testsupport/testsupport.h"
+
 int router_get_router_hash(const char *s, size_t s_len, char *digest);
 int router_get_extrainfo_hash(const char *s, size_t s_len, char *digest);
 
@@ -46,5 +48,13 @@ extern const struct token_rule_t routerdesc_token_table[];
 #endif
 
 #define ED_DESC_SIGNATURE_PREFIX "Tor router descriptor signature v1"
+
+#ifdef ROUTERPARSE_PRIVATE
+STATIC int check_one_family_cert(const uint8_t *cert_body,
+                      size_t cert_body_size,
+                      const struct ed25519_public_key_t *identity_key,
+                      char **family_id_out,
+                      time_t *family_expiration_out);
+#endif
 
 #endif /* !defined(TOR_ROUTERPARSE_H) */

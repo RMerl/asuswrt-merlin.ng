@@ -15,5 +15,5 @@ src_lib_libtor_geoip_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
 # ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS +=					\
-	src/lib/geoip/geoip.h   			\
+	src/lib/geoip/geoip.h				\
 	src/lib/geoip/country.h

@@ -447,10 +447,16 @@ update_socket_written(socket_table_t *table, channel_t *chan, size_t bytes)
  * by only writing a channel's outbuf to the kernel if it has 8 cells or more
  * in it.
  *
- * Note: The number 8 has been picked for no particular reasons except that it
- * is 4096 bytes which is a common number for buffering. A TLS record can hold
- * up to 16KiB thus using 8 cells means that a relay will at most send a TLS
- * record of 4KiB or 1/4 of the maximum capacity of a TLS record.
+ * Note: The number 8 was picked so that, when using 512-byte cells, it
+ * would produce 4096 bytes: a common number for buffering.  A TLS
+ * record can hold up to 16KiB; thus, using 8 512-byte cells means that
+ * a relay will at most send a TLS record of 4KiB or 1/4 of the maximum
+ * capacity of a TLS record.
+ *
+ * Of course, the above calculation became incorrect when we moved to
+ * 514-byte cells in order to accommodate a 4-byte circuit ID; we may
+ * want to consider profiling with '7' to see if it produces better
+ * results.  (TODO)
  */
 MOCK_IMPL(int, channel_should_write_to_kernel,
           (outbuf_table_t *table, channel_t *chan))

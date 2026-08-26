@@ -24,6 +24,7 @@ void accounting_run_housekeeping(time_t now);
 void accounting_add_bytes(size_t n_read, size_t n_written, int seconds);
 int accounting_record_bandwidth_usage(time_t now, or_state_t *state);
 void hibernate_begin_shutdown(void);
+MOCK_DECL(int, we_are_shutting_down, (void));
 MOCK_DECL(int, we_are_hibernating, (void));
 MOCK_DECL(int, we_are_fully_hibernating,(void));
 void consider_hibernation(time_t now);

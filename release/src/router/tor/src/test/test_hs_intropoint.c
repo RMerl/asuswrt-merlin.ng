@@ -544,7 +544,7 @@ test_intro_point_registration(void *arg)
 
   or_circuit_t *intro_circ = NULL;
   trn_cell_establish_intro_t *establish_intro_cell = NULL;
-  ed25519_public_key_t auth_key;
+  ed25519_public_key_t auth_key = {0};
 
   or_circuit_t *returned_intro_circ = NULL;
 

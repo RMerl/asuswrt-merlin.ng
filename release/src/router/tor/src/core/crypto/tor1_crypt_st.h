@@ -5,34 +5,35 @@
 /* See LICENSE for licensing information */
 
 /**
- * @file relay_crypto_st.h
- * @brief Relay-cell encryption state structure.
+ * @file tor1_crypt_st.h
+ * @brief Structures for tor1 relay cell encryption.
  **/
 
-#ifndef RELAY_CRYPTO_ST_H
-#define RELAY_CRYPTO_ST_H
+#ifndef TOR1_CRYPT_ST_H
+#define TOR1_CRYPT_ST_H
 
-#define crypto_cipher_t aes_cnt_cipher_t
-struct crypto_cipher_t;
+struct aes_cnt_cipher_t;
 struct crypto_digest_t;
 
-struct relay_crypto_t {
-  /* crypto environments */
+struct tor1_crypt_t {
   /** Encryption key and counter for cells heading towards the OR at this
    * step. */
-  struct crypto_cipher_t *f_crypto;
+  struct aes_cnt_cipher_t *f_crypto;
   /** Encryption key and counter for cells heading back from the OR at this
    * step. */
-  struct crypto_cipher_t *b_crypto;
+  struct aes_cnt_cipher_t *b_crypto;
 
   /** Digest state for cells heading towards the OR at this step. */
   struct crypto_digest_t *f_digest; /* for integrity checking */
   /** Digest state for cells heading away from the OR at this step. */
   struct crypto_digest_t *b_digest;
 
-  /** Digest used for the next SENDME cell if any. */
+  /** Digest used for the next SENDME cell if any.
+   *
+   * This digest is updated every time a cell is _originated_ or _recognized_
+   * in either direction.  Any operation with this object may
+   * invalidate this digest. */
   uint8_t sendme_digest[DIGEST_LEN];
 };
-#undef crypto_cipher_t
 
-#endif /* !defined(RELAY_CRYPTO_ST_H) */
+#endif /* !defined(TOR1_CRYPT_ST_H) */

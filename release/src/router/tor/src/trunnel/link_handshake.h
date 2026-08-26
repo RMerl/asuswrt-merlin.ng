@@ -15,6 +15,25 @@
 #define CERTTYPE_ED_SIGN_LINK 5
 #define CERTTYPE_ED_SIGN_AUTH 6
 #define CERTTYPE_RSA1024_ID_EDID 7
+#if !defined(TRUNNEL_OPAQUE) && !defined(TRUNNEL_OPAQUE_AUTH1)
+struct auth1_st {
+  uint8_t type[8];
+  uint8_t cid[32];
+  uint8_t sid[32];
+  uint8_t cid_ed[32];
+  uint8_t sid_ed[32];
+  uint8_t slog[32];
+  uint8_t clog[32];
+  uint8_t scert[32];
+  uint8_t tlssecrets[32];
+  const uint8_t *end_of_fixed_part;
+  uint8_t rand[24];
+  const uint8_t *end_of_signed;
+  TRUNNEL_DYNARRAY_HEAD(, uint8_t) sig;
+  uint8_t trunnel_error_code_;
+};
+#endif
+typedef struct auth1_st auth1_t;
 #if !defined(TRUNNEL_OPAQUE) && !defined(TRUNNEL_OPAQUE_AUTH_CHALLENGE_CELL)
 struct auth_challenge_cell_st {
   uint8_t challenge[32];
@@ -24,13 +43,6 @@ struct auth_challenge_cell_st {
 };
 #endif
 typedef struct auth_challenge_cell_st auth_challenge_cell_t;
-#if !defined(TRUNNEL_OPAQUE) && !defined(TRUNNEL_OPAQUE_AUTH_CTX)
-struct auth_ctx_st {
-  uint8_t is_ed;
-  uint8_t trunnel_error_code_;
-};
-#endif
-typedef struct auth_ctx_st auth_ctx_t;
 #if !defined(TRUNNEL_OPAQUE) && !defined(TRUNNEL_OPAQUE_CERTS_CELL_CERT)
 struct certs_cell_cert_st {
   uint8_t cert_type;
@@ -51,25 +63,6 @@ struct rsa_ed_crosscert_st {
 };
 #endif
 typedef struct rsa_ed_crosscert_st rsa_ed_crosscert_t;
-#if !defined(TRUNNEL_OPAQUE) && !defined(TRUNNEL_OPAQUE_AUTH1)
-struct auth1_st {
-  uint8_t type[8];
-  uint8_t cid[32];
-  uint8_t sid[32];
-  uint8_t u1_cid_ed[32];
-  uint8_t u1_sid_ed[32];
-  uint8_t slog[32];
-  uint8_t clog[32];
-  uint8_t scert[32];
-  uint8_t tlssecrets[32];
-  const uint8_t *end_of_fixed_part;
-  uint8_t rand[24];
-  const uint8_t *end_of_signed;
-  TRUNNEL_DYNARRAY_HEAD(, uint8_t) sig;
-  uint8_t trunnel_error_code_;
-};
-#endif
-typedef struct auth1_st auth1_t;
 #if !defined(TRUNNEL_OPAQUE) && !defined(TRUNNEL_OPAQUE_CERTS_CELL)
 struct certs_cell_st {
   uint8_t n_certs;
@@ -78,6 +71,292 @@ struct certs_cell_st {
 };
 #endif
 typedef struct certs_cell_st certs_cell_t;
+/** Return a newly allocated auth1 with all elements set to zero.
+ */
+auth1_t *auth1_new(void);
+/** Release all storage held by the auth1 in 'victim'. (Do nothing if
+ * 'victim' is NULL.)
+ */
+void auth1_free(auth1_t *victim);
+/** Try to parse a auth1 from the buffer in 'input', using up to
+ * 'len_in' bytes from the input buffer. On success, return the number
+ * of bytes consumed and set *output to the newly allocated auth1_t.
+ * On failure, return -2 if the input appears truncated, and -1 if the
+ * input is otherwise invalid.
+ */
+ssize_t auth1_parse(auth1_t **output, const uint8_t *input, const size_t len_in);
+/** Return the number of bytes we expect to need to encode the auth1
+ * in 'obj'. On failure, return a negative value. Note that this value
+ * may be an overestimate, and can even be an underestimate for
+ * certain unencodeable objects.
+ */
+ssize_t auth1_encoded_len(const auth1_t *obj);
+/** Try to encode the auth1 from 'input' into the buffer at 'output',
+ * using up to 'avail' bytes of the output buffer. On success, return
+ * the number of bytes used. On failure, return -2 if the buffer was
+ * not long enough, and -1 if the input was invalid.
+ */
+ssize_t auth1_encode(uint8_t *output, size_t avail, const auth1_t *input);
+/** Check whether the internal state of the auth1 in 'obj' is
+ * consistent. Return NULL if it is, and a short message if it is not.
+ */
+const char *auth1_check(const auth1_t *obj);
+/** Clear any errors that were set on the object 'obj' by its setter
+ * functions. Return true iff errors were cleared.
+ */
+int auth1_clear_errors(auth1_t *obj);
+/** Return the (constant) length of the array holding the type field
+ * of the auth1_t in 'inp'.
+ */
+size_t auth1_getlen_type(const auth1_t *inp);
+/** Return the element at position 'idx' of the fixed array field type
+ * of the auth1_t in 'inp'.
+ */
+uint8_t auth1_get_type(auth1_t *inp, size_t idx);
+/** As auth1_get_type, but take and return a const pointer
+ */
+uint8_t auth1_getconst_type(const auth1_t *inp, size_t idx);
+/** Change the element at position 'idx' of the fixed array field type
+ * of the auth1_t in 'inp', so that it will hold the value 'elt'.
+ */
+int auth1_set_type(auth1_t *inp, size_t idx, uint8_t elt);
+/** Return a pointer to the 8-element array field type of 'inp'.
+ */
+uint8_t * auth1_getarray_type(auth1_t *inp);
+/** As auth1_get_type, but take and return a const pointer
+ */
+const uint8_t  * auth1_getconstarray_type(const auth1_t *inp);
+/** Return the (constant) length of the array holding the cid field of
+ * the auth1_t in 'inp'.
+ */
+size_t auth1_getlen_cid(const auth1_t *inp);
+/** Return the element at position 'idx' of the fixed array field cid
+ * of the auth1_t in 'inp'.
+ */
+uint8_t auth1_get_cid(auth1_t *inp, size_t idx);
+/** As auth1_get_cid, but take and return a const pointer
+ */
+uint8_t auth1_getconst_cid(const auth1_t *inp, size_t idx);
+/** Change the element at position 'idx' of the fixed array field cid
+ * of the auth1_t in 'inp', so that it will hold the value 'elt'.
+ */
+int auth1_set_cid(auth1_t *inp, size_t idx, uint8_t elt);
+/** Return a pointer to the 32-element array field cid of 'inp'.
+ */
+uint8_t * auth1_getarray_cid(auth1_t *inp);
+/** As auth1_get_cid, but take and return a const pointer
+ */
+const uint8_t  * auth1_getconstarray_cid(const auth1_t *inp);
+/** Return the (constant) length of the array holding the sid field of
+ * the auth1_t in 'inp'.
+ */
+size_t auth1_getlen_sid(const auth1_t *inp);
+/** Return the element at position 'idx' of the fixed array field sid
+ * of the auth1_t in 'inp'.
+ */
+uint8_t auth1_get_sid(auth1_t *inp, size_t idx);
+/** As auth1_get_sid, but take and return a const pointer
+ */
+uint8_t auth1_getconst_sid(const auth1_t *inp, size_t idx);
+/** Change the element at position 'idx' of the fixed array field sid
+ * of the auth1_t in 'inp', so that it will hold the value 'elt'.
+ */
+int auth1_set_sid(auth1_t *inp, size_t idx, uint8_t elt);
+/** Return a pointer to the 32-element array field sid of 'inp'.
+ */
+uint8_t * auth1_getarray_sid(auth1_t *inp);
+/** As auth1_get_sid, but take and return a const pointer
+ */
+const uint8_t  * auth1_getconstarray_sid(const auth1_t *inp);
+/** Return the (constant) length of the array holding the cid_ed field
+ * of the auth1_t in 'inp'.
+ */
+size_t auth1_getlen_cid_ed(const auth1_t *inp);
+/** Return the element at position 'idx' of the fixed array field
+ * cid_ed of the auth1_t in 'inp'.
+ */
+uint8_t auth1_get_cid_ed(auth1_t *inp, size_t idx);
+/** As auth1_get_cid_ed, but take and return a const pointer
+ */
+uint8_t auth1_getconst_cid_ed(const auth1_t *inp, size_t idx);
+/** Change the element at position 'idx' of the fixed array field
+ * cid_ed of the auth1_t in 'inp', so that it will hold the value
+ * 'elt'.
+ */
+int auth1_set_cid_ed(auth1_t *inp, size_t idx, uint8_t elt);
+/** Return a pointer to the 32-element array field cid_ed of 'inp'.
+ */
+uint8_t * auth1_getarray_cid_ed(auth1_t *inp);
+/** As auth1_get_cid_ed, but take and return a const pointer
+ */
+const uint8_t  * auth1_getconstarray_cid_ed(const auth1_t *inp);
+/** Return the (constant) length of the array holding the sid_ed field
+ * of the auth1_t in 'inp'.
+ */
+size_t auth1_getlen_sid_ed(const auth1_t *inp);
+/** Return the element at position 'idx' of the fixed array field
+ * sid_ed of the auth1_t in 'inp'.
+ */
+uint8_t auth1_get_sid_ed(auth1_t *inp, size_t idx);
+/** As auth1_get_sid_ed, but take and return a const pointer
+ */
+uint8_t auth1_getconst_sid_ed(const auth1_t *inp, size_t idx);
+/** Change the element at position 'idx' of the fixed array field
+ * sid_ed of the auth1_t in 'inp', so that it will hold the value
+ * 'elt'.
+ */
+int auth1_set_sid_ed(auth1_t *inp, size_t idx, uint8_t elt);
+/** Return a pointer to the 32-element array field sid_ed of 'inp'.
+ */
+uint8_t * auth1_getarray_sid_ed(auth1_t *inp);
+/** As auth1_get_sid_ed, but take and return a const pointer
+ */
+const uint8_t  * auth1_getconstarray_sid_ed(const auth1_t *inp);
+/** Return the (constant) length of the array holding the slog field
+ * of the auth1_t in 'inp'.
+ */
+size_t auth1_getlen_slog(const auth1_t *inp);
+/** Return the element at position 'idx' of the fixed array field slog
+ * of the auth1_t in 'inp'.
+ */
+uint8_t auth1_get_slog(auth1_t *inp, size_t idx);
+/** As auth1_get_slog, but take and return a const pointer
+ */
+uint8_t auth1_getconst_slog(const auth1_t *inp, size_t idx);
+/** Change the element at position 'idx' of the fixed array field slog
+ * of the auth1_t in 'inp', so that it will hold the value 'elt'.
+ */
+int auth1_set_slog(auth1_t *inp, size_t idx, uint8_t elt);
+/** Return a pointer to the 32-element array field slog of 'inp'.
+ */
+uint8_t * auth1_getarray_slog(auth1_t *inp);
+/** As auth1_get_slog, but take and return a const pointer
+ */
+const uint8_t  * auth1_getconstarray_slog(const auth1_t *inp);
+/** Return the (constant) length of the array holding the clog field
+ * of the auth1_t in 'inp'.
+ */
+size_t auth1_getlen_clog(const auth1_t *inp);
+/** Return the element at position 'idx' of the fixed array field clog
+ * of the auth1_t in 'inp'.
+ */
+uint8_t auth1_get_clog(auth1_t *inp, size_t idx);
+/** As auth1_get_clog, but take and return a const pointer
+ */
+uint8_t auth1_getconst_clog(const auth1_t *inp, size_t idx);
+/** Change the element at position 'idx' of the fixed array field clog
+ * of the auth1_t in 'inp', so that it will hold the value 'elt'.
+ */
+int auth1_set_clog(auth1_t *inp, size_t idx, uint8_t elt);
+/** Return a pointer to the 32-element array field clog of 'inp'.
+ */
+uint8_t * auth1_getarray_clog(auth1_t *inp);
+/** As auth1_get_clog, but take and return a const pointer
+ */
+const uint8_t  * auth1_getconstarray_clog(const auth1_t *inp);
+/** Return the (constant) length of the array holding the scert field
+ * of the auth1_t in 'inp'.
+ */
+size_t auth1_getlen_scert(const auth1_t *inp);
+/** Return the element at position 'idx' of the fixed array field
+ * scert of the auth1_t in 'inp'.
+ */
+uint8_t auth1_get_scert(auth1_t *inp, size_t idx);
+/** As auth1_get_scert, but take and return a const pointer
+ */
+uint8_t auth1_getconst_scert(const auth1_t *inp, size_t idx);
+/** Change the element at position 'idx' of the fixed array field
+ * scert of the auth1_t in 'inp', so that it will hold the value
+ * 'elt'.
+ */
+int auth1_set_scert(auth1_t *inp, size_t idx, uint8_t elt);
+/** Return a pointer to the 32-element array field scert of 'inp'.
+ */
+uint8_t * auth1_getarray_scert(auth1_t *inp);
+/** As auth1_get_scert, but take and return a const pointer
+ */
+const uint8_t  * auth1_getconstarray_scert(const auth1_t *inp);
+/** Return the (constant) length of the array holding the tlssecrets
+ * field of the auth1_t in 'inp'.
+ */
+size_t auth1_getlen_tlssecrets(const auth1_t *inp);
+/** Return the element at position 'idx' of the fixed array field
+ * tlssecrets of the auth1_t in 'inp'.
+ */
+uint8_t auth1_get_tlssecrets(auth1_t *inp, size_t idx);
+/** As auth1_get_tlssecrets, but take and return a const pointer
+ */
+uint8_t auth1_getconst_tlssecrets(const auth1_t *inp, size_t idx);
+/** Change the element at position 'idx' of the fixed array field
+ * tlssecrets of the auth1_t in 'inp', so that it will hold the value
+ * 'elt'.
+ */
+int auth1_set_tlssecrets(auth1_t *inp, size_t idx, uint8_t elt);
+/** Return a pointer to the 32-element array field tlssecrets of
+ * 'inp'.
+ */
+uint8_t * auth1_getarray_tlssecrets(auth1_t *inp);
+/** As auth1_get_tlssecrets, but take and return a const pointer
+ */
+const uint8_t  * auth1_getconstarray_tlssecrets(const auth1_t *inp);
+/** Return the position for end_of_fixed_part when we parsed this
+ * object
+ */
+const uint8_t * auth1_get_end_of_fixed_part(const auth1_t *inp);
+/** Return the (constant) length of the array holding the rand field
+ * of the auth1_t in 'inp'.
+ */
+size_t auth1_getlen_rand(const auth1_t *inp);
+/** Return the element at position 'idx' of the fixed array field rand
+ * of the auth1_t in 'inp'.
+ */
+uint8_t auth1_get_rand(auth1_t *inp, size_t idx);
+/** As auth1_get_rand, but take and return a const pointer
+ */
+uint8_t auth1_getconst_rand(const auth1_t *inp, size_t idx);
+/** Change the element at position 'idx' of the fixed array field rand
+ * of the auth1_t in 'inp', so that it will hold the value 'elt'.
+ */
+int auth1_set_rand(auth1_t *inp, size_t idx, uint8_t elt);
+/** Return a pointer to the 24-element array field rand of 'inp'.
+ */
+uint8_t * auth1_getarray_rand(auth1_t *inp);
+/** As auth1_get_rand, but take and return a const pointer
+ */
+const uint8_t  * auth1_getconstarray_rand(const auth1_t *inp);
+/** Return the position for end_of_signed when we parsed this object
+ */
+const uint8_t * auth1_get_end_of_signed(const auth1_t *inp);
+/** Return the length of the dynamic array holding the sig field of
+ * the auth1_t in 'inp'.
+ */
+size_t auth1_getlen_sig(const auth1_t *inp);
+/** Return the element at position 'idx' of the dynamic array field
+ * sig of the auth1_t in 'inp'.
+ */
+uint8_t auth1_get_sig(auth1_t *inp, size_t idx);
+/** As auth1_get_sig, but take and return a const pointer
+ */
+uint8_t auth1_getconst_sig(const auth1_t *inp, size_t idx);
+/** Change the element at position 'idx' of the dynamic array field
+ * sig of the auth1_t in 'inp', so that it will hold the value 'elt'.
+ */
+int auth1_set_sig(auth1_t *inp, size_t idx, uint8_t elt);
+/** Append a new element 'elt' to the dynamic array field sig of the
+ * auth1_t in 'inp'.
+ */
+int auth1_add_sig(auth1_t *inp, uint8_t elt);
+/** Return a pointer to the variable-length array field sig of 'inp'.
+ */
+uint8_t * auth1_getarray_sig(auth1_t *inp);
+/** As auth1_get_sig, but take and return a const pointer
+ */
+const uint8_t  * auth1_getconstarray_sig(const auth1_t *inp);
+/** Change the length of the variable-length array field sig of 'inp'
+ * to 'newlen'.Fill extra elements with 0. Return 0 on success; return
+ * -1 and set the error code on 'inp' on failure.
+ */
+int auth1_setlen_sig(auth1_t *inp, size_t newlen);
 /** Return a newly allocated auth_challenge_cell with all elements set
  * to zero.
  */
@@ -181,21 +460,6 @@ const uint16_t  * auth_challenge_cell_getconstarray_methods(const auth_challenge
  * return -1 and set the error code on 'inp' on failure.
  */
 int auth_challenge_cell_setlen_methods(auth_challenge_cell_t *inp, size_t newlen);
-/** Return a newly allocated auth_ctx with all elements set to zero.
- */
-auth_ctx_t *auth_ctx_new(void);
-/** Release all storage held by the auth_ctx in 'victim'. (Do nothing
- * if 'victim' is NULL.)
- */
-void auth_ctx_free(auth_ctx_t *victim);
-/** Return the value of the is_ed field of the auth_ctx_t in 'inp'
- */
-uint8_t auth_ctx_get_is_ed(const auth_ctx_t *inp);
-/** Set the value of the is_ed field of the auth_ctx_t in 'inp' to
- * 'val'. Return 0 on success; return -1 and set the error code on
- * 'inp' on failure.
- */
-int auth_ctx_set_is_ed(auth_ctx_t *inp, uint8_t val);
 /** Return a newly allocated certs_cell_cert with all elements set to
  * zero.
  */
@@ -393,292 +657,6 @@ const uint8_t  * rsa_ed_crosscert_getconstarray_sig(const rsa_ed_crosscert_t *in
  * -1 and set the error code on 'inp' on failure.
  */
 int rsa_ed_crosscert_setlen_sig(rsa_ed_crosscert_t *inp, size_t newlen);
-/** Return a newly allocated auth1 with all elements set to zero.
- */
-auth1_t *auth1_new(void);
-/** Release all storage held by the auth1 in 'victim'. (Do nothing if
- * 'victim' is NULL.)
- */
-void auth1_free(auth1_t *victim);
-/** Try to parse a auth1 from the buffer in 'input', using up to
- * 'len_in' bytes from the input buffer. On success, return the number
- * of bytes consumed and set *output to the newly allocated auth1_t.
- * On failure, return -2 if the input appears truncated, and -1 if the
- * input is otherwise invalid.
- */
-ssize_t auth1_parse(auth1_t **output, const uint8_t *input, const size_t len_in, const auth_ctx_t *auth_ctx_ctx);
-/** Return the number of bytes we expect to need to encode the auth1
- * in 'obj'. On failure, return a negative value. Note that this value
- * may be an overestimate, and can even be an underestimate for
- * certain unencodeable objects.
- */
-ssize_t auth1_encoded_len(const auth1_t *obj, const auth_ctx_t *auth_ctx_ctx);
-/** Try to encode the auth1 from 'input' into the buffer at 'output',
- * using up to 'avail' bytes of the output buffer. On success, return
- * the number of bytes used. On failure, return -2 if the buffer was
- * not long enough, and -1 if the input was invalid.
- */
-ssize_t auth1_encode(uint8_t *output, size_t avail, const auth1_t *input, const auth_ctx_t *auth_ctx_ctx);
-/** Check whether the internal state of the auth1 in 'obj' is
- * consistent. Return NULL if it is, and a short message if it is not.
- */
-const char *auth1_check(const auth1_t *obj, const auth_ctx_t *auth_ctx_ctx);
-/** Clear any errors that were set on the object 'obj' by its setter
- * functions. Return true iff errors were cleared.
- */
-int auth1_clear_errors(auth1_t *obj);
-/** Return the (constant) length of the array holding the type field
- * of the auth1_t in 'inp'.
- */
-size_t auth1_getlen_type(const auth1_t *inp);
-/** Return the element at position 'idx' of the fixed array field type
- * of the auth1_t in 'inp'.
- */
-uint8_t auth1_get_type(auth1_t *inp, size_t idx);
-/** As auth1_get_type, but take and return a const pointer
- */
-uint8_t auth1_getconst_type(const auth1_t *inp, size_t idx);
-/** Change the element at position 'idx' of the fixed array field type
- * of the auth1_t in 'inp', so that it will hold the value 'elt'.
- */
-int auth1_set_type(auth1_t *inp, size_t idx, uint8_t elt);
-/** Return a pointer to the 8-element array field type of 'inp'.
- */
-uint8_t * auth1_getarray_type(auth1_t *inp);
-/** As auth1_get_type, but take and return a const pointer
- */
-const uint8_t  * auth1_getconstarray_type(const auth1_t *inp);
-/** Return the (constant) length of the array holding the cid field of
- * the auth1_t in 'inp'.
- */
-size_t auth1_getlen_cid(const auth1_t *inp);
-/** Return the element at position 'idx' of the fixed array field cid
- * of the auth1_t in 'inp'.
- */
-uint8_t auth1_get_cid(auth1_t *inp, size_t idx);
-/** As auth1_get_cid, but take and return a const pointer
- */
-uint8_t auth1_getconst_cid(const auth1_t *inp, size_t idx);
-/** Change the element at position 'idx' of the fixed array field cid
- * of the auth1_t in 'inp', so that it will hold the value 'elt'.
- */
-int auth1_set_cid(auth1_t *inp, size_t idx, uint8_t elt);
-/** Return a pointer to the 32-element array field cid of 'inp'.
- */
-uint8_t * auth1_getarray_cid(auth1_t *inp);
-/** As auth1_get_cid, but take and return a const pointer
- */
-const uint8_t  * auth1_getconstarray_cid(const auth1_t *inp);
-/** Return the (constant) length of the array holding the sid field of
- * the auth1_t in 'inp'.
- */
-size_t auth1_getlen_sid(const auth1_t *inp);
-/** Return the element at position 'idx' of the fixed array field sid
- * of the auth1_t in 'inp'.
- */
-uint8_t auth1_get_sid(auth1_t *inp, size_t idx);
-/** As auth1_get_sid, but take and return a const pointer
- */
-uint8_t auth1_getconst_sid(const auth1_t *inp, size_t idx);
-/** Change the element at position 'idx' of the fixed array field sid
- * of the auth1_t in 'inp', so that it will hold the value 'elt'.
- */
-int auth1_set_sid(auth1_t *inp, size_t idx, uint8_t elt);
-/** Return a pointer to the 32-element array field sid of 'inp'.
- */
-uint8_t * auth1_getarray_sid(auth1_t *inp);
-/** As auth1_get_sid, but take and return a const pointer
- */
-const uint8_t  * auth1_getconstarray_sid(const auth1_t *inp);
-/** Return the (constant) length of the array holding the u1_cid_ed
- * field of the auth1_t in 'inp'.
- */
-size_t auth1_getlen_u1_cid_ed(const auth1_t *inp);
-/** Return the element at position 'idx' of the fixed array field
- * u1_cid_ed of the auth1_t in 'inp'.
- */
-uint8_t auth1_get_u1_cid_ed(auth1_t *inp, size_t idx);
-/** As auth1_get_u1_cid_ed, but take and return a const pointer
- */
-uint8_t auth1_getconst_u1_cid_ed(const auth1_t *inp, size_t idx);
-/** Change the element at position 'idx' of the fixed array field
- * u1_cid_ed of the auth1_t in 'inp', so that it will hold the value
- * 'elt'.
- */
-int auth1_set_u1_cid_ed(auth1_t *inp, size_t idx, uint8_t elt);
-/** Return a pointer to the 32-element array field u1_cid_ed of 'inp'.
- */
-uint8_t * auth1_getarray_u1_cid_ed(auth1_t *inp);
-/** As auth1_get_u1_cid_ed, but take and return a const pointer
- */
-const uint8_t  * auth1_getconstarray_u1_cid_ed(const auth1_t *inp);
-/** Return the (constant) length of the array holding the u1_sid_ed
- * field of the auth1_t in 'inp'.
- */
-size_t auth1_getlen_u1_sid_ed(const auth1_t *inp);
-/** Return the element at position 'idx' of the fixed array field
- * u1_sid_ed of the auth1_t in 'inp'.
- */
-uint8_t auth1_get_u1_sid_ed(auth1_t *inp, size_t idx);
-/** As auth1_get_u1_sid_ed, but take and return a const pointer
- */
-uint8_t auth1_getconst_u1_sid_ed(const auth1_t *inp, size_t idx);
-/** Change the element at position 'idx' of the fixed array field
- * u1_sid_ed of the auth1_t in 'inp', so that it will hold the value
- * 'elt'.
- */
-int auth1_set_u1_sid_ed(auth1_t *inp, size_t idx, uint8_t elt);
-/** Return a pointer to the 32-element array field u1_sid_ed of 'inp'.
- */
-uint8_t * auth1_getarray_u1_sid_ed(auth1_t *inp);
-/** As auth1_get_u1_sid_ed, but take and return a const pointer
- */
-const uint8_t  * auth1_getconstarray_u1_sid_ed(const auth1_t *inp);
-/** Return the (constant) length of the array holding the slog field
- * of the auth1_t in 'inp'.
- */
-size_t auth1_getlen_slog(const auth1_t *inp);
-/** Return the element at position 'idx' of the fixed array field slog
- * of the auth1_t in 'inp'.
- */
-uint8_t auth1_get_slog(auth1_t *inp, size_t idx);
-/** As auth1_get_slog, but take and return a const pointer
- */
-uint8_t auth1_getconst_slog(const auth1_t *inp, size_t idx);
-/** Change the element at position 'idx' of the fixed array field slog
- * of the auth1_t in 'inp', so that it will hold the value 'elt'.
- */
-int auth1_set_slog(auth1_t *inp, size_t idx, uint8_t elt);
-/** Return a pointer to the 32-element array field slog of 'inp'.
- */
-uint8_t * auth1_getarray_slog(auth1_t *inp);
-/** As auth1_get_slog, but take and return a const pointer
- */
-const uint8_t  * auth1_getconstarray_slog(const auth1_t *inp);
-/** Return the (constant) length of the array holding the clog field
- * of the auth1_t in 'inp'.
- */
-size_t auth1_getlen_clog(const auth1_t *inp);
-/** Return the element at position 'idx' of the fixed array field clog
- * of the auth1_t in 'inp'.
- */
-uint8_t auth1_get_clog(auth1_t *inp, size_t idx);
-/** As auth1_get_clog, but take and return a const pointer
- */
-uint8_t auth1_getconst_clog(const auth1_t *inp, size_t idx);
-/** Change the element at position 'idx' of the fixed array field clog
- * of the auth1_t in 'inp', so that it will hold the value 'elt'.
- */
-int auth1_set_clog(auth1_t *inp, size_t idx, uint8_t elt);
-/** Return a pointer to the 32-element array field clog of 'inp'.
- */
-uint8_t * auth1_getarray_clog(auth1_t *inp);
-/** As auth1_get_clog, but take and return a const pointer
- */
-const uint8_t  * auth1_getconstarray_clog(const auth1_t *inp);
-/** Return the (constant) length of the array holding the scert field
- * of the auth1_t in 'inp'.
- */
-size_t auth1_getlen_scert(const auth1_t *inp);
-/** Return the element at position 'idx' of the fixed array field
- * scert of the auth1_t in 'inp'.
- */
-uint8_t auth1_get_scert(auth1_t *inp, size_t idx);
-/** As auth1_get_scert, but take and return a const pointer
- */
-uint8_t auth1_getconst_scert(const auth1_t *inp, size_t idx);
-/** Change the element at position 'idx' of the fixed array field
- * scert of the auth1_t in 'inp', so that it will hold the value
- * 'elt'.
- */
-int auth1_set_scert(auth1_t *inp, size_t idx, uint8_t elt);
-/** Return a pointer to the 32-element array field scert of 'inp'.
- */
-uint8_t * auth1_getarray_scert(auth1_t *inp);
-/** As auth1_get_scert, but take and return a const pointer
- */
-const uint8_t  * auth1_getconstarray_scert(const auth1_t *inp);
-/** Return the (constant) length of the array holding the tlssecrets
- * field of the auth1_t in 'inp'.
- */
-size_t auth1_getlen_tlssecrets(const auth1_t *inp);
-/** Return the element at position 'idx' of the fixed array field
- * tlssecrets of the auth1_t in 'inp'.
- */
-uint8_t auth1_get_tlssecrets(auth1_t *inp, size_t idx);
-/** As auth1_get_tlssecrets, but take and return a const pointer
- */
-uint8_t auth1_getconst_tlssecrets(const auth1_t *inp, size_t idx);
-/** Change the element at position 'idx' of the fixed array field
- * tlssecrets of the auth1_t in 'inp', so that it will hold the value
- * 'elt'.
- */
-int auth1_set_tlssecrets(auth1_t *inp, size_t idx, uint8_t elt);
-/** Return a pointer to the 32-element array field tlssecrets of
- * 'inp'.
- */
-uint8_t * auth1_getarray_tlssecrets(auth1_t *inp);
-/** As auth1_get_tlssecrets, but take and return a const pointer
- */
-const uint8_t  * auth1_getconstarray_tlssecrets(const auth1_t *inp);
-/** Return the position for end_of_fixed_part when we parsed this
- * object
- */
-const uint8_t * auth1_get_end_of_fixed_part(const auth1_t *inp);
-/** Return the (constant) length of the array holding the rand field
- * of the auth1_t in 'inp'.
- */
-size_t auth1_getlen_rand(const auth1_t *inp);
-/** Return the element at position 'idx' of the fixed array field rand
- * of the auth1_t in 'inp'.
- */
-uint8_t auth1_get_rand(auth1_t *inp, size_t idx);
-/** As auth1_get_rand, but take and return a const pointer
- */
-uint8_t auth1_getconst_rand(const auth1_t *inp, size_t idx);
-/** Change the element at position 'idx' of the fixed array field rand
- * of the auth1_t in 'inp', so that it will hold the value 'elt'.
- */
-int auth1_set_rand(auth1_t *inp, size_t idx, uint8_t elt);
-/** Return a pointer to the 24-element array field rand of 'inp'.
- */
-uint8_t * auth1_getarray_rand(auth1_t *inp);
-/** As auth1_get_rand, but take and return a const pointer
- */
-const uint8_t  * auth1_getconstarray_rand(const auth1_t *inp);
-/** Return the position for end_of_signed when we parsed this object
- */
-const uint8_t * auth1_get_end_of_signed(const auth1_t *inp);
-/** Return the length of the dynamic array holding the sig field of
- * the auth1_t in 'inp'.
- */
-size_t auth1_getlen_sig(const auth1_t *inp);
-/** Return the element at position 'idx' of the dynamic array field
- * sig of the auth1_t in 'inp'.
- */
-uint8_t auth1_get_sig(auth1_t *inp, size_t idx);
-/** As auth1_get_sig, but take and return a const pointer
- */
-uint8_t auth1_getconst_sig(const auth1_t *inp, size_t idx);
-/** Change the element at position 'idx' of the dynamic array field
- * sig of the auth1_t in 'inp', so that it will hold the value 'elt'.
- */
-int auth1_set_sig(auth1_t *inp, size_t idx, uint8_t elt);
-/** Append a new element 'elt' to the dynamic array field sig of the
- * auth1_t in 'inp'.
- */
-int auth1_add_sig(auth1_t *inp, uint8_t elt);
-/** Return a pointer to the variable-length array field sig of 'inp'.
- */
-uint8_t * auth1_getarray_sig(auth1_t *inp);
-/** As auth1_get_sig, but take and return a const pointer
- */
-const uint8_t  * auth1_getconstarray_sig(const auth1_t *inp);
-/** Change the length of the variable-length array field sig of 'inp'
- * to 'newlen'.Fill extra elements with 0. Return 0 on success; return
- * -1 and set the error code on 'inp' on failure.
- */
-int auth1_setlen_sig(auth1_t *inp, size_t newlen);
 /** Return a newly allocated certs_cell with all elements set to zero.
  */
 certs_cell_t *certs_cell_new(void);

@@ -9,7 +9,7 @@ src_tools_tor_resolve_LDFLAGS = @TOR_LDFLAGS_openssl@
 src_tools_tor_resolve_LDADD = \
 	src/trunnel/libor-trunnel.a \
 	$(TOR_UTIL_LIBS) \
-        $(TOR_CRYPTO_LIBS) $(TOR_LIBS_CRYPTLIB)\
+	$(TOR_CRYPTO_LIBS) $(TOR_LIBS_CRYPTLIB)\
 	@TOR_LIB_MATH@ @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_SHLWAPI@ @TOR_LIB_USERENV@
 
 if COVERAGE_ENABLED
@@ -41,8 +41,8 @@ src_tools_tor_print_ed_signing_cert_SOURCES = src/tools/tor-print-ed-signing-cer
 src_tools_tor_print_ed_signing_cert_LDFLAGS = @TOR_LDFLAGS_zlib@ @TOR_LDFLAGS_openssl@
 src_tools_tor_print_ed_signing_cert_LDADD = \
 	src/trunnel/libor-trunnel.a \
-        $(TOR_CRYPTO_LIBS) \
-        $(TOR_UTIL_LIBS) \
+	$(TOR_CRYPTO_LIBS) \
+	$(TOR_UTIL_LIBS) \
 	@TOR_LIB_MATH@ $(TOR_LIBS_CRYPTLIB) \
 	@TOR_LIB_WS32@ @TOR_LIB_USERENV@ @TOR_LIB_SHLWAPI@ @TOR_LIB_GDI@
 
@@ -66,6 +66,6 @@ endif
 if BUILD_LIBTORRUNNER
 noinst_LIBRARIES += src/tools/libtorrunner.a
 src_tools_libtorrunner_a_SOURCES = \
-        src/tools/tor_runner.c \
-        src/feature/api/tor_api.c
+	src/tools/tor_runner.c \
+	src/feature/api/tor_api.c
 endif

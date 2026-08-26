@@ -10,12 +10,17 @@
 #include "core/or/circuitbuild.h"
 #include "core/or/circuitlist.h"
 #include "core/or/circuitmux_ewma.h"
+#include "core/or/relay.h"
 #include "feature/hs/hs_circuitmap.h"
+#include "app/config/config.h"
 #include "test/test.h"
 #include "test/log_test_helpers.h"
 
 #include "core/or/or_circuit_st.h"
 #include "core/or/origin_circuit_st.h"
+#include "core/or/crypt_path_st.h"
+#include "feature/client/circpathbias.h"
+#include "core/or/cpath_build_state_st.h"
 
 #include "lib/container/bitarray.h"
 
@@ -484,11 +489,139 @@ test_hs_circuitmap_isolation(void *arg)
   circuit_free_(TO_CIRCUIT(circ4));
 }
 
+/** State for the relay_send_command_from_edge mock that simulates
+ *  the pathbias recursive mark-for-close scenario. */
+static int mock_relay_send_calls = 0;
+
+/** Mock for relay_send_command_from_edge_ that simulates a queue-full
+ *  failure: it recursively calls circuit_mark_for_close (as the real
+ *  code does at relay.c:718 when circuit_package_relay_cell returns -1)
+ *  then returns -1. */
+static int
+mock_relay_send_command_from_edge(streamid_t stream_id, circuit_t *circ,
+                                  uint8_t relay_command, const char *payload,
+                                  size_t payload_len,
+                                  crypt_path_t *cpath_layer,
+                                  const char *filename, int lineno)
+{
+  (void)stream_id; (void)relay_command; (void)payload;
+  (void)payload_len; (void)cpath_layer; (void)filename; (void)lineno;
+
+  mock_relay_send_calls++;
+  /* Simulate what relay_send_command_from_edge_ does when
+   * circuit_package_relay_cell returns -1: mark circuit for close. */
+  circuit_mark_for_close(circ, END_CIRC_REASON_INTERNAL);
+  return -1;
+}
+
+static void
+mock_assert_circuit_ok(const circuit_t *c)
+{
+  (void)c;
+}
+
+/** Test that circuit_mark_for_close_ does not add a circuit to
+ *  circuits_pending_close twice when pathbias probing triggers a
+ *  recursive close attempt. */
+static void
+test_clist_mark_for_close_pathbias_reentry(void *arg)
+{
+  origin_circuit_t *ocirc = NULL;
+  circuit_t *circ = NULL;
+  channel_t *fake_chan = NULL;
+  crypt_path_t *cpath = NULL;
+  (void)arg;
+
+  MOCK(assert_circuit_ok, mock_assert_circuit_ok);
+  MOCK(relay_send_command_from_edge_, mock_relay_send_command_from_edge);
+  mock_relay_send_calls = 0;
+
+  /* Set UseEntryGuards so pathbias_should_count returns true. */
+  or_options_t *options = get_options_mutable();
+  options->UseEntryGuards = 1;
+
+  /* Create an origin circuit in the state needed to trigger pathbias
+   * probing: PATH_STATE_USE_ATTEMPTED with an open cpath. */
+  ocirc = origin_circuit_new();
+  tt_assert(ocirc);
+  circ = TO_CIRCUIT(ocirc);
+
+  circ->purpose = CIRCUIT_PURPOSE_C_GENERAL;
+  circ->state = CIRCUIT_STATE_OPEN;
+  ocirc->has_opened = 1;
+
+  /* build_state is required by pathbias_should_count */
+  ocirc->build_state = tor_malloc_zero(sizeof(cpath_build_state_t));
+  ocirc->build_state->desired_path_len = 3;
+  ocirc->build_state->onehop_tunnel = 0;
+
+  /* Set up a minimal cpath (circular list with one node, state OPEN) */
+  cpath = tor_malloc_zero(sizeof(crypt_path_t));
+  cpath->magic = CRYPT_PATH_MAGIC;
+  cpath->state = CPATH_STATE_OPEN;
+  cpath->next = cpath;
+  cpath->prev = cpath;
+  ocirc->cpath = cpath;
+
+  /* Set up a fake open channel so pathbias_send_usable_probe proceeds */
+  fake_chan = tor_malloc_zero(sizeof(channel_t));
+  channel_init(fake_chan);
+  fake_chan->state = CHANNEL_STATE_OPEN;
+  circ->n_chan = fake_chan;
+
+  /* Set the path state that triggers probing in pathbias_check_close */
+  ocirc->path_state = PATH_STATE_USE_ATTEMPTED;
+
+  /* Ensure get_unique_stream_id_by_circ can return a valid ID */
+  ocirc->next_stream_id = 1;
+
+  /* Mark the circuit for close. This will:
+   *  1. Call pathbias_check_close -> pathbias_send_usable_probe
+   *  2. pathbias_send_usable_probe calls relay_send_command_from_edge
+   *  3. Our mock simulates queue-full: recursively calls
+   *     circuit_mark_for_close (the inner call)
+   *  4. The inner call succeeds fully: circuit gets marked and added
+   *     to circuits_pending_close
+   *  5. Back in the outer call: the new guard check sees
+   *     circ->marked_for_close is already set, returns early
+   *  Result: circuit is on circuits_pending_close exactly once. */
+  circuit_mark_for_close(circ, END_CIRC_REASON_INTERNAL);
+
+  /* Verify the circuit IS marked for close */
+  tt_assert(circ->marked_for_close);
+
+  /* Verify our mock was actually called (the probe was attempted) */
+  tt_int_op(mock_relay_send_calls, OP_GE, 1);
+
+  /* Verify the circuit is on circuits_pending_close exactly once */
+  tt_int_op(circuit_count_pending_close(), OP_EQ, 1);
+
+ done:
+  UNMOCK(relay_send_command_from_edge_);
+  UNMOCK(assert_circuit_ok);
+  /* Detach channel before freeing to avoid circuit_about_to_free issues */
+  if (circ)
+    circ->n_chan = NULL;
+  if (ocirc) {
+    /* Detach cpath so circuit_free_ doesn't try to free crypto state */
+    if (ocirc->cpath) {
+      ocirc->cpath->next = NULL;
+      ocirc->cpath->prev = NULL;
+      tor_free(ocirc->cpath);
+      ocirc->cpath = NULL;
+    }
+    circuit_free_(circ);
+  }
+  tor_free(fake_chan);
+}
+
 struct testcase_t circuitlist_tests[] = {
   { "maps", test_clist_maps, TT_FORK, NULL, NULL },
   { "rend_token_maps", test_rend_token_maps, TT_FORK, NULL, NULL },
   { "pick_circid", test_pick_circid, TT_FORK, NULL, NULL },
   { "hs_circuitmap_isolation", test_hs_circuitmap_isolation,
     TT_FORK, NULL, NULL },
+  { "mark_for_close_pathbias_reentry",
+    test_clist_mark_for_close_pathbias_reentry, TT_FORK, NULL, NULL },
   END_OF_TESTCASES
 };

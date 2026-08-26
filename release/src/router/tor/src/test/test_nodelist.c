@@ -559,34 +559,34 @@ test_nodelist_node_nodefamily(void *arg)
   memcpy(mock_node2.identity, "SecondNodeWe'reTestn", DIGEST_LEN);
 
   // empty families.
-  tt_assert(! node_family_contains(&mock_node1, &mock_node2));
-  tt_assert(! node_family_contains(&mock_node2, &mock_node1));
+  tt_assert(! node_family_list_contains(&mock_node1, &mock_node2));
+  tt_assert(! node_family_list_contains(&mock_node2, &mock_node1));
 
   // Families contain nodes, but not these nodes
   mock_ri.declared_family = smartlist_new();
   smartlist_add(mock_ri.declared_family, (char*)"NodeThree");
   mock_md.family = nodefamily_parse("NodeFour", NULL, 0);
-  tt_assert(! node_family_contains(&mock_node1, &mock_node2));
-  tt_assert(! node_family_contains(&mock_node2, &mock_node1));
+  tt_assert(! node_family_list_contains(&mock_node1, &mock_node2));
+  tt_assert(! node_family_list_contains(&mock_node2, &mock_node1));
 
   // Families contain one another.
   smartlist_add(mock_ri.declared_family, (char*)
                 "4e6f64654f6e654e6f6465314e6f64654f6e6531");
-  tt_assert(! node_family_contains(&mock_node1, &mock_node2));
-  tt_assert(node_family_contains(&mock_node2, &mock_node1));
+  tt_assert(! node_family_list_contains(&mock_node1, &mock_node2));
+  tt_assert(node_family_list_contains(&mock_node2, &mock_node1));
 
   nodefamily_free(mock_md.family);
   mock_md.family = nodefamily_parse(
             "NodeFour "
             "5365636f6e644e6f64655765277265546573746e", NULL, 0);
-  tt_assert(node_family_contains(&mock_node1, &mock_node2));
-  tt_assert(node_family_contains(&mock_node2, &mock_node1));
+  tt_assert(node_family_list_contains(&mock_node1, &mock_node2));
+  tt_assert(node_family_list_contains(&mock_node2, &mock_node1));
 
   // Try looking up families now.
   MOCK(node_get_by_nickname, mock_node_get_by_nickname);
   MOCK(node_get_by_id, mock_node_get_by_id);
 
-  node_lookup_declared_family(nodes, &mock_node1);
+  node_lookup_declared_family_list(nodes, &mock_node1);
   tt_int_op(smartlist_len(nodes), OP_EQ, 2);
   const node_t *n = smartlist_get(nodes, 0);
   tt_mem_op(n->identity, OP_EQ, "SecondNodeWe'reTestn", DIGEST_LEN);
@@ -597,7 +597,7 @@ test_nodelist_node_nodefamily(void *arg)
   SMARTLIST_FOREACH(nodes, node_t *, x, tor_free(x));
   smartlist_clear(nodes);
 
-  node_lookup_declared_family(nodes, &mock_node2);
+  node_lookup_declared_family_list(nodes, &mock_node2);
   tt_int_op(smartlist_len(nodes), OP_EQ, 2);
   n = smartlist_get(nodes, 0);
   // This gets a truncated hex hex ID since it was looked up by name

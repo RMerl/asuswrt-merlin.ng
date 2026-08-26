@@ -2003,7 +2003,7 @@ parse_port_range(const char *port, uint16_t *port_min_out,
     port_max = 65535;
   } else {
     char *endptr = NULL;
-    port_min = (int)tor_parse_long(port, 10, 0, 65535, &ok, &endptr);
+    port_min = (int)tor_parse_long(port, 10, 1, 65535, &ok, &endptr);
     if (!ok) {
       goto malformed_port;
     } else if (endptr && *endptr != '\0') {

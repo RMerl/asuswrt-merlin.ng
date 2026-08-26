@@ -1066,7 +1066,7 @@ socks_policy_permits_address(const tor_addr_t *addr)
 }
 
 /** Return 1 if <b>addr</b> is permitted to connect to our metrics port,
- * based on <b>socks_policy</b>. Else return 0.
+ * based on <b>metrics_policy</b>. Else return 0.
  */
 int
 metrics_policy_permits_address(const tor_addr_t *addr)
@@ -1938,8 +1938,10 @@ policies_log_first_redundant_entry(const smartlist_t *policy)
   "accept *:6679,accept *:6697,accept *:8000,accept *:8008,accept *:8074,"    \
   "accept *:8080,accept *:8082,accept *:8087-8088,accept *:8232-8233,"        \
   "accept *:8332-8333,accept *:8443,accept *:8888,accept *:9418,"             \
-  "accept *:9999,accept *:10000,accept *:11371,accept *:19294,"               \
-  "accept *:19638,accept *:50002,accept *:64738,reject *:*"
+  "accept *:9999,accept *:10000,accept *:11371,"                              \
+  "accept *:18080-18081,accept *:18089,"                                      \
+  "accept *:19294,accept *:19638,accept *:50002,accept *:64738,"              \
+  "reject *:*"
 
 /** Parse the exit policy <b>cfg</b> into the linked list *<b>dest</b>.
  *

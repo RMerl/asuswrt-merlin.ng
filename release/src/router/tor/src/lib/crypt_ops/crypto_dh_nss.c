@@ -25,7 +25,7 @@ ENABLE_GCC_WARNING("-Wstrict-prototypes")
 
 static int dh_initialized = 0;
 static SECKEYDHParams tls_dh_param, circuit_dh_param;
-static unsigned char tls_dh_prime_data[DH1024_KEY_LEN];
+static unsigned char tls_dh_prime_data[DH2048_KEY_LEN];
 static unsigned char circuit_dh_prime_data[DH1024_KEY_LEN];
 static unsigned char dh_generator_data[1];
 
@@ -39,7 +39,7 @@ crypto_dh_init_nss(void)
   r = base16_decode((char*)tls_dh_prime_data,
                     sizeof(tls_dh_prime_data),
                     TLS_DH_PRIME, strlen(TLS_DH_PRIME));
-  tor_assert(r == DH1024_KEY_LEN);
+  tor_assert(r == DH2048_KEY_LEN);
   r = base16_decode((char*)circuit_dh_prime_data,
                     sizeof(circuit_dh_prime_data),
                     OAKLEY_PRIME_2, strlen(OAKLEY_PRIME_2));
@@ -47,7 +47,7 @@ crypto_dh_init_nss(void)
   dh_generator_data[0] = DH_GENERATOR;
 
   tls_dh_param.prime.data = tls_dh_prime_data;
-  tls_dh_param.prime.len = DH1024_KEY_LEN;
+  tls_dh_param.prime.len = DH2048_KEY_LEN;
   tls_dh_param.base.data = dh_generator_data;
   tls_dh_param.base.len = 1;
 

@@ -211,13 +211,37 @@ set_onion_key(crypto_pk_t *k)
   mark_my_descriptor_dirty("set onion key");
 }
 
-/** Return the current onion key.  Requires that the onion key has been
- * loaded or generated. */
+/** Return the current TAP onion key.  Requires that the onion key has been
+ * loaded or generated.
+ *
+ * Note that this key is no longer used for anything; we only keep it around
+ * because (as of June 2024) other Tor instances all expect to find it in
+ * our routerdescs.
+ **/
 MOCK_IMPL(crypto_pk_t *,
 get_onion_key,(void))
 {
   tor_assert(onionkey);
   return onionkey;
+}
+
+/**
+ * Return true iff we should include our TAP onion key in our router
+ * descriptor.
+ */
+static int
+should_publish_tap_onion_key(void)
+{
+#define SHOULD_PUBLISH_TAP_MIN 0
+#define SHOULD_PUBLISH_TAP_MAX 1
+  /* Note that we err on the side of publishing. */
+#define SHOULD_PUBLISH_TAP_DFLT 1
+
+  return networkstatus_get_param(NULL,
+                                 "publish-dummy-tap-key",
+                                 SHOULD_PUBLISH_TAP_DFLT,
+                                 SHOULD_PUBLISH_TAP_MIN,
+                                 SHOULD_PUBLISH_TAP_MAX);
 }
 
 /** Store a full copy of the current onion key into *<b>key</b>, and a full
@@ -358,6 +382,7 @@ set_server_identity_key(crypto_pk_t *k)
     log_err(LD_BUG, "Couldn't compute our own identity key digest.");
     tor_assert(0);
   }
+  pt_update_bridge_lines();
 }
 
 #ifdef TOR_UNIT_TESTS
@@ -852,6 +877,7 @@ router_initialize_tls_context(void)
 STATIC void
 router_announce_bridge_status_page(void)
 {
+#ifdef ENABLE_MODULE_RELAY
   char fingerprint[FINGERPRINT_LEN + 1];
 
   if (crypto_pk_get_hashed_fingerprint(get_server_identity_key(),
@@ -865,6 +891,7 @@ router_announce_bridge_status_page(void)
   log_notice(LD_GENERAL, "You can check the status of your bridge relay at "
                          "https://bridges.torproject.org/status?id=%s",
                          fingerprint);
+#endif
 }
 
 /** Compute fingerprint (or hashed fingerprint if hashed is 1) and write
@@ -1040,6 +1067,11 @@ init_keys(void)
   const int new_signing_key = load_ed_keys(options,now);
   if (new_signing_key < 0)
     return -1;
+
+  if (options->command == CMD_RUN_TOR) {
+    if (load_family_id_keys(options, networkstatus_get_latest_consensus()) < 0)
+      return -1;
+  }
 
   /* 2. Read onion key.  Make it if none is found. */
   keydir = get_keydir_fname("secret_onion_key");
@@ -1254,13 +1286,12 @@ router_has_bandwidth_to_be_dirserver(const or_options_t *options)
 
 /** Helper: Return 1 if we have sufficient resources for serving directory
  * requests, return 0 otherwise.
- * dir_port is either 0 or the configured DirPort number.
  * If AccountingMax is set less than our advertised bandwidth, then don't
  * serve requests. Likewise, if our advertised bandwidth is less than
  * MIN_BW_TO_ADVERTISE_DIRSERVER, don't bother trying to serve requests.
  */
 static int
-router_should_be_dirserver(const or_options_t *options, int dir_port)
+router_should_be_dirserver(const or_options_t *options)
 {
   static int advertising=1; /* start out assuming we will advertise */
   int new_choice=1;
@@ -1269,7 +1300,8 @@ router_should_be_dirserver(const or_options_t *options, int dir_port)
   if (accounting_is_enabled(options) &&
     get_options()->AccountingRule != ACCT_IN) {
     /* Don't spend bytes for directory traffic if we could end up hibernating,
-     * but allow DirPort otherwise. Some relay operators set AccountingMax
+     * but allow being a dir cache otherwise.
+     * Some relay operators set AccountingMax
      * because they're confused or to get statistics. Directory traffic has a
      * much larger effect on output than input so there is no reason to turn it
      * off if using AccountingRule in. */
@@ -1281,10 +1313,9 @@ router_should_be_dirserver(const or_options_t *options, int dir_port)
                        "seconds long. Raising to 1.");
       interval_length = 1;
     }
-    log_info(LD_GENERAL, "Calculating whether to advertise %s: effective "
-                         "bwrate: %u, AccountingMax: %"PRIu64", "
+    log_info(LD_GENERAL, "Calculating whether to advertise begindir: "
+                         "effective bwrate: %u, AccountingMax: %"PRIu64", "
                          "accounting interval length %d",
-                         dir_port ? "dirport" : "begindir",
                          effective_bw, (options->AccountingMax),
                          interval_length);
 
@@ -1304,14 +1335,11 @@ router_should_be_dirserver(const or_options_t *options, int dir_port)
 
   if (advertising != new_choice) {
     if (new_choice == 1) {
-      if (dir_port > 0)
-        log_notice(LD_DIR, "Advertising DirPort as %d", dir_port);
-      else
-        log_notice(LD_DIR, "Advertising directory service support");
+      log_notice(LD_DIR, "Advertising directory service support");
     } else {
       tor_assert(reason);
-      log_notice(LD_DIR, "Not advertising Dir%s (Reason: %s)",
-                 dir_port ? "Port" : "ectory Service support", reason);
+      log_notice(LD_DIR, "Not advertising Directory Service support "
+                 "(Reason: %s)", reason);
     }
     advertising = new_choice;
   }
@@ -1320,17 +1348,13 @@ router_should_be_dirserver(const or_options_t *options, int dir_port)
 }
 
 /** Look at a variety of factors, and return 0 if we don't want to
- * advertise the fact that we have a DirPort open or begindir support, else
+ * advertise the fact that we have begindir support, else
  * return 1.
- *
- * Where dir_port or supports_tunnelled_dir_requests are not relevant, they
- * must be 0.
  *
  * Log a helpful message if we change our mind about whether to publish.
  */
 static int
 decide_to_advertise_dir_impl(const or_options_t *options,
-                             uint16_t dir_port,
                              int supports_tunnelled_dir_requests)
 {
   /* Part one: reasons to publish or not publish that aren't
@@ -1338,24 +1362,21 @@ decide_to_advertise_dir_impl(const or_options_t *options,
    * or because they're normal behavior. */
 
   /* short circuit the rest of the function */
-  if (!dir_port && !supports_tunnelled_dir_requests)
+  if (!supports_tunnelled_dir_requests)
     return 0;
   if (authdir_mode(options)) /* always publish */
     return 1;
   if (net_is_disabled())
     return 0;
-  if (dir_port && !routerconf_find_dir_port(options, dir_port))
-    return 0;
-  if (supports_tunnelled_dir_requests &&
-      !routerconf_find_or_port(options, AF_INET))
+  if (!routerconf_find_or_port(options, AF_INET))
     return 0;
 
   /* Part two: consider config options that could make us choose to
    * publish or not publish that the user might find surprising. */
-  return router_should_be_dirserver(options, dir_port);
+  return router_should_be_dirserver(options);
 }
 
-/** Front-end to decide_to_advertise_dir_impl(): return 0 if we don't want to
+/** Return 0 if we don't want to
  * advertise the fact that we have a DirPort open, else return the
  * DirPort we want to advertise.
  */
@@ -1373,8 +1394,7 @@ static int
 router_should_advertise_begindir(const or_options_t *options,
                              int supports_tunnelled_dir_requests)
 {
-  /* dir_port is not relevant, pass 0 */
-  return decide_to_advertise_dir_impl(options, 0,
+  return decide_to_advertise_dir_impl(options,
                                       supports_tunnelled_dir_requests);
 }
 
@@ -1403,17 +1423,14 @@ static bool publish_even_when_ipv4_orport_unreachable = false;
 static bool publish_even_when_ipv6_orport_unreachable = false;
 
 /** Decide if we're a publishable server. We are a publishable server if:
+ * - We are an authoritative directory server, or if
  * - We don't have the ClientOnly option set
  * and
  * - We have the PublishServerDescriptor option set to non-empty
  * and
  * - We have ORPort set
  * and
- * - We believe our ORPort and DirPort (if present) are reachable from
- *   the outside; or
- * - We believe our ORPort is reachable from the outside, and we can't
- *   check our DirPort because the consensus has no exits; or
- * - We are an authoritative directory server.
+ * - We believe our ORPort is reachable from the outside.
  */
 static int
 decide_if_publishable_server(void)
@@ -1446,13 +1463,7 @@ decide_if_publishable_server(void)
       return 0;
     }
   }
-  if (router_have_consensus_path() == CONSENSUS_PATH_INTERNAL) {
-    /* All set: there are no exits in the consensus (maybe this is a tiny
-     * test network), so we can't check our DirPort reachability. */
-    return 1;
-  } else {
-    return router_dirport_seems_reachable(options);
-  }
+  return 1; /* everything looks good! publish. */
 }
 
 /** Initiate server descriptor upload as reasonable (if server is publishable,
@@ -2138,9 +2149,12 @@ router_build_fresh_unsigned_routerinfo,(routerinfo_t **ri_out))
   ri->supports_tunnelled_dir_requests =
     directory_permits_begindir_requests(options);
   ri->cache_info.published_on = time(NULL);
-  /* get_onion_key() must invoke from main thread */
-  router_set_rsa_onion_pkey(get_onion_key(), &ri->onion_pkey,
-                            &ri->onion_pkey_len);
+
+  if (should_publish_tap_onion_key()) {
+    /* get_onion_key() must invoke from main thread */
+    router_set_rsa_onion_pkey(get_onion_key(), &ri->tap_onion_pkey,
+                              &ri->tap_onion_pkey_len);
+  }
 
   ri->onion_curve25519_pkey =
     tor_memdup(&get_current_curve25519_keypair()->pubkey,
@@ -2501,6 +2515,21 @@ router_new_consensus_params(const networkstatus_t *ns)
 
   publish_even_when_ipv4_orport_unreachable = ar;
   publish_even_when_ipv6_orport_unreachable = ar || ar6;
+
+  warn_about_family_id_config(get_options(), ns);
+}
+
+/**
+ * Return true if the parameters in `ns` say that we should publish
+ * a legacy family list.
+ *
+ * Use the latest networkstatus (or returns the default) if `ns` is NULL.
+ */
+bool
+should_publish_family_list(const networkstatus_t *ns)
+{
+  return networkstatus_get_param(ns, "publish-family-list",
+                                 1, 0, 1); // default, min, max
 }
 
 /** Mark our descriptor out of data iff the IPv6 omit status flag is flipped
@@ -2777,7 +2806,7 @@ router_dump_router_to_string(routerinfo_t *router,
   char published[ISO_TIME_LEN+1];
   char fingerprint[FINGERPRINT_LEN+1];
   char *extra_info_line = NULL;
-  size_t onion_pkeylen, identity_pkeylen;
+  size_t onion_pkeylen=0, identity_pkeylen;
   char *family_line = NULL;
   char *extra_or_address = NULL;
   const or_options_t *options = get_options();
@@ -2835,12 +2864,14 @@ router_dump_router_to_string(routerinfo_t *router,
   }
 
   /* PEM-encode the onion key */
-  rsa_pubkey = router_get_rsa_onion_pkey(router->onion_pkey,
-                                         router->onion_pkey_len);
-  if (crypto_pk_write_public_key_to_string(rsa_pubkey,
-                                           &onion_pkey,&onion_pkeylen)<0) {
-    log_warn(LD_BUG,"write onion_pkey to string failed!");
-    goto err;
+  rsa_pubkey = router_get_rsa_onion_pkey(router->tap_onion_pkey,
+                                         router->tap_onion_pkey_len);
+  if (rsa_pubkey) {
+    if (crypto_pk_write_public_key_to_string(rsa_pubkey,
+                                             &onion_pkey,&onion_pkeylen)<0) {
+      log_warn(LD_BUG,"write onion_pkey to string failed!");
+      goto err;
+    }
   }
 
   /* PEM-encode the identity key */
@@ -2851,7 +2882,7 @@ router_dump_router_to_string(routerinfo_t *router,
   }
 
   /* Cross-certify with RSA key */
-  if (tap_key && router->cache_info.signing_key_cert &&
+  if (tap_key && rsa_pubkey && router->cache_info.signing_key_cert &&
       router->cache_info.signing_key_cert->signing_key_included) {
     char buf[256];
     int tap_cc_len = 0;
@@ -2976,7 +3007,7 @@ router_dump_router_to_string(routerinfo_t *router,
                     "uptime %ld\n"
                     "bandwidth %d %d %d\n"
                     "%s%s"
-                    "onion-key\n%s"
+                    "%s%s"
                     "signing-key\n%s"
                     "%s%s"
                     "%s%s%s",
@@ -2997,12 +3028,42 @@ router_dump_router_to_string(routerinfo_t *router,
     extra_info_line ? extra_info_line : "",
     (options->DownloadExtraInfo || options->V3AuthoritativeDir) ?
                          "caches-extra-info\n" : "",
-    onion_pkey, identity_pkey,
+    onion_pkey?"onion-key\n":"", onion_pkey?onion_pkey:"",
+    identity_pkey,
     rsa_tap_cc_line ? rsa_tap_cc_line : "",
     ntor_cc_line ? ntor_cc_line : "",
     family_line,
     we_are_hibernating() ? "hibernating 1\n" : "",
     "hidden-service-dir\n");
+
+  SMARTLIST_FOREACH_BEGIN(get_current_family_id_keys(),
+                          const ed25519_keypair_t *, k_family_id) {
+    // TODO PROP321: We may want this to be configurable;
+    // we can probably use a smaller value.
+#define FAMILY_CERT_LIFETIME (30*86400)
+    tor_cert_t *family_cert = tor_cert_create_ed25519(
+          k_family_id,
+          CERT_TYPE_FAMILY_V_IDENTITY,
+          // (this is the identity key "KP_relayid_ed")
+          &router->cache_info.signing_key_cert->signing_key,
+          router->cache_info.published_on,
+          FAMILY_CERT_LIFETIME, CERT_FLAG_INCLUDE_SIGNING_KEY);
+    char family_cert_base64[256];
+    if (base64_encode(family_cert_base64, sizeof(family_cert_base64),
+                      (const char*) family_cert->encoded,
+                      family_cert->encoded_len, BASE64_ENCODE_MULTILINE) < 0) {
+      log_err(LD_BUG, "Base64 encoding family cert failed!?");
+      tor_cert_free(family_cert);
+      goto err;
+    }
+    smartlist_add_asprintf(chunks,
+                           "family-cert\n"
+                           "-----BEGIN FAMILY CERT-----\n"
+                           "%s"
+                           "-----END FAMILY CERT-----\n",
+                           family_cert_base64);
+    tor_cert_free(family_cert);
+  } SMARTLIST_FOREACH_END(k_family_id);
 
   if (options->ContactInfo && strlen(options->ContactInfo)) {
     const char *ci = options->ContactInfo;

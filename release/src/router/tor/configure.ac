@@ -4,7 +4,7 @@ dnl Copyright (c) 2007-2019, The Tor Project, Inc.
 dnl See LICENSE for licensing information
 
 AC_PREREQ([2.63])
-AC_INIT([tor],[0.4.8.22])
+AC_INIT([tor],[0.4.9.11])
 AC_CONFIG_SRCDIR([src/app/main/tor_main.c])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -18,7 +18,7 @@ AC_DEFINE_UNQUOTED([CONFIG_FLAGS], ["$configure_flags"], [Flags passed to config
 # version number changes.  Tor uses it to make sure that it
 # only shuts down for missing "required protocols" when those protocols
 # are listed as required by a consensus after this date.
-AC_DEFINE(APPROX_RELEASE_DATE, ["2026-01-28"], # for 0.4.8.22
+AC_DEFINE(APPROX_RELEASE_DATE, ["2026-06-25"], # for 0.4.9.11
           [Approximate date when this software was released. (Updated when the version changes.)])
 
 # "foreign" means we don't follow GNU package layout standards
@@ -994,6 +994,23 @@ if test "x$enable_nss" = "xyes"; then
      [have_nss=no; AC_MSG_ERROR([You asked for NSS but I can't find it, $pkg_config_user_action, or set NSS_CFLAGS and NSS_LIBS.])])
   AC_SUBST(NSS_CFLAGS)
   AC_SUBST(NSS_LIBS)
+
+  save_CFLAGS="$CFLAGS"
+  save_LIBS="$LIBS"
+  LIBS="$LIBS $NSS_LIBS"
+  CFLAGS="$CFLAGS $NSS_CFLAGS"
+  AC_MSG_CHECKING([whether NSS defines ssl_kea_ecdh_hybrid(_psk)])
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+    #include <sslt.h>
+    int v = (int) ssl_kea_ecdh_hybrid_psk;
+    int v2 = (int) ssl_kea_ecdh_hybrid;
+    ]], [[]])],
+    [ AC_MSG_RESULT([yes]);
+      AC_DEFINE(NSS_HAS_ECDH_HYBRID, 1, [whether nss defines ecdh_hybrid key exchange.])
+    ],
+    [ AC_MSG_RESULT([no]) ])
+  LIBS="$save_LIBS"
+  CPPFLAGS="$save_CPPFLAGS"
 fi
 
 dnl ------------------------------------------------------
@@ -1015,7 +1032,7 @@ AC_ARG_WITH(ssl-dir,
       fi
   ])
 
-AC_MSG_NOTICE([Now, we'll look for OpenSSL >= 1.0.1])
+AC_MSG_NOTICE([Now, we'll look for OpenSSL.])
 TOR_SEARCH_LIBRARY(openssl, $tryssldir, [-lssl -lcrypto $TOR_LIB_GDI $TOR_LIB_WS32 $TOR_LIB_CRYPT32],
     [#include <openssl/ssl.h>
      char *getenv(const char *);],
@@ -1055,38 +1072,58 @@ dnl and later.  We want to migrate away from them, but that will be a lot of
 dnl work. (See ticket tor#40166.)  For now, we disable the deprecation
 dnl warnings.
 
-AC_MSG_CHECKING([for OpenSSL >= 3.0.0])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-#include <openssl/opensslv.h>
-#if !defined(LIBRESSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x30000000L
-#error "you_have_version_3"
-#endif
-   ]], [[]])],
-   [ AC_MSG_RESULT([no]) ],
-   [ AC_MSG_RESULT([yes]);
-     AC_DEFINE(OPENSSL_SUPPRESS_DEPRECATED, 1, [disable openssl deprecated-function warnings]) ])
+dnl --- Check for OpenSSL engine header ---
+AC_CHECK_HEADERS([openssl/engine.h], [],
+  [AC_MSG_ERROR([Missing required header openssl/engine.h.
 
-AC_MSG_CHECKING([for OpenSSL < 1.0.1])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-#include <openssl/opensslv.h>
-#if OPENSSL_VERSION_NUMBER < 0x1000100fL
-#error "too old"
-#endif
-   ]], [[]])],
-   [ AC_MSG_RESULT([no]) ],
-   [ AC_MSG_ERROR([OpenSSL is too old. We require 1.0.1 or later. You can specify a path to a newer one with --with-openssl-dir.]) ])
+On Debian/Ubuntu install:   libssl-dev
+On Fedora/RHEL install:     openssl-devel-engine
 
-AC_MSG_CHECKING([whether LibreSSL TLS 1.3 APIs are busted])
+Then re-run configure.])])
+
+
+AC_MSG_CHECKING([for OpenSSL implementation])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <openssl/opensslv.h>
-#if defined(LIBRESSL_VERSION_NUMBER) && \
-     LIBRESSL_VERSION_NUMBER >= 0x3020100fL && \
-     LIBRESSL_VERSION_NUMBER < 0x3040100fL
-#error "oh no"
+#if defined(LIBRESSL_VERSION_NUMBER)
+#error "this is libressl, no worries"
+#endif
+   ]], [[]])],
+   [ openssl_impl=openssl
+     AC_MSG_RESULT([OpenSSL])
+     AC_DEFINE(OPENSSL_SUPPRESS_DEPRECATED, 1, [disable openssl deprecated-function warnings])
+   ],
+   [ openssl_impl=libressl
+     AC_MSG_RESULT([LibreSSL])
+   ])
+
+if test "x$openssl_impl" = "xopenssl"; then
+AC_MSG_CHECKING([for OpenSSL < 1.1.1])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <openssl/opensslv.h>
+#if !defined(LIBRESSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER < 0x10101000L
+#error "openssl too old"
 #endif
    ]], [[]])],
    [ AC_MSG_RESULT([no]) ],
-   [ AC_MSG_ERROR([This version of LibreSSL won't work with Tor. Please upgrade to LibreSSL 3.4.1 or later. (Or downgrade to 3.2.0 if you really must.)]) ])
+   [ AC_MSG_RESULT([yes])
+     AC_MSG_ERROR([Your version of OpenSSL is too old. We require 1.1.1 or later, and you should use 3.5 if possible.])
+   ])
+fi
+
+if test "x$openssl_impl" = "xlibressl"; then
+AC_MSG_CHECKING([for LibreSSL < 3.7.0])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <openssl/opensslv.h>
+#if defined(LIBRESSL_VERSION_NUMBER) && LIBRESSL_VERSION_NUMBER < 0x3070000fL
+#error "libressl too old"
+#endif
+   ]], [[]])],
+   [ AC_MSG_RESULT([no]) ],
+   [ AC_MSG_RESULT([yes])
+     AC_MSG_ERROR([Your version of LibreSSL is too old. We require 3.7.0 or later.])
+   ])
+fi
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <openssl/opensslv.h>
@@ -1123,35 +1160,14 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([AC_LANG_PROGRAM([[
    fi], [openssl_ver_mismatch=cross])
 AC_MSG_RESULT([$openssl_ver_mismatch])
 
-AC_CHECK_MEMBERS([struct ssl_method_st.get_cipher_by_char], , ,
-[#include <openssl/ssl.h>
-])
-
 dnl OpenSSL functions which we might not have.  In theory, we could just
 dnl check the openssl version number, but in practice that gets pretty
 dnl confusing with LibreSSL, OpenSSL, and various distributions' patches
 dnl to them.
 AC_CHECK_FUNCS([ \
-		ERR_load_KDF_strings \
 		EVP_PBE_scrypt \
-		SSL_CIPHER_find \
-		SSL_CTX_set1_groups_list \
 		SSL_CTX_set_security_level \
-		SSL_SESSION_get_master_key \
-		SSL_get_client_ciphers \
-		SSL_get_client_random \
-		SSL_get_server_random \
-                SSL_set_ciphersuites \
-		TLS_method
-	       ])
-
-dnl Check if OpenSSL structures are opaque
-AC_CHECK_MEMBERS([SSL.state], , ,
-[#include <openssl/ssl.h>
-])
-
-AC_CHECK_SIZEOF(SHA_CTX, , [AC_INCLUDES_DEFAULT()
-#include <openssl/sha.h>
+		SSL_set_ciphersuites
 ])
 
 fi # enable_nss

@@ -172,6 +172,7 @@
 extern double cc_stats_circ_close_cwnd_ma;
 extern double cc_stats_circ_close_ss_cwnd_ma;
 extern uint64_t cc_stats_circs_closed;
+extern uint64_t circ_n_proto_violation;
 
 /** Convert a circuit_t* to a pointer to the enclosing or_circuit_t.  Assert
  * if the cast is impossible. */
@@ -268,6 +269,9 @@ STATIC size_t n_cells_in_circ_queues(const circuit_t *c);
 STATIC uint32_t circuit_max_queued_data_age(const circuit_t *c, uint32_t now);
 STATIC uint32_t circuit_max_queued_cell_age(const circuit_t *c, uint32_t now);
 STATIC uint32_t circuit_max_queued_item_age(const circuit_t *c, uint32_t now);
+#ifdef TOR_UNIT_TESTS
+STATIC int circuit_count_pending_close(void);
+#endif
 #endif /* defined(CIRCUITLIST_PRIVATE) */
 
 #endif /* !defined(TOR_CIRCUITLIST_H) */

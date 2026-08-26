@@ -83,14 +83,8 @@
 
 #include "core/or/orconn_event.h"
 
-static int connection_tls_finish_handshake(or_connection_t *conn);
 static int connection_or_launch_v3_or_handshake(or_connection_t *conn);
 static int connection_or_process_cells_from_inbuf(or_connection_t *conn);
-static int connection_or_check_valid_tls_handshake(or_connection_t *conn,
-                                                   int started_here,
-                                                   char *digest_rcvd_out);
-
-static void connection_or_tls_renegotiated_cb(tor_tls_t *tls, void *_conn);
 
 static unsigned int
 connection_or_is_bad_for_new_circs(or_connection_t *or_conn);
@@ -104,7 +98,7 @@ static void connection_or_check_canonicity(or_connection_t *conn,
 /**
  * Cast a `connection_t *` to an `or_connection_t *`.
  *
- * Exit with an assertion failure if the input is not an `or_connnection_t`.
+ * Exit with an assertion failure if the input is not an `or_connection_t`.
  **/
 or_connection_t *
 TO_OR_CONN(connection_t *c)
@@ -116,7 +110,7 @@ TO_OR_CONN(connection_t *c)
 /**
  * Cast a `const connection_t *` to a `const or_connection_t *`.
  *
- * Exit with an assertion failure if the input is not an `or_connnection_t`.
+ * Exit with an assertion failure if the input is not an `or_connection_t`.
  **/
 const or_connection_t *
 CONST_TO_OR_CONN(const connection_t *c)
@@ -419,7 +413,6 @@ connection_or_state_publish(const or_connection_t *conn, uint8_t state)
 /** Call this to change or_connection_t states, so the owning channel_tls_t can
  * be notified.
  */
-
 MOCK_IMPL(void,
 connection_or_change_state,(or_connection_t *conn, uint8_t state))
 {
@@ -435,7 +428,6 @@ connection_or_change_state,(or_connection_t *conn, uint8_t state))
 /** Return the number of circuits using an or_connection_t; this used to
  * be an or_connection_t field, but it got moved to channel_t and we
  * shouldn't maintain two copies. */
-
 MOCK_IMPL(int,
 connection_or_get_num_circuits, (or_connection_t *conn))
 {
@@ -526,7 +518,6 @@ var_cell_new(uint16_t payload_len)
 /**
  * Copy a var_cell_t
  */
-
 var_cell_t *
 var_cell_copy(const var_cell_t *src)
 {
@@ -602,9 +593,8 @@ connection_or_process_inbuf(or_connection_t *conn)
       }
 
       return ret;
-    case OR_CONN_STATE_TLS_SERVER_RENEGOTIATING:
     case OR_CONN_STATE_OPEN:
-    case OR_CONN_STATE_OR_HANDSHAKING_V2:
+    case OR_CONN_STATE_SERVER_VERSIONS_WAIT:
     case OR_CONN_STATE_OR_HANDSHAKING_V3:
       return connection_or_process_cells_from_inbuf(conn);
     default:
@@ -708,7 +698,6 @@ connection_or_finished_flushing(or_connection_t *conn)
       }
       break;
     case OR_CONN_STATE_OPEN:
-    case OR_CONN_STATE_OR_HANDSHAKING_V2:
     case OR_CONN_STATE_OR_HANDSHAKING_V3:
       break;
     default:
@@ -1456,7 +1445,6 @@ connection_or_notify_error(or_connection_t *conn,
  *
  * Return the launched conn, or NULL if it failed.
  */
-
 MOCK_IMPL(or_connection_t *,
 connection_or_connect, (const tor_addr_t *_addr, uint16_t port,
                         const char *id_digest,
@@ -1603,7 +1591,6 @@ connection_or_connect, (const tor_addr_t *_addr, uint16_t port,
  * rather than connections, use channel_mark_for_close(); see also
  * the comment on that function in channel.c.
  */
-
 void
 connection_or_close_normally(or_connection_t *orconn, int flush)
 {
@@ -1624,7 +1611,6 @@ connection_or_close_normally(or_connection_t *orconn, int flush)
 /** Mark orconn for close and transition the associated channel, if any, to
  * the error state.
  */
-
 MOCK_IMPL(void,
 connection_or_close_for_error,(or_connection_t *orconn, int flush))
 {
@@ -1690,35 +1676,6 @@ connection_tls_start_handshake,(or_connection_t *conn, int receiving))
   return 0;
 }
 
-/** Block all future attempts to renegotiate on 'conn' */
-void
-connection_or_block_renegotiation(or_connection_t *conn)
-{
-  tor_tls_t *tls = conn->tls;
-  if (!tls)
-    return;
-  tor_tls_set_renegotiate_callback(tls, NULL, NULL);
-  tor_tls_block_renegotiation(tls);
-}
-
-/** Invoked on the server side from inside tor_tls_read() when the server
- * gets a successful TLS renegotiation from the client. */
-static void
-connection_or_tls_renegotiated_cb(tor_tls_t *tls, void *_conn)
-{
-  or_connection_t *conn = _conn;
-  (void)tls;
-
-  /* Don't invoke this again. */
-  connection_or_block_renegotiation(conn);
-
-  if (connection_tls_finish_handshake(conn) < 0) {
-    /* XXXX_TLS double-check that it's ok to do this from inside read. */
-    /* XXXX_TLS double-check that this verifies certificates. */
-    connection_or_close_for_error(conn, 0);
-  }
-}
-
 /** Move forward with the tls handshake. If it finishes, hand
  * <b>conn</b> to connection_tls_finish_handshake().
  *
@@ -1742,26 +1699,24 @@ connection_tls_continue_handshake(or_connection_t *conn)
              tor_tls_err_to_string(result));
       return -1;
     case TOR_TLS_DONE:
-      if (! tor_tls_used_v1_handshake(conn->tls)) {
+      {
         if (!tor_tls_is_server(conn->tls)) {
           tor_assert(conn->base_.state == OR_CONN_STATE_TLS_HANDSHAKING);
           return connection_or_launch_v3_or_handshake(conn);
         } else {
-          /* v2/v3 handshake, but we are not a client. */
+          /* v3+ handshake, but we are not a client. */
           log_debug(LD_OR, "Done with initial SSL handshake (server-side). "
-                           "Expecting renegotiation or VERSIONS cell");
-          tor_tls_set_renegotiate_callback(conn->tls,
-                                           connection_or_tls_renegotiated_cb,
-                                           conn);
+                           "Expecting VERSIONS cell");
+          /* Note: We could instead just send a VERSIONS cell now,
+           * since the V2 handshake is no longer a thing.
+           * But that would require re-plumbing this state machine. */
           connection_or_change_state(conn,
-              OR_CONN_STATE_TLS_SERVER_RENEGOTIATING);
+                                     OR_CONN_STATE_SERVER_VERSIONS_WAIT);
           connection_stop_writing(TO_CONN(conn));
           connection_start_reading(TO_CONN(conn));
           return 0;
         }
       }
-      tor_assert(tor_tls_is_server(conn->tls));
-      return connection_tls_finish_handshake(conn);
     case TOR_TLS_WANTWRITE:
       connection_start_writing(TO_CONN(conn));
       log_debug(LD_OR,"wanted write");
@@ -1790,102 +1745,6 @@ connection_or_nonopen_was_started_here(or_connection_t *conn)
   if (conn->handshake_state)
     return conn->handshake_state->started_here;
   return !tor_tls_is_server(conn->tls);
-}
-
-/** <b>Conn</b> just completed its handshake. Return 0 if all is well, and
- * return -1 if they are lying, broken, or otherwise something is wrong.
- *
- * If we initiated this connection (<b>started_here</b> is true), make sure
- * the other side sent a correctly formed certificate. If I initiated the
- * connection, make sure it's the right relay by checking the certificate.
- *
- * Otherwise (if we _didn't_ initiate this connection), it's okay for
- * the certificate to be weird or absent.
- *
- * If we return 0, and the certificate is as expected, write a hash of the
- * identity key into <b>digest_rcvd_out</b>, which must have DIGEST_LEN
- * space in it.
- * If the certificate is invalid or missing on an incoming connection,
- * we return 0 and set <b>digest_rcvd_out</b> to DIGEST_LEN NUL bytes.
- * (If we return -1, the contents of this buffer are undefined.)
- *
- * As side effects,
- * 1) Set conn->circ_id_type according to tor-spec.txt.
- * 2) If we're an authdirserver and we initiated the connection: drop all
- *    descriptors that claim to be on that IP/port but that aren't
- *    this relay; and note that this relay is reachable.
- * 3) If this is a bridge and we didn't configure its identity
- *    fingerprint, remember the keyid we just learned.
- */
-static int
-connection_or_check_valid_tls_handshake(or_connection_t *conn,
-                                        int started_here,
-                                        char *digest_rcvd_out)
-{
-  crypto_pk_t *identity_rcvd=NULL;
-  const or_options_t *options = get_options();
-  int severity = server_mode(options) ? LOG_PROTOCOL_WARN : LOG_WARN;
-  const char *conn_type = started_here ? "outgoing" : "incoming";
-  int has_cert = 0;
-
-  check_no_tls_errors();
-  has_cert = tor_tls_peer_has_cert(conn->tls);
-  if (started_here && !has_cert) {
-    log_info(LD_HANDSHAKE,"Tried connecting to router at %s, but it didn't "
-             "send a cert! Closing.",
-             connection_describe_peer(TO_CONN(conn)));
-    return -1;
-  } else if (!has_cert) {
-    log_debug(LD_HANDSHAKE,"Got incoming connection with no certificate. "
-              "That's ok.");
-  }
-  check_no_tls_errors();
-
-  if (has_cert) {
-    int v = tor_tls_verify(started_here?severity:LOG_INFO,
-                           conn->tls, &identity_rcvd);
-    if (started_here && v<0) {
-      log_fn(severity,LD_HANDSHAKE,"Tried connecting to router at %s: It"
-             " has a cert but it's invalid. Closing.",
-             connection_describe_peer(TO_CONN(conn)));
-        return -1;
-    } else if (v<0) {
-      log_info(LD_HANDSHAKE,"Incoming connection gave us an invalid cert "
-               "chain; ignoring.");
-    } else {
-      log_debug(LD_HANDSHAKE,
-                "The certificate seems to be valid on %s connection "
-                "with %s", conn_type,
-                connection_describe_peer(TO_CONN(conn)));
-    }
-    check_no_tls_errors();
-  }
-
-  if (identity_rcvd) {
-    if (crypto_pk_get_digest(identity_rcvd, digest_rcvd_out) < 0) {
-      crypto_pk_free(identity_rcvd);
-      return -1;
-    }
-  } else {
-    memset(digest_rcvd_out, 0, DIGEST_LEN);
-  }
-
-  tor_assert(conn->chan);
-  channel_set_circid_type(TLS_CHAN_TO_BASE(conn->chan), identity_rcvd, 1);
-
-  crypto_pk_free(identity_rcvd);
-
-  if (started_here) {
-    /* A TLS handshake can't teach us an Ed25519 ID, so we set it to NULL
-     * here. */
-    log_debug(LD_HANDSHAKE, "Calling client_learned_peer_id from "
-              "check_valid_tls_handshake");
-    return connection_or_client_learned_peer_id(conn,
-                                        (const uint8_t*)digest_rcvd_out,
-                                        NULL);
-  }
-
-  return 0;
 }
 
 /** Called when we (as a connection initiator) have definitively,
@@ -2068,7 +1927,6 @@ connection_or_client_learned_peer_id(or_connection_t *conn,
 /** Return when we last used this channel for client activity (origin
  * circuits). This is called from connection.c, since client_used is now one
  * of the timestamps in channel_t */
-
 time_t
 connection_or_client_used(or_connection_t *conn)
 {
@@ -2077,58 +1935,6 @@ connection_or_client_used(or_connection_t *conn)
   if (conn->chan) {
     return channel_when_last_client(TLS_CHAN_TO_BASE(conn->chan));
   } else return 0;
-}
-
-/** The v1/v2 TLS handshake is finished.
- *
- * Make sure we are happy with the peer we just handshaked with.
- *
- * If they initiated the connection, make sure they're not already connected,
- * then initialize conn from the information in router.
- *
- * If all is successful, call circuit_n_conn_done() to handle events
- * that have been pending on the <tls handshake completion. Also set the
- * directory to be dirty (only matters if I'm an authdirserver).
- *
- * If this is a v2 TLS handshake, send a versions cell.
- */
-static int
-connection_tls_finish_handshake(or_connection_t *conn)
-{
-  char digest_rcvd[DIGEST_LEN];
-  int started_here = connection_or_nonopen_was_started_here(conn);
-
-  tor_assert(!started_here);
-
-  log_debug(LD_HANDSHAKE,"%s tls handshake on %s done, using "
-            "ciphersuite %s. verifying.",
-            started_here?"outgoing":"incoming",
-            connection_describe_peer(TO_CONN(conn)),
-            tor_tls_get_ciphersuite_name(conn->tls));
-
-  if (connection_or_check_valid_tls_handshake(conn, started_here,
-                                              digest_rcvd) < 0)
-    return -1;
-
-  circuit_build_times_network_is_live(get_circuit_build_times_mutable());
-
-  if (tor_tls_used_v1_handshake(conn->tls)) {
-    conn->link_proto = 1;
-    connection_or_init_conn_from_address(conn, &conn->base_.addr,
-                                         conn->base_.port, digest_rcvd,
-                                         NULL, 0);
-    tor_tls_block_renegotiation(conn->tls);
-    rep_hist_note_negotiated_link_proto(1, started_here);
-    return connection_or_set_state_open(conn);
-  } else {
-    connection_or_change_state(conn, OR_CONN_STATE_OR_HANDSHAKING_V2);
-    if (connection_init_or_handshake_state(conn, started_here) < 0)
-      return -1;
-    connection_or_init_conn_from_address(conn, &conn->base_.addr,
-                                         conn->base_.port, digest_rcvd,
-                                         NULL, 0);
-    return connection_or_send_versions(conn, 0);
-  }
 }
 
 /**
@@ -2427,8 +2233,8 @@ connection_or_process_cells_from_inbuf(or_connection_t *conn)
   }
 }
 
-/** Array of recognized link protocol versions. */
-static const uint16_t or_protocol_versions[] = { 1, 2, 3, 4, 5 };
+/** Array of supported link protocol versions. */
+static const uint16_t or_protocol_versions[] = { 3, 4, 5 };
 /** Number of versions in <b>or_protocol_versions</b>. */
 static const int n_or_protocol_versions =
   (int)( sizeof(or_protocol_versions)/sizeof(uint16_t) );

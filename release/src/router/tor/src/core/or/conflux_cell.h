@@ -10,6 +10,7 @@
 #define TOR_CONFLUX_CELL_H
 
 #include "core/or/or.h"
+#include "core/or/relay_msg_st.h"
 
 typedef struct conflux_cell_link_t {
   uint8_t version;
@@ -25,12 +26,9 @@ conflux_cell_link_t *conflux_cell_new_link(const uint8_t *nonce,
                                            uint64_t last_recv,
                                            uint8_t ux);
 
-conflux_cell_link_t *conflux_cell_parse_link(const cell_t *cell,
-                                             const uint16_t cell_len);
-conflux_cell_link_t *conflux_cell_parse_linked(const cell_t *cell,
-                                               const uint16_t cell_le);
-uint32_t conflux_cell_parse_switch(const cell_t *cell,
-                                   const uint16_t rh_len);
+conflux_cell_link_t *conflux_cell_parse_link(const relay_msg_t *msg);
+conflux_cell_link_t *conflux_cell_parse_linked(const relay_msg_t *msg);
+uint32_t conflux_cell_parse_switch(const relay_msg_t *msg);
 
 bool conflux_cell_send_link(const conflux_cell_link_t *link,
                             origin_circuit_t *circ);

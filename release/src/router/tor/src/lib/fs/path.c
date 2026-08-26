@@ -108,7 +108,8 @@ expand_filename(const char *filename)
       rest = strlen(filename)>=2?(filename+2):"";
     } else {
 #ifdef HAVE_PWD_H
-      char *username, *slash;
+      char *username;
+      const char *slash;
       slash = strchr(filename, '/');
       if (slash)
         username = tor_strndup(filename+1,slash-filename-1);

@@ -24350,6 +24350,20 @@ void start_Tor_proxy(void)
 	fprintf(fp, "AutomapHostsOnResolve 1\n");
 	fprintf(fp, "TransPort %s:%s\n", nvram_safe_get( "lan_ipaddr" ), Transport);
 	fprintf(fp, "DNSPort %s:%s\n", nvram_safe_get( "lan_ipaddr" ), Dnsport);
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled()) {
+		/* Bind the same TransPort/DNSPort to the LAN's IPv6 address so that
+		 * the ip6tables PREROUTING REDIRECT rules (see write_tor_nat_rules6()
+		 * in rc/firewall.c) have somewhere local to land. Tor accepts both
+		 * IPv4 and IPv6 traffic on these ports by default (IPv6Traffic is on
+		 * unless explicitly disabled), so no extra flags are needed here. */
+		const char *lan6_ip = ipv6_router_address(NULL);
+		if (lan6_ip && *lan6_ip) {
+			fprintf(fp, "TransPort [%s]:%s\n", lan6_ip, Transport);
+			fprintf(fp, "DNSPort [%s]:%s\n", lan6_ip, Dnsport);
+		}
+	}
+#endif
 	fprintf(fp, "RunAsDaemon 1\n");
 	fprintf(fp, "DataDirectory /tmp/.tordb\n");
 	fprintf(fp, "AvoidDiskWrites 1\n");

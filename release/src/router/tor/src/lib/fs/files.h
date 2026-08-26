@@ -29,6 +29,10 @@
 #endif
 #endif /* defined(_WIN32) */
 
+#if HAVE_FCNTL_H
+#include <fcntl.h>
+#endif
+
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif

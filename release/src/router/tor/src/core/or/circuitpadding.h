@@ -12,6 +12,7 @@
 
 #include "trunnel/circpad_negotiation.h"
 #include "lib/evloop/timers.h"
+#include "core/or/relay_msg_st.h"
 
 struct circuit_t;
 struct origin_circuit_t;
@@ -736,9 +737,9 @@ const circpad_machine_spec_t *circpad_string_to_machine(const char *str);
 
 /* Padding negotiation between client and middle */
 signed_error_t circpad_handle_padding_negotiate(struct circuit_t *circ,
-                                      struct cell_t *cell);
+                                                const relay_msg_t *msg);
 signed_error_t circpad_handle_padding_negotiated(struct circuit_t *circ,
-                                      struct cell_t *cell,
+                                      const relay_msg_t *msg,
                                       crypt_path_t *layer_hint);
 signed_error_t circpad_negotiate_padding(struct origin_circuit_t *circ,
                           circpad_machine_num_t machine,
@@ -753,9 +754,8 @@ bool circpad_padding_negotiated(struct circuit_t *circ,
 
 circpad_purpose_mask_t circpad_circ_purpose_to_mask(uint8_t circ_purpose);
 
-int circpad_check_received_cell(cell_t *cell, circuit_t *circ,
-                                crypt_path_t *layer_hint,
-                                const relay_header_t *rh);
+int circpad_check_received_cell(const relay_msg_t *msg, circuit_t *circ,
+                                crypt_path_t *layer_hint);
 
 MOCK_DECL(circpad_decision_t,
 circpad_machine_schedule_padding,(circpad_machine_runtime_t *));

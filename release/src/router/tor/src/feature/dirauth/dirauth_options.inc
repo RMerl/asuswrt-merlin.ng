@@ -76,6 +76,9 @@ CONF_VAR(RecommendedClientVersions, LINELIST, 0, NULL)
 /** Which versions of tor should we tell users to run on relays? */
 CONF_VAR(RecommendedServerVersions, LINELIST, 0, NULL)
 
+/** Which minimal version of tor do we accept relay descriptors from? */
+CONF_VAR(MinimalAcceptedServerVersion, STRING, 0, "0.4.8.0-alpha-dev")
+
 /** Relays which should be voted Guard regardless of uptime and bandwidth. */
 CONF_VAR(AuthDirVoteGuard, ROUTERSET, 0, NULL)
 

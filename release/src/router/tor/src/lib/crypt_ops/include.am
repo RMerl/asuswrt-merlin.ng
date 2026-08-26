@@ -15,14 +15,14 @@ src_lib_libtor_crypt_ops_a_SOURCES =			\
 	src/lib/crypt_ops/crypto_format.c		\
 	src/lib/crypt_ops/crypto_hkdf.c			\
 	src/lib/crypt_ops/crypto_init.c			\
-	src/lib/crypt_ops/crypto_ope.c          	\
+	src/lib/crypt_ops/crypto_ope.c			\
 	src/lib/crypt_ops/crypto_pwbox.c		\
 	src/lib/crypt_ops/crypto_rand.c			\
 	src/lib/crypt_ops/crypto_rand_fast.c		\
 	src/lib/crypt_ops/crypto_rand_numeric.c		\
 	src/lib/crypt_ops/crypto_rsa.c			\
 	src/lib/crypt_ops/crypto_s2k.c			\
-	src/lib/crypt_ops/crypto_util.c                 \
+	src/lib/crypt_ops/crypto_util.c			\
 	src/lib/crypt_ops/digestset.c
 
 if USE_NSS
@@ -75,5 +75,5 @@ noinst_HEADERS +=					\
 	src/lib/crypt_ops/crypto_rsa.h			\
 	src/lib/crypt_ops/crypto_s2k.h			\
 	src/lib/crypt_ops/crypto_sys.h			\
-	src/lib/crypt_ops/crypto_util.h                 \
+	src/lib/crypt_ops/crypto_util.h			\
 	src/lib/crypt_ops/digestset.h

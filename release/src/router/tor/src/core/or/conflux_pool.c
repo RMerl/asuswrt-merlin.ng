@@ -196,7 +196,7 @@ conflux_free_(conflux_t *cfx)
   } SMARTLIST_FOREACH_END(leg);
   smartlist_free(cfx->legs);
 
-  SMARTLIST_FOREACH(cfx->ooo_q, conflux_cell_t *, cell, tor_free(cell));
+  conflux_clear_ooo_q(cfx);
   smartlist_free(cfx->ooo_q);
 
   memwipe(cfx->nonce, 0, sizeof(cfx->nonce));
@@ -682,8 +682,14 @@ conflux_mark_all_for_close(const uint8_t *nonce, bool is_client, int reason)
    * set. This happens if there is a recovery leg launched for an existing
    * linked set. */
 
+  /* Make a local copy of nonce first, since it might be part of a conflux
+   * leg that gets freed by the various calls in this function. */
+  uint8_t nonce_localcopy[DIGEST256_LEN];
+  memcpy(nonce_localcopy, nonce, sizeof(nonce_localcopy));
+
   /* Close the unlinked set. */
-  unlinked_circuits_t *unlinked = unlinked_pool_get(nonce, is_client);
+  unlinked_circuits_t *unlinked =
+    unlinked_pool_get(nonce_localcopy, is_client);
   if (unlinked) {
     unlinked_close_or_free(unlinked);
   }
@@ -692,7 +698,7 @@ conflux_mark_all_for_close(const uint8_t *nonce, bool is_client, int reason)
 
   /* Close the linked set. It will free itself upon the close of
    * the last leg. */
-  conflux_t *linked = linked_pool_get(nonce, is_client);
+  conflux_t *linked = linked_pool_get(nonce_localcopy, is_client);
   if (linked) {
     if (linked->in_full_teardown) {
       return;
@@ -1410,9 +1416,16 @@ conflux_predict_new(time_t now)
 }
 
 /** Return the first circuit from the linked pool that will work with the conn.
- * If no such circuit exists, return NULL. */
+ * If no such circuit exists, return NULL.
+ *
+ * The need_internal argument must match the caller's stream requirement. When
+ * it is true (for example, for anonymized directory requests), non-internal
+ * conflux circuits are excluded by circuit_is_acceptable(). At present,
+ * conflux circuits in this pool are non-internal.
+ */
 origin_circuit_t *
-conflux_get_circ_for_conn(const entry_connection_t *conn, time_t now)
+conflux_get_circ_for_conn(const entry_connection_t *conn, time_t now,
+                          int need_internal)
 {
   /* Use conn to check the exit policy of the first circuit
    * of each set in the linked pool. */
@@ -1433,12 +1446,16 @@ conflux_get_circ_for_conn(const entry_connection_t *conn, time_t now)
     }
     origin_circuit_t *ocirc = TO_ORIGIN_CIRCUIT(leg->circ);
 
-    /* Make sure the connection conforms with the exit policy and the isolation
-     * flags also allows it. */
+    /* Make sure the connection conforms with the exit policy and isolation
+     * flags.
+     *
+     * Conflux circuits in this pool are currently built as non-internal,
+     * so a true need_internal requirement will reject them.
+     */
     if (!circuit_is_acceptable(ocirc, conn, 1 /* Must be open */,
                                CIRCUIT_PURPOSE_CONFLUX_LINKED,
                                1 /* Need uptime */,
-                               0 /* No need for internal */, now)) {
+                               need_internal, now)) {
       continue;
     }
 
@@ -1608,6 +1625,27 @@ linked_circuit_closed(circuit_t *circ)
    * attached to the circuit so it can be freed in conflux_circuit_free(). */
   if (CONFLUX_NUM_LEGS(circ->conflux) > 0) {
     circ->conflux = NULL;
+  } else {
+    /* We are the last leg. We normally keep the conflux object attached to
+     * this circuit so it can be freed later in linked_circuit_free(). However,
+     * if an unlinked set (for instance a recovery leg launched for the same
+     * nonce) still shares this very same conflux object, it can revive it
+     * (conflux_process_linked() -> try_finalize_set()) and become a second
+     * owner. Were we to keep our reference, both this circuit and the revived
+     * linked set would point at the same conflux object and both would try to
+     * free it once reaped, leading to a use-after-free and double free. Hand
+     * ownership over to the unlinked set now -- it becomes responsible for
+     * freeing the conflux object -- and detach it from this circuit. */
+    unlinked_circuits_t *unlinked = unlinked_pool_get(nonce, is_client);
+    if (unlinked && unlinked->cfx == circ->conflux) {
+      /* We expect the unlinked set sharing our conflux object to be flagged as
+       * belonging to a linked set. If not, something is off in our bookkeeping
+       * but we can still recover by handing ownership over, so warn loudly
+       * rather than assert. */
+      BUG(!unlinked->is_for_linked_set);
+      unlinked->is_for_linked_set = false;
+      circ->conflux = NULL;
+    }
   }
 
   /* If this was a teardown condition, we need to mark other circuits,
@@ -1639,7 +1677,22 @@ linked_circuit_free(circuit_t *circ, bool is_client)
 
   /* Circuit can be freed without being closed and so we try to delete this leg
    * so we can learn if this circuit is the last leg or not. */
-  cfx_del_leg(circ->conflux, circ);
+  if (cfx_del_leg(circ->conflux, circ)) {
+    /* Check for instances of bug #40870, which we suspect happen
+     * during exit. If any happen outside of exit, BUG and warn. */
+    if (!circ->conflux->in_full_teardown) {
+      /* We should bug and warn if we're not in a shutdown process; that
+       * means we got here somehow without a close. */
+      if (BUG(!shutting_down)) {
+        log_warn(LD_BUG,
+                 "Conflux circuit %p being freed without being marked for "
+                 "full teardown via close, with shutdown state %d. "
+                 "Please report this.", circ, shutting_down);
+        conflux_log_set(LOG_WARN, circ->conflux, is_client);
+      }
+      circ->conflux->in_full_teardown = true;
+    }
+  }
 
   if (CONFLUX_NUM_LEGS(circ->conflux) > 0) {
     /* The last leg will free the streams but until then, we nullify to avoid
@@ -1763,14 +1816,13 @@ conflux_circuit_has_opened(origin_circuit_t *orig_circ)
 
 /** Process a CONFLUX_LINK cell which arrived on the given circuit. */
 void
-conflux_process_link(circuit_t *circ, const cell_t *cell,
-                     const uint16_t cell_len)
+conflux_process_link(circuit_t *circ, const relay_msg_t *msg)
 {
   unlinked_circuits_t *unlinked = NULL;
   conflux_cell_link_t *link = NULL;
 
   tor_assert(circ);
-  tor_assert(cell);
+  tor_assert(msg);
 
   if (!conflux_is_enabled(circ)) {
     circuit_mark_for_close(circ, END_CIRC_REASON_TORPROTOCOL);
@@ -1809,8 +1861,18 @@ conflux_process_link(circuit_t *circ, const cell_t *cell,
     goto end;
   }
 
+  /* A LINK must arrive on a fresh circuit that has no attached streams. */
+  if (TO_OR_CIRCUIT(circ)->n_streams ||
+      TO_OR_CIRCUIT(circ)->resolving_streams) {
+    log_fn(LOG_PROTOCOL_WARN, LD_CIRC,
+           "Got a CONFLUX_LINK on a circuit with attached streams. "
+           "Closing circuit.");
+    circuit_mark_for_close(circ, END_CIRC_REASON_TORPROTOCOL);
+    goto end;
+  }
+
   /* On errors, logging is emitted in this parsing function. */
-  link = conflux_cell_parse_link(cell, cell_len);
+  link = conflux_cell_parse_link(msg);
   if (!link) {
     log_fn(LOG_PROTOCOL_WARN, LD_CIRC, "Unable to parse "
            "CONFLUX_LINK cell. Closing circuit.");
@@ -1875,8 +1937,7 @@ conflux_process_link(circuit_t *circ, const cell_t *cell,
 /** Process a CONFLUX_LINKED cell which arrived on the given circuit. */
 void
 conflux_process_linked(circuit_t *circ, crypt_path_t *layer_hint,
-                       const cell_t *cell,
-                       const uint16_t cell_len)
+                       const relay_msg_t *msg)
 {
   conflux_cell_link_t *link = NULL;
 
@@ -1936,7 +1997,7 @@ conflux_process_linked(circuit_t *circ, crypt_path_t *layer_hint,
   tor_assert_nonfatal(circ->purpose == CIRCUIT_PURPOSE_CONFLUX_UNLINKED);
 
   /* On errors, logging is emitted in this parsing function. */
-  link = conflux_cell_parse_link(cell, cell_len);
+  link = conflux_cell_parse_link(msg);
   if (!link) {
     goto close;
   }
@@ -1947,7 +2008,7 @@ conflux_process_linked(circuit_t *circ, crypt_path_t *layer_hint,
   /* Make sure the cell nonce matches the one on the circuit that was
    * previously set by the CONFLUX_LINK cell. */
   if (tor_memneq(link->nonce, circ->conflux_pending_nonce,
-                 sizeof(*link->nonce))) {
+                 sizeof(link->nonce))) {
     log_fn(LOG_PROTOCOL_WARN, LD_CIRC,
            "Received CONFLUX_LINKED but circuit nonce doesn't match "
            "cell nonce. Closing circuit.");
@@ -2008,7 +2069,7 @@ conflux_process_linked(circuit_t *circ, crypt_path_t *layer_hint,
   }
 
   /* This cell is now considered valid for clients. */
-  circuit_read_valid_data(TO_ORIGIN_CIRCUIT(circ), cell_len);
+  circuit_read_valid_data(TO_ORIGIN_CIRCUIT(circ), msg->length);
 
   goto end;
 
@@ -2164,14 +2225,36 @@ conflux_log_set(int loglevel, const conflux_t *cfx, bool is_client)
   }
 }
 
+/**
+ * Conflux needs a notification when tor_shutdown() begins, so that
+ * when circuits are freed, new legs are not launched.
+ *
+ * This needs a separate notification from conflux_pool_free_all(),
+ * because circuits must be freed before that function.
+ */
+void
+conflux_notify_shutdown(void)
+{
+  shutting_down = true;
+}
+
+#ifdef TOR_UNIT_TESTS
+/**
+ * For unit tests: Clear the shutting down state so we resume building legs.
+ */
+void
+conflux_clear_shutdown(void)
+{
+  shutting_down = false;
+}
+#endif
+
 /** Free and clean up the conflux pool subsystem. This is called by the subsys
  * manager AFTER all circuits have been freed which implies that all objects in
  * the pools aren't referenced anymore. */
 void
 conflux_pool_free_all(void)
 {
-  shutting_down = true;
-
   digest256map_free(client_linked_pool, free_conflux_void_);
   digest256map_free(server_linked_pool, free_conflux_void_);
   digest256map_free(client_unlinked_pool, free_unlinked_void_);

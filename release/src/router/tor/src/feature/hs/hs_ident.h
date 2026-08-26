@@ -71,6 +71,12 @@ typedef struct hs_ident_circuit_t {
    * e2e encryption with the service. */
   curve25519_keypair_t rendezvous_client_kp;
 
+  /** (Only client rendezvous circuit) Has this client sent an
+   * ESTABLISH_RENDEZVOUS cell yet? Used for not sending it more than once,
+   * and also for not being tricked into finishing a handshake if we haven't
+   * sent it yet. */
+  bool sent_establish_rendezvous;
+
   /** (Only rendezvous circuit) The NTOR_KEY_SEED needed for key derivation for
    * the e2e encryption with the client on the circuit. */
   uint8_t rendezvous_ntor_key_seed[DIGEST256_LEN];

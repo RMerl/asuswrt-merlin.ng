@@ -13,6 +13,7 @@
 
 #include "core/mainloop/mainloop.h"
 
+#include "feature/client/transports.h"
 #include "feature/control/control_events.h"
 #include "feature/dirauth/authmode.h"
 
@@ -132,14 +133,18 @@ resolved_addr_set_suggested(const tor_addr_t *addr)
   }
 
   /* In case we don't have a configured address, log that we will be using the
-   * one discovered from the dirauth. */
+   * one discovered from the dirauth, and, if running a bridge, use the new IP
+   * for the bridge lines. */
   const int idx = af_to_idx(tor_addr_family(addr));
   if (tor_addr_is_null(&last_resolved_addrs[idx]) &&
       !tor_addr_eq(&last_suggested_addrs[idx], addr)) {
     log_notice(LD_CONFIG, "External address seen and suggested by a "
                           "directory authority: %s", fmt_addr(addr));
+    tor_addr_copy(&last_suggested_addrs[idx], addr);
+    pt_update_bridge_lines();
+  } else {
+    tor_addr_copy(&last_suggested_addrs[idx], addr);
   }
-  tor_addr_copy(&last_suggested_addrs[idx], addr);
 }
 
 /** Copy the last resolved address of family into addr_out.

@@ -98,6 +98,9 @@ STATIC hs_service_add_ephemeral_status_t add_onion_helper_add_service(
                              add_onion_secret_key_t *pk,
                              smartlist_t *port_cfgs, int max_streams,
                              int max_streams_close_circuit,
+                             int pow_defenses_enabled,
+                             uint32_t pow_queue_rate,
+                             uint32_t pow_queue_burst,
                              smartlist_t *auth_clients_v3, char **address_out);
 
 STATIC control_cmd_args_t *control_cmd_parse_args(

@@ -61,4 +61,6 @@ void crypto_dh_init_nss(void);
 void crypto_dh_free_all_nss(void);
 #endif
 
+#define DH_TLS_KEY_BITS 2048
+
 #endif /* !defined(TOR_CRYPTO_DH_H) */

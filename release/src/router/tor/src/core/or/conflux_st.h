@@ -103,6 +103,12 @@ struct conflux_t {
   smartlist_t *ooo_q;
 
   /**
+   * Approximate allocation cost of the bytes stored in ooo_q
+   * and the messages that it contains.
+   */
+  size_t ooo_q_alloc_cost;
+
+  /**
    * Absolute sequence number of cells delivered to streams since start.
    * (ie: this is updated *after* dequeue from the ooo_q priority queue). */
   uint64_t last_seq_delivered;

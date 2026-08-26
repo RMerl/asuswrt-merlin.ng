@@ -73,6 +73,7 @@
 #include "core/or/conflux_util.h"
 #include "core/or/circuitstats.h"
 #include "core/or/connection_or.h"
+#include "core/or/dos.h"
 #include "core/or/extendinfo.h"
 #include "core/or/policies.h"
 #include "core/or/reasons.h"
@@ -105,6 +106,7 @@
 #include "lib/buf/buffers.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/crypt_ops/crypto_util.h"
+#include "lib/encoding/confline.h"
 
 #include "core/or/cell_st.h"
 #include "core/or/cpath_build_state_st.h"
@@ -511,7 +513,7 @@ clip_dns_fuzzy_ttl(uint32_t ttl)
 int
 connection_edge_end(edge_connection_t *conn, uint8_t reason)
 {
-  char payload[RELAY_PAYLOAD_SIZE];
+  char payload[RELAY_PAYLOAD_SIZE_MAX];
   size_t payload_len=1;
   circuit_t *circ;
   uint8_t control_reason = reason;
@@ -2203,7 +2205,7 @@ connection_ap_handshake_rewrite_and_attach(entry_connection_t *conn,
       /* Whoops; this one is stale.  It must have gotten added earlier?
        * (Probably this is not possible, since AllowDotExit no longer
        * exists.) */
-      log_warn(LD_APP,"Stale automapped address for '%s.exit'. Refusing.",
+      log_warn(LD_APP,"Stale automapped address for '%s.$fp.exit'. Refusing.",
                safe_str_client(socks->address));
       control_event_client_status(LOG_WARN, "SOCKS_BAD_HOSTNAME HOSTNAME=%s",
                                   escaped(socks->address));
@@ -2217,7 +2219,7 @@ connection_ap_handshake_rewrite_and_attach(entry_connection_t *conn,
     if (exit_source == ADDRMAPSRC_DNS || exit_source == ADDRMAPSRC_NONE) {
       /* It shouldn't be possible to get a .exit address from any of these
        * sources. */
-      log_warn(LD_BUG,"Address '%s.exit', with impossible source for the "
+      log_warn(LD_BUG,"Address '%s.$fp.exit', with impossible source for the "
                ".exit part. Refusing.",
                safe_str_client(socks->address));
       control_event_client_status(LOG_WARN, "SOCKS_BAD_HOSTNAME HOSTNAME=%s",
@@ -2270,7 +2272,7 @@ connection_ap_handshake_rewrite_and_attach(entry_connection_t *conn,
     /* Now make sure that the chosen exit exists... */
     if (!node) {
       log_warn(LD_APP,
-               "Unrecognized relay in exit address '%s.exit'. Refusing.",
+               "Unrecognized relay in exit address '%s.$fp.exit'. Refusing.",
                safe_str_client(socks->address));
       connection_mark_unattached_ap(conn, END_STREAM_REASON_TORPROTOCOL);
       return -1;
@@ -2278,7 +2280,7 @@ connection_ap_handshake_rewrite_and_attach(entry_connection_t *conn,
     /* ...and make sure that it isn't excluded. */
     if (routerset_contains_node(excludeset, node)) {
       log_warn(LD_APP,
-               "Excluded relay in exit address '%s.exit'. Refusing.",
+               "Excluded relay in exit address '%s.$fp.exit'. Refusing.",
                safe_str_client(socks->address));
       connection_mark_unattached_ap(conn, END_STREAM_REASON_TORPROTOCOL);
       return -1;
@@ -2984,9 +2986,28 @@ connection_ap_process_natd(entry_connection_t *conn)
   return connection_ap_rewrite_and_attach_if_allowed(conn, NULL, NULL);
 }
 
+#define TOR_CAPABILITIES_HEADER \
+  "Tor-Capabilities: \r\n"
+
+#define HTTP_CONNECT_FIXED_HEADERS \
+  TOR_CAPABILITIES_HEADER \
+  "Via: tor/1.0 tor-network (tor "VERSION")\r\n"
+
+#define HTTP_OTHER_FIXED_HEADERS \
+  TOR_CAPABILITIES_HEADER \
+  "Server: tor/1.0 (tor "VERSION")\r\n"
+
+static const char HTTP_OPTIONS_REPLY[] =
+  "HTTP/1.0 200 OK\r\n"
+  "Allow: OPTIONS, CONNECT\r\n"
+  HTTP_OTHER_FIXED_HEADERS
+  "\r\n";
+
 static const char HTTP_CONNECT_IS_NOT_AN_HTTP_PROXY_MSG[] =
   "HTTP/1.0 405 Method Not Allowed\r\n"
-  "Content-Type: text/html; charset=iso-8859-1\r\n\r\n"
+  "Content-Type: text/html; charset=iso-8859-1\r\n"
+  HTTP_OTHER_FIXED_HEADERS
+  "\r\n"
   "<html>\n"
   "<head>\n"
   "<title>This is an HTTP CONNECT tunnel, not a full HTTP Proxy</title>\n"
@@ -3009,6 +3030,64 @@ static const char HTTP_CONNECT_IS_NOT_AN_HTTP_PROXY_MSG[] =
   "</body>\n"
   "</html>\n";
 
+/** Return true iff `host` is a valid host header value indicating localhost.
+ */
+static bool
+host_header_is_localhost(const char *host_value)
+{
+  char *host = NULL;
+  uint16_t port = 0;
+  tor_addr_t addr;
+  bool result;
+
+  // Note that this does not _require_ that a port was set,
+  // which is what we want.
+  if (tor_addr_port_split(LOG_DEBUG, host_value, &host, &port) < 0) {
+    return false;
+  }
+  tor_assert(host);
+
+  if (tor_addr_parse(&addr, host) == 0) {
+    result = tor_addr_is_loopback(&addr);
+  } else {
+    result = ! strcasecmp(host, "localhost");
+  }
+
+  tor_free(host);
+  return result;
+}
+
+/** Return true if the Proxy-Authorization header present in <b>auth</b>
+ * isn't using the "modern" format introduced by proposal 365,
+ * with "basic" auth and username "tor". */
+STATIC bool
+using_old_proxy_auth(const char *auth)
+{
+  auth = eat_whitespace(auth);
+  if (strcasecmpstart(auth, "Basic ")) {
+    // Not Basic.
+    return true;
+  }
+  auth += strlen("Basic ");
+  auth = eat_whitespace(auth);
+
+  ssize_t clen = base64_decode_maxsize(strlen(auth)) + 1;
+  char *credential = tor_malloc_zero(clen);
+  ssize_t n = base64_decode(credential, clen, auth, strlen(auth));
+  if (n < 0 || BUG(n >= clen)) {
+    // not base64, or somehow too long.
+    tor_free(credential);
+    return true;
+  }
+  // nul-terminate.
+  credential[n] = 0;
+
+  bool username_is_modern = ! strcmpstart(credential, "tor:");
+  tor_free(credential);
+
+  return ! username_is_modern;
+}
+
 /** Called on an HTTP CONNECT entry connection when some bytes have arrived,
  * but we have not yet received a full HTTP CONNECT request.  Try to parse an
  * HTTP CONNECT request from the connection's inbuf.  On success, set up the
@@ -3025,16 +3104,26 @@ connection_ap_process_http_connect(entry_connection_t *conn)
   char *command = NULL, *addrport = NULL;
   char *addr = NULL;
   size_t bodylen = 0;
+  const char *fixed_reply_headers = HTTP_OTHER_FIXED_HEADERS;
 
   const char *errmsg = NULL;
+  bool close_without_message = false;
   int rv = 0;
+  bool host_is_localhost = false;
+
+  // If true, we already have a full reply, so we shouldn't add
+  // fixed headers and CRLF.
+  bool errmsg_is_complete = false;
+  // If true, we're sending a fixed reply as an errmsg,
+  // but technically this isn't an error so we shouldn't log.
+  bool skip_error_log = false;
 
   const int http_status =
     fetch_from_buf_http(ENTRY_TO_CONN(conn)->inbuf, &headers, 8192,
                         &body, &bodylen, 1024, 0);
   if (http_status < 0) {
-    /* Bad http status */
-    errmsg = "HTTP/1.0 400 Bad Request\r\n\r\n";
+    /* Unparseable http message.  Don't send a reply. */
+    close_without_message = true;
     goto err;
   } else if (http_status == 0) {
     /* no HTTP request yet. */
@@ -3043,25 +3132,68 @@ connection_ap_process_http_connect(entry_connection_t *conn)
 
   const int cmd_status = parse_http_command(headers, &command, &addrport);
   if (cmd_status < 0) {
-    errmsg = "HTTP/1.0 400 Bad Request\r\n\r\n";
+    /* Unparseable command. Don't reply. */
+    close_without_message = true;
     goto err;
   }
   tor_assert(command);
   tor_assert(addrport);
-  if (strcasecmp(command, "connect")) {
-    errmsg = HTTP_CONNECT_IS_NOT_AN_HTTP_PROXY_MSG;
+  {
+    // Find out whether the host is localhost.  If it isn't,
+    // then either this is a connect request (which is okay)
+    // or a webpage is using DNS rebinding to try to bypass
+    // browser security (which isn't).
+    char *host = http_get_header(headers, "Host: ");
+    if (host) {
+      host_is_localhost = host_header_is_localhost(host);
+    }
+    tor_free(host);
+  }
+  if (!strcasecmp(command, "options") && host_is_localhost) {
+    errmsg = HTTP_OPTIONS_REPLY;
+    errmsg_is_complete = true;
+
+    // TODO: We could in theory make sure that the target
+    // is a host or is *.
+    // TODO: We could in theory make sure that the body is empty.
+    // (And we would have to, if we ever support HTTP/1.1.)
+
+    // This is not actually an error, but the error handling
+    // does the right operations here (send the reply,
+    // mark the connection).
+    skip_error_log = true;
+
     goto err;
   }
+  if (strcasecmp(command, "connect")) {
+    if (host_is_localhost) {
+      errmsg = HTTP_CONNECT_IS_NOT_AN_HTTP_PROXY_MSG;
+      errmsg_is_complete = true;
+    } else {
+      close_without_message = true;
+    }
+    goto err;
+  }
+
+  fixed_reply_headers = HTTP_CONNECT_FIXED_HEADERS;
 
   tor_assert(conn->socks_request);
   socks_request_t *socks = conn->socks_request;
   uint16_t port;
   if (tor_addr_port_split(LOG_WARN, addrport, &addr, &port) < 0) {
-    errmsg = "HTTP/1.0 400 Bad Request\r\n\r\n";
+    errmsg = "HTTP/1.0 400 Bad Request\r\n";
     goto err;
   }
   if (strlen(addr) >= MAX_SOCKS_ADDR_LEN) {
-    errmsg = "HTTP/1.0 414 Request-URI Too Long\r\n\r\n";
+    errmsg = "HTTP/1.0 414 Request-URI Too Long\r\n";
+    goto err;
+  }
+
+  /* Reject the request if it's trying to interact with Arti RPC. */
+  char *rpc_hdr = http_get_header(headers, "Tor-RPC-Target: ");
+  if (rpc_hdr) {
+    tor_free(rpc_hdr);
+    errmsg = "HTTP/1.0 501 Not implemented (No RPC Support)\r\n";
     goto err;
   }
 
@@ -3070,13 +3202,30 @@ connection_ap_process_http_connect(entry_connection_t *conn)
   {
     char *authorization = http_get_header(headers, "Proxy-Authorization: ");
     if (authorization) {
+      if (using_old_proxy_auth(authorization)) {
+        log_warn(LD_GENERAL, "Proxy-Authorization header in legacy format. "
+                 "With modern Tor, use Basic auth with username=tor.");
+      }
       socks->username = authorization; // steal reference
       socks->usernamelen = strlen(authorization);
     }
-    char *isolation = http_get_header(headers, "X-Tor-Stream-Isolation: ");
-    if (isolation) {
-      socks->password = isolation; // steal reference
-      socks->passwordlen = strlen(isolation);
+    char *isolation = http_get_header(headers, "Tor-Stream-Isolation: ");
+    char *x_isolation = http_get_header(headers, "X-Tor-Stream-Isolation: ");
+    if (isolation || x_isolation) {
+      // We need to cram both of these headers into a single
+      // password field.  Using a delimiter like this is a bit ugly,
+      // but the only ones who can confuse it are the applications,
+      // whom we are trusting to get their own isolation right.
+      const char DELIM[] = "\x01\xff\x01\xff";
+      tor_asprintf(&socks->password,
+                   "%s%s%s",
+                   isolation?isolation:"",
+                   DELIM,
+                   x_isolation?x_isolation:"");
+      tor_free(isolation);
+      tor_free(x_isolation);
+
+      socks->passwordlen = strlen(socks->password);
     }
   }
 
@@ -3094,10 +3243,21 @@ connection_ap_process_http_connect(entry_connection_t *conn)
   goto done;
 
  err:
-  if (BUG(errmsg == NULL))
-    errmsg = "HTTP/1.0 400 Bad Request\r\n\r\n";
-  log_info(LD_EDGE, "HTTP tunnel error: saying %s", escaped(errmsg));
-  connection_buf_add(errmsg, strlen(errmsg), ENTRY_TO_CONN(conn));
+  if (! close_without_message && BUG(errmsg == NULL))
+    errmsg = "HTTP/1.0 400 Bad Request\r\n";
+  if (errmsg) {
+    if (!skip_error_log)
+      log_info(LD_EDGE, "HTTP tunnel error: saying %s", escaped(errmsg));
+    connection_buf_add(errmsg, strlen(errmsg), ENTRY_TO_CONN(conn));
+    if (!errmsg_is_complete) {
+      connection_buf_add(fixed_reply_headers, strlen(fixed_reply_headers),
+                         ENTRY_TO_CONN(conn));
+      connection_buf_add("\r\n", 2, ENTRY_TO_CONN(conn));
+    }
+  } else {
+    if (!skip_error_log)
+      log_info(LD_EDGE, "HTTP tunnel error: closing silently");
+  }
   /* Mark it as "has_finished" so that we don't try to send an extra socks
    * reply. */
   conn->socks_request->has_finished = 1;
@@ -3238,8 +3398,8 @@ connection_ap_get_begincell_flags(entry_connection_t *ap_conn)
 MOCK_IMPL(int,
 connection_ap_handshake_send_begin,(entry_connection_t *ap_conn))
 {
-  char payload[CELL_PAYLOAD_SIZE];
-  int payload_len;
+  char payload[RELAY_PAYLOAD_SIZE_MAX];
+  size_t payload_len;
   int begin_type;
   const or_options_t *options = get_options();
   origin_circuit_t *circ;
@@ -3264,17 +3424,20 @@ connection_ap_handshake_send_begin,(entry_connection_t *ap_conn))
     return -1;
   }
 
+  size_t payload_max = circuit_max_relay_payload(
+                edge_conn->on_circuit, edge_conn->cpath_layer,
+                RELAY_COMMAND_BEGIN);
   /* Set up begin cell flags. */
   edge_conn->begincell_flags = connection_ap_get_begincell_flags(ap_conn);
 
-  tor_snprintf(payload,RELAY_PAYLOAD_SIZE, "%s:%d",
+  tor_snprintf(payload,payload_max, "%s:%d",
                (circ->base_.purpose == CIRCUIT_PURPOSE_C_GENERAL ||
                 circ->base_.purpose == CIRCUIT_PURPOSE_CONFLUX_LINKED ||
                 circ->base_.purpose == CIRCUIT_PURPOSE_CONTROLLER) ?
                  ap_conn->socks_request->address : "",
                ap_conn->socks_request->port);
-  payload_len = (int)strlen(payload)+1;
-  if (payload_len <= RELAY_PAYLOAD_SIZE - 4 && edge_conn->begincell_flags) {
+  payload_len = strlen(payload)+1;
+  if (payload_len <= payload_max - 4 && edge_conn->begincell_flags) {
     set_uint32(payload + payload_len, htonl(edge_conn->begincell_flags));
     payload_len += 4;
   }
@@ -3773,9 +3936,24 @@ connection_ap_handshake_socks_reply(entry_connection_t *conn, char *reply,
        CONN_TYPE_AP_HTTP_CONNECT_LISTENER) {
     const char *response = end_reason_to_http_connect_response_line(endreason);
     if (!response) {
-      response = "HTTP/1.0 400 Bad Request\r\n\r\n";
+      response = "HTTP/1.0 400 Bad Request\r\n";
     }
     connection_buf_add(response, strlen(response), ENTRY_TO_CONN(conn));
+    connection_buf_add(HTTP_CONNECT_FIXED_HEADERS,
+                       strlen(HTTP_CONNECT_FIXED_HEADERS),
+                       ENTRY_TO_CONN(conn));
+    if (endreason) {
+      bool reason_is_remote = (endreason & END_STREAM_REASON_MASK) < 256;
+      const char *reason = stream_end_reason_to_control_string(endreason);
+      if (reason) {
+        const char *prefix = reason_is_remote ? "end" : "c-tor";
+        tor_snprintf(buf, sizeof(buf),
+                     "Tor-Request-Failed: %s/%s\r\n",
+                     prefix, reason);
+        connection_buf_add(buf, strlen(buf), ENTRY_TO_CONN(conn));
+      }
+    }
+    connection_buf_add("\r\n", 2, ENTRY_TO_CONN(conn));
   } else if (conn->socks_request->socks_version == 4) {
     memset(buf,0,SOCKS4_NETWORK_LEN);
     buf[1] = (status==SOCKS5_SUCCEEDED ? SOCKS4_GRANTED : SOCKS4_REJECT);
@@ -3816,33 +3994,27 @@ connection_ap_handshake_socks_reply(entry_connection_t *conn, char *reply,
  * we don't.
  **/
 STATIC int
-begin_cell_parse(const cell_t *cell, begin_cell_t *bcell,
+begin_cell_parse(const relay_msg_t *msg, begin_cell_t *bcell,
                  uint8_t *end_reason_out)
 {
-  relay_header_t rh;
   const uint8_t *body, *nul;
 
   memset(bcell, 0, sizeof(*bcell));
   *end_reason_out = END_STREAM_REASON_MISC;
 
-  relay_header_unpack(&rh, cell->payload);
-  if (rh.length > RELAY_PAYLOAD_SIZE) {
-    return -2; /*XXXX why not TORPROTOCOL? */
-  }
+  bcell->stream_id = msg->stream_id;
 
-  bcell->stream_id = rh.stream_id;
-
-  if (rh.command == RELAY_COMMAND_BEGIN_DIR) {
+  if (msg->command == RELAY_COMMAND_BEGIN_DIR) {
     bcell->is_begindir = 1;
     return 0;
-  } else if (rh.command != RELAY_COMMAND_BEGIN) {
-    log_warn(LD_BUG, "Got an unexpected command %d", (int)rh.command);
+  } else if (msg->command != RELAY_COMMAND_BEGIN) {
+    log_warn(LD_BUG, "Got an unexpected command %u", msg->command);
     *end_reason_out = END_STREAM_REASON_INTERNAL;
     return -1;
   }
 
-  body = cell->payload + RELAY_HEADER_SIZE;
-  nul = memchr(body, 0, rh.length);
+  body = msg->body;
+  nul = memchr(body, 0, msg->length);
   if (! nul) {
     log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
            "Relay begin cell has no \\0. Closing.");
@@ -3865,7 +4037,7 @@ begin_cell_parse(const cell_t *cell, begin_cell_t *bcell,
     *end_reason_out = END_STREAM_REASON_TORPROTOCOL;
     return -1;
   }
-  if (body + rh.length >= nul + 4)
+  if (body + msg->length > nul + 4)
     bcell->flags = ntohl(get_uint32(nul+1));
 
   return 0;
@@ -3978,10 +4150,9 @@ handle_hs_exit_conn(circuit_t *circ, edge_connection_t *conn)
  * Else return 0.
  */
 int
-connection_exit_begin_conn(cell_t *cell, circuit_t *circ)
+connection_exit_begin_conn(const relay_msg_t *msg, circuit_t *circ)
 {
   edge_connection_t *n_stream;
-  relay_header_t rh;
   char *address = NULL;
   uint16_t port = 0;
   or_circuit_t *or_circ = NULL;
@@ -3991,6 +4162,7 @@ connection_exit_begin_conn(cell_t *cell, circuit_t *circ)
   begin_cell_t bcell;
   int rv;
   uint8_t end_reason=0;
+  dos_stream_defense_type_t dos_defense_type;
 
   assert_circuit_ok(circ);
   if (!CIRCUIT_IS_ORIGIN(circ)) {
@@ -4001,25 +4173,22 @@ connection_exit_begin_conn(cell_t *cell, circuit_t *circ)
     layer_hint = origin_circ->cpath->prev;
   }
 
-  relay_header_unpack(&rh, cell->payload);
-  if (rh.length > RELAY_PAYLOAD_SIZE)
-    return -END_CIRC_REASON_TORPROTOCOL;
-
   if (!server_mode(options) &&
       circ->purpose != CIRCUIT_PURPOSE_S_REND_JOINED) {
     log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
            "Relay begin cell at non-server. Closing.");
-    relay_send_end_cell_from_edge(rh.stream_id, circ,
+    relay_send_end_cell_from_edge(msg->stream_id, circ,
                                   END_STREAM_REASON_EXITPOLICY, NULL);
     return 0;
   }
 
-  rv = begin_cell_parse(cell, &bcell, &end_reason);
+  rv = begin_cell_parse(msg, &bcell, &end_reason);
   if (rv < -1) {
     return -END_CIRC_REASON_TORPROTOCOL;
   } else if (rv == -1) {
     tor_free(bcell.address);
-    relay_send_end_cell_from_edge(rh.stream_id, circ, end_reason, layer_hint);
+    relay_send_end_cell_from_edge(msg->stream_id, circ, end_reason,
+                                  layer_hint);
     return 0;
   }
 
@@ -4043,7 +4212,7 @@ connection_exit_begin_conn(cell_t *cell, circuit_t *circ)
                safe_str(channel_describe_peer(or_circ->p_chan)),
                client_chan ? "on first hop of circuit" :
                              "from unknown relay");
-        relay_send_end_cell_from_edge(rh.stream_id, circ,
+        relay_send_end_cell_from_edge(msg->stream_id, circ,
                                       client_chan ?
                                         END_STREAM_REASON_TORPROTOCOL :
                                         END_STREAM_REASON_MISC,
@@ -4052,11 +4221,13 @@ connection_exit_begin_conn(cell_t *cell, circuit_t *circ)
         return 0;
       }
     }
-  } else if (rh.command == RELAY_COMMAND_BEGIN_DIR) {
+  } else if (msg->command == RELAY_COMMAND_BEGIN_DIR) {
     if (!directory_permits_begindir_requests(options) ||
+        CIRCUIT_IS_CONFLUX(circ) || /* Cannot be used for dir streams */
         circ->purpose != CIRCUIT_PURPOSE_OR) {
-      relay_send_end_cell_from_edge(rh.stream_id, circ,
-                                  END_STREAM_REASON_NOTDIRECTORY, layer_hint);
+      relay_send_end_cell_from_edge(msg->stream_id, circ,
+                                    END_STREAM_REASON_NOTDIRECTORY,
+                                    layer_hint);
       return 0;
     }
     /* Make sure to get the 'real' address of the previous hop: the
@@ -4074,8 +4245,8 @@ connection_exit_begin_conn(cell_t *cell, circuit_t *circ)
                * isn't "really" a connection here.  But we
                * need to set it to something nonzero. */
   } else {
-    log_warn(LD_BUG, "Got an unexpected command %d", (int)rh.command);
-    relay_send_end_cell_from_edge(rh.stream_id, circ,
+    log_warn(LD_BUG, "Got an unexpected command %u", msg->command);
+    relay_send_end_cell_from_edge(msg->stream_id, circ,
                                   END_STREAM_REASON_INTERNAL, layer_hint);
     return 0;
   }
@@ -4086,7 +4257,7 @@ connection_exit_begin_conn(cell_t *cell, circuit_t *circ)
     /* If you don't want IPv4, I can't help. */
     if (bcell.flags & BEGIN_FLAG_IPV4_NOT_OK) {
       tor_free(address);
-      relay_send_end_cell_from_edge(rh.stream_id, circ,
+      relay_send_end_cell_from_edge(msg->stream_id, circ,
                                     END_STREAM_REASON_EXITPOLICY, layer_hint);
       return 0;
     }
@@ -4103,7 +4274,7 @@ connection_exit_begin_conn(cell_t *cell, circuit_t *circ)
 
   n_stream->base_.purpose = EXIT_PURPOSE_CONNECT;
   n_stream->begincell_flags = bcell.flags;
-  n_stream->stream_id = rh.stream_id;
+  n_stream->stream_id = msg->stream_id;
   n_stream->base_.port = port;
   /* leave n_stream->s at -1, because it's not yet valid */
   n_stream->package_window = STREAMWINDOW_START;
@@ -4118,7 +4289,7 @@ connection_exit_begin_conn(cell_t *cell, circuit_t *circ)
 
     if (ret == 0) {
       /* This was a valid cell. Count it as delivered + overhead. */
-      circuit_read_valid_data(origin_circ, rh.length);
+      circuit_read_valid_data(origin_circ, msg->length);
     }
     return ret;
   }
@@ -4129,7 +4300,7 @@ connection_exit_begin_conn(cell_t *cell, circuit_t *circ)
 
   /* If we're hibernating or shutting down, we refuse to open new streams. */
   if (we_are_hibernating()) {
-    relay_send_end_cell_from_edge(rh.stream_id, circ,
+    relay_send_end_cell_from_edge(msg->stream_id, circ,
                                   END_STREAM_REASON_HIBERNATING, NULL);
     connection_free_(TO_CONN(n_stream));
     return 0;
@@ -4137,7 +4308,7 @@ connection_exit_begin_conn(cell_t *cell, circuit_t *circ)
 
   n_stream->on_circuit = circ;
 
-  if (rh.command == RELAY_COMMAND_BEGIN_DIR) {
+  if (msg->command == RELAY_COMMAND_BEGIN_DIR) {
     tor_addr_t tmp_addr;
     tor_assert(or_circ);
     if (or_circ->p_chan &&
@@ -4149,6 +4320,24 @@ connection_exit_begin_conn(cell_t *cell, circuit_t *circ)
 
   log_debug(LD_EXIT,"about to start the dns_resolve().");
 
+  // in the future we may want to have a similar defense for BEGIN_DIR and
+  // BEGIN sent to OS.
+  dos_defense_type = dos_stream_new_begin_or_resolve_cell(or_circ);
+  switch (dos_defense_type) {
+    case DOS_STREAM_DEFENSE_NONE:
+      break;
+    case DOS_STREAM_DEFENSE_REFUSE_STREAM:
+      // we don't use END_STREAM_REASON_RESOURCELIMIT because it would make a
+      // client mark us as non-functional until they get a new consensus.
+      relay_send_end_cell_from_edge(msg->stream_id, circ,
+                                    END_STREAM_REASON_MISC, layer_hint);
+      connection_free_(TO_CONN(n_stream));
+      return 0;
+    case DOS_STREAM_DEFENSE_CLOSE_CIRCUIT:
+      connection_free_(TO_CONN(n_stream));
+      return -END_CIRC_REASON_RESOURCELIMIT;
+  }
+
   /* send it off to the gethostbyname farm */
   switch (dns_resolve(n_stream)) {
     case 1: /* resolve worked; now n_stream is attached to circ. */
@@ -4157,7 +4346,7 @@ connection_exit_begin_conn(cell_t *cell, circuit_t *circ)
       connection_exit_connect(n_stream);
       return 0;
     case -1: /* resolve failed */
-      relay_send_end_cell_from_edge(rh.stream_id, circ,
+      relay_send_end_cell_from_edge(msg->stream_id, circ,
                                     END_STREAM_REASON_RESOLVEFAILED, NULL);
       /* n_stream got freed. don't touch it. */
       break;
@@ -4172,17 +4361,17 @@ connection_exit_begin_conn(cell_t *cell, circuit_t *circ)
  * Called when we receive a RELAY_COMMAND_RESOLVE cell 'cell' along the
  * circuit <b>circ</b>;
  * begin resolving the hostname, and (eventually) reply with a RESOLVED cell.
+ *
+ * Return -(some circuit end reason) if we want to tear down <b>circ</b>.
+ * Else return 0.
  */
 int
-connection_exit_begin_resolve(cell_t *cell, or_circuit_t *circ)
+connection_exit_begin_resolve(const relay_msg_t *msg, or_circuit_t *circ)
 {
   edge_connection_t *dummy_conn;
-  relay_header_t rh;
+  dos_stream_defense_type_t dos_defense_type;
 
   assert_circuit_ok(TO_CIRCUIT(circ));
-  relay_header_unpack(&rh, cell->payload);
-  if (rh.length > RELAY_PAYLOAD_SIZE)
-    return -1;
 
   /* Note the RESOLVE stream as seen. */
   rep_hist_note_exit_stream(RELAY_COMMAND_RESOLVE);
@@ -4195,15 +4384,26 @@ connection_exit_begin_resolve(cell_t *cell, or_circuit_t *circ)
    * the housekeeping in dns.c would get way more complicated.)
    */
   dummy_conn = edge_connection_new(CONN_TYPE_EXIT, AF_INET);
-  dummy_conn->stream_id = rh.stream_id;
-  dummy_conn->base_.address = tor_strndup(
-                                       (char*)cell->payload+RELAY_HEADER_SIZE,
-                                       rh.length);
+  dummy_conn->stream_id = msg->stream_id;
+  dummy_conn->base_.address = tor_strndup((char *) msg->body, msg->length);
   dummy_conn->base_.port = 0;
   dummy_conn->base_.state = EXIT_CONN_STATE_RESOLVEFAILED;
   dummy_conn->base_.purpose = EXIT_PURPOSE_RESOLVE;
 
   dummy_conn->on_circuit = TO_CIRCUIT(circ);
+
+  dos_defense_type = dos_stream_new_begin_or_resolve_cell(circ);
+  switch (dos_defense_type) {
+    case DOS_STREAM_DEFENSE_NONE:
+      break;
+    case DOS_STREAM_DEFENSE_REFUSE_STREAM:
+      dns_send_resolved_error_cell(dummy_conn, RESOLVED_TYPE_ERROR_TRANSIENT);
+      connection_free_(TO_CONN(dummy_conn));
+      return 0;
+    case DOS_STREAM_DEFENSE_CLOSE_CIRCUIT:
+      connection_free_(TO_CONN(dummy_conn));
+      return -END_CIRC_REASON_RESOURCELIMIT;
+  }
 
   /* send it off to the gethostbyname farm */
   switch (dns_resolve(dummy_conn)) {
@@ -4237,6 +4437,76 @@ my_exit_policy_rejects(const tor_addr_t *addr,
     return 1;
   }
   return 0;
+}
+
+/* Reapply exit policy to existing connections, possibly terminating
+ * connections
+ * no longer allowed by the policy.
+ */
+void
+connection_reapply_exit_policy(config_line_t *changes)
+{
+  int marked_for_close = 0;
+  smartlist_t *conn_list = NULL;
+  smartlist_t *policy = NULL;
+  int config_change_relevant = 0;
+
+  if (get_options()->ReevaluateExitPolicy == 0) {
+    return;
+  }
+
+  for (const config_line_t *line = changes;
+       line && !config_change_relevant;
+       line = line->next) {
+    const char* exit_policy_options[] = {
+      "ExitRelay",
+      "ExitPolicy",
+      "ReducedExitPolicy",
+      "ReevaluateExitPolicy",
+      "IPv6Exit",
+      NULL
+    };
+    for (unsigned int i = 0; exit_policy_options[i] != NULL; ++i) {
+      if (strcmp(line->key, exit_policy_options[i]) == 0) {
+        config_change_relevant = 1;
+        break;
+      }
+    }
+  }
+
+  if (!config_change_relevant) {
+    /* Policy did not change: no need to iterate over connections */
+    return;
+  }
+
+  // we can't use router_compare_to_my_exit_policy as it depend on the
+  // descriptor, which is regenerated asynchronously, so we have to parse the
+  // policy ourselves.
+  // We don't verify for our own IP, it's not part of the configuration.
+  if (BUG(policies_parse_exit_policy_from_options(get_options(), NULL, NULL,
+                                                  &policy) != 0)) {
+    return;
+  }
+
+  conn_list = connection_list_by_type_purpose(CONN_TYPE_EXIT,
+                                              EXIT_PURPOSE_CONNECT);
+
+  SMARTLIST_FOREACH_BEGIN(conn_list, connection_t *, conn) {
+    addr_policy_result_t verdict = compare_tor_addr_to_addr_policy(&conn->addr,
+                                                                   conn->port,
+                                                                   policy);
+    if (verdict != ADDR_POLICY_ACCEPTED) {
+      connection_edge_end(TO_EDGE_CONN(conn), END_STREAM_REASON_EXITPOLICY);
+      connection_mark_for_close(conn);
+      ++marked_for_close;
+    }
+  } SMARTLIST_FOREACH_END(conn);
+
+  smartlist_free(conn_list);
+  smartlist_free(policy);
+
+  log_info(LD_GENERAL, "Marked %d connections to be closed as no longer "
+           "allowed per ExitPolicy", marked_for_close);
 }
 
 /** Return true iff the consensus allows network reentry. The default value is
@@ -4438,6 +4708,13 @@ connection_exit_connect_dir(edge_connection_t *exitconn)
   /* link exitconn to circ, now that we know we can use it. */
   exitconn->next_stream = circ->n_streams;
   circ->n_streams = exitconn;
+  /* Conflux is not supported for directory streams, but if we *do* get here
+   * with a conflux circuit, we need to keep our lists are coherent. This BUG()
+   * condition is actually guarded against in connection_exit_begin_conn(),
+   * but the maze is powerful and contains many roving minotaurs */
+  if (BUG(CIRCUIT_IS_CONFLUX(TO_CIRCUIT(circ)))) {
+    conflux_update_n_streams(circ, exitconn);
+  }
 
   if (connection_add(TO_CONN(dirconn))<0) {
     connection_edge_end(exitconn, END_STREAM_REASON_RESOURCELIMIT);

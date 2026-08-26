@@ -11,7 +11,7 @@ LIBTOR_APP_A_SOURCES += 			\
 MODULE_RELAY_SOURCES = 						\
 	src/feature/relay/circuitbuild_relay.c			\
 	src/feature/relay/dns.c					\
-	src/feature/relay/ext_orport.c		                \
+	src/feature/relay/ext_orport.c				\
 	src/feature/relay/routermode.c				\
 	src/feature/relay/relay_config.c			\
 	src/feature/relay/relay_handshake.c			\
@@ -31,7 +31,7 @@ noinst_HEADERS +=					\
 	src/feature/relay/onion_queue.h			\
 	src/feature/relay/relay_config.h		\
 	src/feature/relay/relay_handshake.h		\
-	src/feature/relay/relay_metrics.h			\
+	src/feature/relay/relay_metrics.h		\
 	src/feature/relay/relay_periodic.h		\
 	src/feature/relay/relay_sys.h			\
 	src/feature/relay/relay_find_addr.h		\

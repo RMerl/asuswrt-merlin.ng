@@ -130,16 +130,6 @@ router_orport_seems_reachable(const or_options_t *options,
   return true;
 }
 
-/** Relay DirPorts are no longer used (though authorities are). In either case,
- * reachability self test is done anymore, since network re-entry towards an
- * authority DirPort is not allowed. Thus, consider it always reachable. */
-int
-router_dirport_seems_reachable(const or_options_t *options)
-{
-  (void) options;
-  return 1;
-}
-
 /** See if we currently believe our ORPort to be unreachable. If so, return 1
  * else return 0. */
 static int
@@ -201,7 +191,6 @@ have_orport_for_family(int family)
 static extend_info_t *
 extend_info_from_router(const routerinfo_t *r, int family)
 {
-  crypto_pk_t *rsa_pubkey;
   extend_info_t *info;
   tor_addr_port_t ap;
 
@@ -224,15 +213,14 @@ extend_info_from_router(const routerinfo_t *r, int family)
     /* We don't have an ORPort for the requested family. */
     return NULL;
   }
-  rsa_pubkey = router_get_rsa_onion_pkey(r->onion_pkey, r->onion_pkey_len);
   info = extend_info_new(r->nickname, r->cache_info.identity_digest,
                          ed_id_key,
-                         rsa_pubkey, r->onion_curve25519_pkey,
+                         r->onion_curve25519_pkey,
                          &ap.addr, ap.port,
                          /* TODO-324: Should self-test circuits use
                           * congestion control? */
                          NULL, false);
-  crypto_pk_free(rsa_pubkey);
+
   return info;
 }
 

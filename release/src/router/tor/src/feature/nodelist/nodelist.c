@@ -680,6 +680,32 @@ get_estimated_address_per_node, (void))
   return ESTIMATED_ADDRESS_PER_NODE;
 }
 
+/**
+ * If true, we use relays' listed family members in order to
+ * determine which relays are in the same family.
+ */
+static int use_family_lists = 1;
+/**
+ * If true, we use relays' validated family IDs in order to
+ * determine which relays are in the same family.
+ */
+static int use_family_ids = 1;
+
+/**
+ * Update consensus parameters relevant to nodelist operations.
+ *
+ * We need to cache these values rather than searching for them every time
+ * we check whether two relays are in the same family.
+ **/
+static void
+nodelist_update_consensus_params(const networkstatus_t *ns)
+{
+  use_family_lists = networkstatus_get_param(ns, "use-family-lists",
+                                             1, 0, 1); // default, low, high
+  use_family_ids = networkstatus_get_param(ns, "use-family-ids",
+                                             1, 0, 1); // default, low, high
+}
+
 /** Tell the nodelist that the current usable consensus is <b>ns</b>.
  * This makes the nodelist change all of the routerstatus entries for
  * the nodes, drop nodes that no longer have enough info to get used,
@@ -697,6 +723,8 @@ nodelist_set_consensus(const networkstatus_t *ns)
 
   SMARTLIST_FOREACH(the_nodelist->nodes, node_t *, node,
                     node->rs = NULL);
+
+  nodelist_update_consensus_params(ns);
 
   /* Conservatively estimate that every node will have 2 addresses (v4 and
    * v6). Then we add the number of configured trusted authorities we have. */
@@ -733,15 +761,21 @@ nodelist_set_consensus(const networkstatus_t *ns)
     }
     node_set_country(node);
 
-    /* If we're not an authdir, believe others. */
-    if (!authdir) {
+    /* Set node's flags based on rs's flags. */
+    {
       node->is_valid = rs->is_valid;
       node->is_running = rs->is_flagged_running;
       node->is_fast = rs->is_fast;
       node->is_stable = rs->is_stable;
       node->is_possible_guard = rs->is_possible_guard;
       node->is_exit = rs->is_exit;
-      node->is_bad_exit = rs->is_bad_exit;
+      if (!authdir) {
+        /* Authdirs treat is_bad_exit specially in that they only assign
+         * it when the descriptor arrives. So when a dir auth is reading
+         * the flags from an existing consensus, don't believe the bit
+         * here, else it will get stuck 'on' forever. */
+        node->is_bad_exit = rs->is_bad_exit;
+      }
       node->is_hs_dir = rs->is_hs_dir;
       node->ipv6_preferred = 0;
       if (reachable_addr_prefer_ipv6_orport(options) &&
@@ -785,15 +819,6 @@ nodelist_set_consensus(const networkstatus_t *ns)
   if (networkstatus_is_live(ns, approx_time())) {
     the_nodelist->live_consensus_valid_after = ns->valid_after;
   }
-}
-
-/** Return 1 iff <b>node</b> has Exit flag and no BadExit flag.
- * Otherwise, return 0.
- */
-int
-node_is_good_exit(const node_t *node)
-{
-  return node->is_exit && ! node->is_bad_exit;
 }
 
 /** Helper: return true iff a node has a usable amount of information*/
@@ -1205,7 +1230,7 @@ node_ed25519_id_matches(const node_t *node, const ed25519_public_key_t *id)
 /** Dummy object that should be unreturnable.  Used to ensure that
  * node_get_protover_summary_flags() always returns non-NULL. */
 static const protover_summary_flags_t zero_protover_flags = {
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
 
 /** Return the protover_summary_flags for a given node. */
@@ -1473,13 +1498,13 @@ int
 node_is_dir(const node_t *node)
 {
   if (node->rs) {
-    routerstatus_t * rs = node->rs;
+    routerstatus_t *rs = node->rs;
     /* This is true if supports_tunnelled_dir_requests is true which
      * indicates that we support directory request tunnelled or through the
      * DirPort. */
     return rs->is_v2_dir;
   } else if (node->ri) {
-    routerinfo_t * ri = node->ri;
+    routerinfo_t *ri = node->ri;
     /* Both tunnelled request is supported or DirPort is set. */
     return ri->supports_tunnelled_dir_requests;
   } else {
@@ -2034,37 +2059,6 @@ node_get_curve25519_onion_key(const node_t *node)
     return NULL;
 }
 
-/* Return a newly allocacted RSA onion public key taken from the given node.
- *
- * Return NULL if node is NULL or no RSA onion public key can be found. It is
- * the caller responsibility to free the returned object. */
-crypto_pk_t *
-node_get_rsa_onion_key(const node_t *node)
-{
-  crypto_pk_t *pk = NULL;
-  const char *onion_pkey;
-  size_t onion_pkey_len;
-
-  if (!node) {
-    goto end;
-  }
-
-  if (node->ri) {
-    onion_pkey = node->ri->onion_pkey;
-    onion_pkey_len = node->ri->onion_pkey_len;
-  } else if (node->rs && node->md) {
-    onion_pkey = node->md->onion_pkey;
-    onion_pkey_len = node->md->onion_pkey_len;
-  } else {
-    /* No descriptor or microdescriptor. */
-    goto end;
-  }
-  pk = router_get_rsa_onion_pkey(onion_pkey, onion_pkey_len);
-
- end:
-  return pk;
-}
-
 /** Refresh the country code of <b>ri</b>.  This function MUST be called on
  * each router when the GeoIP database is reloaded, and on all new routers. */
 void
@@ -2145,7 +2139,7 @@ node_in_nickname_smartlist(const smartlist_t *lst, const node_t *node)
 
 /** Return true iff n1's declared family contains n2. */
 STATIC int
-node_family_contains(const node_t *n1, const node_t *n2)
+node_family_list_contains(const node_t *n1, const node_t *n2)
 {
   if (n1->ri && n1->ri->declared_family) {
     return node_in_nickname_smartlist(n1->ri->declared_family, n2);
@@ -2160,7 +2154,7 @@ node_family_contains(const node_t *n1, const node_t *n2)
  * Return true iff <b>node</b> has declared a nonempty family.
  **/
 STATIC bool
-node_has_declared_family(const node_t *node)
+node_has_declared_family_list(const node_t *node)
 {
   if (node->ri && node->ri->declared_family &&
       smartlist_len(node->ri->declared_family)) {
@@ -2175,12 +2169,44 @@ node_has_declared_family(const node_t *node)
 }
 
 /**
+ * Return the listed family IDs of `a`, if it has any.
+ */
+static const smartlist_t *
+node_get_family_ids(const node_t *node)
+{
+  if (node->ri && node->ri->family_ids) {
+    return node->ri->family_ids;
+  } else if (node->md && node->md->family_ids) {
+    return node->md->family_ids;
+  } else {
+    return NULL;
+  }
+}
+
+/**
+ * Return true iff `a` and `b` have any family ID in common.
+ **/
+static bool
+nodes_have_common_family_id(const node_t *a, const node_t *b)
+{
+  const smartlist_t *ids_a = node_get_family_ids(a);
+  const smartlist_t *ids_b = node_get_family_ids(b);
+  if (ids_a == NULL || ids_b == NULL)
+    return false;
+  SMARTLIST_FOREACH(ids_a, const char *, id, {
+      if (smartlist_contains_string(ids_b, id))
+        return true;
+    });
+  return false;
+}
+
+/**
  * Add to <b>out</b> every node_t that is listed by <b>node</b> as being in
  * its family.  (Note that these nodes are not in node's family unless they
  * also agree that node is in their family.)
  **/
 STATIC void
-node_lookup_declared_family(smartlist_t *out, const node_t *node)
+node_lookup_declared_family_list(smartlist_t *out, const node_t *node)
 {
   if (node->ri && node->ri->declared_family &&
       smartlist_len(node->ri->declared_family)) {
@@ -2220,9 +2246,17 @@ nodes_in_same_family(const node_t *node1, const node_t *node2)
       return 1;
   }
 
-  /* Are they in the same family because the agree they are? */
-  if (node_family_contains(node1, node2) &&
-      node_family_contains(node2, node1)) {
+  /* Are they in the same family because they agree they are? */
+  if (use_family_lists &&
+      node_family_list_contains(node1, node2) &&
+      node_family_list_contains(node2, node1)) {
+    return 1;
+  }
+
+  /* Are they in the same family because they have a common
+   * verified family ID? */
+  if (use_family_ids &&
+      nodes_have_common_family_id(node1, node2)) {
     return 1;
   }
 
@@ -2282,18 +2316,29 @@ nodelist_add_node_and_family(smartlist_t *sl, const node_t *node)
 
   /* Now, add all nodes in the declared family of this node, if they
    * also declare this node to be in their family. */
-  if (node_has_declared_family(node)) {
+  if (use_family_lists &&
+      node_has_declared_family_list(node)) {
     smartlist_t *declared_family = smartlist_new();
-    node_lookup_declared_family(declared_family, node);
+    node_lookup_declared_family_list(declared_family, node);
 
     /* Add every r such that router declares familyness with node, and node
      * declares familyhood with router. */
     SMARTLIST_FOREACH_BEGIN(declared_family, const node_t *, node2) {
-      if (node_family_contains(node2, node)) {
+      if (node_family_list_contains(node2, node)) {
         smartlist_add(sl, (void*)node2);
       }
     } SMARTLIST_FOREACH_END(node2);
     smartlist_free(declared_family);
+  }
+
+  /* Now add all the nodes that share a verified family ID with this node. */
+  if (use_family_ids &&
+      node_get_family_ids(node)) {
+    SMARTLIST_FOREACH(all_nodes, const node_t *, node2, {
+        if (nodes_have_common_family_id(node, node2)) {
+          smartlist_add(sl, (void *)node2);
+        }
+      });
   }
 
   /* If the user declared any families locally, honor those too. */
@@ -2324,7 +2369,9 @@ router_find_exact_exit_enclave(const char *address, uint16_t port)
   tor_addr_from_in(&ipv4_addr, &in);
 
   SMARTLIST_FOREACH(nodelist_get_list(), const node_t *, node, {
-    if (tor_addr_eq(node_get_prim_addr_ipv4(node), &ipv4_addr) &&
+    const tor_addr_t *prim = node_get_prim_addr_ipv4(node);
+    if (prim &&
+        tor_addr_eq(prim, &ipv4_addr) &&
         node->is_running &&
         compare_tor_addr_to_node_policy(&ipv4_addr, port, node) ==
           ADDR_POLICY_ACCEPTED &&

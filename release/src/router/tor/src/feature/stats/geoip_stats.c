@@ -305,6 +305,7 @@ geoip_lookup_client(const tor_addr_t *addr, const char *transport_name,
                     geoip_client_action_t action)
 {
   clientmap_entry_t lookup;
+  memset(&lookup, 0, sizeof(lookup));
 
   tor_assert(addr);
 

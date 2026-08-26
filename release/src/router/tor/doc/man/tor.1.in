@@ -2,12 +2,12 @@
 .\"     Title: tor
 .\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 01/28/2026
+.\"      Date: 06/25/2026
 .\"    Manual: Tor Manual
 .\"    Source: Tor
 .\"  Language: English
 .\"
-.TH "TOR" "1" "01/28/2026" "Tor" "Tor Manual"
+.TH "TOR" "1" "06/25/2026" "Tor" "Tor Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -218,6 +218,16 @@ to learn more about the behavior of these options\&. You must have write access 
 To use the generated files, you must copy them to the
 \fIDataDirectory\fR/\fBkeys\fR
 directory of your Tor daemon, and make sure that they are owned by the user actually running the Tor daemon on your system\&.
+.RE
+.PP
+\fB\-\-keygen\-family\fR \fIbasename\fR
+.RS 4
+Generate a new family ID key in
+\fIbasename\fR\&.secret_family_key\&. To use this key, install it on every relay in your family\&. (Put it in the relay\(cqs
+KeyDirectory\&.) Also, store the corresponding family ID in
+\fIbasename\fR\&.public_family_id\&. Then enable the corresponding FamilyID option on your relays\&. This command overwrites these files if they already exist\&. See
+https://community\&.torproject\&.org/relay/setup/post\-install/family\-ids/
+for more information\&.
 .RE
 .PP
 \fB\-\-passphrase\-fd\fR \fIFILEDES\fR
@@ -799,7 +809,7 @@ If 1, Tor forks and daemonizes to the background\&. This option has no effect on
 Tor can scrub potentially sensitive strings from log messages (e\&.g\&. addresses) by replacing them with the string [scrubbed]\&. This way logs can still be useful, but they don\(cqt leave behind personally identifying information about what sites a user might have visited\&.
 
 
-If this option is set to 0, Tor will not perform any scrubbing, if it is set to 1, all potentially sensitive strings are replaced\&. If it is set to relay, all log messages generated when acting as a relay are sanitized, but all messages generated when acting as a client are not\&. Note: Tor may not heed this option when logging at log levels below Notice\&. (Default: 1)
+If this option is set to 0, Tor will not perform any scrubbing, if it is set to 1, all potentially sensitive strings are replaced\&. If it is set to relay, all log messages generated when acting as a relay are sanitized, but all messages generated when acting as a client are not\&. Note: Tor may not heed this option when logging at log levels more verbose than Notice\&. (Default: 1)
 .RE
 .PP
 \fBSandbox\fR \fB0\fR|\fB1\fR
@@ -901,7 +911,7 @@ to restrict the set of ports you might try to connect to, if your proxy only all
 .RS 4
 .\}
 .nf
-The only protocol supported right now \*(Aqhaproxy\*(Aq\&. This option is only for
+The only protocol supported right now is \*(Aqhaproxy\*(Aq\&. This option is only for
 clients\&. (Default: none) +
 .fi
 .if n \{\
@@ -2293,6 +2303,14 @@ If ExitRelay is set to 0, no traffic is allowed to exit, and the ExitPolicy, Red
 If ExitRelay is set to "auto", then Tor checks the ExitPolicy, ReducedExitPolicy, and IPv6Exit options\&. If at least one of these options is set, Tor behaves as if ExitRelay were set to 1\&. If none of these exit policy options are set, Tor behaves as if ExitRelay were set to 0\&. (Default: auto)
 .RE
 .PP
+\fBReevaluateExitPolicy\fR \fB0\fR|\fB1\fR
+.RS 4
+If set, reevaluate the exit policy on existing connections when reloading configuration\&.
+
+
+When the exit policy of an exit node change while reloading configuration, connections made prior to this change could violate the new policy\&. By setting this to 1, Tor will check if such connections exist, and mark them for termination\&. (Default: 0)
+.RE
+.PP
 \fBExtendAllowPrivateAddresses\fR \fB0\fR|\fB1\fR
 .RS 4
 When this option is enabled, Tor will connect to relays on localhost, RFC1918 addresses, and so on\&. In particular, Tor will make direct OR connections, and Tor routers allow EXTEND requests, to these private addresses\&. (Tor will always allow connections to bridges, proxies, and pluggable transports configured on private addresses\&.) Enabling this option can create security issues; you should probably leave it off\&. (Default: 0)
@@ -2343,7 +2361,10 @@ message designed to help developers instrumenting Tor\(cqs main event loop\&. (D
 .PP
 \fBMaxHSDirCacheBytes\fR \fIN\fR \fBbytes\fR|\fBKBytes\fR|\fBMBytes\fR|\fBGBytes\fR
 .RS 4
-This option configures a threshold of Hidden Service Directory memory consumption above which your Tor relay will begin to prune the least\-frequently accessed hidden service descriptors from the relay\(cqs HSDir cache\&. This pruning used to be done as part of MaxMemInQueues, but it has been decoupled to allow more fine\-grained control of descriptor cache size under DDoS conditions\&. This option defaults to 20% of the MaxMemInQueues size, which itself defaults to an automatically determined value based on system memory\&. (Default: 20% MaxMemInQueues)
+This option configures a threshold of Hidden Service Directory memory consumption above which your Tor relay will begin to prune the least\-frequently accessed hidden service descriptors from the relay\(cqs HSDir cache\&. If set to 0, this will default to 20% of MaxMemInQueues\&. (Default: 0)
+
+
+This pruning used to be done as part of MaxMemInQueues, but it has been decoupled to allow more fine\-grained control of descriptor cache size under DDoS conditions\&.
 .RE
 .PP
 \fBMaxMemInQueues\fR \fIN\fR \fBbytes\fR|\fBKBytes\fR|\fBMBytes\fR|\fBGBytes\fR
@@ -2368,6 +2389,29 @@ list all other relays, as described above\&.
 
 Note: do not use MyFamily when configuring your Tor instance as a bridge\&.
 .RE
+.PP
+\fBFamilyId\fR \fIident\fR
+.RS 4
+Configure this relay to be part of a family identified by a shared secret family key with the given key identity\&. A corresponding family key must be stored in the relay\(cqs key directory, with a filename ending with "\&.secret_family_key"\&. This option can appear multiple times\&. Family keys are generated with "\-\-keygen\-family"; this also generates the value you should use in the
+\fIident\fR
+field in a file ending with "\&.public_family_id"\&. For information on generating and installing a family key, see
+https://community\&.torproject\&.org/relay/setup/post\-install/family\-ids/
+
+In the future, this will be the preferred way for relays to advertise family membership\&. But for now, relay families should configure both this option
+\fIand\fR
+MyFamily, so older clients will still recognize the relays\*(Aq family membership\&.
+
+(Note that if the seccomp2 Sandbox feature is enabled, it is not possible to change the key filenames while Tor is running\&.)
+.RE
+.PP
+\fBFamilyId\fR \fB * \fR
+.RS 4
+Configure this relay to be part of
+\fIevery\fR
+family identified by any family ID key found in the family key directory\&. Only filenames ending with "\&.secret\e_family\e_key" are considered\&. Specifying family IDs in this way makes it unnecessary to adjust the configuration file if the family key is rotated, but it increases the likelihood of accidentally using a different set of family keys than the ones you had expected\&.
+.RE
+.sp
+\fBFamilyKeyDirectory\fR \fIdirectory\fR: Configure a directory to use, in place of the key directory, when searching for family ID keys\&.
 .PP
 \fBNickname\fR \fIname\fR
 .RS 4
@@ -2907,6 +2951,36 @@ The base time period in seconds that the client connection defense is activated 
 Refuse establishment of rendezvous points for single hop clients\&. In other words, if a client directly connects to the relay and sends an ESTABLISH_RENDEZVOUS cell, it is silently dropped\&. "auto" means use the consensus parameter\&. If not defined in the consensus, the value is 0\&. (Default: auto)
 .RE
 .sp
+The following options are useful only for a exit relay\&.
+.PP
+\fBDoSStreamCreationEnabled\fR \fB0\fR|\fB1\fR|\fBauto\fR
+.RS 4
+Enable the stream DoS mitigation\&. If set to 1 (enabled), tor will apply rate limit on the creation of new streams and dns requests per circuit\&. "auto" means use the consensus parameter\&. If not defined in the consensus, the value is 0\&. (Default: auto)
+.RE
+.PP
+\fBDoSStreamCreationDefenseType\fR \fINUM\fR
+.RS 4
+This is the type of defense applied to a detected circuit or stream for the stream mitigation\&. The possible values are:
+
+1: No defense\&.
+
+2: Reject the stream or resolve request\&.
+
+3: Close the circuit creating too many streams\&.
+
+"0" means use the consensus parameter\&. If not defined in the consensus, the value is 2\&. (Default: 0)
+.RE
+.PP
+\fBDoSStreamCreationRate\fR \fINUM\fR
+.RS 4
+The allowed rate of stream creation from a single circuit per second\&. Coupled with the burst (see below), if the limit is reached, actions can be taken against the stream or circuit (DoSStreamCreationDefenseType)\&. If not defined or set to 0, it is controlled by a consensus parameter\&. If not defined in the consensus, the value is 100\&. (Default: 0)
+.RE
+.PP
+\fBDoSStreamCreationBurst\fR \fINUM\fR
+.RS 4
+The allowed burst of stream creation from a circuit per second\&. See the DoSStreamCreationRate for more details on this detection\&. If not defined or set to 0, it is controlled by a consensus parameter\&. If not defined in the consensus, the value is 300\&. (Default: 0)
+.RE
+.sp
 For onion services, mitigations are a work in progress and multiple options are currently available\&.
 .sp
 The introduction point defense is a rate limit on the number of introduction requests that will be forwarded to a service by each of its honest introduction point routers\&. This can prevent some types of overwhelming floods from reaching the service, but it will also prevent legitimate clients from establishing new connections\&.
@@ -2940,7 +3014,7 @@ For example, the default values of 25 and 200 respectively means that for every 
 .sp
 This might be too much for your use case or not, fine tuning these values is hard and are likely different for each service operator\&.
 .sp
-Why is this not helping reachability of the service? Because the defenses are at the introduction point, an attacker can easily flood all introduction point rendering the service unavailable due to no client being able to pass through\&. But, the service itself is not overwhelmed with connetions allowing it to function properly for the few clients that were able to go through or other any services running on the same tor instance\&.
+Why is this not helping reachability of the service? Because the defenses are at the introduction point, an attacker can easily flood all introduction point rendering the service unavailable due to no client being able to pass through\&. But, the service itself is not overwhelmed with connections allowing it to function properly for the few clients that were able to go through or other any services running on the same tor instance\&.
 .sp
 The bottom line is that this protects the network by preventing an onion service to flood the network with new rendezvous circuits that is reducing load on the network\&.
 .sp
@@ -3113,7 +3187,7 @@ Authoritative directories only\&. A set of address patterns for servers that wil
 .PP
 \fBAuthDirRejectRequestsUnderLoad\fR \fB0\fR|\fB1\fR
 .RS 4
-If set, the directory authority will start rejecting directory requests from non relay connections by sending a 503 error code if it is under bandwidth pressure (reaching the configured limit if any)\&. Relays will always tried to be answered even if this is on\&. (Default: 1)
+If set, the directory authority will start rejecting directory requests from non relay connections by sending a 503 error code if it is under bandwidth pressure (reaching the configured limit if any)\&. Relays will always be answered even if this is on\&. (Default: 1)
 .RE
 .sp
 \fBAuthDirBadExitCCs\fR \fICC\fR,\&...
@@ -3227,6 +3301,11 @@ should be set too\&.
 STRING is a comma\-separated list of Tor versions currently believed to be safe\&. The list is included in each directory, and nodes which pull down the directory learn whether they need to upgrade\&. This option can appear multiple times: the values from multiple lines are spliced together\&. When this is set then
 \fBVersioningAuthoritativeDirectory\fR
 should be set too\&.
+.RE
+.PP
+\fBMinimalAcceptedServerVersion\fR \fISTRING\fR
+.RS 4
+STRING is the oldest Tor version accepted by the directory authority for relays and bridge\&. Any older version will be rejected\&. (Default: 0\&.4\&.7\&.0\-alpha\-dev)
 .RE
 .PP
 \fBV3AuthDistDelay\fR \fIN\fR \fBseconds\fR|\fBminutes\fR|\fBhours\fR
@@ -4017,6 +4096,13 @@ A relay\(cqs Curve25519 short\-term onion key\&. Used to handle modern ("ntor") 
 file holds the previously generated key, which the relay uses to handle any requests that were made by clients that didn\(cqt have the new one\&.
 .RE
 .PP
+\fIKeyDirectory\fR/\fIkeyname\fR\fB\&.secret_family_key\fR
+.RS 4
+A relay family\(cqs family identity key\&. Used to prove membership in a relay family\&. See
+https://community\&.torproject\&.org/relay/setup/post\-install/family\-ids/
+for more information\&.
+.RE
+.PP
 \fIDataDirectory\fR/\fBfingerprint\fR
 .RS 4
 Only used by servers\&. Contains the fingerprint of the server\(cqs RSA identity key\&.
@@ -4030,6 +4116,11 @@ Only used by servers\&. Contains the fingerprint of the server\(cqs ed25519 iden
 \fIDataDirectory\fR/\fBhashed\-fingerprint\fR
 .RS 4
 Only used by bridges\&. Contains the hashed fingerprint of the bridge\(cqs identity key\&. (That is, the hash of the hash of the identity key\&.)
+.RE
+.PP
+\fIDataDirectory\fR/\fBbridgelines\fR
+.RS 4
+Only used by bridges\&. Contains the bridge lines that clients can use to connect using pluggable transports\&.
 .RE
 .PP
 \fIDataDirectory\fR/\fBapproved\-routers\fR
@@ -4106,7 +4197,7 @@ Only used by servers\&. This file is used to collect approximate connection hist
 Only used by servers\&. This file is used to collect approximate counts of what fraction of the traffic is hidden service rendezvous traffic, and approximately how many hidden services the relay has seen\&.
 .RE
 .PP
-\fIDataDirectory\fR/\fBnetworkstatus\-bridges`\fR
+\fIDataDirectory\fR/\fBnetworkstatus\-bridges\fR
 .RS 4
 Only used by authoritative bridge directories\&. Contains information about bridges that have self\-reported themselves to the bridge authority\&.
 .RE

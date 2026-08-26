@@ -49,17 +49,7 @@ struct tor_tls_t {
                                        * depending on which operations
                                        * have completed successfully. */
   unsigned int isServer:1; /**< True iff this is a server-side connection */
-  unsigned int wasV2Handshake:1; /**< True iff the original handshake for
-                                  * this connection used the updated version
-                                  * of the connection protocol (client sends
-                                  * different cipher list, server sends only
-                                  * one certificate). */
-  /** True iff we should call negotiated_callback when we're done reading. */
-  unsigned int got_renegotiate:1;
 #ifdef ENABLE_OPENSSL
-  /** Return value from tor_tls_classify_client_ciphers, or 0 if we haven't
-   * called that function yet. */
-  int8_t client_cipher_list_type;
   size_t wantwrite_n; /**< 0 normally, >0 if we returned wantwrite last
                        * time. */
   /** Last values retrieved from BIO_number_read()/write(); see

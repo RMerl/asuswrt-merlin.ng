@@ -15,7 +15,6 @@
 extend_info_t *extend_info_new(const char *nickname,
                                const char *rsa_id_digest,
                                const struct ed25519_public_key_t *ed_id,
-                               crypto_pk_t *onion_key,
                                const struct curve25519_public_key_t *ntor_key,
                                const tor_addr_t *addr, uint16_t port,
                                const struct protover_summary_flags_t *pv,
@@ -27,7 +26,6 @@ void extend_info_free_(extend_info_t *info);
 #define extend_info_free(info) \
   FREE_AND_NULL(extend_info_t, extend_info_free_, (info))
 int extend_info_addr_is_allowed(const tor_addr_t *addr);
-int extend_info_supports_tap(const extend_info_t* ei);
 int extend_info_supports_ntor(const extend_info_t* ei);
 int extend_info_supports_ntor_v3(const extend_info_t *ei);
 int extend_info_has_preferred_onion_key(const extend_info_t* ei);

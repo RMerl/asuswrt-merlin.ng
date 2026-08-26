@@ -1,12 +1,627 @@
+Changes in version 0.4.9.11 - 2026-06-25
+  Security release follows in quick succession after the previous one due to
+  additional high-priority security issues including one concerning onion
+  services (#41297). We strongly recommend upgrading as soon as possible.
+
+  o Major bugfixes (onion services):
+    - Prevent a race condition where in just the right circumstances a
+      rendezvous point could man-in-the-middle (impersonate) the onion
+      service that the client was trying to reach. Fixes bug 41297;
+      bugfix on 0.3.5.3-alpha.
+
+  o Major bugfixes (client):
+    - Clients no longer assert and exit if an onion service encodes an
+      all-zero public key for one of its introduction points. Fixes bug
+      41295; bugfix on 0.3.2.1-alpha.
+
+  o Major bugfixes (directory authorities):
+    - Stop allowing 0 as a port in exit policy lines. We had put in some
+      secondary checks to make sure exit policy ports weren't out of the
+      expected range, but one of those checks accidentally allowed us to
+      parse the port "0" as equivalent to the port range "1-0", which
+      triggered an assert when generating a networkstatus vote (on v3
+      directory authorities) or a networkstatus document (on the bridge
+      authority). Fixes bug 41292; bugfix on 0.1.2.5-alpha.
+
+  o Major bugfixes (security, conflux):
+    - Fix a use-after-free (and potential double free) of a conflux
+      object when a recovery leg revives a conflux set whose last linked
+      leg has already been closed. A malicious exit could use this to
+      crash a client. TROVE-2026-026. Fixes bug 41306; bugfix
+      on 0.4.8.1-alpha.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on June 25, 2026.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2026/06/25.
+
+
+Changes in version 0.4.9.10 - 2026-06-23
+  Another release with an important security fix and major bugfixes. We
+  strongly recommend upgrading as soon as possible.
+
+  o Major bugfixes (conflux, security, TROVE):
+    - Reject a CONFLUX_LINK cell that arrives on a circuit which already
+      has attached streams. A malicious client could send a
+      RELAY_COMMAND_BEGIN before the CONFLUX_LINK on the same circuit,
+      attaching an exit stream that would later end up orphan leaving a
+      dangling circuit back-pointer and a use-after-free (UAF) when the
+      circuit is freed. TROVE-2026-025. Fixes bug 41258; bugfix
+      on 0.4.8.1-alpha.
+
+  o Major bugfixes (client):
+    - Resume warning about unsafe socks protocols (socks4 or
+      socks5-not-hostname) when SafeSocks is not set. Also resume
+      warning every time when TestSocks is set. Fixes bug 41290; bugfix
+      on 0.2.2.18-alpha and 0.2.4.11-alpha.
+
+  o Major bugfixes (clients):
+    - Make clients more consistently expire entry guards 48 to 60 days
+      after they are first used. Previously, we would sometimes expire
+      entry guards after this intended range, but sometimes we would
+      wait up to 120 days. Fixes bug 41280; bugfix on 0.3.0.1-alpha.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on June 23, 2026.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2026/06/23.
+
+  o Minor bugfixes (code security):
+    - Add a defensive check in port_parse_ports_relay() to make it
+      clearer to static analysis tools that there is no security
+      problem. Fixes bug 41278; bugfix on 0.4.3.1-alpha.
+
+  o Minor bugfixes (client-side onion service):
+    - Stop leaking memory in the case where the client fetches a well-
+      formed onion descriptor but it turns out to not match the onion
+      address we intended to fetch. Fixes bug 41264; bugfix
+      on 0.3.2.1-alpha.
+
+  o Minor bugfixes (directory authorities):
+    - Correctly omit "package" lines from the consensus. In proposal 301
+      we tried to make a new consensus method that never generates
+      "package" lines, but we got the logic wrong. Fixes bug 41293;
+      bugfix on 0.4.9.1-alpha.
+
+  o Minor bugfixes (relay):
+    - Avoid a mistaken BUG() warning and backtrace if a client sends an
+      INTRODUCE1 cell using the legacy format from v2 onion services.
+      This error case was already handled correctly, but there's no need
+      to warn and backtrace. Fixes bug 41299; bugfix on 0.4.6.1-alpha.
+
+
+Changes in version 0.4.9.9 - 2026-06-01
+  This is a security release fixing several major bugfixes that were reported
+  in the past weeks. We strongly recommend upgrading as soon as possible.
+
+  o Major bugfixes (compression, security):
+    - Fix a compression bomb bypass where an attacker could concatenate
+      many gzip or zlib sub-streams, each just under the per-stream
+      detection threshold, to avoid the compression bomb check entirely.
+      TROVE-2026-022. Fixes bug 41275; bugfix on 0.3.1.1-alpha.
+    - Fix an infinite loop when decompressing a truncated zlib/gzip
+      stream with done=1. A truncated stream never reaches Z_STREAM_END,
+      causing zlib to return Z_BUF_ERROR with no input remaining, which
+      buf_add_compress() mistook for a full output buffer and retried
+      forever. Fixed by returning TOR_COMPRESS_ERROR in that case so the
+      caller can abort cleanly. TROVE-2026-021. Fixes bug 41274; bugfix
+      on 0.2.6.1-alpha.
+
+  o Major bugfixes (conflux, security):
+    - Fix a NULL write after free when sending a CONFLUX_SWITCH cell
+      fails. The return value of relay_send_command_from_edge() was
+      ignored, so a send failure (which calls circuit_mark_for_close()
+      and removes the leg via cfx_del_leg()) would go undetected,
+      causing the caller to write to the now-freed current leg and
+      resulting in a crash. TROVE-2026-017. Fixes bug 41263; bugfix
+      on 0.4.8.1-alpha.
+
+  o Major bugfixes (security, TROVE-2026-019):
+    - Avoid out-of-bounds read/write when parsing a consensus or
+      detached signature with unexpected signature digest type. Impact
+      is minor for most Tor roles, but potentially major for directory
+      authorities. Fixes bug 41267; bugfix on 0.2.8.2-alpha.
+
+  o Major bugfixes (client stability, TROVE-2026-013, TROVE-2026-015):
+    - Protect against a client-side assert that can happen if a
+      malicious onion service gets the client to load its carefully
+      crafted onion descriptor. Fixes bugs 41259 and 41261; bugfix
+      on 0.3.1.1-alpha.
+
+  o Major bugfixes (code safety):
+    - Avoid a dangerous situation in router_find_exact_exit_enclave()
+      where we could have reached an assert if bridges or relays claim
+      an IP address of 0.0.0.0. Fixes bug 41276; bugfix on 0.4.5.1-alpha.
+
+  o Major bugfixes (conflux, shutdown):
+    - Fix a use-after-free in the shutdown path when freeing conflux
+      circuits. cfx_add_leg() shares stream list pointers across legs
+      without NULLing the old leg, so circuit_free_all() would free the
+      lists via one leg and then access freed memory via another. TROVE-
+      2026-016. Fixes bug 41262; bugfix on 0.4.8.1-alpha.
+
+  o Major bugfixes (DNSPort, TROVE-2026-018):
+    - Fix a client-side crash that would happen if we decide to stop
+      reading on a RESOLVE request that came from the DNSPort or
+      controller. This crash could happen naturally under heavy load and
+      with poor luck, but since 0.4.7.2-alpha it could be induced by the
+      exit relay via a flow control request. Fixes bug 41265; bugfix
+      on 0.2.0.1-alpha.
+
+  o Major bugfixes (memory safety, TROVE-2026-014):
+    - Avoid a heap-use-after-free mistake that can happen in the conflux
+      subsystem, and which can be induced at either the client or the
+      exit relay. Fixes bug 41260; bugfix on 0.4.8.1-alpha.
+
+  o Major bugfixes (onion services, TROVE-2026-020):
+    - Avoid a possible divide by zero crash on onion services that have
+      the proof-of-work (PoW) defense enabled. This bug could be hit by
+      extreme bad luck or maybe by the help of an attacker crafting just
+      the right circumstances. Fixes bug 41270; bugfix on 0.4.8.1-alpha.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on June 01, 2026.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2026/06/01.
+
+  o Minor bugfixes (circuit handshake):
+    - Fix an edge case where relays would allow a CGO-style circuit hop
+      to be established without congestion control parameters, meaning
+      there is no way to refill the sendme windows. Fixes bug 41271;
+      bugfix on 0.4.9.3-alpha.
+
+  o Minor bugfixes (cpuworker threads):
+    - We have a defense-in-depth step to wipe local memory after
+      processing each create cell in a cpuworker thread, but we were
+      accidentally only wiping part of what we wanted to cover. Fixes
+      bug 41269; bugfix on 0.2.4.8-alpha.
+
+  o Minor bugfixes (relay stability):
+    - Make relays survive having the consensus parameter
+      "onion_queue_wait_cutoff" set to a nonsensical 0 seconds. Fixes
+      bug 41266; bugfix on 0.4.7.11.
+
+
+Changes in version 0.4.9.8 - 2026-05-07
+  A quick second release because a silent error occurred in our CI build, which
+  resulted in all fallback directories being removed from the list. This means
+  that all new clients will bootstrap against the directory authorities.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on May 07, 2026.
+
+Changes in version 0.4.9.7 - 2026-05-06
+  This is a security release fixing several major bugfixes that were reported
+  in the past weeks. Huge thanks to everyone that reported these issues! We
+  strongly recommend upgrading as soon as possible.
+
+  o Major bugfixes (cell handling):
+    - Fix out-of-bounds read (OOB) when END, TRUNCATE and TRUNCATED cell
+      have no reason in their payload. TROVE-2026-011. Found by Found by
+      Brian Carpenter (geeknik). Fixes bug 41254; bugfix
+      on 0.1.1.1-alpha.
+
+  o Major bugfixes (conflux):
+    - Do not attempt or accept BEGIN_DIR via conflux legs. TROVE-2026-
+      008. Credit to Anas Cherni from Calif.io in collaboration with
+      Claude and Anthropic Research. Fixes bug 41243; bugfix
+      on 0.4.8.1-alpha.
+
+  o Major bugfixes (conflux, relay):
+    - Adjust conflux out-of-order queue accounting when clearing a
+      queue. TROVE-2026-010. Found by aptupdate. Fixes bug 41251; bugfix
+      on 0.4.8.1-alpha.
+
+  o Major bugfixes (pathbias):
+    - Fix a client-side crash caused by double-close of a circuit while
+      under circuit queue memory pressure. TROVE-2026-009. Found by
+      cypherpunks. Fixes bug 41237; bugfix on 0.3.3.6-rc.
+
+  o Major bugfixes (relay):
+    - Fix null pointer dereference when receiving a CERT cell out of
+      order. TROVE-2026-006. Found by Fwame. Fixes bug 41240; bugfix
+      on 0.2.4.4-alpha.
+
+  o Major bugfixes (relay, onion service):
+    - Fix off-by-one out-of-bounds read if a malformed BEGIN cell is
+      received. TROVE-2026-007. Found by Flanagan. Fixes bug 41245;
+      bugfix on 0.2.4.7-alpha.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on May 06, 2026.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2026/05/06.
+
+
+Changes in version 0.4.8.24 - 2026-05-06
+  This is a security release fixing several major bugfixes that were reported
+  in the past weeks. Huge thanks to everyone that reported these issues! We
+  strongly recommend upgrading as soon as possible.
+
+  o Major bugfixes (cell handling):
+    - Fix out-of-bounds read (OOB) when END, TRUNCATE and TRUNCATED cell
+      have no reason in their payload. TROVE-2026-011. Found by Brian
+      Carpenter (geeknik). Fixes bug 41254; bugfix on 0.1.1.1-alpha.
+
+  o Major bugfixes (conflux):
+    - Do not attempt or accept BEGIN_DIR via conflux legs. TROVE-2026-
+      008. Credit to Anas Cherni from Calif.io in collaboration with
+      Claude and Anthropic Research. Fixes bug 41243; bugfix
+      on 0.4.8.1-alpha.
+
+  o Major bugfixes (conflux, relay):
+    - Adjust conflux out-of-order queue accounting when clearing a
+      queue. TROVE-2026-010. Found by aptupdate. Fixes bug 41251; bugfix
+      on 0.4.8.1-alpha.
+
+  o Major bugfixes (pathbias):
+    - Fix a client-side crash caused by double-close of a circuit while
+      under circuit queue memory pressure. TROVE-2026-009. Found by
+      cypherpunks. Fixes bug 41237; bugfix on 0.3.3.6-rc.
+
+  o Major bugfixes (relay):
+    - Fix null pointer dereference when receiving a CERT cell out of
+      order. TROVE-2026-006. Found by Fwame. Fixes bug 41240; bugfix
+      on 0.2.4.4-alpha.
+
+  o Major bugfixes (relay, onion service):
+    - Fix off-by-one out-of-bounds read if a malformed BEGIN cell is
+      received. TROVE-2026-007. Found by Flanagan. Fixes bug 41245;
+      bugfix on 0.2.4.7-alpha.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on May 06, 2026.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2026/05/06.
+
+
+Changes in version 0.4.9.6 - 2026-03-25
+  This is a security release fixing major bugfixes that could possibly lead to
+  remote crashing relays. We strongly recommend upgrading as soon as possible.
+
+  o Major bugfix (security):
+    - Fix a stack overflow of 11 bytes on malicious CREATED2. This lead
+      to a remote crash. TROVE-2026-003. Reported-by: Anas Cherni of
+      Calif.io. Fixes bug 41231; bugfix on 0.4.9.1-alpha.
+
+  o Major bugfix (security, conflux):
+    - Fix a memory compare using the wrong length. This could lead to a
+      remote crash when using the conflux subsystem. TROVE-2026-004.
+      Fixes bug 41232; bugfix on 0.4.8.1-alpha.
+
+  o Minor bugfixes (security):
+    - Fix a series of defense in depth security issues found across the
+      codebase. Fixes bug 41228; bugfix on 0.3.5.1-alpha.
+
+  o Minor bugfixes (portability):
+    - (Hopefully) fix our polyval implementation on big-endian
+      platforms. Fixes bug 41215; bugfix on 0.4.9.3-alpha.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on March 25, 2026.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2026/03/25.
+
+
+Changes in version 0.4.9.5 - 2026-02-12
+  This first stable release in the 0.4.9 series introduces a new
+  circuit-level encryption design for better client security, as well
+  as a more scalable way for large relay operators to annotate which
+  relays they run so clients can avoid using too many of them in a
+  single circuit.
+
+  o Major features (cryptography):
+    - Clients and relays can now negotiate Counter Galois Onion (CGO)
+      relay cryptography, as designed by Jean Paul Degabriele,
+      Alessandro Melloni, Jean-Pierre Münch, and Martijn Stam. CGO
+      provides improved resistance to several kinds of tagging attacks,
+      better forward secrecy, and better forgery resistance. Closes
+      ticket 41047. Implements proposal 359.
+
+  o Major features (path selection):
+    - Clients and relays now support "happy families", a system to
+      simplify relay family operation and improve directory performance.
+      With "happy families", relays in a family share a secret "family
+      key", which they use to prove their membership in the family.
+      Implements proposal 321; closes ticket 41009. Note that until
+      enough clients are upgraded, relay operators will still need to
+      configure MyFamily lists. But once clients no longer depend on
+      those lists, we will be able to remove them entirely, thereby
+      simplifying family operation, and making microdescriptor downloads
+      approximately 80% smaller. For more information, see
+      https://community.torproject.org/relay/setup/post-install/family-ids/
+
+  o Major bugfixes (conflux):
+    - Ensure conflux guards obey family and subnet restrictions. Fixes
+      bug 40976; bugfix on 0.4.8.1-alpha.
+
+  o Major bugfixes (controller events):
+    - Fix spikes occurring in bandwidth cache events on control connection.
+      Fixes bug 31524; bugfix on 0.0.9pre5.
+
+  o Major bugfixes (sandbox):
+    - Fix sandbox to work on architectures that use Linux's generic
+      syscall interface, extending support for AArch64 (ARM64) and
+      adding support for RISC-V, allowing test_include.sh and the
+      sandbox unit tests to pass on these systems even when building
+      with fragile hardening enabled. Fixes bugs 40465 and 40599; bugfix
+      on 0.2.5.1-alpha.
+
+  o Minor features (client security, reliability):
+    - When KeepaliveIsolateSOCKSAuth is keeping a circuit alive, expire
+      the circuit based on when it was last in use for any stream, not
+      (as we did before) based on when a stream was last attached to it.
+      Closes ticket 41157. Implements a minimal version of Proposal 368.
+
+  o Minor features (exit relays):
+    - Implement reevaluating new exit policy against existing
+      connections. This is controlled by new config option
+      ReevaluateExitPolicy, defaulting to 0. Closes ticket 40676.
+    - Implement a token-bucket based rate limiter for stream creation
+      and resolve request. It is configured by the DoSStream* family of
+      configuration options. Closes ticket 40736.
+    - Add Monero ports to the ReducedExitPolicy. Closes ticket 41168.
+
+  o Minor features (bridges):
+    - Save complete bridge lines to 'datadir/bridgelines'. Closes
+      ticket 29128.
+
+  o Minor features (client extensibility):
+    - Implement new HTTPTunnelPort features for interoperability with
+      Arti's HTTP CONNECT proxy. This work adds new headers to requests
+      to and replies from the HttpConnectPort, support for OPTIONS
+      requests, tightens the expected syntax for Proxy-Authorization,
+      and increases defense-in-depth against some kinds of cross-site
+      HTTP attacks. Closes ticket 41156. Implements proposal 365.
+    - Detect invalid SOCKS5 username/password combinations according to
+      new extended parameters syntax. (Currently, this rejects any
+      SOCKS5 username beginning with "<torS0X>", except for the username
+      "<torS0X>0". Such usernames are now reserved to communicate
+      additional parameters with other Tor implementations.) Implements
+      proposal 351.
+
+  o Minor features (sandboxing):
+    - Allow the fstatat64 and statx syscalls on i386 architecture when
+      glibc >= 2.33. On i386, glibc uses fstatat64 instead of newfstatat
+      for stat operations, and statx for time64 support. Without this,
+      SIGHUP configuration reload fails when using sandbox mode with
+      %include directives on i386 with Debian Bookworm or newer.
+    - Allow the lstat64 syscall on i386 architecture. This syscall is
+      used by glob() in glibc 2.36+ when processing %include directives
+      with directory patterns.
+
+  o Minor features (security):
+    - Increase the size of our finite-field Diffie Hellman TLS group
+      (which we should never actually use!) to 2048 bits. Part of
+      ticket 41067.
+    - Require TLS version 1.2 or later. (Version 1.3 support will be
+      required in the near future.) Part of ticket 41067.
+    - Update TLS 1.2 client cipher list to match current Firefox. Part
+      of ticket 41067.
+    - Verify needle is smaller than haystack before calling memmem.
+      Closes ticket 40854.
+
+  o Minor features (onion services):
+    - Add 3 more keywords to the ADD_ONION control command:
+      PoWDefensesEnabled, PoWQueueRate and PoWQueueBurst which correspond
+      to HiddenServicePoWDefensesEnabled, HiddenServicePoWQueueRate and
+      HiddenServicePoWQueueBurst from torrc.
+    - Reduce the minimum value of hsdir_interval to match recent tor-
+      spec change.
+
+  o Minor feature (directory authority):
+    - Introduce MinimalAcceptedServerVersion to allow configuring
+      the minimum accepted relay version without requiring a new tor
+      release. Closes ticket 40817.
+
+  o Minor features (metrics port):
+    - New metrics on the MetricsPort for the number of BUG() calls that
+      occurred at runtime. Fixes bugs 40839 and 41104; bugfix on
+      0.4.7.1-alpha.
+    - Handle rephist tracking of ntor and ntor_v3 handshakes
+      individually such that MetricsPort exposes the correct values.
+      Fixes bug 40638; bugfix on 0.4.7.11.
+    - Add new metrics for relays on the MetricsPort namely the count of
+      drop cell, destroy cell and the number of circuit protocol
+      violation seen that lead to a circuit close. Closes ticket 40816.
+
+  o Minor features (forward-compatibility):
+    - We now correctly parse microdescriptors and router descriptors
+      that do not include TAP onion keys. (For backward compatibility,
+      authorities continue to require these keys.) Implements part of
+      proposal 350.
+
+  o Minor features (portability, android):
+    - Use /data/local/tmp for data storage on Android by default. Closes
+      ticket 40487. Patch from Hans-Christoph Steiner.
+
+  o Minor features (directory authority):
+    - Export unsigned consensus documents once we have seen a threshold
+      of signatures, as a step toward the consensus transparency
+      experiment.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on February 12, 2026.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database,
+      as retrieved on 2026/02/12.
+
+  o Minor features (windows):
+    - Various compilation fixes for our Windows CI. Closes ticket 41214.
+
+  o Minor bugfixes (exit relays):
+    - Clip every returned DNS TTL to 60 (RESOLVED) in order to mitigate
+      an exit DNS cache oracle. Fixes bug 40979; bugfix on 0.3.5.1-alpha.
+
+  o Minor bugfixes (spec conformance):
+    - Set the length field correctly on RELAY_COMMAND_CONFLUX_SWITCH
+      messages. Previously, it was always set to the maximum value.
+      Fixes bug 41056; bugfix on 0.4.8.1-alpha.
+    - Do not treat "15" as a recognized remote END reason code.
+      Formerly, we treated it as synonymous with a local ENTRYPOLICY,
+      which isn't a valid remote code at all. Fixes bug 41171; bugfix
+      on 0.2.0.8-alpha.
+
+  o Minor bugfixes (tooling):
+    - Fix a false positive valgrind related to inspecting a bitfield
+      next to another uninitialized bitfield. Fixes bug 41182; bugfix
+      on 0.3.3.2-alpha.
+    - Fix minor warnings from newer versions of shellcheck and clang.
+      Fixes bug 41166; bugfix on 0.4.3.1-alpha and several
+      other versions.
+    - Fix a warning when compiling with GCC 14.2. Closes 41032.
+
+  o Minor bugfixes (threads):
+    - Make thread control POSIX compliant. Fixes bug 41109; bugfix
+      on 0.4.8.17.
+
+  o Minor bugfix (client DNS):
+    - Handle empty DNS reply without sending back an error and instead
+      send back NOERROR (RFC1035 error code 0x0). Fixes bug 40248;
+      bugfix on 0.3.5.1-alpha.
+
+  o Minor bugfixes (directory authorities):
+    - After we added layer-two vanguards, directory authorities wouldn't
+      think any of their vanguards were suitable for circuits, leading
+      to a "Failed to find node for hop #2 of our path. Discarding this
+      circuit." log message once per second from startup until they made
+      a fresh consensus. Now they look to their existing consensus on
+      startup, letting them build circuits properly from the beginning.
+      Fixes bug 40802; bugfix on 0.4.7.1-alpha.
+
+  o Minor bugfixes (tests):
+    - Fix a test failure with OpenSSL builds running at security level 1
+      or greater, which does not permit SHA-1 certificates. Fixes bug
+      41021; bugfix on 0.2.8.1-alpha.
+
+  o Minor bugfixes (bridges):
+    - Don't warn when BridgeRelay is 1 and ExitRelay is explicitly set
+      to 0. Fixes bug 40884; bugfix on 0.4.8.3-rc.
+
+  o Minor bugfixes (conflux, client):
+    - Avoid a non fatal assert caused by data coming in on a conflux set
+      that is being freed during shutdown. Fixes bug 40870; bugfix
+      on 0.4.8.1-alpha.
+
+  o Minor bugfixes (testing network):
+    - Enabling TestingTorNetwork no longer forces fast hidden service
+      intro point rotation. This reduces noise and errors when using
+      hidden services with TestingTorNetwork enabled. Fixes bug 40922;
+      bugfix on 0.3.2.1-alpha.
+
+  o Minor bugfixes (relay):
+    - Refuse to overwrite an existing *.secret_family_key when running
+      tor --keygen-family. Fixes bug 41184; bugfix on 0.4.9.1-alpha.
+
+  o New system requirements:
+    - When built with LibreSSL, Tor now requires LibreSSL 3.7 or later.
+      Part of ticket 41059.
+    - When built with OpenSSL, Tor now requires OpenSSL 1.1.1 or later.
+      (We strongly recommend 3.0 or later, but still build with 1.1.1,
+      even though it is not supported by the OpenSSL team, due to its
+      presence in Debian oldstable.) Part of ticket 41059.
+
+  o Removed features (relays):
+    - Relays no longer support clients that falsely advertise TLS
+      ciphers they don't really support. (Clients have not done this
+      since 0.2.3.17-beta). Part of ticket 41031.
+    - Relays no longer support clients that require obsolete v1 and v2
+      link handshakes. (The v3 link handshake has been supported since
+      0.2.3.6-alpha). Part of ticket 41031.
+    - Relays no longer support the obsolete TAP circuit extension
+      protocol. (For backward compatibility, however, relays still
+      continue to include TAP keys in their descriptors.) Implements
+      part of proposal 350.
+    - Relays no longer support the obsolete "RSA-SHA256-TLSSecret"
+      authentication method, which used a dangerously short RSA key, and
+      which required access TLS session internals. The current method
+      ("Ed25519-SHA256-RFC5705") has been supported since 0.3.0.1-alpha.
+      Closes ticket 41020.
+
+  o Removed features (directory authorities):
+    - Directory authorities no longer support consensus methods before
+      method 32. Closes ticket 40835.
+    - We include a new consensus method that removes support for
+      computing "package" lines in consensus documents. This feature was
+      never used, and support for including it in our votes was removed
+      in 0.4.2.1-alpha. Finishes implementation of proposal 301.
+
+
+Changes in version 0.4.9.4-rc - 2026-01-28
+  Finally, the release candidate for the 0.4.9.x series. It consists of minor
+  features and several bugfixes. Nothing major has been added since the alpha.
+  If everything goes well, the next version will be the first stable.
+
+  o Minor features (security, reliability):
+    - When KeepaliveIsolateSOCKSAuth is keeping a circuit alive, expire
+      the circuit based on when it was last in use for any stream, not
+      (as we did before) based on when a stream was last attached to it.
+      Closes ticket 41157. Implements a minimal version of Proposal 368.
+
+  o Minor feature (Exit):
+    - Add Monero ports to the ReducedExitPolicy. Closes ticket 41168.
+
+  o Minor features (HTTPTunnelPort):
+    - Implement new HTTPTunnelPort features for interoperability with
+      Arti's HTTP CONNECT proxy. This work adds new headers to requests
+      to and replies from the HttpConnectPort, support for OPTIONS
+      requests, tightens the expected syntax for Proxy-Authorization,
+      and increases defense-in-depth against some kinds of cross-site
+      HTTP attacks. Closes ticket 41156. Implements proposal 365.
+
+  o Minor features (linux seccomp2 sandbox):
+    - Allow the fstatat64 and statx syscalls on i386 architecture when
+      glibc >= 2.33. On i386, glibc uses fstatat64 instead of newfstatat
+      for stat operations, and statx for time64 support. Without this,
+      SIGHUP configuration reload fails when using sandbox mode with
+      %include directives on i386 with Debian Bookworm or newer.
+    - Allow the lstat64 syscall on i386 architecture. This syscall is
+      used by glob() in glibc 2.36+ when processing %include directives
+      with directory patterns.
+
+  o Minor bugfixes (DNS, exit):
+    - Clip every returned DNS TTL to 60 (RESOLVED) in order to mitigate
+      an exit DNS cache oracle. Fixes bug 40979; bugfix on 0.3.5.1-alpha.
+
+  o Minor bugfixes (spec conformance):
+    - Do not treat "15" as a recognized remote END reason code.
+      Formerly, we treated it as synonymous with a local ENTRYPOLICY,
+      which isn't a valid remote code at all. Fixes bug 41171; bugfix
+      on 0.2.0.8-alpha.
+
+  o Minor bugfixes (tooling):
+    - Fix a false positive valgrind related to inspecting a bitfield
+      next to another uninitialized bitfield. Fixes bug 41182; bugfix
+      on 0.3.3.2-alpha.
+
+  o Minor bugfixes (warnings):
+    - Fix minor warnings from newer versions of shellcheck and clang.
+      Fixes bug 41166; bugfix on 0.4.3.1-alpha and several
+      other versions.
+
+
 Changes in version 0.4.8.22 - 2026-01-28
   This is likely the very last release of the 0.4.8.x series. Three major
-  bugfixes detailled below including two affecting directory servers (basically
+  bugfixes detailed below including two affecting directory servers (basically
   all relays). We strongly recommend upgrading as soon as possible.
 
   o Major bugfixes (security):
     - Avoid an out-of-bounds read error that could occur with
-      V1-formatted cells. Fixes bug 41180; bugfix on 0.4.8.1-alpha. This
-      is tracked as TROVE-2025-016.
+      V1-formatted EXTEND cells. Fixes bug 41180; bugfix on 0.4.8.1-alpha.
+      This is tracked as TROVE-2025-016.
 
   o Major bugfixes (directory servers):
     - Allow old clients to fetch the consensus even if they use version
@@ -33,8 +648,6 @@ Changes in version 0.4.8.22 - 2026-01-28
   o Minor features (debugging, compression):
     - Do not check for compression bombs for buffers smaller than 5MB
       (increased from 64 KB). Fixes ticket 40739; bugfix on 0.2.1.29.
-    - Log the input and output buffer sizes when we detect a potential
-      compression bomb. Diagnostic for ticket 40739.
 
   o Minor features (directory servers):
     - Track how many times directory servers begin serving networkstatus
@@ -49,8 +662,9 @@ Changes in version 0.4.8.22 - 2026-01-28
       retrieved on 2026/01/28.
 
   o Minor bugfixes (relay):
-    - Downgrade log warn to info as the error condition is possible under
-      normal circumstances. Fixes bug 40951; bugfix on 0.3.5.1-alpha.
+    - Downgrade "Error relaying cell across rendezvous" log warn to info
+      as the error condition is possible under normal circumstances. Fixes
+      bug 40951; bugfix on 0.3.5.1-alpha.
 
   o Code simplification and refactoring:
     - Simplify SOCKS4a parsing to avoid the (false) appearance of
@@ -136,6 +750,145 @@ Changes in version 0.4.8.19 - 2025-10-06
     - Avoid closing all possible FDs when spawning a process (PT). On
       some systems, this could lead to 3+ minutes hang. Fixes bug 40990;
       bugfix on 0.3.5.1-alpha.
+
+
+Changes in version 0.4.9.3-alpha - 2025-09-16
+  This is the third alpha release and likely the last before going stable.
+  This release contains the new CGO circuit encryption. See proposal 359 for
+  more details. Several TLS minor fixes which will strengthen the link
+  security.
+
+  o New system requirements:
+    - When built with LibreSSL, Tor now requires LibreSSL 3.7 or later.
+      Part of ticket 41059.
+    - When built with OpenSSL, Tor now requires OpenSSL 1.1.1 or later.
+      (We strongly recommend 3.0 or later, but still build with 1.1.1,
+      even though it is not supported by the OpenSSL team, due to its
+      presence in Debian oldstable.) Part of ticket 41059.
+
+  o Major features (cell format):
+    - Tor now has (unused) internal support to encode and decode relay
+      messages in the new format required by our newer CGO encryption
+      algorithm. Closes ticket 41051. Part of proposal 359.
+
+  o Major features (cryptography):
+    - Clients and relays can now negotiate Counter Galois Onion (CGO)
+      relay cryptography, as designed by Jean Paul Degabriele,
+      Alessandro Melloni, Jean-Pierre Münch, and Martijn Stam. CGO
+      provides improved resistance to several kinds of tagging attacks,
+      better forward secrecy, and better forgery resistance. Closes
+      ticket 41047. Implements proposal 359.
+
+  o Major bugfixes (onion service directory cache):
+    - Preserve the download counter of an onion service descriptor
+      across descriptor uploads, so that recently updated descriptors
+      don't get pruned if there is memory pressure soon after update.
+      Additionally, create a separate torrc option MaxHSDirCacheBytes
+      that defaults to the former 20% of MaxMemInQueues threshold, but
+      can be controlled by relay operators under DoS. Also enforce this
+      threshold during HSDir uploads. Fixes bug 41006; bugfix
+      on 0.4.8.14.
+
+  o Minor features (security):
+    - Increase the size of our finite-field Diffie Hellman TLS group
+      (which we should never actually use!) to 2048 bits. Part of
+      ticket 41067.
+    - Require TLS version 1.2 or later. (Version 1.3 support will be
+      required in the near future.) Part of ticket 41067.
+    - Update TLS 1.2 client cipher list to match current Firefox. Part
+      of ticket 41067.
+
+  o Minor features (security, TLS):
+    - When we are running with OpenSSL 3.5.0 or later, support using the
+      ML-KEM768 for post-quantum key agreement. Closes ticket 41041.
+
+  o Minor feature (client, TLS):
+    - Set the TLS 1.3 cipher list instead of falling back on the
+      default value.
+
+  o Minor feature (padding, logging):
+    - Reduce the amount of messages being logged related to channel
+      padding timeout when log level is "notice".
+
+  o Minor features (bridges):
+    - Save complete bridge lines to 'datadir/bridgelines'. Closes
+      ticket 29128.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on September 16, 2025.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2025/09/16.
+
+  o Minor features (hidden services):
+    - Reduce the minimum value of hsdir_interval to match recent tor-
+      spec change.
+
+  o Minor features (hsdesc POW):
+    - Tolerate multiple PoW schemes in onion service descriptors, for
+      future extensibility. Implements torspec ticket 272.
+
+  o Minor features (performance TLS):
+    - When running with with OpenSSL 3.0.0 or later, support using
+      X25519 for TLS key agreement. (This should slightly improve
+      performance for TLS session establishment.)
+
+  o Minor features (portability):
+    - Fix warnings when compiling with GCC 15. Closes ticket 41079.
+
+  o Minor bugfix (conflux):
+    - Remove the pending nonce if we realize that the nonce of the
+      unlinked circuit is not tracked anymore. Should avoid the non
+      fatal assert triggered with a control port circuit event. Fixes
+      bug 41037; bugfix on 0.4.8.15.
+
+  o Minor bugfixes (bridges, pluggable transport):
+    - Fix a bug causing the initial tor process to hang instead of
+      exiting with RunAsDaemon, when pluggable transports are used.
+      Fixes bug 41088; bugfix on 0.4.9.1-alpha.
+
+  o Minor bugfixes (circuit handling):
+    - Prevent circuit_mark_for_close() from being called twice on the
+      same circuit. Fixes bug 40951; bugfix on 0.4.8.16-dev.
+    - Prevent circuit_mark_for_close() from being called twice on the
+      same circuit. Second fix attempt Fixes bug 41106; bugfix
+      on 0.4.8.17
+
+  o Minor bugfixes (compilation):
+    - Fix linking on systems without a working stdatomic.h. Fixes bug
+      41076; bugfix on 0.4.9.1-alpha.
+
+  o Minor bugfixes (compiler warnings):
+    - Make sure the two bitfields in the half-closed edge struct are
+      unsigned, as we're using them for boolean values and assign 1 to
+      them. Fixes bug 40911; bugfix on 0.4.7.2-alpha.
+
+  o Minor bugfixes (logging, metrics port):
+    - Count BUG statements for the MetricsPort only if they are warnings
+      or errors. Fixes bug 41104; bugfix on 0.4.7.1-alpha. Patch
+      contributed by shadowcoder.
+
+  o Minor bugfixes (protocol):
+    - Set the length field correctly on RELAY_COMMAND_CONFLUX_SWITCH
+      messages. Previously, it was always set to the maximum value.
+      Fixes bug 41056; bugfix on 0.4.8.1-alpha.
+
+  o Minor bugfixes (relay):
+    - Fix a crash when FamilyKeyDir is a path that cannot be read. Fixes
+      bug 41043; bugfix on 0.4.9.2-alpha.
+
+  o Minor bugfixes (threads):
+    - Make thread control POSIX compliant. Fixes bug 41109; bugfix
+      on 0.4.8.17-dev.
+
+  o Removed features:
+    - Relays no longer support clients that falsely advertise TLS
+      ciphers they don't really support. (Clients have not done this
+      since 0.2.3.17-beta). Part of ticket 41031.
+    - Relays no longer support clients that require obsolete v1 and v2
+      link handshakes. (The v3 link handshake has been supported since
+      0.2.3.6-alpha). Part of ticket 41031.
 
 
 Changes in version 0.4.8.18 - 2025-09-16
@@ -246,6 +999,144 @@ Changes in version 0.4.8.17 - 2025-06-30
     - Rework start and exit of worker threads.
 
 
+Changes in version 0.4.9.2-alpha - 2025-04-02
+  This is the second alpha of the 0.4.9.x series. We have several new minor
+  features and a big one, the happy families that was long awaited by relay
+  operators. This release also fixes a number of bugs including major ones.
+
+  o Major feature (happy families):
+    - Clients and relays now support "happy families", a system to
+      simplify relay family operation and improve directory performance.
+      With "happy families", relays in a family shares a secret "family
+      key", which they use to prove their membership in the family.
+      Implements proposal 321; closes ticket 41009. Note that until
+      enough clients are upgraded, relay operators will still need to
+      configure MyFamily lists. But once clients no longer depend on
+      those lists, we will be able to remove them entirely, thereby
+      simplifying family operation, and making microdescriptor downloads
+      approximately 80% smaller. For more information, see
+      https://community.torproject.org/relay/setup/post-install/family-ids/
+
+  o Major features (client):
+    - Clients now respect "happy families" per proposal 321. This
+      feature will eventually allow a much more compact representation
+      for relay families, for a significant savings in directory
+      download size.
+
+  o Minor feature (onion service, control port):
+    - Add 3 more keywords to the ADD_ONION control command:
+      PoWDefensesEnabled, PoWQueueRate and PoWQueueBurst which correspond
+      to HiddenServicePoWDefensesEnabled, HiddenServicePoWQueueRate and
+      HiddenServicePoWQueueBurst from torrc.
+
+  o Minor feature (testing, CI):
+    - Use a fixed version of chutney (be881a1e) instead of its current
+      HEAD. This version should also be preferred when testing locally.
+
+  o Minor features (compilation):
+    - Fix a warning when compiling with GCC 14.2. Closes 41032.
+
+  o Minor features (continuous integration):
+    - Upgrade CI runners to use Debian Bookworm instead of Bullseye.
+      Closes ticket 41029.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on February 05, 2025.
+    - Regenerate fallback directories generated on March 20, 2025.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2025/02/05.
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2025/03/20.
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2025/03/24.
+
+  o Minor features (recommended protocols):
+    - Directory authorities now vote to recommend that clients support
+      certain protocols beyond those that are required. These include
+      improved support for connecting to relays on IPv6, NtorV3, and
+      congestion control. Part of ticket 40836.
+
+  o Minor features (required protocols):
+    - Directory authorities now vote to require clients to support the
+      authenticated SENDME feature, which was introduced in
+      0.4.1.1-alpha. Part of ticket 40836.
+    - Directory authorities now vote to require relays to support
+      certain protocols, all of which have been implemented since
+      0.4.7.4-alpha or earlier. These include improved support for
+      connecting to relays on IPv6, NtorV3, running as a rate-limited
+      introduction point, authenticated SENDMEs, and congestion control.
+      Part of ticket 40836.
+
+  o Major bugfix (control-events, bw-cache):
+    - Fixes spikes occurring in bandwidth cache on control connection.
+      Fixes bug 31524; bugfix on 0.4.8.12-dev.
+
+  o Major bugfixes (conflux):
+    - Ensure conflux guards obey family and subnet restrictions. Fixes
+      bug 40976; bugfix on 0.4.8.13.
+
+  o Major bugfixes (onion service directory cache):
+    - When the OOM killer kicks in, cleanup the descriptor cache of an
+      HSDir by looking at the lowest downloaded count instead of time in
+      cache. Fixes bug 40996; bugfix on 0.3.5.1-alpha.
+
+  o Minor bugfix (client DNS):
+    - Handle empty DNS reply without sending back an error and instead
+      send back NOERROR (RFC1035 error code 0x0). Fixes bug 40248;
+      bugfix on 0.3.5.1-alpha.
+
+  o Minor bugfix (conflux):
+    - Avoid a non fatal assert when describing a conflux circuit on the
+      control port after being prepped to be freed. Fixes bug 41037;
+      bugfix on 0.4.8.15.
+
+  o Minor bugfix (dirauth):
+    - Fix typo in flag assignment approved-routers file. Fixes bug
+      41035; bugfix on 0.4.8.15
+
+  o Minor bugfixes (control port):
+    - Correctly report conflux pair information to controller fields
+      Fixes bug 40872; bugfix on 0.4.8.1-alpha
+
+  o Minor bugfixes (directory authorities):
+    - After we added layer-two vanguards, directory authorities wouldn't
+      think any of their vanguards were suitable for circuits, leading
+      to a "Failed to find node for hop #2 of our path. Discarding this
+      circuit." log message once per second from startup until they made
+      a fresh consensus. Now they look to their existing consensus on
+      startup, letting them build circuits properly from the beginning.
+      Fixes bug 40802; bugfix on 0.4.7.1-alpha.
+
+  o Minor bugfixes (relay flag usage):
+    - Fix client usage of the MiddleOnly flag so that MiddleOnly relays
+      are not used as HS IP or RP by clients or services. Additionally,
+      give dirauths the ability to remove specific flags, as an
+      alternative to MiddleOnly. Fixes bug 41023; bugfix on 0.4.7.2-alpha
+
+  o Minor bugfixes (sandbox, bwauth):
+    - Fix sandbox to work for bandwidth authority. Fixes bug 40933;
+      bugfix on 0.2.2.1-alpha
+
+  o Minor bugfixes (tests):
+    - Fix a test failure with OpenSSL builds running at security level 1
+      or greater, which does not permit SHA-1 certificates. (Fixes bug
+      41021; bugfix on 0.2.8.1-alpha.)
+
+  o Minor bugfixes (threads, memory):
+    - Improvements in cleanup of resources used by threads. Fixes bug
+      40991; bugfix on 0.4.8.13-dev.
+    - Rework start and exit of worker threads.
+
+  o Removed features:
+    - Relays no longer support the obsolete "RSA-SHA256-TLSSecret"
+      authentication method, which used a dangerously short RSA key, and
+      which required access TLS session internals. The current method
+      ("Ed25519-SHA256-RFC5705") has been supported since 0.3.0.1-alpha.
+      Closes ticket 41020.
+
+
 Changes in version 0.4.8.16 - 2025-03-24
   This is a quick second release since 0.4.8.15 due to a typo in a directory
   authority rule file. This only affects directory authorities.
@@ -322,8 +1213,141 @@ Changes in version 0.4.8.14 - 2025-02-05
       40989; bugfix on 0.4.8.13.
 
 
+Changes in version 0.4.9.1-alpha - 2024-12-03
+  This is the first alpha of the 0.4.9.x series. This release mostly consists
+  of bugfixes including some major ones. There are several minor features in
+  this release but no large new subsystem.
+
+  o Major bugfixes (sandbox):
+    - Fix sandbox to work on architectures that use Linux's generic
+      syscall interface, extending support for AArch64 (ARM64) and
+      adding support for RISC-V, allowing test_include.sh and the
+      sandbox unit tests to pass on these systems even when building
+      with fragile hardening enabled. Fixes bugs 40465 and 40599; bugfix
+      on 0.2.5.1-alpha.
+
+  o Minor feature (defense in depth):
+    - Verify needle is smaller than haystack before calling memmem.
+      Closes ticket 40854.
+
+  o Minor feature (directory authority):
+    - Introduce MinimalAcceptedServerVersion to allow modification of
+      minimal accepted version for relays without requiring a new tor
+      release. Closes ticket 40817.
+
+  o Minor feature (exit policies):
+    - Implement reevaluating new exit policy against existing
+      connections. This is controlled by new config option
+      ReevaluateExitPolicy, defaulting to 0. Closes ticket 40676.
+
+  o Minor feature (exit relay, DoS resistance):
+    - Implement a token-bucket based rate limiter for stream creation
+      and resolve request. It is configured by the DoSStream* family of
+      configuration options. Closes ticket 40736.
+
+  o Minor feature (metrics port):
+    - New metrics on the MetricsPort for the number of BUG() that
+      occurred at runtime. Closes MR 760.
+
+  o Minor feature (metrics port, relay):
+    - Add new metrics for relays on the MetricsPort namely the count of
+      drop cell, destroy cell and the number of circuit protocol
+      violation seen that lead to a circuit close. Closes ticket 40816.
+
+  o Minor feature (testing):
+    - test-network now unconditionally includes IPv6 instead of trying
+      to detect IPv6 support.
+
+  o Minor feature (testing, CI):
+    - Use a fixed version of chutney (be881a1e) instead of its current
+      HEAD. This version should also be preferred when testing locally.
+
+  o Minor features (forward-compatibility):
+    - We now correctly parse microdescriptors and router descriptors
+      that do not include TAP onion keys. (For backward compatibility,
+      authorities continue to require these keys.) Implements part of
+      proposal 350.
+
+  o Minor features (portability, android):
+    - Use /data/local/tmp for data storage on Android by default. Closes
+      ticket 40487. Patch from Hans-Christoph Steiner.
+
+  o Minor features (SOCKS):
+    - Detect invalid SOCKS5 username/password combinations according to
+      new extended parameters syntax. (Currently, this rejects any
+      SOCKS5 username beginning with "<torS0X>", except for the username
+      "<torS0X>0". Such usernames are now reserved to communicate
+      additional parameters with other Tor implementations.) Implements
+      proposal 351.
+
+  o Minor bugfix (MetricsPort, relay):
+    - Handle rephist tracking of ntor and ntor_v3 handshakes
+      individually such that MetricsPort exposes the correct values.
+      Fixes bug 40638; bugfix on 0.4.7.11.
+
+  o Minor bugfix (process):
+    - Avoid closing all possible FDs when spawning a process (PT). On
+      some systems, this could lead to 3+ minutes hang. Fixes bug 40990;
+      bugfix on 0.3.5.1-alpha.
+
+  o Minor bugfix (relay, sandbox):
+    - Disable a sandbox unit test that is failing on Debian Sid breaking
+      our nightly packages. Fixes bug 40918; bugfix on 0.3.5.1-alpha.
+
+  o Minor bugfixes (bridge):
+    - Don't warn when BridgeRelay is 1 and ExitRelay is explicitly set
+      to 0. Fixes bug 40884; bugfix on 0.4.8.3-rc.
+
+  o Minor bugfixes (compiler warnings):
+    - Make sure the two bitfields in the half-closed edge struct are
+      unsigned, as we're using them for boolean values and assign 1 to
+      them. Fixes bug 40911; bugfix on 0.4.7.2-alpha.
+
+  o Minor bugfixes (conflux, client):
+    - Avoid a non fatal assert caused by data coming in on a conflux set
+      that is being freed during shutdown. Fixes bug 40870; bugfix
+      on 0.4.8.1-alpha.
+
+  o Minor bugfixes (memory):
+    - Fix a pointer free that wasn't set to NULL afterwards which could
+      be reused by calling back in the free all function. Fixes bug
+      40989; bugfix on 0.4.8.13.
+
+  o Minor bugfixes (sandbox, bwauth):
+    - Fix sandbox to work for bandwidth authority. Fixes bug 40933;
+      bugfix on 0.2.2.1-alpha
+
+  o Minor bugfixes (testing):
+    - Enabling TestingTorNetwork no longer forces fast hidden service
+      intro point rotation. This reduces noise and errors when using
+      hidden services with TestingTorNetwork enabled. Fixes bug 40922;
+      bugfix on 0.3.2.1-alpha.
+
+  o Minor bugfixes (tor-resolve):
+    - Create socket with correct family as given by sockshost, fixes
+      IPv6. Fixes bug 40982; bugfix on 0.4.9.0-alpha.
+
+  o Removed features:
+    - Directory authorities no longer support consensus methods before
+      method 32. Closes ticket 40835.
+
+  o Removed features (directory authority):
+    - We include a new consensus method that removes support for
+      computing "package" lines in consensus documents. This feature was
+      never used, and support for including it in our votes was removed
+      in 0.4.2.1-alpha. Finishes implementation of proposal 301.
+
+  o Removed features (obsolete):
+    - Relays no longer support the obsolete TAP circuit extension
+      protocol. (For backward compatibility, however, relays still
+      continue to include TAP keys in their descriptors.) Implements
+      part of proposal 350.
+    - Removed some vestigial code for selecting the TAP circuit
+      extension protocol.
+
+
 Changes in version 0.4.8.13 - 2024-10-24
-  This is minor release fixing an important client circuit building (conflux
+  This minor release fixes an important client circuit building (conflux
   related) bug which led to performance degradation and extra load on the
   network. Some minor memory leaks fixes as well as an important minor feature
   for pluggable transports. We strongly recommend to update as soon as possible
@@ -391,11 +1415,11 @@ Changes in version 0.4.8.12 - 2024-06-06
 
 
 Changes in version 0.4.8.11 - 2024-04-10
-  This is a minor release mostly to upgrade the fallbackdir list. Worth noting
-  also that directory authority running this version will now automatically
+  This is a minor release mostly to upgrade the fallbackdir list.
+  Directory authorities running this version will now automatically
   reject relays running the end of life 0.4.7.x version.
 
-  o Minor feature (authority):
+  o Minor features (directory authorities):
     - Reject 0.4.7.x series at the authority level. Closes ticket 40896.
 
   o Minor feature (dirauth, tor26):
@@ -428,7 +1452,7 @@ Changes in version 0.4.8.10 - 2023-12-08
 
   o Major bugfixes (TROVE-2023-007, exit):
     - Improper error propagation from a safety check in conflux leg
-      linking lead to a desynchronization of which legs were part of a
+      linking led to a desynchronization of which legs were part of a
       conflux set, ultimately causing a UAF and NULL pointer dereference
       crash on Exit relays. Fixes bug 40897; bugfix on 0.4.8.1-alpha.
 
@@ -440,8 +1464,8 @@ Changes in version 0.4.8.10 - 2023-12-08
       retrieved on 2023/12/08.
 
   o Minor bugfixes (bridges, statistics):
-    - Correctly report statistics for client count over Pluggable
-      transport. Fixes bug 40871; bugfix on 0.4.8.4.
+    - Correctly report statistics for client count over pluggable
+      transports. Fixes bug 40871; bugfix on 0.4.8.4.
 
 
 Changes in version 0.4.8.9 - 2023-11-09
@@ -476,7 +1500,7 @@ Changes in version 0.4.8.9 - 2023-11-09
 Changes in version 0.4.8.8 - 2023-11-03
   We are releasing today a fix for a high security issue, TROVE-2023-004, that
   is affecting relays. Also a few minor bugfixes detailed below. Please upgrade
-  as soon as posssible.
+  as soon as possible.
 
   o Major bugfixes (TROVE-2023-004, relay):
     - Mitigate an issue when Tor compiled with OpenSSL can crash during
@@ -715,7 +1739,7 @@ Changes in version 0.4.8.2-alpha - 2023-07-12
 
   o Minor bugfixes (conflux):
     - Count leg launch attempts prior to attempting to launch them. This
-      avoids inifinite launch attempts due to internal circuit building
+      avoids infinite launch attempts due to internal circuit building
       failures. Additionally, double-check that we have enough exits in
       our consensus overall, before attempting to launch conflux sets.
       Fixes bug 40811; bugfix on 0.4.8.1-alpha.
@@ -921,7 +1945,7 @@ Changes in version 0.4.7.13 - 2023-01-12
 
   o Major bugfixes (congestion control):
     - Avoid incrementing the congestion window when the window is not
-      fully in use. Thia prevents overshoot in cases where long periods
+      fully in use. This prevents overshoot in cases where long periods
       of low activity would allow our congestion window to grow, and
       then get followed by a burst, which would cause queue overload.
       Also improve the increment checks for RFC3742. Fixes bug 40732;

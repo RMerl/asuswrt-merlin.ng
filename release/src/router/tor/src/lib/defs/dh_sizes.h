@@ -16,7 +16,10 @@
 #ifndef TOR_DH_SIZES_H
 #define TOR_DH_SIZES_H
 
-/** Length of our legacy DH keys. */
+/** Length of our legacy DH keys, in bytes. */
 #define DH1024_KEY_LEN (1024/8)
+
+/** Length of our current TLS DH keys, in bytes. */
+#define DH2048_KEY_LEN (2048/8)
 
 #endif /* !defined(TOR_DH_SIZES_H) */

@@ -48,7 +48,7 @@ fi
 tmpdir=
 # For some reasons, shellcheck is not seeing that we can call this
 # function from the trap below.
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 clean () {
   if [ -n "$tmpdir" ] && [ -d "$tmpdir" ]; then
     ls -l "$tmpdir"

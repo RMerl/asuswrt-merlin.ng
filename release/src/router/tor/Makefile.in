@@ -221,11 +221,11 @@ noinst_PROGRAMS = $(am__EXEEXT_2) src/test/bench$(EXEEXT) \
 
 @UNITTESTS_ENABLED_TRUE@am__append_60 = src/core/libtor-app-testing.a
 @USE_TRACING_INSTRUMENTATION_LTTNG_TRUE@am__append_61 = \
-@USE_TRACING_INSTRUMENTATION_LTTNG_TRUE@	src/core/or/trace_probes_cc.c				\
+@USE_TRACING_INSTRUMENTATION_LTTNG_TRUE@	src/core/or/trace_probes_cc.c			\
 @USE_TRACING_INSTRUMENTATION_LTTNG_TRUE@	src/core/or/trace_probes_circuit.c
 
 @USE_TRACING_INSTRUMENTATION_LTTNG_TRUE@am__append_62 = \
-@USE_TRACING_INSTRUMENTATION_LTTNG_TRUE@	src/core/or/trace_probes_cc.h				\
+@USE_TRACING_INSTRUMENTATION_LTTNG_TRUE@	src/core/or/trace_probes_cc.h			\
 @USE_TRACING_INSTRUMENTATION_LTTNG_TRUE@	src/core/or/trace_probes_circuit.h
 
 @BUILD_MODULE_DIRAUTH_TRUE@am__append_63 = $(MODULE_DIRAUTH_SOURCES)
@@ -257,7 +257,7 @@ noinst_PROGRAMS = $(am__EXEEXT_2) src/test/bench$(EXEEXT) \
 @COVERAGE_ENABLED_FALSE@@USEPYTHON_TRUE@am__append_74 = src/test/test_rebind.sh \
 @COVERAGE_ENABLED_FALSE@@USEPYTHON_TRUE@	src/test/test_include.sh
 @USE_PERL_TRUE@am__append_75 = \
-@USE_PERL_TRUE@        scripts/maint/checkSpaceTest.sh
+@USE_PERL_TRUE@	scripts/maint/checkSpaceTest.sh
 
 @UNITTESTS_ENABLED_TRUE@am__append_76 = \
 @UNITTESTS_ENABLED_TRUE@	src/test/test \
@@ -317,6 +317,7 @@ noinst_PROGRAMS = $(am__EXEEXT_2) src/test/bench$(EXEEXT) \
 @UNITTESTS_ENABLED_TRUE@	src/test/test_crypto.c \
 @UNITTESTS_ENABLED_TRUE@	src/test/test_crypto_ope.c \
 @UNITTESTS_ENABLED_TRUE@	src/test/test_crypto_rng.c \
+@UNITTESTS_ENABLED_TRUE@	src/test/test_crypto_cgo.c \
 @UNITTESTS_ENABLED_TRUE@	src/test/test_data.c \
 @UNITTESTS_ENABLED_TRUE@	src/test/test_dir.c \
 @UNITTESTS_ENABLED_TRUE@	src/test/test_dirauth_ports.c \
@@ -519,9 +520,11 @@ src_core_libtor_app_testing_a_LIBADD =
 am__src_core_libtor_app_testing_a_SOURCES_DIST =  \
 	src/core/crypto/hs_ntor.c src/core/crypto/onion_crypto.c \
 	src/core/crypto/onion_fast.c src/core/crypto/onion_ntor.c \
-	src/core/crypto/onion_ntor_v3.c src/core/crypto/onion_tap.c \
-	src/core/crypto/relay_crypto.c src/core/mainloop/connection.c \
-	src/core/mainloop/cpuworker.c src/core/mainloop/mainloop.c \
+	src/core/crypto/onion_ntor_v3.c src/core/crypto/relay_crypto.c \
+	src/core/crypto/relay_crypto_cgo.c \
+	src/core/crypto/relay_crypto_tor1.c \
+	src/core/mainloop/connection.c src/core/mainloop/cpuworker.c \
+	src/core/mainloop/mainloop.c \
 	src/core/mainloop/mainloop_pubsub.c \
 	src/core/mainloop/mainloop_sys.c src/core/mainloop/netstatus.c \
 	src/core/mainloop/periodic.c src/core/or/address_set.c \
@@ -539,9 +542,10 @@ am__src_core_libtor_app_testing_a_SOURCES_DIST =  \
 	src/core/or/or_periodic.c src/core/or/or_sys.c \
 	src/core/or/orconn_event.c src/core/or/policies.c \
 	src/core/or/protover.c src/core/or/reasons.c \
-	src/core/or/relay.c src/core/or/scheduler.c \
-	src/core/or/scheduler_kist.c src/core/or/scheduler_vanilla.c \
-	src/core/or/sendme.c src/core/or/congestion_control_common.c \
+	src/core/or/relay.c src/core/or/relay_msg.c \
+	src/core/or/scheduler.c src/core/or/scheduler_kist.c \
+	src/core/or/scheduler_vanilla.c src/core/or/sendme.c \
+	src/core/or/congestion_control_common.c \
 	src/core/or/congestion_control_vegas.c \
 	src/core/or/congestion_control_flow.c src/core/or/conflux.c \
 	src/core/or/conflux_cell.c src/core/or/conflux_params.c \
@@ -701,8 +705,9 @@ am__objects_11 =  \
 	src/core/crypto/libtor_app_testing_a-onion_fast.$(OBJEXT) \
 	src/core/crypto/libtor_app_testing_a-onion_ntor.$(OBJEXT) \
 	src/core/crypto/libtor_app_testing_a-onion_ntor_v3.$(OBJEXT) \
-	src/core/crypto/libtor_app_testing_a-onion_tap.$(OBJEXT) \
 	src/core/crypto/libtor_app_testing_a-relay_crypto.$(OBJEXT) \
+	src/core/crypto/libtor_app_testing_a-relay_crypto_cgo.$(OBJEXT) \
+	src/core/crypto/libtor_app_testing_a-relay_crypto_tor1.$(OBJEXT) \
 	src/core/mainloop/libtor_app_testing_a-connection.$(OBJEXT) \
 	src/core/mainloop/libtor_app_testing_a-cpuworker.$(OBJEXT) \
 	src/core/mainloop/libtor_app_testing_a-mainloop.$(OBJEXT) \
@@ -739,6 +744,7 @@ am__objects_11 =  \
 	src/core/or/libtor_app_testing_a-protover.$(OBJEXT) \
 	src/core/or/libtor_app_testing_a-reasons.$(OBJEXT) \
 	src/core/or/libtor_app_testing_a-relay.$(OBJEXT) \
+	src/core/or/libtor_app_testing_a-relay_msg.$(OBJEXT) \
 	src/core/or/libtor_app_testing_a-scheduler.$(OBJEXT) \
 	src/core/or/libtor_app_testing_a-scheduler_kist.$(OBJEXT) \
 	src/core/or/libtor_app_testing_a-scheduler_vanilla.$(OBJEXT) \
@@ -873,7 +879,9 @@ src_core_libtor_app_a_LIBADD =
 am__src_core_libtor_app_a_SOURCES_DIST = src/core/crypto/hs_ntor.c \
 	src/core/crypto/onion_crypto.c src/core/crypto/onion_fast.c \
 	src/core/crypto/onion_ntor.c src/core/crypto/onion_ntor_v3.c \
-	src/core/crypto/onion_tap.c src/core/crypto/relay_crypto.c \
+	src/core/crypto/relay_crypto.c \
+	src/core/crypto/relay_crypto_cgo.c \
+	src/core/crypto/relay_crypto_tor1.c \
 	src/core/mainloop/connection.c src/core/mainloop/cpuworker.c \
 	src/core/mainloop/mainloop.c \
 	src/core/mainloop/mainloop_pubsub.c \
@@ -893,9 +901,10 @@ am__src_core_libtor_app_a_SOURCES_DIST = src/core/crypto/hs_ntor.c \
 	src/core/or/or_periodic.c src/core/or/or_sys.c \
 	src/core/or/orconn_event.c src/core/or/policies.c \
 	src/core/or/protover.c src/core/or/reasons.c \
-	src/core/or/relay.c src/core/or/scheduler.c \
-	src/core/or/scheduler_kist.c src/core/or/scheduler_vanilla.c \
-	src/core/or/sendme.c src/core/or/congestion_control_common.c \
+	src/core/or/relay.c src/core/or/relay_msg.c \
+	src/core/or/scheduler.c src/core/or/scheduler_kist.c \
+	src/core/or/scheduler_vanilla.c src/core/or/sendme.c \
+	src/core/or/congestion_control_common.c \
 	src/core/or/congestion_control_vegas.c \
 	src/core/or/congestion_control_flow.c src/core/or/conflux.c \
 	src/core/or/conflux_cell.c src/core/or/conflux_params.c \
@@ -1055,8 +1064,9 @@ am__objects_24 = src/core/crypto/hs_ntor.$(OBJEXT) \
 	src/core/crypto/onion_fast.$(OBJEXT) \
 	src/core/crypto/onion_ntor.$(OBJEXT) \
 	src/core/crypto/onion_ntor_v3.$(OBJEXT) \
-	src/core/crypto/onion_tap.$(OBJEXT) \
 	src/core/crypto/relay_crypto.$(OBJEXT) \
+	src/core/crypto/relay_crypto_cgo.$(OBJEXT) \
+	src/core/crypto/relay_crypto_tor1.$(OBJEXT) \
 	src/core/mainloop/connection.$(OBJEXT) \
 	src/core/mainloop/cpuworker.$(OBJEXT) \
 	src/core/mainloop/mainloop.$(OBJEXT) \
@@ -1086,6 +1096,7 @@ am__objects_24 = src/core/crypto/hs_ntor.$(OBJEXT) \
 	src/core/or/orconn_event.$(OBJEXT) \
 	src/core/or/policies.$(OBJEXT) src/core/or/protover.$(OBJEXT) \
 	src/core/or/reasons.$(OBJEXT) src/core/or/relay.$(OBJEXT) \
+	src/core/or/relay_msg.$(OBJEXT) \
 	src/core/or/scheduler.$(OBJEXT) \
 	src/core/or/scheduler_kist.$(OBJEXT) \
 	src/core/or/scheduler_vanilla.$(OBJEXT) \
@@ -1288,6 +1299,12 @@ am__src_ext_keccak_tiny_libkeccak_tiny_a_SOURCES_DIST =  \
 @BUILD_KECCAK_TINY_TRUE@am_src_ext_keccak_tiny_libkeccak_tiny_a_OBJECTS = src/ext/keccak-tiny/libkeccak_tiny_a-keccak-tiny-unrolled.$(OBJEXT)
 src_ext_keccak_tiny_libkeccak_tiny_a_OBJECTS =  \
 	$(am_src_ext_keccak_tiny_libkeccak_tiny_a_OBJECTS)
+src_ext_polyval_libpolyval_a_AR = $(AR) $(ARFLAGS)
+src_ext_polyval_libpolyval_a_LIBADD =
+am_src_ext_polyval_libpolyval_a_OBJECTS =  \
+	src/ext/polyval/libpolyval_a-polyval.$(OBJEXT)
+src_ext_polyval_libpolyval_a_OBJECTS =  \
+	$(am_src_ext_polyval_libpolyval_a_OBJECTS)
 src_lib_libcurve25519_donna_a_AR = $(AR) $(ARFLAGS)
 src_lib_libcurve25519_donna_a_LIBADD =
 am__src_lib_libcurve25519_donna_a_SOURCES_DIST =  \
@@ -2249,7 +2266,7 @@ am__src_trunnel_libor_trunnel_testing_a_SOURCES_DIST =  \
 	src/trunnel/sendme_cell.c src/trunnel/flow_control_cells.c \
 	src/trunnel/congestion_control.c src/trunnel/socks5.c \
 	src/trunnel/netinfo.c src/trunnel/circpad_negotiation.c \
-	src/trunnel/conflux.c
+	src/trunnel/conflux.c src/trunnel/subproto_request.c
 am__objects_107 = src/ext/trunnel/trunnel_libor_trunnel_testing_a-trunnel.$(OBJEXT) \
 	src/trunnel/libor_trunnel_testing_a-ed25519_cert.$(OBJEXT) \
 	src/trunnel/libor_trunnel_testing_a-extension.$(OBJEXT) \
@@ -2265,7 +2282,8 @@ am__objects_107 = src/ext/trunnel/trunnel_libor_trunnel_testing_a-trunnel.$(OBJE
 	src/trunnel/libor_trunnel_testing_a-socks5.$(OBJEXT) \
 	src/trunnel/libor_trunnel_testing_a-netinfo.$(OBJEXT) \
 	src/trunnel/libor_trunnel_testing_a-circpad_negotiation.$(OBJEXT) \
-	src/trunnel/libor_trunnel_testing_a-conflux.$(OBJEXT)
+	src/trunnel/libor_trunnel_testing_a-conflux.$(OBJEXT) \
+	src/trunnel/libor_trunnel_testing_a-subproto_request.$(OBJEXT)
 @UNITTESTS_ENABLED_TRUE@am_src_trunnel_libor_trunnel_testing_a_OBJECTS =  \
 @UNITTESTS_ENABLED_TRUE@	$(am__objects_107)
 src_trunnel_libor_trunnel_testing_a_OBJECTS =  \
@@ -2288,7 +2306,8 @@ am__objects_108 =  \
 	src/trunnel/libor_trunnel_a-socks5.$(OBJEXT) \
 	src/trunnel/libor_trunnel_a-netinfo.$(OBJEXT) \
 	src/trunnel/libor_trunnel_a-circpad_negotiation.$(OBJEXT) \
-	src/trunnel/libor_trunnel_a-conflux.$(OBJEXT)
+	src/trunnel/libor_trunnel_a-conflux.$(OBJEXT) \
+	src/trunnel/libor_trunnel_a-subproto_request.$(OBJEXT)
 am_src_trunnel_libor_trunnel_a_OBJECTS = $(am__objects_108)
 src_trunnel_libor_trunnel_a_OBJECTS =  \
 	$(am_src_trunnel_libor_trunnel_a_OBJECTS)
@@ -2697,51 +2716,52 @@ am__src_test_test_SOURCES_DIST = src/test/fakecircs.c \
 	src/test/test_containers.c src/test/test_controller.c \
 	src/test/test_controller_events.c src/test/test_crypto.c \
 	src/test/test_crypto_ope.c src/test/test_crypto_rng.c \
-	src/test/test_data.c src/test/test_dir.c \
-	src/test/test_dirauth_ports.c src/test/test_dirvote.c \
-	src/test/test_dir_common.c src/test/test_dir_handle_get.c \
-	src/test/test_dispatch.c src/test/test_dos.c \
-	src/test/test_entryconn.c src/test/test_entrynodes.c \
-	src/test/test_geoip.c src/test/test_guardfraction.c \
-	src/test/test_extorport.c src/test/test_hs_common.c \
-	src/test/test_hs_config.c src/test/test_hs_cell.c \
-	src/test/test_hs_ntor.c src/test/test_hs_service.c \
-	src/test/test_hs_client.c src/test/test_hs_intropoint.c \
-	src/test/test_hs_control.c src/test/test_hs_ob.c \
-	src/test/test_handles.c src/test/test_hs_cache.c \
-	src/test/test_hs_descriptor.c src/test/test_hs_dos.c \
-	src/test/test_hs_metrics.c src/test/test_hs_pow.c \
-	src/test/test_keypin.c src/test/test_link_handshake.c \
-	src/test/test_logging.c src/test/test_mainloop.c \
-	src/test/test_metrics.c src/test/test_microdesc.c \
-	src/test/test_namemap.c src/test/test_netinfo.c \
-	src/test/test_nodelist.c src/test/test_ntor_v3.c \
-	src/test/test_oom.c src/test/test_oos.c \
-	src/test/test_options.c src/test/test_options_act.c \
-	src/test/test_pem.c src/test/test_periodic_event.c \
-	src/test/test_policy.c src/test/test_process.c \
-	src/test/test_process_descs.c src/test/test_prob_distr.c \
-	src/test/test_procmon.c src/test/test_proto_haproxy.c \
-	src/test/test_proto_http.c src/test/test_proto_misc.c \
-	src/test/test_protover.c src/test/test_pt.c \
-	src/test/test_pubsub_build.c src/test/test_pubsub_msg.c \
-	src/test/test_relay.c src/test/test_relaycell.c \
-	src/test/test_relaycrypt.c src/test/test_replay.c \
-	src/test/test_router.c src/test/test_routerkeys.c \
-	src/test/test_routerlist.c src/test/test_routerset.c \
-	src/test/test_sandbox.c src/test/test_scheduler.c \
-	src/test/test_sendme.c src/test/test_shared_random.c \
-	src/test/test_socks.c src/test/test_statefile.c \
-	src/test/test_stats.c src/test/test_status.c \
-	src/test/test_storagedir.c src/test/test_threads.c \
-	src/test/test_token_bucket.c src/test/test_tortls.c \
-	src/test/test_util.c src/test/test_util_format.c \
-	src/test/test_util_process.c src/test/test_voting_flags.c \
-	src/test/test_voting_schedule.c src/test/test_x509.c \
-	src/test/test_helpers.c src/test/test_dns.c \
-	src/test/test_parsecommon.c src/test/testing_common.c \
-	src/test/testing_rsakeys.c src/ext/tinytest.c \
-	src/test/test_crypto_openssl.c src/test/test_tortls_openssl.c
+	src/test/test_crypto_cgo.c src/test/test_data.c \
+	src/test/test_dir.c src/test/test_dirauth_ports.c \
+	src/test/test_dirvote.c src/test/test_dir_common.c \
+	src/test/test_dir_handle_get.c src/test/test_dispatch.c \
+	src/test/test_dos.c src/test/test_entryconn.c \
+	src/test/test_entrynodes.c src/test/test_geoip.c \
+	src/test/test_guardfraction.c src/test/test_extorport.c \
+	src/test/test_hs_common.c src/test/test_hs_config.c \
+	src/test/test_hs_cell.c src/test/test_hs_ntor.c \
+	src/test/test_hs_service.c src/test/test_hs_client.c \
+	src/test/test_hs_intropoint.c src/test/test_hs_control.c \
+	src/test/test_hs_ob.c src/test/test_handles.c \
+	src/test/test_hs_cache.c src/test/test_hs_descriptor.c \
+	src/test/test_hs_dos.c src/test/test_hs_metrics.c \
+	src/test/test_hs_pow.c src/test/test_keypin.c \
+	src/test/test_link_handshake.c src/test/test_logging.c \
+	src/test/test_mainloop.c src/test/test_metrics.c \
+	src/test/test_microdesc.c src/test/test_namemap.c \
+	src/test/test_netinfo.c src/test/test_nodelist.c \
+	src/test/test_ntor_v3.c src/test/test_oom.c \
+	src/test/test_oos.c src/test/test_options.c \
+	src/test/test_options_act.c src/test/test_pem.c \
+	src/test/test_periodic_event.c src/test/test_policy.c \
+	src/test/test_process.c src/test/test_process_descs.c \
+	src/test/test_prob_distr.c src/test/test_procmon.c \
+	src/test/test_proto_haproxy.c src/test/test_proto_http.c \
+	src/test/test_proto_misc.c src/test/test_protover.c \
+	src/test/test_pt.c src/test/test_pubsub_build.c \
+	src/test/test_pubsub_msg.c src/test/test_relay.c \
+	src/test/test_relaycell.c src/test/test_relaycrypt.c \
+	src/test/test_replay.c src/test/test_router.c \
+	src/test/test_routerkeys.c src/test/test_routerlist.c \
+	src/test/test_routerset.c src/test/test_sandbox.c \
+	src/test/test_scheduler.c src/test/test_sendme.c \
+	src/test/test_shared_random.c src/test/test_socks.c \
+	src/test/test_statefile.c src/test/test_stats.c \
+	src/test/test_status.c src/test/test_storagedir.c \
+	src/test/test_threads.c src/test/test_token_bucket.c \
+	src/test/test_tortls.c src/test/test_util.c \
+	src/test/test_util_format.c src/test/test_util_process.c \
+	src/test/test_voting_flags.c src/test/test_voting_schedule.c \
+	src/test/test_x509.c src/test/test_helpers.c \
+	src/test/test_dns.c src/test/test_parsecommon.c \
+	src/test/testing_common.c src/test/testing_rsakeys.c \
+	src/ext/tinytest.c src/test/test_crypto_openssl.c \
+	src/test/test_tortls_openssl.c
 @UNITTESTS_ENABLED_TRUE@am__objects_126 =  \
 @UNITTESTS_ENABLED_TRUE@	src/test/test-fakecircs.$(OBJEXT) \
 @UNITTESTS_ENABLED_TRUE@	src/test/test-log_test_helpers.$(OBJEXT) \
@@ -2788,6 +2808,7 @@ am__src_test_test_SOURCES_DIST = src/test/fakecircs.c \
 @UNITTESTS_ENABLED_TRUE@	src/test/test-test_crypto.$(OBJEXT) \
 @UNITTESTS_ENABLED_TRUE@	src/test/test-test_crypto_ope.$(OBJEXT) \
 @UNITTESTS_ENABLED_TRUE@	src/test/test-test_crypto_rng.$(OBJEXT) \
+@UNITTESTS_ENABLED_TRUE@	src/test/test-test_crypto_cgo.$(OBJEXT) \
 @UNITTESTS_ENABLED_TRUE@	src/test/test-test_data.$(OBJEXT) \
 @UNITTESTS_ENABLED_TRUE@	src/test/test-test_dir.$(OBJEXT) \
 @UNITTESTS_ENABLED_TRUE@	src/test/test-test_dirauth_ports.$(OBJEXT) \
@@ -3082,14 +3103,16 @@ am__depfiles_remade = src/app/config/$(DEPDIR)/config.Po \
 	src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_fast.Po \
 	src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_ntor.Po \
 	src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_ntor_v3.Po \
-	src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_tap.Po \
 	src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto.Po \
+	src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_cgo.Po \
+	src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_tor1.Po \
 	src/core/crypto/$(DEPDIR)/onion_crypto.Po \
 	src/core/crypto/$(DEPDIR)/onion_fast.Po \
 	src/core/crypto/$(DEPDIR)/onion_ntor.Po \
 	src/core/crypto/$(DEPDIR)/onion_ntor_v3.Po \
-	src/core/crypto/$(DEPDIR)/onion_tap.Po \
 	src/core/crypto/$(DEPDIR)/relay_crypto.Po \
+	src/core/crypto/$(DEPDIR)/relay_crypto_cgo.Po \
+	src/core/crypto/$(DEPDIR)/relay_crypto_tor1.Po \
 	src/core/mainloop/$(DEPDIR)/connection.Po \
 	src/core/mainloop/$(DEPDIR)/cpuworker.Po \
 	src/core/mainloop/$(DEPDIR)/libtor_app_testing_a-connection.Po \
@@ -3171,6 +3194,7 @@ am__depfiles_remade = src/app/config/$(DEPDIR)/config.Po \
 	src/core/or/$(DEPDIR)/libtor_app_testing_a-protover.Po \
 	src/core/or/$(DEPDIR)/libtor_app_testing_a-reasons.Po \
 	src/core/or/$(DEPDIR)/libtor_app_testing_a-relay.Po \
+	src/core/or/$(DEPDIR)/libtor_app_testing_a-relay_msg.Po \
 	src/core/or/$(DEPDIR)/libtor_app_testing_a-scheduler.Po \
 	src/core/or/$(DEPDIR)/libtor_app_testing_a-scheduler_kist.Po \
 	src/core/or/$(DEPDIR)/libtor_app_testing_a-scheduler_vanilla.Po \
@@ -3188,6 +3212,7 @@ am__depfiles_remade = src/app/config/$(DEPDIR)/config.Po \
 	src/core/or/$(DEPDIR)/protover.Po \
 	src/core/or/$(DEPDIR)/reasons.Po \
 	src/core/or/$(DEPDIR)/relay.Po \
+	src/core/or/$(DEPDIR)/relay_msg.Po \
 	src/core/or/$(DEPDIR)/scheduler.Po \
 	src/core/or/$(DEPDIR)/scheduler_kist.Po \
 	src/core/or/$(DEPDIR)/scheduler_vanilla.Po \
@@ -3277,6 +3302,7 @@ am__depfiles_remade = src/app/config/$(DEPDIR)/config.Po \
 	src/ext/keccak-tiny/$(DEPDIR)/libkeccak_tiny_a-keccak-tiny-unrolled.Po \
 	src/ext/mulodi/$(DEPDIR)/lib_libtor_ctime_a-mulodi4.Po \
 	src/ext/mulodi/$(DEPDIR)/lib_libtor_ctime_testing_a-mulodi4.Po \
+	src/ext/polyval/$(DEPDIR)/libpolyval_a-polyval.Po \
 	src/ext/trunnel/$(DEPDIR)/trunnel_libor_trunnel_a-trunnel.Po \
 	src/ext/trunnel/$(DEPDIR)/trunnel_libor_trunnel_testing_a-trunnel.Po \
 	src/feature/api/$(DEPDIR)/core_libtor_app_testing_a-tor_api.Po \
@@ -3881,6 +3907,7 @@ am__depfiles_remade = src/app/config/$(DEPDIR)/config.Po \
 	src/test/$(DEPDIR)/test-test_controller.Po \
 	src/test/$(DEPDIR)/test-test_controller_events.Po \
 	src/test/$(DEPDIR)/test-test_crypto.Po \
+	src/test/$(DEPDIR)/test-test_crypto_cgo.Po \
 	src/test/$(DEPDIR)/test-test_crypto_ope.Po \
 	src/test/$(DEPDIR)/test-test_crypto_openssl.Po \
 	src/test/$(DEPDIR)/test-test_crypto_rng.Po \
@@ -4104,6 +4131,7 @@ am__depfiles_remade = src/app/config/$(DEPDIR)/config.Po \
 	src/trunnel/$(DEPDIR)/libor_trunnel_a-pwbox.Po \
 	src/trunnel/$(DEPDIR)/libor_trunnel_a-sendme_cell.Po \
 	src/trunnel/$(DEPDIR)/libor_trunnel_a-socks5.Po \
+	src/trunnel/$(DEPDIR)/libor_trunnel_a-subproto_request.Po \
 	src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-channelpadding_negotiation.Po \
 	src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-circpad_negotiation.Po \
 	src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-conflux.Po \
@@ -4116,6 +4144,7 @@ am__depfiles_remade = src/app/config/$(DEPDIR)/config.Po \
 	src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-pwbox.Po \
 	src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-sendme_cell.Po \
 	src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-socks5.Po \
+	src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-subproto_request.Po \
 	src/trunnel/hs/$(DEPDIR)/libor_trunnel_a-cell_establish_intro.Po \
 	src/trunnel/hs/$(DEPDIR)/libor_trunnel_a-cell_introduce1.Po \
 	src/trunnel/hs/$(DEPDIR)/libor_trunnel_a-cell_rendezvous.Po \
@@ -4146,6 +4175,7 @@ SOURCES = $(src_core_libtor_app_testing_a_SOURCES) \
 	$(src_ext_equix_libequix_a_SOURCES) \
 	$(src_ext_equix_libhashx_a_SOURCES) \
 	$(src_ext_keccak_tiny_libkeccak_tiny_a_SOURCES) \
+	$(src_ext_polyval_libpolyval_a_SOURCES) \
 	$(src_lib_libcurve25519_donna_a_SOURCES) \
 	$(src_lib_libtor_buf_testing_a_SOURCES) \
 	$(src_lib_libtor_buf_a_SOURCES) \
@@ -4290,6 +4320,7 @@ DIST_SOURCES = $(am__src_core_libtor_app_testing_a_SOURCES_DIST) \
 	$(src_ext_equix_libequix_a_SOURCES) \
 	$(src_ext_equix_libhashx_a_SOURCES) \
 	$(am__src_ext_keccak_tiny_libkeccak_tiny_a_SOURCES_DIST) \
+	$(src_ext_polyval_libpolyval_a_SOURCES) \
 	$(am__src_lib_libcurve25519_donna_a_SOURCES_DIST) \
 	$(src_lib_libtor_buf_testing_a_SOURCES) \
 	$(src_lib_libtor_buf_a_SOURCES) \
@@ -4507,7 +4538,9 @@ am__noinst_HEADERS_DIST = src/ext/ht.h src/ext/byteorder.h \
 	src/ext/equix/hashx/src/virtual_memory.h \
 	src/ext/equix/include/equix.h src/ext/equix/src/context.h \
 	src/ext/equix/src/solver_heap.h src/ext/equix/src/solver.h \
-	src/ext/keccak-tiny/keccak-tiny.h src/lib/arch/bytes.h \
+	src/ext/keccak-tiny/keccak-tiny.h src/ext/polyval/polyval.h \
+	src/ext/polyval/pclmul.c src/ext/polyval/ctmul64.c \
+	src/ext/polyval/ctmul.c src/lib/arch/bytes.h \
 	src/lib/buf/buffers.h src/lib/err/backtrace.h \
 	src/lib/err/torerr.h src/lib/err/torerr_sys.h \
 	src/lib/cc/compat_compiler.h src/lib/cc/ctassert.h \
@@ -4629,12 +4662,15 @@ am__noinst_HEADERS_DIST = src/ext/ht.h src/ext/byteorder.h \
 	src/trunnel/sendme_cell.h src/trunnel/flow_control_cells.h \
 	src/trunnel/congestion_control.h src/trunnel/socks5.h \
 	src/trunnel/netinfo.h src/trunnel/circpad_negotiation.h \
-	src/trunnel/conflux.h src/core/crypto/hs_ntor.h \
-	src/core/crypto/onion_crypto.h src/core/crypto/onion_fast.h \
-	src/core/crypto/onion_ntor.h src/core/crypto/onion_ntor_v3.h \
-	src/core/crypto/onion_tap.h src/core/crypto/relay_crypto.h \
-	src/core/mainloop/connection.h src/core/mainloop/cpuworker.h \
-	src/core/mainloop/mainloop.h \
+	src/trunnel/conflux.h src/trunnel/subproto_request.h \
+	src/core/crypto/hs_ntor.h src/core/crypto/onion_crypto.h \
+	src/core/crypto/onion_fast.h src/core/crypto/onion_ntor.h \
+	src/core/crypto/onion_ntor_v3.h src/core/crypto/relay_crypto.h \
+	src/core/crypto/relay_crypto_st.h \
+	src/core/crypto/relay_crypto_cgo.h \
+	src/core/crypto/relay_crypto_tor1.h \
+	src/core/crypto/tor1_crypt_st.h src/core/mainloop/connection.h \
+	src/core/mainloop/cpuworker.h src/core/mainloop/mainloop.h \
 	src/core/mainloop/mainloop_pubsub.h \
 	src/core/mainloop/mainloop_state.inc \
 	src/core/mainloop/mainloop_state_st.h \
@@ -4670,8 +4706,9 @@ am__noinst_HEADERS_DIST = src/ext/ht.h src/ext/byteorder.h \
 	src/core/or/origin_circuit_st.h src/core/or/policies.h \
 	src/core/or/port_cfg_st.h src/core/or/protover.h \
 	src/core/or/reasons.h src/core/or/relay.h \
-	src/core/or/relay_crypto_st.h src/core/or/scheduler.h \
-	src/core/or/sendme.h src/core/or/congestion_control_flow.h \
+	src/core/or/relay_msg.h src/core/or/relay_msg_st.h \
+	src/core/or/scheduler.h src/core/or/sendme.h \
+	src/core/or/congestion_control_flow.h \
 	src/core/or/congestion_control_common.h \
 	src/core/or/congestion_control_vegas.h src/core/or/conflux.h \
 	src/core/or/conflux_cell.h src/core/or/conflux_params.h \
@@ -4826,8 +4863,8 @@ am__noinst_HEADERS_DIST = src/ext/ht.h src/ext/byteorder.h \
 	src/test/test_tortls.h src/test/test_descriptors.inc \
 	src/test/example_extrainfo.inc \
 	src/test/failing_routerdescs.inc src/test/ed25519_vectors.inc \
-	src/test/test_hs_descriptor.inc src/test/vote_descriptors.inc \
-	src/test/fuzz/fuzzing.h
+	src/test/cgo_vectors.inc src/test/test_hs_descriptor.inc \
+	src/test/vote_descriptors.inc src/test/fuzz/fuzzing.h
 HEADERS = $(noinst_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) \
 	$(LISP)orconfig.h.in
@@ -5291,9 +5328,9 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
 noinst_LIBRARIES = $(LIBED25519_REF10) $(LIBED25519_DONNA) \
-	$(EQUIX_LIBS) $(am__append_6) src/lib/libtor-buf.a \
-	$(am__append_7) src/lib/libtor-err.a $(am__append_8) \
-	src/lib/libtor-ctime.a $(am__append_9) \
+	$(EQUIX_LIBS) $(am__append_6) $(LIBPOLYVAL) \
+	src/lib/libtor-buf.a $(am__append_7) src/lib/libtor-err.a \
+	$(am__append_8) src/lib/libtor-ctime.a $(am__append_9) \
 	src/lib/libtor-compress.a $(am__append_10) \
 	src/lib/libtor-confmgt.a $(am__append_11) \
 	src/lib/libtor-container.a $(am__append_12) \
@@ -5545,7 +5582,7 @@ EXTRA_DIST = src/ext/ext.md src/ext/timeouts/bench/bench-add.lua \
 # ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS = $(EXTHEADERS) $(ED25519_REF10_HDRS) \
 	$(ED25519_DONNA_HDRS) $(EQUIX_HDRS) $(am__append_5) \
-	src/lib/arch/bytes.h src/lib/buf/buffers.h \
+	$(POLYVAL_HDRS) src/lib/arch/bytes.h src/lib/buf/buffers.h \
 	src/lib/err/backtrace.h src/lib/err/torerr.h \
 	src/lib/err/torerr_sys.h src/lib/cc/compat_compiler.h \
 	src/lib/cc/ctassert.h src/lib/cc/tokpaste.h \
@@ -5655,8 +5692,11 @@ noinst_HEADERS = $(EXTHEADERS) $(ED25519_REF10_HDRS) \
 	src/lib/wallclock/wallclock_sys.h $(TRUNNELHEADERS) \
 	src/core/crypto/hs_ntor.h src/core/crypto/onion_crypto.h \
 	src/core/crypto/onion_fast.h src/core/crypto/onion_ntor.h \
-	src/core/crypto/onion_ntor_v3.h src/core/crypto/onion_tap.h \
-	src/core/crypto/relay_crypto.h src/core/mainloop/connection.h \
+	src/core/crypto/onion_ntor_v3.h src/core/crypto/relay_crypto.h \
+	src/core/crypto/relay_crypto_st.h \
+	src/core/crypto/relay_crypto_cgo.h \
+	src/core/crypto/relay_crypto_tor1.h \
+	src/core/crypto/tor1_crypt_st.h src/core/mainloop/connection.h \
 	src/core/mainloop/cpuworker.h src/core/mainloop/mainloop.h \
 	src/core/mainloop/mainloop_pubsub.h \
 	src/core/mainloop/mainloop_state.inc \
@@ -5693,8 +5733,9 @@ noinst_HEADERS = $(EXTHEADERS) $(ED25519_REF10_HDRS) \
 	src/core/or/origin_circuit_st.h src/core/or/policies.h \
 	src/core/or/port_cfg_st.h src/core/or/protover.h \
 	src/core/or/reasons.h src/core/or/relay.h \
-	src/core/or/relay_crypto_st.h src/core/or/scheduler.h \
-	src/core/or/sendme.h src/core/or/congestion_control_flow.h \
+	src/core/or/relay_msg.h src/core/or/relay_msg_st.h \
+	src/core/or/scheduler.h src/core/or/sendme.h \
+	src/core/or/congestion_control_flow.h \
 	src/core/or/congestion_control_common.h \
 	src/core/or/congestion_control_vegas.h src/core/or/conflux.h \
 	src/core/or/conflux_cell.h src/core/or/conflux_params.h \
@@ -5848,8 +5889,9 @@ noinst_HEADERS = $(EXTHEADERS) $(ED25519_REF10_HDRS) \
 	src/test/test_tortls.h src/test/test_descriptors.inc \
 	src/test/example_extrainfo.inc \
 	src/test/failing_routerdescs.inc src/test/ed25519_vectors.inc \
-	src/test/test_descriptors.inc src/test/test_hs_descriptor.inc \
-	src/test/vote_descriptors.inc src/test/fuzz/fuzzing.h
+	src/test/cgo_vectors.inc src/test/test_descriptors.inc \
+	src/test/test_hs_descriptor.inc src/test/vote_descriptors.inc \
+	src/test/fuzz/fuzzing.h
 CLEANFILES = micro-revision.i micro-revision.tmp $(asciidoc_product)
 DISTCLEANFILES = $(html_in) $(man_in)
 MOSTLYCLEANFILES = libtor.a $(am__append_2)
@@ -5883,12 +5925,12 @@ TOR_UTIL_LIBS = \
 	src/lib/libtor-sandbox.a \
 	src/lib/libtor-container.a \
 	src/lib/libtor-net.a \
-	src/lib/libtor-thread.a \
 	src/lib/libtor-memarea.a \
 	src/lib/libtor-math.a \
 	src/lib/libtor-meminfo.a \
 	src/lib/libtor-osinfo.a \
 	src/lib/libtor-log.a \
+	src/lib/libtor-thread.a \
 	src/lib/libtor-lock.a \
 	src/lib/libtor-fdio.a \
 	src/lib/libtor-string.a \
@@ -5919,13 +5961,13 @@ TOR_UTIL_LIBS = \
 @UNITTESTS_ENABLED_TRUE@	src/lib/libtor-sandbox-testing.a \
 @UNITTESTS_ENABLED_TRUE@	src/lib/libtor-container-testing.a \
 @UNITTESTS_ENABLED_TRUE@	src/lib/libtor-net-testing.a \
-@UNITTESTS_ENABLED_TRUE@	src/lib/libtor-thread-testing.a \
 @UNITTESTS_ENABLED_TRUE@	src/lib/libtor-memarea-testing.a \
 @UNITTESTS_ENABLED_TRUE@	src/lib/libtor-math-testing.a \
 @UNITTESTS_ENABLED_TRUE@	src/lib/libtor-meminfo-testing.a \
 @UNITTESTS_ENABLED_TRUE@	src/lib/libtor-osinfo-testing.a \
 @UNITTESTS_ENABLED_TRUE@	src/lib/libtor-term-testing.a \
 @UNITTESTS_ENABLED_TRUE@	src/lib/libtor-log-testing.a \
+@UNITTESTS_ENABLED_TRUE@	src/lib/libtor-thread-testing.a \
 @UNITTESTS_ENABLED_TRUE@	src/lib/libtor-lock-testing.a \
 @UNITTESTS_ENABLED_TRUE@	src/lib/libtor-fdio-testing.a \
 @UNITTESTS_ENABLED_TRUE@	src/lib/libtor-string-testing.a \
@@ -5942,7 +5984,7 @@ TOR_UTIL_LIBS = \
 
 # Internal crypto libraries used in Tor
 TOR_CRYPTO_LIBS = src/lib/libtor-tls.a src/lib/libtor-crypt-ops.a \
-	$(LIBKECCAK_TINY) $(LIBDONNA) $(am__append_1)
+	$(LIBKECCAK_TINY) $(LIBDONNA) $(LIBPOLYVAL) $(am__append_1)
 
 # Variants of the above for linking the testing variant of tor (for coverage
 # and tests)
@@ -5951,6 +5993,7 @@ TOR_CRYPTO_LIBS = src/lib/libtor-tls.a src/lib/libtor-crypt-ops.a \
 @UNITTESTS_ENABLED_TRUE@	src/lib/libtor-crypt-ops-testing.a \
 @UNITTESTS_ENABLED_TRUE@	$(LIBKECCAK_TINY) \
 @UNITTESTS_ENABLED_TRUE@	$(LIBDONNA) \
+@UNITTESTS_ENABLED_TRUE@        $(LIBPOLYVAL) \
 @UNITTESTS_ENABLED_TRUE@	$(EQUIX_LIBS)
 
 
@@ -5980,15 +6023,15 @@ TOR_LDFLAGS_CRYPTLIB = @TOR_LDFLAGS_openssl@
 TOR_LIBS_CRYPTLIB = @TOR_OPENSSL_LIBS@ $(am__append_4)
 TOR_CFLAGS_CRYPTLIB = $(am__append_3)
 EXTHEADERS = \
-  src/ext/ht.h		\
-  src/ext/byteorder.h   \
-  src/ext/tinytest.h	\
+  src/ext/ht.h \
+  src/ext/byteorder.h \
+  src/ext/tinytest.h \
   src/ext/tor_readpassphrase.h \
-  src/ext/strlcat.c	\
-  src/ext/strlcpy.c	\
-  src/ext/getdelim.c    \
+  src/ext/strlcat.c \
+  src/ext/strlcpy.c \
+  src/ext/getdelim.c \
   src/ext/tinytest_macros.h \
-  src/ext/tor_queue.h	\
+  src/ext/tor_queue.h \
   src/ext/siphash.h \
   src/ext/compat_blake2.h \
   src/ext/timeouts/timeout.h \
@@ -6171,6 +6214,19 @@ EQUIX_LIBS = \
 @BUILD_KECCAK_TINY_TRUE@	src/ext/keccak-tiny/keccak-tiny.h
 
 @BUILD_KECCAK_TINY_TRUE@LIBKECCAK_TINY = src/ext/keccak-tiny/libkeccak-tiny.a
+src_ext_polyval_libpolyval_a_CFLAGS = \
+  @CFLAGS_CONSTTIME@
+
+src_ext_polyval_libpolyval_a_SOURCES = \
+   src/ext/polyval/polyval.c
+
+POLYVAL_HDRS = \
+   src/ext/polyval/polyval.h \
+   src/ext/polyval/pclmul.c \
+   src/ext/polyval/ctmul64.c \
+   src/ext/polyval/ctmul.c
+
+LIBPOLYVAL = src/ext/polyval/libpolyval.a
 
 # ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_buf_a_SOURCES = \
@@ -6198,8 +6254,8 @@ src_lib_libtor_err_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
 # ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_ctime_a_SOURCES = \
-	$(mulodi4_source) 				\
-	src/ext/csiphash.c   				\
+	$(mulodi4_source)				\
+	src/ext/csiphash.c				\
 	src/lib/ctime/di_ops.c
 
 src_lib_libtor_ctime_testing_a_SOURCES = \
@@ -6225,10 +6281,10 @@ src_lib_libtor_compress_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
 # ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_confmgt_a_SOURCES = \
-	src/lib/confmgt/confmgt.c      			\
-	src/lib/confmgt/structvar.c                      \
-	src/lib/confmgt/type_defs.c                      \
-	src/lib/confmgt/typedvar.c                      \
+	src/lib/confmgt/confmgt.c			\
+	src/lib/confmgt/structvar.c			\
+	src/lib/confmgt/type_defs.c			\
+	src/lib/confmgt/typedvar.c			\
 	src/lib/confmgt/unitparse.c
 
 src_lib_libtor_confmgt_testing_a_SOURCES = \
@@ -6422,7 +6478,7 @@ src_lib_libtor_malloc_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
 # ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_math_a_SOURCES = \
-		src/lib/math/fp.c		\
+		src/lib/math/fp.c	\
 		src/lib/math/laplace.c 	\
 		src/lib/math/prob_distr.c
 
@@ -6455,8 +6511,8 @@ src_lib_libtor_meminfo_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 # ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_metrics_a_SOURCES = \
 	src/lib/metrics/metrics_store.c		\
-	src/lib/metrics/metrics_store_entry.c		\
-	src/lib/metrics/metrics_common.c		\
+	src/lib/metrics/metrics_store_entry.c	\
+	src/lib/metrics/metrics_common.c	\
 	src/lib/metrics/prometheus.c
 
 src_lib_libtor_metrics_testing_a_SOURCES = \
@@ -6468,7 +6524,7 @@ src_lib_libtor_metrics_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 # ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_net_a_SOURCES = \
 	src/lib/net/address.c			\
-	src/lib/net/alertsock.c                 \
+	src/lib/net/alertsock.c			\
 	src/lib/net/buffers_net.c		\
 	src/lib/net/gethostname.c		\
 	src/lib/net/inaddr.c			\
@@ -6552,7 +6608,7 @@ src_lib_libtor_string_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
 # ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_smartlist_core_a_SOURCES = \
-	src/lib/smartlist_core/smartlist_core.c                 \
+	src/lib/smartlist_core/smartlist_core.c			\
 	src/lib/smartlist_core/smartlist_split.c
 
 src_lib_libtor_smartlist_core_testing_a_SOURCES = \
@@ -6661,45 +6717,48 @@ TRUNNELINPUTS = \
 	src/trunnel/congestion_control.trunnel \
 	src/trunnel/socks5.trunnel \
 	src/trunnel/circpad_negotiation.trunnel \
-	src/trunnel/conflux.trunnel
+	src/trunnel/conflux.trunnel \
+	src/trunnel/subproto_request.trunnel
 
 TRUNNELSOURCES = \
 	src/ext/trunnel/trunnel.c \
 	src/trunnel/ed25519_cert.c \
 	src/trunnel/extension.c \
 	src/trunnel/link_handshake.c \
-	src/trunnel/pwbox.c			\
-	src/trunnel/hs/cell_establish_intro.c	\
+	src/trunnel/pwbox.c \
+	src/trunnel/hs/cell_establish_intro.c \
 	src/trunnel/hs/cell_introduce1.c \
 	src/trunnel/hs/cell_rendezvous.c \
 	src/trunnel/channelpadding_negotiation.c \
-	src/trunnel/sendme_cell.c                    \
-	src/trunnel/flow_control_cells.c                    \
-	src/trunnel/congestion_control.c       \
+	src/trunnel/sendme_cell.c \
+	src/trunnel/flow_control_cells.c \
+	src/trunnel/congestion_control.c \
 	src/trunnel/socks5.c \
 	src/trunnel/netinfo.c \
 	src/trunnel/circpad_negotiation.c \
-	src/trunnel/conflux.c
+	src/trunnel/conflux.c \
+	src/trunnel/subproto_request.c
 
 TRUNNELHEADERS = \
-	src/ext/trunnel/trunnel.h		\
-	src/ext/trunnel/trunnel-impl.h		\
-	src/trunnel/trunnel-local.h		\
-	src/trunnel/ed25519_cert.h		\
+	src/ext/trunnel/trunnel.h \
+	src/ext/trunnel/trunnel-impl.h \
+	src/trunnel/trunnel-local.h \
+	src/trunnel/ed25519_cert.h \
 	src/trunnel/extension.h \
-	src/trunnel/link_handshake.h		\
-	src/trunnel/pwbox.h			\
-	src/trunnel/hs/cell_establish_intro.h	\
+	src/trunnel/link_handshake.h \
+	src/trunnel/pwbox.h \
+	src/trunnel/hs/cell_establish_intro.h \
 	src/trunnel/hs/cell_introduce1.h \
 	src/trunnel/hs/cell_rendezvous.h \
 	src/trunnel/channelpadding_negotiation.h \
-	src/trunnel/sendme_cell.h                    \
-	src/trunnel/flow_control_cells.h                    \
-	src/trunnel/congestion_control.h    \
-	src/trunnel/socks5.h                    \
+	src/trunnel/sendme_cell.h \
+	src/trunnel/flow_control_cells.h \
+	src/trunnel/congestion_control.h \
+	src/trunnel/socks5.h \
 	src/trunnel/netinfo.h \
 	src/trunnel/circpad_negotiation.h \
-	src/trunnel/conflux.h
+	src/trunnel/conflux.h \
+	src/trunnel/subproto_request.h
 
 src_trunnel_libor_trunnel_a_SOURCES = $(TRUNNELSOURCES)
 src_trunnel_libor_trunnel_a_CPPFLAGS = \
@@ -6754,7 +6813,9 @@ src_trunnel_libor_trunnel_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 LIBTOR_APP_A_SOURCES = src/core/crypto/hs_ntor.c \
 	src/core/crypto/onion_crypto.c src/core/crypto/onion_fast.c \
 	src/core/crypto/onion_ntor.c src/core/crypto/onion_ntor_v3.c \
-	src/core/crypto/onion_tap.c src/core/crypto/relay_crypto.c \
+	src/core/crypto/relay_crypto.c \
+	src/core/crypto/relay_crypto_cgo.c \
+	src/core/crypto/relay_crypto_tor1.c \
 	src/core/mainloop/connection.c src/core/mainloop/cpuworker.c \
 	src/core/mainloop/mainloop.c \
 	src/core/mainloop/mainloop_pubsub.c \
@@ -6774,9 +6835,10 @@ LIBTOR_APP_A_SOURCES = src/core/crypto/hs_ntor.c \
 	src/core/or/or_periodic.c src/core/or/or_sys.c \
 	src/core/or/orconn_event.c src/core/or/policies.c \
 	src/core/or/protover.c src/core/or/reasons.c \
-	src/core/or/relay.c src/core/or/scheduler.c \
-	src/core/or/scheduler_kist.c src/core/or/scheduler_vanilla.c \
-	src/core/or/sendme.c src/core/or/congestion_control_common.c \
+	src/core/or/relay.c src/core/or/relay_msg.c \
+	src/core/or/scheduler.c src/core/or/scheduler_kist.c \
+	src/core/or/scheduler_vanilla.c src/core/or/sendme.c \
+	src/core/or/congestion_control_common.c \
 	src/core/or/congestion_control_vegas.c \
 	src/core/or/congestion_control_flow.c src/core/or/conflux.c \
 	src/core/or/conflux_cell.c src/core/or/conflux_params.c \
@@ -6905,7 +6967,7 @@ MODULE_POW_SOURCES = \
 MODULE_RELAY_SOURCES = \
 	src/feature/relay/circuitbuild_relay.c			\
 	src/feature/relay/dns.c					\
-	src/feature/relay/ext_orport.c		                \
+	src/feature/relay/ext_orport.c				\
 	src/feature/relay/routermode.c				\
 	src/feature/relay/relay_config.c			\
 	src/feature/relay/relay_handshake.c			\
@@ -7010,8 +7072,8 @@ TEST_CHUTNEY_FLAVORS_MIXED = mixed+hs-v3
 TEST_CHUTNEY_FLAVORS_IPV6_MIXED = mixed+hs-v3-ipv6
 src_test_AM_CPPFLAGS = -DSHARE_DATADIR="\"$(datadir)\"" \
 	-DLOCALSTATEDIR="\"$(localstatedir)\"" \
-	-DBINDIR="\"$(bindir)\""	       \
-	-DTOR_UNIT_TESTS                       \
+	-DBINDIR="\"$(bindir)\"" \
+	-DTOR_UNIT_TESTS \
 	$(AM_CPPFLAGS)
 
 
@@ -7078,7 +7140,7 @@ src_test_bench_LDFLAGS = @TOR_LDFLAGS_zlib@ $(TOR_LDFLAGS_CRYPTLIB) \
 	@TOR_LDFLAGS_libevent@
 
 src_test_bench_LDADD = \
-        libtor.a \
+	libtor.a \
 	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ @TOR_LIBEVENT_LIBS@ \
 	$(TOR_LIBS_CRYPTLIB) @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_SHLWAPI@ @TOR_LIB_GDI@ @TOR_LIB_USERENV@ \
 	@CURVE25519_LIBS@ \
@@ -7123,7 +7185,7 @@ src_test_test_hs_ntor_cl_LDADD = \
 	libtor.a \
 	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ \
 	$(TOR_LIBS_CRYPTLIB) @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_SHLWAPI@ @TOR_LIB_GDI@ \
-        @CURVE25519_LIBS@ @TOR_TRACE_LIBS@
+	@CURVE25519_LIBS@ @TOR_TRACE_LIBS@
 
 src_test_test_hs_ntor_cl_AM_CPPFLAGS = \
 	$(AM_CPPFLAGS)
@@ -7133,7 +7195,7 @@ src_test_test_hs_ntor_cl_AM_CPPFLAGS = \
 @UNITTESTS_ENABLED_TRUE@	$(TOR_UTIL_TESTING_LIBS) \
 @UNITTESTS_ENABLED_TRUE@	@TOR_LIB_MATH@ \
 @UNITTESTS_ENABLED_TRUE@	@TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_SHLWAPI@ @TOR_LIB_GDI@ @TOR_LIB_USERENV@ \
-@UNITTESTS_ENABLED_TRUE@        @TOR_TRACE_LIBS@
+@UNITTESTS_ENABLED_TRUE@	@TOR_TRACE_LIBS@
 
 @UNITTESTS_ENABLED_TRUE@src_test_test_bt_cl_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 @UNITTESTS_ENABLED_TRUE@src_test_test_bt_cl_CPPFLAGS = $(src_test_AM_CPPFLAGS) $(TEST_CPPFLAGS)
@@ -7142,7 +7204,7 @@ src_tools_tor_resolve_LDFLAGS = @TOR_LDFLAGS_openssl@
 src_tools_tor_resolve_LDADD = \
 	src/trunnel/libor-trunnel.a \
 	$(TOR_UTIL_LIBS) \
-        $(TOR_CRYPTO_LIBS) $(TOR_LIBS_CRYPTLIB)\
+	$(TOR_CRYPTO_LIBS) $(TOR_LIBS_CRYPTLIB)\
 	@TOR_LIB_MATH@ @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_SHLWAPI@ @TOR_LIB_USERENV@
 
 @COVERAGE_ENABLED_TRUE@src_tools_tor_cov_resolve_SOURCES = src/tools/tor-resolve.c
@@ -7167,8 +7229,8 @@ src_tools_tor_print_ed_signing_cert_SOURCES = src/tools/tor-print-ed-signing-cer
 src_tools_tor_print_ed_signing_cert_LDFLAGS = @TOR_LDFLAGS_zlib@ @TOR_LDFLAGS_openssl@
 src_tools_tor_print_ed_signing_cert_LDADD = \
 	src/trunnel/libor-trunnel.a \
-        $(TOR_CRYPTO_LIBS) \
-        $(TOR_UTIL_LIBS) \
+	$(TOR_CRYPTO_LIBS) \
+	$(TOR_UTIL_LIBS) \
 	@TOR_LIB_MATH@ $(TOR_LIBS_CRYPTLIB) \
 	@TOR_LIB_WS32@ @TOR_LIB_USERENV@ @TOR_LIB_SHLWAPI@ @TOR_LIB_GDI@
 
@@ -7183,8 +7245,8 @@ src_tools_tor_print_ed_signing_cert_LDADD = \
 @COVERAGE_ENABLED_TRUE@@USE_NSS_FALSE@    @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_SHLWAPI@ @TOR_LIB_GDI@ @CURVE25519_LIBS@
 
 @BUILD_LIBTORRUNNER_TRUE@src_tools_libtorrunner_a_SOURCES = \
-@BUILD_LIBTORRUNNER_TRUE@        src/tools/tor_runner.c \
-@BUILD_LIBTORRUNNER_TRUE@        src/feature/api/tor_api.c
+@BUILD_LIBTORRUNNER_TRUE@	src/tools/tor_runner.c \
+@BUILD_LIBTORRUNNER_TRUE@	src/feature/api/tor_api.c
 
 confdir = $(sysconfdir)/tor
 tordatadir = $(datadir)/tor
@@ -7780,10 +7842,13 @@ src/core/crypto/libtor_app_testing_a-onion_ntor.$(OBJEXT):  \
 src/core/crypto/libtor_app_testing_a-onion_ntor_v3.$(OBJEXT):  \
 	src/core/crypto/$(am__dirstamp) \
 	src/core/crypto/$(DEPDIR)/$(am__dirstamp)
-src/core/crypto/libtor_app_testing_a-onion_tap.$(OBJEXT):  \
+src/core/crypto/libtor_app_testing_a-relay_crypto.$(OBJEXT):  \
 	src/core/crypto/$(am__dirstamp) \
 	src/core/crypto/$(DEPDIR)/$(am__dirstamp)
-src/core/crypto/libtor_app_testing_a-relay_crypto.$(OBJEXT):  \
+src/core/crypto/libtor_app_testing_a-relay_crypto_cgo.$(OBJEXT):  \
+	src/core/crypto/$(am__dirstamp) \
+	src/core/crypto/$(DEPDIR)/$(am__dirstamp)
+src/core/crypto/libtor_app_testing_a-relay_crypto_tor1.$(OBJEXT):  \
 	src/core/crypto/$(am__dirstamp) \
 	src/core/crypto/$(DEPDIR)/$(am__dirstamp)
 src/core/mainloop/$(am__dirstamp):
@@ -7904,6 +7969,9 @@ src/core/or/libtor_app_testing_a-reasons.$(OBJEXT):  \
 	src/core/or/$(am__dirstamp) \
 	src/core/or/$(DEPDIR)/$(am__dirstamp)
 src/core/or/libtor_app_testing_a-relay.$(OBJEXT):  \
+	src/core/or/$(am__dirstamp) \
+	src/core/or/$(DEPDIR)/$(am__dirstamp)
+src/core/or/libtor_app_testing_a-relay_msg.$(OBJEXT):  \
 	src/core/or/$(am__dirstamp) \
 	src/core/or/$(DEPDIR)/$(am__dirstamp)
 src/core/or/libtor_app_testing_a-scheduler.$(OBJEXT):  \
@@ -8508,9 +8576,13 @@ src/core/crypto/onion_ntor.$(OBJEXT): src/core/crypto/$(am__dirstamp) \
 src/core/crypto/onion_ntor_v3.$(OBJEXT):  \
 	src/core/crypto/$(am__dirstamp) \
 	src/core/crypto/$(DEPDIR)/$(am__dirstamp)
-src/core/crypto/onion_tap.$(OBJEXT): src/core/crypto/$(am__dirstamp) \
-	src/core/crypto/$(DEPDIR)/$(am__dirstamp)
 src/core/crypto/relay_crypto.$(OBJEXT):  \
+	src/core/crypto/$(am__dirstamp) \
+	src/core/crypto/$(DEPDIR)/$(am__dirstamp)
+src/core/crypto/relay_crypto_cgo.$(OBJEXT):  \
+	src/core/crypto/$(am__dirstamp) \
+	src/core/crypto/$(DEPDIR)/$(am__dirstamp)
+src/core/crypto/relay_crypto_tor1.$(OBJEXT):  \
 	src/core/crypto/$(am__dirstamp) \
 	src/core/crypto/$(DEPDIR)/$(am__dirstamp)
 src/core/mainloop/connection.$(OBJEXT):  \
@@ -8592,6 +8664,8 @@ src/core/or/protover.$(OBJEXT): src/core/or/$(am__dirstamp) \
 src/core/or/reasons.$(OBJEXT): src/core/or/$(am__dirstamp) \
 	src/core/or/$(DEPDIR)/$(am__dirstamp)
 src/core/or/relay.$(OBJEXT): src/core/or/$(am__dirstamp) \
+	src/core/or/$(DEPDIR)/$(am__dirstamp)
+src/core/or/relay_msg.$(OBJEXT): src/core/or/$(am__dirstamp) \
 	src/core/or/$(DEPDIR)/$(am__dirstamp)
 src/core/or/scheduler.$(OBJEXT): src/core/or/$(am__dirstamp) \
 	src/core/or/$(DEPDIR)/$(am__dirstamp)
@@ -9251,6 +9325,20 @@ src/ext/keccak-tiny/libkeccak-tiny.a: $(src_ext_keccak_tiny_libkeccak_tiny_a_OBJ
 	$(AM_V_at)-rm -f src/ext/keccak-tiny/libkeccak-tiny.a
 	$(AM_V_AR)$(src_ext_keccak_tiny_libkeccak_tiny_a_AR) src/ext/keccak-tiny/libkeccak-tiny.a $(src_ext_keccak_tiny_libkeccak_tiny_a_OBJECTS) $(src_ext_keccak_tiny_libkeccak_tiny_a_LIBADD)
 	$(AM_V_at)$(RANLIB) src/ext/keccak-tiny/libkeccak-tiny.a
+src/ext/polyval/$(am__dirstamp):
+	@$(MKDIR_P) src/ext/polyval
+	@: > src/ext/polyval/$(am__dirstamp)
+src/ext/polyval/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/ext/polyval/$(DEPDIR)
+	@: > src/ext/polyval/$(DEPDIR)/$(am__dirstamp)
+src/ext/polyval/libpolyval_a-polyval.$(OBJEXT):  \
+	src/ext/polyval/$(am__dirstamp) \
+	src/ext/polyval/$(DEPDIR)/$(am__dirstamp)
+
+src/ext/polyval/libpolyval.a: $(src_ext_polyval_libpolyval_a_OBJECTS) $(src_ext_polyval_libpolyval_a_DEPENDENCIES) $(EXTRA_src_ext_polyval_libpolyval_a_DEPENDENCIES) src/ext/polyval/$(am__dirstamp)
+	$(AM_V_at)-rm -f src/ext/polyval/libpolyval.a
+	$(AM_V_AR)$(src_ext_polyval_libpolyval_a_AR) src/ext/polyval/libpolyval.a $(src_ext_polyval_libpolyval_a_OBJECTS) $(src_ext_polyval_libpolyval_a_LIBADD)
+	$(AM_V_at)$(RANLIB) src/ext/polyval/libpolyval.a
 src/ext/curve25519_donna/$(am__dirstamp):
 	@$(MKDIR_P) src/ext/curve25519_donna
 	@: > src/ext/curve25519_donna/$(am__dirstamp)
@@ -10992,6 +11080,9 @@ src/trunnel/libor_trunnel_testing_a-circpad_negotiation.$(OBJEXT):  \
 src/trunnel/libor_trunnel_testing_a-conflux.$(OBJEXT):  \
 	src/trunnel/$(am__dirstamp) \
 	src/trunnel/$(DEPDIR)/$(am__dirstamp)
+src/trunnel/libor_trunnel_testing_a-subproto_request.$(OBJEXT):  \
+	src/trunnel/$(am__dirstamp) \
+	src/trunnel/$(DEPDIR)/$(am__dirstamp)
 
 src/trunnel/libor-trunnel-testing.a: $(src_trunnel_libor_trunnel_testing_a_OBJECTS) $(src_trunnel_libor_trunnel_testing_a_DEPENDENCIES) $(EXTRA_src_trunnel_libor_trunnel_testing_a_DEPENDENCIES) src/trunnel/$(am__dirstamp)
 	$(AM_V_at)-rm -f src/trunnel/libor-trunnel-testing.a
@@ -11043,6 +11134,9 @@ src/trunnel/libor_trunnel_a-circpad_negotiation.$(OBJEXT):  \
 	src/trunnel/$(am__dirstamp) \
 	src/trunnel/$(DEPDIR)/$(am__dirstamp)
 src/trunnel/libor_trunnel_a-conflux.$(OBJEXT):  \
+	src/trunnel/$(am__dirstamp) \
+	src/trunnel/$(DEPDIR)/$(am__dirstamp)
+src/trunnel/libor_trunnel_a-subproto_request.$(OBJEXT):  \
 	src/trunnel/$(am__dirstamp) \
 	src/trunnel/$(DEPDIR)/$(am__dirstamp)
 
@@ -11487,6 +11581,8 @@ src/test/test-test_crypto_ope.$(OBJEXT): src/test/$(am__dirstamp) \
 	src/test/$(DEPDIR)/$(am__dirstamp)
 src/test/test-test_crypto_rng.$(OBJEXT): src/test/$(am__dirstamp) \
 	src/test/$(DEPDIR)/$(am__dirstamp)
+src/test/test-test_crypto_cgo.$(OBJEXT): src/test/$(am__dirstamp) \
+	src/test/$(DEPDIR)/$(am__dirstamp)
 src/test/test-test_data.$(OBJEXT): src/test/$(am__dirstamp) \
 	src/test/$(DEPDIR)/$(am__dirstamp)
 src/test/test-test_dir.$(OBJEXT): src/test/$(am__dirstamp) \
@@ -11833,6 +11929,7 @@ mostlyclean-compile:
 	-rm -f src/ext/equix/src/*.$(OBJEXT)
 	-rm -f src/ext/keccak-tiny/*.$(OBJEXT)
 	-rm -f src/ext/mulodi/*.$(OBJEXT)
+	-rm -f src/ext/polyval/*.$(OBJEXT)
 	-rm -f src/ext/trunnel/*.$(OBJEXT)
 	-rm -f src/feature/api/*.$(OBJEXT)
 	-rm -f src/feature/client/*.$(OBJEXT)
@@ -11924,14 +12021,16 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_fast.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_ntor.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_ntor_v3.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_tap.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_cgo.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_tor1.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/crypto/$(DEPDIR)/onion_crypto.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/crypto/$(DEPDIR)/onion_fast.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/crypto/$(DEPDIR)/onion_ntor.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/crypto/$(DEPDIR)/onion_ntor_v3.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/core/crypto/$(DEPDIR)/onion_tap.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/crypto/$(DEPDIR)/relay_crypto.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/core/crypto/$(DEPDIR)/relay_crypto_cgo.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/core/crypto/$(DEPDIR)/relay_crypto_tor1.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/mainloop/$(DEPDIR)/connection.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/mainloop/$(DEPDIR)/cpuworker.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/mainloop/$(DEPDIR)/libtor_app_testing_a-connection.Po@am__quote@ # am--include-marker
@@ -12013,6 +12112,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/or/$(DEPDIR)/libtor_app_testing_a-protover.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/or/$(DEPDIR)/libtor_app_testing_a-reasons.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/or/$(DEPDIR)/libtor_app_testing_a-relay.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/core/or/$(DEPDIR)/libtor_app_testing_a-relay_msg.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/or/$(DEPDIR)/libtor_app_testing_a-scheduler.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/or/$(DEPDIR)/libtor_app_testing_a-scheduler_kist.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/or/$(DEPDIR)/libtor_app_testing_a-scheduler_vanilla.Po@am__quote@ # am--include-marker
@@ -12030,6 +12130,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/or/$(DEPDIR)/protover.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/or/$(DEPDIR)/reasons.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/or/$(DEPDIR)/relay.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/core/or/$(DEPDIR)/relay_msg.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/or/$(DEPDIR)/scheduler.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/or/$(DEPDIR)/scheduler_kist.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/core/or/$(DEPDIR)/scheduler_vanilla.Po@am__quote@ # am--include-marker
@@ -12119,6 +12220,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/ext/keccak-tiny/$(DEPDIR)/libkeccak_tiny_a-keccak-tiny-unrolled.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/ext/mulodi/$(DEPDIR)/lib_libtor_ctime_a-mulodi4.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/ext/mulodi/$(DEPDIR)/lib_libtor_ctime_testing_a-mulodi4.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/ext/polyval/$(DEPDIR)/libpolyval_a-polyval.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/ext/trunnel/$(DEPDIR)/trunnel_libor_trunnel_a-trunnel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/ext/trunnel/$(DEPDIR)/trunnel_libor_trunnel_testing_a-trunnel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/feature/api/$(DEPDIR)/core_libtor_app_testing_a-tor_api.Po@am__quote@ # am--include-marker
@@ -12728,6 +12830,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/test/$(DEPDIR)/test-test_controller.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/test/$(DEPDIR)/test-test_controller_events.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/test/$(DEPDIR)/test-test_crypto.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/test/$(DEPDIR)/test-test_crypto_cgo.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/test/$(DEPDIR)/test-test_crypto_ope.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/test/$(DEPDIR)/test-test_crypto_openssl.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/test/$(DEPDIR)/test-test_crypto_rng.Po@am__quote@ # am--include-marker
@@ -12951,6 +13054,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/trunnel/$(DEPDIR)/libor_trunnel_a-pwbox.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/trunnel/$(DEPDIR)/libor_trunnel_a-sendme_cell.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/trunnel/$(DEPDIR)/libor_trunnel_a-socks5.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/trunnel/$(DEPDIR)/libor_trunnel_a-subproto_request.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-channelpadding_negotiation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-circpad_negotiation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-conflux.Po@am__quote@ # am--include-marker
@@ -12963,6 +13067,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-pwbox.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-sendme_cell.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-socks5.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-subproto_request.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/trunnel/hs/$(DEPDIR)/libor_trunnel_a-cell_establish_intro.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/trunnel/hs/$(DEPDIR)/libor_trunnel_a-cell_introduce1.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/trunnel/hs/$(DEPDIR)/libor_trunnel_a-cell_rendezvous.Po@am__quote@ # am--include-marker
@@ -13062,20 +13167,6 @@ src/core/crypto/libtor_app_testing_a-onion_ntor_v3.obj: src/core/crypto/onion_nt
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -c -o src/core/crypto/libtor_app_testing_a-onion_ntor_v3.obj `if test -f 'src/core/crypto/onion_ntor_v3.c'; then $(CYGPATH_W) 'src/core/crypto/onion_ntor_v3.c'; else $(CYGPATH_W) '$(srcdir)/src/core/crypto/onion_ntor_v3.c'; fi`
 
-src/core/crypto/libtor_app_testing_a-onion_tap.o: src/core/crypto/onion_tap.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -MT src/core/crypto/libtor_app_testing_a-onion_tap.o -MD -MP -MF src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_tap.Tpo -c -o src/core/crypto/libtor_app_testing_a-onion_tap.o `test -f 'src/core/crypto/onion_tap.c' || echo '$(srcdir)/'`src/core/crypto/onion_tap.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_tap.Tpo src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_tap.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/core/crypto/onion_tap.c' object='src/core/crypto/libtor_app_testing_a-onion_tap.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -c -o src/core/crypto/libtor_app_testing_a-onion_tap.o `test -f 'src/core/crypto/onion_tap.c' || echo '$(srcdir)/'`src/core/crypto/onion_tap.c
-
-src/core/crypto/libtor_app_testing_a-onion_tap.obj: src/core/crypto/onion_tap.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -MT src/core/crypto/libtor_app_testing_a-onion_tap.obj -MD -MP -MF src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_tap.Tpo -c -o src/core/crypto/libtor_app_testing_a-onion_tap.obj `if test -f 'src/core/crypto/onion_tap.c'; then $(CYGPATH_W) 'src/core/crypto/onion_tap.c'; else $(CYGPATH_W) '$(srcdir)/src/core/crypto/onion_tap.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_tap.Tpo src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_tap.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/core/crypto/onion_tap.c' object='src/core/crypto/libtor_app_testing_a-onion_tap.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -c -o src/core/crypto/libtor_app_testing_a-onion_tap.obj `if test -f 'src/core/crypto/onion_tap.c'; then $(CYGPATH_W) 'src/core/crypto/onion_tap.c'; else $(CYGPATH_W) '$(srcdir)/src/core/crypto/onion_tap.c'; fi`
-
 src/core/crypto/libtor_app_testing_a-relay_crypto.o: src/core/crypto/relay_crypto.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -MT src/core/crypto/libtor_app_testing_a-relay_crypto.o -MD -MP -MF src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto.Tpo -c -o src/core/crypto/libtor_app_testing_a-relay_crypto.o `test -f 'src/core/crypto/relay_crypto.c' || echo '$(srcdir)/'`src/core/crypto/relay_crypto.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto.Tpo src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto.Po
@@ -13089,6 +13180,34 @@ src/core/crypto/libtor_app_testing_a-relay_crypto.obj: src/core/crypto/relay_cry
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/core/crypto/relay_crypto.c' object='src/core/crypto/libtor_app_testing_a-relay_crypto.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -c -o src/core/crypto/libtor_app_testing_a-relay_crypto.obj `if test -f 'src/core/crypto/relay_crypto.c'; then $(CYGPATH_W) 'src/core/crypto/relay_crypto.c'; else $(CYGPATH_W) '$(srcdir)/src/core/crypto/relay_crypto.c'; fi`
+
+src/core/crypto/libtor_app_testing_a-relay_crypto_cgo.o: src/core/crypto/relay_crypto_cgo.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -MT src/core/crypto/libtor_app_testing_a-relay_crypto_cgo.o -MD -MP -MF src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_cgo.Tpo -c -o src/core/crypto/libtor_app_testing_a-relay_crypto_cgo.o `test -f 'src/core/crypto/relay_crypto_cgo.c' || echo '$(srcdir)/'`src/core/crypto/relay_crypto_cgo.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_cgo.Tpo src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_cgo.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/core/crypto/relay_crypto_cgo.c' object='src/core/crypto/libtor_app_testing_a-relay_crypto_cgo.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -c -o src/core/crypto/libtor_app_testing_a-relay_crypto_cgo.o `test -f 'src/core/crypto/relay_crypto_cgo.c' || echo '$(srcdir)/'`src/core/crypto/relay_crypto_cgo.c
+
+src/core/crypto/libtor_app_testing_a-relay_crypto_cgo.obj: src/core/crypto/relay_crypto_cgo.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -MT src/core/crypto/libtor_app_testing_a-relay_crypto_cgo.obj -MD -MP -MF src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_cgo.Tpo -c -o src/core/crypto/libtor_app_testing_a-relay_crypto_cgo.obj `if test -f 'src/core/crypto/relay_crypto_cgo.c'; then $(CYGPATH_W) 'src/core/crypto/relay_crypto_cgo.c'; else $(CYGPATH_W) '$(srcdir)/src/core/crypto/relay_crypto_cgo.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_cgo.Tpo src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_cgo.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/core/crypto/relay_crypto_cgo.c' object='src/core/crypto/libtor_app_testing_a-relay_crypto_cgo.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -c -o src/core/crypto/libtor_app_testing_a-relay_crypto_cgo.obj `if test -f 'src/core/crypto/relay_crypto_cgo.c'; then $(CYGPATH_W) 'src/core/crypto/relay_crypto_cgo.c'; else $(CYGPATH_W) '$(srcdir)/src/core/crypto/relay_crypto_cgo.c'; fi`
+
+src/core/crypto/libtor_app_testing_a-relay_crypto_tor1.o: src/core/crypto/relay_crypto_tor1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -MT src/core/crypto/libtor_app_testing_a-relay_crypto_tor1.o -MD -MP -MF src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_tor1.Tpo -c -o src/core/crypto/libtor_app_testing_a-relay_crypto_tor1.o `test -f 'src/core/crypto/relay_crypto_tor1.c' || echo '$(srcdir)/'`src/core/crypto/relay_crypto_tor1.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_tor1.Tpo src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_tor1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/core/crypto/relay_crypto_tor1.c' object='src/core/crypto/libtor_app_testing_a-relay_crypto_tor1.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -c -o src/core/crypto/libtor_app_testing_a-relay_crypto_tor1.o `test -f 'src/core/crypto/relay_crypto_tor1.c' || echo '$(srcdir)/'`src/core/crypto/relay_crypto_tor1.c
+
+src/core/crypto/libtor_app_testing_a-relay_crypto_tor1.obj: src/core/crypto/relay_crypto_tor1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -MT src/core/crypto/libtor_app_testing_a-relay_crypto_tor1.obj -MD -MP -MF src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_tor1.Tpo -c -o src/core/crypto/libtor_app_testing_a-relay_crypto_tor1.obj `if test -f 'src/core/crypto/relay_crypto_tor1.c'; then $(CYGPATH_W) 'src/core/crypto/relay_crypto_tor1.c'; else $(CYGPATH_W) '$(srcdir)/src/core/crypto/relay_crypto_tor1.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_tor1.Tpo src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_tor1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/core/crypto/relay_crypto_tor1.c' object='src/core/crypto/libtor_app_testing_a-relay_crypto_tor1.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -c -o src/core/crypto/libtor_app_testing_a-relay_crypto_tor1.obj `if test -f 'src/core/crypto/relay_crypto_tor1.c'; then $(CYGPATH_W) 'src/core/crypto/relay_crypto_tor1.c'; else $(CYGPATH_W) '$(srcdir)/src/core/crypto/relay_crypto_tor1.c'; fi`
 
 src/core/mainloop/libtor_app_testing_a-connection.o: src/core/mainloop/connection.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -MT src/core/mainloop/libtor_app_testing_a-connection.o -MD -MP -MF src/core/mainloop/$(DEPDIR)/libtor_app_testing_a-connection.Tpo -c -o src/core/mainloop/libtor_app_testing_a-connection.o `test -f 'src/core/mainloop/connection.c' || echo '$(srcdir)/'`src/core/mainloop/connection.c
@@ -13593,6 +13712,20 @@ src/core/or/libtor_app_testing_a-relay.obj: src/core/or/relay.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/core/or/relay.c' object='src/core/or/libtor_app_testing_a-relay.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -c -o src/core/or/libtor_app_testing_a-relay.obj `if test -f 'src/core/or/relay.c'; then $(CYGPATH_W) 'src/core/or/relay.c'; else $(CYGPATH_W) '$(srcdir)/src/core/or/relay.c'; fi`
+
+src/core/or/libtor_app_testing_a-relay_msg.o: src/core/or/relay_msg.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -MT src/core/or/libtor_app_testing_a-relay_msg.o -MD -MP -MF src/core/or/$(DEPDIR)/libtor_app_testing_a-relay_msg.Tpo -c -o src/core/or/libtor_app_testing_a-relay_msg.o `test -f 'src/core/or/relay_msg.c' || echo '$(srcdir)/'`src/core/or/relay_msg.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/core/or/$(DEPDIR)/libtor_app_testing_a-relay_msg.Tpo src/core/or/$(DEPDIR)/libtor_app_testing_a-relay_msg.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/core/or/relay_msg.c' object='src/core/or/libtor_app_testing_a-relay_msg.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -c -o src/core/or/libtor_app_testing_a-relay_msg.o `test -f 'src/core/or/relay_msg.c' || echo '$(srcdir)/'`src/core/or/relay_msg.c
+
+src/core/or/libtor_app_testing_a-relay_msg.obj: src/core/or/relay_msg.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -MT src/core/or/libtor_app_testing_a-relay_msg.obj -MD -MP -MF src/core/or/$(DEPDIR)/libtor_app_testing_a-relay_msg.Tpo -c -o src/core/or/libtor_app_testing_a-relay_msg.obj `if test -f 'src/core/or/relay_msg.c'; then $(CYGPATH_W) 'src/core/or/relay_msg.c'; else $(CYGPATH_W) '$(srcdir)/src/core/or/relay_msg.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/core/or/$(DEPDIR)/libtor_app_testing_a-relay_msg.Tpo src/core/or/$(DEPDIR)/libtor_app_testing_a-relay_msg.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/core/or/relay_msg.c' object='src/core/or/libtor_app_testing_a-relay_msg.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -c -o src/core/or/libtor_app_testing_a-relay_msg.obj `if test -f 'src/core/or/relay_msg.c'; then $(CYGPATH_W) 'src/core/or/relay_msg.c'; else $(CYGPATH_W) '$(srcdir)/src/core/or/relay_msg.c'; fi`
 
 src/core/or/libtor_app_testing_a-scheduler.o: src/core/or/scheduler.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_core_libtor_app_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_core_libtor_app_testing_a_CFLAGS) $(CFLAGS) -MT src/core/or/libtor_app_testing_a-scheduler.o -MD -MP -MF src/core/or/$(DEPDIR)/libtor_app_testing_a-scheduler.Tpo -c -o src/core/or/libtor_app_testing_a-scheduler.o `test -f 'src/core/or/scheduler.c' || echo '$(srcdir)/'`src/core/or/scheduler.c
@@ -16547,6 +16680,20 @@ src/ext/keccak-tiny/libkeccak_tiny_a-keccak-tiny-unrolled.obj: src/ext/keccak-ti
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/ext/keccak-tiny/keccak-tiny-unrolled.c' object='src/ext/keccak-tiny/libkeccak_tiny_a-keccak-tiny-unrolled.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_ext_keccak_tiny_libkeccak_tiny_a_CFLAGS) $(CFLAGS) -c -o src/ext/keccak-tiny/libkeccak_tiny_a-keccak-tiny-unrolled.obj `if test -f 'src/ext/keccak-tiny/keccak-tiny-unrolled.c'; then $(CYGPATH_W) 'src/ext/keccak-tiny/keccak-tiny-unrolled.c'; else $(CYGPATH_W) '$(srcdir)/src/ext/keccak-tiny/keccak-tiny-unrolled.c'; fi`
+
+src/ext/polyval/libpolyval_a-polyval.o: src/ext/polyval/polyval.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_ext_polyval_libpolyval_a_CFLAGS) $(CFLAGS) -MT src/ext/polyval/libpolyval_a-polyval.o -MD -MP -MF src/ext/polyval/$(DEPDIR)/libpolyval_a-polyval.Tpo -c -o src/ext/polyval/libpolyval_a-polyval.o `test -f 'src/ext/polyval/polyval.c' || echo '$(srcdir)/'`src/ext/polyval/polyval.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/ext/polyval/$(DEPDIR)/libpolyval_a-polyval.Tpo src/ext/polyval/$(DEPDIR)/libpolyval_a-polyval.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/ext/polyval/polyval.c' object='src/ext/polyval/libpolyval_a-polyval.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_ext_polyval_libpolyval_a_CFLAGS) $(CFLAGS) -c -o src/ext/polyval/libpolyval_a-polyval.o `test -f 'src/ext/polyval/polyval.c' || echo '$(srcdir)/'`src/ext/polyval/polyval.c
+
+src/ext/polyval/libpolyval_a-polyval.obj: src/ext/polyval/polyval.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_ext_polyval_libpolyval_a_CFLAGS) $(CFLAGS) -MT src/ext/polyval/libpolyval_a-polyval.obj -MD -MP -MF src/ext/polyval/$(DEPDIR)/libpolyval_a-polyval.Tpo -c -o src/ext/polyval/libpolyval_a-polyval.obj `if test -f 'src/ext/polyval/polyval.c'; then $(CYGPATH_W) 'src/ext/polyval/polyval.c'; else $(CYGPATH_W) '$(srcdir)/src/ext/polyval/polyval.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/ext/polyval/$(DEPDIR)/libpolyval_a-polyval.Tpo src/ext/polyval/$(DEPDIR)/libpolyval_a-polyval.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/ext/polyval/polyval.c' object='src/ext/polyval/libpolyval_a-polyval.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_ext_polyval_libpolyval_a_CFLAGS) $(CFLAGS) -c -o src/ext/polyval/libpolyval_a-polyval.obj `if test -f 'src/ext/polyval/polyval.c'; then $(CYGPATH_W) 'src/ext/polyval/polyval.c'; else $(CYGPATH_W) '$(srcdir)/src/ext/polyval/polyval.c'; fi`
 
 src/ext/curve25519_donna/lib_libcurve25519_donna_a-curve25519-donna-c64.o: src/ext/curve25519_donna/curve25519-donna-c64.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_lib_libcurve25519_donna_a_CFLAGS) $(CFLAGS) -MT src/ext/curve25519_donna/lib_libcurve25519_donna_a-curve25519-donna-c64.o -MD -MP -MF src/ext/curve25519_donna/$(DEPDIR)/lib_libcurve25519_donna_a-curve25519-donna-c64.Tpo -c -o src/ext/curve25519_donna/lib_libcurve25519_donna_a-curve25519-donna-c64.o `test -f 'src/ext/curve25519_donna/curve25519-donna-c64.c' || echo '$(srcdir)/'`src/ext/curve25519_donna/curve25519-donna-c64.c
@@ -20034,6 +20181,20 @@ src/trunnel/libor_trunnel_testing_a-conflux.obj: src/trunnel/conflux.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_trunnel_libor_trunnel_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_trunnel_libor_trunnel_testing_a_CFLAGS) $(CFLAGS) -c -o src/trunnel/libor_trunnel_testing_a-conflux.obj `if test -f 'src/trunnel/conflux.c'; then $(CYGPATH_W) 'src/trunnel/conflux.c'; else $(CYGPATH_W) '$(srcdir)/src/trunnel/conflux.c'; fi`
 
+src/trunnel/libor_trunnel_testing_a-subproto_request.o: src/trunnel/subproto_request.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_trunnel_libor_trunnel_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_trunnel_libor_trunnel_testing_a_CFLAGS) $(CFLAGS) -MT src/trunnel/libor_trunnel_testing_a-subproto_request.o -MD -MP -MF src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-subproto_request.Tpo -c -o src/trunnel/libor_trunnel_testing_a-subproto_request.o `test -f 'src/trunnel/subproto_request.c' || echo '$(srcdir)/'`src/trunnel/subproto_request.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-subproto_request.Tpo src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-subproto_request.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/trunnel/subproto_request.c' object='src/trunnel/libor_trunnel_testing_a-subproto_request.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_trunnel_libor_trunnel_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_trunnel_libor_trunnel_testing_a_CFLAGS) $(CFLAGS) -c -o src/trunnel/libor_trunnel_testing_a-subproto_request.o `test -f 'src/trunnel/subproto_request.c' || echo '$(srcdir)/'`src/trunnel/subproto_request.c
+
+src/trunnel/libor_trunnel_testing_a-subproto_request.obj: src/trunnel/subproto_request.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_trunnel_libor_trunnel_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_trunnel_libor_trunnel_testing_a_CFLAGS) $(CFLAGS) -MT src/trunnel/libor_trunnel_testing_a-subproto_request.obj -MD -MP -MF src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-subproto_request.Tpo -c -o src/trunnel/libor_trunnel_testing_a-subproto_request.obj `if test -f 'src/trunnel/subproto_request.c'; then $(CYGPATH_W) 'src/trunnel/subproto_request.c'; else $(CYGPATH_W) '$(srcdir)/src/trunnel/subproto_request.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-subproto_request.Tpo src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-subproto_request.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/trunnel/subproto_request.c' object='src/trunnel/libor_trunnel_testing_a-subproto_request.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_trunnel_libor_trunnel_testing_a_CPPFLAGS) $(CPPFLAGS) $(src_trunnel_libor_trunnel_testing_a_CFLAGS) $(CFLAGS) -c -o src/trunnel/libor_trunnel_testing_a-subproto_request.obj `if test -f 'src/trunnel/subproto_request.c'; then $(CYGPATH_W) 'src/trunnel/subproto_request.c'; else $(CYGPATH_W) '$(srcdir)/src/trunnel/subproto_request.c'; fi`
+
 src/ext/trunnel/trunnel_libor_trunnel_a-trunnel.o: src/ext/trunnel/trunnel.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_trunnel_libor_trunnel_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT src/ext/trunnel/trunnel_libor_trunnel_a-trunnel.o -MD -MP -MF src/ext/trunnel/$(DEPDIR)/trunnel_libor_trunnel_a-trunnel.Tpo -c -o src/ext/trunnel/trunnel_libor_trunnel_a-trunnel.o `test -f 'src/ext/trunnel/trunnel.c' || echo '$(srcdir)/'`src/ext/trunnel/trunnel.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/ext/trunnel/$(DEPDIR)/trunnel_libor_trunnel_a-trunnel.Tpo src/ext/trunnel/$(DEPDIR)/trunnel_libor_trunnel_a-trunnel.Po
@@ -20257,6 +20418,20 @@ src/trunnel/libor_trunnel_a-conflux.obj: src/trunnel/conflux.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/trunnel/conflux.c' object='src/trunnel/libor_trunnel_a-conflux.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_trunnel_libor_trunnel_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o src/trunnel/libor_trunnel_a-conflux.obj `if test -f 'src/trunnel/conflux.c'; then $(CYGPATH_W) 'src/trunnel/conflux.c'; else $(CYGPATH_W) '$(srcdir)/src/trunnel/conflux.c'; fi`
+
+src/trunnel/libor_trunnel_a-subproto_request.o: src/trunnel/subproto_request.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_trunnel_libor_trunnel_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT src/trunnel/libor_trunnel_a-subproto_request.o -MD -MP -MF src/trunnel/$(DEPDIR)/libor_trunnel_a-subproto_request.Tpo -c -o src/trunnel/libor_trunnel_a-subproto_request.o `test -f 'src/trunnel/subproto_request.c' || echo '$(srcdir)/'`src/trunnel/subproto_request.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/trunnel/$(DEPDIR)/libor_trunnel_a-subproto_request.Tpo src/trunnel/$(DEPDIR)/libor_trunnel_a-subproto_request.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/trunnel/subproto_request.c' object='src/trunnel/libor_trunnel_a-subproto_request.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_trunnel_libor_trunnel_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o src/trunnel/libor_trunnel_a-subproto_request.o `test -f 'src/trunnel/subproto_request.c' || echo '$(srcdir)/'`src/trunnel/subproto_request.c
+
+src/trunnel/libor_trunnel_a-subproto_request.obj: src/trunnel/subproto_request.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_trunnel_libor_trunnel_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT src/trunnel/libor_trunnel_a-subproto_request.obj -MD -MP -MF src/trunnel/$(DEPDIR)/libor_trunnel_a-subproto_request.Tpo -c -o src/trunnel/libor_trunnel_a-subproto_request.obj `if test -f 'src/trunnel/subproto_request.c'; then $(CYGPATH_W) 'src/trunnel/subproto_request.c'; else $(CYGPATH_W) '$(srcdir)/src/trunnel/subproto_request.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/trunnel/$(DEPDIR)/libor_trunnel_a-subproto_request.Tpo src/trunnel/$(DEPDIR)/libor_trunnel_a-subproto_request.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/trunnel/subproto_request.c' object='src/trunnel/libor_trunnel_a-subproto_request.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_trunnel_libor_trunnel_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o src/trunnel/libor_trunnel_a-subproto_request.obj `if test -f 'src/trunnel/subproto_request.c'; then $(CYGPATH_W) 'src/trunnel/subproto_request.c'; else $(CYGPATH_W) '$(srcdir)/src/trunnel/subproto_request.c'; fi`
 
 src/app/main/tor_cov-tor_main.o: src/app/main/tor_main.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_app_tor_cov_CPPFLAGS) $(CPPFLAGS) $(src_app_tor_cov_CFLAGS) $(CFLAGS) -MT src/app/main/tor_cov-tor_main.o -MD -MP -MF src/app/main/$(DEPDIR)/tor_cov-tor_main.Tpo -c -o src/app/main/tor_cov-tor_main.o `test -f 'src/app/main/tor_main.c' || echo '$(srcdir)/'`src/app/main/tor_main.c
@@ -21797,6 +21972,20 @@ src/test/test-test_crypto_rng.obj: src/test/test_crypto_rng.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/test/test_crypto_rng.c' object='src/test/test-test_crypto_rng.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_test_test_CPPFLAGS) $(CPPFLAGS) $(src_test_test_CFLAGS) $(CFLAGS) -c -o src/test/test-test_crypto_rng.obj `if test -f 'src/test/test_crypto_rng.c'; then $(CYGPATH_W) 'src/test/test_crypto_rng.c'; else $(CYGPATH_W) '$(srcdir)/src/test/test_crypto_rng.c'; fi`
+
+src/test/test-test_crypto_cgo.o: src/test/test_crypto_cgo.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_test_test_CPPFLAGS) $(CPPFLAGS) $(src_test_test_CFLAGS) $(CFLAGS) -MT src/test/test-test_crypto_cgo.o -MD -MP -MF src/test/$(DEPDIR)/test-test_crypto_cgo.Tpo -c -o src/test/test-test_crypto_cgo.o `test -f 'src/test/test_crypto_cgo.c' || echo '$(srcdir)/'`src/test/test_crypto_cgo.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/test/$(DEPDIR)/test-test_crypto_cgo.Tpo src/test/$(DEPDIR)/test-test_crypto_cgo.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/test/test_crypto_cgo.c' object='src/test/test-test_crypto_cgo.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_test_test_CPPFLAGS) $(CPPFLAGS) $(src_test_test_CFLAGS) $(CFLAGS) -c -o src/test/test-test_crypto_cgo.o `test -f 'src/test/test_crypto_cgo.c' || echo '$(srcdir)/'`src/test/test_crypto_cgo.c
+
+src/test/test-test_crypto_cgo.obj: src/test/test_crypto_cgo.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_test_test_CPPFLAGS) $(CPPFLAGS) $(src_test_test_CFLAGS) $(CFLAGS) -MT src/test/test-test_crypto_cgo.obj -MD -MP -MF src/test/$(DEPDIR)/test-test_crypto_cgo.Tpo -c -o src/test/test-test_crypto_cgo.obj `if test -f 'src/test/test_crypto_cgo.c'; then $(CYGPATH_W) 'src/test/test_crypto_cgo.c'; else $(CYGPATH_W) '$(srcdir)/src/test/test_crypto_cgo.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/test/$(DEPDIR)/test-test_crypto_cgo.Tpo src/test/$(DEPDIR)/test-test_crypto_cgo.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/test/test_crypto_cgo.c' object='src/test/test-test_crypto_cgo.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_test_test_CPPFLAGS) $(CPPFLAGS) $(src_test_test_CFLAGS) $(CFLAGS) -c -o src/test/test-test_crypto_cgo.obj `if test -f 'src/test/test_crypto_cgo.c'; then $(CYGPATH_W) 'src/test/test_crypto_cgo.c'; else $(CYGPATH_W) '$(srcdir)/src/test/test_crypto_cgo.c'; fi`
 
 src/test/test-test_data.o: src/test/test_data.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_test_test_CPPFLAGS) $(CPPFLAGS) $(src_test_test_CFLAGS) $(CFLAGS) -MT src/test/test-test_data.o -MD -MP -MF src/test/$(DEPDIR)/test-test_data.Tpo -c -o src/test/test-test_data.o `test -f 'src/test/test_data.c' || echo '$(srcdir)/'`src/test/test_data.c
@@ -24111,6 +24300,8 @@ distclean-generic:
 	-rm -f src/ext/keccak-tiny/$(am__dirstamp)
 	-rm -f src/ext/mulodi/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/ext/mulodi/$(am__dirstamp)
+	-rm -f src/ext/polyval/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/ext/polyval/$(am__dirstamp)
 	-rm -f src/ext/trunnel/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/ext/trunnel/$(am__dirstamp)
 	-rm -f src/feature/api/$(DEPDIR)/$(am__dirstamp)
@@ -24270,14 +24461,16 @@ distclean: distclean-am
 	-rm -f src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_fast.Po
 	-rm -f src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_ntor.Po
 	-rm -f src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_ntor_v3.Po
-	-rm -f src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_tap.Po
 	-rm -f src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto.Po
+	-rm -f src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_cgo.Po
+	-rm -f src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_tor1.Po
 	-rm -f src/core/crypto/$(DEPDIR)/onion_crypto.Po
 	-rm -f src/core/crypto/$(DEPDIR)/onion_fast.Po
 	-rm -f src/core/crypto/$(DEPDIR)/onion_ntor.Po
 	-rm -f src/core/crypto/$(DEPDIR)/onion_ntor_v3.Po
-	-rm -f src/core/crypto/$(DEPDIR)/onion_tap.Po
 	-rm -f src/core/crypto/$(DEPDIR)/relay_crypto.Po
+	-rm -f src/core/crypto/$(DEPDIR)/relay_crypto_cgo.Po
+	-rm -f src/core/crypto/$(DEPDIR)/relay_crypto_tor1.Po
 	-rm -f src/core/mainloop/$(DEPDIR)/connection.Po
 	-rm -f src/core/mainloop/$(DEPDIR)/cpuworker.Po
 	-rm -f src/core/mainloop/$(DEPDIR)/libtor_app_testing_a-connection.Po
@@ -24359,6 +24552,7 @@ distclean: distclean-am
 	-rm -f src/core/or/$(DEPDIR)/libtor_app_testing_a-protover.Po
 	-rm -f src/core/or/$(DEPDIR)/libtor_app_testing_a-reasons.Po
 	-rm -f src/core/or/$(DEPDIR)/libtor_app_testing_a-relay.Po
+	-rm -f src/core/or/$(DEPDIR)/libtor_app_testing_a-relay_msg.Po
 	-rm -f src/core/or/$(DEPDIR)/libtor_app_testing_a-scheduler.Po
 	-rm -f src/core/or/$(DEPDIR)/libtor_app_testing_a-scheduler_kist.Po
 	-rm -f src/core/or/$(DEPDIR)/libtor_app_testing_a-scheduler_vanilla.Po
@@ -24376,6 +24570,7 @@ distclean: distclean-am
 	-rm -f src/core/or/$(DEPDIR)/protover.Po
 	-rm -f src/core/or/$(DEPDIR)/reasons.Po
 	-rm -f src/core/or/$(DEPDIR)/relay.Po
+	-rm -f src/core/or/$(DEPDIR)/relay_msg.Po
 	-rm -f src/core/or/$(DEPDIR)/scheduler.Po
 	-rm -f src/core/or/$(DEPDIR)/scheduler_kist.Po
 	-rm -f src/core/or/$(DEPDIR)/scheduler_vanilla.Po
@@ -24465,6 +24660,7 @@ distclean: distclean-am
 	-rm -f src/ext/keccak-tiny/$(DEPDIR)/libkeccak_tiny_a-keccak-tiny-unrolled.Po
 	-rm -f src/ext/mulodi/$(DEPDIR)/lib_libtor_ctime_a-mulodi4.Po
 	-rm -f src/ext/mulodi/$(DEPDIR)/lib_libtor_ctime_testing_a-mulodi4.Po
+	-rm -f src/ext/polyval/$(DEPDIR)/libpolyval_a-polyval.Po
 	-rm -f src/ext/trunnel/$(DEPDIR)/trunnel_libor_trunnel_a-trunnel.Po
 	-rm -f src/ext/trunnel/$(DEPDIR)/trunnel_libor_trunnel_testing_a-trunnel.Po
 	-rm -f src/feature/api/$(DEPDIR)/core_libtor_app_testing_a-tor_api.Po
@@ -25074,6 +25270,7 @@ distclean: distclean-am
 	-rm -f src/test/$(DEPDIR)/test-test_controller.Po
 	-rm -f src/test/$(DEPDIR)/test-test_controller_events.Po
 	-rm -f src/test/$(DEPDIR)/test-test_crypto.Po
+	-rm -f src/test/$(DEPDIR)/test-test_crypto_cgo.Po
 	-rm -f src/test/$(DEPDIR)/test-test_crypto_ope.Po
 	-rm -f src/test/$(DEPDIR)/test-test_crypto_openssl.Po
 	-rm -f src/test/$(DEPDIR)/test-test_crypto_rng.Po
@@ -25297,6 +25494,7 @@ distclean: distclean-am
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_a-pwbox.Po
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_a-sendme_cell.Po
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_a-socks5.Po
+	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_a-subproto_request.Po
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-channelpadding_negotiation.Po
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-circpad_negotiation.Po
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-conflux.Po
@@ -25309,6 +25507,7 @@ distclean: distclean-am
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-pwbox.Po
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-sendme_cell.Po
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-socks5.Po
+	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-subproto_request.Po
 	-rm -f src/trunnel/hs/$(DEPDIR)/libor_trunnel_a-cell_establish_intro.Po
 	-rm -f src/trunnel/hs/$(DEPDIR)/libor_trunnel_a-cell_introduce1.Po
 	-rm -f src/trunnel/hs/$(DEPDIR)/libor_trunnel_a-cell_rendezvous.Po
@@ -25391,14 +25590,16 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_fast.Po
 	-rm -f src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_ntor.Po
 	-rm -f src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_ntor_v3.Po
-	-rm -f src/core/crypto/$(DEPDIR)/libtor_app_testing_a-onion_tap.Po
 	-rm -f src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto.Po
+	-rm -f src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_cgo.Po
+	-rm -f src/core/crypto/$(DEPDIR)/libtor_app_testing_a-relay_crypto_tor1.Po
 	-rm -f src/core/crypto/$(DEPDIR)/onion_crypto.Po
 	-rm -f src/core/crypto/$(DEPDIR)/onion_fast.Po
 	-rm -f src/core/crypto/$(DEPDIR)/onion_ntor.Po
 	-rm -f src/core/crypto/$(DEPDIR)/onion_ntor_v3.Po
-	-rm -f src/core/crypto/$(DEPDIR)/onion_tap.Po
 	-rm -f src/core/crypto/$(DEPDIR)/relay_crypto.Po
+	-rm -f src/core/crypto/$(DEPDIR)/relay_crypto_cgo.Po
+	-rm -f src/core/crypto/$(DEPDIR)/relay_crypto_tor1.Po
 	-rm -f src/core/mainloop/$(DEPDIR)/connection.Po
 	-rm -f src/core/mainloop/$(DEPDIR)/cpuworker.Po
 	-rm -f src/core/mainloop/$(DEPDIR)/libtor_app_testing_a-connection.Po
@@ -25480,6 +25681,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/core/or/$(DEPDIR)/libtor_app_testing_a-protover.Po
 	-rm -f src/core/or/$(DEPDIR)/libtor_app_testing_a-reasons.Po
 	-rm -f src/core/or/$(DEPDIR)/libtor_app_testing_a-relay.Po
+	-rm -f src/core/or/$(DEPDIR)/libtor_app_testing_a-relay_msg.Po
 	-rm -f src/core/or/$(DEPDIR)/libtor_app_testing_a-scheduler.Po
 	-rm -f src/core/or/$(DEPDIR)/libtor_app_testing_a-scheduler_kist.Po
 	-rm -f src/core/or/$(DEPDIR)/libtor_app_testing_a-scheduler_vanilla.Po
@@ -25497,6 +25699,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/core/or/$(DEPDIR)/protover.Po
 	-rm -f src/core/or/$(DEPDIR)/reasons.Po
 	-rm -f src/core/or/$(DEPDIR)/relay.Po
+	-rm -f src/core/or/$(DEPDIR)/relay_msg.Po
 	-rm -f src/core/or/$(DEPDIR)/scheduler.Po
 	-rm -f src/core/or/$(DEPDIR)/scheduler_kist.Po
 	-rm -f src/core/or/$(DEPDIR)/scheduler_vanilla.Po
@@ -25586,6 +25789,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/ext/keccak-tiny/$(DEPDIR)/libkeccak_tiny_a-keccak-tiny-unrolled.Po
 	-rm -f src/ext/mulodi/$(DEPDIR)/lib_libtor_ctime_a-mulodi4.Po
 	-rm -f src/ext/mulodi/$(DEPDIR)/lib_libtor_ctime_testing_a-mulodi4.Po
+	-rm -f src/ext/polyval/$(DEPDIR)/libpolyval_a-polyval.Po
 	-rm -f src/ext/trunnel/$(DEPDIR)/trunnel_libor_trunnel_a-trunnel.Po
 	-rm -f src/ext/trunnel/$(DEPDIR)/trunnel_libor_trunnel_testing_a-trunnel.Po
 	-rm -f src/feature/api/$(DEPDIR)/core_libtor_app_testing_a-tor_api.Po
@@ -26195,6 +26399,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/test/$(DEPDIR)/test-test_controller.Po
 	-rm -f src/test/$(DEPDIR)/test-test_controller_events.Po
 	-rm -f src/test/$(DEPDIR)/test-test_crypto.Po
+	-rm -f src/test/$(DEPDIR)/test-test_crypto_cgo.Po
 	-rm -f src/test/$(DEPDIR)/test-test_crypto_ope.Po
 	-rm -f src/test/$(DEPDIR)/test-test_crypto_openssl.Po
 	-rm -f src/test/$(DEPDIR)/test-test_crypto_rng.Po
@@ -26418,6 +26623,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_a-pwbox.Po
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_a-sendme_cell.Po
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_a-socks5.Po
+	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_a-subproto_request.Po
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-channelpadding_negotiation.Po
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-circpad_negotiation.Po
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-conflux.Po
@@ -26430,6 +26636,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-pwbox.Po
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-sendme_cell.Po
 	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-socks5.Po
+	-rm -f src/trunnel/$(DEPDIR)/libor_trunnel_testing_a-subproto_request.Po
 	-rm -f src/trunnel/hs/$(DEPDIR)/libor_trunnel_a-cell_establish_intro.Po
 	-rm -f src/trunnel/hs/$(DEPDIR)/libor_trunnel_a-cell_introduce1.Po
 	-rm -f src/trunnel/hs/$(DEPDIR)/libor_trunnel_a-cell_rendezvous.Po

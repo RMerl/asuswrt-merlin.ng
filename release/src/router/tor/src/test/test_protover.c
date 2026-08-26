@@ -219,15 +219,15 @@ test_protover_all_supported(void *arg)
   tt_str_op(msg, OP_EQ, "Link=6-60");
   tor_free(msg);
   tt_assert(! protover_all_supported("Link=1-3,50-63", &msg));
-  tt_str_op(msg, OP_EQ, "Link=50-63");
+  tt_str_op(msg, OP_EQ, "Link=1-2,50-63");
   tor_free(msg);
   tt_assert(! protover_all_supported("Link=1-3,5-12", &msg));
-  tt_str_op(msg, OP_EQ, "Link=6-12");
+  tt_str_op(msg, OP_EQ, "Link=1-2,6-12");
   tor_free(msg);
 
   /* Mix of protocols we do support and some we don't, where the protocols
    * we do support have some versions we don't support. */
-  tt_assert(! protover_all_supported("Link=1-3,5-12 Quokka=40-41", &msg));
+  tt_assert(! protover_all_supported("Link=3,5-12 Quokka=40-41", &msg));
   tt_str_op(msg, OP_EQ, "Link=6-12 Quokka=40-41");
   tor_free(msg);
 
@@ -329,7 +329,7 @@ test_protover_supports_version(void *arg)
  * headers. */
 #define PROTOVER_LINKAUTH_V1 1
 #define PROTOVER_LINKAUTH_V2 2
-#define PROTOVER_RELAY_V1 1
+#define PROTOVER_RELAY_V2 2
 
 /* Deprecated HSIntro versions */
 #define PROTOVER_HS_INTRO_DEPRECATED_1 1
@@ -397,7 +397,7 @@ test_protover_supported_protocols(void *arg)
   /* Relay protovers do not appear anywhere in the code. */
   tt_assert(protocol_list_supports_protocol(supported_protocols,
                                             PRT_RELAY,
-                                            PROTOVER_RELAY_V1));
+                                            PROTOVER_RELAY_V2));
   tt_assert(protocol_list_supports_protocol(supported_protocols,
                                             PRT_RELAY,
                                             PROTOVER_RELAY_EXTEND2));

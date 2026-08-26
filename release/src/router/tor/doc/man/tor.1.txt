@@ -168,6 +168,16 @@ The following options in this section are only recognized on the
     make sure that they are owned by the user actually running the Tor
     daemon on your system.
 
+[[opt-keygen-family]] **`--keygen-family`** __basename__::
+    Generate a new family ID key in __basename__`.secret_family_key`.
+    To use this key, install it on every relay in your family.
+    (Put it in the relay's `KeyDirectory`.)
+    Also, store the corresponding family ID in __basename__`.public_family_id`.
+    Then enable the corresponding FamilyID option on your relays.
+    This command overwrites these files if they already exist.
+    See https://community.torproject.org/relay/setup/post-install/family-ids/
+    for more information.
+
 **`--passphrase-fd`** __FILEDES__::
     File descriptor to read the passphrase from.  Note that unlike with the
     tor-gencert program, the entire file contents are read and used as
@@ -906,7 +916,8 @@ forward slash (/) in the configuration file and on the command line.
     set to 1, all potentially sensitive strings are replaced. If it is set to
     relay, all log messages generated when acting as a relay are sanitized, but
     all messages generated when acting as a client are not.
-    Note: Tor may not heed this option when logging at log levels below Notice.
+    Note: Tor may not heed this option when logging at log levels more
+    verbose than Notice.
     (Default: 1)
 
 [[Sandbox]] **Sandbox** **0**|**1**::
@@ -1010,7 +1021,7 @@ forward slash (/) in the configuration file and on the command line.
     equivalent option for directory connections, because all Tor client versions
     that support this option download directory documents via OR connections. +
 +
-    The only protocol supported right now 'haproxy'. This option is only for
+    The only protocol supported right now is 'haproxy'. This option is only for
     clients. (Default: none) +
 +
     The HAProxy version 1 proxy protocol is described in detail at
@@ -2385,6 +2396,16 @@ is non-zero):
     policy options are set, Tor behaves as if ExitRelay were set to 0.
     (Default: auto)
 
+[[ReevaluateExitPolicy]] **ReevaluateExitPolicy** **0**|**1**::
+    If set, reevaluate the exit policy on existing connections when reloading
+    configuration. +
+     +
+    When the exit policy of an exit node change while reloading configuration,
+    connections made prior to this change could violate the new policy. By
+    setting this to 1, Tor will check if such connections exist, and mark them
+    for termination.
+    (Default: 0)
+
 [[ExtendAllowPrivateAddresses]] **ExtendAllowPrivateAddresses** **0**|**1**::
     When this option is enabled, Tor will connect to relays on localhost,
     RFC1918 addresses, and so on. In particular, Tor will make direct OR
@@ -2432,11 +2453,12 @@ is non-zero):
 [[MaxHSDirCacheBytes]] **MaxHSDirCacheBytes** __N__ **bytes**|**KBytes**|**MBytes**|**GBytes**::
     This option configures a threshold of Hidden Service Directory memory
     consumption above which your Tor relay will begin to prune the least-frequently
-    accessed hidden service descriptors from the relay's HSDir cache. This pruning used
-    to be done as part of MaxMemInQueues, but it has been decoupled to allow more
-    fine-grained control of descriptor cache size under DDoS conditions. This
-    option defaults to 20% of the MaxMemInQueues size, which itself defaults to
-    an automatically determined value based on system memory. (Default: 20% MaxMemInQueues)
+    accessed hidden service descriptors from the relay's HSDir cache.
+    If set to 0, this will default to 20% of MaxMemInQueues. (Default: 0) +
+     +
+    This pruning used to be done as part of MaxMemInQueues, but it has been
+    decoupled to allow more fine-grained control of descriptor cache size under
+    DDoS conditions.
 
 [[MaxMemInQueues]] **MaxMemInQueues**  __N__ **bytes**|**KBytes**|**MBytes**|**GBytes**::
     This option configures a threshold above which Tor will assume that it
@@ -2470,6 +2492,40 @@ is non-zero):
      +
     Note: do not use MyFamily when configuring your Tor instance as a
     bridge.
+
+[[FamilyId]] **FamilyId** __ident__::
+    Configure this relay to be part of a family
+    identified by a shared secret family key with the given key identity.
+    A corresponding family key must be stored in the relay's key directory,
+    with a filename ending with ".secret\_family\_key".
+    This option can appear multiple times.
+    Family keys are generated with "--keygen-family";
+    this also generates the value you should use in the __ident__ field
+    in a file ending with ".public\_family\_id".
+    For information on generating and installing a family
+    key, see https://community.torproject.org/relay/setup/post-install/family-ids/
+      +
+    In the future, this will be the preferred way for relays
+    to advertise family membership.
+    But for now, relay families should configure
+    both this option _and_ MyFamily, so older clients
+    will still recognize the relays' family membership.
+      +
+    (Note that if the seccomp2 Sandbox feature is enabled,
+    it is not possible to change the key filenames while Tor is running.)
+
+[[FamilyIdStar]] **FamilyId** ** * **::
+    Configure this relay to be part of _every_ family
+    identified by any family ID key found in the family key directory.
+    Only filenames ending with ".secret\_family\_key" are considered.
+    Specifying family IDs in this way makes it unnecessary to adjust the
+    configuration file if the family key is rotated,
+    but it increases the likelihood of accidentally using a different
+    set of family keys than the ones you had expected.
+
+[[FamilyKeyDirectory]] **FamilyKeyDirectory** __directory__:
+    Configure a directory to use, in place of the key directory,
+    when searching for family ID keys.
 
 [[Nickname]] **Nickname** __name__::
     Set the server's nickname to \'name'. Nicknames must be between 1 and 19
@@ -3035,6 +3091,44 @@ Denial of Service mitigation subsystem described above.
     consensus parameter. If not defined in the consensus, the value is 0.
     (Default: auto)
 
+The following options are useful only for a exit relay.
+
+[[DoSStreamCreationEnabled]] **DoSStreamCreationEnabled** **0**|**1**|**auto**::
+
+    Enable the stream DoS mitigation. If set to 1 (enabled), tor will apply
+    rate limit on the creation of new streams and dns requests per circuit.
+    "auto" means use the consensus parameter. If not defined in the consensus,
+    the value is 0. (Default: auto)
+
+[[DoSStreamCreationDefenseType]] **DoSStreamCreationDefenseType** __NUM__::
+
+    This is the type of defense applied to a detected circuit or stream for the
+    stream mitigation. The possible values are:
+     +
+      1: No defense.
+     +
+      2: Reject the stream or resolve request.
+     +
+      3: Close the circuit creating too many streams.
+     +
+    "0" means use the consensus parameter. If not defined in the consensus, the value is 2.
+    (Default: 0)
+
+[[DoSStreamCreationRate]] **DoSStreamCreationRate** __NUM__::
+
+    The allowed rate of stream creation from a single circuit per second. Coupled
+    with the burst (see below), if the limit is reached, actions can be taken
+    against the stream or circuit (DoSStreamCreationDefenseType). If not defined or
+    set to 0, it is controlled by a consensus parameter. If not defined in the
+    consensus, the value is 100. (Default: 0)
+
+[[DoSStreamCreationBurst]] **DoSStreamCreationBurst** __NUM__::
+
+    The allowed burst of stream creation from a circuit per second.
+    See the DoSStreamCreationRate for more details on this detection. If
+    not defined or set to 0, it is controlled by a consensus parameter. If not
+    defined in the consensus, the value is 300. (Default: 0)
+
 
 For onion services, mitigations are a work in progress and multiple options
 are currently available.
@@ -3089,7 +3183,7 @@ hard and are likely different for each service operator.
 Why is this not helping reachability of the service? Because the defenses are
 at the introduction point, an attacker can easily flood all introduction point
 rendering the service unavailable due to no client being able to pass through.
-But, the service itself is not overwhelmed with connetions allowing it to
+But, the service itself is not overwhelmed with connections allowing it to
 function properly for the few clients that were able to go through or other any
 services running on the same tor instance.
 
@@ -3261,7 +3355,7 @@ on the public Tor network.
     If set, the directory authority will start rejecting directory requests
     from non relay connections by sending a 503 error code if it is under
     bandwidth pressure (reaching the configured limit if any). Relays will
-    always tried to be answered even if this is on. (Default: 1)
+    always be answered even if this is on. (Default: 1)
 
 //Out of order because it logically belongs with the other CCs options.
 [[AuthDirBadExitCCs]] **AuthDirBadExitCCs** __CC__,... +
@@ -3378,6 +3472,11 @@ on the public Tor network.
     directory learn whether they need to upgrade. This option can appear
     multiple times: the values from multiple lines are spliced together. When
     this is set then **VersioningAuthoritativeDirectory** should be set too.
+
+[[MinimalAcceptedServerVersion]] **MinimalAcceptedServerVersion** __STRING__::
+   STRING is the oldest Tor version accepted by the directory authority for
+   relays and bridge. Any older version will be rejected.
+   (Default: 0.4.7.0-alpha-dev)
 
 [[V3AuthDistDelay]] **V3AuthDistDelay** __N__ **seconds**|**minutes**|**hours**::
     V3 authoritative directories only. Configures the server's preferred  delay
@@ -3996,6 +4095,12 @@ __KeyDirectory__/**`secret_onion_key_ntor`** and **`secret_onion_key_ntor.old`**
     generated key, which the relay uses to handle any requests that were made
     by clients that didn't have the new one.
 
+__KeyDirectory__/__keyname__**`.secret_family_key`**::
+    A relay family's family identity key.
+    Used to prove membership in a relay family.
+    See https://community.torproject.org/relay/setup/post-install/family-ids/
+    for more information.
+
 __DataDirectory__/**`fingerprint`**::
     Only used by servers. Contains the fingerprint of the server's RSA
     identity key.
@@ -4007,6 +4112,10 @@ __DataDirectory__/**`fingerprint-ed25519`**::
 __DataDirectory__/**`hashed-fingerprint`**::
     Only used by bridges. Contains the hashed fingerprint of the bridge's
     identity key. (That is, the hash of the hash of the identity key.)
+
+__DataDirectory__/**`bridgelines`**::
+    Only used by bridges. Contains the bridge lines that clients can use to
+    connect using pluggable transports.
 
 __DataDirectory__/**`approved-routers`**::
     Only used by authoritative directory servers. Each line lists a status and
@@ -4073,7 +4182,7 @@ __DataDirectory__/**`stats/hidserv-stats`**::
     of what fraction of the traffic is hidden service rendezvous traffic, and
     approximately how many hidden services the relay has seen.
 
-__DataDirectory__/**networkstatus-bridges`**::
+__DataDirectory__/**`networkstatus-bridges`**::
     Only used by authoritative bridge directories. Contains information
     about bridges that have self-reported themselves to the bridge
     authority.

@@ -79,6 +79,24 @@ static uint64_t conn_num_addr_connect_rejected;
 static uint32_t dos_num_circ_max_outq;
 
 /*
+ * Stream denial of service mitigation.
+ *
+ * Namespace used for this mitigation framework is "dos_stream_".
+ */
+
+/* Is the connection DoS mitigation enabled? */
+static unsigned int dos_stream_enabled = 0;
+
+/* Consensus parameters. They can be changed when a new consensus arrives.
+ * They are initialized with the hardcoded default values. */
+static dos_stream_defense_type_t dos_stream_defense_type;
+static uint32_t dos_stream_rate = DOS_STREAM_RATE_DEFAULT;
+static uint32_t dos_stream_burst = DOS_STREAM_BURST_DEFAULT;
+
+/* Keep some stats for the heartbeat so we can report out. */
+static uint64_t stream_num_rejected;
+
+/*
  * General interface of the denial of service mitigation subsystem.
  */
 
@@ -258,6 +276,59 @@ get_param_conn_connect_defense_time_period(const networkstatus_t *ns)
                                  INT32_MAX);
 }
 
+/* Return true iff the stream creation mitigation is enabled. We look at the
+ * consensus for this else a default value is returned. */
+MOCK_IMPL(STATIC unsigned int,
+get_param_stream_enabled, (const networkstatus_t *ns))
+{
+  if (dos_get_options()->DoSStreamCreationEnabled != -1) {
+    return dos_get_options()->DoSStreamCreationEnabled;
+  }
+
+  return !!networkstatus_get_param(ns, "DoSStreamCreationEnabled",
+                                   DOS_STREAM_ENABLED_DEFAULT, 0, 1);
+}
+
+/* Return the parameter for the time rate that is how many stream per circuit
+ * over this time span. */
+static uint32_t
+get_param_stream_rate(const networkstatus_t *ns)
+{
+  /* This is in seconds. */
+  if (dos_get_options()->DoSStreamCreationRate) {
+    return dos_get_options()->DoSStreamCreationRate;
+  }
+  return networkstatus_get_param(ns, "DoSStreamCreationRate",
+                                 DOS_STREAM_RATE_DEFAULT,
+                                 1, INT32_MAX);
+}
+
+/* Return the parameter for the maximum circuit count for the circuit time
+ * rate. */
+static uint32_t
+get_param_stream_burst(const networkstatus_t *ns)
+{
+  if (dos_get_options()->DoSStreamCreationBurst) {
+    return dos_get_options()->DoSStreamCreationBurst;
+  }
+  return networkstatus_get_param(ns, "DoSStreamCreationBurst",
+                                 DOS_STREAM_BURST_DEFAULT,
+                                 1, INT32_MAX);
+}
+
+/* Return the consensus parameter of the circuit creation defense type. */
+static uint32_t
+get_param_stream_defense_type(const networkstatus_t *ns)
+{
+  if (dos_get_options()->DoSStreamCreationDefenseType) {
+    return dos_get_options()->DoSStreamCreationDefenseType;
+  }
+  return networkstatus_get_param(ns, "DoSStreamCreationDefenseType",
+                                 DOS_STREAM_DEFENSE_TYPE_DEFAULT,
+                                 DOS_STREAM_DEFENSE_NONE,
+                                 DOS_STREAM_DEFENSE_MAX);
+}
+
 /* Set circuit creation parameters located in the consensus or their default
  * if none are present. Called at initialization or when the consensus
  * changes. */
@@ -283,6 +354,12 @@ set_dos_parameters(const networkstatus_t *ns)
 
   /* Circuit. */
   dos_num_circ_max_outq = get_param_dos_num_circ_max_outq(ns);
+
+  /* Stream. */
+  dos_stream_enabled = get_param_stream_enabled(ns);
+  dos_stream_defense_type = get_param_stream_defense_type(ns);
+  dos_stream_rate = get_param_stream_rate(ns);
+  dos_stream_burst = get_param_stream_burst(ns);
 }
 
 /* Free everything for the circuit creation DoS mitigation subsystem. */
@@ -760,6 +837,48 @@ dos_conn_addr_get_defense_type(const tor_addr_t *addr)
   return DOS_CONN_DEFENSE_NONE;
 }
 
+/* Stream creation public API. */
+
+/** Return the number of rejected stream and resolve. */
+uint64_t
+dos_get_num_stream_rejected(void)
+{
+  return stream_num_rejected;
+}
+
+/* Return the action to take against a BEGIN or RESOLVE cell. Return
+ *  DOS_STREAM_DEFENSE_NONE when no action should be taken.
+ *  Increment the appropriate counter when the cell was found to go over a
+ *  limit. */
+dos_stream_defense_type_t
+dos_stream_new_begin_or_resolve_cell(or_circuit_t *circ)
+{
+  if (!dos_stream_enabled || circ == NULL)
+    return DOS_STREAM_DEFENSE_NONE;
+
+  token_bucket_ctr_refill(&circ->stream_limiter,
+                          (uint32_t) monotime_coarse_absolute_sec());
+
+  if (token_bucket_ctr_get(&circ->stream_limiter) > 0) {
+    token_bucket_ctr_dec(&circ->stream_limiter, 1);
+    return DOS_STREAM_DEFENSE_NONE;
+  }
+  /* if defense type is DOS_STREAM_DEFENSE_NONE but DoSStreamEnabled is true,
+   * we count offending cells as rejected, despite them being actually
+   * accepted. */
+  ++stream_num_rejected;
+  return dos_stream_defense_type;
+}
+
+/* Initialize the token bucket for stream rate limit on a circuit. */
+void
+dos_stream_init_circ_tbf(or_circuit_t *circ)
+{
+  token_bucket_ctr_init(&circ->stream_limiter, dos_stream_rate,
+                        dos_stream_burst,
+                        (uint32_t) monotime_coarse_absolute_sec());
+}
+
 /* General API */
 
 /* Take any appropriate actions for the given geoip entry that is about to get
@@ -943,6 +1062,14 @@ dos_log_heartbeat(void)
   } else {
     smartlist_add_asprintf(elems,
                            "[DoSRefuseSingleHopClientRendezvous disabled]");
+  }
+
+  if (dos_stream_enabled) {
+    smartlist_add_asprintf(elems,
+                           "%" PRIu64 " stream rejected",
+                           stream_num_rejected);
+  } else {
+    smartlist_add_asprintf(elems, "[DoSStreamCreationEnabled disabled]");
   }
 
   /* HS DoS stats. */

@@ -22,14 +22,14 @@ TESTSCRIPTS = \
 	src/test/test_switch_id.sh \
 	src/test/test_cmdline.sh \
 	src/test/test_parseconf.sh \
-        src/test/unittest_part1.sh \
-        src/test/unittest_part2.sh \
-        src/test/unittest_part3.sh \
-        src/test/unittest_part4.sh \
-        src/test/unittest_part5.sh \
-        src/test/unittest_part6.sh \
-        src/test/unittest_part7.sh \
-        src/test/unittest_part8.sh
+	src/test/unittest_part1.sh \
+	src/test/unittest_part2.sh \
+	src/test/unittest_part3.sh \
+	src/test/unittest_part4.sh \
+	src/test/unittest_part5.sh \
+	src/test/unittest_part6.sh \
+	src/test/unittest_part7.sh \
+	src/test/unittest_part8.sh
 
 if USEPYTHON
 TESTSCRIPTS += \
@@ -51,7 +51,7 @@ endif
 
 if USE_PERL
 TESTSCRIPTS += \
-        scripts/maint/checkSpaceTest.sh
+	scripts/maint/checkSpaceTest.sh
 endif
 
 TESTS += src/test/test-slow src/test/test-memwipe \
@@ -103,8 +103,8 @@ endif
 
 src_test_AM_CPPFLAGS = -DSHARE_DATADIR="\"$(datadir)\"" \
 	-DLOCALSTATEDIR="\"$(localstatedir)\"" \
-	-DBINDIR="\"$(bindir)\""	       \
-	-DTOR_UNIT_TESTS                       \
+	-DBINDIR="\"$(bindir)\"" \
+	-DTOR_UNIT_TESTS \
 	$(AM_CPPFLAGS)
 
 # -L flags need to go in LDFLAGS. -l flags need to go in LDADD.
@@ -162,6 +162,7 @@ src_test_test_SOURCES += \
 	src/test/test_crypto.c \
 	src/test/test_crypto_ope.c \
 	src/test/test_crypto_rng.c \
+	src/test/test_crypto_cgo.c \
 	src/test/test_data.c \
 	src/test/test_dir.c \
 	src/test/test_dirauth_ports.c \
@@ -336,7 +337,7 @@ src_test_test_memwipe_LDFLAGS = $(src_test_test_LDFLAGS) @CFLAGS_BUGTRAP@
 src_test_bench_LDFLAGS = @TOR_LDFLAGS_zlib@ $(TOR_LDFLAGS_CRYPTLIB) \
 	@TOR_LDFLAGS_libevent@
 src_test_bench_LDADD = \
-        libtor.a \
+	libtor.a \
 	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ @TOR_LIBEVENT_LIBS@ \
 	$(TOR_LIBS_CRYPTLIB) @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_SHLWAPI@ @TOR_LIB_GDI@ @TOR_LIB_USERENV@ \
 	@CURVE25519_LIBS@ \
@@ -383,6 +384,7 @@ noinst_HEADERS+= \
 	src/test/example_extrainfo.inc \
 	src/test/failing_routerdescs.inc \
 	src/test/ed25519_vectors.inc \
+	src/test/cgo_vectors.inc \
 	src/test/test_descriptors.inc \
 	src/test/test_hs_descriptor.inc \
 	src/test/vote_descriptors.inc
@@ -405,10 +407,9 @@ src_test_test_hs_ntor_cl_LDADD = \
 	libtor.a \
 	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ \
 	$(TOR_LIBS_CRYPTLIB) @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_SHLWAPI@ @TOR_LIB_GDI@ \
-        @CURVE25519_LIBS@ @TOR_TRACE_LIBS@
+	@CURVE25519_LIBS@ @TOR_TRACE_LIBS@
 src_test_test_hs_ntor_cl_AM_CPPFLAGS =	       \
 	$(AM_CPPFLAGS)
-
 
 if UNITTESTS_ENABLED
 noinst_PROGRAMS += src/test/test-bt-cl
@@ -417,7 +418,7 @@ src_test_test_bt_cl_LDADD = \
 	$(TOR_UTIL_TESTING_LIBS) \
 	@TOR_LIB_MATH@ \
 	@TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_SHLWAPI@ @TOR_LIB_GDI@ @TOR_LIB_USERENV@ \
-        @TOR_TRACE_LIBS@
+	@TOR_TRACE_LIBS@
 src_test_test_bt_cl_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 src_test_test_bt_cl_CPPFLAGS= $(src_test_AM_CPPFLAGS) $(TEST_CPPFLAGS)
 endif
@@ -439,7 +440,8 @@ EXTRA_DIST += \
 	src/test/test_keygen.sh \
 	src/test/test_key_expiration.sh \
 	src/test/test_zero_length_keys.sh \
-	src/test/test_ntor.sh src/test/test_hs_ntor.sh src/test/test_bt.sh \
+	src/test/test_ntor.sh src/test/test_hs_ntor.sh \
+	src/test/test_bt.sh \
 	src/test/test-network.sh \
 	src/test/test_switch_id.sh \
 	src/test/test_workqueue_cancel.sh \
@@ -450,11 +452,11 @@ EXTRA_DIST += \
 	src/test/test_workqueue_socketpair.sh \
 	src/test/test_cmdline.sh \
 	src/test/test_parseconf.sh \
-        src/test/unittest_part1.sh \
-        src/test/unittest_part2.sh \
-        src/test/unittest_part3.sh \
-        src/test/unittest_part4.sh \
-        src/test/unittest_part5.sh \
-        src/test/unittest_part6.sh \
-        src/test/unittest_part7.sh \
-        src/test/unittest_part8.sh
+	src/test/unittest_part1.sh \
+	src/test/unittest_part2.sh \
+	src/test/unittest_part3.sh \
+	src/test/unittest_part4.sh \
+	src/test/unittest_part5.sh \
+	src/test/unittest_part6.sh \
+	src/test/unittest_part7.sh \
+	src/test/unittest_part8.sh

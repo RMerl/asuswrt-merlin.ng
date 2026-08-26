@@ -187,6 +187,11 @@ do_hup(void)
         generate_ed_link_cert(options, now, new_signing_key > 0)) {
       log_warn(LD_OR, "Problem reloading Ed25519 keys; still using old keys.");
     }
+    if (load_family_id_keys(options,
+                            networkstatus_get_latest_consensus())) {
+      log_warn(LD_OR, "Problem reloading family ID keys; "
+               "still using old keys.");
+    }
 
     /* Update cpuworker and dnsworker processes, so they get up-to-date
      * configuration options. */
@@ -372,6 +377,7 @@ dumpstats(int severity)
   channel_dumpstats(severity);
   channel_listener_dumpstats(severity);
 
+  // TODO CGO: Use of RELAY_PAYLOAD_SIZE_MAX may make this a bit wrong.
   tor_log(severity, LD_NET,
       "Cells processed: %"PRIu64" padding\n"
       "                 %"PRIu64" create\n"
@@ -390,11 +396,11 @@ dumpstats(int severity)
   if (stats_n_data_cells_packaged)
     tor_log(severity,LD_NET,"Average packaged cell fullness: %2.3f%%",
         100*(((double)stats_n_data_bytes_packaged) /
-             ((double)stats_n_data_cells_packaged*RELAY_PAYLOAD_SIZE)) );
+             ((double)stats_n_data_cells_packaged*RELAY_PAYLOAD_SIZE_MAX)) );
   if (stats_n_data_cells_received)
     tor_log(severity,LD_NET,"Average delivered cell fullness: %2.3f%%",
         100*(((double)stats_n_data_bytes_received) /
-             ((double)stats_n_data_cells_received*RELAY_PAYLOAD_SIZE)) );
+             ((double)stats_n_data_cells_received*RELAY_PAYLOAD_SIZE_MAX)) );
 
   cpuworker_log_onionskin_overhead(severity, ONION_HANDSHAKE_TYPE_TAP, "TAP");
   cpuworker_log_onionskin_overhead(severity, ONION_HANDSHAKE_TYPE_NTOR,"ntor");
@@ -825,6 +831,39 @@ do_dump_config(void)
   return 0;
 }
 
+/** Implement --keygen-family; create a family ID key and write it to a file.
+ */
+static int
+do_keygen_family(const char *fname_base)
+{
+  ed25519_public_key_t pk;
+  char *fname_key = NULL, *fname_id = NULL, *id_contents = NULL;
+  int r = -1;
+
+  if (BUG(!fname_base))
+    goto done;
+
+  tor_asprintf(&fname_key, "%s.secret_family_key", fname_base);
+  tor_asprintf(&fname_id, "%s.public_family_id", fname_base);
+
+  if (create_family_id_key(fname_key, &pk) < 0)
+    goto done;
+  tor_asprintf(&id_contents, "%s\n", ed25519_fmt(&pk));
+  if (write_str_to_file(fname_id, id_contents, 0) < 0)
+    goto done;
+
+  printf("# Generated %s\n", fname_key);
+  printf("FamilyId %s\n", ed25519_fmt(&pk));
+
+  r = 0;
+
+ done:
+  tor_free(fname_key);
+  tor_free(fname_id);
+  tor_free(id_contents);
+  return r;
+}
+
 static void
 init_addrinfo(void)
 {
@@ -919,6 +958,19 @@ sandbox_init_filter(void)
   OPEN("/etc/hosts");
   OPEN("/proc/meminfo");
 
+#ifdef HAVE_MODULE_RELAY
+  {
+    smartlist_t *family_id_files =
+      list_family_key_files(options, options->FamilyKeyDirectory);
+
+    SMARTLIST_FOREACH(family_id_files, const char *, fn,
+                      OPEN(fn));
+
+    SMARTLIST_FOREACH(family_id_files, char *, cp, tor_free(cp));
+    smartlist_free(family_id_files);
+  }
+#endif
+
   if (options->BridgeAuthoritativeDir)
     OPEN_DATADIR_SUFFIX("networkstatus-bridges", ".tmp");
 
@@ -1012,6 +1064,13 @@ sandbox_init_filter(void)
   if (authdir_mode(options)) {
     RENAME_SUFFIX("my-consensus-microdesc", ".tmp");
     RENAME_SUFFIX("my-consensus-ns", ".tmp");
+
+    sandbox_cfg_allow_rename(&cfg,
+      get_datadir_fname("my-consensus-microdesc"),
+      get_datadir_fname("consensus-transparency-microdesc"));
+    sandbox_cfg_allow_rename(&cfg,
+      get_datadir_fname("my-consensus-ns"),
+      get_datadir_fname("consensus-transparency-ns"));
   }
 
 #define STAT_DATADIR(name)                      \
@@ -1382,6 +1441,9 @@ tor_run_main(const tor_main_configuration_t *tor_cfg)
     break;
   case CMD_KEYGEN:
     result = load_ed_keys(get_options(), time(NULL)) < 0;
+    break;
+  case CMD_KEYGEN_FAMILY:
+    result = do_keygen_family(get_options()->command_arg);
     break;
   case CMD_KEY_EXPIRATION:
     init_keys();

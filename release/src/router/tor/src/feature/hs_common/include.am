@@ -1,7 +1,7 @@
 
 # ADD_C_FILE: INSERT SOURCES HERE.
 LIBTOR_APP_A_SOURCES += 				\
-	src/feature/hs_common/replaycache.c	        \
+	src/feature/hs_common/replaycache.c		\
 	src/feature/hs_common/shared_random_client.c
 
 # ADD_C_FILE: INSERT HEADERS HERE.

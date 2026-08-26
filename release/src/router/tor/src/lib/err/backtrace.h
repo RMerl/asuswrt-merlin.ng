@@ -29,6 +29,14 @@ const char *get_tor_backtrace_version(void);
 #define log_backtrace(sev, dom, msg) \
   log_backtrace_impl((sev), (dom), (msg), tor_log)
 
+#define log_backtrace_once(sev, dom, msg) STMT_BEGIN                    \
+  static int backtrace_logged__ = 0;                                    \
+  if (!backtrace_logged__) {                                            \
+    backtrace_logged__ = 1;                                             \
+    log_backtrace((sev), (dom), (msg));                                 \
+  }                                                                     \
+  STMT_END
+
 #ifdef BACKTRACE_PRIVATE
 #if defined(HAVE_EXECINFO_H) && defined(HAVE_BACKTRACE) && \
   defined(HAVE_BACKTRACE_SYMBOLS_FD) && defined(HAVE_SIGACTION)

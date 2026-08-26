@@ -71,6 +71,9 @@ cpath_append_hop(crypt_path_t **head_ptr, extend_info_t *choice)
   hop->package_window = circuit_initial_package_window();
   hop->deliver_window = CIRCWINDOW_START;
 
+  // This can get changed later on by circuit negotiation.
+  hop->relay_cell_format = RELAY_CELL_FORMAT_V0;
+
   return 0;
 }
 
@@ -113,11 +116,8 @@ cpath_assert_layer_ok(const crypt_path_t *cp)
       relay_crypto_assert_ok(&cp->pvt_crypto);
       FALLTHROUGH;
     case CPATH_STATE_CLOSED:
-      /*XXXX Assert that there's no handshake_state either. */
-      tor_assert(!cp->rend_dh_handshake_state);
       break;
     case CPATH_STATE_AWAITING_KEYS:
-      /* tor_assert(cp->dh_handshake_state); */
       break;
     default:
       log_fn(LOG_ERR, LD_BUG, "Unexpected state %d", cp->state);
@@ -145,14 +145,13 @@ cpath_assert_layer_ok(const crypt_path_t *cp)
  * Return 0 if init was successful, else -1 if it failed.
  */
 int
-cpath_init_circuit_crypto(crypt_path_t *cpath,
-                          const char *key_data, size_t key_data_len,
-                          int reverse, int is_hs_v3)
+cpath_init_circuit_crypto(relay_crypto_alg_t alg,
+                          crypt_path_t *cpath,
+                          const char *key_data, size_t key_data_len)
 {
 
   tor_assert(cpath);
-  return relay_crypto_init(&cpath->pvt_crypto, key_data, key_data_len,
-                           reverse, is_hs_v3);
+  return relay_crypto_init(alg, &cpath->pvt_crypto, key_data, key_data_len);
 }
 
 /** Deallocate space associated with the cpath node <b>victim</b>. */
@@ -164,7 +163,6 @@ cpath_free(crypt_path_t *victim)
 
   relay_crypto_clear(&victim->pvt_crypto);
   onion_handshake_state_release(&victim->handshake_state);
-  crypto_dh_free(victim->rend_dh_handshake_state);
   extend_info_free(victim->extend_info);
   congestion_control_free(victim->ccontrol);
 
@@ -172,51 +170,14 @@ cpath_free(crypt_path_t *victim)
   tor_free(victim);
 }
 
-/********************** cpath crypto API *******************************/
-
-/** Encrypt or decrypt <b>payload</b> using the crypto of <b>cpath</b>. Actual
- *  operation decided by <b>is_decrypt</b>.  */
-void
-cpath_crypt_cell(const crypt_path_t *cpath, uint8_t *payload, bool is_decrypt)
-{
-  if (is_decrypt) {
-    relay_crypt_one_payload(cpath->pvt_crypto.b_crypto, payload);
-  } else {
-    relay_crypt_one_payload(cpath->pvt_crypto.f_crypto, payload);
-  }
-}
-
-/** Getter for the incoming digest of <b>cpath</b>. */
-struct crypto_digest_t *
-cpath_get_incoming_digest(const crypt_path_t *cpath)
-{
-  return cpath->pvt_crypto.b_digest;
-}
-
-/** Set the right integrity digest on the outgoing <b>cell</b> based on the
- *  cell payload and update the forward digest of <b>cpath</b>. */
-void
-cpath_set_cell_forward_digest(crypt_path_t *cpath, cell_t *cell)
-{
-  relay_set_digest(cpath->pvt_crypto.f_digest, cell);
-}
-
 /************ cpath sendme API ***************************/
 
-/** Return the sendme_digest of this <b>cpath</b>. */
-uint8_t *
-cpath_get_sendme_digest(crypt_path_t *cpath)
+/** Return the sendme tag of this <b>cpath</b>,
+ * along with its length. */
+const uint8_t *
+cpath_get_sendme_tag(crypt_path_t *cpath, size_t *len_out)
 {
-  return relay_crypto_get_sendme_digest(&cpath->pvt_crypto);
-}
-
-/** Record the cell digest, indicated by is_foward_digest or not, as the
- * SENDME cell digest. */
-void
-cpath_sendme_record_cell_digest(crypt_path_t *cpath, bool is_foward_digest)
-{
-  tor_assert(cpath);
-  relay_crypto_record_sendme_digest(&cpath->pvt_crypto, is_foward_digest);
+  return relay_crypto_get_sendme_tag(&cpath->pvt_crypto, len_out);
 }
 
 /************ other cpath functions ***************************/

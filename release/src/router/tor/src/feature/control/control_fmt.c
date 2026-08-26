@@ -166,7 +166,7 @@ circuit_describe_status_for_controller(origin_circuit_t *circ)
    * (which will have the lowest current RTT).
    *
    * NOTE: Because control port events can happen at arbitrary points, we
-   * must specificially check exactly what we need from the conflux object.
+   * must specifically check exactly what we need from the conflux object.
    * We cannot use CIRCUIT_IS_CONFLUX() because this event may have been
    * emitted while a set was under partial construction or teardown. */
   if (TO_CIRCUIT(circ)->conflux || TO_CIRCUIT(circ)->conflux_pending_nonce) {

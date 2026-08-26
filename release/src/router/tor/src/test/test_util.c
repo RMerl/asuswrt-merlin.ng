@@ -2926,6 +2926,79 @@ test_util_decompress_dos(void *arg)
   ;
 }
 
+/* Regression test for the concatenated-stream compression bomb bypass. */
+static void
+test_util_decompress_dos_concat_impl(compress_method_t method)
+{
+  /* Three 3 MB zero chunks are used: each decompresses to just under
+   * CHECK_FOR_COMPRESSION_BOMB_AFTER (5 MB), so the per-sub-stream inner
+   * check never fires on its own.  But after two sub-streams the cumulative
+   * output crosses 5 MB at a ratio far above MAX_UNCOMPRESSION_FACTOR,
+   * which the fix detects at the sub-stream boundary before reinitializing
+   * for the third member. */
+  const size_t chunk_size = 3 * 1024 * 1024;
+  char *input = tor_malloc_zero(chunk_size);
+  char *c1 = NULL, *c2 = NULL, *c3 = NULL, *cat = NULL, *result = NULL;
+  size_t sz1, sz2, sz3, szcat, szr;
+  int r;
+
+  /* Compress each chunk with bomb detection suppressed so we can actually
+   * produce the highly-compressible streams. */
+  MOCK(tor_compress_is_compression_bomb, mock_is_never_compression_bomb);
+  r = tor_compress(&c1, &sz1, input, chunk_size, method);
+  tt_int_op(r, OP_EQ, 0);
+  r = tor_compress(&c2, &sz2, input, chunk_size, method);
+  tt_int_op(r, OP_EQ, 0);
+  r = tor_compress(&c3, &sz3, input, chunk_size, method);
+  tt_int_op(r, OP_EQ, 0);
+  UNMOCK(tor_compress_is_compression_bomb);
+
+  /* Concatenate the three compressed members into one buffer. */
+  szcat = sz1 + sz2 + sz3;
+  cat = tor_malloc(szcat);
+  memcpy(cat,             c1, sz1);
+  memcpy(cat + sz1,       c2, sz2);
+  memcpy(cat + sz1 + sz2, c3, sz3);
+
+  /* Decompression must fail: cumulative output after two sub-streams
+   * crosses CHECK_FOR_COMPRESSION_BOMB_AFTER at a ratio far above
+   * MAX_UNCOMPRESSION_FACTOR.  Before the fix the per-sub-stream counters
+   * were reset on each reinit so this went undetected. */
+  setup_capture_of_logs(LOG_WARN);
+  r = tor_uncompress(&result, &szr, cat, szcat, method, 0, LOG_WARN);
+  tt_int_op(r, OP_EQ, -1);
+  expect_log_msg_containing(
+        "Possible compression bomb across concatenated streams; abandoning"
+  );
+
+ done:
+  teardown_capture_of_logs();
+  UNMOCK(tor_compress_is_compression_bomb);
+  tor_free(input);
+  tor_free(c1);
+  tor_free(c2);
+  tor_free(c3);
+  tor_free(cat);
+  tor_free(result);
+}
+
+static void
+test_util_decompress_dos_concat(void *arg)
+{
+  const char *methodname = arg;
+  tt_assert(methodname);
+
+  compress_method_t method = compression_method_get_by_name(methodname);
+  tt_int_op(method, OP_NE, UNKNOWN_METHOD);
+  if (! tor_compress_supports_method(method)) {
+    tt_skip();
+  }
+
+  test_util_decompress_dos_concat_impl(method);
+ done:
+  ;
+}
+
 static void
 test_util_gzip_compression_bomb(void *arg)
 {
@@ -4173,11 +4246,11 @@ test_util_find_str_at_start_of_line(void *ptr)
     "howdy world. how are you? i hope it's fine.\n"
     "hello kitty\n"
     "third line";
-  char *line2 = strchr(long_string,'\n')+1;
-  char *line3 = strchr(line2,'\n')+1;
+  const char *line2 = strchr(long_string,'\n')+1;
+  const char *line3 = strchr(line2,'\n')+1;
   const char *short_string = "hello kitty\n"
     "second line\n";
-  char *short_line2 = strchr(short_string,'\n')+1;
+  const char *short_line2 = strchr(short_string,'\n')+1;
 
   (void)ptr;
 
@@ -6939,6 +7012,11 @@ test_util_map_anon_nofork(void *arg)
     &compress_setup,                                                    \
     (char*)(identifier) }
 
+#define COMPRESS_DOS_CONCAT(name, identifier)                           \
+  { ("compress_dos_concat/" #name), test_util_decompress_dos_concat, 0, \
+    &compress_setup,                                                    \
+    (char*)(identifier) }
+
 #ifdef _WIN32
 #define UTIL_TEST_WIN_ONLY(n, f) UTIL_TEST(n, (f))
 #else
@@ -6987,6 +7065,8 @@ struct testcase_t util_tests[] = {
   COMPRESS_DOS(lzma, "x-tor-lzma"),
   COMPRESS_DOS(zstd, "x-zstd"),
   COMPRESS_DOS(zstd_nostatic, "x-zstd:nostatic"),
+  COMPRESS_DOS_CONCAT(zlib, "deflate"),
+  COMPRESS_DOS_CONCAT(gzip, "gzip"),
   UTIL_TEST(gzip_compression_bomb, TT_FORK),
   UTIL_LEGACY(datadir),
   UTIL_LEGACY(memarea),

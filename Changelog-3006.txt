@@ -12,7 +12,10 @@ Asuswrt-Merlin 3006.xxx Changelog
          HNS engine.  (RSDNTWK)
   - NEW: Wireless Log will now report infos for Repeater,
          Media Bridge and WISP upstream link
+  - NEW: IPv6 support in Tor.  Previously, any IPv6 traffic
+         would leak outside of the proxy.  (Claude)
   - UPDATED: amtm to 7.0 (decoderman)
+  - UPDATED: tor to 0.4.9.11.
   - CHANGED: Kernel backports to mark the B53-based CPUs
              as not being vulnerable to Spectre V2 and
              Meltdown.  This tells the kernel to skip

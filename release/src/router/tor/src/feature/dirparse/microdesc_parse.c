@@ -30,11 +30,12 @@
 /** List of tokens recognized in microdescriptors */
 // clang-format off
 static token_rule_t microdesc_token_table[] = {
-  T1_START("onion-key",        K_ONION_KEY,        NO_ARGS,     NEED_KEY_1024),
+  T1_START("onion-key",        K_ONION_KEY,        NO_ARGS,     OPT_KEY_1024),
   T1("ntor-onion-key",         K_ONION_KEY_NTOR,   GE(1),       NO_OBJ ),
   T0N("id",                    K_ID,               GE(2),       NO_OBJ ),
   T0N("a",                     K_A,                GE(1),       NO_OBJ ),
   T01("family",                K_FAMILY,           CONCAT_ARGS, NO_OBJ ),
+  T01("family-ids",            K_FAMILY_IDS,       CONCAT_ARGS, NO_OBJ ),
   T01("p",                     K_P,                CONCAT_ARGS, NO_OBJ ),
   T01("p6",                    K_P6,               CONCAT_ARGS, NO_OBJ ),
   A01("@last-listed",          A_LAST_LISTED,      CONCAT_ARGS, NO_OBJ ),
@@ -200,14 +201,11 @@ microdesc_parse_fields(microdesc_t *md,
   }
 
   tok = find_by_keyword(tokens, K_ONION_KEY);
-  if (!crypto_pk_public_exponent_ok(tok->key)) {
+  if (tok && tok->key && !crypto_pk_public_exponent_ok(tok->key)) {
     log_warn(LD_DIR,
              "Relay's onion key had invalid exponent.");
     goto err;
   }
-  md->onion_pkey = tor_memdup(tok->object_body, tok->object_size);
-  md->onion_pkey_len = tok->object_size;
-  crypto_pk_free(tok->key);
 
   if ((tok = find_opt_by_keyword(tokens, K_ONION_KEY_NTOR))) {
     curve25519_public_key_t k;
@@ -254,6 +252,16 @@ microdesc_parse_fields(microdesc_t *md,
     md->family = nodefamily_parse(tok->args[0],
                                   NULL,
                                   NF_WARN_MALFORMED);
+  }
+  if ((tok = find_opt_by_keyword(tokens, K_FAMILY_IDS))) {
+    smartlist_t *ids = smartlist_new();
+    smartlist_split_string(ids, tok->args[0], " ",
+                           SPLIT_SKIP_SPACE|SPLIT_IGNORE_BLANK, 0);
+    if (smartlist_len(ids) > 0) {
+      md->family_ids = ids;
+    } else {
+      smartlist_free(ids);
+    }
   }
 
   if ((tok = find_opt_by_keyword(tokens, K_P))) {

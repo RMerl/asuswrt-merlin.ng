@@ -105,7 +105,7 @@ networkstatus_parse_detached_signatures(const char *s, const char *eos)
       hexdigest = tok->args[0];
     } else if (tok->tp == K_ADDITIONAL_DIGEST) {
       int a = crypto_digest_algorithm_parse_name(tok->args[1]);
-      if (a<0) {
+      if (a < 0 || a >= N_COMMON_DIGEST_ALGORITHMS) {
         log_warn(LD_DIR, "Unrecognized algorithm name %s", tok->args[0]);
         continue;
       }
@@ -190,7 +190,7 @@ networkstatus_parse_detached_signatures(const char *s, const char *eos)
 
     {
       int a = crypto_digest_algorithm_parse_name(algname);
-      if (a<0) {
+      if (a < 0 || a >= N_COMMON_DIGEST_ALGORITHMS) {
         log_warn(LD_DIR, "Unrecognized algorithm name %s", algname);
         continue;
       }

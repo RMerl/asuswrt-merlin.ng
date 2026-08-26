@@ -37,9 +37,6 @@ int sendme_note_stream_data_packaged(edge_connection_t *conn, size_t len);
 
 /* Record cell digest on circuit. */
 void sendme_record_cell_digest_on_circ(circuit_t *circ, crypt_path_t *cpath);
-/* Record cell digest as the SENDME digest. */
-void sendme_record_received_cell_digest(circuit_t *circ, crypt_path_t *cpath);
-void sendme_record_sending_cell_digest(circuit_t *circ, crypt_path_t *cpath);
 
 /* Private section starts. */
 #ifdef SENDME_PRIVATE
@@ -68,13 +65,13 @@ STATIC int get_accept_min_version(void);
 
 STATIC bool cell_version_can_be_handled(uint8_t cell_version);
 
-STATIC ssize_t build_cell_payload_v1(const uint8_t *cell_digest,
+STATIC ssize_t build_cell_payload_v1(const uint8_t *cell_tag,
+                                     size_t tag_len,
                                      uint8_t *payload);
 STATIC bool sendme_is_valid(circuit_t *circ,
+                            const crypt_path_t *layer_hint,
                             const uint8_t *cell_payload,
                             size_t cell_payload_len);
-STATIC bool circuit_sendme_cell_is_next(int deliver_window,
-                                        int sendme_inc);
 
 #endif /* defined(TOR_UNIT_TESTS) */
 

@@ -39,6 +39,7 @@
 #include "orconfig.h"
 #include "lib/cc/compat_compiler.h"
 #include "lib/log/log.h"
+#include "lib/smartlist_core/smartlist_core.h"
 #include "lib/testsupport/testsupport.h"
 
 /* Replace assert() with a variant that sends failures to the log before
@@ -191,6 +192,7 @@
   STMT_END
 #define tor_assert_nonfatal_unreached_once() STMT_BEGIN                 \
   static int warning_logged__ = 0;                                      \
+  tor_bug_increment_count_();                                           \
   if (!warning_logged__) {                                              \
     warning_logged__ = 1;                                               \
     tor_bug_occurred_(SHORT_FILE__, __LINE__, __func__, NULL, 1, NULL); \
@@ -198,10 +200,12 @@
   STMT_END
 #define tor_assert_nonfatal_once(cond) STMT_BEGIN                       \
   static int warning_logged__ = 0;                                      \
-  if (ASSERT_PREDICT_LIKELY_(cond)) {                                   \
-  } else if (!warning_logged__) {                                       \
-    warning_logged__ = 1;                                               \
-    tor_bug_occurred_(SHORT_FILE__, __LINE__, __func__, #cond, 1, NULL);\
+  if (!ASSERT_PREDICT_LIKELY_(cond)) {                                   \
+    tor_bug_increment_count_();                                         \
+    if (!warning_logged__) {                                            \
+      warning_logged__ = 1;                                             \
+      tor_bug_occurred_(SHORT_FILE__, __LINE__, __func__, #cond, 1, NULL);\
+    }                                                                   \
   }                                                                     \
   STMT_END
 #define BUG(cond)                                                       \
@@ -215,18 +219,22 @@
   if (( {                                                               \
       static int var = 0;                                               \
       int bool_result = !!(cond);                                       \
-      if (bool_result && !var) {                                        \
-        var = 1;                                                        \
-        tor_bug_occurred_(SHORT_FILE__, __LINE__, __func__,             \
-                          ("!("#cond")"), 1, NULL);                     \
+      if (bool_result) {                                                \
+        tor_bug_increment_count_();                                     \
+        if (!var) {                                                     \
+          var = 1;                                                      \
+          tor_bug_occurred_(SHORT_FILE__, __LINE__, __func__,           \
+                            ("!("#cond")"), 1, NULL);                   \
+        }                                                               \
       }                                                                 \
       bool_result; } ))
 #else /* !defined(__GNUC__) */
 #define IF_BUG_ONCE__(cond,var)                                         \
   static int var = 0;                                                   \
   if ((cond) ?                                                          \
-      (var ? 1 :                                                        \
+      (var ? (tor_bug_increment_count_(), 1) :                          \
        (var=1,                                                          \
+        tor_bug_increment_count_(),                                     \
         tor_bug_occurred_(SHORT_FILE__, __LINE__, __func__,             \
                           ("!("#cond")"), 1, NULL),                     \
         1))                                                             \
@@ -273,12 +281,15 @@ void tor_assertion_failed_(const char *fname, unsigned int line,
                            const char *func, const char *expr,
                            const char *fmt, ...)
     CHECK_PRINTF(5,6);
+void tor_bug_increment_count_(void);
+size_t tor_bug_get_count(void);
 void tor_bug_occurred_(const char *fname, unsigned int line,
                        const char *func, const char *expr,
                        int once, const char *fmt, ...)
   CHECK_PRINTF(6,7);
 
 void tor_abort_(void) ATTR_NORETURN;
+void tor_bug_init_counter(void);
 
 #ifdef _WIN32
 #define SHORT_FILE__ (tor_fix_source_file(__FILE__))

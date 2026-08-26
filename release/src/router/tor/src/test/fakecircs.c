@@ -22,7 +22,7 @@
 #include "core/or/conflux.h"
 #include "core/or/crypt_path.h"
 #include "core/or/relay.h"
-#include "core/or/relay_crypto_st.h"
+#include "core/crypto/relay_crypto_st.h"
 
 #include "test/fakecircs.h"
 
@@ -59,8 +59,9 @@ new_fake_orcirc(channel_t *nchan, channel_t *pchan)
   cell_queue_init(&(orcirc->p_chan_cells));
 
   memset(&tmp_cpath, 0, sizeof(tmp_cpath));
-  if (cpath_init_circuit_crypto(&tmp_cpath, whatevs_key,
-                                sizeof(whatevs_key), 0, 0)<0) {
+  if (cpath_init_circuit_crypto(RELAY_CRYPTO_ALG_TOR1,
+                                &tmp_cpath, whatevs_key,
+                                sizeof(whatevs_key))<0) {
     log_warn(LD_BUG,"Circuit initialization failed");
     return NULL;
   }

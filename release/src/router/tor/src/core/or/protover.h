@@ -58,6 +58,14 @@ struct smartlist_t;
 /** The protover that signals support for congestion control */
 #define PROTOVER_FLOWCTRL_CC 2
 
+/** The protover required for negotiating protovers as part of the circuit
+ * extension handshake. */
+#define PROTOVER_RELAY_NEGOTIATE_SUBPROTO 5
+
+/** The protover required for negotiating protovers as part of the circuit
+ * extension handshake. */
+#define PROTOVER_RELAY_CRYPT_CGO 6
+
 /** List of recognized subprotocols. */
 /// C_RUST_COUPLED: src/rust/protover/ffi.rs `translate_to_rust`
 /// C_RUST_COUPLED: src/rust/protover/protover.rs `Proto`

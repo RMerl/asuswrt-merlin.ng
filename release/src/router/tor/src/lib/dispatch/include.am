@@ -20,8 +20,8 @@ src_lib_libtor_dispatch_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 # ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS +=					\
 	src/lib/dispatch/dispatch.h			\
-	src/lib/dispatch/dispatch_cfg.h 		\
-	src/lib/dispatch/dispatch_cfg_st.h 		\
+	src/lib/dispatch/dispatch_cfg.h			\
+	src/lib/dispatch/dispatch_cfg_st.h		\
 	src/lib/dispatch/dispatch_naming.h		\
 	src/lib/dispatch/dispatch_st.h			\
 	src/lib/dispatch/msgtypes.h

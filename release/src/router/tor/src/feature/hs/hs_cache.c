@@ -170,8 +170,9 @@ cache_store_v3_as_dir(hs_cache_dir_descriptor_t *desc)
     size_t removed = hs_cache_handle_oom(bytes_to_remove);
     static ratelim_t hs_cache_oom_ratelim = RATELIM_INIT(600);
     log_fn_ratelim(&hs_cache_oom_ratelim, LOG_NOTICE, LD_REND,
-               "HSDir cache exceeded limit (%zu > %zu bytes). "
-               "Pruned %zu bytes during an HS descriptor upload.",
+               "HSDir cache exceeded limit "
+               "(%"TOR_PRIuSZ " > %"TOR_PRIuSZ " bytes). "
+               "Pruned %"TOR_PRIuSZ " bytes during an HS descriptor upload.",
                current_cache_bytes, max_cache_bytes, removed);
   }
 

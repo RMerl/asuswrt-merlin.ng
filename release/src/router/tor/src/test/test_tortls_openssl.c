@@ -46,15 +46,19 @@ ENABLE_GCC_WARNING("-Wredundant-decls")
 #include "test/log_test_helpers.h"
 #include "test/test_tortls.h"
 
-#ifndef HAVE_SSL_STATE
-#define OPENSSL_OPAQUE
-#endif
-
-#if defined(OPENSSL_OPAQUE) && !defined(LIBRESSL_VERSION_NUMBER)
 #define SSL_STATE_STR "before SSL initialization"
-#else
-#define SSL_STATE_STR "before/accept initialization"
-#endif
+
+/* Every version and fork of OpenSSL we support now qualifies as "opaque",
+ * in that it hides the members of important structures.
+ *
+ * That's a good thing, but it means we can't run a number of older tests
+ * that require the ability to poke at OpenSSL's internals.
+ *
+ * We're retaining these tests here, rather than removing them,
+ * in case anybody wants to port them to modern OpenSSL.
+ * (Some of them are probably not worth saving, though.)
+ */
+#define OPENSSL_OPAQUE
 
 #ifndef OPENSSL_OPAQUE
 static SSL_METHOD *
@@ -124,12 +128,7 @@ test_tortls_tor_tls_new(void *data)
 static void
 library_init(void)
 {
-#ifdef OPENSSL_1_1_API
   OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, NULL);
-#else
-  SSL_library_init();
-  SSL_load_error_strings();
-#endif /* defined(OPENSSL_1_1_API) */
 }
 
 static void
@@ -295,13 +294,6 @@ test_tortls_log_one_error(void *ignored)
   tor_tls_log_one_error(tls, ERR_PACK(1, 2, SSL_R_RECORD_LENGTH_MISMATCH),
                         LOG_WARN, 0, NULL);
   expect_log_severity(LOG_INFO);
-
-#ifndef OPENSSL_1_1_API
-  mock_clean_saved_logs();
-  tor_tls_log_one_error(tls, ERR_PACK(1, 2, SSL_R_RECORD_TOO_LARGE),
-                        LOG_WARN, 0, NULL);
-  expect_log_severity(LOG_INFO);
-#endif /* !defined(OPENSSL_1_1_API) */
 
   mock_clean_saved_logs();
   tor_tls_log_one_error(tls, ERR_PACK(1, 2, SSL_R_UNKNOWN_PROTOCOL),
@@ -505,232 +497,6 @@ test_tortls_cert_get_key(void *ignored)
 }
 #endif /* !defined(OPENSSL_OPAQUE) */
 
-static void
-test_tortls_get_my_client_auth_key(void *ignored)
-{
-  (void)ignored;
-  crypto_pk_t *ret;
-  crypto_pk_t *expected;
-  tor_tls_context_t *ctx;
-  RSA *k = RSA_new();
-
-  ctx = tor_malloc_zero(sizeof(tor_tls_context_t));
-  expected = crypto_new_pk_from_openssl_rsa_(k);
-  ctx->auth_key = expected;
-
-  client_tls_context = NULL;
-  ret = tor_tls_get_my_client_auth_key();
-  tt_assert(!ret);
-
-  client_tls_context = ctx;
-  ret = tor_tls_get_my_client_auth_key();
-  tt_assert(ret == expected);
-
- done:
-  crypto_pk_free(expected);
-  tor_free(ctx);
-}
-
-#ifndef HAVE_SSL_GET_CLIENT_CIPHERS
-static SSL_CIPHER *
-get_cipher_by_name(const char *name)
-{
-  int i;
-  const SSL_METHOD *method = SSLv23_method();
-  int num = method->num_ciphers();
-
-  for (i = 0; i < num; ++i) {
-    const SSL_CIPHER *cipher = method->get_cipher(i);
-    const char *ciphername = SSL_CIPHER_get_name(cipher);
-    if (!strcmp(ciphername, name)) {
-      return (SSL_CIPHER *)cipher;
-    }
-  }
-
-  return NULL;
-}
-#endif /* !defined(HAVE_SSL_GET_CLIENT_CIPHERS) */
-
-#ifndef OPENSSL_OPAQUE
-static void
-test_tortls_get_ciphersuite_name(void *ignored)
-{
-  (void)ignored;
-  const char *ret;
-  tor_tls_t *ctx;
-  ctx = tor_malloc_zero(sizeof(tor_tls_t));
-  ctx->ssl = tor_malloc_zero(sizeof(SSL));
-
-  ret = tor_tls_get_ciphersuite_name(ctx);
-  tt_str_op(ret, OP_EQ, "(NONE)");
-
- done:
-  tor_free(ctx->ssl);
-  tor_free(ctx);
-}
-
-static SSL_CIPHER *
-get_cipher_by_id(uint16_t id)
-{
-  int i;
-  const SSL_METHOD *method = SSLv23_method();
-  int num = method->num_ciphers();
-  for (i = 0; i < num; ++i) {
-    const SSL_CIPHER *cipher = method->get_cipher(i);
-    if (id == (SSL_CIPHER_get_id(cipher) & 0xffff)) {
-      return (SSL_CIPHER *)cipher;
-    }
-  }
-
-  return NULL;
-}
-
-static void
-test_tortls_classify_client_ciphers(void *ignored)
-{
-  (void)ignored;
-  int i;
-  int ret;
-  SSL_CTX *ctx;
-  SSL *ssl;
-  tor_tls_t *tls;
-  STACK_OF(SSL_CIPHER) *ciphers;
-  SSL_CIPHER *tmp_cipher;
-
-  library_init();
-
-  tor_tls_allocate_tor_tls_object_ex_data_index();
-
-  tls = tor_malloc_zero(sizeof(tor_tls_t));
-  tls->magic = TOR_TLS_MAGIC;
-
-  ctx = SSL_CTX_new(TLSv1_method());
-  ssl = SSL_new(ctx);
-  tls->ssl = ssl;
-
-  ciphers = sk_SSL_CIPHER_new_null();
-
-  ret = tor_tls_classify_client_ciphers(ssl, NULL);
-  tt_int_op(ret, OP_EQ, -1);
-
-  SSL_set_ex_data(ssl, tor_tls_object_ex_data_index, tls);
-  tls->client_cipher_list_type = 42;
-
-  ret = tor_tls_classify_client_ciphers(ssl, NULL);
-  tt_int_op(ret, OP_EQ, 42);
-
-  tls->client_cipher_list_type = 0;
-  ret = tor_tls_classify_client_ciphers(ssl, ciphers);
-  tt_int_op(ret, OP_EQ, 1);
-  tt_int_op(tls->client_cipher_list_type, OP_EQ, 1);
-
-  tls->client_cipher_list_type = 0;
-  ret = tor_tls_classify_client_ciphers(ssl, SSL_get_ciphers(ssl));
-  tt_int_op(ret, OP_EQ, 3);
-  tt_int_op(tls->client_cipher_list_type, OP_EQ, 3);
-
-  SSL_CIPHER *one = get_cipher_by_name(TLS1_TXT_DHE_RSA_WITH_AES_128_SHA),
-    *two = get_cipher_by_name(TLS1_TXT_DHE_RSA_WITH_AES_256_SHA),
-    *three = get_cipher_by_name(SSL3_TXT_EDH_RSA_DES_192_CBC3_SHA),
-    *four = NULL;
-  sk_SSL_CIPHER_push(ciphers, one);
-  sk_SSL_CIPHER_push(ciphers, two);
-  sk_SSL_CIPHER_push(ciphers, three);
-  sk_SSL_CIPHER_push(ciphers, four);
-
-  tls->client_cipher_list_type = 0;
-  ret = tor_tls_classify_client_ciphers(ssl, ciphers);
-  tt_int_op(ret, OP_EQ, 1);
-  tt_int_op(tls->client_cipher_list_type, OP_EQ, 1);
-
-  sk_SSL_CIPHER_zero(ciphers);
-
-  one = get_cipher_by_name("ECDHE-RSA-AES256-GCM-SHA384");
-  tt_assert(one);
-  one->id = 0x00ff;
-  two = get_cipher_by_name("ECDHE-RSA-AES128-GCM-SHA256");
-  tt_assert(two);
-  two->id = 0x0000;
-  sk_SSL_CIPHER_push(ciphers, one);
-  tls->client_cipher_list_type = 0;
-  ret = tor_tls_classify_client_ciphers(ssl, ciphers);
-  tt_int_op(ret, OP_EQ, 3);
-  tt_int_op(tls->client_cipher_list_type, OP_EQ, 3);
-
-  sk_SSL_CIPHER_push(ciphers, two);
-  tls->client_cipher_list_type = 0;
-  ret = tor_tls_classify_client_ciphers(ssl, ciphers);
-  tt_int_op(ret, OP_EQ, 3);
-  tt_int_op(tls->client_cipher_list_type, OP_EQ, 3);
-
-  one->id = 0xC00A;
-  tls->client_cipher_list_type = 0;
-  ret = tor_tls_classify_client_ciphers(ssl, ciphers);
-  tt_int_op(ret, OP_EQ, 3);
-  tt_int_op(tls->client_cipher_list_type, OP_EQ, 3);
-
-  sk_SSL_CIPHER_zero(ciphers);
-  for (i=0; v2_cipher_list[i]; i++) {
-    tmp_cipher = get_cipher_by_id(v2_cipher_list[i]);
-    tt_assert(tmp_cipher);
-    sk_SSL_CIPHER_push(ciphers, tmp_cipher);
-  }
-  tls->client_cipher_list_type = 0;
-  ret = tor_tls_classify_client_ciphers(ssl, ciphers);
-  tt_int_op(ret, OP_EQ, 2);
-  tt_int_op(tls->client_cipher_list_type, OP_EQ, 2);
-
- done:
-  sk_SSL_CIPHER_free(ciphers);
-  SSL_free(tls->ssl);
-  tor_free(tls);
-  SSL_CTX_free(ctx);
-}
-#endif /* !defined(OPENSSL_OPAQUE) */
-
-static void
-test_tortls_client_is_using_v2_ciphers(void *ignored)
-{
-  (void)ignored;
-
-#ifdef HAVE_SSL_GET_CLIENT_CIPHERS
-  tt_skip();
- done:
-  (void)1;
-#else
-  int ret;
-  SSL_CTX *ctx;
-  SSL *ssl;
-  SSL_SESSION *sess;
-  STACK_OF(SSL_CIPHER) *ciphers;
-
-  library_init();
-
-  ctx = SSL_CTX_new(TLSv1_method());
-  ssl = SSL_new(ctx);
-  sess = SSL_SESSION_new();
-
-  ret = tor_tls_client_is_using_v2_ciphers(ssl);
-  tt_int_op(ret, OP_EQ, -1);
-
-  ssl->session = sess;
-  ret = tor_tls_client_is_using_v2_ciphers(ssl);
-  tt_int_op(ret, OP_EQ, 0);
-
-  ciphers = sk_SSL_CIPHER_new_null();
-  SSL_CIPHER *one = get_cipher_by_name("ECDHE-RSA-AES256-GCM-SHA384");
-  tt_assert(one);
-  one->id = 0x00ff;
-  sk_SSL_CIPHER_push(ciphers, one);
-  sess->ciphers = ciphers;
-  ret = tor_tls_client_is_using_v2_ciphers(ssl);
-  tt_int_op(ret, OP_EQ, 1);
- done:
-  SSL_free(ssl);
-  SSL_CTX_free(ctx);
-#endif /* defined(HAVE_SSL_GET_CLIENT_CIPHERS) */
-}
-
 #ifndef OPENSSL_OPAQUE
 static int fixed_ssl_pending_result = 0;
 
@@ -768,65 +534,6 @@ test_tortls_get_pending_bytes(void *ignored)
 
 #ifndef OPENSSL_OPAQUE
 static void
-test_tortls_SSL_SESSION_get_master_key(void *ignored)
-{
-  (void)ignored;
-  size_t ret;
-  tor_tls_t *tls;
-  uint8_t *out;
-  out = tor_malloc_zero(1);
-  tls = tor_malloc_zero(sizeof(tor_tls_t));
-  tls->ssl = tor_malloc_zero(sizeof(SSL));
-  tls->ssl->session = tor_malloc_zero(sizeof(SSL_SESSION));
-  tls->ssl->session->master_key_length = 1;
-
-#ifndef HAVE_SSL_SESSION_GET_MASTER_KEY
-  tls->ssl->session->master_key[0] = 43;
-  ret = SSL_SESSION_get_master_key(tls->ssl->session, out, 0);
-  tt_int_op(ret, OP_EQ, 1);
-  tt_int_op(out[0], OP_EQ, 0);
-
-  ret = SSL_SESSION_get_master_key(tls->ssl->session, out, 1);
-  tt_int_op(ret, OP_EQ, 1);
-  tt_int_op(out[0], OP_EQ, 43);
-
- done:
-#endif /* !defined(HAVE_SSL_SESSION_GET_MASTER_KEY) */
-  tor_free(tls->ssl->session);
-  tor_free(tls->ssl);
-  tor_free(tls);
-  tor_free(out);
-}
-#endif /* !defined(OPENSSL_OPAQUE) */
-
-#ifndef OPENSSL_OPAQUE
-static void
-test_tortls_get_tlssecrets(void *ignored)
-{
-  (void)ignored;
-  int ret;
-  uint8_t *secret_out = tor_malloc_zero(DIGEST256_LEN);
-  tor_tls_t *tls;
-  tls = tor_malloc_zero(sizeof(tor_tls_t));
-  tls->ssl = tor_malloc_zero(sizeof(SSL));
-  tls->ssl->session = tor_malloc_zero(sizeof(SSL_SESSION));
-  tls->ssl->session->master_key_length = 1;
-  tls->ssl->s3 = tor_malloc_zero(sizeof(SSL3_STATE));
-
-  ret = tor_tls_get_tlssecrets(tls, secret_out);
-  tt_int_op(ret, OP_EQ, 0);
-
- done:
-  tor_free(secret_out);
-  tor_free(tls->ssl->s3);
-  tor_free(tls->ssl->session);
-  tor_free(tls->ssl);
-  tor_free(tls);
-}
-#endif /* !defined(OPENSSL_OPAQUE) */
-
-#ifndef OPENSSL_OPAQUE
-static void
 test_tortls_get_buffer_sizes(void *ignored)
 {
   (void)ignored;
@@ -849,23 +556,7 @@ test_tortls_get_buffer_sizes(void *ignored)
   tls->ssl->s3->wbuf.left = 43;
 
   ret = tor_tls_get_buffer_sizes(tls, &rbuf_c, &rbuf_b, &wbuf_c, &wbuf_b);
-#if OPENSSL_VERSION_NUMBER >= OPENSSL_V_SERIES(1,1,0)
   tt_int_op(ret, OP_EQ, -1);
-#else
-  tt_int_op(ret, OP_EQ, 0);
-  tt_int_op(rbuf_c, OP_EQ, 0);
-  tt_int_op(wbuf_c, OP_EQ, 0);
-  tt_int_op(rbuf_b, OP_EQ, 42);
-  tt_int_op(wbuf_b, OP_EQ, 43);
-
-  tls->ssl->s3->rbuf.buf = tor_malloc_zero(1);
-  tls->ssl->s3->wbuf.buf = tor_malloc_zero(1);
-  ret = tor_tls_get_buffer_sizes(tls, &rbuf_c, &rbuf_b, &wbuf_c, &wbuf_b);
-  tt_int_op(ret, OP_EQ, 0);
-  tt_int_op(rbuf_c, OP_EQ, 1);
-  tt_int_op(wbuf_c, OP_EQ, 2);
-
-#endif /* OPENSSL_VERSION_NUMBER >= OPENSSL_V_SERIES(1,1,0) */
 
  done:
   tor_free(tls->ssl->s3->rbuf.buf);
@@ -873,76 +564,6 @@ test_tortls_get_buffer_sizes(void *ignored)
   tor_free(tls->ssl->s3);
   tor_free(tls->ssl);
   tor_free(tls);
-}
-#endif /* !defined(OPENSSL_OPAQUE) */
-
-#ifndef OPENSSL_OPAQUE
-typedef struct cert_pkey_st_local
-{
-  X509 *x509;
-  EVP_PKEY *privatekey;
-  const EVP_MD *digest;
-} CERT_PKEY_local;
-
-typedef struct sess_cert_st_local
-{
-  STACK_OF(X509) *cert_chain;
-  int peer_cert_type;
-  CERT_PKEY_local *peer_key;
-  CERT_PKEY_local peer_pkeys[8];
-  int references;
-} SESS_CERT_local;
-
-static void
-test_tortls_try_to_extract_certs_from_tls(void *ignored)
-{
-  (void)ignored;
-  tor_tls_t *tls;
-  X509 *cert = NULL, *id_cert = NULL, *c1 = NULL, *c2 = NULL;
-  SESS_CERT_local *sess = NULL;
-
-  c1 = read_cert_from(validCertString);
-  c2 = read_cert_from(caCertString);
-
-  tls = tor_malloc_zero(sizeof(tor_tls_t));
-  tls->ssl = tor_malloc_zero(sizeof(SSL));
-  tls->ssl->session = tor_malloc_zero(sizeof(SSL_SESSION));
-  sess = tor_malloc_zero(sizeof(SESS_CERT_local));
-  tls->ssl->session->sess_cert = (void *)sess;
-
-  try_to_extract_certs_from_tls(LOG_WARN, tls, &cert, &id_cert);
-  tt_assert(!cert);
-  tt_assert(!id_cert);
-
-  tls->ssl->session->peer = c1;
-  try_to_extract_certs_from_tls(LOG_WARN, tls, &cert, &id_cert);
-  tt_assert(cert == c1);
-  tt_assert(!id_cert);
-  X509_free(cert); /* decrease refcnt */
-
-  sess->cert_chain = sk_X509_new_null();
-  try_to_extract_certs_from_tls(LOG_WARN, tls, &cert, &id_cert);
-  tt_assert(cert == c1);
-  tt_assert(!id_cert);
-  X509_free(cert); /* decrease refcnt */
-
-  sk_X509_push(sess->cert_chain, c1);
-  sk_X509_push(sess->cert_chain, c2);
-
-  try_to_extract_certs_from_tls(LOG_WARN, tls, &cert, &id_cert);
-  tt_assert(cert == c1);
-  tt_assert(id_cert);
-  X509_free(cert); /* decrease refcnt */
-  X509_free(id_cert); /* decrease refcnt */
-
- done:
-  sk_X509_free(sess->cert_chain);
-  tor_free(sess);
-  tor_free(tls->ssl->session);
-  tor_free(tls->ssl);
-  tor_free(tls);
-  X509_free(c1);
-  X509_free(c2);
 }
 #endif /* !defined(OPENSSL_OPAQUE) */
 
@@ -1112,11 +733,6 @@ test_tortls_block_renegotiation(void *ignored)
 
   tor_tls_block_renegotiation(tls);
 
-#ifndef OPENSSL_1_1_API
-  tt_assert(!(tls->ssl->s3->flags &
-              SSL3_FLAGS_ALLOW_UNSAFE_LEGACY_RENEGOTIATION));
-#endif
-
  done:
   tor_free(tls->ssl->s3);
   tor_free(tls->ssl);
@@ -1195,93 +811,6 @@ test_tortls_set_renegotiate_callback(void *ignored)
  done:
   tor_free(tls->ssl);
   tor_free(tls);
-}
-#endif /* !defined(OPENSSL_OPAQUE) */
-
-#ifndef OPENSSL_OPAQUE
-static SSL_CIPHER *fixed_cipher1 = NULL;
-static SSL_CIPHER *fixed_cipher2 = NULL;
-static const SSL_CIPHER *
-fake_get_cipher(unsigned ncipher)
-{
-
-  switch (ncipher) {
-  case 1:
-    return fixed_cipher1;
-  case 2:
-    return fixed_cipher2;
-  default:
-    return NULL;
-  }
-}
-#endif /* !defined(OPENSSL_OPAQUE) */
-
-#ifndef OPENSSL_OPAQUE
-static void
-test_tortls_find_cipher_by_id(void *ignored)
-{
-  (void)ignored;
-  int ret;
-  SSL *ssl;
-  SSL_CTX *ctx;
-  const SSL_METHOD *m = TLSv1_method();
-  SSL_METHOD *empty_method = tor_malloc_zero(sizeof(SSL_METHOD));
-
-  fixed_cipher1 = tor_malloc_zero(sizeof(SSL_CIPHER));
-  fixed_cipher2 = tor_malloc_zero(sizeof(SSL_CIPHER));
-  fixed_cipher2->id = 0xC00A;
-
-  library_init();
-
-  ctx = SSL_CTX_new(m);
-  ssl = SSL_new(ctx);
-
-  ret = find_cipher_by_id(ssl, NULL, 0xC00A);
-  tt_int_op(ret, OP_EQ, 1);
-
-  ret = find_cipher_by_id(ssl, m, 0xC00A);
-  tt_int_op(ret, OP_EQ, 1);
-
-  ret = find_cipher_by_id(ssl, m, 0xFFFF);
-  tt_int_op(ret, OP_EQ, 0);
-
-  ret = find_cipher_by_id(ssl, empty_method, 0xC00A);
-  tt_int_op(ret, OP_EQ, 1);
-
-  ret = find_cipher_by_id(ssl, empty_method, 0xFFFF);
-#ifdef HAVE_SSL_CIPHER_FIND
-  tt_int_op(ret, OP_EQ, 0);
-#else
-  tt_int_op(ret, OP_EQ, 1);
-#endif
-
-  empty_method->get_cipher = fake_get_cipher;
-  ret = find_cipher_by_id(ssl, empty_method, 0xC00A);
-  tt_int_op(ret, OP_EQ, 1);
-
-  empty_method->get_cipher = m->get_cipher;
-  empty_method->num_ciphers = m->num_ciphers;
-  ret = find_cipher_by_id(ssl, empty_method, 0xC00A);
-  tt_int_op(ret, OP_EQ, 1);
-
-  empty_method->get_cipher = fake_get_cipher;
-  empty_method->num_ciphers = m->num_ciphers;
-  ret = find_cipher_by_id(ssl, empty_method, 0xC00A);
-  tt_int_op(ret, OP_EQ, 1);
-
-  empty_method->num_ciphers = fake_num_ciphers;
-  ret = find_cipher_by_id(ssl, empty_method, 0xC00A);
-#ifdef HAVE_SSL_CIPHER_FIND
-  tt_int_op(ret, OP_EQ, 1);
-#else
-  tt_int_op(ret, OP_EQ, 0);
-#endif
-
- done:
-  tor_free(empty_method);
-  SSL_free(ssl);
-  SSL_CTX_free(ctx);
-  tor_free(fixed_cipher1);
 }
 #endif /* !defined(OPENSSL_OPAQUE) */
 
@@ -2068,20 +1597,21 @@ test_tortls_cert_is_valid(void *ignored)
   (void)ignored;
   int ret;
   tor_x509_cert_t *cert = NULL, *scert = NULL;
+  time_t now = cert_strings_valid_at;
 
   scert = tor_malloc_zero(sizeof(tor_x509_cert_t));
-  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, time(NULL), 0);
+  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, now, 0);
   tt_int_op(ret, OP_EQ, 0);
 
   cert = tor_malloc_zero(sizeof(tor_x509_cert_t));
-  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, time(NULL), 0);
+  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, now, 0);
   tt_int_op(ret, OP_EQ, 0);
   tor_free(scert);
   tor_free(cert);
 
   cert = tor_x509_cert_new(read_cert_from(validCertString));
   scert = tor_x509_cert_new(read_cert_from(caCertString));
-  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, time(NULL), 0);
+  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, now, 0);
   tt_int_op(ret, OP_EQ, 1);
 
 #ifndef OPENSSL_OPAQUE
@@ -2092,7 +1622,7 @@ test_tortls_cert_is_valid(void *ignored)
   ASN1_TIME_free(cert->cert->cert_info->validity->notAfter);
   cert->cert->cert_info->validity->notAfter =
     ASN1_TIME_set(NULL, time(NULL)-1000000);
-  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, time(NULL), 0);
+  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, now, 0);
   tt_int_op(ret, OP_EQ, 0);
 
   tor_x509_cert_free(cert);
@@ -2101,7 +1631,7 @@ test_tortls_cert_is_valid(void *ignored)
   scert = tor_x509_cert_new(read_cert_from(caCertString));
   X509_PUBKEY_free(cert->cert->cert_info->key);
   cert->cert->cert_info->key = NULL;
-  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, time(NULL), 1);
+  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, now, 1);
   tt_int_op(ret, OP_EQ, 0);
 #endif /* !defined(OPENSSL_OPAQUE) */
 
@@ -2112,7 +1642,7 @@ test_tortls_cert_is_valid(void *ignored)
   scert = tor_x509_cert_new(read_cert_from(caCertString));
   /* This doesn't actually change the key in the cert. XXXXXX */
   BN_one(EVP_PKEY_get1_RSA(X509_get_pubkey(cert->cert))->n);
-  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, time(NULL), 1);
+  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, now, 1);
   tt_int_op(ret, OP_EQ, 0);
 
   tor_x509_cert_free(cert);
@@ -2121,7 +1651,7 @@ test_tortls_cert_is_valid(void *ignored)
   scert = tor_x509_cert_new(read_cert_from(caCertString));
   /* This doesn't actually change the key in the cert. XXXXXX */
   X509_get_pubkey(cert->cert)->type = EVP_PKEY_EC;
-  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, time(NULL), 1);
+  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, now, 1);
   tt_int_op(ret, OP_EQ, 0);
 
   tor_x509_cert_free(cert);
@@ -2130,7 +1660,7 @@ test_tortls_cert_is_valid(void *ignored)
   scert = tor_x509_cert_new(read_cert_from(caCertString));
   /* This doesn't actually change the key in the cert. XXXXXX */
   X509_get_pubkey(cert->cert)->type = EVP_PKEY_EC;
-  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, time(NULL), 0);
+  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, now, 0);
   tt_int_op(ret, OP_EQ, 1);
 
   tor_x509_cert_free(cert);
@@ -2140,7 +1670,7 @@ test_tortls_cert_is_valid(void *ignored)
   /* This doesn't actually change the key in the cert. XXXXXX */
   X509_get_pubkey(cert->cert)->type = EVP_PKEY_EC;
   X509_get_pubkey(cert->cert)->ameth = NULL;
-  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, time(NULL), 0);
+  ret = tor_tls_cert_is_valid(LOG_WARN, cert, scert, now, 0);
   tt_int_op(ret, OP_EQ, 0);
 #endif /* 0 */
 
@@ -2187,15 +1717,10 @@ struct testcase_t tortls_openssl_tests[] = {
   LOCAL_TEST_CASE(always_accept_verify_cb, 0),
   INTRUSIVE_TEST_CASE(x509_cert_free, 0),
   INTRUSIVE_TEST_CASE(cert_get_key, 0),
-  LOCAL_TEST_CASE(get_my_client_auth_key, TT_FORK),
   INTRUSIVE_TEST_CASE(get_ciphersuite_name, 0),
   INTRUSIVE_TEST_CASE(classify_client_ciphers, 0),
-  LOCAL_TEST_CASE(client_is_using_v2_ciphers, 0),
   INTRUSIVE_TEST_CASE(get_pending_bytes, 0),
-  INTRUSIVE_TEST_CASE(SSL_SESSION_get_master_key, 0),
-  INTRUSIVE_TEST_CASE(get_tlssecrets, 0),
   INTRUSIVE_TEST_CASE(get_buffer_sizes, 0),
-  INTRUSIVE_TEST_CASE(try_to_extract_certs_from_tls, 0),
   INTRUSIVE_TEST_CASE(get_peer_cert, 0),
   INTRUSIVE_TEST_CASE(peer_has_cert, 0),
   INTRUSIVE_TEST_CASE(finish_handshake, 0),
@@ -2209,7 +1734,6 @@ struct testcase_t tortls_openssl_tests[] = {
   INTRUSIVE_TEST_CASE(unblock_renegotiation, 0),
   INTRUSIVE_TEST_CASE(set_renegotiate_callback, 0),
   LOCAL_TEST_CASE(set_logged_address, 0),
-  INTRUSIVE_TEST_CASE(find_cipher_by_id, 0),
   INTRUSIVE_TEST_CASE(session_secret_cb, 0),
   INTRUSIVE_TEST_CASE(debug_state_callback, 0),
   INTRUSIVE_TEST_CASE(context_new, TT_FORK /* redundant */),

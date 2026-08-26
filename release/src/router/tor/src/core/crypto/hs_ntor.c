@@ -129,7 +129,7 @@ get_rendezvous1_key_material(const uint8_t *rend_secret_hs_input,
   crypto_mac_sha3_256(rend_cell_auth, sizeof(rend_cell_auth),
                       rend_auth_input, sizeof(rend_auth_input),
                       (const uint8_t *)T_HSMAC, strlen(T_HSMAC));
-  bad |= safe_mem_is_zero(ntor_verify, DIGEST256_LEN);
+  bad |= safe_mem_is_zero(rend_cell_auth, DIGEST256_LEN);
 
   { /* Get the computed RENDEZVOUS1 material! */
     memcpy(&hs_ntor_rend_cell_keys_out->rend_cell_auth_mac,
@@ -348,6 +348,7 @@ hs_ntor_client_get_introduce1_keys(
 
   /* Cleanup */
   memwipe(secret_input,  0, sizeof(secret_input));
+  memwipe(dh_result,  0, sizeof(dh_result));
   if (bad) {
     memwipe(hs_ntor_intro_cell_keys_out, 0, sizeof(hs_ntor_intro_cell_keys_t));
   }
@@ -419,6 +420,8 @@ hs_ntor_client_get_rendezvous1_keys(
                                       &client_ephemeral_enc_keypair->pubkey,
                                       hs_ntor_rend_cell_keys_out);
 
+  memwipe(dh_result1,  0, sizeof(dh_result1));
+  memwipe(dh_result2,  0, sizeof(dh_result2));
   memwipe(rend_secret_hs_input, 0, sizeof(rend_secret_hs_input));
   if (bad) {
     memwipe(hs_ntor_rend_cell_keys_out, 0, sizeof(hs_ntor_rend_cell_keys_t));
@@ -505,6 +508,7 @@ hs_ntor_service_get_introduce1_keys_multi(
                                 &hs_ntor_intro_cell_keys_out[i]);
   }
 
+  memwipe(dh_result,  0, sizeof(dh_result));
   memwipe(secret_input,  0, sizeof(secret_input));
   if (bad) {
     memwipe(hs_ntor_intro_cell_keys_out, 0,
@@ -579,6 +583,8 @@ hs_ntor_service_get_rendezvous1_keys(
                                       client_ephemeral_enc_pubkey,
                                       hs_ntor_rend_cell_keys_out);
 
+  memwipe(dh_result1,  0, sizeof(dh_result1));
+  memwipe(dh_result2,  0, sizeof(dh_result2));
   memwipe(rend_secret_hs_input, 0, sizeof(rend_secret_hs_input));
   if (bad) {
     memwipe(hs_ntor_rend_cell_keys_out, 0, sizeof(hs_ntor_rend_cell_keys_t));
@@ -636,5 +642,6 @@ hs_ntor_circuit_key_expansion(const uint8_t *ntor_key_seed, size_t seed_len,
   crypto_xof(keys_out, HS_NTOR_KEY_EXPANSION_KDF_OUT_LEN,
              kdf_input, sizeof(kdf_input));
 
+  memwipe(kdf_input,  0, sizeof(kdf_input));
   return 0;
 }

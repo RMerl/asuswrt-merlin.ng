@@ -115,6 +115,9 @@ typedef struct pending_consensus_t {
   char *body;
   /** The parsed in-progress consensus document. */
   networkstatus_t *consensus;
+  /** Have we reached the critical number of sigs on this consensus, and
+   * exported it for the consensus transparency module? */
+  bool have_exported_for_transparency;
 } pending_consensus_t;
 
 /* DOCDOC dirvote_add_signatures_to_all_pending_consensuses */
@@ -1631,7 +1634,11 @@ networkstatus_compute_consensus(smartlist_t *votes,
                                                       n_versioning_servers);
     client_versions = compute_consensus_versions_list(combined_client_versions,
                                                       n_versioning_clients);
-    packages = compute_consensus_package_lines(votes);
+
+    if (consensus_method >= MIN_METHOD_TO_OMIT_PACKAGE_FINGERPRINTS)
+      packages = tor_strdup("");
+    else
+      packages = compute_consensus_package_lines(votes);
 
     SMARTLIST_FOREACH(combined_server_versions, char *, cp, tor_free(cp));
     SMARTLIST_FOREACH(combined_client_versions, char *, cp, tor_free(cp));
@@ -1776,15 +1783,10 @@ networkstatus_compute_consensus(smartlist_t *votes,
   }
 
   {
-    if (consensus_method < MIN_METHOD_FOR_CORRECT_BWWEIGHTSCALE) {
-      max_unmeasured_bw_kb = (int32_t) extract_param_buggy(
-                  params, "maxunmeasuredbw", DEFAULT_MAX_UNMEASURED_BW_KB);
-    } else {
-      max_unmeasured_bw_kb = dirvote_get_intermediate_param_value(
-                  param_list, "maxunmeasuredbw", DEFAULT_MAX_UNMEASURED_BW_KB);
-      if (max_unmeasured_bw_kb < 1)
-        max_unmeasured_bw_kb = 1;
-    }
+    max_unmeasured_bw_kb = dirvote_get_intermediate_param_value(
+                param_list, "maxunmeasuredbw", DEFAULT_MAX_UNMEASURED_BW_KB);
+    if (max_unmeasured_bw_kb < 1)
+      max_unmeasured_bw_kb = 1;
   }
 
   /* Add the actual router entries. */
@@ -2130,7 +2132,7 @@ networkstatus_compute_consensus(smartlist_t *votes,
       /* Starting with consensus method 32, we handle the middle-only
        * flag specially: when it is present, we clear some flags, and
        * set others. */
-      if (is_middle_only && consensus_method >= MIN_METHOD_FOR_MIDDLEONLY) {
+      if (is_middle_only) {
         remove_flag(chosen_flags, "Exit");
         remove_flag(chosen_flags, "V2Dir");
         remove_flag(chosen_flags, "Guard");
@@ -2367,17 +2369,27 @@ networkstatus_compute_consensus(smartlist_t *votes,
 
   {
     int64_t weight_scale;
-    if (consensus_method < MIN_METHOD_FOR_CORRECT_BWWEIGHTSCALE) {
-      weight_scale = extract_param_buggy(params, "bwweightscale",
-                                         BW_WEIGHT_SCALE);
-    } else {
-      weight_scale = dirvote_get_intermediate_param_value(
-                       param_list, "bwweightscale", BW_WEIGHT_SCALE);
-      if (weight_scale < 1)
-        weight_scale = 1;
-    }
+    weight_scale = dirvote_get_intermediate_param_value(
+                     param_list, "bwweightscale", BW_WEIGHT_SCALE);
+    if (weight_scale < 1)
+      weight_scale = 1;
     added_weights = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D,
                                                          T, weight_scale);
+  }
+
+  /* Write the unsigned proposed consensus text to disk, for dir auth
+   * debugging purposes, and also to put a sig-less consensus file in
+   * place for (with luck) later export to the consensus transparency
+   * module. */
+  {
+    char *unsigned_consensus = smartlist_join_strings(chunks, "", 0, NULL);
+    char *filename = NULL;
+    tor_asprintf(&filename, "my-consensus-%s", flavor_name);
+    char *fpath = get_datadir_fname(filename);
+    write_str_to_file(fpath, unsigned_consensus, 0);
+    tor_free(filename);
+    tor_free(fpath);
+    tor_free(unsigned_consensus);
   }
 
   /* Add a signature. */
@@ -2475,53 +2487,6 @@ networkstatus_compute_consensus(smartlist_t *votes,
   smartlist_free(param_list);
 
   return result;
-}
-
-/** Extract the value of a parameter from a string encoding a list of
- * parameters, badly.
- *
- * This is a deliberately buggy implementation, for backward compatibility
- * with versions of Tor affected by #19011.  Once all authorities have
- * upgraded to consensus method 31 or later, then we can throw away this
- * function.  */
-STATIC int64_t
-extract_param_buggy(const char *params,
-                    const char *param_name,
-                    int64_t default_value)
-{
-  int64_t value = default_value;
-  const char *param_str = NULL;
-
-  if (params) {
-    char *prefix1 = NULL, *prefix2=NULL;
-    tor_asprintf(&prefix1, "%s=", param_name);
-    tor_asprintf(&prefix2, " %s=", param_name);
-    if (strcmpstart(params, prefix1) == 0)
-      param_str = params;
-    else
-      param_str = strstr(params, prefix2);
-    tor_free(prefix1);
-    tor_free(prefix2);
-  }
-
-  if (param_str) {
-    int ok=0;
-    char *eq = strchr(param_str, '=');
-    if (eq) {
-      value = tor_parse_long(eq+1, 10, 1, INT32_MAX, &ok, NULL);
-      if (!ok) {
-        log_warn(LD_DIR, "Bad element '%s' in %s",
-                 escaped(param_str), param_name);
-        value = default_value;
-      }
-    } else {
-      log_warn(LD_DIR, "Bad element '%s' in %s",
-               escaped(param_str), param_name);
-      value = default_value;
-    }
-  }
-
-  return value;
 }
 
 /** Given a list of networkstatus_t for each vote, return a newly allocated
@@ -3539,16 +3504,6 @@ dirvote_compute_consensuses(void)
       pending[flav].consensus = consensus;
       n_generated++;
 
-      /* Write it out to disk too, for dir auth debugging purposes */
-      {
-        char *filename;
-        tor_asprintf(&filename, "my-consensus-%s", flavor_name);
-        char *fpath = get_datadir_fname(filename);
-        write_str_to_file(fpath, consensus_body, 0);
-        tor_free(filename);
-        tor_free(fpath);
-      }
-
       consensus_body = NULL;
       consensus = NULL;
     }
@@ -3614,9 +3569,36 @@ dirvote_compute_consensuses(void)
   return -1;
 }
 
-/** Helper: we just got the <b>detached_signatures_body</b> sent to us as
- * signatures on the currently pending consensus.  Add them to <b>pc</b>
- * as appropriate.  Return the number of signatures added. (?) */
+/** We just got enough sigs on the pending <b>flavor_name</b>-flavor
+ * consensus that it is time to export it to the consensus transparency
+ * module. We do this by writing a "consensus-transparency-%s" file which
+ * the module will detect and act on.
+ *
+ * The file needs to be just the bare consensus, with no signatures, so we
+ * are registering a hash that everybody can agree on. */
+static void
+export_consensus_for_transparency(const char *flavor_name)
+{
+  char *filename = NULL;
+  tor_asprintf(&filename, "my-consensus-%s", flavor_name);
+  char *fpath_from = get_datadir_fname(filename);
+  tor_free(filename);
+  tor_asprintf(&filename, "consensus-transparency-%s", flavor_name);
+  char *fpath_to = get_datadir_fname(filename);
+  tor_free(filename);
+
+  replace_file(fpath_from, fpath_to);
+
+  log_notice(LD_DIR, "Exported consensus transparency file %s.",
+             fpath_to);
+
+  tor_free(fpath_from);
+  tor_free(fpath_to);
+}
+
+/** Helper: we just received <b>sigs</b> as
+ * signatures on the currently pending consensus. Add them to <b>pc</b>
+ * as appropriate. Return the number of signatures added, or -1 if error. */
 static int
 dirvote_add_signatures_to_pending_consensus(
                        pending_consensus_t *pc,
@@ -3680,6 +3662,16 @@ dirvote_add_signatures_to_pending_consensus(
     }
     *msg_out = "Signatures added";
     tor_free(new_signatures);
+
+    /* Check if we now have enough sigs that we are confident this
+     * will be our consensus. */
+    if (!pc->have_exported_for_transparency &&
+        networkstatus_check_consensus_signature(pc->consensus, -1) >= 0) {
+      /* Yes! Send it to the consensus transparency module. */
+      export_consensus_for_transparency(flavor_name);
+      pc->have_exported_for_transparency = 1;
+    }
+
   } else if (r == 0) {
     *msg_out = "Signatures ignored";
   } else {
@@ -3919,13 +3911,18 @@ dirvote_get_vote(const char *fp, int flags)
 STATIC microdesc_t *
 dirvote_create_microdescriptor(const routerinfo_t *ri, int consensus_method)
 {
+  (void) consensus_method; // Currently unneeded...
   microdesc_t *result = NULL;
   char *key = NULL, *summary = NULL, *family = NULL;
   size_t keylen;
   smartlist_t *chunks = smartlist_new();
   char *output = NULL;
-  crypto_pk_t *rsa_pubkey = router_get_rsa_onion_pkey(ri->onion_pkey,
-                                                      ri->onion_pkey_len);
+  crypto_pk_t *rsa_pubkey = router_get_rsa_onion_pkey(ri->tap_onion_pkey,
+                                                      ri->tap_onion_pkey_len);
+  if (!rsa_pubkey) {
+    /* We do not yet support creating MDs for relays without TAP onion keys. */
+    goto done;
+  }
 
   if (crypto_pk_write_public_key_to_string(rsa_pubkey, &key, &keylen)<0)
     goto done;
@@ -3937,20 +3934,22 @@ dirvote_create_microdescriptor(const routerinfo_t *ri, int consensus_method)
 
   if (ri->onion_curve25519_pkey) {
     char kbuf[CURVE25519_BASE64_PADDED_LEN + 1];
-    bool add_padding = (consensus_method < MIN_METHOD_FOR_UNPADDED_NTOR_KEY);
-    curve25519_public_to_base64(kbuf, ri->onion_curve25519_pkey, add_padding);
+    curve25519_public_to_base64(kbuf, ri->onion_curve25519_pkey, false);
     smartlist_add_asprintf(chunks, "ntor-onion-key %s\n", kbuf);
   }
 
   if (family) {
-    if (consensus_method < MIN_METHOD_FOR_CANONICAL_FAMILIES_IN_MICRODESCS) {
-      smartlist_add_asprintf(chunks, "family %s\n", family);
-    } else {
-      const uint8_t *id = (const uint8_t *)ri->cache_info.identity_digest;
-      char *canonical_family = nodefamily_canonicalize(family, id, 0);
-      smartlist_add_asprintf(chunks, "family %s\n", canonical_family);
-      tor_free(canonical_family);
-    }
+    const uint8_t *id = (const uint8_t *)ri->cache_info.identity_digest;
+    char *canonical_family = nodefamily_canonicalize(family, id, 0);
+    smartlist_add_asprintf(chunks, "family %s\n", canonical_family);
+    tor_free(canonical_family);
+  }
+
+  if (consensus_method >= MIN_METHOD_FOR_FAMILY_IDS &&
+      ri->family_ids && smartlist_len(ri->family_ids)) {
+    char *family_ids = smartlist_join_strings(ri->family_ids, " ", 0, NULL);
+    smartlist_add_asprintf(chunks, "family-ids %s\n", family_ids);
+    tor_free(family_ids);
   }
 
   if (summary && strcmp(summary, "reject 1-65535"))
@@ -4048,10 +4047,8 @@ static const struct consensus_method_range_t {
   int high;
 } microdesc_consensus_methods[] = {
   {MIN_SUPPORTED_CONSENSUS_METHOD,
-   MIN_METHOD_FOR_CANONICAL_FAMILIES_IN_MICRODESCS - 1},
-  {MIN_METHOD_FOR_CANONICAL_FAMILIES_IN_MICRODESCS,
-   MIN_METHOD_FOR_UNPADDED_NTOR_KEY - 1},
-  {MIN_METHOD_FOR_UNPADDED_NTOR_KEY,
+   MIN_METHOD_FOR_FAMILY_IDS - 1},
+  {MIN_METHOD_FOR_FAMILY_IDS,
    MAX_SUPPORTED_CONSENSUS_METHOD},
   {-1, -1}
 };

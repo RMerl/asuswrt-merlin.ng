@@ -58,7 +58,7 @@ token_bucket_raw_reset(token_bucket_raw_t *bucket,
 }
 
 /**
- * Adust a preexisting token bucket to respect the new configuration
+ * Adjust a preexisting token bucket to respect the new configuration
  * <b>cfg</b>, by decreasing its current level if needed. */
 void
 token_bucket_raw_adjust(token_bucket_raw_t *bucket,

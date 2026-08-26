@@ -20,6 +20,9 @@ struct curve25519_public_key_t;
 #define MAX_ONIONSKIN_CHALLENGE_LEN 255
 #define MAX_ONIONSKIN_REPLY_LEN 255
 
+#define MAX_CREATE_LEN (CELL_PAYLOAD_SIZE - 4)
+#define MAX_CREATED_LEN (CELL_PAYLOAD_SIZE - 2)
+
 /** A parsed CREATE, CREATE_FAST, or CREATE2 cell. */
 typedef struct create_cell_t {
   /** The cell command. One of CREATE{,_FAST,2} */
@@ -29,7 +32,7 @@ typedef struct create_cell_t {
   /** The number of bytes used in <b>onionskin</b>. */
   uint16_t handshake_len;
   /** The client-side message for the circuit creation handshake. */
-  uint8_t onionskin[CELL_PAYLOAD_SIZE - 4];
+  uint8_t onionskin[MAX_CREATE_LEN];
 } create_cell_t;
 
 /** A parsed CREATED, CREATED_FAST, or CREATED2 cell. */
@@ -39,7 +42,7 @@ typedef struct created_cell_t {
   /** The number of bytes used in <b>reply</b>. */
   uint16_t handshake_len;
   /** The server-side message for the circuit creation handshake. */
-  uint8_t reply[CELL_PAYLOAD_SIZE - 2];
+  uint8_t reply[MAX_CREATED_LEN];
 } created_cell_t;
 
 /** A parsed RELAY_EXTEND or RELAY_EXTEND2 cell */

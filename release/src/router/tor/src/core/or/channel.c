@@ -1285,7 +1285,7 @@ channel_closed(channel_t *chan)
   /* Inform any pending (not attached) circs that they should
    * give up. */
   if (! chan->has_been_open)
-    circuit_n_chan_done(chan, 0, 0);
+    circuit_n_chan_done(chan, 0);
 
   /* Now close all the attached circuits on it. */
   circuit_unlink_all_from_channel(chan, END_CIRC_REASON_CHANNEL_CLOSED);
@@ -1865,7 +1865,6 @@ channel_do_open_actions(channel_t *chan)
 {
   tor_addr_t remote_addr;
   int started_here;
-  int close_origin_circuits = 0;
 
   tor_assert(chan);
 
@@ -1918,7 +1917,7 @@ channel_do_open_actions(channel_t *chan)
     }
   }
 
-  circuit_n_chan_done(chan, 1, close_origin_circuits);
+  circuit_n_chan_done(chan, 1);
 }
 
 /**

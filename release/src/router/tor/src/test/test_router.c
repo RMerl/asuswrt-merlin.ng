@@ -60,8 +60,8 @@ rtr_tests_gen_routerinfo(crypto_pk_t *ident_key, crypto_pk_t *tap_key)
   mock_routerinfo->identity_pkey = crypto_pk_dup_key(ident_key);
   mock_routerinfo->protocol_list =
     tor_strdup("Cons=1-2 Desc=1-2 DirCache=1-2");
-  router_set_rsa_onion_pkey(tap_key, &mock_routerinfo->onion_pkey,
-                            &mock_routerinfo->onion_pkey_len);
+  router_set_rsa_onion_pkey(tap_key, &mock_routerinfo->tap_onion_pkey,
+                            &mock_routerinfo->tap_onion_pkey_len);
   mock_routerinfo->bandwidthrate = 9001;
   mock_routerinfo->bandwidthburst = 9002;
 

@@ -90,6 +90,7 @@ uint64_t dos_get_num_cc_rejected(void);
 uint64_t dos_get_num_conn_addr_rejected(void);
 uint64_t dos_get_num_conn_addr_connect_rejected(void);
 uint64_t dos_get_num_single_hop_refused(void);
+uint64_t dos_get_num_stream_rejected(void);
 
 /*
  * Circuit creation DoS mitigation subsystemn interface.
@@ -159,6 +160,37 @@ typedef enum dos_conn_defense_type_t {
 
 dos_conn_defense_type_t dos_conn_addr_get_defense_type(const tor_addr_t *addr);
 
+/*
+ * Stream creation DoS mitigation subsystem interface.
+ */
+
+/* DoSStreamCreationEnabled default. Disabled by deault. */
+#define DOS_STREAM_ENABLED_DEFAULT 0
+/* DoSStreamCreationDefenseType maps to the dos_stream_defense_type_t enum */
+#define DOS_STREAM_DEFENSE_TYPE_DEFAULT DOS_STREAM_DEFENSE_REFUSE_STREAM
+/* DosStreamCreationRate is 100 per seconds. */
+#define DOS_STREAM_RATE_DEFAULT 100
+/* DosStreamCreationBurst default. */
+#define DOS_STREAM_BURST_DEFAULT 300
+
+/* Type of defense that we can use for the stream creation DoS mitigation. */
+typedef enum dos_stream_defense_type_t {
+  /* No defense used. */
+  DOS_STREAM_DEFENSE_NONE           = 1,
+  /* Reject the stream */
+  DOS_STREAM_DEFENSE_REFUSE_STREAM  = 2,
+  /* Close the circuit */
+  DOS_STREAM_DEFENSE_CLOSE_CIRCUIT  = 3,
+
+  /* Maximum value that can be used. Useful for the boundaries of the
+   * consensus parameter. */
+  DOS_STREAM_DEFENSE_MAX            = 3,
+} dos_stream_defense_type_t;
+
+dos_stream_defense_type_t dos_stream_new_begin_or_resolve_cell(
+                                                          or_circuit_t *circ);
+void dos_stream_init_circ_tbf(or_circuit_t *circ);
+
 #ifdef DOS_PRIVATE
 
 STATIC uint32_t get_param_conn_max_concurrent_count(
@@ -175,6 +207,8 @@ STATIC void cc_stats_refill_bucket(cc_client_stats_t *stats,
 MOCK_DECL(STATIC unsigned int, get_param_cc_enabled,
           (const networkstatus_t *ns));
 MOCK_DECL(STATIC unsigned int, get_param_conn_enabled,
+          (const networkstatus_t *ns));
+MOCK_DECL(STATIC unsigned int, get_param_stream_enabled,
           (const networkstatus_t *ns));
 
 #endif /* defined(DOS_PRIVATE) */

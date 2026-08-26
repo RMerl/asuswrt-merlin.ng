@@ -33,7 +33,6 @@
 #include "core/crypto/hs_ntor.h"
 #include "core/crypto/onion_crypto.h"
 #include "core/crypto/onion_fast.h"
-#include "core/crypto/onion_tap.h"
 #include "core/mainloop/connection.h"
 #include "core/mainloop/mainloop.h"
 #include "core/or/channel.h"
@@ -53,6 +52,7 @@
 #include "core/or/relay.h"
 #include "core/or/trace_probes_circuit.h"
 #include "core/or/crypt_path.h"
+#include "core/or/protover.h"
 #include "feature/client/bridges.h"
 #include "feature/client/circpathbias.h"
 #include "feature/client/entrynodes.h"
@@ -85,6 +85,7 @@
 
 #include "trunnel/extension.h"
 #include "trunnel/congestion_control.h"
+#include "trunnel/subproto_request.h"
 
 static int circuit_send_first_onion_skin(origin_circuit_t *circ);
 static int circuit_build_no_more_hops(origin_circuit_t *circ);
@@ -412,13 +413,6 @@ onion_populate_cpath(origin_circuit_t *circ)
   /* We would like every path to support ntor, but we have to allow for some
    * edge cases. */
   tor_assert(circuit_get_cpath_len(circ));
-  if (circuit_can_use_tap(circ)) {
-    /* Circuits from clients to intro points, and hidden services to rend
-     * points do not support ntor, because the hidden service protocol does
-     * not include ntor onion keys. This is also true for Single Onion
-     * Services. */
-    return 0;
-  }
 
   if (circuit_get_cpath_len(circ) == 1) {
     /* Allow for bootstrapping: when we're fetching directly from a fallback,
@@ -671,17 +665,13 @@ circuit_handle_first_hop(origin_circuit_t *circ)
   return 0;
 }
 
-/** Find any circuits that are waiting on <b>or_conn</b> to become
+/** Find any circuits that are waiting on <b>chan</b> to become
  * open and get them to send their create cells forward.
  *
  * Status is 1 if connect succeeded, or 0 if connect failed.
- *
- * Close_origin_circuits is 1 if we should close all the origin circuits
- * through this channel, or 0 otherwise.  (This happens when we want to retry
- * an older guard.)
  */
 void
-circuit_n_chan_done(channel_t *chan, int status, int close_origin_circuits)
+circuit_n_chan_done(channel_t *chan, int status)
 {
   smartlist_t *pending_circs;
   int err_reason = 0;
@@ -734,11 +724,6 @@ circuit_n_chan_done(channel_t *chan, int status, int close_origin_circuits)
         continue;
       }
 
-      if (close_origin_circuits && CIRCUIT_IS_ORIGIN(circ)) {
-        log_info(LD_CIRC,"Channel deprecated for origin circs; closing circ.");
-        circuit_mark_for_close(circ, END_CIRC_REASON_CHANNEL_CLOSED);
-        continue;
-      }
       log_debug(LD_CIRC, "Found circ, sending create cell.");
       /* circuit_deliver_create_cell will set n_circ_id and add us to
        * chan_circuid_circuit_map, so we don't need to call
@@ -891,20 +876,16 @@ circuit_pick_create_handshake(uint8_t *cell_type_out,
 {
   /* torspec says: In general, clients SHOULD use CREATE whenever they are
    * using the TAP handshake, and CREATE2 otherwise. */
-  if (extend_info_supports_ntor(ei)) {
-    *cell_type_out = CELL_CREATE2;
-    /* Only use ntor v3 with exits that support congestion control,
-     * and only when it is enabled. */
-    if (ei->exit_supports_congestion_control &&
-        congestion_control_enabled())
-      *handshake_type_out = ONION_HANDSHAKE_TYPE_NTOR_V3;
-    else
-      *handshake_type_out = ONION_HANDSHAKE_TYPE_NTOR;
-  } else {
-    /* XXXX030 Remove support for deciding to use TAP and EXTEND. */
-    *cell_type_out = CELL_CREATE;
-    *handshake_type_out = ONION_HANDSHAKE_TYPE_TAP;
-  }
+  *cell_type_out = CELL_CREATE2;
+  /* Only use ntor v3 with exits that support congestion control,
+   * and only when it is enabled. */
+  if (ei->exit_supports_congestion_control &&
+      congestion_control_enabled())
+    *handshake_type_out = ONION_HANDSHAKE_TYPE_NTOR_V3;
+  else if (ei->enable_cgo)
+    *handshake_type_out = ONION_HANDSHAKE_TYPE_NTOR_V3;
+  else
+    *handshake_type_out = ONION_HANDSHAKE_TYPE_NTOR;
 }
 
 /** Decide whether to use a TAP or ntor handshake for extending to <b>ei</b>
@@ -925,16 +906,8 @@ circuit_pick_extend_handshake(uint8_t *cell_type_out,
   uint8_t t;
   circuit_pick_create_handshake(&t, handshake_type_out, ei);
 
-  /* torspec says: Clients SHOULD use the EXTEND format whenever sending a TAP
-   * handshake... In other cases, clients SHOULD use EXTEND2. */
-  if (*handshake_type_out != ONION_HANDSHAKE_TYPE_TAP) {
-    *cell_type_out = RELAY_COMMAND_EXTEND2;
-    *create_cell_type_out = CELL_CREATE2;
-  } else {
-    /* XXXX030 Remove support for deciding to use TAP and EXTEND. */
-    *cell_type_out = RELAY_COMMAND_EXTEND;
-    *create_cell_type_out = CELL_CREATE;
-  }
+  *cell_type_out = RELAY_COMMAND_EXTEND2;
+  *create_cell_type_out = CELL_CREATE2;
 }
 
 /**
@@ -1213,9 +1186,15 @@ circuit_send_intermediate_onion_skin(origin_circuit_t *circ,
   {
     uint8_t command = 0;
     uint16_t payload_len=0;
-    uint8_t payload[RELAY_PAYLOAD_SIZE];
+    uint8_t payload[RELAY_PAYLOAD_SIZE_MAX];
     if (extend_cell_format(&command, &payload_len, payload, &ec)<0) {
       log_warn(LD_CIRC,"Couldn't format extend cell");
+      return -END_CIRC_REASON_INTERNAL;
+    }
+
+    if (payload_len > circuit_max_relay_payload(
+                             TO_CIRCUIT(circ), hop->prev, command)) {
+      log_warn(LD_BUG, "Generated a too-long extend cell");
       return -END_CIRC_REASON_INTERNAL;
     }
 
@@ -1280,7 +1259,7 @@ int
 circuit_finish_handshake(origin_circuit_t *circ,
                          const created_cell_t *reply)
 {
-  char keys[CPATH_KEY_MATERIAL_LEN];
+  char keys[MAX_RELAY_KEY_MATERIAL_LEN];
   crypt_path_t *hop;
   int rv;
 
@@ -1301,12 +1280,14 @@ circuit_finish_handshake(origin_circuit_t *circ,
   tor_assert(hop->state == CPATH_STATE_AWAITING_KEYS);
 
   circuit_params_t params;
+  size_t keylen = sizeof(keys);
   {
     const char *msg = NULL;
+
     if (onion_skin_client_handshake(hop->handshake_state.tag,
                                     &hop->handshake_state,
                                     reply->reply, reply->handshake_len,
-                                    (uint8_t*)keys, sizeof(keys),
+                                    (uint8_t*)keys, &keylen,
                                     (uint8_t*)hop->rend_circ_nonce,
                                     &params,
                                     &msg) < 0) {
@@ -1317,10 +1298,11 @@ circuit_finish_handshake(origin_circuit_t *circ,
   }
 
   onion_handshake_state_release(&hop->handshake_state);
-
-  if (cpath_init_circuit_crypto(hop, keys, sizeof(keys), 0, 0)<0) {
+  if (cpath_init_circuit_crypto(params.crypto_alg,
+                                hop, keys, keylen)<0) {
     return -END_CIRC_REASON_TORPROTOCOL;
   }
+  hop->relay_cell_format = params.cell_fmt;
 
   if (params.cc_enabled) {
     int circ_len = circuit_get_cpath_len(circ);
@@ -1344,7 +1326,7 @@ circuit_finish_handshake(origin_circuit_t *circ,
         hop->ccontrol = congestion_control_new(&params, CC_PATH_EXIT);
       } else {
         /* This is likely directory requests, which should block on orconn
-         * before congestion control, but lets give them the lower sbws
+         * before congestion control, but let's give them the lower sbws
          * param set anyway just in case. */
         log_info(LD_CIRC,
                  "Unexpected path length %d for exit circuit %d, purpose %d",
@@ -2622,29 +2604,6 @@ build_state_get_exit_nickname(cpath_build_state_t *state)
   return state->chosen_exit->nickname;
 }
 
-/* Is circuit purpose allowed to use the deprecated TAP encryption protocol?
- * The hidden service protocol still uses TAP for some connections, because
- * ntor onion keys aren't included in HS descriptors or INTRODUCE cells. */
-static int
-circuit_purpose_can_use_tap_impl(uint8_t purpose)
-{
-  return (purpose == CIRCUIT_PURPOSE_S_CONNECT_REND ||
-          purpose == CIRCUIT_PURPOSE_C_INTRODUCING);
-}
-
-/* Is circ allowed to use the deprecated TAP encryption protocol?
- * The hidden service protocol still uses TAP for some connections, because
- * ntor onion keys aren't included in HS descriptors or INTRODUCE cells. */
-int
-circuit_can_use_tap(const origin_circuit_t *circ)
-{
-  tor_assert(circ);
-  tor_assert(circ->cpath);
-  tor_assert(circ->cpath->extend_info);
-  return (circuit_purpose_can_use_tap_impl(circ->base_.purpose) &&
-          extend_info_supports_tap(circ->cpath->extend_info));
-}
-
 /* Does circ have an onion key which it's allowed to use? */
 int
 circuit_has_usable_onion_key(const origin_circuit_t *circ)
@@ -2652,8 +2611,7 @@ circuit_has_usable_onion_key(const origin_circuit_t *circ)
   tor_assert(circ);
   tor_assert(circ->cpath);
   tor_assert(circ->cpath->extend_info);
-  return (extend_info_supports_ntor(circ->cpath->extend_info) ||
-          circuit_can_use_tap(circ));
+  return extend_info_supports_ntor(circ->cpath->extend_info);
 }
 
 /** Find the circuits that are waiting to find out whether their guards are
@@ -2679,6 +2637,80 @@ circuit_upgrade_circuits_from_guard_wait(void)
   smartlist_free(to_upgrade);
 }
 
+// TODO: Find a better place to declare this; it's duplicated in
+// onion_crypto.c
+#define EXT_TYPE_SUBPROTO 3
+
+/** Add a request for the CGO subprotocol capability to ext.
+ *
+ * NOTE: If we need to support other subprotocol extensions,
+ * do not add separate functions! Instead rename this function
+ * and adapt it as appropriate.
+ */
+static int
+build_cgo_subproto_request(trn_extension_t *ext)
+{
+  trn_extension_field_t *fld = NULL;
+  trn_subproto_request_t *req = NULL;
+  trn_subproto_request_ext_t *req_ext = NULL;
+  int r = 0;
+
+  fld = trn_extension_field_new();
+  req_ext = trn_subproto_request_ext_new();
+
+  req = trn_subproto_request_new();
+  req->protocol_id = PRT_RELAY;
+  req->proto_cap_number = PROTOVER_RELAY_CRYPT_CGO;
+  trn_subproto_request_ext_add_reqs(req_ext, req);
+  req = NULL; // prevent double-free
+
+  // TODO: If we add other capabilities here, we need to make
+  // sure they are correctly sorted.
+
+  ssize_t len = trn_subproto_request_ext_encoded_len(req_ext);
+  if (BUG(len<0))
+    goto err;
+  if (BUG(len > UINT8_MAX))
+    goto err;
+
+  trn_extension_field_setlen_field(fld, len);
+  trn_extension_field_set_field_type(fld, EXT_TYPE_SUBPROTO);
+  trn_extension_field_set_field_len(fld, len);
+  uint8_t *out = trn_extension_field_getarray_field(fld);
+  ssize_t len2 = trn_subproto_request_ext_encode(out, len, req_ext);
+  if (BUG(len != len2))
+    goto err;
+
+  trn_extension_add_fields(ext, fld);
+  fld = NULL; // prevent double-free
+
+  // We succeeded!
+  r = 0;
+
+ err:
+  trn_subproto_request_ext_free(req_ext);
+  trn_subproto_request_free(req);
+  trn_extension_field_free(fld);
+
+  return r;
+}
+
+/** Helper: Comparison function to sort extensions. */
+static int
+ext_cmp(const void *a, const void *b)
+{
+  const trn_extension_field_t *fa = *(trn_extension_field_t **)a;
+  const trn_extension_field_t *fb = *(trn_extension_field_t **)b;
+  uint8_t ta = trn_extension_field_get_field_type(fa);
+  uint8_t tb = trn_extension_field_get_field_type(fb);
+  if (ta < tb)
+    return -1;
+  else if (ta == tb)
+    return 0;
+  else
+    return 1;
+}
+
 /**
  * Try to generate a circuit-negotiation message for communication with a
  * given relay.  Assumes we are using ntor v3, or some later version that
@@ -2690,13 +2722,53 @@ circuit_upgrade_circuits_from_guard_wait(void)
 int
 client_circ_negotiation_message(const extend_info_t *ei,
                                 uint8_t **msg_out,
-                                size_t *msg_len_out)
+                                size_t *msg_len_out,
+                                circuit_params_t *params_out)
 {
-  tor_assert(ei && msg_out && msg_len_out);
+  tor_assert(ei && msg_out && msg_len_out && params_out);
+  bool cc_enabled = false;
 
-  if (!ei->exit_supports_congestion_control) {
-    return -1;
+  *msg_out = NULL;
+
+  trn_extension_t *ext = trn_extension_new();
+
+  if (ei->exit_supports_congestion_control &&
+      congestion_control_enabled()) {
+    if (congestion_control_build_ext_request(ext) < 0) {
+      goto err;
+    }
+    cc_enabled = true;
   }
 
-  return congestion_control_build_ext_request(msg_out, msg_len_out);
+  if (cc_enabled && ei->enable_cgo) {
+    if (build_cgo_subproto_request(ext) < 0) {
+      goto err;
+    }
+    params_out->cell_fmt = RELAY_CELL_FORMAT_V1;
+    params_out->crypto_alg = RELAY_CRYPTO_ALG_CGO_CLIENT;
+  }
+
+  size_t n_fields = trn_extension_getlen_fields(ext);
+  qsort(trn_extension_getarray_fields(ext),
+        n_fields, sizeof(trn_extension_field_t *),
+        ext_cmp);
+
+  trn_extension_set_num(ext, n_fields);
+
+  ssize_t total_len = trn_extension_encoded_len(ext);
+  if (BUG(total_len < 0))
+    goto err;
+
+  *msg_out = tor_malloc_zero(total_len);
+  *msg_len_out = total_len;
+  if (BUG(trn_extension_encode(*msg_out, total_len, ext) < 0)) {
+    goto err;
+  }
+  trn_extension_free(ext);
+
+  return 0;
+ err:
+  trn_extension_free(ext);
+  tor_free(*msg_out);
+  return -1;
 }

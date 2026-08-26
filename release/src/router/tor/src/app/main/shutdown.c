@@ -122,6 +122,7 @@ tor_free_all(int postfork)
   dirserv_free_all();
   rep_hist_free_all();
   bwhist_free_all();
+  conflux_notify_shutdown();
   circuit_free_all();
   conflux_pool_free_all();
   circpad_machines_free();

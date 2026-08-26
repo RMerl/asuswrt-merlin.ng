@@ -9,9 +9,9 @@
  * \brief Functions to handle different kinds of circuit extension crypto.
  *
  * In this module, we provide a set of abstractions to create a uniform
- * interface over the three circuit extension handshakes that Tor has used
- * over the years (TAP, CREATE_FAST, and ntor).  These handshakes are
- * implemented in onion_tap.c, onion_fast.c, and onion_ntor.c respectively.
+ * interface over the circuit extension handshakes that Tor has used
+ * over the years (CREATE_FAST, ntor, hs_ntor, and ntorv3).
+ * These handshakes are implemented in the onion_*.c modules.
  *
  * All[*] of these handshakes follow a similar pattern: a client, knowing
  * some key from the relay it wants to extend through, generates the
@@ -36,12 +36,13 @@
 #include "core/crypto/onion_fast.h"
 #include "core/crypto/onion_ntor.h"
 #include "core/crypto/onion_ntor_v3.h"
-#include "core/crypto/onion_tap.h"
 #include "feature/relay/router.h"
 #include "lib/crypt_ops/crypto_dh.h"
 #include "lib/crypt_ops/crypto_util.h"
 #include "feature/relay/routerkeys.h"
 #include "core/or/congestion_control_common.h"
+#include "core/crypto/relay_crypto.h"
+#include "core/or/protover.h"
 
 #include "core/or/circuitbuild.h"
 
@@ -50,12 +51,27 @@
 
 #include "trunnel/congestion_control.h"
 #include "trunnel/extension.h"
+#include "trunnel/subproto_request.h"
+
+#define EXT_TYPE_SUBPROTO 3
 
 static const uint8_t NTOR3_CIRC_VERIFICATION[] = "circuit extend";
 static const size_t NTOR3_CIRC_VERIFICATION_LEN = 14;
 
 #define NTOR3_VERIFICATION_ARGS \
   NTOR3_CIRC_VERIFICATION, NTOR3_CIRC_VERIFICATION_LEN
+
+/** Set `params` to a set of defaults.
+ *
+ * These defaults will only change later on if we're using a handshake that has
+ * parameter negotiation. */
+static void
+circuit_params_init(circuit_params_t *params)
+{
+  memset(params, 0, sizeof(*params));
+  params->crypto_alg = RELAY_CRYPTO_ALG_TOR1;
+  params->cell_fmt = RELAY_CELL_FORMAT_V0;
+}
 
 /** Return a new server_onion_keys_t object with all of the keys
  * and other info we might need to do onion handshakes.  (We make a copy of
@@ -98,8 +114,6 @@ onion_handshake_state_release(onion_handshake_state_t *state)
 {
   switch (state->tag) {
   case ONION_HANDSHAKE_TYPE_TAP:
-    crypto_dh_free(state->u.tap);
-    state->u.tap = NULL;
     break;
   case ONION_HANDSHAKE_TYPE_FAST:
     fast_handshake_state_free(state->u.fast);
@@ -137,20 +151,11 @@ onion_skin_create(int type,
 {
   int r = -1;
 
+  circuit_params_init(&state_out->chosen_params);
+
   switch (type) {
   case ONION_HANDSHAKE_TYPE_TAP:
-    if (onion_skin_out_maxlen < TAP_ONIONSKIN_CHALLENGE_LEN)
-      return -1;
-    if (!node->onion_key)
-      return -1;
-
-    if (onion_skin_TAP_create(node->onion_key,
-                              &state_out->u.tap,
-                              (char*)onion_skin_out) < 0)
-      return -1;
-
-    r = TAP_ONIONSKIN_CHALLENGE_LEN;
-    break;
+    return -1;
   case ONION_HANDSHAKE_TYPE_FAST:
     if (fast_onionskin_create(&state_out->u.fast, onion_skin_out) < 0)
       return -1;
@@ -171,14 +176,21 @@ onion_skin_create(int type,
     r = NTOR_ONIONSKIN_LEN;
     break;
   case ONION_HANDSHAKE_TYPE_NTOR_V3:
-    if (!extend_info_supports_ntor_v3(node))
+    if (!extend_info_supports_ntor_v3(node)) {
+      log_warn(LD_BUG, "Chose ntorv3 handshake, but no support at node");
       return -1;
-    if (ed25519_public_key_is_zero(&node->ed_identity))
+    }
+    if (ed25519_public_key_is_zero(&node->ed_identity)) {
+      log_warn(LD_BUG, "Chose ntorv3 handshake, but no ed id");
       return -1;
+    }
     size_t msg_len = 0;
     uint8_t *msg = NULL;
-    if (client_circ_negotiation_message(node, &msg, &msg_len) < 0)
+    if (client_circ_negotiation_message(node, &msg, &msg_len,
+                                        &state_out->chosen_params) < 0) {
+      log_warn(LD_BUG, "Could not create circuit negotiation msg");
       return -1;
+    }
     uint8_t *onion_skin = NULL;
     size_t onion_skin_len = 0;
     int status = onion_skin_ntor3_create(
@@ -190,9 +202,10 @@ onion_skin_create(int type,
                              &onion_skin, &onion_skin_len);
     tor_free(msg);
     if (status < 0) {
+      log_warn(LD_BUG, "onion skin create failed");
       return -1;
     }
-    if (onion_skin_len > onion_skin_out_maxlen) {
+    IF_BUG_ONCE(onion_skin_len > onion_skin_out_maxlen) {
       tor_free(onion_skin);
       return -1;
     }
@@ -216,6 +229,75 @@ onion_skin_create(int type,
   return r;
 }
 
+static bool
+subproto_requests_in_order(const trn_subproto_request_t *a,
+                           const trn_subproto_request_t *b)
+{
+  if (a->protocol_id < b->protocol_id) {
+    return true;
+  } else if (a->protocol_id == b->protocol_id) {
+    return (a->proto_cap_number < b->proto_cap_number);
+  } else {
+    return false;
+  }
+}
+
+/**
+ * Process the SUBPROTO extension, as an OR.
+ *
+ * This extension declares one or more subproto capabilities that the
+ * relay must implement, and tells it to enable them.
+ */
+static int
+relay_process_subproto_ext(const trn_extension_t *ext,
+                           circuit_params_t *params_out)
+{
+  const trn_extension_field_t *field;
+  trn_subproto_request_ext_t *req = NULL;
+  int res = -1;
+
+  field = trn_extension_find(ext, EXT_TYPE_SUBPROTO);
+  if (!field) {
+    // Nothing to do.
+    res = 0;
+    goto done;
+  }
+
+  const uint8_t *f = trn_extension_field_getconstarray_field(field);
+  size_t len = trn_extension_field_getlen_field(field);
+
+  if (trn_subproto_request_ext_parse(&req, f, len) < 0) {
+    goto done;
+  }
+
+  const trn_subproto_request_t *prev = NULL;
+  size_t n_requests = trn_subproto_request_ext_getlen_reqs(req);
+  for (unsigned i = 0; i < n_requests; ++i) {
+    const trn_subproto_request_t *cur =
+      trn_subproto_request_ext_getconst_reqs(req, i);
+    if (prev && !subproto_requests_in_order(prev, cur)) {
+      // The requests were not properly sorted and deduplicated.
+      goto done;
+    }
+
+    if (cur->protocol_id == PRT_RELAY &&
+        cur->proto_cap_number == PROTOVER_RELAY_CRYPT_CGO) {
+      params_out->crypto_alg = RELAY_CRYPTO_ALG_CGO_RELAY;
+      params_out->cell_fmt = RELAY_CELL_FORMAT_V1;
+    } else {
+      // Unless a protocol capability is explicitly supported for use
+      // with this extension, we _must_ reject when it appears.
+      goto done;
+    }
+  }
+
+  res = 0;
+
+ done:
+  trn_subproto_request_ext_free(req);
+  return res;
+}
+
 /**
  * Takes a param request message from the client, compares it to our
  * consensus parameters, and creates a reply message and output
@@ -235,15 +317,25 @@ negotiate_v3_ntor_server_circ_params(const uint8_t *param_request_msg,
                                      uint8_t **resp_msg_out,
                                      size_t *resp_msg_len_out)
 {
-  int ret;
+  int ret = -1;
+  trn_extension_t *ext = NULL;
+
+  ssize_t len =
+    trn_extension_parse(&ext, param_request_msg, param_request_len);
+  if (len < 0) {
+    goto err;
+  }
 
   /* Parse request. */
-  ret = congestion_control_parse_ext_request(param_request_msg,
-                                             param_request_len);
+  ret = congestion_control_parse_ext_request(ext);
   if (ret < 0) {
     goto err;
   }
   params_out->cc_enabled = ret && our_ns_params->cc_enabled;
+  ret = relay_process_subproto_ext(ext, params_out);
+  if (ret < 0) {
+    goto err;
+  }
 
   /* Build the response. */
   ret = congestion_control_build_ext_response(our_ns_params, params_out,
@@ -253,17 +345,27 @@ negotiate_v3_ntor_server_circ_params(const uint8_t *param_request_msg,
   }
   params_out->sendme_inc_cells = our_ns_params->sendme_inc_cells;
 
+  if (params_out->cell_fmt != RELAY_CELL_FORMAT_V0 &&
+      !params_out->cc_enabled) {
+    // The V1 cell format is incompatible with pre-CC circuits,
+    // since it has no way to encode stream-level SENDME messages.
+    ret = -1;
+    goto err;
+  }
+
   /* Success. */
   ret = 0;
 
  err:
+  trn_extension_free(ext);
   return ret;
 }
 
 /* This is the maximum value for keys_out_len passed to
- * onion_skin_server_handshake, plus 16. We can make it bigger if needed:
+ * onion_skin_server_handshake, plus 20 for the rend_nonce.
+ * We can make it bigger if needed:
  * It just defines how many bytes to stack-allocate. */
-#define MAX_KEYS_TMP_LEN 128
+#define MAX_KEYS_TMP_LEN (MAX_RELAY_KEY_MATERIAL_LEN + DIGEST_LEN)
 
 /** Perform the second (server-side) step of a circuit-creation handshake of
  * type <b>type</b>, responding to the client request in <b>onion_skin</b>
@@ -271,6 +373,9 @@ negotiate_v3_ntor_server_circ_params(const uint8_t *param_request_msg,
  * <b>reply_out</b>, generate <b>keys_out_len</b> bytes worth of key material
  * in <b>keys_out_len</b>, a hidden service nonce to <b>rend_nonce_out</b>,
  * and return the length of the reply. On failure, return -1.
+ *
+ * Requires that *keys_len_out of bytes are allocated at keys_out;
+ * adjusts *keys_out_len to the number of bytes actually genarated.
  */
 int
 onion_skin_server_handshake(int type,
@@ -279,33 +384,30 @@ onion_skin_server_handshake(int type,
                       const circuit_params_t *our_ns_params,
                       uint8_t *reply_out,
                       size_t reply_out_maxlen,
-                      uint8_t *keys_out, size_t keys_out_len,
+                      uint8_t *keys_out, size_t *keys_len_out,
                       uint8_t *rend_nonce_out,
                       circuit_params_t *params_out)
 {
   int r = -1;
-  memset(params_out, 0, sizeof(*params_out));
+
+  relay_crypto_alg_t relay_alg = RELAY_CRYPTO_ALG_TOR1;
+  size_t keys_out_needed = relay_crypto_key_material_len(relay_alg);
+
+  circuit_params_init(params_out);
 
   switch (type) {
   case ONION_HANDSHAKE_TYPE_TAP:
-    if (reply_out_maxlen < TAP_ONIONSKIN_REPLY_LEN)
-      return -1;
-    if (onionskin_len != TAP_ONIONSKIN_CHALLENGE_LEN)
-      return -1;
-    if (onion_skin_TAP_server_handshake((const char*)onion_skin,
-                                        keys->onion_key, keys->last_onion_key,
-                                        (char*)reply_out,
-                                        (char*)keys_out, keys_out_len)<0)
-      return -1;
-    r = TAP_ONIONSKIN_REPLY_LEN;
-    memcpy(rend_nonce_out, reply_out+DH1024_KEY_LEN, DIGEST_LEN);
-    break;
+    return -1;
   case ONION_HANDSHAKE_TYPE_FAST:
     if (reply_out_maxlen < CREATED_FAST_LEN)
       return -1;
     if (onionskin_len != CREATE_FAST_LEN)
       return -1;
-    if (fast_server_handshake(onion_skin, reply_out, keys_out, keys_out_len)<0)
+    if (BUG(*keys_len_out < keys_out_needed)) {
+      return -1;
+    }
+    if (fast_server_handshake(onion_skin, reply_out, keys_out,
+                              keys_out_needed)<0)
       return -1;
     r = CREATED_FAST_LEN;
     memcpy(rend_nonce_out, reply_out+DIGEST_LEN, DIGEST_LEN);
@@ -315,8 +417,11 @@ onion_skin_server_handshake(int type,
       return -1;
     if (onionskin_len < NTOR_ONIONSKIN_LEN)
       return -1;
+    if (BUG(*keys_len_out < keys_out_needed)) {
+      return -1;
+    }
     {
-      size_t keys_tmp_len = keys_out_len + DIGEST_LEN;
+      size_t keys_tmp_len = keys_out_needed + DIGEST_LEN;
       tor_assert(keys_tmp_len <= MAX_KEYS_TMP_LEN);
       uint8_t keys_tmp[MAX_KEYS_TMP_LEN];
 
@@ -329,15 +434,13 @@ onion_skin_server_handshake(int type,
         return -1;
       }
 
-      memcpy(keys_out, keys_tmp, keys_out_len);
-      memcpy(rend_nonce_out, keys_tmp+keys_out_len, DIGEST_LEN);
+      memcpy(keys_out, keys_tmp, keys_out_needed);
+      memcpy(rend_nonce_out, keys_tmp+keys_out_needed, DIGEST_LEN);
       memwipe(keys_tmp, 0, sizeof(keys_tmp));
       r = NTOR_REPLY_LEN;
     }
     break;
   case ONION_HANDSHAKE_TYPE_NTOR_V3: {
-    size_t keys_tmp_len = keys_out_len + DIGEST_LEN;
-    tor_assert(keys_tmp_len <= MAX_KEYS_TMP_LEN);
     uint8_t keys_tmp[MAX_KEYS_TMP_LEN];
     uint8_t *client_msg = NULL;
     size_t client_msg_len = 0;
@@ -368,6 +471,16 @@ onion_skin_server_handshake(int type,
       return -1;
     }
     tor_free(client_msg);
+    /* Now we know what we negotiated,
+       so we can use the right lengths. */
+    relay_alg = params_out->crypto_alg;
+    keys_out_needed = relay_crypto_key_material_len(relay_alg);
+
+    if (BUG(*keys_len_out < keys_out_needed)) {
+      return -1;
+    }
+    size_t keys_tmp_len = keys_out_needed + DIGEST_LEN;
+    tor_assert(keys_tmp_len <= MAX_KEYS_TMP_LEN);
 
     uint8_t *server_handshake = NULL;
     size_t server_handshake_len = 0;
@@ -389,8 +502,8 @@ onion_skin_server_handshake(int type,
       return -1;
     }
 
-    memcpy(keys_out, keys_tmp, keys_out_len);
-    memcpy(rend_nonce_out, keys_tmp+keys_out_len, DIGEST_LEN);
+    memcpy(keys_out, keys_tmp, keys_out_needed);
+    memcpy(rend_nonce_out, keys_tmp+keys_out_needed, DIGEST_LEN);
     memcpy(reply_out, server_handshake, server_handshake_len);
     memwipe(keys_tmp, 0, keys_tmp_len);
     memwipe(server_handshake, 0, server_handshake_len);
@@ -408,6 +521,7 @@ onion_skin_server_handshake(int type,
     return -1;
     /* LCOV_EXCL_STOP */
   }
+  *keys_len_out = keys_out_needed;
 
   return r;
 }
@@ -424,11 +538,19 @@ negotiate_v3_ntor_client_circ_params(const uint8_t *param_response_msg,
                                      size_t param_response_len,
                                      circuit_params_t *params_out)
 {
-  int ret = congestion_control_parse_ext_response(param_response_msg,
-                                                  param_response_len,
-                                                  params_out);
+  int ret = -1;
+  trn_extension_t *ext = NULL;
+
+  ssize_t len =
+    trn_extension_parse(&ext, param_response_msg, param_response_len);
+  if (len < 0) {
+    goto err;
+  }
+
+  ret = congestion_control_parse_ext_response(ext,
+                                              params_out);
   if (ret < 0) {
-    return -1;
+    goto err;
   }
 
   /* If congestion control came back enabled, but we didn't ask for it
@@ -443,26 +565,33 @@ negotiate_v3_ntor_client_circ_params(const uint8_t *param_response_msg,
    * new one.
    */
   if (ret && !congestion_control_enabled()) {
-    return -1;
+    goto err;
   }
   params_out->cc_enabled = ret;
 
-  return 0;
+ err:
+  trn_extension_free(ext);
+  return ret;
 }
 
 /** Perform the final (client-side) step of a circuit-creation handshake of
  * type <b>type</b>, using our state in <b>handshake_state</b> and the
- * server's response in <b>reply</b>. On success, generate <b>keys_out_len</b>
- * bytes worth of key material in <b>keys_out_len</b>, set
+ * server's response in <b>reply</b>. On success, generate an appropriate
+ * amount of key material in <b>keys_out</b>,
+ * set <b>keys_out_len</b> to the amount generated, set
  * <b>rend_authenticator_out</b> to the "KH" field that can be used to
  * establish introduction points at this hop, and return 0. On failure,
  * return -1, and set *msg_out to an error message if this is worth
- * complaining to the user about. */
+ * complaining to the user about.
+ *
+ * Requires that *keys_len_out of bytes are allocated at keys_out;
+ * adjusts *keys_out_len to the number of bytes actually genarated.
+ */
 int
 onion_skin_client_handshake(int type,
                       const onion_handshake_state_t *handshake_state,
                       const uint8_t *reply, size_t reply_len,
-                      uint8_t *keys_out, size_t keys_out_len,
+                      uint8_t *keys_out, size_t *keys_len_out,
                       uint8_t *rend_authenticator_out,
                       circuit_params_t *params_out,
                       const char **msg_out)
@@ -470,24 +599,20 @@ onion_skin_client_handshake(int type,
   if (handshake_state->tag != type)
     return -1;
 
-  memset(params_out, 0, sizeof(*params_out));
+  memcpy(params_out, &handshake_state->chosen_params,
+         sizeof(circuit_params_t));
+
+  // at this point, we know the crypto algorithm we want to use
+  relay_crypto_alg_t relay_alg = params_out->crypto_alg;
+  size_t keys_out_needed = relay_crypto_key_material_len(relay_alg);
+  if (BUG(*keys_len_out < keys_out_needed)) {
+    return -1;
+  }
+  *keys_len_out = keys_out_needed;
 
   switch (type) {
   case ONION_HANDSHAKE_TYPE_TAP:
-    if (reply_len != TAP_ONIONSKIN_REPLY_LEN) {
-      if (msg_out)
-        *msg_out = "TAP reply was not of the correct length.";
-      return -1;
-    }
-    if (onion_skin_TAP_client_handshake(handshake_state->u.tap,
-                                        (const char*)reply,
-                                        (char *)keys_out, keys_out_len,
-                                        msg_out) < 0)
-      return -1;
-
-    memcpy(rend_authenticator_out, reply+DH1024_KEY_LEN, DIGEST_LEN);
-
-    return 0;
+    return -1;
   case ONION_HANDSHAKE_TYPE_FAST:
     if (reply_len != CREATED_FAST_LEN) {
       if (msg_out)
@@ -495,7 +620,7 @@ onion_skin_client_handshake(int type,
       return -1;
     }
     if (fast_client_handshake(handshake_state->u.fast, reply,
-                              keys_out, keys_out_len, msg_out) < 0)
+                              keys_out, keys_out_needed, msg_out) < 0)
       return -1;
 
     memcpy(rend_authenticator_out, reply+DIGEST_LEN, DIGEST_LEN);
@@ -507,7 +632,7 @@ onion_skin_client_handshake(int type,
       return -1;
     }
     {
-      size_t keys_tmp_len = keys_out_len + DIGEST_LEN;
+      size_t keys_tmp_len = keys_out_needed + DIGEST_LEN;
       uint8_t *keys_tmp = tor_malloc(keys_tmp_len);
       if (onion_skin_ntor_client_handshake(handshake_state->u.ntor,
                                         reply,
@@ -515,14 +640,14 @@ onion_skin_client_handshake(int type,
         tor_free(keys_tmp);
         return -1;
       }
-      memcpy(keys_out, keys_tmp, keys_out_len);
-      memcpy(rend_authenticator_out, keys_tmp + keys_out_len, DIGEST_LEN);
+      memcpy(keys_out, keys_tmp, keys_out_needed);
+      memcpy(rend_authenticator_out, keys_tmp + keys_out_needed, DIGEST_LEN);
       memwipe(keys_tmp, 0, keys_tmp_len);
       tor_free(keys_tmp);
     }
     return 0;
   case ONION_HANDSHAKE_TYPE_NTOR_V3: {
-    size_t keys_tmp_len = keys_out_len + DIGEST_LEN;
+    size_t keys_tmp_len = keys_out_needed + DIGEST_LEN;
     uint8_t *keys_tmp = tor_malloc(keys_tmp_len);
     uint8_t *server_msg = NULL;
     size_t server_msg_len = 0;
@@ -547,8 +672,8 @@ onion_skin_client_handshake(int type,
     }
     tor_free(server_msg);
 
-    memcpy(keys_out, keys_tmp, keys_out_len);
-    memcpy(rend_authenticator_out, keys_tmp + keys_out_len, DIGEST_LEN);
+    memcpy(keys_out, keys_tmp, keys_out_needed);
+    memcpy(rend_authenticator_out, keys_tmp + keys_out_needed, DIGEST_LEN);
     memwipe(keys_tmp, 0, keys_tmp_len);
     tor_free(keys_tmp);
 
@@ -559,4 +684,31 @@ onion_skin_client_handshake(int type,
     tor_fragile_assert();
     return -1;
   }
+}
+
+/**
+ * If there is an extension field of type `ext_type` in `ext`,
+ * return that field.  Otherwise return NULL.
+ */
+const trn_extension_field_t *
+trn_extension_find(const trn_extension_t *ext, uint8_t ext_type)
+{
+  IF_BUG_ONCE(!ext) {
+    return NULL;
+  }
+  size_t n_fields = trn_extension_get_num(ext);
+  if (n_fields == 0)
+    return NULL;
+
+  for (unsigned i = 0; i < n_fields; ++i) {
+    const trn_extension_field_t *field = trn_extension_getconst_fields(ext, i);
+    IF_BUG_ONCE(field == NULL) {
+      return NULL;
+    }
+    if (trn_extension_field_get_field_type(field) == ext_type) {
+      return field;
+    }
+  }
+
+  return NULL;
 }

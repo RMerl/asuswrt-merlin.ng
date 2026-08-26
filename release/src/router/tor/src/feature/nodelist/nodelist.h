@@ -54,7 +54,6 @@ void node_get_verbose_nickname(const node_t *node,
 void node_get_verbose_nickname_by_id(const char *id_digest,
                                 char *verbose_name_out);
 int node_is_dir(const node_t *node);
-int node_is_good_exit(const node_t *node);
 int node_has_any_descriptor(const node_t *node);
 int node_has_preferred_descriptor(const node_t *node,
                                   int for_direct_connect);
@@ -109,7 +108,6 @@ void node_get_pref_ipv6_dirport(const node_t *node, tor_addr_port_t *ap_out);
 int node_has_curve25519_onion_key(const node_t *node);
 const struct curve25519_public_key_t *node_get_curve25519_onion_key(
                                   const node_t *node);
-crypto_pk_t *node_get_rsa_onion_key(const node_t *node);
 
 MOCK_DECL(const smartlist_t *, nodelist_get_list, (void));
 
@@ -171,9 +169,10 @@ int count_loading_descriptors_progress(void);
 STATIC int node_nickname_matches(const node_t *node, const char *nickname);
 STATIC int node_in_nickname_smartlist(const smartlist_t *lst,
                                       const node_t *node);
-STATIC int node_family_contains(const node_t *n1, const node_t *n2);
-STATIC bool node_has_declared_family(const node_t *node);
-STATIC void node_lookup_declared_family(smartlist_t *out, const node_t *node);
+STATIC int node_family_list_contains(const node_t *n1, const node_t *n2);
+STATIC bool node_has_declared_family_list(const node_t *node);
+STATIC void node_lookup_declared_family_list(smartlist_t *out,
+                                             const node_t *node);
 
 #ifdef TOR_UNIT_TESTS
 

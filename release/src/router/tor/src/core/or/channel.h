@@ -97,6 +97,7 @@ typedef enum {
    *
    * Permitted transitions from:
    *   - CHANNEL_STATE_MAINT
+   *   - CHANNEL_STATE_OPENING
    *   - CHANNEL_STATE_OPEN
    * Permitted transitions to:
    *   - CHANNEL_STATE_CLOSED,

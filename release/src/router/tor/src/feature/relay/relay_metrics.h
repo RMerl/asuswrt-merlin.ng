@@ -57,6 +57,12 @@ typedef enum {
   RELAY_METRICS_NUM_INTRO1_CELLS,
   /** Number of times we received a REND1 cell */
   RELAY_METRICS_NUM_REND1_CELLS,
+  /** Number of circuit closed by receiving a DESTROY cell. */
+  RELAY_METRICS_CIRC_DESTROY_CELL,
+  /** Number of circuits closed due to protocol violation. */
+  RELAY_METRICS_CIRC_PROTO_VIOLATION,
+  /** Number of drop cell seen. */
+  RELAY_METRICS_CIRC_DROP_CELL,
 } relay_metrics_key_t;
 
 /** The metadata of a relay metric. */

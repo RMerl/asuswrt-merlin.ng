@@ -9,5 +9,6 @@ tor_x509_cert_impl_t *read_cert_from(const char *str);
 extern const char *notCompletelyValidCertString;
 extern const char *validCertString;
 extern const char *caCertString;
+extern const time_t cert_strings_valid_at;
 
 #endif /* !defined(TEST_TORTLS_H) */

@@ -224,12 +224,14 @@ test_e2e_rend_circuit_setup(void *arg)
   tt_int_op(retval, OP_EQ, 1);
 
   /* Check the digest algo */
-  tt_int_op(crypto_digest_get_algorithm(or_circ->cpath->pvt_crypto.f_digest),
+  tt_int_op(crypto_digest_get_algorithm(
+                              or_circ->cpath->pvt_crypto.c.tor1.f_digest),
             OP_EQ, DIGEST_SHA3_256);
-  tt_int_op(crypto_digest_get_algorithm(or_circ->cpath->pvt_crypto.b_digest),
+  tt_int_op(crypto_digest_get_algorithm(
+                              or_circ->cpath->pvt_crypto.c.tor1.b_digest),
             OP_EQ, DIGEST_SHA3_256);
-  tt_assert(or_circ->cpath->pvt_crypto.f_crypto);
-  tt_assert(or_circ->cpath->pvt_crypto.b_crypto);
+  tt_assert(or_circ->cpath->pvt_crypto.c.tor1.f_crypto);
+  tt_assert(or_circ->cpath->pvt_crypto.c.tor1.b_crypto);
 
   /* Ensure that circ purpose was changed */
   tt_int_op(or_circ->base_.purpose, OP_EQ, CIRCUIT_PURPOSE_S_REND_JOINED);
@@ -1605,7 +1607,6 @@ test_build_update_descriptors(void *arg)
     tt_int_op(ret, OP_EQ, 0);
     ri.onion_curve25519_pkey =
       tor_malloc_zero(sizeof(curve25519_public_key_t));
-    ri.onion_pkey = tor_malloc_zero(140);
     curve25519_public_key_generate(ri.onion_curve25519_pkey,
                                    &curve25519_secret_key);
     memset(ri.cache_info.identity_digest, 'A', DIGEST_LEN);
@@ -1631,7 +1632,6 @@ test_build_update_descriptors(void *arg)
   update_all_descriptors_intro_points(now);
   tor_free(node->ri->onion_curve25519_pkey); /* Avoid memleak. */
   tor_free(node->ri->cache_info.signing_key_cert);
-  tor_free(node->ri->onion_pkey);
   expect_log_msg_containing("just picked 1 intro points and wanted 3 for next "
                             "descriptor. It currently has 0 intro points. "
                             "Launching ESTABLISH_INTRO circuit shortly.");

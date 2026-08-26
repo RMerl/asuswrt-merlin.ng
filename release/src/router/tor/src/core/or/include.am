@@ -1,6 +1,6 @@
 
 # ADD_C_FILE: INSERT SOURCES HERE.
-LIBTOR_APP_A_SOURCES += 				\
+LIBTOR_APP_A_SOURCES += 			\
 	src/core/or/address_set.c		\
 	src/core/or/channel.c			\
 	src/core/or/channelpadding.c		\
@@ -18,9 +18,9 @@ LIBTOR_APP_A_SOURCES += 				\
 	src/core/or/connection_edge.c		\
 	src/core/or/connection_or.c		\
 	src/core/or/dos.c			\
-	src/core/or/dos_config.c			\
+	src/core/or/dos_config.c		\
 	src/core/or/dos_sys.c			\
-	src/core/or/extendinfo.c			\
+	src/core/or/extendinfo.c		\
 	src/core/or/onion.c			\
 	src/core/or/ocirc_event.c		\
 	src/core/or/or_periodic.c		\
@@ -30,19 +30,20 @@ LIBTOR_APP_A_SOURCES += 				\
 	src/core/or/protover.c			\
 	src/core/or/reasons.c			\
 	src/core/or/relay.c			\
+	src/core/or/relay_msg.c			\
 	src/core/or/scheduler.c			\
 	src/core/or/scheduler_kist.c		\
 	src/core/or/scheduler_vanilla.c		\
 	src/core/or/sendme.c			\
-	src/core/or/congestion_control_common.c			\
-	src/core/or/congestion_control_vegas.c			\
-	src/core/or/congestion_control_flow.c			\
+	src/core/or/congestion_control_common.c	\
+	src/core/or/congestion_control_vegas.c	\
+	src/core/or/congestion_control_flow.c	\
 	src/core/or/conflux.c			\
-	src/core/or/conflux_cell.c			\
-	src/core/or/conflux_params.c			\
-	src/core/or/conflux_pool.c			\
-	src/core/or/conflux_sys.c			\
-	src/core/or/conflux_util.c			\
+	src/core/or/conflux_cell.c		\
+	src/core/or/conflux_params.c		\
+	src/core/or/conflux_pool.c		\
+	src/core/or/conflux_sys.c		\
+	src/core/or/conflux_util.c		\
 	src/core/or/status.c			\
 	src/core/or/versions.c
 
@@ -65,7 +66,7 @@ noinst_HEADERS +=					\
 	src/core/or/circuitpadding_machines.h		\
 	src/core/or/circuituse.h			\
 	src/core/or/command.h				\
-	src/core/or/congestion_control_st.h				\
+	src/core/or/congestion_control_st.h		\
 	src/core/or/connection_edge.h			\
 	src/core/or/connection_or.h			\
 	src/core/or/connection_st.h			\
@@ -75,9 +76,9 @@ noinst_HEADERS +=					\
 	src/core/or/crypt_path_st.h			\
 	src/core/or/destroy_cell_queue_st.h		\
 	src/core/or/dos.h				\
-	src/core/or/dos_config.h				\
-	src/core/or/dos_options.inc				\
-	src/core/or/dos_options_st.h				\
+	src/core/or/dos_config.h			\
+	src/core/or/dos_options.inc			\
+	src/core/or/dos_options_st.h			\
 	src/core/or/dos_sys.h				\
 	src/core/or/edge_connection_st.h		\
 	src/core/or/extendinfo.h			\
@@ -104,17 +105,18 @@ noinst_HEADERS +=					\
 	src/core/or/protover.h				\
 	src/core/or/reasons.h				\
 	src/core/or/relay.h				\
-	src/core/or/relay_crypto_st.h			\
+	src/core/or/relay_msg.h				\
+	src/core/or/relay_msg_st.h			\
 	src/core/or/scheduler.h				\
 	src/core/or/sendme.h				\
-	src/core/or/congestion_control_flow.h				\
-	src/core/or/congestion_control_common.h				\
-	src/core/or/congestion_control_vegas.h				\
+	src/core/or/congestion_control_flow.h		\
+	src/core/or/congestion_control_common.h		\
+	src/core/or/congestion_control_vegas.h		\
 	src/core/or/conflux.h				\
 	src/core/or/conflux_cell.h			\
 	src/core/or/conflux_params.h			\
 	src/core/or/conflux_pool.h			\
-	src/core/or/conflux_st.h				\
+	src/core/or/conflux_st.h			\
 	src/core/or/conflux_sys.h			\
 	src/core/or/conflux_util.h			\
 	src/core/or/server_port_cfg_st.h		\
@@ -126,9 +128,9 @@ noinst_HEADERS +=					\
 
 if USE_TRACING_INSTRUMENTATION_LTTNG
 LIBTOR_APP_A_SOURCES += \
-	src/core/or/trace_probes_cc.c				\
+	src/core/or/trace_probes_cc.c			\
 	src/core/or/trace_probes_circuit.c
 noinst_HEADERS += \
-	src/core/or/trace_probes_cc.h				\
+	src/core/or/trace_probes_cc.h			\
 	src/core/or/trace_probes_circuit.h
 endif

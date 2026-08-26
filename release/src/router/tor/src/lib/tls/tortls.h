@@ -89,9 +89,6 @@ void tor_tls_context_decref(tor_tls_context_t *ctx);
 tor_tls_context_t *tor_tls_context_get(int is_server);
 tor_tls_t *tor_tls_new(tor_socket_t sock, int is_server);
 void tor_tls_set_logged_address(tor_tls_t *tls, const char *address);
-void tor_tls_set_renegotiate_callback(tor_tls_t *tls,
-                                      void (*cb)(tor_tls_t *, void *arg),
-                                      void *arg);
 int tor_tls_is_server(tor_tls_t *tls);
 void tor_tls_release_socket(tor_tls_t *tls);
 void tor_tls_free_(tor_tls_t *tls);
@@ -99,13 +96,9 @@ void tor_tls_free_(tor_tls_t *tls);
 int tor_tls_peer_has_cert(tor_tls_t *tls);
 MOCK_DECL(struct tor_x509_cert_t *,tor_tls_get_peer_cert,(tor_tls_t *tls));
 MOCK_DECL(struct tor_x509_cert_t *,tor_tls_get_own_cert,(tor_tls_t *tls));
-int tor_tls_verify(int severity, tor_tls_t *tls, crypto_pk_t **identity);
 MOCK_DECL(int, tor_tls_read, (tor_tls_t *tls, char *cp, size_t len));
 int tor_tls_write(tor_tls_t *tls, const char *cp, size_t n);
 int tor_tls_handshake(tor_tls_t *tls);
-int tor_tls_finish_handshake(tor_tls_t *tls);
-void tor_tls_unblock_renegotiation(tor_tls_t *tls);
-void tor_tls_block_renegotiation(tor_tls_t *tls);
 int tor_tls_get_pending_bytes(tor_tls_t *tls);
 size_t tor_tls_get_forced_write_size(tor_tls_t *tls);
 
@@ -118,16 +111,8 @@ int tor_tls_get_buffer_sizes(tor_tls_t *tls,
 
 MOCK_DECL(double, tls_get_write_overhead_ratio, (void));
 
-int tor_tls_used_v1_handshake(tor_tls_t *tls);
-int tor_tls_get_num_server_handshakes(tor_tls_t *tls);
-int tor_tls_server_got_renegotiate(tor_tls_t *tls);
 MOCK_DECL(int,tor_tls_cert_matches_key,(const tor_tls_t *tls,
                                         const struct tor_x509_cert_t *cert));
-MOCK_DECL(int,tor_tls_get_tlssecrets,(tor_tls_t *tls, uint8_t *secrets_out));
-#ifdef ENABLE_OPENSSL
-/* OpenSSL lets us see these master secrets; NSS sensibly does not. */
-#define HAVE_WORKING_TOR_TLS_GET_TLSSECRETS
-#endif
 MOCK_DECL(int,tor_tls_export_key_material,(
                      tor_tls_t *tls, uint8_t *secrets_out,
                      const uint8_t *context,
@@ -149,9 +134,6 @@ void tor_tls_log_one_error(tor_tls_t *tls, unsigned long err,
 int tor_tls_get_my_certs(int server,
                          const struct tor_x509_cert_t **link_cert_out,
                          const struct tor_x509_cert_t **id_cert_out);
-crypto_pk_t *tor_tls_get_my_client_auth_key(void);
-
-const char *tor_tls_get_ciphersuite_name(tor_tls_t *tls);
 
 int evaluate_ecgroup_for_tls(const char *ecgroup);
 

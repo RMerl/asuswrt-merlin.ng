@@ -57,6 +57,7 @@ void pt_configure_remaining_proxies(void);
 int pt_proxies_configuration_pending(void);
 
 char *pt_get_extra_info_descriptor_string(void);
+void pt_update_bridge_lines(void);
 
 void pt_free_all(void);
 
@@ -76,6 +77,7 @@ char *tor_escape_str_for_pt_args(const char *string,
 /** State of the managed proxy configuration protocol. */
 enum pt_proto_state {
   PT_PROTO_INFANT, /* was just born */
+  PT_PROTO_WAITING, /* waiting to be launched */
   PT_PROTO_LAUNCHED, /* was just launched */
   PT_PROTO_ACCEPTING_METHODS, /* accepting methods */
   PT_PROTO_CONFIGURED, /* configured successfully */
@@ -99,6 +101,9 @@ typedef struct {
 
   /* A pointer to the process of this managed proxy. */
   struct process_t *process;
+
+  /* timer event to launch proxy */
+  struct mainloop_event_t *process_launch_ev;
 
   /** Boolean: We are re-parsing our config, and we are going to
    * remove this managed proxy if we don't find it any transport
@@ -149,6 +154,7 @@ STATIC void managed_proxy_destroy(managed_proxy_t *mp,
 STATIC managed_proxy_t *managed_proxy_create(const smartlist_t *transport_list,
                                              char **proxy_argv, int is_server);
 
+STATIC void launch_proxy_ev(struct mainloop_event_t *event, void *v);
 STATIC int configure_proxy(managed_proxy_t *mp);
 
 STATIC char* get_pt_proxy_uri(void);

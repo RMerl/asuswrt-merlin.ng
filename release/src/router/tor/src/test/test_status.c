@@ -333,10 +333,12 @@ test_status_hb_not_in_consensus(void *arg)
        status_hb_not_in_consensus_server_mode);
 
   log_global_min_severity_ = LOG_DEBUG;
-  onion_handshakes_requested[ONION_HANDSHAKE_TYPE_TAP] = 1;
   onion_handshakes_assigned[ONION_HANDSHAKE_TYPE_TAP] = 1;
-  onion_handshakes_requested[ONION_HANDSHAKE_TYPE_NTOR] = 1;
-  onion_handshakes_assigned[ONION_HANDSHAKE_TYPE_NTOR] = 1;
+  onion_handshakes_requested[ONION_HANDSHAKE_TYPE_TAP] = 2;
+  onion_handshakes_assigned[ONION_HANDSHAKE_TYPE_NTOR] = 3;
+  onion_handshakes_requested[ONION_HANDSHAKE_TYPE_NTOR] = 4;
+  onion_handshakes_assigned[ONION_HANDSHAKE_TYPE_NTOR_V3] = 5;
+  onion_handshakes_requested[ONION_HANDSHAKE_TYPE_NTOR_V3] = 6;
 
   expected = 0;
   setup_capture_of_logs(LOG_INFO);
@@ -352,8 +354,8 @@ test_status_hb_not_in_consensus(void *arg)
                  "I've made 0 connections with IPv4 and 0 with IPv6.\n");
   expect_log_msg("Average packaged cell fullness: 100.000%. "
                  "TLS write overhead: 0%\n");
-  expect_log_msg("Circuit handshake stats since last time: 1/1 TAP, "
-                 "1/1 NTor.\n");
+  expect_log_msg("Circuit handshake stats since last time: 1/2 TAP, "
+                 "3/4 NTor, 5/6 NTor (v3).\n");
   expect_log_msg("Since startup we initiated 0 and received 0 v1 "
                  "connections; initiated 0 and received 0 v2 connections; "
                  "initiated 0 and received 0 v3 connections; "
@@ -363,6 +365,7 @@ test_status_hb_not_in_consensus(void *arg)
                  "with too many cells, [DoSCircuitCreationEnabled disabled], "
                  "[DoSConnectionEnabled disabled], "
                  "[DoSRefuseSingleHopClientRendezvous disabled], "
+                 "[DoSStreamCreationEnabled disabled], "
                  "0 INTRODUCE2 rejected.\n");
   tt_int_op(mock_saved_log_n_entries(), OP_EQ, 6);
 

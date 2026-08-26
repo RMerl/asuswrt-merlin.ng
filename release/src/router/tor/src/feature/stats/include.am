@@ -9,7 +9,7 @@ LIBTOR_APP_A_SOURCES += 			\
 
 # ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS +=					\
-        src/feature/stats/bw_array_st.h                 \
+	src/feature/stats/bw_array_st.h			\
 	src/feature/stats/bwhist.h			\
 	src/feature/stats/connstats.h			\
 	src/feature/stats/geoip_stats.h			\

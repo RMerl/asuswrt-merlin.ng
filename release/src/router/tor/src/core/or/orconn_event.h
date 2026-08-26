@@ -34,24 +34,16 @@
 /** State for an OR connection client: SSL is handshaking, not done
  * yet. */
 #define OR_CONN_STATE_TLS_HANDSHAKING 3
-/** State for a connection to an OR: We're doing a second SSL handshake for
- * renegotiation purposes. (V2 handshake only.) */
-#define OR_CONN_STATE_TLS_CLIENT_RENEGOTIATING 4
 /** State for a connection at an OR: We're waiting for the client to
- * renegotiate (to indicate a v2 handshake) or send a versions cell (to
- * indicate a v3 handshake) */
-#define OR_CONN_STATE_TLS_SERVER_RENEGOTIATING 5
-/** State for an OR connection: We're done with our SSL handshake, we've done
- * renegotiation, but we haven't yet negotiated link protocol versions and
- * sent a netinfo cell. */
-#define OR_CONN_STATE_OR_HANDSHAKING_V2 6
+ * send a versions cell (to indicate a v3+ handshake) */
+#define OR_CONN_STATE_SERVER_VERSIONS_WAIT 4
 /** State for an OR connection: We're done with our SSL handshake, but we
  * haven't yet negotiated link protocol versions, done a V3 handshake, and
  * sent a netinfo cell. */
-#define OR_CONN_STATE_OR_HANDSHAKING_V3 7
+#define OR_CONN_STATE_OR_HANDSHAKING_V3 5
 /** State for an OR connection: Ready to send/receive cells. */
-#define OR_CONN_STATE_OPEN 8
-#define OR_CONN_STATE_MAX_ 8
+#define OR_CONN_STATE_OPEN 6
+#define OR_CONN_STATE_MAX_ 6
 /** @} */
 
 /** Used to indicate the type of an OR connection event passed to the

@@ -93,19 +93,6 @@ tor_tls_get_my_certs(int server,
   return rv;
 }
 
-/**
- * Return the authentication key that we use to authenticate ourselves as a
- * client in the V3 in-protocol handshake.
- */
-crypto_pk_t *
-tor_tls_get_my_client_auth_key(void)
-{
-  tor_tls_context_t *context = tor_tls_context_get(0);
-  if (! context)
-    return NULL;
-  return context->auth_key;
-}
-
 /** Increase the reference count of <b>ctx</b>. */
 void
 tor_tls_context_incref(tor_tls_context_t *ctx)
@@ -404,47 +391,6 @@ tor_tls_free_(tor_tls_t *tls)
   tor_free(tls->address);
   tls->magic = 0x99999999;
   tor_free(tls);
-}
-
-/** If the provided tls connection is authenticated and has a
- * certificate chain that is currently valid and signed, then set
- * *<b>identity_key</b> to the identity certificate's key and return
- * 0.  Else, return -1 and log complaints with log-level <b>severity</b>.
- */
-int
-tor_tls_verify(int severity, tor_tls_t *tls, crypto_pk_t **identity)
-{
-  tor_x509_cert_impl_t *cert = NULL, *id_cert = NULL;
-  tor_x509_cert_t *peer_x509 = NULL, *id_x509 = NULL;
-  tor_assert(tls);
-  tor_assert(identity);
-  int rv = -1;
-
-  try_to_extract_certs_from_tls(severity, tls, &cert, &id_cert);
-  if (!cert)
-    goto done;
-  if (!id_cert) {
-    log_fn(severity,LD_PROTOCOL,"No distinct identity certificate found");
-    goto done;
-  }
-  peer_x509 = tor_x509_cert_new(cert);
-  id_x509 = tor_x509_cert_new(id_cert);
-  cert = id_cert = NULL; /* Prevent double-free */
-
-  if (! tor_tls_cert_is_valid(severity, peer_x509, id_x509, time(NULL), 0)) {
-    goto done;
-  }
-
-  *identity = tor_tls_cert_get_key(id_x509);
-  rv = 0;
-
- done:
-  tor_x509_cert_impl_free(cert);
-  tor_x509_cert_impl_free(id_cert);
-  tor_x509_cert_free(peer_x509);
-  tor_x509_cert_free(id_x509);
-
-  return rv;
 }
 
 static void

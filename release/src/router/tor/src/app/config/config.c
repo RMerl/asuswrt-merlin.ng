@@ -470,6 +470,9 @@ static const config_var_t option_vars_[] = {
   V(UseDefaultFallbackDirs,      BOOL,     "1"),
 
   OBSOLETE("FallbackNetworkstatusFile"),
+  VAR("FamilyId",                LINELIST, FamilyId_lines,   NULL),
+  VAR_IMMUTABLE("FamilyKeyDirectory",
+                FILENAME, FamilyKeyDirectory_option, NULL),
   V(FascistFirewall,             BOOL,     "0"),
   V(FirewallPorts,               CSV,      ""),
   OBSOLETE("FastFirstHopPK"),
@@ -483,6 +486,13 @@ static const config_var_t option_vars_[] = {
 #ifdef _WIN32
   V(GeoIPFile,                   FILENAME, "<default>"),
   V(GeoIPv6File,                 FILENAME, "<default>"),
+#elif defined(__ANDROID__)
+  /* Android apps use paths that are configured at runtime.
+   * /data/local/tmp is guaranteed to exist, but will only be
+   * usable by the 'shell' and 'root' users, so this fallback is
+   * for debugging only. */
+  V(GeoIPFile,                   FILENAME, "/data/local/tmp/geoip"),
+  V(GeoIPv6File,                 FILENAME, "/data/local/tmp/geoip6"),
 #else
   V(GeoIPFile,                   FILENAME,
     SHARE_DATADIR PATH_SEPARATOR "tor" PATH_SEPARATOR "geoip"),
@@ -638,6 +648,7 @@ static const config_var_t option_vars_[] = {
   V(RephistTrackTime,            INTERVAL, "24 hours"),
   V_IMMUTABLE(RunAsDaemon,       BOOL,     "0"),
   V(ReducedExitPolicy,           BOOL,     "0"),
+  V(ReevaluateExitPolicy,        BOOL,     "0"),
   OBSOLETE("RunTesting"), // currently unused
   V_IMMUTABLE(Sandbox,           BOOL,     "0"),
   V(SafeLogging,                 STRING,   "1"),
@@ -997,6 +1008,7 @@ set_options(or_options_t *new_val, char **msg)
     config_line_t *changes =
       config_get_changes(get_options_mgr(), old_options, new_val);
     control_event_conf_changed(changes);
+    connection_reapply_exit_policy(changes);
     config_free_lines(changes);
   }
 
@@ -1036,11 +1048,17 @@ options_clear_cb(const config_mgr_t *mgr, void *opts)
   }
   tor_free(options->DataDirectory);
   tor_free(options->CacheDirectory);
+  tor_free(options->FamilyKeyDirectory);
   tor_free(options->KeyDirectory);
   tor_free(options->BridgePassword_AuthDigest_);
   tor_free(options->command_arg);
   tor_free(options->master_key_fname);
   config_free_lines(options->MyFamily);
+  if (options->FamilyIds) {
+    SMARTLIST_FOREACH(options->FamilyIds,
+                      ed25519_public_key_t *, k, tor_free(k));
+    smartlist_free(options->FamilyIds);
+  }
 }
 
 /** Release all memory allocated in options
@@ -2480,6 +2498,9 @@ static const struct {
     .command=CMD_LIST_FINGERPRINT },
   { .name="--keygen",
     .command=CMD_KEYGEN },
+  { .name="--keygen-family",
+    .command=CMD_KEYGEN_FAMILY,
+    .takes_argument=ARGUMENT_NECESSARY },
   { .name="--key-expiration",
     .takes_argument=ARGUMENT_OPTIONAL,
     .command=CMD_KEY_EXPIRATION },
@@ -6899,6 +6920,15 @@ get_data_directory(const char *val)
   } else {
     return tor_strdup(get_windows_conf_root());
   }
+#elif defined(__ANDROID__)
+  /* Android apps can only use paths that are configured at runtime.
+   * /data/local/tmp is guaranteed to exist, but is only usable by the
+   * 'shell' and 'root' users, so this fallback is for debugging only. */
+  if (val) {
+    return tor_strdup(val);
+  } else {
+    return tor_strdup("/data/local/tmp");
+  }
 #else /* !defined(_WIN32) */
   const char *d = val;
   if (!d)
@@ -6961,6 +6991,17 @@ validate_data_directories(or_options_t *options)
   } else {
     /* Default to the data directory. */
     options->CacheDirectory = tor_strdup(options->DataDirectory);
+  }
+
+  tor_free(options->FamilyKeyDirectory);
+  if (options->FamilyKeyDirectory_option) {
+    options->FamilyKeyDirectory =
+      get_data_directory(options->FamilyKeyDirectory_option);
+    if (!options->FamilyKeyDirectory)
+      return -1;
+  } else {
+    /* Default to the key directory. */
+    options->FamilyKeyDirectory = tor_strdup(options->KeyDirectory);
   }
 
   return 0;

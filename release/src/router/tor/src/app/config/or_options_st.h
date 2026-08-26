@@ -89,6 +89,10 @@ struct or_options_t {
   char *KeyDirectory; /**< Where to store keys data, as modified. */
   int KeyDirectoryGroupReadable; /**< Boolean: Is the KeyDirectory g+r? */
 
+  char *FamilyKeyDirectory_option; /**< Where to look for family ID keys,
+                                    * as configured by the user. */
+  char *FamilyKeyDirectory; /**< Where to look for family ID keys. */
+
   char *CacheDirectory_option; /**< Where to store cached data, as
                                * configured by the user. */
   char *CacheDirectory; /**< Where to store cached data, as modified. */
@@ -141,6 +145,8 @@ struct or_options_t {
                                         * Includes OutboundBindAddresses and
                                         * configured ports. */
   int ReducedExitPolicy; /**<Should we use the Reduced Exit Policy? */
+  int ReevaluateExitPolicy; /**<Should we re-evaluate Exit Policy on existing
+                             * connections when it changes? */
   struct config_line_t *SocksPolicy; /**< Lists of socks policy components */
   struct config_line_t *DirPolicy; /**< Lists of dir policy components */
   /** Local address to bind outbound sockets */
@@ -495,6 +501,13 @@ struct or_options_t {
   struct config_line_t *MyFamily_lines; /**< Declared family for this OR. */
   struct config_line_t *MyFamily; /**< Declared family for this OR,
                                      normalized */
+  struct config_line_t *FamilyId_lines; /**< If set, IDs for family keys to use
+                      * to certify this OR's membership. */
+  struct smartlist_t *FamilyIds; /**< FamilyIds, parsed and converted
+                                  * to a list of ed25519_public_key_t */
+  bool AllFamilyIdsExpected; /**< If true, we should accept all the
+                              * FamilyIds in the FamilyKeyDirectory. */
+
   struct config_line_t *NodeFamilies; /**< List of config lines for
                                 * node families */
   /** List of parsed NodeFamilies values. */

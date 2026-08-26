@@ -153,6 +153,23 @@ tor_compress_impl(int compress,
           // More data is present, and we're decompressing.  So we may need to
           // reinitialize the stream if we are handling multiple concatenated
           // inputs.
+
+          /* Check the cumulative ratio across all sub-streams before
+           * reinitializing: the inner per-sub-stream bomb check resets to zero
+           * with each new backend state, so without this check an attacker can
+           * concatenate many sub-streams each just under
+           * CHECK_FOR_COMPRESSION_BOMB_AFTER bytes of output and escape
+           * detection entirely. Both subtractions are safe: outptr >= *out
+           * always (it only advances forward, and out_alloc is bounded by
+           * SIZE_T_CEILING/2), and in_len <= in_len_orig always (input is only
+           * consumed). */
+          const size_t out_so_far = (size_t)(outptr - *out);
+          const size_t in_so_far = in_len_orig - in_len;
+          if (tor_compress_is_compression_bomb(in_so_far, out_so_far)) {
+            log_warn(LD_DIR, "Possible compression bomb across concatenated "
+                     "streams; abandoning.");
+            goto err;
+          }
           tor_compress_free(stream);
           stream = tor_compress_new(compress, method, compression_level);
           if (stream == NULL) {

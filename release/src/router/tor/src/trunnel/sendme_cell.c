@@ -34,6 +34,7 @@ sendme_cell_new(void)
   sendme_cell_t *val = trunnel_calloc(1, sizeof(sendme_cell_t));
   if (NULL == val)
     return NULL;
+  val->data_len = 16;
   return val;
 }
 
@@ -43,6 +44,8 @@ static void
 sendme_cell_clear(sendme_cell_t *obj)
 {
   (void) obj;
+  TRUNNEL_DYNARRAY_WIPE(&obj->data_v1_digest);
+  TRUNNEL_DYNARRAY_CLEAR(&obj->data_v1_digest);
 }
 
 void
@@ -78,20 +81,23 @@ sendme_cell_get_data_len(const sendme_cell_t *inp)
 int
 sendme_cell_set_data_len(sendme_cell_t *inp, uint16_t val)
 {
+  if (! ((val == 16 || val == 20))) {
+     TRUNNEL_SET_ERROR_CODE(inp);
+     return -1;
+  }
   inp->data_len = val;
   return 0;
 }
 size_t
 sendme_cell_getlen_data_v1_digest(const sendme_cell_t *inp)
 {
-  (void)inp;  return TRUNNEL_SENDME_V1_DIGEST_LEN;
+  return TRUNNEL_DYNARRAY_LEN(&inp->data_v1_digest);
 }
 
 uint8_t
 sendme_cell_get_data_v1_digest(sendme_cell_t *inp, size_t idx)
 {
-  trunnel_assert(idx < TRUNNEL_SENDME_V1_DIGEST_LEN);
-  return inp->data_v1_digest[idx];
+  return TRUNNEL_DYNARRAY_GET(&inp->data_v1_digest, idx);
 }
 
 uint8_t
@@ -102,20 +108,44 @@ sendme_cell_getconst_data_v1_digest(const sendme_cell_t *inp, size_t idx)
 int
 sendme_cell_set_data_v1_digest(sendme_cell_t *inp, size_t idx, uint8_t elt)
 {
-  trunnel_assert(idx < TRUNNEL_SENDME_V1_DIGEST_LEN);
-  inp->data_v1_digest[idx] = elt;
+  TRUNNEL_DYNARRAY_SET(&inp->data_v1_digest, idx, elt);
   return 0;
+}
+int
+sendme_cell_add_data_v1_digest(sendme_cell_t *inp, uint8_t elt)
+{
+  TRUNNEL_DYNARRAY_ADD(uint8_t, &inp->data_v1_digest, elt, {});
+  return 0;
+ trunnel_alloc_failed:
+  TRUNNEL_SET_ERROR_CODE(inp);
+  return -1;
 }
 
 uint8_t *
 sendme_cell_getarray_data_v1_digest(sendme_cell_t *inp)
 {
-  return inp->data_v1_digest;
+  return inp->data_v1_digest.elts_;
 }
 const uint8_t  *
 sendme_cell_getconstarray_data_v1_digest(const sendme_cell_t *inp)
 {
   return (const uint8_t  *)sendme_cell_getarray_data_v1_digest((sendme_cell_t*)inp);
+}
+int
+sendme_cell_setlen_data_v1_digest(sendme_cell_t *inp, size_t newlen)
+{
+  uint8_t *newptr;
+  newptr = trunnel_dynarray_setlen(&inp->data_v1_digest.allocated_,
+                 &inp->data_v1_digest.n_, inp->data_v1_digest.elts_, newlen,
+                 sizeof(inp->data_v1_digest.elts_[0]), (trunnel_free_fn_t) NULL,
+                 &inp->trunnel_error_code_);
+  if (newlen != 0 && newptr == NULL)
+    goto trunnel_alloc_failed;
+  inp->data_v1_digest.elts_ = newptr;
+  return 0;
+ trunnel_alloc_failed:
+  TRUNNEL_SET_ERROR_CODE(inp);
+  return -1;
 }
 const char *
 sendme_cell_check(const sendme_cell_t *obj)
@@ -125,6 +155,8 @@ sendme_cell_check(const sendme_cell_t *obj)
   if (obj->trunnel_error_code_)
     return "A set function failed on this object";
   if (! (obj->version == 0 || obj->version == 1))
+    return "Integer out of bounds";
+  if (! (obj->data_len == 16 || obj->data_len == 20))
     return "Integer out of bounds";
   switch (obj->version) {
 
@@ -153,7 +185,7 @@ sendme_cell_encoded_len(const sendme_cell_t *obj)
   /* Length of u8 version IN [0, 1] */
   result += 1;
 
-  /* Length of u16 data_len */
+  /* Length of u16 data_len IN [16, 20] */
   result += 2;
   switch (obj->version) {
 
@@ -162,8 +194,8 @@ sendme_cell_encoded_len(const sendme_cell_t *obj)
 
     case 1:
 
-      /* Length of u8 data_v1_digest[TRUNNEL_SENDME_V1_DIGEST_LEN] */
-      result += TRUNNEL_SENDME_V1_DIGEST_LEN;
+      /* Length of u8 data_v1_digest[] */
+      result += TRUNNEL_DYNARRAY_LEN(&obj->data_v1_digest);
       break;
 
     default:
@@ -206,7 +238,7 @@ sendme_cell_encode(uint8_t *output, const size_t avail, const sendme_cell_t *obj
   trunnel_set_uint8(ptr, (obj->version));
   written += 1; ptr += 1;
 
-  /* Encode u16 data_len */
+  /* Encode u16 data_len IN [16, 20] */
   backptr_data_len = ptr;
   trunnel_assert(written <= avail);
   if (avail - written < 2)
@@ -225,12 +257,16 @@ sendme_cell_encode(uint8_t *output, const size_t avail, const sendme_cell_t *obj
 
       case 1:
 
-        /* Encode u8 data_v1_digest[TRUNNEL_SENDME_V1_DIGEST_LEN] */
-        trunnel_assert(written <= avail);
-        if (avail - written < TRUNNEL_SENDME_V1_DIGEST_LEN)
-          goto truncated;
-        memcpy(ptr, obj->data_v1_digest, TRUNNEL_SENDME_V1_DIGEST_LEN);
-        written += TRUNNEL_SENDME_V1_DIGEST_LEN; ptr += TRUNNEL_SENDME_V1_DIGEST_LEN;
+        /* Encode u8 data_v1_digest[] */
+        {
+          size_t elt_len = TRUNNEL_DYNARRAY_LEN(&obj->data_v1_digest);
+          trunnel_assert(written <= avail);
+          if (avail - written < elt_len)
+            goto truncated;
+          if (elt_len)
+            memcpy(ptr, obj->data_v1_digest.elts_, elt_len);
+          written += elt_len; ptr += elt_len;
+        }
         break;
 
       default:
@@ -287,10 +323,12 @@ sendme_cell_parse_into(sendme_cell_t *obj, const uint8_t *input, const size_t le
   if (! (obj->version == 0 || obj->version == 1))
     goto fail;
 
-  /* Parse u16 data_len */
+  /* Parse u16 data_len IN [16, 20] */
   CHECK_REMAINING(2, truncated);
   obj->data_len = trunnel_ntohs(trunnel_get_uint16(ptr));
   remaining -= 2; ptr += 2;
+  if (! (obj->data_len == 16 || obj->data_len == 20))
+    goto fail;
   {
     size_t remaining_after;
     CHECK_REMAINING(obj->data_len, truncated);
@@ -307,10 +345,12 @@ sendme_cell_parse_into(sendme_cell_t *obj, const uint8_t *input, const size_t le
 
       case 1:
 
-        /* Parse u8 data_v1_digest[TRUNNEL_SENDME_V1_DIGEST_LEN] */
-        CHECK_REMAINING(TRUNNEL_SENDME_V1_DIGEST_LEN, fail);
-        memcpy(obj->data_v1_digest, ptr, TRUNNEL_SENDME_V1_DIGEST_LEN);
-        remaining -= TRUNNEL_SENDME_V1_DIGEST_LEN; ptr += TRUNNEL_SENDME_V1_DIGEST_LEN;
+        /* Parse u8 data_v1_digest[] */
+        TRUNNEL_DYNARRAY_EXPAND(uint8_t, &obj->data_v1_digest, remaining, {});
+        obj->data_v1_digest.n_ = remaining;
+        if (remaining)
+          memcpy(obj->data_v1_digest.elts_, ptr, remaining);
+        ptr += remaining; remaining -= remaining;
         break;
 
       default:
@@ -326,6 +366,8 @@ sendme_cell_parse_into(sendme_cell_t *obj, const uint8_t *input, const size_t le
 
  truncated:
   return -2;
+ trunnel_alloc_failed:
+  return -1;
  fail:
   result = -1;
   return result;

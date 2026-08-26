@@ -12,7 +12,10 @@
 #ifndef TOR_CONNECTION_EDGE_H
 #define TOR_CONNECTION_EDGE_H
 
+#include "core/or/relay_msg_st.h"
+
 #include "lib/testsupport/testsupport.h"
+#include "lib/encoding/confline.h"
 
 #include "feature/hs/hs_service.h"
 
@@ -101,6 +104,7 @@ void connection_entry_set_controller_wait(entry_connection_t *conn);
 
 void connection_ap_about_to_close(entry_connection_t *edge_conn);
 void connection_exit_about_to_close(edge_connection_t *edge_conn);
+void connection_reapply_exit_policy(config_line_t *changes);
 
 MOCK_DECL(int,
           connection_ap_handshake_send_begin,(entry_connection_t *ap_conn));
@@ -127,8 +131,8 @@ void connection_ap_handshake_socks_resolved_addr(entry_connection_t *conn,
                                                  int ttl,
                                                  time_t expires);
 
-int connection_exit_begin_conn(cell_t *cell, circuit_t *circ);
-int connection_exit_begin_resolve(cell_t *cell, or_circuit_t *circ);
+int connection_exit_begin_conn(const relay_msg_t *msg, circuit_t *circ);
+int connection_exit_begin_resolve(const relay_msg_t *msg, or_circuit_t *circ);
 void connection_exit_connect(edge_connection_t *conn);
 int connection_edge_is_rendezvous_stream(const edge_connection_t *conn);
 int connection_ap_can_use_exit(const entry_connection_t *conn,
@@ -266,8 +270,8 @@ typedef struct begin_cell_t {
   unsigned is_begindir : 1;
 } begin_cell_t;
 
-STATIC int begin_cell_parse(const cell_t *cell, begin_cell_t *bcell,
-                     uint8_t *end_reason_out);
+STATIC int begin_cell_parse(const relay_msg_t *msg, begin_cell_t *bcell,
+                            uint8_t *end_reason_out);
 STATIC int connected_cell_format_payload(uint8_t *payload_out,
                                   const tor_addr_t *addr,
                                   uint32_t ttl);
@@ -306,6 +310,7 @@ STATIC void connection_half_edge_add(const edge_connection_t *conn,
 STATIC struct half_edge_t *connection_half_edge_find_stream_id(
                                      const smartlist_t *half_conns,
                                      streamid_t stream_id);
+STATIC bool using_old_proxy_auth(const char *auth);
 #endif /* defined(CONNECTION_EDGE_PRIVATE) */
 
 #endif /* !defined(TOR_CONNECTION_EDGE_H) */

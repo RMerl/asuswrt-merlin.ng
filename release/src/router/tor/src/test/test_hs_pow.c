@@ -33,6 +33,7 @@
 #include "feature/nodelist/node_st.h"
 #include "feature/nodelist/routerinfo_st.h"
 
+#include "lib/crypt_ops/crypto_rand.h"
 #include "trunnel/hs/cell_introduce1.h"
 
 static int test_rend_launch_count;
@@ -177,6 +178,12 @@ testing_hs_pow_service_new(void)
   struct hs_ident_circuit_t *hs_ident = tor_malloc_zero(sizeof *hs_ident);
   tsvc->rend_circ->hs_ident = hs_ident;
   tsvc->intro_circ->hs_ident = hs_ident;
+
+  /* give it a non-zero rendezvous cookie so when we pretend to send the
+   * intro1 cell, we won't be surprised it's still zero. */
+  crypto_rand((char *) tsvc->rend_circ->hs_ident->rendezvous_cookie,
+              HS_REND_COOKIE_LEN);
+
   curve25519_keypair_generate(&hs_ident->rendezvous_client_kp, 0);
   tt_int_op(0, OP_EQ,
             hs_ntor_client_get_introduce1_keys(ip_auth_pubkey,

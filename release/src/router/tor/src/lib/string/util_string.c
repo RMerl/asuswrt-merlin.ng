@@ -31,6 +31,8 @@ tor_memmem(const void *_haystack, size_t hlen,
 {
 #if defined(HAVE_MEMMEM) && (!defined(__GNUC__) || __GNUC__ >= 2)
   raw_assert(nlen);
+  if (nlen > hlen)
+    return NULL;
   return memmem(_haystack, hlen, _needle, nlen);
 #else
   /* This isn't as fast as the GLIBC implementation, but it doesn't need to

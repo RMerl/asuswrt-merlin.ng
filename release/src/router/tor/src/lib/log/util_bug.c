@@ -18,6 +18,7 @@
 #endif
 #include "lib/malloc/malloc.h"
 #include "lib/string/printf.h"
+#include "lib/thread/threads.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -101,6 +102,27 @@ tor_assertion_failed_(const char *fname, unsigned int line,
   tor_free(buf);
 }
 
+static atomic_counter_t total_bug_reached;
+
+void
+tor_bug_init_counter(void)
+{
+  atomic_counter_init(&total_bug_reached);
+}
+
+/** Helper to update BUG count in metrics. */
+void
+tor_bug_increment_count_(void)
+{
+  atomic_counter_add(&total_bug_reached, 1);
+}
+
+size_t
+tor_bug_get_count(void)
+{
+  return atomic_counter_get(&total_bug_reached);
+}
+
 /** Helper for tor_assert_nonfatal: report the assertion failure. */
 void
 tor_bug_occurred_(const char *fname, unsigned int line,
@@ -110,6 +132,11 @@ tor_bug_occurred_(const char *fname, unsigned int line,
   char *buf = NULL;
   const char *once_str = once ?
     " (Future instances of this warning will be silenced.)": "";
+  if (! once) {
+    // _once assertions count from the macro directly so we count them as many
+    // times as they are reached, and not just once.
+    tor_bug_increment_count_();
+  }
   if (! expr) {
     if (capturing_bugs()) {
       add_captured_bug("This line should not have been reached.");

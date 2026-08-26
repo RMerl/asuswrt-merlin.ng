@@ -9,6 +9,8 @@ AC_DEFUN([TOR_EXTEND_CODEPATH],
 [
   if test -d "$1/lib"; then
     LDFLAGS="-L$1/lib $LDFLAGS"
+  elif test -d "$1/lib64"; then
+    LDFLAGS="-L$1/lib64 $LDFLAGS"
   else
     LDFLAGS="-L$1 $LDFLAGS"
   fi
@@ -28,6 +30,9 @@ AC_DEFUN([TOR_DEFINE_CODEPATH],
    if test -d "$1/lib"; then
      TOR_LDFLAGS_$2="-L$1/lib"
      TOR_LIBDIR_$2="$1/lib"
+   elif test -d "$1/lib64"; then
+     TOR_LDFLAGS_$2="-L$1/lib64"
+     TOR_LIBDIR_$2="$1/lib64"
    else
      TOR_LDFLAGS_$2="-L$1"
      TOR_LIBDIR_$2="$1"

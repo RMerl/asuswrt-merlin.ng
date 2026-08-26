@@ -596,6 +596,70 @@ test_socks_5_authenticate_with_data(void *ptr)
   ;
 }
 
+/** Perform SOCKS 5 authentication and send data all in one go */
+static void
+test_socks_5_authenticate_with_rpc_objectid(void *ptr)
+{
+  SOCKS_TEST_INIT();
+
+  /* SOCKS 5 Negotiate username/password authentication */
+  ADD_DATA(buf, "\x05\x01\x02");
+  tt_assert(!fetch_from_buf_socks(buf, socks,
+                                   get_options()->TestSocks,
+                                   get_options()->SafeSocks));
+  /* SOCKS 5 Send username/password as a RPC ObjectID (see prop351). This
+   * should be invalid as in only the objectID prefix without a version. */
+  ADD_DATA(buf, "\x01\x08<torS0X>\x08password");
+  tt_int_op(fetch_from_buf_socks(buf, socks, get_options()->TestSocks,
+                                 get_options()->SafeSocks), OP_EQ, -1);
+
+  buf_clear(buf);
+  socks_request_clear(socks);
+
+  /* SOCKS 5 Negotiate username/password authentication */
+  ADD_DATA(buf, "\x05\x01\x02");
+  tt_assert(!fetch_from_buf_socks(buf, socks,
+                                   get_options()->TestSocks,
+                                   get_options()->SafeSocks));
+  /* SOCKS 5 Send username/password as a RPC ObjectID (see prop351). This
+   * should be valid because it is exactly the prefix and version without an
+   * object ID. */
+  ADD_DATA(buf, "\x01\x09<torS0X>0\x08password");
+  tt_int_op(fetch_from_buf_socks(buf, socks, get_options()->TestSocks,
+                                 get_options()->SafeSocks), OP_EQ, 0);
+
+  buf_clear(buf);
+  socks_request_clear(socks);
+
+  /* SOCKS 5 Negotiate username/password authentication */
+  ADD_DATA(buf, "\x05\x01\x02");
+  tt_assert(!fetch_from_buf_socks(buf, socks,
+                                   get_options()->TestSocks,
+                                   get_options()->SafeSocks));
+  /* SOCKS 5 Send username/password as a RPC ObjectID (see prop351). This
+   * should be invalid as an unknown version per prop351. */
+  ADD_DATA(buf, "\x01\x09<torS0X>1\x08password");
+  tt_int_op(fetch_from_buf_socks(buf, socks, get_options()->TestSocks,
+                                 get_options()->SafeSocks), OP_EQ, -1);
+
+  buf_clear(buf);
+  socks_request_clear(socks);
+
+  /* SOCKS 5 Negotiate username/password authentication */
+  ADD_DATA(buf, "\x05\x01\x02");
+  tt_assert(!fetch_from_buf_socks(buf, socks,
+                                   get_options()->TestSocks,
+                                   get_options()->SafeSocks));
+  /* SOCKS 5 Send username/password as a RPC ObjectID (see prop351). This
+   * should be invalid because there is an objectID after the prefix. */
+  ADD_DATA(buf, "\x01\x0C<torS0X>0abc\x08password");
+  tt_int_op(fetch_from_buf_socks(buf, socks, get_options()->TestSocks,
+                                 get_options()->SafeSocks), OP_EQ, -1);
+
+ done:
+  ;
+}
+
 /** Try to negotiate an unsupported authentication type */
 static void
 test_socks_5_auth_unsupported_type(void *ptr)
@@ -1112,6 +1176,7 @@ struct testcase_t socks_tests[] = {
   SOCKSENT(5_authenticate),
   SOCKSENT(5_authenticate_empty_user_pass),
   SOCKSENT(5_authenticate_with_data),
+  SOCKSENT(5_authenticate_with_rpc_objectid),
   SOCKSENT(5_malformed_commands),
   SOCKSENT(5_bad_arguments),
 

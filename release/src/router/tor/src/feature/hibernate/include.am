@@ -4,5 +4,5 @@ LIBTOR_APP_A_SOURCES += 			\
 	src/feature/hibernate/hibernate.c
 
 # ADD_C_FILE: INSERT HEADERS HERE.
-noinst_HEADERS +=					\
+noinst_HEADERS +=				\
 	src/feature/hibernate/hibernate.h

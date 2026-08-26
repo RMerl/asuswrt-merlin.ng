@@ -17,45 +17,48 @@ TRUNNELINPUTS = \
 	src/trunnel/congestion_control.trunnel \
 	src/trunnel/socks5.trunnel \
 	src/trunnel/circpad_negotiation.trunnel \
-	src/trunnel/conflux.trunnel
+	src/trunnel/conflux.trunnel \
+	src/trunnel/subproto_request.trunnel
 
 TRUNNELSOURCES = \
 	src/ext/trunnel/trunnel.c \
 	src/trunnel/ed25519_cert.c \
 	src/trunnel/extension.c \
 	src/trunnel/link_handshake.c \
-	src/trunnel/pwbox.c			\
-	src/trunnel/hs/cell_establish_intro.c	\
+	src/trunnel/pwbox.c \
+	src/trunnel/hs/cell_establish_intro.c \
 	src/trunnel/hs/cell_introduce1.c \
 	src/trunnel/hs/cell_rendezvous.c \
 	src/trunnel/channelpadding_negotiation.c \
-	src/trunnel/sendme_cell.c                    \
-	src/trunnel/flow_control_cells.c                    \
-	src/trunnel/congestion_control.c       \
+	src/trunnel/sendme_cell.c \
+	src/trunnel/flow_control_cells.c \
+	src/trunnel/congestion_control.c \
 	src/trunnel/socks5.c \
 	src/trunnel/netinfo.c \
 	src/trunnel/circpad_negotiation.c \
-	src/trunnel/conflux.c
+	src/trunnel/conflux.c \
+	src/trunnel/subproto_request.c
 
 TRUNNELHEADERS = \
-	src/ext/trunnel/trunnel.h		\
-	src/ext/trunnel/trunnel-impl.h		\
-	src/trunnel/trunnel-local.h		\
-	src/trunnel/ed25519_cert.h		\
+	src/ext/trunnel/trunnel.h \
+	src/ext/trunnel/trunnel-impl.h \
+	src/trunnel/trunnel-local.h \
+	src/trunnel/ed25519_cert.h \
 	src/trunnel/extension.h \
-	src/trunnel/link_handshake.h		\
-	src/trunnel/pwbox.h			\
-	src/trunnel/hs/cell_establish_intro.h	\
+	src/trunnel/link_handshake.h \
+	src/trunnel/pwbox.h \
+	src/trunnel/hs/cell_establish_intro.h \
 	src/trunnel/hs/cell_introduce1.h \
 	src/trunnel/hs/cell_rendezvous.h \
 	src/trunnel/channelpadding_negotiation.h \
-	src/trunnel/sendme_cell.h                    \
-	src/trunnel/flow_control_cells.h                    \
-	src/trunnel/congestion_control.h    \
-	src/trunnel/socks5.h                    \
+	src/trunnel/sendme_cell.h \
+	src/trunnel/flow_control_cells.h \
+	src/trunnel/congestion_control.h \
+	src/trunnel/socks5.h \
 	src/trunnel/netinfo.h \
 	src/trunnel/circpad_negotiation.h \
-	src/trunnel/conflux.h
+	src/trunnel/conflux.h \
+	src/trunnel/subproto_request.h
 
 src_trunnel_libor_trunnel_a_SOURCES = $(TRUNNELSOURCES)
 src_trunnel_libor_trunnel_a_CPPFLAGS = \

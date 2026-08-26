@@ -23,6 +23,7 @@ typedef enum {
   CMD_VERIFY_CONFIG, /**< Running --verify-config. */
   CMD_DUMP_CONFIG, /**< Running --dump-config. */
   CMD_KEYGEN, /**< Running --keygen */
+  CMD_KEYGEN_FAMILY, /**< Running --keygen-family */
   CMD_KEY_EXPIRATION, /**< Running --key-expiration */
   CMD_IMMEDIATE, /**< Special value: indicates a command that is handled
                   * immediately during configuration processing. */

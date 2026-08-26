@@ -50,35 +50,28 @@
                 ((MIN_VOTE_SECONDS_TESTING)+(MIN_DIST_SECONDS_TESTING)+1)
 
 /** The lowest consensus method that we currently support. */
-#define MIN_SUPPORTED_CONSENSUS_METHOD 28
+#define MIN_SUPPORTED_CONSENSUS_METHOD 32
 
 /** The highest consensus method that we currently support. */
-#define MAX_SUPPORTED_CONSENSUS_METHOD 33
-
-/**
- * Lowest consensus method where microdescriptor lines are put in canonical
- * form for improved compressibility and ease of storage. See proposal 298.
- **/
-#define MIN_METHOD_FOR_CANONICAL_FAMILIES_IN_MICRODESCS 29
-
-/** Lowest consensus method where an unpadded base64 onion-key-ntor is allowed
- * See #7869 */
-#define MIN_METHOD_FOR_UNPADDED_NTOR_KEY 30
-
-/** Lowest consensus method for which we use the correct algorithm for
- * extracting the bwweightscale= and maxunmeasuredbw= parameters. See #19011.
- */
-#define MIN_METHOD_FOR_CORRECT_BWWEIGHTSCALE 31
-
-/** Lowest consensus method for which we handle the MiddleOnly flag specially.
- */
-#define MIN_METHOD_FOR_MIDDLEONLY 32
+#define MAX_SUPPORTED_CONSENSUS_METHOD 35
 
 /**
  * Lowest consensus method for which we suppress the published time in
  * microdescriptor consensuses.
  */
 #define MIN_METHOD_TO_SUPPRESS_MD_PUBLISHED 33
+
+/**
+ * Lowest (supported) consensus method for which we do not include
+ * any "package" lines.
+ **/
+#define MIN_METHOD_TO_OMIT_PACKAGE_FINGERPRINTS 34
+
+/**
+ * Lowest supported consensus method for which we include `family-ids`
+ * in microdescs.
+ */
+#define MIN_METHOD_FOR_FAMILY_IDS 35
 
 /** Default bandwidth to clip unmeasured bandwidths to using method >=
  * MIN_METHOD_TO_CLIP_UNMEASURED_BW.  (This is not a consensus method; do not
@@ -274,9 +267,6 @@ STATIC
 char *networkstatus_get_detached_signatures(smartlist_t *consensuses);
 STATIC microdesc_t *dirvote_create_microdescriptor(const routerinfo_t *ri,
                                                    int consensus_method);
-STATIC int64_t extract_param_buggy(const char *params,
-                                   const char *param_name,
-                                   int64_t default_value);
 
 #endif /* defined(DIRVOTE_PRIVATE) */
 

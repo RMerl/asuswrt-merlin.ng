@@ -15,6 +15,7 @@
 #include "feature/nodelist/signed_descriptor_st.h"
 
 struct curve25519_public_key_t;
+struct smartlist_t;
 
 /** Information about another onion router in the network. */
 struct routerinfo_t {
@@ -33,10 +34,13 @@ struct routerinfo_t {
   /**
    * Public RSA TAP key for onions, ASN.1 encoded.  We store this
    * in its encoded format since storing it as a crypto_pk_t uses
-   * significantly more memory. */
-  char *onion_pkey;
+   * significantly more memory.
+   *
+   * This may be absent.
+   */
+  char *tap_onion_pkey;
   /** Length of onion_pkey, in bytes. */
-  size_t onion_pkey_len;
+  size_t tap_onion_pkey_len;
 
   crypto_pk_t *identity_pkey;  /**< Public RSA key for signing. */
   /** Public curve25519 key for onions */
@@ -64,6 +68,10 @@ struct routerinfo_t {
   long uptime; /**< How many seconds the router claims to have been up */
   smartlist_t *declared_family; /**< Nicknames of router which this router
                                  * claims are its family. */
+  /** A list of strings representing router family IDs.
+   * May be null. Extracted from family-certs.
+   * (Happy families only.) */
+  struct smartlist_t *family_ids;
   char *contact_info; /**< Declared contact info for this router. */
   unsigned int is_hibernating:1; /**< Whether the router claims to be
                                   * hibernating */

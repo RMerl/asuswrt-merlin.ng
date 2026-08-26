@@ -41,7 +41,7 @@ compute_introduce_mac(const uint8_t *encoded_cell, size_t encoded_cell_len,
 {
   size_t offset = 0;
   size_t mac_msg_len;
-  uint8_t mac_msg[RELAY_PAYLOAD_SIZE] = {0};
+  uint8_t mac_msg[RELAY_PAYLOAD_SIZE_MAX] = {0};
 
   tor_assert(encoded_cell);
   tor_assert(encrypted);
@@ -289,9 +289,11 @@ introduce1_set_encrypted_padding(const trn_cell_introduce1_t *cell,
 /** Encrypt the ENCRYPTED payload and encode it in the cell using the enc_cell
  * and the INTRODUCE1 data.
  *
- * This can't fail but it is very important that the caller sets every field
- * in data so the computation of the INTRODUCE1 keys doesn't fail. */
-static void
+ * It is very important that the caller sets every field
+ * in data so the computation of the INTRODUCE1 keys doesn't fail.
+ *
+ * Return 0 on success, -1 if we should fail the circuit. */
+static int
 introduce1_encrypt_and_encode(trn_cell_introduce1_t *cell,
                               const trn_cell_introduce_encrypted_t *enc_cell,
                               const hs_cell_introduce1_data_t *data)
@@ -299,8 +301,8 @@ introduce1_encrypt_and_encode(trn_cell_introduce1_t *cell,
   size_t offset = 0;
   ssize_t encrypted_len;
   ssize_t encoded_cell_len, encoded_enc_cell_len;
-  uint8_t encoded_cell[RELAY_PAYLOAD_SIZE] = {0};
-  uint8_t encoded_enc_cell[RELAY_PAYLOAD_SIZE] = {0};
+  uint8_t encoded_cell[RELAY_PAYLOAD_SIZE_MAX] = {0};
+  uint8_t encoded_enc_cell[RELAY_PAYLOAD_SIZE_MAX] = {0};
   uint8_t *encrypted = NULL;
   uint8_t mac[DIGEST256_LEN];
   crypto_cipher_t *cipher = NULL;
@@ -310,7 +312,7 @@ introduce1_encrypt_and_encode(trn_cell_introduce1_t *cell,
   tor_assert(enc_cell);
   tor_assert(data);
 
-  /* Encode the cells up to now of what we have to we can perform the MAC
+  /* Encode the cells up to now of what we have so we can perform the MAC
    * computation on it. */
   encoded_cell_len = trn_cell_introduce1_encode(encoded_cell,
                                                 sizeof(encoded_cell), cell);
@@ -327,7 +329,9 @@ introduce1_encrypt_and_encode(trn_cell_introduce1_t *cell,
   if (hs_ntor_client_get_introduce1_keys(data->auth_pk, data->enc_pk,
                                          data->client_kp,
                                          data->subcredential, &keys) < 0) {
-    tor_assert_unreached();
+    /* this can happen in practice if e.g. the onion service is rude
+     * and sets one of its introduction keys to all-zero. */
+    return -1;
   }
 
   /* Prepare cipher with the encryption key just computed. */
@@ -339,7 +343,7 @@ introduce1_encrypt_and_encode(trn_cell_introduce1_t *cell,
    * ENCRYPTED_DATA and MAC length. */
   encrypted_len = sizeof(data->client_kp->pubkey) + encoded_enc_cell_len +
                   sizeof(mac);
-  tor_assert(encrypted_len < RELAY_PAYLOAD_SIZE);
+  tor_assert(encrypted_len < RELAY_PAYLOAD_SIZE_MAX);
   encrypted = tor_malloc_zero(encrypted_len);
 
   /* Put the CLIENT_PK first. */
@@ -369,9 +373,10 @@ introduce1_encrypt_and_encode(trn_cell_introduce1_t *cell,
   /* Cleanup. */
   memwipe(&keys, 0, sizeof(keys));
   memwipe(mac, 0, sizeof(mac));
-  memwipe(encrypted, 0, sizeof(encrypted_len));
+  memwipe(encrypted, 0, encrypted_len);
   memwipe(encoded_enc_cell, 0, sizeof(encoded_enc_cell));
   tor_free(encrypted);
+  return 0;
 }
 
 /** Build the PoW cell extension and put it in the given extensions object.
@@ -469,8 +474,8 @@ build_introduce_cc_extension(trn_extension_t *extensions)
 }
 
 /** Using the INTRODUCE1 data, setup the ENCRYPTED section in cell. This means
- * set it, encrypt it and encode it. */
-static void
+ * set it, encrypt it, and encode it. Return 0 on success, -1 on failure. */
+static int
 introduce1_set_encrypted(trn_cell_introduce1_t *cell,
                          const hs_cell_introduce1_data_t *data)
 {
@@ -510,10 +515,12 @@ introduce1_set_encrypted(trn_cell_introduce1_t *cell,
   introduce1_set_encrypted_padding(cell, enc_cell);
 
   /* Encrypt and encode it in the cell. */
-  introduce1_encrypt_and_encode(cell, enc_cell, data);
+  if (introduce1_encrypt_and_encode(cell, enc_cell, data) < 0)
+    return -1;
 
   /* Cleanup. */
   trn_cell_introduce_encrypted_free(enc_cell);
+  return 0;
 }
 
 /** Set the authentication key in the INTRODUCE1 cell from the given data. */
@@ -709,7 +716,7 @@ hs_cell_build_establish_intro(const char *circ_nonce,
     ssize_t tmp_cell_mac_offset =
       sig_len + sizeof(cell->sig_len) +
       trn_cell_establish_intro_getlen_handshake_mac(cell);
-    uint8_t tmp_cell_enc[RELAY_PAYLOAD_SIZE] = {0};
+    uint8_t tmp_cell_enc[RELAY_PAYLOAD_SIZE_MAX] = {0};
     uint8_t mac[TRUNNEL_SHA3_256_LEN], *handshake_ptr;
 
     /* We first encode the current fields we have in the cell so we can
@@ -738,7 +745,7 @@ hs_cell_build_establish_intro(const char *circ_nonce,
   {
     ssize_t tmp_cell_enc_len = 0;
     ssize_t tmp_cell_sig_offset = (sig_len + sizeof(cell->sig_len));
-    uint8_t tmp_cell_enc[RELAY_PAYLOAD_SIZE] = {0}, *sig_ptr;
+    uint8_t tmp_cell_enc[RELAY_PAYLOAD_SIZE_MAX] = {0}, *sig_ptr;
     ed25519_signature_t sig;
 
     /* We first encode the current fields we have in the cell so we can
@@ -764,7 +771,8 @@ hs_cell_build_establish_intro(const char *circ_nonce,
   }
 
   /* Encode the cell. Can't be bigger than a standard cell. */
-  cell_len = trn_cell_establish_intro_encode(cell_out, RELAY_PAYLOAD_SIZE,
+  cell_len = trn_cell_establish_intro_encode(cell_out,
+                                             RELAY_PAYLOAD_SIZE_MAX,
                                              cell);
 
  done:
@@ -1161,7 +1169,8 @@ hs_cell_build_rendezvous1(const uint8_t *rendezvous_cookie,
   memcpy(trn_cell_rendezvous1_getarray_handshake_info(cell),
          rendezvous_handshake_info, rendezvous_handshake_info_len);
   /* Encoding. */
-  cell_len = trn_cell_rendezvous1_encode(cell_out, RELAY_PAYLOAD_SIZE, cell);
+  cell_len = trn_cell_rendezvous1_encode(cell_out,
+                                         RELAY_PAYLOAD_SIZE_MAX, cell);
   tor_assert(cell_len > 0);
 
   trn_cell_rendezvous1_free(cell);
@@ -1197,10 +1206,12 @@ hs_cell_build_introduce1(const hs_cell_introduce1_data_t *data,
 
   /* Set the encrypted section. This will set, encrypt and encode the
    * ENCRYPTED section in the cell. After this, we'll be ready to encode. */
-  introduce1_set_encrypted(cell, data);
+  if (introduce1_set_encrypted(cell, data) < 0)
+    return -1;
 
   /* Final encoding. */
-  cell_len = trn_cell_introduce1_encode(cell_out, RELAY_PAYLOAD_SIZE, cell);
+  cell_len = trn_cell_introduce1_encode(cell_out,
+                                        RELAY_PAYLOAD_SIZE_MAX, cell);
 
   trn_cell_introduce1_free(cell);
   return cell_len;

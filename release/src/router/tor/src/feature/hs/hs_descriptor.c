@@ -165,9 +165,9 @@ static token_rule_t hs_desc_intro_point_v3_token_table[] = {
   T1N(str_ip_onion_key, R3_INTRO_ONION_KEY, GE(2), OBJ_OK),
   T1(str_ip_auth_key, R3_INTRO_AUTH_KEY, NO_ARGS, NEED_OBJ),
   T1(str_ip_enc_key, R3_INTRO_ENC_KEY, GE(2), OBJ_OK),
-  T1(str_ip_enc_key_cert, R3_INTRO_ENC_KEY_CERT, ARGS, OBJ_OK),
+  T1(str_ip_enc_key_cert, R3_INTRO_ENC_KEY_CERT, ARGS, NEED_OBJ),
   T01(str_ip_legacy_key, R3_INTRO_LEGACY_KEY, ARGS, NEED_KEY_1024),
-  T01(str_ip_legacy_key_cert, R3_INTRO_LEGACY_KEY_CERT, ARGS, OBJ_OK),
+  T01(str_ip_legacy_key_cert, R3_INTRO_LEGACY_KEY_CERT, ARGS, NEED_OBJ),
   END_OF_TABLE
 };
 

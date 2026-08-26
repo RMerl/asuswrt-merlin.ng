@@ -7,7 +7,9 @@
  *        creating/parsing cells and handling the content.
  */
 
+// For access to cpath pvt_crypto field.
 #define SENDME_PRIVATE
+#define CRYPT_PATH_PRIVATE
 
 #include "core/or/or.h"
 
@@ -26,6 +28,15 @@
 #include "feature/nodelist/networkstatus.h"
 #include "lib/ctime/di_ops.h"
 #include "trunnel/sendme_cell.h"
+
+/**
+ * Return true iff tag_len is some length we recognize.
+ */
+static inline bool
+tag_len_ok(size_t tag_len)
+{
+  return tag_len == SENDME_TAG_LEN_CGO || tag_len == SENDME_TAG_LEN_TOR1;
+}
 
 /* Return the minimum version given by the consensus (if any) that should be
  * used when emitting a SENDME cell. */
@@ -71,17 +82,18 @@ pop_first_cell_digest(const circuit_t *circ)
   return circ_digest;
 }
 
-/* Return true iff the given cell digest matches the first digest in the
+/* Return true iff the given cell tag matches the first digest in the
  * circuit sendme list. */
 static bool
-v1_digest_matches(const uint8_t *circ_digest, const uint8_t *cell_digest)
+v1_tag_matches(const uint8_t *circ_digest,
+               const uint8_t *cell_tag, size_t tag_len)
 {
   tor_assert(circ_digest);
-  tor_assert(cell_digest);
+  tor_assert(cell_tag);
 
   /* Compare the digest with the one in the SENDME. This cell is invalid
    * without a perfect match. */
-  if (tor_memneq(circ_digest, cell_digest, TRUNNEL_SENDME_V1_DIGEST_LEN)) {
+  if (tor_memneq(circ_digest, cell_tag, tag_len)) {
     log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
            "SENDME v1 cell digest do not match.");
     return false;
@@ -98,13 +110,22 @@ v1_digest_matches(const uint8_t *circ_digest, const uint8_t *cell_digest)
  * cell we saw which tells us that the other side has in fact seen that cell.
  * See proposal 289 for more details. */
 static bool
-cell_v1_is_valid(const sendme_cell_t *cell, const uint8_t *circ_digest)
+cell_v1_is_valid(const sendme_cell_t *cell, const uint8_t *circ_digest,
+                 size_t circ_digest_len)
 {
   tor_assert(cell);
   tor_assert(circ_digest);
 
+  size_t tag_len = sendme_cell_get_data_len(cell);
+  if (! tag_len_ok(tag_len))
+    return false;
+  if (sendme_cell_getlen_data_v1_digest(cell) < tag_len)
+    return false;
+  if (tag_len != circ_digest_len)
+    return false;
+
   const uint8_t *cell_digest = sendme_cell_getconstarray_data_v1_digest(cell);
-  return v1_digest_matches(circ_digest, cell_digest);
+  return v1_tag_matches(circ_digest, cell_digest, tag_len);
 }
 
 /* Return true iff the given cell version can be handled or if the minimum
@@ -156,8 +177,16 @@ cell_version_can_be_handled(uint8_t cell_version)
  * This is the main critical function to make sure we can continue to
  * send/recv cells on a circuit. If the SENDME is invalid, the circuit should
  * be marked for close by the caller. */
+/*
+ * NOTE: This function uses `layer_hint` to determine
+ * what the sendme tag length will be, and nothing else.
+ * Notably, we _don't_ keep a separate queue
+ * of expected tags for each layer!
+ */
 STATIC bool
-sendme_is_valid(circuit_t *circ, const uint8_t *cell_payload,
+sendme_is_valid(circuit_t *circ,
+                const crypt_path_t *layer_hint,
+                const uint8_t *cell_payload,
                 size_t cell_payload_len)
 {
   uint8_t cell_version;
@@ -194,6 +223,19 @@ sendme_is_valid(circuit_t *circ, const uint8_t *cell_payload,
     goto invalid;
   }
 
+  /* Determine the expected tag length for this sendme. */
+  size_t circ_expects_tag_len;
+  if (layer_hint) {
+    circ_expects_tag_len =
+      relay_crypto_sendme_tag_len(&layer_hint->pvt_crypto);
+  } else if (CIRCUIT_IS_ORCIRC(circ)) {
+    const or_circuit_t *or_circ = CONST_TO_OR_CIRCUIT(circ);
+    circ_expects_tag_len = relay_crypto_sendme_tag_len(&or_circ->crypto);
+  } else {
+    tor_assert_nonfatal_unreached();
+    goto invalid;
+  }
+
   /* Pop the first element that was added (FIFO). We do that regardless of the
    * version so we don't accumulate on the circuit if v0 is used by the other
    * end point. */
@@ -206,12 +248,10 @@ sendme_is_valid(circuit_t *circ, const uint8_t *cell_payload,
            "We received a SENDME but we have no cell digests to match. "
            "Closing circuit.");
     goto invalid;
-  }
-
-  /* Validate depending on the version now. */
+  }  /* Validate depending on the version now. */
   switch (cell_version) {
   case 0x01:
-    if (!cell_v1_is_valid(cell, circ_digest)) {
+    if (!cell_v1_is_valid(cell, circ_digest, circ_expects_tag_len)) {
       goto invalid;
     }
     break;
@@ -237,17 +277,19 @@ sendme_is_valid(circuit_t *circ, const uint8_t *cell_payload,
 }
 
 /* Build and encode a version 1 SENDME cell into payload, which must be at
- * least of RELAY_PAYLOAD_SIZE bytes, using the digest for the cell data.
+ * least of RELAY_PAYLOAD_SIZE_MAX bytes, using the digest for the cell data.
  *
  * Return the size in bytes of the encoded cell in payload. A negative value
  * is returned on encoding failure. */
 STATIC ssize_t
-build_cell_payload_v1(const uint8_t *cell_digest, uint8_t *payload)
+build_cell_payload_v1(const uint8_t *cell_tag, const size_t tag_len,
+                      uint8_t *payload)
 {
   ssize_t len = -1;
   sendme_cell_t *cell = NULL;
 
-  tor_assert(cell_digest);
+  tor_assert(cell_tag);
+  tor_assert(tag_len_ok(tag_len));
   tor_assert(payload);
 
   cell = sendme_cell_new();
@@ -255,14 +297,14 @@ build_cell_payload_v1(const uint8_t *cell_digest, uint8_t *payload)
   /* Building a payload for version 1. */
   sendme_cell_set_version(cell, 0x01);
   /* Set the data length field for v1. */
-  sendme_cell_set_data_len(cell, TRUNNEL_SENDME_V1_DIGEST_LEN);
+  sendme_cell_set_data_len(cell, tag_len);
+  sendme_cell_setlen_data_v1_digest(cell, tag_len);
 
   /* Copy the digest into the data payload. */
-  memcpy(sendme_cell_getarray_data_v1_digest(cell), cell_digest,
-         sendme_cell_get_data_len(cell));
+  memcpy(sendme_cell_getarray_data_v1_digest(cell), cell_tag, tag_len);
 
   /* Finally, encode the cell into the payload. */
-  len = sendme_cell_encode(payload, RELAY_PAYLOAD_SIZE, cell);
+  len = sendme_cell_encode(payload, RELAY_PAYLOAD_SIZE_MAX, cell);
 
   sendme_cell_free(cell);
   return len;
@@ -275,19 +317,19 @@ build_cell_payload_v1(const uint8_t *cell_digest, uint8_t *payload)
  * because we failed to send the cell on it. */
 static int
 send_circuit_level_sendme(circuit_t *circ, crypt_path_t *layer_hint,
-                          const uint8_t *cell_digest)
+                          const uint8_t *cell_tag, size_t tag_len)
 {
   uint8_t emit_version;
-  uint8_t payload[RELAY_PAYLOAD_SIZE];
+  uint8_t payload[RELAY_PAYLOAD_SIZE_MAX];
   ssize_t payload_len;
 
   tor_assert(circ);
-  tor_assert(cell_digest);
+  tor_assert(cell_tag);
 
   emit_version = get_emit_min_version();
   switch (emit_version) {
   case 0x01:
-    payload_len = build_cell_payload_v1(cell_digest, payload);
+    payload_len = build_cell_payload_v1(cell_tag, tag_len, payload);
     if (BUG(payload_len < 0)) {
       /* Unable to encode the cell, abort. We can recover from this by closing
        * the circuit but in theory it should never happen. */
@@ -315,60 +357,38 @@ send_circuit_level_sendme(circuit_t *circ, crypt_path_t *layer_hint,
   return 0;
 }
 
-/* Record the cell digest only if the next cell is expected to be a SENDME. */
+/* Record the sendme tag as expected in a future SENDME, */
 static void
-record_cell_digest_on_circ(circuit_t *circ, const uint8_t *sendme_digest)
+record_cell_digest_on_circ(circuit_t *circ,
+                           const uint8_t *sendme_tag,
+                           size_t tag_len)
 {
   tor_assert(circ);
-  tor_assert(sendme_digest);
+  tor_assert(sendme_tag);
 
   /* Add the digest to the last seen list in the circuit. */
   if (circ->sendme_last_digests == NULL) {
     circ->sendme_last_digests = smartlist_new();
   }
-  smartlist_add(circ->sendme_last_digests,
-                tor_memdup(sendme_digest, DIGEST_LEN));
+  // We always allocate the largest possible tag here to
+  // make sure we don't have heap overflow bugs.
+  uint8_t *tag;
+  if (tag_len == SENDME_TAG_LEN_CGO) {
+    tag = tor_malloc_zero(SENDME_TAG_LEN_TOR1);
+    memcpy(tag, sendme_tag, tag_len);
+    // (The final bytes were initialized to zero.)
+  } else if (tag_len == SENDME_TAG_LEN_TOR1) {
+    tag = tor_memdup(sendme_tag, SENDME_TAG_LEN_TOR1);
+  } else {
+    tor_assert_unreached();
+  }
+
+  smartlist_add(circ->sendme_last_digests, tag);
 }
 
 /*
  * Public API
  */
-
-/** Return true iff the next cell for the given cell window is expected to be
- * a SENDME.
- *
- * We are able to know that because the package or inflight window value minus
- * one cell (the possible SENDME cell) should be a multiple of the
- * cells-per-sendme increment value (set via consensus parameter, negotiated
- * for the circuit, and passed in as sendme_inc).
- *
- * This function is used when recording a cell digest and this is done quite
- * low in the stack when decrypting or encrypting a cell. The window is only
- * updated once the cell is actually put in the outbuf.
- */
-STATIC bool
-circuit_sendme_cell_is_next(int deliver_window, int sendme_inc)
-{
-  /* Are we at the limit of the increment and if not, we don't expect next
-   * cell is a SENDME.
-   *
-   * We test against the window minus 1 because when we are looking if the
-   * next cell is a SENDME, the window (either package or deliver) hasn't been
-   * decremented just yet so when this is called, we are currently processing
-   * the "window - 1" cell.
-   *
-   * Because deliver_window starts at CIRCWINDOW_START and counts down,
-   * to get the actual number of received cells for this check, we must
-   * first convert to received cells, or the modulus operator will fail.
-   */
-  tor_assert(deliver_window <= CIRCWINDOW_START);
-  if (((CIRCWINDOW_START - (deliver_window - 1)) % sendme_inc) != 0) {
-    return false;
-  }
-
-  /* Next cell is expected to be a SENDME. */
-  return true;
-}
 
 /** Called when we've just received a relay data cell, when we've just
  * finished flushing all bytes to stream <b>conn</b>, or when we've flushed
@@ -428,7 +448,8 @@ void
 sendme_circuit_consider_sending(circuit_t *circ, crypt_path_t *layer_hint)
 {
   bool sent_one_sendme = false;
-  const uint8_t *digest;
+  const uint8_t *tag;
+  size_t tag_len = 0;
   int sendme_inc = sendme_get_inc_count(circ, layer_hint);
 
   while ((layer_hint ? layer_hint->deliver_window : circ->deliver_window) <=
@@ -436,12 +457,13 @@ sendme_circuit_consider_sending(circuit_t *circ, crypt_path_t *layer_hint)
     log_debug(LD_CIRC,"Queuing circuit sendme.");
     if (layer_hint) {
       layer_hint->deliver_window += sendme_inc;
-      digest = cpath_get_sendme_digest(layer_hint);
+      tag = cpath_get_sendme_tag(layer_hint, &tag_len);
     } else {
       circ->deliver_window += sendme_inc;
-      digest = relay_crypto_get_sendme_digest(&TO_OR_CIRCUIT(circ)->crypto);
+      tag = relay_crypto_get_sendme_tag(&TO_OR_CIRCUIT(circ)->crypto,
+                                        &tag_len);
     }
-    if (send_circuit_level_sendme(circ, layer_hint, digest) < 0) {
+    if (send_circuit_level_sendme(circ, layer_hint, tag, tag_len) < 0) {
       return; /* The circuit's closed, don't continue */
     }
     /* Current implementation is not suppose to send multiple SENDME at once
@@ -478,7 +500,7 @@ sendme_process_circuit_level(crypt_path_t *layer_hint,
 
   /* Validate the SENDME cell. Depending on the version, different validation
    * can be done. An invalid SENDME requires us to close the circuit. */
-  if (!sendme_is_valid(circ, cell_payload, cell_payload_len)) {
+  if (!sendme_is_valid(circ, layer_hint, cell_payload, cell_payload_len)) {
     return -END_CIRC_REASON_TORPROTOCOL;
   }
 
@@ -705,7 +727,8 @@ sendme_note_stream_data_packaged(edge_connection_t *conn, size_t len)
 void
 sendme_record_cell_digest_on_circ(circuit_t *circ, crypt_path_t *cpath)
 {
-  uint8_t *sendme_digest;
+  const uint8_t *sendme_tag;
+  size_t tag_len = 0;
 
   tor_assert(circ);
 
@@ -719,60 +742,11 @@ sendme_record_cell_digest_on_circ(circuit_t *circ, crypt_path_t *cpath)
   /* Getting the digest is expensive so we only do it once we are certain to
    * record it on the circuit. */
   if (cpath) {
-    sendme_digest = cpath_get_sendme_digest(cpath);
+    sendme_tag = cpath_get_sendme_tag(cpath, &tag_len);
   } else {
-    sendme_digest =
-      relay_crypto_get_sendme_digest(&TO_OR_CIRCUIT(circ)->crypto);
+    sendme_tag =
+      relay_crypto_get_sendme_tag(&TO_OR_CIRCUIT(circ)->crypto, &tag_len);
   }
 
-  record_cell_digest_on_circ(circ, sendme_digest);
-}
-
-/* Called once we decrypted a cell and recognized it. Record the cell digest
- * as the next sendme digest only if the next cell we'll send on the circuit
- * is expected to be a SENDME. */
-void
-sendme_record_received_cell_digest(circuit_t *circ, crypt_path_t *cpath)
-{
-  tor_assert(circ);
-
-  /* Only record if the next cell is expected to be a SENDME. */
-  if (!circuit_sendme_cell_is_next(cpath ? cpath->deliver_window :
-                                           circ->deliver_window,
-                                   sendme_get_inc_count(circ, cpath))) {
-    return;
-  }
-
-  if (cpath) {
-    /* Record incoming digest. */
-    cpath_sendme_record_cell_digest(cpath, false);
-  } else {
-    /* Record forward digest. */
-    relay_crypto_record_sendme_digest(&TO_OR_CIRCUIT(circ)->crypto, true);
-  }
-}
-
-/* Called once we encrypted a cell. Record the cell digest as the next sendme
- * digest only if the next cell we expect to receive is a SENDME so we can
- * match the digests. */
-void
-sendme_record_sending_cell_digest(circuit_t *circ, crypt_path_t *cpath)
-{
-  tor_assert(circ);
-
-  /* Only record if the next cell is expected to be a SENDME. */
-  if (!circuit_sent_cell_for_sendme(circ, cpath)) {
-    goto end;
-  }
-
-  if (cpath) {
-    /* Record the forward digest. */
-    cpath_sendme_record_cell_digest(cpath, true);
-  } else {
-    /* Record the incoming digest. */
-    relay_crypto_record_sendme_digest(&TO_OR_CIRCUIT(circ)->crypto, false);
-  }
-
- end:
-  return;
+  record_cell_digest_on_circ(circ, sendme_tag, tag_len);
 }

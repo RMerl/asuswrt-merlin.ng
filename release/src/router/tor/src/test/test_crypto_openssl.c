@@ -49,11 +49,6 @@ test_crypto_rng_engine(void *arg)
   ;
 }
 
-#ifndef OPENSSL_1_1_API
-#define EVP_ENCODE_CTX_new() tor_malloc_zero(sizeof(EVP_ENCODE_CTX))
-#define EVP_ENCODE_CTX_free(ctx) tor_free(ctx)
-#endif
-
 /** Encode src into dest with OpenSSL's EVP Encode interface, returning the
  * length of the encoded data in bytes.
  */

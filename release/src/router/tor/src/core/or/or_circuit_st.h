@@ -107,6 +107,14 @@ struct or_circuit_t {
    * used if this is a service introduction circuit at the intro point
    * (purpose = CIRCUIT_PURPOSE_INTRO_POINT). */
   token_bucket_ctr_t introduce2_bucket;
+
+  /** RELAY_BEGIN and RELAY_RESOLVE cell bucket controlling how much can go on
+   * this circuit. Only used if this is the end of a circuit on an exit node.*/
+  token_bucket_ctr_t stream_limiter;
+
+  /** Format to use when exchanging relay cells with the client
+   * who built this circuit. */
+  relay_cell_fmt_t relay_cell_format;
 };
 
 #endif /* !defined(OR_CIRCUIT_ST_H) */

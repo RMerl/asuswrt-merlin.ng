@@ -54,7 +54,7 @@ config_get_lines_include(const char *string, config_line_t **result,
                               opened_lst, 1, NULL, config_process_include);
 }
 
-/** Return a list of paths obtained when expading globs in <b>pattern</b>.
+/** Return a list of paths obtained when expanding globs in <b>pattern</b>.
  * If <b>pattern</b> has no globs, return a list with <b>pattern</b> in it.
  * If <b>opened_files</b> is provided, add paths opened by glob to it.
  * Return NULL on failure. */

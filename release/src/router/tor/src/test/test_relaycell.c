@@ -19,6 +19,7 @@
 #include "core/or/connection_edge.h"
 #include "core/or/sendme.h"
 #include "core/or/relay.h"
+#include "core/or/relay_msg.h"
 #include "test/test.h"
 #include "test/log_test_helpers.h"
 
@@ -172,19 +173,20 @@ fake_entry_conn(origin_circuit_t *oncirc, streamid_t id)
   return entryconn;
 }
 
-#define PACK_CELL(id, cmd, body_s) do {                                  \
-    memset(&cell, 0, sizeof(cell));                                     \
-    memset(&rh, 0, sizeof(rh));                                         \
-    memcpy(cell.payload+RELAY_HEADER_SIZE, (body_s), sizeof((body_s))-1); \
-    rh.length = sizeof((body_s))-1;                                     \
-    rh.command = (cmd);                                                 \
-    rh.stream_id = (id);                                                \
-    relay_header_pack((uint8_t*)&cell.payload, &rh);                    \
+#define PACK_CELL(id, cmd, body_s) do {                                 \
+    len_tmp = sizeof(body_s)-1;                                         \
+    relay_msg_free(msg);                                                \
+    msg = tor_malloc_zero(sizeof(relay_msg_t));                         \
+    msg->command = (cmd);                                               \
+    msg->stream_id = (id);                                              \
+    msg->body = cell_buf;                                               \
+    msg->length = len_tmp;                                              \
+    memcpy(cell_buf, (body_s), len_tmp);                                \
   } while (0)
 #define ASSERT_COUNTED_BW() do { \
-    tt_int_op(circ->n_delivered_read_circ_bw, OP_EQ, delivered+rh.length); \
+    tt_int_op(circ->n_delivered_read_circ_bw, OP_EQ, delivered+msg->length); \
     tt_int_op(circ->n_overhead_read_circ_bw, OP_EQ,                      \
-              overhead+RELAY_PAYLOAD_SIZE-rh.length);               \
+              overhead+RELAY_PAYLOAD_SIZE-msg->length);               \
     delivered = circ->n_delivered_read_circ_bw;                          \
     overhead = circ->n_overhead_read_circ_bw;                            \
  } while (0)
@@ -196,14 +198,15 @@ fake_entry_conn(origin_circuit_t *oncirc, streamid_t id)
 static int
 subtest_circbw_halfclosed(origin_circuit_t *circ, streamid_t init_id)
 {
-  cell_t cell;
-  relay_header_t rh;
+  relay_msg_t *msg = NULL;
+  size_t len_tmp;
   edge_connection_t *edgeconn;
   entry_connection_t *entryconn2=NULL;
   entry_connection_t *entryconn3=NULL;
   entry_connection_t *entryconn4=NULL;
   int delivered = circ->n_delivered_read_circ_bw;
   int overhead = circ->n_overhead_read_circ_bw;
+  uint8_t cell_buf[RELAY_PAYLOAD_SIZE_MAX];
 
   /* Make new entryconns */
   entryconn2 = fake_entry_conn(circ, init_id);
@@ -225,36 +228,36 @@ subtest_circbw_halfclosed(origin_circuit_t *circ, streamid_t init_id)
   /* Data cell not in the half-opened list */
   PACK_CELL(4000, RELAY_COMMAND_DATA, "Data1234");
   if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-    pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+    pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
   else
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                        circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
   /* Sendme cell not in the half-opened list */
   PACK_CELL(4000, RELAY_COMMAND_SENDME, "Data1234");
   if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-    pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+    pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
   else
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
   /* Connected cell not in the half-opened list */
   PACK_CELL(4000, RELAY_COMMAND_CONNECTED, "Data1234");
   if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-    pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+    pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
   else
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
   /* Resolved cell not in the half-opened list */
   PACK_CELL(4000, RELAY_COMMAND_RESOLVED, "Data1234");
   if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-    pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+    pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
   else
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
@@ -262,9 +265,9 @@ subtest_circbw_halfclosed(origin_circuit_t *circ, streamid_t init_id)
   edgeconn = ENTRY_TO_EDGE_CONN(entryconn2);
   PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_CONNECTED, "Data1234");
   if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-    pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+    pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
   else
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
@@ -273,9 +276,9 @@ subtest_circbw_halfclosed(origin_circuit_t *circ, streamid_t init_id)
     ENTRY_TO_CONN(entryconn2)->marked_for_close = 0;
     PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_DATA, "Data1234");
     if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-      pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+      pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
     else
-      connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+      connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                        circ->cpath);
     ASSERT_COUNTED_BW();
     data_cells--;
@@ -283,9 +286,9 @@ subtest_circbw_halfclosed(origin_circuit_t *circ, streamid_t init_id)
   ENTRY_TO_CONN(entryconn2)->marked_for_close = 0;
   PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_DATA, "Data1234");
   if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-    pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+    pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
   else
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
@@ -294,9 +297,9 @@ subtest_circbw_halfclosed(origin_circuit_t *circ, streamid_t init_id)
     ENTRY_TO_CONN(entryconn2)->marked_for_close = 0;
     PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_SENDME, "Data1234");
     if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-      pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+      pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
     else
-      connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+      connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                        circ->cpath);
     ASSERT_COUNTED_BW();
     sendme_cells--;
@@ -304,9 +307,9 @@ subtest_circbw_halfclosed(origin_circuit_t *circ, streamid_t init_id)
   ENTRY_TO_CONN(entryconn2)->marked_for_close = 0;
   PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_SENDME, "Data1234");
   if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-    pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+    pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
   else
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
@@ -314,18 +317,18 @@ subtest_circbw_halfclosed(origin_circuit_t *circ, streamid_t init_id)
   ENTRY_TO_CONN(entryconn2)->marked_for_close = 0;
   PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_END, "Data1234");
   if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-    pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+    pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
   else
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_COUNTED_BW();
 
   ENTRY_TO_CONN(entryconn2)->marked_for_close = 0;
   PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_END, "Data1234");
   if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-    pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+    pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
   else
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
@@ -335,7 +338,7 @@ subtest_circbw_halfclosed(origin_circuit_t *circ, streamid_t init_id)
   /* sendme cell on open entryconn with full window */
   PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_SENDME, "Data1234");
   int ret =
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), edgeconn,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), edgeconn,
                                      circ->cpath);
   tt_int_op(ret, OP_EQ, -END_CIRC_REASON_TORPROTOCOL);
   ASSERT_UNCOUNTED_BW();
@@ -346,18 +349,18 @@ subtest_circbw_halfclosed(origin_circuit_t *circ, streamid_t init_id)
   connection_edge_reached_eof(edgeconn);
   PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_CONNECTED, "Data1234");
   if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-    pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+    pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
   else
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ),  NULL,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ),  NULL,
                                      circ->cpath);
   ASSERT_COUNTED_BW();
 
   ENTRY_TO_CONN(entryconn3)->marked_for_close = 0;
   PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_CONNECTED, "Data1234");
   if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-    pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+    pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
   else
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ),  NULL,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ),  NULL,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
@@ -365,16 +368,16 @@ subtest_circbw_halfclosed(origin_circuit_t *circ, streamid_t init_id)
   ENTRY_TO_CONN(entryconn3)->marked_for_close = 0;
   PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_END, "Data1234");
   if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-    pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+    pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
   else
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ),  NULL,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ),  NULL,
                                      circ->cpath);
   ASSERT_COUNTED_BW();
 
   ENTRY_TO_CONN(entryconn3)->marked_for_close = 0;
   PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_SENDME, "Data1234");
   ret =
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   tt_int_op(ret, OP_NE, -END_CIRC_REASON_TORPROTOCOL);
   ASSERT_UNCOUNTED_BW();
@@ -382,9 +385,9 @@ subtest_circbw_halfclosed(origin_circuit_t *circ, streamid_t init_id)
   ENTRY_TO_CONN(entryconn3)->marked_for_close = 0;
   PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_DATA, "Data1234");
   if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-    pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+    pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
   else
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
@@ -400,16 +403,16 @@ subtest_circbw_halfclosed(origin_circuit_t *circ, streamid_t init_id)
   PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_RESOLVED,
             "\x04\x04\x12\x00\x00\x01\x00\x00\x02\x00");
   if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-    pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+    pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
   else
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_COUNTED_BW();
 
   ENTRY_TO_CONN(entryconn4)->marked_for_close = 0;
   PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_RESOLVED,
             "\x04\x04\x12\x00\x00\x01\x00\x00\x02\x00");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
@@ -417,9 +420,9 @@ subtest_circbw_halfclosed(origin_circuit_t *circ, streamid_t init_id)
   ENTRY_TO_CONN(entryconn4)->marked_for_close = 0;
   PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_DATA, "Data1234");
   if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-    pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+    pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
   else
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
@@ -427,17 +430,19 @@ subtest_circbw_halfclosed(origin_circuit_t *circ, streamid_t init_id)
   ENTRY_TO_CONN(entryconn4)->marked_for_close = 0;
   PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_END, "Data1234");
   if (circ->base_.purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
-    pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+    pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
   else
-    connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+    connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
+  relay_msg_free(msg);
   connection_free_minimal(ENTRY_TO_CONN(entryconn2));
   connection_free_minimal(ENTRY_TO_CONN(entryconn3));
   connection_free_minimal(ENTRY_TO_CONN(entryconn4));
   return 1;
  done:
+  relay_msg_free(msg);
   connection_free_minimal(ENTRY_TO_CONN(entryconn2));
   connection_free_minimal(ENTRY_TO_CONN(entryconn3));
   connection_free_minimal(ENTRY_TO_CONN(entryconn4));
@@ -666,14 +671,15 @@ test_halfstream_wrap(void *arg)
 static void
 test_circbw_relay(void *arg)
 {
-  cell_t cell;
-  relay_header_t rh;
+  relay_msg_t *msg = NULL;
+  size_t len_tmp;
   tor_addr_t addr;
   edge_connection_t *edgeconn;
   entry_connection_t *entryconn1=NULL;
   origin_circuit_t *circ;
   int delivered = 0;
   int overhead = 0;
+  uint8_t cell_buf[RELAY_PAYLOAD_SIZE_MAX];
 
   (void)arg;
 
@@ -692,23 +698,22 @@ test_circbw_relay(void *arg)
 
   /* Stream id 0: Not counted */
   PACK_CELL(0, RELAY_COMMAND_END, "Data1234");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), edgeconn,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), edgeconn,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
   /* Stream id 1: Counted */
   PACK_CELL(1, RELAY_COMMAND_END, "Data1234");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), edgeconn,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), edgeconn,
                                      circ->cpath);
   ASSERT_COUNTED_BW();
 
   /* Properly formatted connect cell: counted */
   PACK_CELL(1, RELAY_COMMAND_CONNECTED, "Data1234");
   tor_addr_parse(&addr, "30.40.50.60");
-  rh.length = connected_cell_format_payload(cell.payload+RELAY_HEADER_SIZE,
-                                            &addr, 1024);
-  relay_header_pack((uint8_t*)&cell.payload, &rh);                    \
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), edgeconn,
+  msg->length = connected_cell_format_payload(cell_buf,
+                                              &addr, 1024);
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), edgeconn,
                                      circ->cpath);
   ASSERT_COUNTED_BW();
 
@@ -718,7 +723,7 @@ test_circbw_relay(void *arg)
   edgeconn->on_circuit = TO_CIRCUIT(circ);
   PACK_CELL(1, RELAY_COMMAND_RESOLVED,
             "\x04\x04\x12\x00\x00\x01\x00\x00\x02\x00");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), edgeconn,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), edgeconn,
                                      circ->cpath);
   ASSERT_COUNTED_BW();
 
@@ -727,65 +732,65 @@ test_circbw_relay(void *arg)
 
   /* Connected cell after open: not counted */
   PACK_CELL(1, RELAY_COMMAND_CONNECTED, "Data1234");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), edgeconn,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), edgeconn,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
   /* Resolved cell after open: not counted */
   PACK_CELL(1, RELAY_COMMAND_RESOLVED, "Data1234");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), edgeconn,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), edgeconn,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
   /* Drop cell: not counted */
   PACK_CELL(1, RELAY_COMMAND_DROP, "Data1234");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), edgeconn,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), edgeconn,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
   /* Data cell on stream 0: not counted */
   PACK_CELL(0, RELAY_COMMAND_DATA, "Data1234");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), edgeconn,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), edgeconn,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
   /* Data cell on open connection: counted */
   ENTRY_TO_CONN(entryconn1)->marked_for_close = 0;
   PACK_CELL(1, RELAY_COMMAND_DATA, "Data1234");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), edgeconn,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), edgeconn,
                                      circ->cpath);
   ASSERT_COUNTED_BW();
 
   /* Empty Data cell on open connection: not counted */
   ENTRY_TO_CONN(entryconn1)->marked_for_close = 0;
   PACK_CELL(1, RELAY_COMMAND_DATA, "");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), edgeconn,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), edgeconn,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
   /* Sendme on valid stream: counted */
   edgeconn->package_window -= STREAMWINDOW_INCREMENT;
   PACK_CELL(1, RELAY_COMMAND_SENDME, "Data1234");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), edgeconn,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), edgeconn,
                                      circ->cpath);
   ASSERT_COUNTED_BW();
 
   /* Sendme on valid stream with full window: not counted */
   PACK_CELL(1, RELAY_COMMAND_SENDME, "Data1234");
   edgeconn->package_window = STREAMWINDOW_START;
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), edgeconn,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), edgeconn,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
   /* Sendme on unknown stream: not counted */
   PACK_CELL(1, RELAY_COMMAND_SENDME, "Data1234");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
   /* Sendme on circuit with full window: not counted */
   PACK_CELL(0, RELAY_COMMAND_SENDME, "Data1234");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), edgeconn,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), edgeconn,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
@@ -796,44 +801,45 @@ test_circbw_relay(void *arg)
   circ->cpath->package_window = 901;
   sendme_record_cell_digest_on_circ(TO_CIRCUIT(circ), circ->cpath);
   circ->cpath->package_window = 900;
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), edgeconn,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), edgeconn,
                                      circ->cpath);
   ASSERT_COUNTED_BW();
 
   /* Invalid extended cell: not counted */
   PACK_CELL(1, RELAY_COMMAND_EXTENDED2, "Data1234");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
   /* Invalid extended cell: not counted */
   PACK_CELL(1, RELAY_COMMAND_EXTENDED, "Data1234");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
   /* Invalid HS cell: not counted */
   PACK_CELL(1, RELAY_COMMAND_ESTABLISH_INTRO, "Data1234");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
   /* "Valid" HS cell in expected state: counted */
   TO_CIRCUIT(circ)->purpose = CIRCUIT_PURPOSE_C_ESTABLISH_REND;
+  circ->hs_ident->sent_establish_rendezvous = 1;
   PACK_CELL(1, RELAY_COMMAND_RENDEZVOUS_ESTABLISHED, "Data1234");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_COUNTED_BW();
 
   /* End cell on non-closed connection: counted */
   PACK_CELL(1, RELAY_COMMAND_END, "Data1234");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), edgeconn,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), edgeconn,
                                      circ->cpath);
   ASSERT_COUNTED_BW();
 
   /* End cell on connection that already got one: not counted */
   PACK_CELL(1, RELAY_COMMAND_END, "Data1234");
-  connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), NULL,
+  connection_edge_process_relay_cell(msg, TO_CIRCUIT(circ), NULL,
                                      circ->cpath);
   ASSERT_UNCOUNTED_BW();
 
@@ -848,10 +854,11 @@ test_circbw_relay(void *arg)
   /* Path bias: truncated */
   tt_int_op(circ->base_.marked_for_close, OP_EQ, 0);
   PACK_CELL(0, RELAY_COMMAND_TRUNCATED, "Data1234");
-  pathbias_count_valid_cells(TO_CIRCUIT(circ), &cell);
+  pathbias_count_valid_cells(TO_CIRCUIT(circ), msg);
   tt_int_op(circ->base_.marked_for_close, OP_EQ, 1);
 
  done:
+  relay_msg_free(msg);
   UNMOCK(connection_start_reading);
   UNMOCK(connection_mark_unattached_ap_);
   UNMOCK(connection_mark_for_close_internal_);
@@ -872,17 +879,19 @@ test_relaycell_resolved(void *arg)
 {
   entry_connection_t *entryconn;
   edge_connection_t *edgeconn;
-  cell_t cell;
-  relay_header_t rh;
+  relay_msg_t *msg = NULL;
   int r;
   or_options_t *options = get_options_mutable();
+  size_t len_tmp;
+  uint8_t cell_buf[RELAY_PAYLOAD_SIZE_MAX];
 
 #define SET_CELL(s) do {                                                \
-    memset(&cell, 0, sizeof(cell));                                     \
-    memset(&rh, 0, sizeof(rh));                                         \
-    memcpy(cell.payload + RELAY_HEADER_SIZE, (s), sizeof((s))-1);       \
-    rh.length = sizeof((s))-1;                                          \
-    rh.command = RELAY_COMMAND_RESOLVED;                                \
+    relay_msg_free(msg);                                                \
+    msg = tor_malloc_zero(sizeof(relay_msg_t));                         \
+    len_tmp = sizeof(s) - 1;                                            \
+    msg->body = cell_buf;                                               \
+    msg->length = len_tmp;                                              \
+    memcpy(cell_buf, s, len_tmp);                                      \
   } while (0)
 #define MOCK_RESET() do {                       \
     srm_ncalls = mum_ncalls = 0;                \
@@ -892,20 +901,20 @@ test_relaycell_resolved(void *arg)
     tt_ptr_op(mum_conn, OP_EQ, entryconn);         \
     tt_int_op(mum_endreason, OP_EQ, (reason));     \
   } while (0)
-#define ASSERT_RESOLVED_CALLED(atype, answer, ttl, expires) do {  \
-    tt_int_op(srm_ncalls, OP_EQ, 1);                                 \
-    tt_ptr_op(srm_conn, OP_EQ, entryconn);                           \
-    tt_int_op(srm_atype, OP_EQ, (atype));                            \
-    if ((answer) != NULL) {                                          \
-      tt_int_op(srm_alen, OP_EQ, sizeof(answer)-1);                  \
-      tt_int_op(srm_alen, OP_LT, 512);                                \
-      tt_int_op(srm_answer_is_set, OP_EQ, 1);                        \
-      tt_mem_op(srm_answer, OP_EQ, answer, sizeof(answer)-1);        \
-    } else {                                                      \
-      tt_int_op(srm_answer_is_set, OP_EQ, 0);                        \
-    }                                                             \
-    tt_int_op(srm_ttl, OP_EQ, ttl);                                  \
-    tt_i64_op(srm_expires, OP_EQ, expires);                          \
+#define ASSERT_RESOLVED_CALLED(atype, answer, ttl, expires) do {        \
+    tt_int_op(srm_ncalls, OP_EQ, 1);                                    \
+    tt_ptr_op(srm_conn, OP_EQ, entryconn);                              \
+    tt_int_op(srm_atype, OP_EQ, (atype));                               \
+    if ((answer) != NULL) {                                             \
+      tt_int_op(srm_alen, OP_EQ, sizeof(answer)-1);                     \
+      tt_int_op(srm_alen, OP_LT, 512);                                  \
+      tt_int_op(srm_answer_is_set, OP_EQ, 1);                           \
+      tt_mem_op(srm_answer, OP_EQ, answer, sizeof(answer)-1);           \
+    } else {                                                            \
+      tt_int_op(srm_answer_is_set, OP_EQ, 0);                           \
+    }                                                                   \
+    tt_int_op(srm_ttl, OP_EQ, ttl);                                     \
+    tt_i64_op(srm_expires, OP_EQ, expires);                             \
   } while (0)
 
   (void)arg;
@@ -930,7 +939,7 @@ test_relaycell_resolved(void *arg)
 
   /* Try with connection in non-RESOLVE_WAIT state: cell gets ignored */
   MOCK_RESET();
-  r = connection_edge_process_resolved_cell(edgeconn, &cell, &rh);
+  r = connection_edge_process_resolved_cell(edgeconn, msg);
   tt_int_op(r, OP_EQ, 0);
   tt_int_op(srm_ncalls, OP_EQ, 0);
   tt_int_op(mum_ncalls, OP_EQ, 0);
@@ -944,7 +953,7 @@ test_relaycell_resolved(void *arg)
 
   /* We prefer ipv4, so we should get the first ipv4 answer */
   MOCK_RESET();
-  r = connection_edge_process_resolved_cell(edgeconn, &cell, &rh);
+  r = connection_edge_process_resolved_cell(edgeconn, msg);
   tt_int_op(r, OP_EQ, 0);
   ASSERT_MARK_CALLED(END_STREAM_REASON_DONE|
                      END_STREAM_REASON_FLAG_ALREADY_SOCKS_REPLIED);
@@ -953,7 +962,7 @@ test_relaycell_resolved(void *arg)
   /* But we may be discarding private answers. */
   MOCK_RESET();
   options->ClientDNSRejectInternalAddresses = 1;
-  r = connection_edge_process_resolved_cell(edgeconn, &cell, &rh);
+  r = connection_edge_process_resolved_cell(edgeconn, msg);
   tt_int_op(r, OP_EQ, 0);
   ASSERT_MARK_CALLED(END_STREAM_REASON_DONE|
                      END_STREAM_REASON_FLAG_ALREADY_SOCKS_REPLIED);
@@ -962,7 +971,7 @@ test_relaycell_resolved(void *arg)
   /* now prefer ipv6, and get the first ipv6 answer */
   entryconn->entry_cfg.prefer_ipv6 = 1;
   MOCK_RESET();
-  r = connection_edge_process_resolved_cell(edgeconn, &cell, &rh);
+  r = connection_edge_process_resolved_cell(edgeconn, msg);
   tt_int_op(r, OP_EQ, 0);
   ASSERT_MARK_CALLED(END_STREAM_REASON_DONE|
                      END_STREAM_REASON_FLAG_ALREADY_SOCKS_REPLIED);
@@ -974,7 +983,7 @@ test_relaycell_resolved(void *arg)
   /* With a cell that only has IPv4, we report IPv4 even if we prefer IPv6 */
   MOCK_RESET();
   SET_CELL("\x04\x04\x12\x00\x00\x01\x00\x00\x02\x00");
-  r = connection_edge_process_resolved_cell(edgeconn, &cell, &rh);
+  r = connection_edge_process_resolved_cell(edgeconn, msg);
   tt_int_op(r, OP_EQ, 0);
   ASSERT_MARK_CALLED(END_STREAM_REASON_DONE|
                      END_STREAM_REASON_FLAG_ALREADY_SOCKS_REPLIED);
@@ -984,17 +993,17 @@ test_relaycell_resolved(void *arg)
    * ipv4 */
   MOCK_RESET();
   entryconn->entry_cfg.ipv4_traffic = 0;
-  r = connection_edge_process_resolved_cell(edgeconn, &cell, &rh);
+  r = connection_edge_process_resolved_cell(edgeconn, msg);
   tt_int_op(r, OP_EQ, 0);
   ASSERT_MARK_CALLED(END_STREAM_REASON_DONE|
                      END_STREAM_REASON_FLAG_ALREADY_SOCKS_REPLIED);
-  ASSERT_RESOLVED_CALLED(RESOLVED_TYPE_ERROR, NULL, -1, -1);
+  ASSERT_RESOLVED_CALLED(RESOLVED_TYPE_NOERROR, NULL, -1, -1);
 
   /* If we wanted hostnames, we report nothing, since we only had IPs. */
   MOCK_RESET();
   entryconn->entry_cfg.ipv4_traffic = 1;
   entryconn->socks_request->command = SOCKS_COMMAND_RESOLVE_PTR;
-  r = connection_edge_process_resolved_cell(edgeconn, &cell, &rh);
+  r = connection_edge_process_resolved_cell(edgeconn, msg);
   tt_int_op(r, OP_EQ, 0);
   ASSERT_MARK_CALLED(END_STREAM_REASON_DONE|
                      END_STREAM_REASON_FLAG_ALREADY_SOCKS_REPLIED);
@@ -1003,7 +1012,7 @@ test_relaycell_resolved(void *arg)
   /* A hostname cell is fine though. */
   MOCK_RESET();
   SET_CELL("\x00\x0fwww.example.com\x00\x01\x00\x00");
-  r = connection_edge_process_resolved_cell(edgeconn, &cell, &rh);
+  r = connection_edge_process_resolved_cell(edgeconn, msg);
   tt_int_op(r, OP_EQ, 0);
   ASSERT_MARK_CALLED(END_STREAM_REASON_DONE|
                      END_STREAM_REASON_FLAG_ALREADY_SOCKS_REPLIED);
@@ -1013,7 +1022,7 @@ test_relaycell_resolved(void *arg)
   MOCK_RESET();
   entryconn->socks_request->command = SOCKS_COMMAND_RESOLVE;
   SET_CELL("\x04\x04\x01\x02\x03\x04"); /* no ttl */
-  r = connection_edge_process_resolved_cell(edgeconn, &cell, &rh);
+  r = connection_edge_process_resolved_cell(edgeconn, msg);
   tt_int_op(r, OP_EQ, 0);
   ASSERT_MARK_CALLED(END_STREAM_REASON_TORPROTOCOL);
   tt_int_op(srm_ncalls, OP_EQ, 0);
@@ -1024,7 +1033,7 @@ test_relaycell_resolved(void *arg)
            "\x04\x04\x7f\x00\x01\x02\x00\x00\x01\x00"
            /* IPv4: 192.168.1.1, ttl 256 */
            "\x04\x04\xc0\xa8\x01\x01\x00\x00\x01\x00");
-  r = connection_edge_process_resolved_cell(edgeconn, &cell, &rh);
+  r = connection_edge_process_resolved_cell(edgeconn, msg);
   tt_int_op(r, OP_EQ, 0);
   ASSERT_MARK_CALLED(END_STREAM_REASON_TORPROTOCOL);
   ASSERT_RESOLVED_CALLED(RESOLVED_TYPE_ERROR_TRANSIENT, NULL, 0, TIME_MAX);
@@ -1032,15 +1041,70 @@ test_relaycell_resolved(void *arg)
   /* Legit error code */
   MOCK_RESET();
   SET_CELL("\xf0\x15" "quiet and meaningless" "\x00\x00\x0f\xff");
-  r = connection_edge_process_resolved_cell(edgeconn, &cell, &rh);
+  r = connection_edge_process_resolved_cell(edgeconn, msg);
   tt_int_op(r, OP_EQ, 0);
   ASSERT_MARK_CALLED(END_STREAM_REASON_DONE|
                      END_STREAM_REASON_FLAG_ALREADY_SOCKS_REPLIED);
   ASSERT_RESOLVED_CALLED(RESOLVED_TYPE_ERROR_TRANSIENT, NULL, -1, -1);
 
  done:
+  relay_msg_free(msg);
   UNMOCK(connection_mark_unattached_ap_);
   UNMOCK(connection_ap_handshake_socks_resolved);
+}
+
+/* Test that an END cell with no body (msg->length == 0) is rejected as a
+ * protocol violation in both the "not open" and "open stream" case. */
+static void
+test_relaycell_end_no_reason(void *arg)
+{
+  relay_msg_t *msg = NULL;
+  relay_msg_t *heap_msg = NULL;
+  size_t len_tmp;
+  uint8_t cell_buf[RELAY_PAYLOAD_SIZE_MAX];
+  edge_connection_t *edgeconn;
+  entry_connection_t *entryconn;
+  origin_circuit_t *circ;
+  int ret;
+
+  (void)arg;
+
+  MOCK(connection_mark_unattached_ap_, mock_connection_mark_unattached_ap_);
+  MOCK(connection_mark_for_close_internal_, mock_mark_for_close);
+
+  circ = helper_create_origin_circuit(CIRCUIT_PURPOSE_C_GENERAL, 0);
+  entryconn = fake_entry_conn(circ, 1);
+  edgeconn = ENTRY_TO_EDGE_CONN(entryconn);
+
+  /* AP connection in CONNECT_WAIT: empty END cell must be rejected before any
+   * reason-code processing in connection_edge_process_relay_cell_not_open.
+   *
+   * Use relay_msg_copy() so the message body is a on the heap which means zero
+   * bytes for the empty payload. If we ever remove the length check, reading
+   * msg->body[0] is an OOB read. (Better catch with ASAN). */
+  edgeconn->base_.state = AP_CONN_STATE_CONNECT_WAIT;
+  PACK_CELL(edgeconn->stream_id, RELAY_COMMAND_END, "");
+  heap_msg = relay_msg_copy(msg);
+  ret = connection_edge_process_relay_cell(heap_msg, TO_CIRCUIT(circ),
+                                           edgeconn, circ->cpath);
+  relay_msg_free(heap_msg);
+  tt_int_op(ret, OP_EQ, -END_CIRC_REASON_TORPROTOCOL);
+
+  /* No matched stream (conn=NULL): empty END cell must be rejected in
+   * handle_relay_cell_command before reading any reason byte. */
+  PACK_CELL(1, RELAY_COMMAND_END, "");
+  heap_msg = relay_msg_copy(msg);
+  ret = connection_edge_process_relay_cell(heap_msg, TO_CIRCUIT(circ), NULL,
+                                           circ->cpath);
+  tt_int_op(ret, OP_EQ, -END_CIRC_REASON_TORPROTOCOL);
+
+ done:
+  relay_msg_free(msg);
+  relay_msg_free(heap_msg);
+  UNMOCK(connection_mark_unattached_ap_);
+  UNMOCK(connection_mark_for_close_internal_);
+  circuit_free_(TO_CIRCUIT(circ));
+  connection_free_minimal(ENTRY_TO_CONN(entryconn));
 }
 
 struct testcase_t relaycell_tests[] = {
@@ -1048,5 +1112,6 @@ struct testcase_t relaycell_tests[] = {
   { "circbw", test_circbw_relay, TT_FORK, NULL, NULL },
   { "halfstream", test_halfstream_insertremove, TT_FORK, NULL, NULL },
   { "streamwrap", test_halfstream_wrap, TT_FORK, NULL, NULL },
+  { "end_no_reason", test_relaycell_end_no_reason, TT_FORK, NULL, NULL },
   END_OF_TESTCASES
 };

@@ -16,7 +16,6 @@ noinst_HEADERS +=					\
 	src/app/config/statefile.h			\
 	src/app/config/tor_cmdline_mode.h
 
-
 noinst_HEADERS +=				\
 	src/app/config/auth_dirs.inc		\
 	src/app/config/fallback_dirs.inc	\

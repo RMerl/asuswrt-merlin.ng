@@ -1686,7 +1686,7 @@ hs_get_extend_info_from_lspecs(const smartlist_t *lspecs,
 
   /* We do have everything for which we think we can connect successfully. */
   info = extend_info_new(NULL, legacy_id,
-                         (have_ed25519_id) ? &ed25519_pk : NULL, NULL,
+                         (have_ed25519_id) ? &ed25519_pk : NULL,
                          onion_key, &ap.addr, ap.port, NULL, false);
  done:
   return info;

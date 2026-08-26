@@ -20,11 +20,8 @@
 #ifdef ENABLE_OPENSSL
 #include <openssl/evp.h>
 #include <openssl/opensslv.h>
-
-#if defined(HAVE_ERR_LOAD_KDF_STRINGS)
 #include <openssl/kdf.h>
-#define HAVE_OPENSSL_HKDF 1
-#endif
+#define HAVE_OPENSSL_HKDF
 #endif /* defined(ENABLE_OPENSSL) */
 
 #include <string.h>

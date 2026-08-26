@@ -105,6 +105,12 @@ STATIC int needs_hs_client_circuits(time_t now,
 
 STATIC int needs_circuits_for_build(int num);
 
+STATIC origin_circuit_t *circuit_get_best(const entry_connection_t *conn,
+                                          int must_be_open,
+                                          uint8_t purpose,
+                                          int need_uptime,
+                                          int need_internal);
+
 #endif /* defined(TOR_UNIT_TESTS) */
 
 #endif /* !defined(TOR_CIRCUITUSE_H) */

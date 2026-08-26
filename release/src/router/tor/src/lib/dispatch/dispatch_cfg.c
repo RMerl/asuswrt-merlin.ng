@@ -93,7 +93,7 @@ dcfg_type_set_fns(dispatch_cfg_t *cfg, msg_type_id_t type,
 
 /**
  * Associate a receiver with a message ID.  Multiple receivers may be
- * associated with a single messasge ID.
+ * associated with a single message ID.
  *
  * Return 0 on success, on failure.
  **/

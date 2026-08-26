@@ -13,8 +13,8 @@ endif
 
 # ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_ctime_a_SOURCES =			\
-	$(mulodi4_source) 				\
-	src/ext/csiphash.c   				\
+	$(mulodi4_source)				\
+	src/ext/csiphash.c				\
 	src/lib/ctime/di_ops.c
 
 src_lib_libtor_ctime_testing_a_SOURCES = \

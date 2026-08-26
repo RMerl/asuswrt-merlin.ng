@@ -20,8 +20,6 @@ struct or_options_t;
 int router_orport_seems_reachable(
                                          const struct or_options_t *options,
                                          int family);
-int router_dirport_seems_reachable(
-                                         const struct or_options_t *options);
 
 void router_do_reachability_checks(void);
 void router_perform_bandwidth_test(int num_circs, time_t now);

@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2021, The Tor Project, Inc. */
+ * Copyright (c) 2007-2024, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -11,6 +11,8 @@
 
 #ifndef TOR_CONTROL_AUTH_H
 #define TOR_CONTROL_AUTH_H
+
+void control_remove_authenticated_connection(const control_connection_t *conn);
 
 struct control_cmd_args_t;
 struct control_cmd_syntax_t;

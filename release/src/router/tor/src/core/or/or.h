@@ -222,6 +222,52 @@ struct curve25519_public_key_t;
 #define RELAY_COMMAND_XOFF 43
 #define RELAY_COMMAND_XON 44
 
+/* NOTE: Any new command from above MUST be added to this function. */
+/** Helper to learn if we know the relay command. Unfortuantely, they are not
+ * contigous and so we need this kind of big switch. We could do better but for
+ * now, we'll run with this. */
+static inline bool
+is_known_relay_command(const uint8_t cmd)
+{
+  switch (cmd) {
+  case RELAY_COMMAND_BEGIN:
+  case RELAY_COMMAND_BEGIN_DIR:
+  case RELAY_COMMAND_CONFLUX_LINK:
+  case RELAY_COMMAND_CONFLUX_LINKED:
+  case RELAY_COMMAND_CONFLUX_LINKED_ACK:
+  case RELAY_COMMAND_CONFLUX_SWITCH:
+  case RELAY_COMMAND_CONNECTED:
+  case RELAY_COMMAND_DATA:
+  case RELAY_COMMAND_DROP:
+  case RELAY_COMMAND_END:
+  case RELAY_COMMAND_ESTABLISH_INTRO:
+  case RELAY_COMMAND_ESTABLISH_RENDEZVOUS:
+  case RELAY_COMMAND_EXTEND2:
+  case RELAY_COMMAND_EXTEND:
+  case RELAY_COMMAND_EXTENDED2:
+  case RELAY_COMMAND_EXTENDED:
+  case RELAY_COMMAND_INTRODUCE1:
+  case RELAY_COMMAND_INTRODUCE2:
+  case RELAY_COMMAND_INTRODUCE_ACK:
+  case RELAY_COMMAND_INTRO_ESTABLISHED:
+  case RELAY_COMMAND_PADDING_NEGOTIATE:
+  case RELAY_COMMAND_PADDING_NEGOTIATED:
+  case RELAY_COMMAND_RENDEZVOUS1:
+  case RELAY_COMMAND_RENDEZVOUS2:
+  case RELAY_COMMAND_RENDEZVOUS_ESTABLISHED:
+  case RELAY_COMMAND_RESOLVE:
+  case RELAY_COMMAND_RESOLVED:
+  case RELAY_COMMAND_SENDME:
+  case RELAY_COMMAND_TRUNCATE:
+  case RELAY_COMMAND_TRUNCATED:
+  case RELAY_COMMAND_XOFF:
+  case RELAY_COMMAND_XON:
+    return true;
+  default:
+    return false;
+  }
+}
+
 /* Reasons why an OR connection is closed. */
 #define END_OR_CONN_REASON_DONE           1
 #define END_OR_CONN_REASON_REFUSED        2 /* connection refused */
@@ -251,7 +297,6 @@ struct curve25519_public_key_t;
 #define END_STREAM_REASON_CONNRESET 12
 #define END_STREAM_REASON_TORPROTOCOL 13
 #define END_STREAM_REASON_NOTDIRECTORY 14
-#define END_STREAM_REASON_ENTRYPOLICY 15
 
 /* These high-numbered end reasons are not part of the official spec,
  * and are not intended to be put in relay end cells. They are here
@@ -280,6 +325,11 @@ struct curve25519_public_key_t;
  * way we can't handle.
  */
 #define END_STREAM_REASON_HTTPPROTOCOL 263
+/**
+ * The user has asked us to do something that we reject
+ * (Like connecting to a plaintext port, or violating OnionTrafficOnly.)
+ **/
+#define END_STREAM_REASON_ENTRYPOLICY 264
 
 /** Bitwise-and this value with endreason to mask out all flags. */
 #define END_STREAM_REASON_MASK 511
@@ -301,6 +351,8 @@ struct curve25519_public_key_t;
 #define RESOLVED_TYPE_IPV6 6
 #define RESOLVED_TYPE_ERROR_TRANSIENT 0xF0
 #define RESOLVED_TYPE_ERROR 0xF1
+/* C Tor internal error code to handle empty dns reply */
+#define RESOLVED_TYPE_NOERROR 0x01F2
 
 /* Negative reasons are internal: we never send them in a DESTROY or TRUNCATE
  * call; they only go to the controller for tracking  */
@@ -403,6 +455,11 @@ typedef enum {
 /** Amount to increment a stream window when we get a stream SENDME. */
 #define STREAMWINDOW_INCREMENT 50
 
+/** Length for authenticated sendme tag with tor1 encryption. */
+#define SENDME_TAG_LEN_TOR1 20
+/** Length for authenticated sendme tag with cgo encryption. */
+#define SENDME_TAG_LEN_CGO 16
+
 /** Maximum number of queued cells on a circuit for which we are the
  * midpoint before we give up and kill it.  This must be >= circwindow
  * to avoid killing innocent circuits, and >= circwindow*2 to give
@@ -452,13 +509,20 @@ typedef enum {
 #define SOCKS4_NETWORK_LEN 8
 
 /*
- * Relay payload:
+ * Relay cell body (V0):
  *         Relay command           [1 byte]
  *         Recognized              [2 bytes]
  *         Stream ID               [2 bytes]
  *         Partial SHA-1           [4 bytes]
  *         Length                  [2 bytes]
  *         Relay payload           [498 bytes]
+ *
+ * Relay cell body (V1):
+ *         Tag                     [16 bytes]
+ *         Command                 [1 byte]
+ *         Length                  [2 bytes]
+ *         Stream ID               [2 bytes, Optional, depends on command]
+ *         Relay payload           [488 bytes _or_ 490 bytes]
  */
 
 /** Number of bytes in a cell, minus cell header. */
@@ -469,6 +533,14 @@ typedef enum {
 
 /** Maximum length of a header on a variable-length cell. */
 #define VAR_CELL_MAX_HEADER_SIZE 7
+
+/** Which format should we use for relay cells? */
+typedef enum relay_cell_fmt_t {
+  /** Our original format, with 2 byte recognized field and a 4-byte digest */
+  RELAY_CELL_FORMAT_V0,
+  /** New format introduced for CGO, with 16 byte tag. */
+  RELAY_CELL_FORMAT_V1,
+} relay_cell_fmt_t;
 
 static int get_cell_network_size(int wide_circ_ids);
 static inline int get_cell_network_size(int wide_circ_ids)
@@ -487,11 +559,30 @@ static inline int get_circ_id_size(int wide_circ_ids)
   return wide_circ_ids ? 4 : 2;
 }
 
-/** Number of bytes in a relay cell's header (not including general cell
- * header). */
-#define RELAY_HEADER_SIZE (1+2+2+4+2)
-/** Largest number of bytes that can fit in a relay cell payload. */
-#define RELAY_PAYLOAD_SIZE (CELL_PAYLOAD_SIZE-RELAY_HEADER_SIZE)
+/** Number of bytes used for a relay cell's header, in the v0 format. */
+#define RELAY_HEADER_SIZE_V0 (1+2+2+4+2)
+/** Number of bytes used for a relay cell's header, in the v1 format,
+ * if no StreamID is used. */
+#define RELAY_HEADER_SIZE_V1_NO_STREAM_ID (16+1+2)
+/** Number of bytes used for a relay cell's header, in the v1 format,
+ * if a StreamID is used. */
+#define RELAY_HEADER_SIZE_V1_WITH_STREAM_ID (16+1+2+2)
+
+/** Largest number of bytes that can fit in any relay cell payload.
+ *
+ * Note that the actual maximum may be smaller if the V1 cell format
+ * is in use; see relay_cell_max_payload_size() for the real maximum.
+ */
+#define RELAY_PAYLOAD_SIZE_MAX (CELL_PAYLOAD_SIZE - RELAY_HEADER_SIZE_V0)
+
+/** Smallest capacity of any relay cell payload. */
+#define RELAY_PAYLOAD_SIZE_MIN \
+  (CELL_PAYLOAD_SIZE - RELAY_HEADER_SIZE_V1_WITH_STREAM_ID)
+
+#ifdef TOR_UNIT_TESTS
+// This name is for testing only.
+#define RELAY_PAYLOAD_SIZE RELAY_PAYLOAD_SIZE_MAX
+#endif
 
 /** Identifies a circuit on an or_connection */
 typedef uint32_t circid_t;
@@ -522,6 +613,11 @@ typedef struct destroy_cell_t destroy_cell_t;
 typedef struct destroy_cell_queue_t destroy_cell_queue_t;
 typedef struct ext_or_cmd_t ext_or_cmd_t;
 
+#ifdef TOR_UNIT_TESTS
+/* This is a vestigial type used only for testing.
+ * All current code should instead use relay_msg_t and related accessors.
+ */
+
 /** Beginning of a RELAY cell payload. */
 typedef struct {
   uint8_t command; /**< The end-to-end relay command. */
@@ -530,6 +626,7 @@ typedef struct {
   char integrity[4]; /**< Used to tell whether cell is corrupted. */
   uint16_t length; /**< How long is the payload body? */
 } relay_header_t;
+#endif
 
 typedef struct socks_request_t socks_request_t;
 typedef struct entry_port_cfg_t entry_port_cfg_t;
@@ -741,8 +838,14 @@ typedef struct protover_summary_flags_t {
    * Requires both FlowCtrl=2 *and* Relay=4 */
   unsigned int supports_congestion_control : 1;
 
-  /** True iff this router supports conflux. Requires Relay=5 */
+  /** True iff this router supports conflux. */
   unsigned int supports_conflux : 1;
+
+  /** True iff this router supports CGO. */
+  unsigned int supports_cgo : 1;
+
+  /** True iff this router supports ntorv3 */
+  unsigned int supports_ntor_v3 : 1;
 } protover_summary_flags_t;
 
 typedef struct routerinfo_t routerinfo_t;

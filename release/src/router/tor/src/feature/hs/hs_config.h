@@ -27,6 +27,8 @@
 
 /* Default values for the HS anti-DoS PoW defenses. */
 #define HS_CONFIG_V3_POW_DEFENSES_DEFAULT 0
+#define HS_CONFIG_V3_POW_QUEUE_RATE 250
+#define HS_CONFIG_V3_POW_QUEUE_BURST 2500
 
 /* API */
 

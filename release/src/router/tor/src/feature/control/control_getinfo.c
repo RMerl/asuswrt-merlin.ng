@@ -1257,14 +1257,12 @@ getinfo_helper_events(control_connection_t *control_conn,
                     router_all_orports_seem_reachable(options) ?
                     "1" : "0");
     } else if (!strcmp(question, "status/reachability-succeeded/dir")) {
-      *answer = tor_strdup(
-                    router_dirport_seems_reachable(options) ?
-                    "1" : "0");
+      *answer = tor_strdup("1"); /* obsolete since tor#2667) */
     } else if (!strcmp(question, "status/reachability-succeeded")) {
       tor_asprintf(
           answer, "OR=%d DIR=%d",
           router_all_orports_seem_reachable(options) ? 1 : 0,
-          router_dirport_seems_reachable(options) ? 1 : 0);
+          1);
     } else if (!strcmp(question, "status/bootstrap-phase")) {
       *answer = control_event_boot_last_msg();
     } else if (!strcmpstart(question, "status/version/")) {

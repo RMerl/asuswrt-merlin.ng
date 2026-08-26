@@ -215,6 +215,16 @@ token_check_object(memarea_t *area, const char *kwd,
         RET_ERR(ebuf);
       }
       break;
+    case OPT_KEY_1024:
+      /* If there is anything, it must be a 1024-bit RSA key. */
+      if (tok->object_body && !tok->key) {
+        tor_snprintf(ebuf, sizeof(ebuf), "Unexpected object for %s", kwd);
+        RET_ERR(ebuf);
+      }
+      if (!tok->key) {
+        break;
+      }
+      FALLTHROUGH;
     case NEED_KEY_1024: /* There must be a 1024-bit public key. */
       if (tok->key && crypto_pk_num_bits(tok->key) != PK_BYTES*8) {
         tor_snprintf(ebuf, sizeof(ebuf), "Wrong size on key for %s: %d bits",
@@ -395,7 +405,8 @@ get_next_token(memarea_t *area,
   }
 
   if (!strcmp(tok->object_type, "RSA PUBLIC KEY")) { /* If it's a public key */
-    if (o_syn != NEED_KEY && o_syn != NEED_KEY_1024 && o_syn != OBJ_OK) {
+    if (o_syn != OPT_KEY_1024 && o_syn != NEED_KEY &&
+        o_syn != NEED_KEY_1024 && o_syn != OBJ_OK) {
       RET_ERR("Unexpected public key.");
     }
     tok->key = crypto_pk_asn1_decode(tok->object_body, tok->object_size);

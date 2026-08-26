@@ -494,21 +494,23 @@ function overHint(itemNum){
 
 			wifiDesc += "<div style='display:grid; grid-template-columns: 9ch 1fr; margin-bottom: 5px;'><b><span>" + wl_nband_title[band_unit[unit]] + ":</b></span>";
 			if ( radio_state[unit] == 1) {
-				if ((extent_chan_arr[band_unit[unit]] == 0) || (extent_chan_arr[band_unit[unit]] == undefined) || (extent_chan_arr[band_unit[unit]] == control_chan_arr[band_unit[unit]]))
+				if (isSwMode("WISP"))
+					wifiDesc += "<span>Enabled</span>";
+				else if ((extent_chan_arr[band_unit[unit]] == 0) || (extent_chan_arr[band_unit[unit]] == undefined) || (extent_chan_arr[band_unit[unit]] == control_chan_arr[band_unit[unit]]))
 					wifiDesc += "<span>" + control_chan_arr[band_unit[unit]] + "</span>";
-					else {
-						if (wl_nband_title[band_unit[unit]].substring(0,1) == "2") {
-							wifiDesc += "<span>"+ low_channel(control_chan_arr[band_unit[unit]],extent_chan_arr[band_unit[unit]]) + "+" + high_channel(control_chan_arr[band_unit[unit]],extent_chan_arr[band_unit[unit]]) + "</span>";
-						} else if (wl_nband_title[band_unit[unit]].substring(0, 1) == "6") {
-							wifiDesc += "<span>6g"+ control_chan_arr[band_unit[unit]] + "/" + extent_chan_arr[band_unit[unit]] + "</span>";
-						} else if (wl_nband_title[band_unit[unit]].substring(0, 1) == "5") {
-							wifiDesc += "<span>"+ control_chan_arr[band_unit[unit]] + "/" + extent_chan_arr[band_unit[unit]] + "</span>";
-						} else {
-								wifiDesc += "<span>unknown</span>";
-						}
+				else {
+					if (wl_nband_title[band_unit[unit]].substring(0,1) == "2") {
+						wifiDesc += "<span>"+ low_channel(control_chan_arr[band_unit[unit]],extent_chan_arr[band_unit[unit]]) + "+" + high_channel(control_chan_arr[band_unit[unit]],extent_chan_arr[band_unit[unit]]) + "</span>";
+					} else if (wl_nband_title[band_unit[unit]].substring(0, 1) == "6") {
+						wifiDesc += "<span>6g"+ control_chan_arr[band_unit[unit]] + "/" + extent_chan_arr[band_unit[unit]] + "</span>";
+					} else if (wl_nband_title[band_unit[unit]].substring(0, 1) == "5") {
+						wifiDesc += "<span>"+ control_chan_arr[band_unit[unit]] + "/" + extent_chan_arr[band_unit[unit]] + "</span>";
+					} else {
+						wifiDesc += "<span>unknown</span>";
 					}
-				} else {
-					wifiDesc += "<span><#btn_Disabled#></span>";
+				}
+			} else {
+				wifiDesc += "<span><#btn_Disabled#></span>";
 			}
 			wifiDesc += "</div>";
 		}

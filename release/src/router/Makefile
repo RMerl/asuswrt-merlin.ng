@@ -3816,7 +3816,7 @@ openssl-3.5/Makefile:
 	@touch $@
 
 openssl-3.5: openssl-3.5/Makefile
-	$(MAKE) -C openssl-3.5 && $(MAKE) $@-stage
+	$(MAKE) -C openssl-3.5 $(PARALLEL_BUILD) && $(MAKE) $@-stage
 
 openssl-3.5-clean:
 	[ ! -f openssl-3.5/Makefile ] || $(MAKE) -C openssl-3.5 clean

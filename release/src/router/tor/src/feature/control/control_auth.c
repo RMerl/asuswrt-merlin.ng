@@ -1,5 +1,5 @@
 /* Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2021, The Tor Project, Inc. */
+ * Copyright (c) 2007-2024, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -11,6 +11,7 @@
 #include "app/config/config.h"
 #include "core/mainloop/connection.h"
 #include "feature/control/control.h"
+#include "feature/control/control_events.h"
 #include "feature/control/control_cmd.h"
 #include "feature/control/control_auth.h"
 #include "feature/control/control_cmd_args_st.h"
@@ -23,6 +24,36 @@
 #include "lib/encoding/qstring.h"
 
 #include "lib/crypt_ops/crypto_s2k.h"
+
+/* List of authenticated control connections */
+static smartlist_t *control_auth_conns = NULL;
+
+static void
+control_add_authenticated_connection(control_connection_t *conn)
+{
+  if (!control_auth_conns)
+    control_auth_conns = smartlist_new();
+
+  smartlist_add(control_auth_conns, conn);
+
+  if (smartlist_len(control_auth_conns) == 1)
+    stats_init();
+}
+
+void
+control_remove_authenticated_connection(const control_connection_t *conn)
+{
+  if (!control_auth_conns)
+    return;
+
+  smartlist_remove(control_auth_conns, conn);
+
+  if (smartlist_len(control_auth_conns) == 0) {
+    smartlist_free(control_auth_conns);
+    control_auth_conns = NULL;
+    stats_clear();
+  }
+}
 
 /** If we're using cookie-type authentication, how long should our cookies be?
  */
@@ -429,6 +460,9 @@ handle_control_authenticate(control_connection_t *conn,
     SMARTLIST_FOREACH(sl, char *, str, tor_free(str));
     smartlist_free(sl);
   }
+
+  control_add_authenticated_connection(conn);
+
   return 0;
 }
 
@@ -438,4 +472,7 @@ control_auth_free_all(void)
   if (authentication_cookie) /* Free the auth cookie */
     tor_free(authentication_cookie);
   authentication_cookie_is_set = 0;
+
+  if (control_auth_conns)
+    smartlist_free(control_auth_conns);
 }

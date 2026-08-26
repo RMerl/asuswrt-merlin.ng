@@ -104,7 +104,7 @@ flow_control_new_consensus_params(const networkstatus_t *ns)
   xoff_client = networkstatus_get_param(ns, "cc_xoff_client",
       CC_XOFF_CLIENT_DFLT,
       CC_XOFF_CLIENT_MIN,
-      CC_XOFF_CLIENT_MAX)*RELAY_PAYLOAD_SIZE;
+      CC_XOFF_CLIENT_MAX)*RELAY_PAYLOAD_SIZE_MIN;
 
 #define CC_XOFF_EXIT_DFLT 500
 #define CC_XOFF_EXIT_MIN 1
@@ -112,7 +112,7 @@ flow_control_new_consensus_params(const networkstatus_t *ns)
   xoff_exit = networkstatus_get_param(ns, "cc_xoff_exit",
       CC_XOFF_EXIT_DFLT,
       CC_XOFF_EXIT_MIN,
-      CC_XOFF_EXIT_MAX)*RELAY_PAYLOAD_SIZE;
+      CC_XOFF_EXIT_MAX)*RELAY_PAYLOAD_SIZE_MIN;
 
 #define CC_XON_CHANGE_PCT_DFLT 25
 #define CC_XON_CHANGE_PCT_MIN 1
@@ -128,7 +128,7 @@ flow_control_new_consensus_params(const networkstatus_t *ns)
   xon_rate_bytes = networkstatus_get_param(ns, "cc_xon_rate",
       CC_XON_RATE_BYTES_DFLT,
       CC_XON_RATE_BYTES_MIN,
-      CC_XON_RATE_BYTES_MAX)*RELAY_PAYLOAD_SIZE;
+      CC_XON_RATE_BYTES_MAX)*RELAY_PAYLOAD_SIZE_MAX;
 
 #define CC_XON_EWMA_CNT_DFLT (2)
 #define CC_XON_EWMA_CNT_MIN (2)
@@ -259,10 +259,8 @@ circuit_send_stream_xon(edge_connection_t *stream)
  */
 bool
 circuit_process_stream_xoff(edge_connection_t *conn,
-                            const crypt_path_t *layer_hint,
-                            const cell_t *cell)
+                            const crypt_path_t *layer_hint)
 {
-  (void)cell;
   bool retval = true;
 
   if (BUG(!conn)) {
@@ -354,7 +352,7 @@ circuit_process_stream_xoff(edge_connection_t *conn,
 bool
 circuit_process_stream_xon(edge_connection_t *conn,
                            const crypt_path_t *layer_hint,
-                           const cell_t *cell)
+                           const relay_msg_t *msg)
 {
   xon_cell_t *xon;
   bool retval = true;
@@ -378,8 +376,7 @@ circuit_process_stream_xon(edge_connection_t *conn,
     return false;
   }
 
-  if (xon_cell_parse(&xon, cell->payload+RELAY_HEADER_SIZE,
-                     CELL_PAYLOAD_SIZE-RELAY_HEADER_SIZE) < 0) {
+  if (xon_cell_parse(&xon, msg->body, msg->length) < 0) {
     log_fn(LOG_PROTOCOL_WARN, LD_EDGE,
           "Received malformed XON cell.");
     return false;
@@ -534,7 +531,7 @@ flow_control_decide_xoff(edge_connection_t *stream)
    * do this because writes only happen when the socket unblocks, so
    * may not otherwise notice accumulation of data in the outbuf for
    * advisory XONs. */
-   if (total_buffered > MAX_EXPECTED_CELL_BURST*RELAY_PAYLOAD_SIZE) {
+   if (total_buffered > MAX_EXPECTED_CELL_BURST*RELAY_PAYLOAD_SIZE_MIN) {
      flow_control_decide_xon(stream, 0);
    }
 
@@ -767,4 +764,3 @@ conn_uses_flow_control(connection_t *conn)
 
   return ret;
 }
-

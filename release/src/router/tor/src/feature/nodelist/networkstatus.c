@@ -1954,7 +1954,7 @@ networkstatus_set_current_consensus(const char *consensus,
   int free_consensus = 1; /* Free 'c' at the end of the function */
   int checked_protocols_already = 0;
 
-  if (flav < 0) {
+  if (flav < 0 || flav >= N_CONSENSUS_FLAVORS) {
     /* XXXX we don't handle unrecognized flavors yet. */
     log_warn(LD_BUG, "Unrecognized consensus flavor %s", flavor);
     return -2;
@@ -1982,6 +1982,7 @@ networkstatus_set_current_consensus(const char *consensus,
 
   if ((int)c->flavor != flav) {
     /* This wasn't the flavor we thought we were getting. */
+    tor_assert(c->flavor < N_CONSENSUS_FLAVORS);
     if (require_flavor) {
       log_warn(LD_DIR, "Got consensus with unexpected flavor %s (wanted %s)",
                networkstatus_get_flavor_name(c->flavor), flavor);

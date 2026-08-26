@@ -6,11 +6,14 @@
  * \brief Tests for our HTTP protocol parser code
  */
 
+#define CONNECTION_EDGE_PRIVATE
+
 #include "core/or/or.h"
 #include "test/test.h"
 #include "lib/buf/buffers.h"
 #include "core/proto/proto_http.h"
 #include "test/log_test_helpers.h"
+#include "core/or/connection_edge.h"
 
 #define S(str) str, sizeof(str)-1
 
@@ -203,11 +206,33 @@ test_proto_http_invalid(void *arg)
   teardown_capture_of_logs();
 }
 
+static void
+test_proto_http_proxy_auth(void *arg)
+{
+  (void)arg;
+
+  tt_assert(using_old_proxy_auth(""));
+  tt_assert(using_old_proxy_auth("Foo Bar"));
+  tt_assert(using_old_proxy_auth("Basicish Bar"));
+  tt_assert(using_old_proxy_auth("Basic"));
+  tt_assert(using_old_proxy_auth("Basic x"));
+  // encodes foo:bar
+  tt_assert(using_old_proxy_auth("Basic Zm9vOmJhcg=="));
+  // encodes torx:bar
+  tt_assert(using_old_proxy_auth("Basic dG9yeDpiYXI="));
+
+  // encodes tor:random
+  tt_assert(! using_old_proxy_auth("Basic dG9yOnJhbmRvbQ=="));
+
+ done:
+  ;
+}
+
 struct testcase_t proto_http_tests[] = {
   { "peek", test_proto_http_peek, 0, NULL, NULL },
   { "valid", test_proto_http_valid, 0, NULL, NULL },
   { "invalid", test_proto_http_invalid, 0, NULL, NULL },
+  { "proxyauth", test_proto_http_proxy_auth, 0, NULL, NULL },
 
   END_OF_TESTCASES
 };
-

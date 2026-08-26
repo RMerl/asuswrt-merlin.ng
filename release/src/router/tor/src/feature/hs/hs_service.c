@@ -264,7 +264,9 @@ set_service_default_config(hs_service_config_t *c,
   c->intro_dos_rate_per_sec = HS_CONFIG_V3_DOS_DEFENSE_RATE_PER_SEC_DEFAULT;
   c->intro_dos_burst_per_sec = HS_CONFIG_V3_DOS_DEFENSE_BURST_PER_SEC_DEFAULT;
   /* PoW default options. */
-  c->has_dos_defense_enabled = HS_CONFIG_V3_POW_DEFENSES_DEFAULT;
+  c->has_pow_defenses_enabled = HS_CONFIG_V3_POW_DEFENSES_DEFAULT;
+  c->pow_queue_rate = HS_CONFIG_V3_POW_QUEUE_RATE;
+  c->pow_queue_burst = HS_CONFIG_V3_POW_QUEUE_BURST;
 }
 
 /** Initialize PoW defenses */
@@ -410,11 +412,6 @@ get_intro_point_max_introduce2(void)
 static int32_t
 get_intro_point_min_lifetime(void)
 {
-#define MIN_INTRO_POINT_LIFETIME_TESTING 10
-  if (get_options()->TestingTorNetwork) {
-    return MIN_INTRO_POINT_LIFETIME_TESTING;
-  }
-
   /* The [0, 2147483647] range is quite large to accommodate anything we decide
    * in the future. */
   return networkstatus_get_param(NULL, "hs_intro_min_lifetime",
@@ -427,11 +424,6 @@ get_intro_point_min_lifetime(void)
 static int32_t
 get_intro_point_max_lifetime(void)
 {
-#define MAX_INTRO_POINT_LIFETIME_TESTING 30
-  if (get_options()->TestingTorNetwork) {
-    return MAX_INTRO_POINT_LIFETIME_TESTING;
-  }
-
   /* The [0, 2147483647] range is quite large to accommodate anything we decide
    * in the future. */
   return networkstatus_get_param(NULL, "hs_intro_max_lifetime",
@@ -2163,7 +2155,7 @@ build_all_descriptors(time_t now)
       continue;
     }
 
-    /* Reaching this point means we are pass bootup so at runtime. We should
+    /* Reaching this point means we are past bootup so at runtime. We should
      * *never* have an empty current descriptor. If the next descriptor is
      * empty, we'll try to build it for the next time period. This only
      * happens when we rotate meaning that we are guaranteed to have a new SRV
@@ -2185,7 +2177,7 @@ build_all_descriptors(time_t now)
 /** Randomly pick a node to become an introduction point but not present in the
  * given exclude_nodes list. The chosen node is put in the exclude list
  * regardless of success or not because in case of failure, the node is simply
- * unsusable from that point on.
+ * unusable from that point on.
  *
  * If direct_conn is set, try to pick a node that our local firewall/policy
  * allows us to connect to directly. If we can't find any, return NULL.
@@ -2730,9 +2722,11 @@ update_suggested_effort(hs_service_t *service, time_t now)
   switch (aimd_event) {
     case INCREASE:
       if (pow_state->suggested_effort < UINT32_MAX) {
-        pow_state->suggested_effort = MAX(pow_state->suggested_effort + 1,
-                                          (uint32_t)(pow_state->total_effort /
-                                                     pow_state->rend_handled));
+        uint32_t avg =
+          pow_state->rend_handled ? /* check for div by 0 */
+            (uint32_t)(pow_state->total_effort / pow_state->rend_handled) : 0;
+        pow_state->suggested_effort =
+          MAX(pow_state->suggested_effort + 1, avg);
       }
       break;
     case DECREASE:
@@ -3039,13 +3033,6 @@ get_max_intro_circ_per_period(const hs_service_t *service)
   tor_assert(service->config.num_intro_points <=
              HS_CONFIG_V3_MAX_INTRO_POINTS);
 
-/** For a testing network, allow to do it for the maximum amount so circuit
- * creation and rotation and so on can actually be tested without limit. */
-#define MAX_INTRO_POINT_CIRCUIT_RETRIES_TESTING -1
-  if (get_options()->TestingTorNetwork) {
-    return MAX_INTRO_POINT_CIRCUIT_RETRIES_TESTING;
-  }
-
   num_wanted_ip = service->config.num_intro_points;
 
   /* The calculation is as follow. We have a number of intro points that we
@@ -3279,9 +3266,8 @@ set_descriptor_revision_counter(hs_service_descriptor_t *hs_desc, time_t now,
 }
 
 /** Encode and sign the service descriptor desc and upload it to the
- * responsible hidden service directories. If for_next_period is true, the set
- * of directories are selected using the next hsdir_index. This does nothing
- * if PublishHidServDescriptors is false. */
+ * responsible hidden service directories.
+ * This does nothing if PublishHidServDescriptors is false. */
 STATIC void
 upload_descriptor_to_all(const hs_service_t *service,
                          hs_service_descriptor_t *desc)
@@ -4080,6 +4066,9 @@ hs_service_add_ephemeral_status_t
 hs_service_add_ephemeral(ed25519_secret_key_t *sk, smartlist_t *ports,
                          int max_streams_per_rdv_circuit,
                          int max_streams_close_circuit,
+                         int pow_defenses_enabled,
+                         uint32_t pow_queue_rate,
+                         uint32_t pow_queue_burst,
                          smartlist_t *auth_clients_v3, char **address_out)
 {
   hs_service_add_ephemeral_status_t ret;
@@ -4099,6 +4088,9 @@ hs_service_add_ephemeral(ed25519_secret_key_t *sk, smartlist_t *ports,
   service->config.is_ephemeral = 1;
   smartlist_free(service->config.ports);
   service->config.ports = ports;
+  service->config.has_pow_defenses_enabled = pow_defenses_enabled;
+  service->config.pow_queue_rate = pow_queue_rate;
+  service->config.pow_queue_burst = pow_queue_burst;
 
   /* Handle the keys. */
   memcpy(&service->keys.identity_sk, sk, sizeof(service->keys.identity_sk));

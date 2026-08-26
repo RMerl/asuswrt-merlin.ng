@@ -21,7 +21,6 @@ int connection_or_send_auth_challenge_cell(or_connection_t *conn);
 var_cell_t *connection_or_compute_authenticate_cell_body(
                               or_connection_t *conn,
                               const int authtype,
-                              crypto_pk_t *signing_key,
                               const struct ed25519_keypair_t *ed_signing_key,
                               int server);
 
@@ -56,13 +55,11 @@ static inline var_cell_t *
 connection_or_compute_authenticate_cell_body(
                               or_connection_t *conn,
                               const int authtype,
-                              crypto_pk_t *signing_key,
                               const struct ed25519_keypair_t *ed_signing_key,
                               int server)
 {
   (void)conn;
   (void)authtype;
-  (void)signing_key;
   (void)ed_signing_key;
   (void)server;
   tor_assert_nonfatal_unreached();

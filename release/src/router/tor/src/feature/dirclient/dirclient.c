@@ -688,7 +688,6 @@ directory_choose_address_routerstatus(const routerstatus_t *status,
   /* We rejected all addresses in the relay's status. This means we can't
    * connect to it. */
   if (!have_or && !have_dir) {
-    static int logged_backtrace = 0;
     char *ipv6_str = tor_addr_to_str_dup(&status->ipv6_addr);
     log_info(LD_BUG, "Rejected all OR and Dir addresses from %s when "
              "launching an outgoing directory connection to: IPv4 %s OR %d "
@@ -697,10 +696,7 @@ directory_choose_address_routerstatus(const routerstatus_t *status,
              status->ipv4_dirport, ipv6_str, status->ipv6_orport,
              status->ipv4_dirport);
     tor_free(ipv6_str);
-    if (!logged_backtrace) {
-      log_backtrace(LOG_INFO, LD_BUG, "Addresses came from");
-      logged_backtrace = 1;
-    }
+    log_backtrace_once(LOG_INFO, LD_BUG, "Addresses came from");
     return -1;
   }
 
@@ -1325,15 +1321,11 @@ directory_initiate_request,(directory_request_t *request))
 
   /* Make sure that the destination addr and port we picked is viable. */
   if (!port || tor_addr_is_null(&addr)) {
-    static int logged_backtrace = 0;
     log_warn(LD_DIR,
              "Cannot make an outgoing %sconnection without a remote %sPort.",
              use_begindir ? "begindir " : "",
              use_begindir ? "OR" : "Dir");
-    if (!logged_backtrace) {
-      log_backtrace(LOG_INFO, LD_BUG, "Address came from");
-      logged_backtrace = 1;
-    }
+    log_backtrace_once(LOG_INFO, LD_BUG, "Address came from");
     return;
   }
 

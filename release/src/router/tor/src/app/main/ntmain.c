@@ -66,7 +66,7 @@ static int nt_service_cmd_stop(void);
 
 /** Struct to hold dynamically loaded NT-service related function pointers.
  */
-struct {
+typedef struct nt_services {
   int loaded;
 
   /** @{ */
@@ -143,7 +143,9 @@ struct {
                              LPDWORD cchReferencedDomainName,
                              PSID_NAME_USE peUse);
   /** @} */
-} service_fns = { 0,
+} nt_services_t;
+
+static nt_services_t service_fns = { 0,
                   NULL, NULL, NULL, NULL, NULL, NULL,
                   NULL, NULL, NULL, NULL, NULL, NULL,
                   NULL};
@@ -341,6 +343,7 @@ nt_service_main(void)
       case CMD_VERIFY_CONFIG:
       case CMD_DUMP_CONFIG:
       case CMD_KEYGEN:
+      case CMD_KEYGEN_FAMILY:
       case CMD_KEY_EXPIRATION:
         log_err(LD_CONFIG, "Unsupported command (--list-fingerprint, "
                "--hash-password, --keygen, --dump-config, --verify-config, "

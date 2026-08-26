@@ -110,8 +110,12 @@ create_rend_cpath(const uint8_t *ntor_key_seed, size_t seed_len,
   cpath = tor_malloc_zero(sizeof(crypt_path_t));
   cpath->magic = CRYPT_PATH_MAGIC;
 
-  if (cpath_init_circuit_crypto(cpath, (char*)keys, sizeof(keys),
-                                is_service_side, 1) < 0) {
+  // TODO CGO: Pick relay cell format based on capabilities.
+  cpath->relay_cell_format = RELAY_CELL_FORMAT_V0;
+  relay_crypto_alg_t alg = is_service_side ? RELAY_CRYPTO_ALG_TOR1_HSS :
+    RELAY_CRYPTO_ALG_TOR1_HSC;
+
+  if (cpath_init_circuit_crypto(alg, cpath, (char*)keys, sizeof(keys)) < 0) {
     tor_free(cpath);
     goto err;
   }
@@ -268,7 +272,7 @@ send_establish_intro(const hs_service_t *service,
                      hs_service_intro_point_t *ip, origin_circuit_t *circ)
 {
   ssize_t cell_len;
-  uint8_t payload[RELAY_PAYLOAD_SIZE];
+  uint8_t payload[RELAY_PAYLOAD_SIZE_MAX];
 
   tor_assert(service);
   tor_assert(ip);
@@ -1153,7 +1157,7 @@ hs_circ_service_rp_has_opened(const hs_service_t *service,
                               origin_circuit_t *circ)
 {
   size_t payload_len;
-  uint8_t payload[RELAY_PAYLOAD_SIZE] = {0};
+  uint8_t payload[RELAY_PAYLOAD_SIZE_MAX] = {0};
 
   tor_assert(service);
   tor_assert(circ);
@@ -1442,7 +1446,7 @@ hs_circ_send_introduce1(origin_circuit_t *intro_circ,
 {
   int ret = -1;
   ssize_t payload_len;
-  uint8_t payload[RELAY_PAYLOAD_SIZE] = {0};
+  uint8_t payload[RELAY_PAYLOAD_SIZE_MAX] = {0};
   hs_cell_introduce1_data_t intro1_data;
 
   tor_assert(intro_circ);
@@ -1472,6 +1476,14 @@ hs_circ_send_introduce1(origin_circuit_t *intro_circ,
     goto close;
   }
 
+  if (BUG(fast_mem_is_zero((char *)rend_circ->hs_ident->rendezvous_cookie,
+                           HS_REND_COOKIE_LEN))) {
+    /* make sure we aren't somehow sending an intro cell without
+     * initializing the rendezvous cookie. this is defense-in-depth for
+     * bugs like #41297. */
+    goto close;
+  }
+
   /* Set the PoW solution if any. */
   intro1_data.pow_solution = pow_solution;
 
@@ -1494,7 +1506,9 @@ hs_circ_send_introduce1(origin_circuit_t *intro_circ,
   /* From the introduce1 data object, this will encode the INTRODUCE1 cell
    * into payload which is then ready to be sent as is. */
   payload_len = hs_cell_build_introduce1(&intro1_data, payload);
-  if (BUG(payload_len < 0)) {
+  if (payload_len < 0) {
+    log_fn(LOG_PROTOCOL_WARN, LD_REND,
+           "Problem building introduce1 cell. Closing circuit.");
     goto close;
   }
 
@@ -1526,7 +1540,7 @@ int
 hs_circ_send_establish_rendezvous(origin_circuit_t *circ)
 {
   ssize_t cell_len = 0;
-  uint8_t cell[RELAY_PAYLOAD_SIZE] = {0};
+  uint8_t cell[RELAY_PAYLOAD_SIZE_MAX] = {0};
 
   tor_assert(circ);
   tor_assert(TO_CIRCUIT(circ)->purpose == CIRCUIT_PURPOSE_C_ESTABLISH_REND);
@@ -1564,6 +1578,10 @@ hs_circ_send_establish_rendezvous(origin_circuit_t *circ)
     memwipe(cell, 0, cell_len);
     goto err;
   }
+
+  /* Record that we sent the cell, so we can make sure our state is as
+   * expected. */
+  circ->hs_ident->sent_establish_rendezvous = 1;
 
   memwipe(cell, 0, cell_len);
   return 0;

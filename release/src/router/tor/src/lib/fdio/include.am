@@ -15,5 +15,5 @@ src_lib_libtor_fdio_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
 src_lib_libtor_fdio_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
 # ADD_C_FILE: INSERT HEADERS HERE.
-noinst_HEADERS +=					\
+noinst_HEADERS +=				\
 	src/lib/fdio/fdio.h

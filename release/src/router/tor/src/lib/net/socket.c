@@ -652,7 +652,13 @@ tor_socket_errno(tor_socket_t sock)
 
 #if defined(_WIN32)
 #define E(code, s) { code, (s " [" #code " ]") }
-struct { int code; const char *msg; } windows_socket_errors[] = {
+
+typedef struct windows_socket_error {
+  int code;
+  const char *msg;
+} windows_socket_error_t;
+
+static windows_socket_error_t windows_socket_errors[] = {
   E(WSAEINTR, "Interrupted function call"),
   E(WSAEACCES, "Permission denied"),
   E(WSAEFAULT, "Bad address"),

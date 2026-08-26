@@ -49,61 +49,79 @@ const char* notCompletelyValidCertString =
   "evnAhf0cwULaebn+lMs8Pdl7y37+sfluVok=\n"
   "-----END CERTIFICATE-----\n";
 
-const char* validCertString = "-----BEGIN CERTIFICATE-----\n"
-  "MIIDpTCCAY0CAg3+MA0GCSqGSIb3DQEBBQUAMF4xCzAJBgNVBAYTAlVTMREwDwYD\n"
-  "VQQIDAhJbGxpbm9pczEQMA4GA1UEBwwHQ2hpY2FnbzEUMBIGA1UECgwLVG9yIFRl\n"
-  "c3RpbmcxFDASBgNVBAMMC1RvciBUZXN0aW5nMB4XDTE1MDkwNjEzMzk1OVoXDTQz\n"
-  "MDEyMjEzMzk1OVowVjELMAkGA1UEBhMCVVMxEDAOBgNVBAcMB0NoaWNhZ28xFDAS\n"
-  "BgNVBAoMC1RvciBUZXN0aW5nMR8wHQYDVQQDDBZ0ZXN0aW5nLnRvcnByb2plY3Qu\n"
-  "b3JnMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDoT6uyVVhWyOF3wkHjjYbd\n"
-  "nKaykyRv4JVtKQdZ4OpEErmX1zw4MmyzpQNV6iR4bQnWiyLfzyVJMZDIC/WILBfX\n"
-  "w2Pza/yuLgUvDc3twMuhOACzOQVO8PrEF/aVv2+hbCCy2udXvKhnYn+CCXl3ozc8\n"
-  "XcKYvujTXDyvGWY3xwAjlQIDAQABMA0GCSqGSIb3DQEBBQUAA4ICAQCUvnhzQWuQ\n"
-  "MrN+pERkE+zcTI/9dGS90rUMMLgu8VDNqTa0TUQh8uO0EQ6uDvI8Js6e8tgwS0BR\n"
-  "UBahqb7ZHv+rejGCBr5OudqD+x4STiiuPNJVs86JTLN8SpM9CHjIBH5WCCN2KOy3\n"
-  "mevNoRcRRyYJzSFULCunIK6FGulszigMYGscrO4oiTkZiHPh9KvWT40IMiHfL+Lw\n"
-  "EtEWiLex6064LcA2YQ1AMuSZyCexks63lcfaFmQbkYOKqXa1oLkIRuDsOaSVjTfe\n"
-  "vec+X6jvf12cFTKS5WIeqkKF2Irt+dJoiHEGTe5RscUMN/f+gqHPzfFz5dR23sxo\n"
-  "g+HC6MZHlFkLAOx3wW6epPS8A/m1mw3zMPoTnb2U2YYt8T0dJMMlUn/7Y1sEAa+a\n"
-  "dSTMaeUf6VnJ//11m454EZl1to9Z7oJOgqmFffSrdD4BGIWe8f7hhW6L1Enmqe/J\n"
-  "BKL3wbzZh80O1W0bndAwhnEEhlzneFY84cbBo9pmVxpODHkUcStpr5Z7pBDrcL21\n"
-  "Ss/aB/1YrsVXhdvJdOGxl3Mnl9dUY57CympLGlT8f0pPS6GAKOelECOhFMHmJd8L\n"
-  "dj3XQSmKtYHevZ6IvuMXSlB/fJvSjSlkCuLo5+kJoaqPuRu+i/S1qxeRy3CBwmnE\n"
-  "LdSNdcX4N79GQJ996PA8+mUCQG7YRtK+WA==\n"
+// Tor www.torproject.org certificate.
+// Fetched March 6 2025, ~1320 UTC.
+const char* validCertString =
+  "-----BEGIN CERTIFICATE-----\n"
+  "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\n"
   "-----END CERTIFICATE-----\n";
 
-const char* caCertString = "-----BEGIN CERTIFICATE-----\n"
-  "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\n"
+// Let's encrypt certificate, used to sign validCertString.
+// Also fetched March 6 2025, ~1320 UTC.
+const char* caCertString =
+  "-----BEGIN CERTIFICATE-----\n"
+  "MIIFBTCCAu2gAwIBAgIQS6hSk/eaL6JzBkuoBI110DANBgkqhkiG9w0BAQsFADBP\n"
+  "MQswCQYDVQQGEwJVUzEpMCcGA1UEChMgSW50ZXJuZXQgU2VjdXJpdHkgUmVzZWFy\n"
+  "Y2ggR3JvdXAxFTATBgNVBAMTDElTUkcgUm9vdCBYMTAeFw0yNDAzMTMwMDAwMDBa\n"
+  "Fw0yNzAzMTIyMzU5NTlaMDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBF\n"
+  "bmNyeXB0MQwwCgYDVQQDEwNSMTAwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\n"
+  "AoIBAQDPV+XmxFQS7bRH/sknWHZGUCiMHT6I3wWd1bUYKb3dtVq/+vbOo76vACFL\n"
+  "YlpaPAEvxVgD9on/jhFD68G14BQHlo9vH9fnuoE5CXVlt8KvGFs3Jijno/QHK20a\n"
+  "/6tYvJWuQP/py1fEtVt/eA0YYbwX51TGu0mRzW4Y0YCF7qZlNrx06rxQTOr8IfM4\n"
+  "FpOUurDTazgGzRYSespSdcitdrLCnF2YRVxvYXvGLe48E1KGAdlX5jgc3421H5KR\n"
+  "mudKHMxFqHJV8LDmowfs/acbZp4/SItxhHFYyTr6717yW0QrPHTnj7JHwQdqzZq3\n"
+  "DZb3EoEmUVQK7GH29/Xi8orIlQ2NAgMBAAGjgfgwgfUwDgYDVR0PAQH/BAQDAgGG\n"
+  "MB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDATASBgNVHRMBAf8ECDAGAQH/\n"
+  "AgEAMB0GA1UdDgQWBBS7vMNHpeS8qcbDpHIMEI2iNeHI6DAfBgNVHSMEGDAWgBR5\n"
+  "tFnme7bl5AFzgAiIyBpY9umbbjAyBggrBgEFBQcBAQQmMCQwIgYIKwYBBQUHMAKG\n"
+  "Fmh0dHA6Ly94MS5pLmxlbmNyLm9yZy8wEwYDVR0gBAwwCjAIBgZngQwBAgEwJwYD\n"
+  "VR0fBCAwHjAcoBqgGIYWaHR0cDovL3gxLmMubGVuY3Iub3JnLzANBgkqhkiG9w0B\n"
+  "AQsFAAOCAgEAkrHnQTfreZ2B5s3iJeE6IOmQRJWjgVzPw139vaBw1bGWKCIL0vIo\n"
+  "zwzn1OZDjCQiHcFCktEJr59L9MhwTyAWsVrdAfYf+B9haxQnsHKNY67u4s5Lzzfd\n"
+  "u6PUzeetUK29v+PsPmI2cJkxp+iN3epi4hKu9ZzUPSwMqtCceb7qPVxEbpYxY1p9\n"
+  "1n5PJKBLBX9eb9LU6l8zSxPWV7bK3lG4XaMJgnT9x3ies7msFtpKK5bDtotij/l0\n"
+  "GaKeA97pb5uwD9KgWvaFXMIEt8jVTjLEvwRdvCn294GPDF08U8lAkIv7tghluaQh\n"
+  "1QnlE4SEN4LOECj8dsIGJXpGUk3aU3KkJz9icKy+aUgA+2cP21uh6NcDIS3XyfaZ\n"
+  "QjmDQ993ChII8SXWupQZVBiIpcWO4RqZk3lr7Bz5MUCwzDIA359e57SSq5CCkY0N\n"
+  "4B6Vulk7LktfwrdGNVI5BsC9qqxSwSKgRJeZ9wygIaehbHFHFhcBaMDKpiZlBHyz\n"
+  "rsnnlFXCb5s8HKn5LsUgGvB24L7sGNZP2CX7dhHov+YhD+jozLW2p9W4959Bz2Ei\n"
+  "RmqDtmiXLnzqTpXbI+suyCsohKRg6Un0RC47+cpiVwHiXZAW+cn8eiNIjqbVgXLx\n"
+  "KPpdzvvtTnOPlC7SQZSYmdunr3Bf9b77AiC/ZidstK36dRILKz7OA54=\n"
   "-----END CERTIFICATE-----\n";
+
+// A time at which the certs above are valid.
+const time_t cert_strings_valid_at = 1741267580;
 
 static tor_x509_cert_t *fixed_x509_cert = NULL;
 static tor_x509_cert_t *
@@ -134,24 +152,6 @@ read_cert_from(const char *str)
   tor_x509_cert_impl_t *res = tor_x509_cert_impl_dup_(cert->cert);
   tor_x509_cert_free(cert);
   return res;
-}
-
-static tor_x509_cert_impl_t *
-  fixed_try_to_extract_certs_from_tls_cert_out_result = NULL;
-static tor_x509_cert_impl_t *
-  fixed_try_to_extract_certs_from_tls_id_cert_out_result = NULL;
-
-static void
-fixed_try_to_extract_certs_from_tls(int severity, tor_tls_t *tls,
-                                    tor_x509_cert_impl_t **cert_out,
-                                    tor_x509_cert_impl_t **id_cert_out)
-{
-  (void) severity;
-  (void) tls;
-  *cert_out = tor_x509_cert_impl_dup_(
-                      fixed_try_to_extract_certs_from_tls_cert_out_result);
-  *id_cert_out =  tor_x509_cert_impl_dup_(
-                      fixed_try_to_extract_certs_from_tls_id_cert_out_result);
 }
 
 static void
@@ -309,44 +309,6 @@ test_tortls_get_forced_write_size(void *ignored)
  done:
   tor_free(tls);
 }
-
-static void
-test_tortls_used_v1_handshake(void *ignored)
-{
-  (void)ignored;
-  int ret;
-  tor_tls_t *tls;
-  tls = tor_malloc_zero(sizeof(tor_tls_t));
-
-  // These tests assume both V2 handshake server and client are enabled
-  tls->wasV2Handshake = 0;
-  ret = tor_tls_used_v1_handshake(tls);
-  tt_int_op(ret, OP_EQ, 1);
-
-  tls->wasV2Handshake = 1;
-  ret = tor_tls_used_v1_handshake(tls);
-  tt_int_op(ret, OP_EQ, 0);
-
- done:
-  tor_free(tls);
-}
-
-static void
-test_tortls_server_got_renegotiate(void *ignored)
-{
-  (void)ignored;
-  int ret;
-  tor_tls_t *tls;
-
-  tls = tor_malloc_zero(sizeof(tor_tls_t));
-
-  tls->got_renegotiate = 1;
-  ret = tor_tls_server_got_renegotiate(tls);
-  tt_int_op(ret, OP_EQ, 1);
-
- done:
-  tor_free(tls);
-}
 #endif /* defined(ENABLE_OPENSSL) */
 
 static void
@@ -474,57 +436,6 @@ test_tortls_is_server(void *arg)
 }
 
 static void
-test_tortls_verify(void *ignored)
-{
-  (void)ignored;
-  int ret;
-  tor_tls_t *tls;
-  crypto_pk_t *k = NULL;
-  tor_x509_cert_impl_t *cert1 = NULL, *cert2 = NULL, *invalidCert = NULL,
-    *validCert = NULL, *caCert = NULL;
-
-  validCert = read_cert_from(validCertString);
-  caCert = read_cert_from(caCertString);
-  invalidCert = read_cert_from(notCompletelyValidCertString);
-
-  tls = tor_malloc_zero(sizeof(tor_tls_t));
-
-  MOCK(try_to_extract_certs_from_tls, fixed_try_to_extract_certs_from_tls);
-
-  fixed_try_to_extract_certs_from_tls_cert_out_result = cert1;
-  ret = tor_tls_verify(LOG_WARN, tls, &k);
-  tt_int_op(ret, OP_EQ, -1);
-
-  fixed_try_to_extract_certs_from_tls_id_cert_out_result = cert2;
-  ret = tor_tls_verify(LOG_WARN, tls, &k);
-  tt_int_op(ret, OP_EQ, -1);
-
-  fixed_try_to_extract_certs_from_tls_cert_out_result = invalidCert;
-  fixed_try_to_extract_certs_from_tls_id_cert_out_result = invalidCert;
-
-  ret = tor_tls_verify(LOG_WARN, tls, &k);
-  tt_int_op(ret, OP_EQ, -1);
-
-  fixed_try_to_extract_certs_from_tls_cert_out_result = validCert;
-  fixed_try_to_extract_certs_from_tls_id_cert_out_result = caCert;
-
-  ret = tor_tls_verify(LOG_WARN, tls, &k);
-  tt_int_op(ret, OP_EQ, 0);
-  tt_assert(k);
-
- done:
-  UNMOCK(try_to_extract_certs_from_tls);
-  tor_x509_cert_impl_free(cert1);
-  tor_x509_cert_impl_free(cert2);
-  tor_x509_cert_impl_free(validCert);
-  tor_x509_cert_impl_free(invalidCert);
-  tor_x509_cert_impl_free(caCert);
-
-  tor_free(tls);
-  crypto_pk_free(k);
-}
-
-static void
 test_tortls_cert_matches_key(void *ignored)
 {
   (void)ignored;
@@ -596,15 +507,12 @@ struct testcase_t tortls_tests[] = {
 #ifdef ENABLE_OPENSSL
   LOCAL_TEST_CASE(tor_tls_get_error, 0),
   LOCAL_TEST_CASE(get_forced_write_size, 0),
-  LOCAL_TEST_CASE(used_v1_handshake, TT_FORK),
-  LOCAL_TEST_CASE(server_got_renegotiate, 0),
 #endif /* defined(ENABLE_OPENSSL) */
   LOCAL_TEST_CASE(evaluate_ecgroup_for_tls, 0),
   LOCAL_TEST_CASE(double_init, TT_FORK),
   LOCAL_TEST_CASE(address, TT_FORK),
   LOCAL_TEST_CASE(is_server, 0),
   LOCAL_TEST_CASE(bridge_init, TT_FORK),
-  LOCAL_TEST_CASE(verify, TT_FORK),
   LOCAL_TEST_CASE(cert_matches_key, 0),
   END_OF_TESTCASES
 };

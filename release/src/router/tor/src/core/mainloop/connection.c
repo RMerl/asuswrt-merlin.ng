@@ -314,12 +314,8 @@ conn_state_to_string(int type, int state)
         case OR_CONN_STATE_CONNECTING: return "connect()ing";
         case OR_CONN_STATE_PROXY_HANDSHAKING: return "handshaking (proxy)";
         case OR_CONN_STATE_TLS_HANDSHAKING: return "handshaking (TLS)";
-        case OR_CONN_STATE_TLS_CLIENT_RENEGOTIATING:
-          return "renegotiating (TLS, v2 handshake)";
-        case OR_CONN_STATE_TLS_SERVER_RENEGOTIATING:
-          return "waiting for renegotiation or V3 handshake";
-        case OR_CONN_STATE_OR_HANDSHAKING_V2:
-          return "handshaking (Tor, v2 handshake)";
+        case OR_CONN_STATE_SERVER_VERSIONS_WAIT:
+          return "waiting for V3+ handshake";
         case OR_CONN_STATE_OR_HANDSHAKING_V3:
           return "handshaking (Tor, v3 handshake)";
         case OR_CONN_STATE_OPEN: return "open";
@@ -2342,15 +2338,11 @@ connection_connect_log_client_use_ip_version(const connection_t *conn)
   /* Check if we broke a mandatory address family restriction */
   if ((must_ipv4 && tor_addr_family(&real_addr) == AF_INET6)
       || (must_ipv6 && tor_addr_family(&real_addr) == AF_INET)) {
-    static int logged_backtrace = 0;
     log_info(LD_BUG, "Outgoing %s connection to %s violated ClientUseIPv%s 0.",
              conn->type == CONN_TYPE_OR ? "OR" : "Dir",
              fmt_addr(&real_addr),
              options->ClientUseIPv4 == 0 ? "4" : "6");
-    if (!logged_backtrace) {
-      log_backtrace(LOG_INFO, LD_BUG, "Address came from");
-      logged_backtrace = 1;
-    }
+    log_backtrace_once(LOG_INFO, LD_BUG, "Address came from");
   }
 
   /* Bridges are allowed to break IPv4/IPv6 ORPort preferences to connect to
@@ -3485,7 +3477,7 @@ connection_bucket_get_share(int base, int priority,
 static ssize_t
 connection_bucket_read_limit(connection_t *conn, time_t now)
 {
-  int base = RELAY_PAYLOAD_SIZE;
+  int base = RELAY_PAYLOAD_SIZE_MAX;
   int priority = conn->type != CONN_TYPE_DIR;
   ssize_t conn_bucket = -1;
   size_t global_bucket_val = token_bucket_rw_get_read(&global_bucket);
@@ -3539,7 +3531,7 @@ connection_bucket_read_limit(connection_t *conn, time_t now)
 ssize_t
 connection_bucket_write_limit(connection_t *conn, time_t now)
 {
-  int base = RELAY_PAYLOAD_SIZE;
+  int base = RELAY_PAYLOAD_SIZE_MAX;
   int priority = conn->type != CONN_TYPE_DIR;
   size_t conn_bucket = buf_datalen(conn->outbuf);
   size_t global_bucket_val = token_bucket_rw_get_write(&global_bucket);
@@ -4163,8 +4155,7 @@ connection_buf_read_from_socket(connection_t *conn, ssize_t *max_to_read,
     int pending;
     or_connection_t *or_conn = TO_OR_CONN(conn);
     size_t initial_size;
-    if (conn->state == OR_CONN_STATE_TLS_HANDSHAKING ||
-        conn->state == OR_CONN_STATE_TLS_CLIENT_RENEGOTIATING) {
+    if (conn->state == OR_CONN_STATE_TLS_HANDSHAKING) {
       /* continue handshaking even if global token bucket is empty */
       return connection_tls_continue_handshake(or_conn);
     }
@@ -4206,6 +4197,7 @@ connection_buf_read_from_socket(connection_t *conn, ssize_t *max_to_read,
            * again.  Stop waiting for write events now, or else we'll
            * busy-loop until data arrives for us to read.
            * XXX: remove this when v2 handshakes support is dropped. */
+          // XXXX Try to make sense of what is going on here.
           connection_stop_writing(conn);
           if (!connection_is_reading(conn))
             connection_start_reading(conn);
@@ -4493,8 +4485,7 @@ connection_handle_write_impl(connection_t *conn, int force)
       conn->state > OR_CONN_STATE_PROXY_HANDSHAKING) {
     or_connection_t *or_conn = TO_OR_CONN(conn);
     size_t initial_size;
-    if (conn->state == OR_CONN_STATE_TLS_HANDSHAKING ||
-        conn->state == OR_CONN_STATE_TLS_CLIENT_RENEGOTIATING) {
+    if (conn->state == OR_CONN_STATE_TLS_HANDSHAKING) {
       connection_stop_writing(conn);
       if (connection_tls_continue_handshake(or_conn) < 0) {
         /* Don't flush; connection is dead. */
@@ -4511,7 +4502,7 @@ connection_handle_write_impl(connection_t *conn, int force)
         return -1;
       }
       return 0;
-    } else if (conn->state == OR_CONN_STATE_TLS_SERVER_RENEGOTIATING) {
+    } else if (conn->state == OR_CONN_STATE_SERVER_VERSIONS_WAIT) {
       return connection_handle_read(conn);
     }
 

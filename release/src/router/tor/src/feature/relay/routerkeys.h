@@ -21,6 +21,10 @@ const ed25519_keypair_t *get_current_auth_keypair(void);
 const struct tor_cert_st *get_current_link_cert_cert(void);
 const struct tor_cert_st *get_current_auth_key_cert(void);
 
+smartlist_t *list_family_key_files(const or_options_t *options,
+                                   const char *keydir);
+const smartlist_t *get_current_family_id_keys(void);
+
 void get_master_rsa_crosscert(const uint8_t **cert_out,
                               size_t *size_out);
 
@@ -39,6 +43,11 @@ uint8_t *make_tap_onion_key_crosscert(const crypto_pk_t *onion_key,
 
 int log_cert_expiration(void);
 int load_ed_keys(const or_options_t *options, time_t now);
+int load_family_id_keys(const or_options_t *options,
+                        const networkstatus_t *ns);
+int create_family_id_key(const char *fname, ed25519_public_key_t *pk_out);
+void warn_about_family_id_config(const or_options_t *options,
+                                 const networkstatus_t *ns);
 int should_make_new_ed_keys(const or_options_t *options, const time_t now);
 
 int generate_ed_link_cert(const or_options_t *options, time_t now, int force);
@@ -82,6 +91,10 @@ relay_key_is_unavailable_(void)
   ((void)(options), (void)(now), (void)(force), 0)
 #define should_make_new_ed_keys(options, now) \
   ((void)(options), (void)(now), 0)
+#define warn_about_family_id_config(options,ns) \
+  ((void)(options), (void)(ns))
+#define get_current_family_id_keys() \
+  (smartlist_new())
 
 // These can get removed once router.c becomes relay-only.
 static inline struct tor_cert_st *
@@ -120,12 +133,23 @@ make_tap_onion_key_crosscert(const crypto_pk_t *onion_key,
  * CMD_KEYGEN. */
 #define load_ed_keys(x,y)                                                \
   (puts("Not available: Tor has been compiled without relay support"), 0)
+#define load_family_id_keys(x,y)                                         \
+  (puts("Not available: Tor has been compiled without relay support"), 0)
+#define create_family_id_key(x,y)                                      \
+  (puts("Not available: Tor has been compiled without relay support"), -1)
 
 #endif /* defined(HAVE_MODULE_RELAY) */
 
 #ifdef TOR_UNIT_TESTS
 const ed25519_keypair_t *get_master_identity_keypair(void);
 void init_mock_ed_keys(const crypto_pk_t *rsa_identity_key);
+#endif
+
+#ifdef ROUTERKEYS_PRIVATE
+STATIC void set_family_id_keys(smartlist_t *keys);
+STATIC bool is_family_key_fname(const char *fname);
+STATIC int load_family_id_keys_impl(const or_options_t *options,
+                                    const char *keydir);
 #endif
 
 #endif /* !defined(TOR_ROUTERKEYS_H) */

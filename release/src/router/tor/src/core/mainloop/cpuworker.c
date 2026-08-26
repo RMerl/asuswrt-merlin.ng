@@ -213,7 +213,9 @@ typedef struct cpuworker_reply_t {
   /** The created cell to send back. */
   created_cell_t created_cell;
   /** The keys to use on this circuit. */
-  uint8_t keys[CPATH_KEY_MATERIAL_LEN];
+  uint8_t keys[MAX_RELAY_KEY_MATERIAL_LEN];
+  /** Length of the generated key material. */
+  size_t keys_len;
   /** Input to use for authenticating introduce1 cells. */
   uint8_t rend_auth_material[DIGEST_LEN];
   /** Negotiated circuit parameters. */
@@ -451,9 +453,12 @@ cpuworker_onion_handshake_replyfn(void *work_)
     }
   }
 
+  circ->relay_cell_format = rpl.circ_params.cell_fmt;
+
   if (onionskin_answer(circ,
                        &rpl.created_cell,
-                       (const char*)rpl.keys, sizeof(rpl.keys),
+                       rpl.circ_params.crypto_alg,
+                       (const char*)rpl.keys, rpl.keys_len,
                        rpl.rend_auth_material) < 0) {
     log_warn(LD_OR,"onionskin_answer failed. Closing.");
     circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_INTERNAL);
@@ -495,15 +500,17 @@ cpuworker_onion_handshake_threadfn(void *state_, void *work_)
   rpl.handshake_type = cc->handshake_type;
   if (req.timed)
     tor_gettimeofday(&tv_start);
+  rpl.keys_len = sizeof(rpl.keys);
   n = onion_skin_server_handshake(cc->handshake_type,
                                   cc->onionskin, cc->handshake_len,
                                   onion_keys,
                                   &req.circ_ns_params,
                                   cell_out->reply,
                                   sizeof(cell_out->reply),
-                                  rpl.keys, CPATH_KEY_MATERIAL_LEN,
+                                  rpl.keys, &rpl.keys_len,
                                   rpl.rend_auth_material,
                                   &rpl.circ_params);
+
   if (n < 0) {
     /* failure */
     log_debug(LD_OR,"onion_skin_server_handshake failed.");
@@ -543,7 +550,7 @@ cpuworker_onion_handshake_threadfn(void *state_, void *work_)
   memcpy(&job->u.reply, &rpl, sizeof(rpl));
 
   memwipe(&req, 0, sizeof(req));
-  memwipe(&rpl, 0, sizeof(req));
+  memwipe(&rpl, 0, sizeof(rpl));
   return WQ_RPL_REPLY;
 }
 

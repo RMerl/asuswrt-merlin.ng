@@ -86,8 +86,6 @@ bto_cevent_anyconn(const bt_orconn_t *bto)
   case OR_CONN_STATE_TLS_HANDSHAKING:
     control_event_bootstrap(BOOTSTRAP_STATUS_CONN_DONE, 0);
     break;
-  case OR_CONN_STATE_TLS_CLIENT_RENEGOTIATING:
-  case OR_CONN_STATE_OR_HANDSHAKING_V2:
   case OR_CONN_STATE_OR_HANDSHAKING_V3:
     control_event_bootstrap(BOOTSTRAP_STATUS_HANDSHAKE, 0);
     break;
@@ -140,8 +138,6 @@ bto_cevent_apconn(const bt_orconn_t *bto)
   case OR_CONN_STATE_TLS_HANDSHAKING:
     control_event_bootstrap(BOOTSTRAP_STATUS_AP_CONN_DONE, 0);
     break;
-  case OR_CONN_STATE_TLS_CLIENT_RENEGOTIATING:
-  case OR_CONN_STATE_OR_HANDSHAKING_V2:
   case OR_CONN_STATE_OR_HANDSHAKING_V3:
     control_event_bootstrap(BOOTSTRAP_STATUS_AP_HANDSHAKE, 0);
     break;

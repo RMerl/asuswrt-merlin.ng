@@ -16,9 +16,12 @@
 #include "lib/encoding/confline.h"
 #include "lib/confmgt/confmgt.h"
 #include "lib/conf/confdecl.h"
+#include "lib/version/torversion.h"
 
 /* Required for dirinfo_type_t in or_options_t */
 #include "core/or/or.h"
+#include "core/or/tor_version_st.h"
+#include "core/or/versions.h"
 #include "app/config/config.h"
 #include "app/config/resolve_addr.h"
 
@@ -426,6 +429,7 @@ static int
 dirauth_options_validate(const void *arg, char **msg)
 {
   const dirauth_options_t *options = arg;
+  tor_version_t minimal_accepted_server_version, recommended_version;
 
   if (options->VersioningAuthoritativeDirectory &&
       (!options->RecommendedClientVersions ||
@@ -439,12 +443,53 @@ dirauth_options_validate(const void *arg, char **msg)
     REJECT("Guard bandwdith threshold fraction is invalid.");
   }
 
-  char *t;
+  if (tor_version_parse(options->MinimalAcceptedServerVersion,
+        &minimal_accepted_server_version) != 0) {
+    REJECT("Invalid MinimalAcceptedServerVersion");
+  }
+
+  tor_assertf(tor_version_parse(get_short_version(),
+        &recommended_version) == 0,
+      "We failed to parse our own version");
+  if (tor_version_compare(&recommended_version,
+        &minimal_accepted_server_version) < 0) {
+    REJECT("MinimalAcceptedServerVersion wants to reject the version "
+        "this node is running");
+  }
+
+  char *recommended_versions;
+  int found_recommended_rejected_version = 0;
   /* Call these functions to produce warnings only. */
-  t = format_recommended_version_list(options->RecommendedClientVersions, 1);
-  tor_free(t);
-  t = format_recommended_version_list(options->RecommendedServerVersions, 1);
-  tor_free(t);
+  recommended_versions = format_recommended_version_list(
+      options->RecommendedClientVersions, 1);
+  tor_free(recommended_versions);
+
+  recommended_versions = format_recommended_version_list(
+      options->RecommendedServerVersions, 1);
+
+  smartlist_t *version_sl = smartlist_new();
+  smartlist_split_string(version_sl, recommended_versions, ",",
+      SPLIT_SKIP_SPACE, 0);
+  SMARTLIST_FOREACH_BEGIN(version_sl, const char *, version) {
+    if (version[0] != '\0' && tor_version_parse(version,
+          &recommended_version) != 0) {
+      COMPLAIN("Found unparseable version in RecommendedServerVersions");
+      continue;
+    }
+
+    if (tor_version_compare(&recommended_version,
+          &minimal_accepted_server_version) < 0) {
+      found_recommended_rejected_version = 1;
+      break;
+    }
+  } SMARTLIST_FOREACH_END(version);
+
+  SMARTLIST_FOREACH(version_sl, char *, version, tor_free(version));
+  smartlist_free(version_sl);
+  tor_free(recommended_versions);
+  if (found_recommended_rejected_version)
+      REJECT("MinimalAcceptedServerVersion wants to reject a recommended "
+          "version");
 
   if (options->TestingAuthDirTimeToLearnReachability > 2*60*60) {
     COMPLAIN("TestingAuthDirTimeToLearnReachability is insanely high.");

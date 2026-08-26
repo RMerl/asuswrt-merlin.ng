@@ -14,6 +14,7 @@
 #include "core/or/circuitlist.h"
 #include "core/or/circuituse.h"
 #include "core/or/relay.h"
+#include "core/or/relay_msg.h"
 #include "feature/rend/rendmid.h"
 #include "feature/relay/relay_metrics.h"
 #include "feature/stats/rephist.h"
@@ -594,11 +595,13 @@ validate_introduce1_parsed_cell(const trn_cell_introduce1_t *cell)
 
   tor_assert(cell);
 
-  /* This code path SHOULD NEVER be reached if the cell is a legacy type so
-   * safety net here. The legacy ID must be zeroes in this case. */
+  /* If it's a legacy (v2 intro1 cell), refuse it and return. This type of
+   * cell starts with something other than 20 zeros. */
   legacy_key_id_len = trn_cell_introduce1_getlen_legacy_key_id(cell);
   legacy_key_id = trn_cell_introduce1_getconstarray_legacy_key_id(cell);
-  if (BUG(!fast_mem_is_zero((char *) legacy_key_id, legacy_key_id_len))) {
+  if (!fast_mem_is_zero((char *) legacy_key_id, legacy_key_id_len)) {
+    log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
+           "Incoming INTRODUCE1 cell uses legacy format. Rejecting.");
     goto invalid;
   }
 
@@ -630,7 +633,7 @@ validate_introduce1_parsed_cell(const trn_cell_introduce1_t *cell)
   return -1;
 }
 
-/** We just received a non legacy INTRODUCE1 cell on <b>client_circ</b> with
+/** We just received an INTRODUCE1 cell on <b>client_circ</b> with
  * the payload in <b>request</b> of size <b>request_len</b>. Return 0 if
  * everything went well, or -1 if an error occurred. This function is in charge
  * of sending back an INTRODUCE_ACK cell and will close client_circ on error.
@@ -641,11 +644,32 @@ handle_introduce1(or_circuit_t *client_circ, const uint8_t *request,
 {
   int ret = -1;
   or_circuit_t *service_circ;
-  trn_cell_introduce1_t *parsed_cell;
+  trn_cell_introduce1_t *parsed_cell = NULL;
   uint16_t status = TRUNNEL_HS_INTRO_ACK_STATUS_SUCCESS;
 
   tor_assert(client_circ);
   tor_assert(request);
+
+  /* Make sure the cell we're going to send toward the onion service is
+   * small enough to fit in a CGO-style circuit. Otherwise we should fail
+   * it right here, rather than trying to send it toward the onion
+   * service, maybe discovering that it doesn't fit, and maybe tearing
+   * down that intro circuit.
+   *
+   * Note that we refuse this cell in that case even if it would fit
+   * (that is, even if the onion service side isn't using a CGO-style
+   * circuit), because we don't want to reveal to the client which kind
+   * of circuit the onion service made. */
+  if (request_len >
+      relay_cell_max_payload_size(RELAY_CELL_FORMAT_V1,
+                                  RELAY_COMMAND_INTRODUCE2)) {
+    relay_increment_intro1_action(INTRO1_MALFORMED);
+    log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
+           "Rejecting over-long INTRODUCE1 cell. Responding with NACK.");
+    /* Inform client that the INTRODUCE1 has a bad format. */
+    status = TRUNNEL_HS_INTRO_ACK_STATUS_BAD_FORMAT;
+    goto send_ack;
+  }
 
   /* Parse cell. Note that we can only parse the non encrypted section for
    * which we'll use the authentication key to find the service introduction
@@ -689,7 +713,7 @@ handle_introduce1(or_circuit_t *client_circ, const uint8_t *request,
     }
   }
 
-  /* Before sending, lets make sure this cell can be sent on the service
+  /* Before sending, let's make sure this cell can be sent on the service
    * circuit asking the DoS defenses. */
   if (!hs_dos_can_send_intro2(service_circ)) {
     relay_increment_intro1_action(INTRO1_RATE_LIMITED);

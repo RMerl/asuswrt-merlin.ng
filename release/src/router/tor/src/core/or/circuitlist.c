@@ -65,6 +65,7 @@
 #include "core/or/conflux.h"
 #include "core/or/conflux_pool.h"
 #include "core/or/crypt_path.h"
+#include "core/or/dos.h"
 #include "core/or/extendinfo.h"
 #include "core/or/status.h"
 #include "core/or/trace_probes_circuit.h"
@@ -158,6 +159,10 @@ double cc_stats_circ_close_cwnd_ma = 0;
 double cc_stats_circ_close_ss_cwnd_ma = 0;
 
 uint64_t cc_stats_circs_closed = 0;
+
+/** Total number of circuit protocol violation. This is incremented when the
+ * END_CIRC_REASON_TORPROTOCOL is used to close a circuit. */
+uint64_t circ_n_proto_violation = 0;
 
 /********* END VARIABLES ************/
 
@@ -703,6 +708,18 @@ circuit_close_all_marked(void)
   smartlist_clear(circuits_pending_close);
 }
 
+#ifdef TOR_UNIT_TESTS
+/** Return the number of circuits on the circuits_pending_close list.
+ *  Exposed for testing. */
+STATIC int
+circuit_count_pending_close(void)
+{
+  if (!circuits_pending_close)
+    return 0;
+  return smartlist_len(circuits_pending_close);
+}
+#endif
+
 /** Return a pointer to the global list of circuits. */
 MOCK_IMPL(smartlist_t *,
 circuit_get_global_list,(void))
@@ -1130,6 +1147,7 @@ or_circuit_new(circid_t p_circ_id, channel_t *p_chan)
   cell_queue_init(&circ->p_chan_cells);
 
   init_circuit_base(TO_CIRCUIT(circ));
+  dos_stream_init_circ_tbf(circ);
 
   tor_trace(TR_SUBSYS(circuit), TR_EV(new_or), circ);
   return circ;
@@ -1333,6 +1351,12 @@ circuit_free_all(void)
   smartlist_t *lst = circuit_get_global_list();
 
   SMARTLIST_FOREACH_BEGIN(lst, circuit_t *, tmp) {
+    tmp->global_circuitlist_idx = -1;
+    /* Must run before the resolving_streams loop below: for conflux circuits,
+     * this calls linked_circuit_free() -> linked_nullify_streams(), which
+     * NULLs the shared stream pointer on non-last legs so that the loop is
+     * a no-op for them and only the last leg actually frees the streams. */
+    circuit_about_to_free_atexit(tmp);
     if (! CIRCUIT_IS_ORIGIN(tmp)) {
       or_circuit_t *or_circ = TO_OR_CIRCUIT(tmp);
       while (or_circ->resolving_streams) {
@@ -1342,8 +1366,6 @@ circuit_free_all(void)
         or_circ->resolving_streams = next_conn;
       }
     }
-    tmp->global_circuitlist_idx = -1;
-    circuit_about_to_free_atexit(tmp);
     circuit_free(tmp);
     SMARTLIST_DEL_CURRENT(lst, tmp);
   } SMARTLIST_FOREACH_END(tmp);
@@ -2164,6 +2186,10 @@ circuit_mark_for_close_, (circuit_t *circ, int reason, int line,
   tor_assert(line);
   tor_assert(file);
 
+  if (reason == END_CIRC_REASON_TORPROTOCOL) {
+    circ_n_proto_violation++;
+  }
+
   /* Check whether the circuitpadding subsystem wants to block this close */
   if (circpad_marked_circuit_for_padding(circ, reason)) {
     return;
@@ -2193,6 +2219,14 @@ circuit_mark_for_close_, (circuit_t *circ, int reason, int line,
 
     /* We don't send reasons when closing circuits at the origin. */
     reason = END_CIRC_REASON_NONE;
+  }
+
+  /* If a callback above (e.g. pathbias probing failing to send on a full
+   * queue) recursively called circuit_mark_for_close on this circuit, it is
+   * already marked and on circuits_pending_close. Bail out to avoid
+   * performing cleanup twice. */
+  if (circ->marked_for_close) {
+    return;
   }
 
   circuit_synchronize_written_or_bandwidth(circ, CIRCUIT_N_CHAN);

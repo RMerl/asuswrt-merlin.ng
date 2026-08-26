@@ -177,8 +177,8 @@ tor_mlockall(void)
  * return 0 and <b>max_out</b> is set to the current maximum value returned
  * by getrlimit().
  *
- * Otherwise, return 0 and store the maximum we found inside <b>max_out</b>
- * and set <b>max_sockets</b> with that value as well.*/
+ * Otherwise: return 0, store the maximum we found inside <b>max_out</b>,
+ * and call set_max_sockets() with that value as well.*/
 int
 set_max_file_descriptors(rlim_t limit, int *max_out)
 {

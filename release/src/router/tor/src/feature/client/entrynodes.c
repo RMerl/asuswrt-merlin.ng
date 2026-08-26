@@ -1350,15 +1350,16 @@ sampled_guards_update_consensus_presence(guard_selection_t *gs)
 }
 
 /**
- * Enumerate <b>sampled_entry_guards</b> smartlist in <b>gs</b>.
- * For each <b>entry_guard_t</b> object in smartlist, do the following:
+ * Walk through the <b>sampled_entry_guards</b> smartlist in <b>gs</b>.
+ *
+ * For each <b>entry_guard_t</b> object in the smartlist:
+ *
  * * If <b>currently_listed</b> is false and <b>unlisted_since_date</b>
  *   is earlier than <b>remove_if_unlisted_since</b> - remove it.
- * * Otherwise, check if <b>sampled_on_date</b> is earlier than
- *   <b>maybe_remove_if_sampled_before</b>.
- *   * When above condition is correct, remove the guard if:
- *     * It was never confirmed.
- *     * It was confirmed before <b>remove_if_confirmed_before</b>.
+ * * Otherwise, if it is confirmed and it was confirmed before
+ *   <b>remove_if_confirmed_before</b> - remove it.
+ * * Otherwise, if it is not confirmed and it was sampled before
+ *   <b>maybe_remove_if_sampled_before</b> - remove it.
  *
  * Require <b>gs</b> to be non-null pointer.
  * Return number of entries deleted.
@@ -1383,22 +1384,25 @@ sampled_guards_prune_obsolete_entries(guard_selection_t *gs,
          {FIRST_UNLISTED_AT} is over get_remove_unlisted_guards_after_days()
          days in the past."
       */
+      rmv = 1;
       log_info(LD_GUARD, "Removing sampled guard %s: it has been unlisted "
                "for over %d days", entry_guard_describe(guard),
                get_remove_unlisted_guards_after_days());
-      rmv = 1;
-    } else if (guard->sampled_on_date < maybe_remove_if_sampled_before) {
-      /* We have a live consensus, and {ADDED_ON_DATE} is over
-        {GUARD_LIFETIME} ago, *and* {CONFIRMED_ON_DATE} is either
-        "never", or over {GUARD_CONFIRMED_MIN_LIFETIME} ago.
-      */
-      if (guard->confirmed_on_date == 0) {
+    } else if (guard->confirmed_on_date == 0) {
+      if (guard->sampled_on_date < maybe_remove_if_sampled_before) {
+        /* We have a live consensus, and this guard isn't confirmed, and
+         * {ADDED_ON_DATE} is over {GUARD_LIFETIME} ago. */
         rmv = 1;
         log_info(LD_GUARD, "Removing sampled guard %s: it was sampled "
                  "over %d days ago, but never confirmed.",
                  entry_guard_describe(guard),
                  get_guard_lifetime() / 86400);
-      } else if (guard->confirmed_on_date < remove_if_confirmed_before) {
+      }
+    } else { /* guard is confirmed */
+      if (guard->confirmed_on_date < remove_if_confirmed_before) {
+        /* We have a live consensus, and {CONFIRMED_ON_DATE} is not
+         * "never", and {CONFIRMED_ON_DATE} is over
+         * {GUARD_CONFIRMED_MIN_LIFETIME} ago. */
         rmv = 1;
         log_info(LD_GUARD, "Removing sampled guard %s: it was sampled "
                  "over %d days ago, and confirmed over %d days ago.",
@@ -1595,13 +1599,15 @@ guard_create_exit_restriction(const uint8_t *exit_id)
 /* Allocate and return a new exit guard restriction that excludes all current
  * and pending conflux guards */
 STATIC entry_guard_restriction_t *
-guard_create_conflux_restriction(const origin_circuit_t *circ)
+guard_create_conflux_restriction(const origin_circuit_t *circ,
+                                 const uint8_t *exit_id)
 {
   entry_guard_restriction_t *rst = NULL;
   rst = tor_malloc_zero(sizeof(entry_guard_restriction_t));
   rst->type = RST_EXCL_LIST;
   rst->excluded = smartlist_new();
   conflux_add_guards_to_exclude_list(circ, rst->excluded);
+  memcpy(rst->exclude_id, exit_id, DIGEST_LEN);
   return rst;
 }
 
@@ -1653,7 +1659,8 @@ static int
 guard_obeys_exit_restriction(const entry_guard_t *guard,
                              const entry_guard_restriction_t *rst)
 {
-  tor_assert(rst->type == RST_EXIT_NODE);
+  tor_assert(rst->type == RST_EXIT_NODE ||
+          rst->type == RST_EXCL_LIST);
 
   // Exclude the exit ID and all of its family.
   const node_t *node = node_get_by_id((const char*)rst->exclude_id);
@@ -1709,7 +1716,8 @@ entry_guard_obeys_restriction(const entry_guard_t *guard,
   } else if (rst->type == RST_OUTDATED_MD_DIRSERVER) {
     return guard_obeys_md_dirserver_restriction(guard);
   } else if (rst->type == RST_EXCL_LIST) {
-    return !smartlist_contains_digest(rst->excluded, guard->identity);
+    return guard_obeys_exit_restriction(guard, rst) &&
+        !smartlist_contains_digest(rst->excluded, guard->identity);
   }
 
   tor_assert_nonfatal_unreached();
@@ -2169,7 +2177,7 @@ select_primary_guard_for_circuit(guard_selection_t *gs,
             static ratelim_t guardlog = RATELIM_INIT(60);
             log_fn_ratelim(&guardlog, LOG_NOTICE, LD_GUARD,
                            "All current guards excluded by path restriction "
-                           "type %d; using an additonal guard.",
+                           "type %d; using an additional guard.",
                            rst->type);
           } else {
             break;
@@ -3875,8 +3883,9 @@ guards_choose_guard(const origin_circuit_t *circ,
   entry_guard_restriction_t *rst = NULL;
 
   /* If we this is a conflux circuit, build an exclusion list for it. */
-  if (CIRCUIT_IS_CONFLUX(TO_CIRCUIT(circ))) {
-    rst = guard_create_conflux_restriction(circ);
+  if (CIRCUIT_IS_CONFLUX(TO_CIRCUIT(circ)) && state
+          && (exit_id = build_state_get_exit_rsa_id(state))) {
+    rst = guard_create_conflux_restriction(circ, exit_id);
     /* Don't allow connecting back to the exit if there is one */
     if (state && (exit_id = build_state_get_exit_rsa_id(state))) {
       /* add the exit_id to the excluded list */

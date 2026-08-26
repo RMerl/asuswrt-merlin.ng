@@ -943,25 +943,15 @@ test_link_handshake_send_authchallenge(void *arg)
   cell1 = mock_got_var_cell;
   tt_int_op(0, OP_EQ, connection_or_send_auth_challenge_cell(c1));
   cell2 = mock_got_var_cell;
-#ifdef HAVE_WORKING_TOR_TLS_GET_TLSSECRETS
-  tt_int_op(38, OP_EQ, cell1->payload_len);
-  tt_int_op(38, OP_EQ, cell2->payload_len);
-#else
   tt_int_op(36, OP_EQ, cell1->payload_len);
   tt_int_op(36, OP_EQ, cell2->payload_len);
-#endif /* defined(HAVE_WORKING_TOR_TLS_GET_TLSSECRETS) */
   tt_int_op(0, OP_EQ, cell1->circ_id);
   tt_int_op(0, OP_EQ, cell2->circ_id);
   tt_int_op(CELL_AUTH_CHALLENGE, OP_EQ, cell1->command);
   tt_int_op(CELL_AUTH_CHALLENGE, OP_EQ, cell2->command);
 
-#ifdef HAVE_WORKING_TOR_TLS_GET_TLSSECRETS
-  tt_mem_op("\x00\x02\x00\x01\x00\x03", OP_EQ, cell1->payload + 32, 6);
-  tt_mem_op("\x00\x02\x00\x01\x00\x03", OP_EQ, cell2->payload + 32, 6);
-#else
   tt_mem_op("\x00\x01\x00\x03", OP_EQ, cell1->payload + 32, 4);
   tt_mem_op("\x00\x01\x00\x03", OP_EQ, cell2->payload + 32, 4);
-#endif /* defined(HAVE_WORKING_TOR_TLS_GET_TLSSECRETS) */
   tt_mem_op(cell1->payload, OP_NE, cell2->payload, 32);
 
  done:
@@ -1004,7 +994,6 @@ recv_authchallenge_setup(const struct testcase_t *test)
 {
   (void)test;
 
-  testing__connection_or_pretend_TLSSECRET_is_supported = 1;
   authchallenge_data_t *d = tor_malloc_zero(sizeof(*d));
   d->c = or_connection_new(CONN_TYPE_OR, AF_INET);
   d->chan = tor_malloc_zero(sizeof(*d->chan));
@@ -1019,7 +1008,7 @@ recv_authchallenge_setup(const struct testcase_t *test)
   d->cell->payload_len = 38;
   d->cell->payload[33] = 2; /* 2 methods */
   d->cell->payload[35] = 7; /* This one isn't real */
-  d->cell->payload[37] = 1; /* This is the old RSA one. */
+  d->cell->payload[37] = 3; /* This is the currently supported Ed25519 one. */
   d->cell->command = CELL_AUTH_CHALLENGE;
 
   get_options_mutable()->ORPort_set = 1;
@@ -1043,18 +1032,19 @@ static struct testcase_setup_t setup_recv_authchallenge = {
 };
 
 static void
-test_link_handshake_recv_authchallenge_ok(void *arg)
+test_link_handshake_recv_authchallenge_no_ed25519(void *arg)
 {
   authchallenge_data_t *d = arg;
 
+  d->cell->payload[33] = 1; /* only 1 type supported. */
+  d->cell->payload_len -= 2;
+
+  setup_capture_of_logs(LOG_INFO);
   channel_tls_process_auth_challenge_cell(d->cell, d->chan);
-  tt_int_op(0, OP_EQ, mock_close_called);
-  tt_int_op(1, OP_EQ, d->c->handshake_state->received_auth_challenge);
-  tt_int_op(1, OP_EQ, mock_send_authenticate_called);
-  tt_int_op(1, OP_EQ, mock_send_netinfo_called);
-  tt_int_op(1, OP_EQ, mock_send_authenticate_called_with_type); /* RSA */
+  expect_log_msg_containing("we don't know any of its authentication types");
+
  done:
-  ;
+  teardown_capture_of_logs();
 }
 
 static void
@@ -1154,14 +1144,6 @@ AUTHCHALLENGE_FAIL(nonzero_circid,
                    require_failure_message = "It had a nonzero circuit ID";
                    d->cell->circ_id = 1337)
 
-static int
-mock_get_tlssecrets(tor_tls_t *tls, uint8_t *secrets_out)
-{
-  (void)tls;
-  memcpy(secrets_out, "int getRandomNumber(){return 4;}", 32);
-  return 0;
-}
-
 static void
 mock_set_circid_type(channel_t *chan,
                      crypto_pk_t *identity_rcvd,
@@ -1173,7 +1155,6 @@ mock_set_circid_type(channel_t *chan,
 }
 
 typedef struct authenticate_data_t {
-  int is_ed;
   or_connection_t *c1, *c2;
   channel_tls_t *chan2;
   var_cell_t *cell;
@@ -1187,7 +1168,6 @@ authenticate_data_cleanup(const struct testcase_t *test, void *arg)
   UNMOCK(connection_or_write_var_cell_to_buf);
   UNMOCK(tor_tls_get_peer_cert);
   UNMOCK(tor_tls_get_own_cert);
-  UNMOCK(tor_tls_get_tlssecrets);
   UNMOCK(connection_or_close_for_error);
   UNMOCK(channel_set_circid_type);
   UNMOCK(tor_tls_export_key_material);
@@ -1216,16 +1196,12 @@ static void *
 authenticate_data_setup(const struct testcase_t *test)
 {
   authenticate_data_t *d = tor_malloc_zero(sizeof(*d));
-  int is_ed = d->is_ed = (test->setup_data == (void*)3);
-
-  testing__connection_or_pretend_TLSSECRET_is_supported = 1;
 
   scheduler_init();
 
   MOCK(connection_or_write_var_cell_to_buf, mock_write_var_cell);
   MOCK(tor_tls_get_peer_cert, mock_get_peer_cert);
   MOCK(tor_tls_get_own_cert, mock_get_own_cert);
-  MOCK(tor_tls_get_tlssecrets, mock_get_tlssecrets);
   MOCK(connection_or_close_for_error, mock_close_for_err);
   MOCK(channel_set_circid_type, mock_set_circid_type);
   MOCK(tor_tls_export_key_material, mock_export_key_material);
@@ -1265,7 +1241,7 @@ authenticate_data_setup(const struct testcase_t *test)
   d->c2->tls = tor_tls_new(-1, 1);
   d->c2->handshake_state->received_certs_cell = 1;
 
-  const tor_x509_cert_t *id_cert=NULL, *link_cert=NULL, *auth_cert=NULL;
+  const tor_x509_cert_t *id_cert=NULL, *link_cert=NULL;
   tt_assert(! tor_tls_get_my_certs(1, &link_cert, &id_cert));
 
   const uint8_t *der;
@@ -1274,17 +1250,13 @@ authenticate_data_setup(const struct testcase_t *test)
   d->c1->handshake_state->certs->id_cert = tor_x509_cert_decode(der, sz);
   d->c2->handshake_state->certs->id_cert = tor_x509_cert_decode(der, sz);
 
-  if (is_ed) {
+  {
     d->c1->handshake_state->certs->ed_id_sign =
       tor_cert_dup(get_master_signing_key_cert());
     d->c2->handshake_state->certs->ed_id_sign =
       tor_cert_dup(get_master_signing_key_cert());
     d->c2->handshake_state->certs->ed_sign_auth =
       tor_cert_dup(get_current_auth_key_cert());
-  } else {
-    tt_assert(! tor_tls_get_my_certs(0, &auth_cert, &id_cert));
-    tor_x509_cert_get_der(auth_cert, &der, &sz);
-    d->c2->handshake_state->certs->auth_cert = tor_x509_cert_decode(der, sz);
   }
 
   tor_x509_cert_get_der(link_cert, &der, &sz);
@@ -1295,11 +1267,8 @@ authenticate_data_setup(const struct testcase_t *test)
   tt_assert(mock_own_cert);
 
   /* Make an authenticate cell ... */
-  int authtype;
-  if (is_ed)
-    authtype = AUTHTYPE_ED25519_SHA256_RFC5705;
-  else
-    authtype = AUTHTYPE_RSA_SHA256_TLSSECRET;
+  int authtype = AUTHTYPE_ED25519_SHA256_RFC5705;
+
   tt_int_op(0, OP_EQ, connection_or_send_authenticate_cell(d->c1, authtype));
 
   tt_assert(mock_got_var_cell);
@@ -1327,50 +1296,27 @@ test_link_handshake_auth_cell(void *arg)
   /* Is the cell well-formed on the outer layer? */
   tt_int_op(d->cell->command, OP_EQ, CELL_AUTHENTICATE);
   tt_int_op(d->cell->payload[0], OP_EQ, 0);
-  if (d->is_ed)
-    tt_int_op(d->cell->payload[1], OP_EQ, 3);
-  else
-    tt_int_op(d->cell->payload[1], OP_EQ, 1);
+  tt_int_op(d->cell->payload[1], OP_EQ, 3);
   tt_int_op(ntohs(get_uint16(d->cell->payload + 2)), OP_EQ,
             d->cell->payload_len - 4);
 
   /* Check it out for plausibility... */
-  auth_ctx_t ctx;
-  ctx.is_ed = d->is_ed;
   tt_int_op(d->cell->payload_len-4, OP_EQ, auth1_parse(&auth1,
                                              d->cell->payload+4,
-                                             d->cell->payload_len - 4, &ctx));
+                                             d->cell->payload_len - 4));
   tt_assert(auth1);
 
-  if (d->is_ed) {
-    tt_mem_op(auth1->type, OP_EQ, "AUTH0003", 8);
-  } else {
-    tt_mem_op(auth1->type, OP_EQ, "AUTH0001", 8);
-  }
+  tt_mem_op(auth1->type, OP_EQ, "AUTH0003", 8);
   tt_mem_op(auth1->tlssecrets, OP_EQ, "int getRandomNumber(){return 4;}", 32);
 
   /* Is the signature okay? */
   const uint8_t *start = d->cell->payload+4, *end = auth1->end_of_signed;
-  if (d->is_ed) {
+  {
     ed25519_signature_t sig;
     tt_int_op(auth1_getlen_sig(auth1), OP_EQ, ED25519_SIG_LEN);
     memcpy(&sig.sig, auth1_getarray_sig(auth1), ED25519_SIG_LEN);
     tt_assert(!ed25519_checksig(&sig, start, end-start,
                                 &get_current_auth_keypair()->pubkey));
-  } else {
-    uint8_t sig[128];
-    uint8_t digest[32];
-    tt_int_op(auth1_getlen_sig(auth1), OP_GT, 120);
-    auth_pubkey = tor_tls_cert_get_key(
-                                d->c2->handshake_state->certs->auth_cert);
-    int n = crypto_pk_public_checksig(
-              auth_pubkey,
-              (char*)sig, sizeof(sig), (char*)auth1_getarray_sig(auth1),
-              auth1_getlen_sig(auth1));
-    tt_int_op(n, OP_EQ, 32);
-    crypto_digest256((char*)digest,
-                     (const char*)start, end-start, DIGEST_SHA256);
-    tt_mem_op(sig, OP_EQ, digest, 32);
   }
 
   /* Then feed it to c2. */
@@ -1378,11 +1324,8 @@ test_link_handshake_auth_cell(void *arg)
   channel_tls_process_authenticate_cell(d->cell, d->chan2);
   tt_int_op(mock_close_called, OP_EQ, 0);
   tt_int_op(d->c2->handshake_state->authenticated, OP_EQ, 1);
-  if (d->is_ed) {
+  {
     tt_int_op(d->c2->handshake_state->authenticated_ed25519, OP_EQ, 1);
-    tt_int_op(d->c2->handshake_state->authenticated_rsa, OP_EQ, 1);
-  } else {
-    tt_int_op(d->c2->handshake_state->authenticated_ed25519, OP_EQ, 0);
     tt_int_op(d->c2->handshake_state->authenticated_rsa, OP_EQ, 1);
   }
 
@@ -1445,11 +1388,6 @@ AUTHENTICATE_FAIL(noidcert,
                     "certificate";
                   tor_x509_cert_free(d->c2->handshake_state->certs->id_cert);
                   d->c2->handshake_state->certs->id_cert = NULL)
-AUTHENTICATE_FAIL(noauthcert,
-                  require_failure_message = "We never got an RSA "
-                    "authentication certificate";
-                  tor_x509_cert_free(d->c2->handshake_state->certs->auth_cert);
-                  d->c2->handshake_state->certs->auth_cert = NULL)
 AUTHENTICATE_FAIL(tooshort,
                   require_failure_message = "Cell was way too short";
                   d->cell->payload_len = 3)
@@ -1473,10 +1411,7 @@ AUTHENTICATE_FAIL(badcontent,
                     "cell body was not as expected";
                   d->cell->payload[10] ^= 0xff)
 AUTHENTICATE_FAIL(badsig_1,
-                  if (d->is_ed)
-                    require_failure_message = "Ed25519 signature wasn't valid";
-                  else
-                    require_failure_message = "RSA signature wasn't valid";
+                  require_failure_message = "Ed25519 signature wasn't valid";
                   d->cell->payload[d->cell->payload_len - 5] ^= 0xff)
 AUTHENTICATE_FAIL(missing_ed_id,
                 {
@@ -1522,10 +1457,13 @@ AUTHENTICATE_FAIL(missing_ed_auth,
       test_link_handshake_recv_certs_ ## name, TT_FORK,         \
       &setup_recv_certs, (void*)type }
 
+/* These two used to have different behavior, but since we've
+   disabled RSA-SHAS256-TLSSecret authentication, we no longer
+   have any need to distinguish.
+*/
 #define TEST_AUTHENTICATE(name)                                         \
   { "authenticate/" #name , test_link_handshake_auth_ ## name, TT_FORK, \
       &setup_authenticate, NULL }
-
 #define TEST_AUTHENTICATE_ED(name)                                      \
   { "authenticate/" #name "_ed25519" , test_link_handshake_auth_ ## name, \
       TT_FORK, &setup_authenticate, (void*)3 }
@@ -1581,7 +1519,7 @@ struct testcase_t link_handshake_tests[] = {
   TEST_RCV_CERTS(server_wrong_labels_1),
 
   TEST_RSA(send_authchallenge, TT_FORK),
-  TEST_RCV_AUTHCHALLENGE(ok),
+  TEST_RCV_AUTHCHALLENGE(no_ed25519),
   TEST_RCV_AUTHCHALLENGE(ok_ed25519),
   TEST_RCV_AUTHCHALLENGE(ok_noserver),
   TEST_RCV_AUTHCHALLENGE(ok_unrecognized),
@@ -1603,7 +1541,6 @@ struct testcase_t link_handshake_tests[] = {
   TEST_AUTHENTICATE(already_authenticated),
   TEST_AUTHENTICATE(nocerts),
   TEST_AUTHENTICATE(noidcert),
-  TEST_AUTHENTICATE(noauthcert),
   TEST_AUTHENTICATE(tooshort),
   TEST_AUTHENTICATE(badtype),
   TEST_AUTHENTICATE(truncated_1),

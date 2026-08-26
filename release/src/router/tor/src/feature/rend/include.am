@@ -5,6 +5,6 @@ LIBTOR_APP_A_SOURCES += 			\
 	src/feature/rend/rendmid.c
 
 # ADD_C_FILE: INSERT HEADERS HERE.
-noinst_HEADERS +=					\
-	src/feature/rend/rendcommon.h			\
+noinst_HEADERS +=				\
+	src/feature/rend/rendcommon.h		\
 	src/feature/rend/rendmid.h

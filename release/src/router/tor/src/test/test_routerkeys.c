@@ -5,6 +5,7 @@
 
 #include "orconfig.h"
 #define ROUTER_PRIVATE
+#define ROUTERKEYS_PRIVATE
 #include "core/or/or.h"
 #include "app/config/config.h"
 #include "feature/relay/router.h"
@@ -735,6 +736,87 @@ test_routerkeys_rsa_ed_crosscert(void *arg)
   tor_free(cc);
 }
 
+static void
+test_routerkeys_family_key_fname(void *arg)
+{
+  (void)arg;
+
+  tt_assert(is_family_key_fname("hello.secret_family_key"));
+  tt_assert(is_family_key_fname("xyzzy.secret_family_key"));
+  tt_assert(is_family_key_fname("909.secret_family_key"));
+  tt_assert(! is_family_key_fname("zzz.secret_family_key~"));
+  tt_assert(! is_family_key_fname("secret_family_key"));
+
+ done:
+  ;
+}
+
+static void
+test_routerkeys_load_family_keys(void *arg)
+{
+  (void) arg;
+  char *dname = tor_strdup(get_fname_rnd("fkeys"));
+  char *fname = NULL;
+  or_options_t *options = get_options_mutable();
+  ed25519_public_key_t pubkey;
+
+#ifdef _WIN32
+  tt_assert(0==mkdir(dname));
+#else
+  tt_assert(0==mkdir(dname,0700));
+#endif
+
+  options->FamilyIds = smartlist_new();
+
+  // Not a family key, will be ignored
+  tor_asprintf(&fname, "%s"PATH_SEPARATOR"junk.1", dname);
+  write_str_to_file(fname, "hello world", 0);
+  tor_free(fname);
+
+  tt_int_op(0, OP_EQ, load_family_id_keys_impl(options, dname));
+  tt_int_op(0, OP_EQ, smartlist_len(get_current_family_id_keys()));
+
+  // Create a family key; make sure we can load it.
+  tor_asprintf(&fname, "%s"PATH_SEPARATOR"cg.secret_family_key", dname);
+  tt_int_op(0, OP_EQ, create_family_id_key(fname, &pubkey));
+  tor_free(fname);
+  smartlist_add(options->FamilyIds, tor_memdup(&pubkey, sizeof(pubkey)));
+
+  tt_int_op(0, OP_EQ, load_family_id_keys_impl(options, dname));
+  tt_int_op(1, OP_EQ, smartlist_len(get_current_family_id_keys()));
+
+  //Try a second key.
+  tor_asprintf(&fname, "%s"PATH_SEPARATOR"eb.secret_family_key", dname);
+  tt_int_op(0, OP_EQ, create_family_id_key(fname, &pubkey));
+  smartlist_add(options->FamilyIds, tor_memdup(&pubkey, sizeof(pubkey)));
+  tor_free(fname);
+
+  tt_int_op(0, OP_EQ, load_family_id_keys_impl(options, dname));
+  tt_int_op(2, OP_EQ, smartlist_len(get_current_family_id_keys()));
+
+  // Try an unlisted key, make sure it isn't loaded.
+  tor_asprintf(&fname, "%s"PATH_SEPARATOR"gt.secret_family_key", dname);
+  tt_int_op(0, OP_EQ, create_family_id_key(fname, &pubkey));
+  // Do not add to FamilyIDs here; we're leaving it unlisted.
+  tor_free(fname);
+
+  tt_int_op(0, OP_EQ, load_family_id_keys_impl(options, dname));
+  tt_int_op(2, OP_EQ, smartlist_len(get_current_family_id_keys()));
+
+  // Make a junk key, make sure it causes an error.
+  tor_asprintf(&fname, "%s"PATH_SEPARATOR"xyz.secret_family_key", dname);
+  write_str_to_file(fname, "hello world", 0);
+  tor_free(fname);
+
+  tt_int_op(-1, OP_EQ, load_family_id_keys_impl(options, dname));
+  // keys unchanged
+  tt_int_op(2, OP_EQ, smartlist_len(get_current_family_id_keys()));
+
+ done:
+  tor_free(dname);
+  tor_free(fname);
+}
+
 #define TEST(name, flags)                                       \
   { #name , test_routerkeys_ ## name, (flags), NULL, NULL }
 
@@ -749,5 +831,7 @@ struct testcase_t routerkeys_tests[] = {
   TEST(cross_certify_ntor, 0),
   TEST(cross_certify_tap, 0),
   TEST(rsa_ed_crosscert, 0),
+  TEST(family_key_fname, 0),
+  TEST(load_family_keys, TT_FORK),
   END_OF_TESTCASES
 };

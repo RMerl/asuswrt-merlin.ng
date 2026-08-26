@@ -1,6 +1,6 @@
 
 # ADD_C_FILE: INSERT SOURCES HERE.
-LIBTOR_APP_A_SOURCES += 				\
+LIBTOR_APP_A_SOURCES += 			\
 	src/feature/dircommon/consdiff.c	\
 	src/feature/dircommon/directory.c	\
 	src/feature/dircommon/fp_pair.c

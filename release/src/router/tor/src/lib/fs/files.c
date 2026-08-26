@@ -573,9 +573,10 @@ write_bytes_to_new_file(const char *fname, const char *str, size_t len,
 /**
  * Read the contents of the open file <b>fd</b> presuming it is a FIFO
  * (or similar) file descriptor for which the size of the file isn't
- * known ahead of time. Return NULL on failure, and a NUL-terminated
- * string on success.  On success, set <b>sz_out</b> to the number of
- * bytes read.
+ * known ahead of time.
+ * Return NULL on failure, and a NUL-terminated string on success.
+ * On success, set <b>sz_out</b> to the number of  bytes read (not including
+ * the final NULL, which wasn't read from <b>fd</b>).
  */
 char *
 read_file_to_str_until_eof(int fd, size_t max_bytes_to_read, size_t *sz_out)

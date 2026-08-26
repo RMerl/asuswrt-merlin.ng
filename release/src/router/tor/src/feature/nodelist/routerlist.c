@@ -929,8 +929,8 @@ routerinfo_free_(routerinfo_t *router)
   tor_free(router->platform);
   tor_free(router->protocol_list);
   tor_free(router->contact_info);
-  if (router->onion_pkey)
-    tor_free(router->onion_pkey);
+  if (router->tap_onion_pkey)
+    tor_free(router->tap_onion_pkey);
   tor_free(router->onion_curve25519_pkey);
   if (router->identity_pkey)
     crypto_pk_free(router->identity_pkey);
@@ -938,6 +938,10 @@ routerinfo_free_(routerinfo_t *router)
   if (router->declared_family) {
     SMARTLIST_FOREACH(router->declared_family, char *, s, tor_free(s));
     smartlist_free(router->declared_family);
+  }
+  if (router->family_ids) {
+    SMARTLIST_FOREACH(router->family_ids, char *, cp, tor_free(cp));
+    smartlist_free(router->family_ids);
   }
   addr_policy_list_free(router->exit_policy);
   short_policy_free(router->ipv6_exit_policy);
@@ -2956,6 +2960,24 @@ router_reset_descriptor_download_failures(void)
 /** We allow uptime to vary from how much it ought to be by this much. */
 #define ROUTER_ALLOW_UPTIME_DRIFT (6*60*60)
 
+/** Return true iff r1 and r2 have the same TAP onion keys. */
+static int
+router_tap_onion_keys_eq(const routerinfo_t *r1, const routerinfo_t *r2)
+{
+  if (r1->tap_onion_pkey_len != r2->tap_onion_pkey_len)
+    return 0;
+
+  if ((r1->tap_onion_pkey == NULL) && (r2->tap_onion_pkey == NULL)) {
+    return 1;
+  } else if ((r1->tap_onion_pkey != NULL) && (r2->tap_onion_pkey != NULL)) {
+    return tor_memeq(r1->tap_onion_pkey, r2->tap_onion_pkey,
+                     r1->tap_onion_pkey_len);
+  } else {
+    /* One is NULL; one is not. */
+    return 0;
+  }
+}
+
 /** Return true iff the only differences between r1 and r2 are such that
  * would not cause a recent (post 0.1.1.6) dirserver to republish.
  */
@@ -2981,8 +3003,7 @@ router_differences_are_cosmetic(const routerinfo_t *r1, const routerinfo_t *r2)
       r1->ipv6_orport != r2->ipv6_orport ||
       r1->ipv4_dirport != r2->ipv4_dirport ||
       r1->purpose != r2->purpose ||
-      r1->onion_pkey_len != r2->onion_pkey_len ||
-      !tor_memeq(r1->onion_pkey, r2->onion_pkey, r1->onion_pkey_len) ||
+      !router_tap_onion_keys_eq(r1,r2) ||
       !crypto_pk_eq_keys(r1->identity_pkey, r2->identity_pkey) ||
       strcasecmp(r1->platform, r2->platform) ||
       (r1->contact_info && !r2->contact_info) || /* contact_info is optional */

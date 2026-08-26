@@ -366,38 +366,30 @@ static const char test_ri[] =
   "iFJkKxxDx7ksxX0zdl7aPT4ORFEuRhCYS6el7YJmoyg=\n"
   "-----END SIGNATURE-----\n";
 
-static const char test_md2_25[] =
+static const char test_md2_withfamily_33[] =
   "onion-key\n"
   "-----BEGIN RSA PUBLIC KEY-----\n"
   "MIGJAoGBAMvEJ/JVNK7I38PPWhQMuCgkET/ki4WIas4tj5Kmqfb9kHqxMR+EunRD\n"
   "83k4pel1yB7QdV+iTd/4SZOI8RpZP+BO1KnOTWfpztAU1lDGr19/PwdwcHaILpBD\n"
   "nNzm6otk4/bKUQ0vqpOfJljtg0DfAm4uMAQ6BMFy6uEAF7+JupuPAgMBAAE=\n"
   "-----END RSA PUBLIC KEY-----\n"
-  "ntor-onion-key FChIfm77vrWB7JsxQ+jMbN6VSSp1P0DYbw/2aqey4iA=\n"
-  "p accept 1-65535\n"
-  "id ed25519 J5lkRqyL6qW+CpN3E4RIlgJZeLgwjtmOOrjZvVhuwLQ\n";
-
-static const char test_md2_withfamily_28[] =
-  "onion-key\n"
-  "-----BEGIN RSA PUBLIC KEY-----\n"
-  "MIGJAoGBAMvEJ/JVNK7I38PPWhQMuCgkET/ki4WIas4tj5Kmqfb9kHqxMR+EunRD\n"
-  "83k4pel1yB7QdV+iTd/4SZOI8RpZP+BO1KnOTWfpztAU1lDGr19/PwdwcHaILpBD\n"
-  "nNzm6otk4/bKUQ0vqpOfJljtg0DfAm4uMAQ6BMFy6uEAF7+JupuPAgMBAAE=\n"
-  "-----END RSA PUBLIC KEY-----\n"
-  "ntor-onion-key FChIfm77vrWB7JsxQ+jMbN6VSSp1P0DYbw/2aqey4iA=\n"
-  "family OtherNode !Strange\n"
-  "p accept 1-65535\n"
-  "id ed25519 J5lkRqyL6qW+CpN3E4RIlgJZeLgwjtmOOrjZvVhuwLQ\n";
-
-static const char test_md2_withfamily_29[] =
-  "onion-key\n"
-  "-----BEGIN RSA PUBLIC KEY-----\n"
-  "MIGJAoGBAMvEJ/JVNK7I38PPWhQMuCgkET/ki4WIas4tj5Kmqfb9kHqxMR+EunRD\n"
-  "83k4pel1yB7QdV+iTd/4SZOI8RpZP+BO1KnOTWfpztAU1lDGr19/PwdwcHaILpBD\n"
-  "nNzm6otk4/bKUQ0vqpOfJljtg0DfAm4uMAQ6BMFy6uEAF7+JupuPAgMBAAE=\n"
-  "-----END RSA PUBLIC KEY-----\n"
-  "ntor-onion-key FChIfm77vrWB7JsxQ+jMbN6VSSp1P0DYbw/2aqey4iA=\n"
+  "ntor-onion-key FChIfm77vrWB7JsxQ+jMbN6VSSp1P0DYbw/2aqey4iA\n"
   "family !Strange $D219590AC9513BCDEBBA9AB721007A4CC01BBAE3 othernode\n"
+  "p accept 1-65535\n"
+  "id ed25519 J5lkRqyL6qW+CpN3E4RIlgJZeLgwjtmOOrjZvVhuwLQ\n";
+
+static const char test_md2_withfamilyids_35[] =
+  "onion-key\n"
+  "-----BEGIN RSA PUBLIC KEY-----\n"
+  "MIGJAoGBAMvEJ/JVNK7I38PPWhQMuCgkET/ki4WIas4tj5Kmqfb9kHqxMR+EunRD\n"
+  "83k4pel1yB7QdV+iTd/4SZOI8RpZP+BO1KnOTWfpztAU1lDGr19/PwdwcHaILpBD\n"
+  "nNzm6otk4/bKUQ0vqpOfJljtg0DfAm4uMAQ6BMFy6uEAF7+JupuPAgMBAAE=\n"
+  "-----END RSA PUBLIC KEY-----\n"
+  "ntor-onion-key FChIfm77vrWB7JsxQ+jMbN6VSSp1P0DYbw/2aqey4iA\n"
+  "family !Strange $D219590AC9513BCDEBBA9AB721007A4CC01BBAE3 othernode\n"
+  "family-ids "
+       "ed25519:YWxsIGhhcHB5IGZhbWlsaWVzIGFyZSBhbGlrZSAtTFQ "
+       "rlwe:0YHRh9Cw0YHRgtC70LjQstGL0LUg0YHQtdC80YzQuC0\n"
   "p accept 1-65535\n"
   "id ed25519 J5lkRqyL6qW+CpN3E4RIlgJZeLgwjtmOOrjZvVhuwLQ\n";
 
@@ -411,21 +403,22 @@ test_md_generate(void *arg)
   ri = router_parse_entry_from_string(test_ri, NULL, 0, 0, NULL, NULL);
   tt_assert(ri);
 
-  md = dirvote_create_microdescriptor(ri, 25);
-  tt_str_op(md->body, OP_EQ, test_md2_25);
-  tt_assert(ed25519_pubkey_eq(md->ed25519_identity_pkey,
-                              &ri->cache_info.signing_key_cert->signing_key));
-
   // Try family encoding.
   microdesc_free(md);
   ri->declared_family = smartlist_new();
   smartlist_add_strdup(ri->declared_family, "OtherNode !Strange");
-  md = dirvote_create_microdescriptor(ri, 28);
-  tt_str_op(md->body, OP_EQ, test_md2_withfamily_28);
+  md = dirvote_create_microdescriptor(ri, 33);
+  tt_str_op(md->body, OP_EQ, test_md2_withfamily_33);
 
+  // Try family-ids.
   microdesc_free(md);
-  md = dirvote_create_microdescriptor(ri, 29);
-  tt_str_op(md->body, OP_EQ, test_md2_withfamily_29);
+  ri->family_ids = smartlist_new();
+  smartlist_add_strdup(ri->family_ids,
+                       "ed25519:YWxsIGhhcHB5IGZhbWlsaWVzIGFyZSBhbGlrZSAtTFQ");
+  smartlist_add_strdup(ri->family_ids,
+                       "rlwe:0YHRh9Cw0YHRgtC70LjQstGL0LUg0YHQtdC80YzQuC0");
+  md = dirvote_create_microdescriptor(ri, 35);
+  tt_str_op(md->body, OP_EQ, test_md2_withfamilyids_35);
 
  done:
   microdesc_free(md);
@@ -792,6 +785,73 @@ test_md_parse_id_ed25519(void *arg)
   teardown_capture_of_logs();
 }
 
+static void
+test_md_parse_no_onion_key(void *arg)
+{
+  (void)arg;
+
+  /* A correct MD with no onion key. */
+  const char GOOD_MD[] =
+    "onion-key\n"
+    "ntor-onion-key AppBt6CSeb1kKid/36ototmFA24ddfW5JpjWPLuoJgs=\n"
+    "id ed25519 VGhpcyBpc24ndCBhY3R1YWxseSBhIHB1YmxpYyBrZXk\n";
+
+  smartlist_t *mds = NULL;
+
+  mds = microdescs_parse_from_string(GOOD_MD,
+                                     NULL, 1, SAVED_NOWHERE, NULL);
+  tt_assert(mds);
+  tt_int_op(smartlist_len(mds), OP_EQ, 1);
+  const microdesc_t *md = smartlist_get(mds, 0);
+  tt_mem_op(md->ed25519_identity_pkey, OP_EQ,
+            "This isn't actually a public key", ED25519_PUBKEY_LEN);
+
+ done:
+  if (mds) {
+    SMARTLIST_FOREACH(mds, microdesc_t *, m, microdesc_free(m));
+    smartlist_free(mds);
+  }
+  teardown_capture_of_logs();
+}
+
+static void
+test_md_parse_family_ids(void *arg)
+{
+  (void)arg;
+
+  const char GOOD_MDS[] =
+    "onion-key\n"
+    "ntor-onion-key VHlycmFueSwgbGlrZSBoZWxsLCBpcyBub3QgZWFzaWw\n"
+    "id ed25519 eSBjb25xdWVyZWQ7IHlldCB3ZSBoYXZlIHRoaXMgY28\n"
+    "family-ids\n"
+    "onion-key\n"
+    "ntor-onion-key bnNvbGF0aW9uIHdpdGggdXMsIHRoYXQgdGhlIGhhcmQ\n"
+    "id ed25519 ZXIgdGhlIGNvbmZsaWN0LCB0aGUgbW9yZSBnbG9yaW8\n"
+    "family-ids ed25519:dXMgdGhlIHRyaXVtcGguICAgIC1UaG9tYXMgUGFpbmU "
+       "other:Example\n";
+  smartlist_t *mds = NULL;
+  mds = microdescs_parse_from_string(GOOD_MDS, NULL, 1, SAVED_NOWHERE, NULL);
+  tt_assert(mds);
+  tt_int_op(smartlist_len(mds), OP_EQ, 2);
+
+  const microdesc_t *md1 = smartlist_get(mds, 0);
+  tt_ptr_op(md1->family_ids, OP_EQ, NULL);
+
+  const microdesc_t *md2 = smartlist_get(mds, 1);
+  tt_ptr_op(md2->family_ids, OP_NE, NULL);
+  tt_int_op(smartlist_len(md2->family_ids), OP_EQ, 2);
+  tt_str_op(smartlist_get(md2->family_ids, 0), OP_EQ,
+            "ed25519:dXMgdGhlIHRyaXVtcGguICAgIC1UaG9tYXMgUGFpbmU");
+  tt_str_op(smartlist_get(md2->family_ids, 1), OP_EQ,
+            "other:Example");
+
+ done:
+  if (mds) {
+    SMARTLIST_FOREACH(mds, microdesc_t *, m, microdesc_free(m));
+    smartlist_free(mds);
+  }
+}
+
 static int mock_rgsbd_called = 0;
 static routerstatus_t *mock_rgsbd_val_a = NULL;
 static routerstatus_t *mock_rgsbd_val_b = NULL;
@@ -926,6 +986,8 @@ struct testcase_t microdesc_tests[] = {
   { "generate", test_md_generate, 0, NULL, NULL },
   { "parse", test_md_parse, 0, NULL, NULL },
   { "parse_id_ed25519", test_md_parse_id_ed25519, 0, NULL, NULL },
+  { "parse_no_onion_key", test_md_parse_no_onion_key, 0, NULL, NULL },
+  { "parse_family_ids", test_md_parse_family_ids, 0, NULL, NULL },
   { "reject_cache", test_md_reject_cache, TT_FORK, NULL, NULL },
   { "corrupt_desc", test_md_corrupt_desc, TT_FORK, NULL, NULL },
   END_OF_TESTCASES

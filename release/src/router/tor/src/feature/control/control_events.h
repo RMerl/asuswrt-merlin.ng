@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2021, The Tor Project, Inc. */
+ * Copyright (c) 2007-2024, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -225,6 +225,9 @@ void cbt_control_event_buildtimeout_set(const circuit_build_times_t *cbt,
                                         buildtimeout_set_event_t type);
 
 int control_event_enter_controller_wait(void);
+
+void stats_init(void);
+void stats_clear(void);
 
 void control_events_free_all(void);
 

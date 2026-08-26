@@ -222,10 +222,11 @@ log_heartbeat(time_t now)
   }
 
   double fullness_pct = 100;
+  // TODO CGO: This is slightly wrong?
   if (stats_n_data_cells_packaged && !hibernating) {
     fullness_pct =
       100*(((double)stats_n_data_bytes_packaged) /
-           ((double)stats_n_data_cells_packaged*RELAY_PAYLOAD_SIZE));
+           ((double)stats_n_data_cells_packaged*RELAY_PAYLOAD_SIZE_MAX));
   }
   const double overhead_pct = ( r - 1.0 ) * 100.0;
 

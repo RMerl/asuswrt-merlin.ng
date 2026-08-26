@@ -183,27 +183,17 @@ connection_or_send_certs_cell(or_connection_t *conn)
   return 0;
 }
 
-#ifdef TOR_UNIT_TESTS
-int testing__connection_or_pretend_TLSSECRET_is_supported = 0;
-#else
-#define testing__connection_or_pretend_TLSSECRET_is_supported 0
-#endif
-
 /** Return true iff <b>challenge_type</b> is an AUTHCHALLENGE type that
  * we can send and receive. */
 int
 authchallenge_type_is_supported(uint16_t challenge_type)
 {
   switch (challenge_type) {
-     case AUTHTYPE_RSA_SHA256_TLSSECRET:
-#ifdef HAVE_WORKING_TOR_TLS_GET_TLSSECRETS
-       return 1;
-#else
-       return testing__connection_or_pretend_TLSSECRET_is_supported;
-#endif
      case AUTHTYPE_ED25519_SHA256_RFC5705:
        return 1;
-     case AUTHTYPE_RSA_SHA256_RFC5705:
+
+     case AUTHTYPE_RSA_SHA256_TLSSECRET: // obsolete.
+     case AUTHTYPE_RSA_SHA256_RFC5705: // never implemented.
      default:
        return 0;
   }
@@ -243,11 +233,6 @@ connection_or_send_auth_challenge_cell(or_connection_t *conn)
   tor_assert(sizeof(ac->challenge) == 32);
   crypto_rand((char*)ac->challenge, sizeof(ac->challenge));
 
-  if (authchallenge_type_is_supported(AUTHTYPE_RSA_SHA256_TLSSECRET))
-    auth_challenge_cell_add_methods(ac, AUTHTYPE_RSA_SHA256_TLSSECRET);
-  /* Disabled, because everything that supports this method also supports
-   * the much-superior ED25519_SHA256_RFC5705 */
-  /* auth_challenge_cell_add_methods(ac, AUTHTYPE_RSA_SHA256_RFC5705); */
   if (authchallenge_type_is_supported(AUTHTYPE_ED25519_SHA256_RFC5705))
     auth_challenge_cell_add_methods(ac, AUTHTYPE_ED25519_SHA256_RFC5705);
   auth_challenge_cell_set_n_methods(ac,
@@ -283,42 +268,36 @@ connection_or_send_auth_challenge_cell(or_connection_t *conn)
  * determined by the rest of the handshake, and which match the provided value
  * exactly.
  *
- * If <b>server</b> is false and <b>signing_key</b> is NULL, calculate the
+ * If <b>server</b> is false and <b>ed_signing_key</b> is NULL, calculate the
  * first V3_AUTH_BODY_LEN bytes of the authenticator (that is, everything
  * that should be signed), but don't actually sign it.
  *
- * If <b>server</b> is false and <b>signing_key</b> is provided, calculate the
- * entire authenticator, signed with <b>signing_key</b>.
+ * If <b>server</b> is false and <b>ed_signing_key</b> is provided,
+ * calculate the
+ * entire authenticator, signed with <b>ed_signing_key</b>.
  *
  * Return the length of the cell body on success, and -1 on failure.
  */
 var_cell_t *
 connection_or_compute_authenticate_cell_body(or_connection_t *conn,
                                              const int authtype,
-                                             crypto_pk_t *signing_key,
                                       const ed25519_keypair_t *ed_signing_key,
                                       int server)
 {
   auth1_t *auth = NULL;
-  auth_ctx_t *ctx = auth_ctx_new();
   var_cell_t *result = NULL;
-  int old_tlssecrets_algorithm = 0;
   const char *authtype_str = NULL;
-
-  int is_ed = 0;
 
   /* assert state is reasonable XXXX */
   switch (authtype) {
   case AUTHTYPE_RSA_SHA256_TLSSECRET:
-    authtype_str = "AUTH0001";
-    old_tlssecrets_algorithm = 1;
-    break;
   case AUTHTYPE_RSA_SHA256_RFC5705:
-    authtype_str = "AUTH0002";
+    /* These are unsupported; we should never reach this point. */
+    tor_assert_nonfatal_unreached_once();
+    return NULL;
     break;
   case AUTHTYPE_ED25519_SHA256_RFC5705:
     authtype_str = "AUTH0003";
-    is_ed = 1;
     break;
   default:
     tor_assert(0);
@@ -326,7 +305,6 @@ connection_or_compute_authenticate_cell_body(or_connection_t *conn,
   }
 
   auth = auth1_new();
-  ctx->is_ed = is_ed;
 
   /* Type: 8 bytes. */
   memcpy(auth1_getarray_type(auth), authtype_str, 8);
@@ -355,7 +333,7 @@ connection_or_compute_authenticate_cell_body(or_connection_t *conn,
     memcpy(auth->sid, server_id, 32);
   }
 
-  if (is_ed) {
+  {
     const ed25519_public_key_t *my_ed_id, *their_ed_id;
     if (!conn->handshake_state->certs->ed_id_sign) {
       log_warn(LD_OR, "Ed authenticate without Ed ID cert from peer.");
@@ -367,8 +345,8 @@ connection_or_compute_authenticate_cell_body(or_connection_t *conn,
     const uint8_t *cid_ed = (server ? their_ed_id : my_ed_id)->pubkey;
     const uint8_t *sid_ed = (server ? my_ed_id : their_ed_id)->pubkey;
 
-    memcpy(auth->u1_cid_ed, cid_ed, ED25519_PUBKEY_LEN);
-    memcpy(auth->u1_sid_ed, sid_ed, ED25519_PUBKEY_LEN);
+    memcpy(auth->cid_ed, cid_ed, ED25519_PUBKEY_LEN);
+    memcpy(auth->sid_ed, sid_ed, ED25519_PUBKEY_LEN);
   }
 
   {
@@ -408,15 +386,8 @@ connection_or_compute_authenticate_cell_body(or_connection_t *conn,
     tor_x509_cert_free(cert);
   }
 
-  /* HMAC of clientrandom and serverrandom using master key : 32 octets */
-  if (old_tlssecrets_algorithm) {
-    if (tor_tls_get_tlssecrets(conn->tls, auth->tlssecrets) < 0) {
-      log_fn(LOG_PROTOCOL_WARN, LD_OR, "Somebody asked us for an older TLS "
-         "authentication method (AUTHTYPE_RSA_SHA256_TLSSECRET) "
-         "which we don't support.");
-      goto err;
-    }
-  } else {
+  /* RFC5709 key exporter material : 32 octets */
+  {
     char label[128];
     tor_snprintf(label, sizeof(label),
                  "EXPORTER FOR TOR TLS CLIENT BINDING %s", authtype_str);
@@ -436,11 +407,9 @@ connection_or_compute_authenticate_cell_body(or_connection_t *conn,
    * checks it.  That's followed by 16 bytes of nonce. */
   crypto_rand((char*)auth->rand, 24);
 
-  ssize_t maxlen = auth1_encoded_len(auth, ctx);
-  if (ed_signing_key && is_ed) {
+  ssize_t maxlen = auth1_encoded_len(auth);
+  if (ed_signing_key) {
     maxlen += ED25519_SIG_LEN;
-  } else if (signing_key && !is_ed) {
-    maxlen += crypto_pk_keysize(signing_key);
   }
 
   const int AUTH_CELL_HEADER_LEN = 4; /* 2 bytes of type, 2 bytes of length */
@@ -452,7 +421,7 @@ connection_or_compute_authenticate_cell_body(or_connection_t *conn,
   result->command = CELL_AUTHENTICATE;
   set_uint16(result->payload, htons(authtype));
 
-  if ((len = auth1_encode(out, outlen, auth, ctx)) < 0) {
+  if ((len = auth1_encode(out, outlen, auth)) < 0) {
     /* LCOV_EXCL_START */
     log_warn(LD_BUG, "Unable to encode signed part of AUTH1 data.");
     goto err;
@@ -461,7 +430,7 @@ connection_or_compute_authenticate_cell_body(or_connection_t *conn,
 
   if (server) {
     auth1_t *tmp = NULL;
-    ssize_t len2 = auth1_parse(&tmp, out, len, ctx);
+    ssize_t len2 = auth1_parse(&tmp, out, len);
     if (!tmp) {
       /* LCOV_EXCL_START */
       log_warn(LD_BUG, "Unable to parse signed part of AUTH1 data that "
@@ -481,7 +450,7 @@ connection_or_compute_authenticate_cell_body(or_connection_t *conn,
     goto done;
   }
 
-  if (ed_signing_key && is_ed) {
+  if (ed_signing_key) {
     ed25519_signature_t sig;
     if (ed25519_sign(&sig, out, len, ed_signing_key) < 0) {
       /* LCOV_EXCL_START */
@@ -491,25 +460,9 @@ connection_or_compute_authenticate_cell_body(or_connection_t *conn,
     }
     auth1_setlen_sig(auth, ED25519_SIG_LEN);
     memcpy(auth1_getarray_sig(auth), sig.sig, ED25519_SIG_LEN);
-
-  } else if (signing_key && !is_ed) {
-    auth1_setlen_sig(auth, crypto_pk_keysize(signing_key));
-
-    char d[32];
-    crypto_digest256(d, (char*)out, len, DIGEST_SHA256);
-    int siglen = crypto_pk_private_sign(signing_key,
-                                    (char*)auth1_getarray_sig(auth),
-                                    auth1_getlen_sig(auth),
-                                    d, 32);
-    if (siglen < 0) {
-      log_warn(LD_OR, "Unable to sign AUTH1 data.");
-      goto err;
-    }
-
-    auth1_setlen_sig(auth, siglen);
   }
 
-  len = auth1_encode(out, outlen, auth, ctx);
+  len = auth1_encode(out, outlen, auth);
   if (len < 0) {
     /* LCOV_EXCL_START */
     log_warn(LD_BUG, "Unable to encode signed AUTH1 data.");
@@ -527,7 +480,6 @@ connection_or_compute_authenticate_cell_body(or_connection_t *conn,
   result = NULL;
  done:
   auth1_free(auth);
-  auth_ctx_free(ctx);
   return result;
 }
 
@@ -537,13 +489,8 @@ MOCK_IMPL(int,
 connection_or_send_authenticate_cell,(or_connection_t *conn, int authtype))
 {
   var_cell_t *cell;
-  crypto_pk_t *pk = tor_tls_get_my_client_auth_key();
   /* XXXX make sure we're actually supposed to send this! */
 
-  if (!pk) {
-    log_warn(LD_BUG, "Can't compute authenticate cell: no client auth key");
-    return -1;
-  }
   if (! authchallenge_type_is_supported(authtype)) {
     log_warn(LD_BUG, "Tried to send authenticate cell with unknown "
              "authentication type %d", authtype);
@@ -552,7 +499,6 @@ connection_or_send_authenticate_cell,(or_connection_t *conn, int authtype))
 
   cell = connection_or_compute_authenticate_cell_body(conn,
                                                  authtype,
-                                                 pk,
                                                  get_current_auth_keypair(),
                                                  0 /* not server */);
   if (! cell) {

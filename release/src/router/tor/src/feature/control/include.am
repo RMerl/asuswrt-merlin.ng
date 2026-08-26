@@ -1,11 +1,11 @@
 
 # ADD_C_FILE: INSERT SOURCES HERE.
-LIBTOR_APP_A_SOURCES += 				\
+LIBTOR_APP_A_SOURCES += 			\
 	src/feature/control/btrack.c		\
 	src/feature/control/btrack_circuit.c	\
 	src/feature/control/btrack_orconn.c	\
-	src/feature/control/btrack_orconn_cevent.c	\
-	src/feature/control/btrack_orconn_maps.c	\
+	src/feature/control/btrack_orconn_cevent.c\
+	src/feature/control/btrack_orconn_maps.c\
 	src/feature/control/control.c		\
 	src/feature/control/control_auth.c	\
 	src/feature/control/control_bootstrap.c	\

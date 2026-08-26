@@ -285,6 +285,9 @@ handle_client_auth_nonce(const char *client_nonce, size_t client_nonce_len,
            EXT_OR_PORT_AUTH_NONCE_LEN);
   }
 
+  memwipe(server_hash, 0, sizeof(server_hash));
+  memwipe(server_nonce, 0, sizeof(server_nonce));
+
   *reply_out = reply;
   *reply_len_out = reply_len;
 

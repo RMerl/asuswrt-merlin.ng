@@ -1,5 +1,5 @@
 /* Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2021, The Tor Project, Inc. */
+ * Copyright (c) 2007-2024, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -252,6 +252,8 @@ connection_control_closed(control_connection_t *conn)
   if (conn->is_owning_control_connection) {
     lost_owning_controller("connection", "closed");
   }
+
+  control_remove_authenticated_connection(conn);
 }
 
 /** Return true iff <b>cmd</b> is allowable (or at least forgivable) at this

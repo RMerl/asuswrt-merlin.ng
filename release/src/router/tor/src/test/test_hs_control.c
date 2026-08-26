@@ -23,6 +23,7 @@
 #include "app/config/config.h"
 #include "feature/hs/hs_common.h"
 #include "feature/hs/hs_client.h"
+#include "feature/hs/hs_config.h"
 #include "feature/hs/hs_control.h"
 #include "feature/nodelist/nodelist.h"
 
@@ -829,8 +830,12 @@ test_hs_control_add_onion_helper_add_service(void *arg)
   list_good = smartlist_new();
   smartlist_add(list_good, client_good);
 
-  add_onion_helper_add_service(HS_VERSION_THREE, &sk_good, portcfgs, 1, 1,
-                               list_good, &address_out_good);
+  add_onion_helper_add_service(
+            HS_VERSION_THREE, &sk_good, portcfgs, 1, 1,
+            /*pow_defenses_enabled=*/1,
+            /*pow_queue_rate=*/HS_CONFIG_V3_POW_QUEUE_RATE,
+            /*pow_queue_burst=*/HS_CONFIG_V3_POW_QUEUE_BURST,
+            list_good, &address_out_good);
 
   service_good = find_service(global_map, &pk_good);
   tt_int_op(smartlist_len(service_good->config.clients), OP_EQ, 1);
@@ -845,8 +850,12 @@ test_hs_control_add_onion_helper_add_service(void *arg)
   portcfgs = smartlist_new();
   smartlist_add(portcfgs, portcfg);
 
-  add_onion_helper_add_service(HS_VERSION_THREE, &sk_bad, portcfgs, 1, 1,
-                               list_bad, &address_out_bad);
+  add_onion_helper_add_service(
+            HS_VERSION_THREE, &sk_bad, portcfgs, 1, 1,
+            /*pow_defenses_enabled=*/1,
+            /*pow_queue_rate=*/HS_CONFIG_V3_POW_QUEUE_RATE,
+            /*pow_queue_burst=*/HS_CONFIG_V3_POW_QUEUE_BURST,
+            list_bad, &address_out_bad);
 
   service_bad = find_service(global_map, &pk_bad);
 

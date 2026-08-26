@@ -21,6 +21,7 @@
 #include "lib/meminfo/meminfo.h"
 #include "lib/osinfo/uname.h"
 #include "lib/process/setuid.h"
+#include "lib/crypt_ops/crypto_format.h"
 
 /* Required for dirinfo_type_t in or_options_t */
 #include "core/or/or.h"
@@ -518,7 +519,7 @@ port_parse_ports_relay(or_options_t *options,
   retval = 0;
 
  err:
-  if (*have_low_ports_out < 0)
+  if (have_low_ports_out && *have_low_ports_out < 0)
     *have_low_ports_out = (n_low_ports > 0);
   if (ports) {
     SMARTLIST_FOREACH(ports, port_cfg_t *, p, port_cfg_free(p));
@@ -693,7 +694,7 @@ compute_publishserverdescriptor(or_options_t *options)
  * - "any"
  * - "https"
  * - "email"
- * - "moat"
+ * - "settings"
  *
  * If the option string is unrecognised, a warning will be logged and 0 is
  * returned.  If the option string contains an invalid character, -1 is
@@ -706,7 +707,7 @@ check_bridge_distribution_setting(const char *bd)
     return 0;
 
   const char *RECOGNIZED[] = {
-    "none", "any", "https", "email", "moat"
+    "none", "any", "https", "email", "settings"
   };
   unsigned i;
   for (i = 0; i < ARRAY_LENGTH(RECOGNIZED); ++i) {
@@ -1151,8 +1152,8 @@ options_validate_relay_mode(const or_options_t *old_options,
     REJECT("BridgeRelay is 1, ORPort is not set. This is an invalid "
            "combination.");
 
-  if (options->BridgeRelay == 1 && (options->ExitRelay == 1 ||
-      !policy_using_default_exit_options(options))) {
+  if (options->BridgeRelay == 1 && !(options->ExitRelay == 0 ||
+      policy_using_default_exit_options(options))) {
     log_warn(LD_CONFIG, "BridgeRelay is 1, but ExitRelay is 1 or an "
            "ExitPolicy is configured. Tor will start, but it will not "
            "function as an exit relay.");
@@ -1179,6 +1180,24 @@ options_validate_relay_mode(const or_options_t *old_options,
   if (normalize_nickname_list(&options->MyFamily,
                               options->MyFamily_lines, "MyFamily", msg))
     return -1;
+
+  if (options->FamilyId_lines) {
+    options->FamilyIds = smartlist_new();
+    config_line_t *line;
+    for (line = options->FamilyId_lines; line; line = line->next) {
+      if (!strcmp(line->value, "*")) {
+        options->AllFamilyIdsExpected = true;
+        continue;
+      }
+
+      ed25519_public_key_t pk;
+      if (ed25519_public_from_base64(&pk, line->value) < 0) {
+        tor_asprintf(msg, "Invalid FamilyId %s", line->value);
+        return -1;
+      }
+      smartlist_add(options->FamilyIds, tor_memdup(&pk, sizeof(pk)));
+    }
+  }
 
   if (options->ConstrainedSockets) {
     if (options->DirPort_set) {
@@ -1274,6 +1293,7 @@ options_transition_affects_descriptor(const or_options_t *old_options,
   YES_IF_CHANGED_STRING(ContactInfo);
   YES_IF_CHANGED_STRING(BridgeDistribution);
   YES_IF_CHANGED_LINELIST(MyFamily);
+  YES_IF_CHANGED_LINELIST(FamilyId_lines);
   YES_IF_CHANGED_STRING(AccountingStart);
   YES_IF_CHANGED_INT(AccountingMax);
   YES_IF_CHANGED_INT(AccountingRule);

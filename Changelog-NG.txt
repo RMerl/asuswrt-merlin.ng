@@ -8,7 +8,10 @@ Asuswrt-Merlin Changelog
          OpenSSL 1.1.1, a shim was developped to pretend being
          the openssl 1.1.1 library, redirecting calls to the
          actual 3.5.x library.  (RSDNTWK)
+  - NEW: IPv6 support in Tor.  Previously, any IPv6 traffic
+         would leak outside of the proxy.  (Claude)
   - UPDATED: amtm to 7.0 (decoderman)
+  - UPDATED: tor to 0.4.9.11.
 
 
 3004.388.12_2 (20-Aug-2026)

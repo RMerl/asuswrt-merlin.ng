@@ -17,5 +17,6 @@ plan skip_all => "CMS is disabled in this build" if disabled("cms");
 plan tests => 1;
 
 ok(run(test(["cmsapitest", srctop_file("test", "certs", "servercert.pem"),
-             srctop_file("test", "certs", "serverkey.pem")])),
+             srctop_file("test", "certs", "serverkey.pem"),
+             srctop_file("test", "smime-certs", "smec1.pem")])),
              "running cmsapitest");

@@ -4,7 +4,7 @@ Asuswrt-Merlin 3006.xxx Changelog
 3006.102.9 (xx-xxx-xxxx)
   - NEW: Migrated all devices to OpenSSL 3.5 (except GT-BE19000AI,
          which was already on that version).
-         To work around closed source components linked against
+         For closed source components linked against
          OpenSSL 1.1.1, a shim was developped to pretend being
          the openssl 1.1.1 library, redirecting calls to the
          actual 3.5.x library.  A similar shim for 1.0.0 was
@@ -14,13 +14,20 @@ Asuswrt-Merlin 3006.xxx Changelog
          Media Bridge and WISP upstream link
   - NEW: IPv6 support in Tor.  Previously, any IPv6 traffic
          would leak outside of the proxy.  (Claude)
-  - UPDATED: amtm to 7.0 (decoderman)
+  - UPDATED: amtm to 7.0.  (decoderman)
   - UPDATED: tor to 0.4.9.11.
+  - UPDATED: OpenSSL 3.5 to 3.5.8.
+  - UPDATED: zoneinfo data to 2026c.
   - CHANGED: Kernel backports to mark the B53-based CPUs
              as not being vulnerable to Spectre V2 and
              Meltdown.  This tells the kernel to skip
              software mitigation, avoiding their associated
              performance penalties.  (leonpano2006)
+  - CHANGED: Tweaks to OpenVPN Server and Tor pages.  Use
+             the new CSS radio switcher instead of old
+             switcherplugin.
+  - CHANGED: Stop forcing FTP TLS to be (re-)enabled after
+             a firmware upgrade.
   - FIXED: Wireless Log not working while in WISP mode.
   - FIXED: Wireless Log issues while in Repeater and
            Media Bridge modes.

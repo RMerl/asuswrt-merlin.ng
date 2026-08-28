@@ -19125,10 +19125,10 @@ int init_nvram2(void)
 #if defined(RTAC68U) || defined(RTCONFIG_FORCE_AUTO_UPGRADE)
 		nvram_set_int("auto_upgrade", 0);
 #endif
-#ifdef RTCONFIG_FTP_SSL
-		// The ftp_tls is enabled by default when upgrading or downgrading the version.
-		nvram_set("ftp_tls", "1");
-#endif
+//#ifdef RTCONFIG_FTP_SSL
+//		// The ftp_tls is enabled by default when upgrading or downgrading the version.
+//		nvram_set("ftp_tls", "1");
+//#endif
 	}
 
 #ifdef RTCONFIG_AUTO_FW_UPGRADE

@@ -19,7 +19,6 @@
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <style type="text/css">
@@ -85,6 +84,61 @@
 	background-color:#2B373B;
 	box-shadow: 3px 3px 10px #000;
 	display:none;
+}
+.icon_switch {
+	border-radius: 50px;
+	width: 40px;
+	height: 20px;
+	position: relative;
+	-webkit-transition: all 0.6s;
+	transition: all 0.6s;
+	cursor: pointer;
+}
+
+.icon_switch.off {
+	background: rgba(127, 143, 164, 1);
+}
+
+.icon_switch.on {
+	background: rgba(16, 185, 129, 1);
+}
+
+.icon_switch:before {
+	border-radius: 50%;
+	display: block;
+	position: absolute;
+	content: "";
+	height: 12px;
+	width: 12px;
+	left: 4px;
+	top: 4px;
+	-webkit-transition: 0.6s;
+	transition: all 0.6s;
+	-webkit-transition-delay: 0.01s;
+	transition-delay: 0.01s;
+	background: rgb(48 61 67);
+}
+
+.icon_switch.on:before {
+	-webkit-transform: translateX(20px);
+	-ms-transform: translateX(20px);
+	transform: translateX(20px);
+}
+.icon_switch {
+	background: #808080;
+}
+
+.icon_switch.on {
+	background: rgb(30, 162, 255);
+}
+.icon_switch.on.rog {
+	background: #cf0a2c;
+}
+.icon_switch.on.tuf {
+	background: #D0982C;
+}
+.icon_switch:before {
+	background: #f7f7f7;
 }
 
 </style>
@@ -1545,20 +1599,27 @@ function handle_ipv6_submit_settings(){
 										<tr>
 											<th><#vpn_openvpn_enable#></th>
 											<td>
-												<div align="center" class="left" style="width:94px; float:left; cursor:pointer;" id="radio_VPNServer_enable"></div>												
-												<script type="text/javascript">													
-													$('#radio_VPNServer_enable').iphoneSwitch(vpn_server_enable,
-													function(){
-														enable_openvpn(1);
-														document.form.VPNServer_enable.value = "1";
-														formShowAndHide(1, "openvpn");
-													},
-													function(){
-														enable_openvpn(0);
-														document.form.VPNServer_enable.value = "0";
-														formShowAndHide(0, "openvpn");
-													}
-													);
+												<div id="radio_VPNServer_enable"></div>
+												<script type="text/javascript">
+													$("#radio_VPNServer_enable").addClass("icon_switch");
+													if(document.form.VPNServer_enable.value == "1")
+														$("#radio_VPNServer_enable").addClass("on");
+													else
+														$("#radio_VPNServer_enable").removeClass("on");
+													$("#radio_VPNServer_enable").click(function(e){
+														e = e || event;
+														e.stopPropagation();
+														$(this).toggleClass("on");
+														if($(this).hasClass("on")){
+															enable_openvpn(1);
+															document.form.VPNServer_enable.value = "1";
+															formShowAndHide(1, "openvpn");
+														}else{
+															enable_openvpn(0);
+															document.form.VPNServer_enable.value = "0";
+															formShowAndHide(0, "openvpn");
+														}
+													});
 												</script>
 											</td>
 										</tr>
@@ -1698,33 +1759,6 @@ function handle_ipv6_submit_settings(){
 												<td colspan="2"><#menu5#></td>
 											</tr>
 											</thead>
-											<tr style="display:none;">
-												<th>Service state</th>
-												<td>
-													<div class="left" style="width:94px; float:left; cursor:pointer;" id="radio_service_enable"></div>
-													<script type="text/javascript">
-														if (openvpn_unit == '1')
-															var service_state_advanced = (<% sysinfo("pid.vpnserver1"); %> > 0);
-														else if (openvpn_unit == '2')
-															var service_state_advanced = (<% sysinfo("pid.vpnserver2"); %> > 0);
-														else
-															var service_state_advanced = false;
-															
-														$('#radio_service_enable').iphoneSwitch(service_state_advanced,
-															function() {
-																document.form.action_script.value = "start_vpnserver"+openvpn_unit;
-																parent.showLoading();
-																document.form.submit();
-															},
-															function() {
-																document.form.action_script.value = "stop_vpnserver"+openvpn_unit;
-																parent.showLoading();
-																document.form.submit();
-															}
-														);
-													</script>
-												</td>
-											</tr>
 											<tr>
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,4);"><#vpn_openvpn_interface#></a></th>
 												<td>

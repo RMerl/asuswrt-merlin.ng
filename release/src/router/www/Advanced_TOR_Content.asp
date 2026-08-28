@@ -8,8 +8,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-
-<title><#Web_Title#> - TOR Settings</title>
+<title><#Web_Title#> - Tor Settings</title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="device-map/device-map.css">
@@ -21,7 +20,71 @@
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<style>
+#pull_arrow{
+ 	float:center;
+ 	cursor:pointer;
+ 	border:2px outset #EFEFEF;
+ 	background-color:#CCC;
+ 	padding:3px 2px 4px 0px;
+}
+
+.icon_switch {
+	border-radius: 50px;
+	width: 40px;
+	height: 20px;
+	position: relative;
+	-webkit-transition: all 0.6s;
+	transition: all 0.6s;
+	cursor: pointer;
+}
+
+.icon_switch.off {
+	background: rgba(127, 143, 164, 1);
+}
+
+.icon_switch.on {
+	background: rgba(16, 185, 129, 1);
+}
+
+.icon_switch:before {
+	border-radius: 50%;
+	display: block;
+	position: absolute;
+	content: "";
+	height: 12px;
+	width: 12px;
+	left: 4px;
+	top: 4px;
+	-webkit-transition: 0.6s;
+	transition: all 0.6s;
+	-webkit-transition-delay: 0.01s;
+	transition-delay: 0.01s;
+	background: rgb(48 61 67);
+}
+
+.icon_switch.on:before {
+	-webkit-transform: translateX(20px);
+	-ms-transform: translateX(20px);
+	transform: translateX(20px);
+}
+.icon_switch {
+	background: #808080;
+}
+
+.icon_switch.on {
+	background: rgb(30, 162, 255);
+}
+.icon_switch.on.rog {
+	background: #cf0a2c;
+}
+.icon_switch.on.tuf {
+	background: #D0982C;
+}
+.icon_switch:before {
+	background: #f7f7f7;
+}
+</style>
 <script>
 
 
@@ -298,7 +361,7 @@ function show_tor_settings(value){
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="Tor_redir_list" value=''>
-
+<input type="hidden" name="Tor_enable" value="<% nvram_get("Tor_enable"); %>">
 <table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
 	<tr>
 		<td valign="top" >
@@ -308,7 +371,7 @@ function show_tor_settings(value){
 			<tr>
 				<td bgcolor="#4D595D" valign="top">
 					<div>&nbsp;</div>
-					<div class="formfonttitle">VPN - TOR Settings</div>
+					<div class="formfonttitle">VPN - Tor Settings</div>
 					<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 					<div class="formfontdesc"></div>
 					<table id="MainTable1" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
@@ -318,12 +381,28 @@ function show_tor_settings(value){
 						  </tr>
 						</thead>
 						<tr>
-							<th>TOR</th>
+							<th>Enable Tor proxy</th>
 							<td>
-								<select id="tor_enable_select" name="Tor_enable" class="input_option" onchange="show_tor_settings(this.value);">
-									<option value="1" <% nvram_match("Tor_enable", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
-									<option value="0" <% nvram_match("Tor_enable", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
-								</select>		
+								<div id="radio_tor_enable"></div>
+								<script type="text/javascript">
+									$("#radio_tor_enable").addClass("icon_switch");
+									if('<% nvram_get("Tor_enable"); %>'=='1')
+										$("#radio_tor_enable").addClass("on");
+									else
+										$("#radio_tor_enable").removeClass("on");
+									$("#radio_tor_enable").click(function(e){
+										e = e || event;
+										e.stopPropagation();
+										$(this).toggleClass("on");
+										if($(this).hasClass("on")){
+											document.form.Tor_enable.value = "1";
+											show_tor_settings(1);
+										}else{
+											document.form.Tor_enable.value = "0";
+											show_tor_settings(0)
+										}
+									});
+								</script>
 							</td>
 					 	</tr>
 						<tr id="tor_socks_tr" style="display:none;">

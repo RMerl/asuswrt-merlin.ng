@@ -3,17 +3,22 @@
 # This file is in the public domain, so clarified as of
 # 2009-05-17 by Arthur David Olson.
 #
-# From Paul Eggert (2015-05-02):
+# From Paul Eggert (2025-07-01):
 # This file contains a table of two-letter country codes.  Columns are
-# separated by a single tab.  Lines beginning with '#' are comments.
+# separated by a single tab.  Lines beginning with ‘#’ are comments.
 # All text uses UTF-8 encoding.  The columns of the table are as follows:
 #
 # 1.  ISO 3166-1 alpha-2 country code, current as of
-#     ISO 3166-1 Newsletter VI-16 (2013-07-11).  See: Updates on ISO 3166
-#   http://www.iso.org/iso/home/standards/country_codes/updates_on_iso_3166.htm
-# 2.  The usual English name for the coded region,
-#     chosen so that alphabetic sorting of subsets produces helpful lists.
-#     This is not the same as the English name in the ISO 3166 tables.
+#     ISO/TC 46 N1127 (2024-02-29).  See: ISO/TC 46 Documents
+#     https://www.iso.org/committee/48750.html?view=documents
+# 2.  The usual English name for the coded region.  This sometimes
+#     departs from ISO-listed names, sometimes so that sorted subsets
+#     of names are useful (e.g., “Samoa (American)” and “Samoa
+#     (western)” rather than “American Samoa” and “Samoa”),
+#     sometimes to avoid confusion among non-experts (e.g.,
+#     “Czech Republic” and “Turkey” rather than “Czechia” and “Türkiye”),
+#     and sometimes to omit needless detail or churn (e.g., “Netherlands”
+#     rather than “Netherlands (the)” or “Netherlands (Kingdom of the)”).
 #
 # The table is sorted by country code.
 #
@@ -66,7 +71,7 @@ CD	Congo (Dem. Rep.)
 CF	Central African Rep.
 CG	Congo (Rep.)
 CH	Switzerland
-CI	Côte d'Ivoire
+CI	Côte d’Ivoire
 CK	Cook Islands
 CL	Chile
 CM	Cameroon
@@ -166,7 +171,7 @@ ME	Montenegro
 MF	St Martin (French)
 MG	Madagascar
 MH	Marshall Islands
-MK	Macedonia
+MK	North Macedonia
 ML	Mali
 MM	Myanmar (Burma)
 MN	Mongolia
@@ -235,10 +240,10 @@ ST	Sao Tome & Principe
 SV	El Salvador
 SX	St Maarten (Dutch)
 SY	Syria
-SZ	Swaziland
+SZ	Eswatini (Swaziland)
 TC	Turks & Caicos Is
 TD	Chad
-TF	French Southern & Antarctic Lands
+TF	French S. Terr.
 TG	Togo
 TH	Thailand
 TJ	Tajikistan

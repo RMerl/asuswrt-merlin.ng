@@ -122,6 +122,63 @@
 // disable auto log out
 AUTOLOGOUT_MAX_MINUTE = 0;
 var detect_interval = 2;	// get information per second
+var BW_IDLE_MS = 8000;
+var bw_rate_state = {};
+
+function bwRate(key, tx_raw, rx_raw){
+	var tx = parseFloat(tx_raw);
+	var rx = parseFloat(rx_raw);
+	var now = Date.now();
+	var prev = bw_rate_state[key];
+
+	if(isNaN(tx) || isNaN(rx))
+		return prev ? {up: prev.up, down: prev.down} : {up: 0, down: 0};
+
+	if(!prev){
+		bw_rate_state[key] = {tx: tx, rx: rx, t: now, up: 0, down: 0, primed: false};
+		return {up: 0, down: 0};
+	}
+
+	if(tx < prev.tx || rx < prev.rx){		// counter reset: re-anchor, keep showing the last rate
+		prev.tx = tx;
+		prev.rx = rx;
+		prev.t = now;
+		prev.primed = false;
+		return {up: prev.up, down: prev.down};
+	}
+
+	if(tx == prev.tx && rx == prev.rx){	// engine has not published a new sample yet
+		if(now - prev.t >= BW_IDLE_MS){
+			prev.up = 0;
+			prev.down = 0;
+		}
+		return {up: prev.up, down: prev.down};
+	}
+
+	var secs = (now - prev.t) / 1000;
+	var d_tx = tx - prev.tx;
+	var d_rx = rx - prev.rx;
+	prev.tx = tx;
+	prev.rx = rx;
+	prev.t = now;
+
+	if(!prev.primed || secs <= 0){		// first movement is a baseline only
+		prev.primed = true;
+		return {up: prev.up, down: prev.down};
+	}
+
+	prev.up = d_tx * 8 / secs;		// bits per second
+	prev.down = d_rx * 8 / secs;
+	return {up: prev.up, down: prev.down};
+}
+
+function bwRateReset(prefix){
+	for(var key in bw_rate_state){
+		if(!prefix || key.indexOf(prefix) === 0)
+			delete bw_rate_state[key];
+	}
+}
+
 var qos_rulelist = "<% nvram_get("qos_rulelist"); %>".replace(/&#62/g, ">").replace(/&#60/g, "<");
 var curState = '<% nvram_get("apps_analysis"); %>';
 if(dns_dpi_support)
@@ -156,7 +213,7 @@ function register_event(){
 					alert('<#List_limit#>: 32')
 					return false;
 				}
-				
+
 				this.style.color = "";
 				this.style.backgroundColor = "";
 				this.style.fontWeight = "";
@@ -289,22 +346,9 @@ function calculate_router_traffic(traffic){
 		router_traffic_old = [0, 0];
 	}
 
-	if((router_traffic_new[0] - router_traffic_old[0]) < 0){		// to control overflow issue
-		//tx = (parseInt(router_traffic_new[0]) + Math.pow(2,32)) - router_traffic_old[0];
-	}
-	else{
-		tx = router_traffic_new[0] - router_traffic_old[0];
-	}
-
-	if((router_traffic_new[1] - router_traffic_old[1]) < 0){
-		//rx = (parseInt(router_traffic_new[1]) + Math.pow(2,32)) - router_traffic_old[1];
-	}
-	else{
-		rx = router_traffic_new[1] - router_traffic_old[1];
-	}
-
-	tx = tx*8/detect_interval;		// translate to bits
-	rx = rx*8/detect_interval;
+	var router_rate = bwRate("__router__", router_traffic_new[0], router_traffic_new[1]);
+	tx = router_rate.up;		// bits per second
+	rx = router_rate.down;
 	var tx_kb = tx/1024;
 	var rx_kb = rx/1024;
 	var tx_mb = tx/1024/1024;
@@ -570,7 +614,7 @@ function show_apps(obj){
 
   if(dns_dpi_support) {
     if(document.form.dns_dpi_apps_analysis.value == 0)
-		return false;  
+		return false;
   } else {
     if(document.form.apps_analysis.value == 0)
 		return false;
@@ -580,6 +624,7 @@ function show_apps(obj){
 		clearTimeout(apps_time_flag);
 		apps_time_flag = "";
 		apps_traffic_old = [];
+		bwRateReset("app:");
 		var first_element = parent_obj_temp.firstChild;
 		if(first_element.nodeName == "#text"){
 			parent_obj_temp.removeChild(first_element);
@@ -675,6 +720,7 @@ function cancel_previous_device_apps(obj){
 	clearTimeout(apps_time_flag);
 	apps_time_flag = "";
 	apps_traffic_old = [];
+	bwRateReset("app:");
 	var first_element = parent_obj_temp.firstChild;
 	if(first_element.nodeName == "#text"){
 		parent_obj_temp.removeChild(first_element);
@@ -831,32 +877,10 @@ function calculate_traffic(array_traffic){
 			var tx_width = 0;
 			var rx_width = 0;
 
-			if(client_traffic_old[client_traffic_new[i]]){
-				if((client_traffic_new[client_traffic_new[i]].tx - client_traffic_old[client_traffic_new[i]].tx) < 0){
-					//diff_tx = (parseInt(client_traffic_new[client_traffic_new[i]].tx) + Math.pow(2,32)) - client_traffic_old[client_traffic_new[i]].tx;
-				}
-				else{
-					diff_tx = client_traffic_new[client_traffic_new[i]].tx - client_traffic_old[client_traffic_new[i]].tx;
-				}
-			}
-			else{
-				diff_tx = 0;
-			}
-
-			if(client_traffic_old[client_traffic_new[i]]){
-				if((client_traffic_new[client_traffic_new[i]].rx - client_traffic_old[client_traffic_new[i]].rx) < 0){
-					//diff_rx = (parseInt(client_traffic_new[client_traffic_new[i]].rx) + Math.pow(2,32)) - client_traffic_old[client_traffic_new[i]].rx;
-				}
-				else{
-					diff_rx = client_traffic_new[client_traffic_new[i]].rx - client_traffic_old[client_traffic_new[i]].rx;
-				}
-			}
-			else{
-				diff_rx = 0;
-			}
-
-			diff_tx = diff_tx*8/detect_interval;
-			diff_rx = diff_rx*8/detect_interval;
+			var client_rate = bwRate(client_traffic_new[i],
+				client_traffic_new[client_traffic_new[i]].tx, client_traffic_new[client_traffic_new[i]].rx);
+			diff_tx = client_rate.up;
+			diff_rx = client_rate.down;
 			diff_tx_kb = diff_tx/1024;
 			diff_rx_kb = diff_rx/1024;
 			diff_tx_mb = diff_tx/1024/1024;
@@ -888,9 +912,9 @@ function calculate_traffic(array_traffic){
 					else{
 						if(diff_tx_kb.toFixed(2) >= 0.01 && tx_width < 1){
 							tx_width = 1;
-						}				
+						}
 					}
-					
+
 					if(document.getElementById(client_traffic_new[i]+'_upload_bar') != "undefined" && document.getElementById(client_traffic_new[i]+'_upload_bar') != null){
 						document.getElementById(client_traffic_new[i]+'_upload_bar').style.width = tx_width + "%";
 					}
@@ -921,7 +945,7 @@ function calculate_traffic(array_traffic){
 							document.getElementById(client_traffic_new[i]+'_upload_unit').innerHTML = "Mb";
 						}
 					}
-				}				
+				}
 			}
 			else if((diff_tx_kb >= upload_maximum/5) && (diff_tx_kb < upload_maximum*2/5)){
 				tx_width = parseInt((diff_tx_kb - (upload_maximum/5))/(upload_maximum/5)*25);
@@ -939,7 +963,7 @@ function calculate_traffic(array_traffic){
 					else{
 						document.getElementById(client_traffic_new[i]+'_upload').innerHTML = diff_tx_mb.toFixed(2)
 						document.getElementById(client_traffic_new[i]+'_upload_unit').innerHTML = "Mb";
-					}		
+					}
 				}
 			}
 			else if((diff_tx_kb >= upload_maximum*2/5) && (diff_tx_kb < upload_maximum*3/5)){
@@ -958,7 +982,7 @@ function calculate_traffic(array_traffic){
 					else{
 						document.getElementById(client_traffic_new[i]+'_upload').innerHTML = diff_tx_mb.toFixed(2)
 						document.getElementById(client_traffic_new[i]+'_upload_unit').innerHTML = "Mb";
-					}	
+					}
 				}
 			}
 			else if((diff_tx_kb >= upload_maximum*3/5) && (diff_tx_kb < upload_maximum*4/5)){
@@ -977,7 +1001,7 @@ function calculate_traffic(array_traffic){
 					else{
 						document.getElementById(client_traffic_new[i]+'_upload').innerHTML = diff_tx_mb.toFixed(2)
 						document.getElementById(client_traffic_new[i]+'_upload_unit').innerHTML = "Mb";
-					}	
+					}
 				}
 			}
 			else{
@@ -998,7 +1022,7 @@ function calculate_traffic(array_traffic){
 					else{
 						document.getElementById(client_traffic_new[i]+'_upload').innerHTML = diff_tx_mb.toFixed(2)
 						document.getElementById(client_traffic_new[i]+'_upload_unit').innerHTML = "Mb";
-					}	
+					}
 				}
 			}
 
@@ -1018,19 +1042,19 @@ function calculate_traffic(array_traffic){
 					if(unit == '0'){
 						if(diff_rx_kb.toFixed(2) >= 0.01 &&  rx_width < 1){
 							rx_width = 1;
-						}	
+						}
 					}
 					else if(unit == '1'){
 						if(diff_rx_mb.toFixed(2) >= 0.01 &&  rx_width < 1){
 							rx_width = 1;
-						}	
+						}
 					}
 					else{
 						if(diff_rx_kb.toFixed(2) >= 0.01 &&  rx_width < 1){
 							rx_width = 1;
-						}			
+						}
 					}
-					
+
 					if(document.getElementById(client_traffic_new[i]+'_download_bar') != "undefined" && document.getElementById(client_traffic_new[i]+'_download_bar') != null){
 						document.getElementById(client_traffic_new[i]+'_download_bar').style.width = rx_width + "%";
 					}
@@ -1061,7 +1085,7 @@ function calculate_traffic(array_traffic){
 							document.getElementById(client_traffic_new[i]+'_download_unit').innerHTML = "Mb";
 						}
 					}
-				}				
+				}
 			}
 			else if((diff_rx_kb >= download_maximum/5) && (diff_rx_kb < download_maximum*2/5)){		//	25%
 				rx_width = parseInt((diff_rx_kb - (download_maximum/5))/(download_maximum/5)*25);
@@ -1080,7 +1104,7 @@ function calculate_traffic(array_traffic){
 					else{
 						document.getElementById(client_traffic_new[i]+'_download').innerHTML = diff_rx_mb.toFixed(2);
 						document.getElementById(client_traffic_new[i]+'_download_unit').innerHTML = "Mb";
-					}			
+					}
 				}
 			}
 			else if((diff_rx_kb >= download_maximum*2/5) && (diff_rx_kb < download_maximum*3/5)){		// 20%
@@ -1099,7 +1123,7 @@ function calculate_traffic(array_traffic){
 					else{
 						document.getElementById(client_traffic_new[i]+'_download').innerHTML = diff_rx_mb.toFixed(2);
 						document.getElementById(client_traffic_new[i]+'_download_unit').innerHTML = "Mb";
-					}			
+					}
 				}
 			}
 			else if((diff_rx_kb >= download_maximum*3/5) && (diff_rx_kb <download_maximum*4/5)){		//	15%
@@ -1118,7 +1142,7 @@ function calculate_traffic(array_traffic){
 					else{
 						document.getElementById(client_traffic_new[i]+'_download').innerHTML = diff_rx_mb.toFixed(2);
 						document.getElementById(client_traffic_new[i]+'_download_unit').innerHTML = "Mb";
-					}					
+					}
 				}
 			}
 			else{		//10%
@@ -1173,23 +1197,10 @@ function calculate_apps_traffic(apps_traffic){
 			var tx_width = 0;
 			var rx_width = 0;
 
-			diff_tx = (apps_traffic_old[apps_traffic_new[i]]) ? apps_traffic_new[apps_traffic_new[i]].tx - apps_traffic_old[apps_traffic_new[i]].tx : 0;
-			diff_rx = (apps_traffic_old[apps_traffic_new[i]]) ? apps_traffic_new[apps_traffic_new[i]].rx - apps_traffic_old[apps_traffic_new[i]].rx : 0;
-
-      /* dns dpi report current active conntrack and its accumulated bytes for simplicity
-			   However, a few conntrack might timeout and won't report next query then have a smaller app bytes compared to last query
-			   To fix in fw, need to have a baseline conntrack and add calculated diff , minus tracks which there is no same app_id active
-			   ct. Nice to have since fw already give correct acculmuated info
-			*/
-			if(dns_dpi_support) {
-				if(diff_tx < 0)
-					diff_tx = 0;
-				if(diff_rx < 0)
-					diff_rx = 0;
-			}
-
-			diff_tx = diff_tx*8/detect_interval;
-			diff_rx = diff_rx*8/detect_interval;
+			var app_rate = bwRate("app:" + apps_traffic_new[i],
+				apps_traffic_new[apps_traffic_new[i]].tx, apps_traffic_new[apps_traffic_new[i]].rx);
+			diff_tx = app_rate.up;
+			diff_rx = app_rate.down;
 
 			diff_tx_kb = diff_tx/1024;
 			diff_rx_kb = diff_rx/1024;
@@ -1234,7 +1245,7 @@ function calculate_apps_traffic(apps_traffic){
 								tx_width = 1;
 							}
 						}
-						
+
 						document.getElementById(apps_traffic_new[i]+'_upload_bar').style.width = tx_width + "%";
 					}
 
@@ -1255,7 +1266,7 @@ function calculate_apps_traffic(apps_traffic){
 							document.getElementById(apps_traffic_new[i] + '_upload').innerHTML = diff_tx_mb.toFixed(2) ;
 							document.getElementById(apps_traffic_new[i] + '_upload_unit').innerHTML = "Mb";
 						}
-					}					
+					}
 				}
 				else if((diff_tx_kb >= upload_maximum/5) && (diff_tx_kb < upload_maximum*2/5)){
 					tx_width = parseInt((diff_tx_kb - (upload_maximum/5))/(upload_maximum/5)*25);
@@ -1273,7 +1284,7 @@ function calculate_apps_traffic(apps_traffic){
 					else{
 						document.getElementById(apps_traffic_new[i] + '_upload').innerHTML = diff_tx_mb.toFixed(2)
 						document.getElementById(apps_traffic_new[i] + '_upload_unit').innerHTML = "Mb";
-					}			
+					}
 				}
 				else if((diff_tx_kb >= upload_maximum*2/5) && (diff_tx_kb < upload_maximum*3/5)){
 					tx_width = parseInt((diff_tx_kb - (upload_maximum*2/5))/(upload_maximum/5)*20);
@@ -1344,23 +1355,23 @@ function calculate_apps_traffic(apps_traffic){
 					}
 					else{
 						rx_width = parseInt(diff_rx_kb/(download_maximum/5)*30);
-						
+
 						if(unit == '0'){
 							if(diff_rx_kb.toFixed(2) >= 0.01 &&  rx_width < 1){
 								rx_width = 1;
-							}	
+							}
 						}
 						else if(unit == '1'){
 							if(diff_rx_mb.toFixed(2) >= 0.01 &&  rx_width < 1){
 								rx_width = 1;
-							}	
+							}
 						}
 						else{
 							if(diff_rx_kb.toFixed(2) >= 0.01 &&  rx_width < 1){
 								rx_width = 1;
-							}			
+							}
 						}
-							
+
 
 						document.getElementById(apps_traffic_new[i]+'_download_bar').style.width = rx_width + "%";
 					}
@@ -1382,13 +1393,13 @@ function calculate_apps_traffic(apps_traffic){
 							document.getElementById(apps_traffic_new[i]+'_download').innerHTML = diff_rx_mb.toFixed(2);
 							document.getElementById(apps_traffic_new[i]+'_download_unit').innerHTML = "Mb";
 						}
-					}					
+					}
 				}
 				else if((diff_rx_kb >= download_maximum/5) && (diff_rx_kb < download_maximum*2/5)){		//	25%
 					rx_width = parseInt((diff_rx_kb - (download_maximum/5))/(download_maximum/5)*25);
 					rx_width += 30;
 					document.getElementById(apps_traffic_new[i]+'_download_bar').style.width = rx_width + "%";
-					
+
 					if(unit == '0'){
 						document.getElementById(apps_traffic_new[i]+'_download').innerHTML = diff_rx_kb.toFixed(2);
 						document.getElementById(apps_traffic_new[i]+'_download_unit').innerHTML = "Kb";
@@ -1400,7 +1411,7 @@ function calculate_apps_traffic(apps_traffic){
 					else{
 						document.getElementById(apps_traffic_new[i]+'_download').innerHTML = diff_rx_mb.toFixed(2);
 						document.getElementById(apps_traffic_new[i]+'_download_unit').innerHTML = "Mb";
-					}					
+					}
 				}
 				else if((diff_rx_kb >= download_maximum*2/5) && (diff_rx_kb < download_maximum*3/5)){		// 20%
 					rx_width = parseInt((diff_rx_kb - (download_maximum*2/5))/(download_maximum/5)*20);
@@ -1424,7 +1435,7 @@ function calculate_apps_traffic(apps_traffic){
 					rx_width = parseInt((diff_rx_kb - (download_maximum*3/5))/(download_maximum/5)*15);
 					rx_width += 75;
 					document.getElementById(apps_traffic_new[i]+'_download_bar').style.width = rx_width + "%";
-					
+
 					if(unit == '0'){
 						document.getElementById(apps_traffic_new[i]+'_download').innerHTML = diff_rx_kb.toFixed(2);
 						document.getElementById(apps_traffic_new[i]+'_download_unit').innerHTML = "Kb";
@@ -1445,7 +1456,7 @@ function calculate_apps_traffic(apps_traffic){
 						rx_width = 100;
 
 					document.getElementById(apps_traffic_new[i]+'_download_bar').style.width = rx_width + "%";
-					
+
 					if(unit == '0'){
 						document.getElementById(apps_traffic_new[i]+'_download').innerHTML = diff_rx_kb.toFixed(2);
 						document.getElementById(apps_traffic_new[i]+'_download_unit').innerHTML = "Kb";
@@ -1583,7 +1594,7 @@ function applyRule(){
 
   if(dns_dpi_support)
     document.form.action_script.value = "restart_dnsqd;restart_qos;restart_firewall";
-  
+
 	document.form.qos_rulelist.value = qos_rulelist;
 	showLoading();
 	document.form.submit();

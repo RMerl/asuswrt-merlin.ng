@@ -390,13 +390,35 @@ reliable_empty(const struct reliable *rel)
     return true;
 }
 
+int
+validate_packet_id_window(struct reliable *rel, packet_id_type pid)
+{
+    return reliable_pid_min(pid, rel->packet_id)
+           && reliable_pid_min(subtract_pid(rel->packet_id, RELIABLE_CAPACITY), pid);
+}
+
 /* del acknowledged items from send buf */
 void
 reliable_send_purge(struct reliable *rel, const struct reliable_ack *ack)
 {
+    unsigned int out_of_window = 0;
+    packet_id_type first_out_of_window = 0;
+
     for (int i = 0; i < ack->len; ++i)
     {
         packet_id_type pid = ack->packet_id[i];
+
+
+        if (!validate_packet_id_window(rel, pid))
+        {
+            if (out_of_window == 0)
+            {
+                first_out_of_window = pid;
+            }
+            out_of_window++;
+            continue;
+        }
+
         for (int j = 0; j < rel->size; ++j)
         {
             struct reliable_entry *e = &rel->array[j];
@@ -417,15 +439,26 @@ reliable_send_purge(struct reliable *rel, const struct reliable_ack *ack)
 #endif
                 e->active = false;
             }
-            else if (e->active && e->packet_id < pid)
+
+            if (e->active && reliable_pid_min(e->packet_id, pid))
             {
                 /* We have received an ACK for a packet with a higher PID. Either
                  * we have received ACKs out of or order or the packet has been
                  * lost. We count the number of ACKs to determine if we should
-                 * resend it early. */
+                 * resend it early. The comparison needs to be wraparound aware,
+                 * otherwise a peer can inflate n_acks with an ACK for a pid from
+                 * the lower half of the id space and force a retransmit. */
                 e->n_acks++;
             }
         }
+    }
+
+    if (out_of_window > 0)
+    {
+        (void)first_out_of_window; /* dmsg might not generate code */
+        dmsg(D_REL_LOW, "ACK contained %u ids outside the send window, "
+                        "first was " packet_id_format,
+             out_of_window, (packet_id_print_type)first_out_of_window);
     }
 }
 
@@ -655,11 +688,22 @@ reliable_send(struct reliable *rel, int *opcode)
             }
         }
     }
+
     if (best)
     {
+        /* The initial timeout is bounded by RELIABLE_MAX_INITIAL_TIMEOUT, so
+         * shifting it cannot overflow. */
+        static_assert(RELIABLE_MAX_INITIAL_TIMEOUT <= (INT_MAX >> RELIABLE_MAX_TIMEOUT_SHIFT),
+                      "initial reliable timeout overflows when shifted");
+        const interval_t max_timeout = rel->initial_timeout << RELIABLE_MAX_TIMEOUT_SHIFT;
+
         /* exponential backoff */
         best->next_try = local_now + best->timeout;
-        best->timeout *= 2;
+        if (best->timeout < max_timeout)
+        {
+            best->timeout *= 2;
+        }
+
         best->n_acks = 0;
         *opcode = best->opcode;
         dmsg(D_REL_DEBUG, "ACK reliable_send ID " packet_id_format " (size=%d to=%d)",

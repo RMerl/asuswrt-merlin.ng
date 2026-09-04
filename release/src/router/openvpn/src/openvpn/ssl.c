@@ -95,6 +95,14 @@ show_tls_performance_stats(void)
 
 #endif /* ifdef MEASURE_TLS_HANDSHAKE_STATS */
 
+/* forward decleration since tls_process needs this function prototype */
+static void
+check_session_buf_not_used(struct buffer *to_link, struct tls_session *session);
+
+static void
+check_keystate_buf_not_used(struct buffer *to_link, const struct key_state *ks);
+
+
 /**
  * Limit the reneg_bytes value when using a small-block (<128 bytes) cipher.
  *
@@ -902,10 +910,15 @@ key_state_init(struct tls_session *session, struct key_state *ks)
  *                       cleaned up.
  * @param clear        - Whether the memory allocated for the \a ks object
  *                       should be overwritten with 0s.
+ *
+ * @param to_link      - if not NULL, check that the buffer does not contain
+ *                       any pointer to one of the internal structs of ks
  */
 static void
-key_state_free(struct key_state *ks, bool clear)
+key_state_free(struct key_state *ks, bool clear, struct buffer *to_link)
 {
+    check_keystate_buf_not_used(to_link, ks);
+
     ks->state = S_UNDEF;
 
     key_state_ssl_free(&ks->ks_ssl);
@@ -1049,11 +1062,14 @@ tls_session_init(struct tls_multi *multi, struct tls_session *session)
  *                       object should be overwritten with 0s. This
  *                       implicitly sets many states to 0/false,
  *                       e.g. the validity of the keys in the structure
+ * @param to_link      - if not NULL, check that the buffer does not contain
+ *                       any pointer to one of the internal structs of ks
  *
  */
 static void
-tls_session_free(struct tls_session *session, bool clear)
+tls_session_free(struct tls_session *session, bool clear, struct buffer *to_link)
 {
+    check_session_buf_not_used(to_link, session);
     tls_wrap_free(&session->tls_wrap);
     tls_wrap_free(&session->tls_wrap_reneg);
 
@@ -1062,7 +1078,7 @@ tls_session_free(struct tls_session *session, bool clear)
         /* we don't need clear=true for this call since
          * the structs are part of session and get cleared
          * as part of session */
-        key_state_free(&session->key[i], false);
+        key_state_free(&session->key[i], false, to_link);
     }
 
     free(session->common_name);
@@ -1081,14 +1097,16 @@ tls_session_free(struct tls_session *session, bool clear)
 
 
 static void
-move_session(struct tls_multi *multi, int dest, int src, bool reinit_src)
+move_session(struct tls_multi *multi, int dest, int src, bool reinit_src,
+             struct buffer *to_link)
 {
+    check_session_buf_not_used(to_link, &multi->session[dest]);
     msg(D_TLS_DEBUG_LOW, "TLS: move_session: dest=%s src=%s reinit_src=%d",
         session_index_name(dest), session_index_name(src), reinit_src);
     ASSERT(src != dest);
     ASSERT(src >= 0 && src < TM_SIZE);
     ASSERT(dest >= 0 && dest < TM_SIZE);
-    tls_session_free(&multi->session[dest], false);
+    tls_session_free(&multi->session[dest], false, to_link);
     multi->session[dest] = multi->session[src];
 
     if (reinit_src)
@@ -1104,9 +1122,9 @@ move_session(struct tls_multi *multi, int dest, int src, bool reinit_src)
 }
 
 static void
-reset_session(struct tls_multi *multi, struct tls_session *session)
+reset_session(struct tls_multi *multi, struct tls_session *session, struct buffer *to_link)
 {
-    tls_session_free(session, false);
+    tls_session_free(session, false, to_link);
     tls_session_init(multi, session);
 }
 
@@ -1259,7 +1277,7 @@ tls_multi_free(struct tls_multi *multi, bool clear)
 
     for (int i = 0; i < TM_SIZE; ++i)
     {
-        tls_session_free(&multi->session[i], false);
+        tls_session_free(&multi->session[i], false, NULL);
     }
 
     if (clear)
@@ -1338,10 +1356,14 @@ static void
 init_epoch_keys(struct key_state *ks, struct tls_multi *multi, const struct key_type *key_type,
                 bool server, struct key2 *key2)
 {
-    /* For now we hardcode this to be 16 for the software based data channel
+    /* For now we hardcode this to be 4 for the software based data channel
      * DCO based implementations/HW implementation might adjust this number
-     * based on their expected speed */
-    const uint8_t future_key_count = 16;
+     * based on their expected speed.
+     *
+     * One epoch lasts 910 GiB with 128 byte packets or 78s at 100 GBit/s.
+     * (respectively 1011 GiB and 86s with 1280 byte packets).
+     */
+    const uint8_t future_key_count = 4;
 
     int key_direction = server ? KEY_DIRECTION_INVERSE : KEY_DIRECTION_NORMAL;
     struct key_direction_state kds;
@@ -1754,13 +1776,13 @@ flush_payload_buffer(struct key_state *ks)
  * active key.
  */
 static void
-key_state_soft_reset(struct tls_session *session)
+key_state_soft_reset(struct tls_session *session, struct buffer *to_link)
 {
     struct key_state *ks = &session->key[KS_PRIMARY];        /* primary key */
     struct key_state *ks_lame = &session->key[KS_LAME_DUCK]; /* retiring key */
 
     ks->must_die = now + session->opt->transition_window;    /* remaining lifetime of old key */
-    key_state_free(ks_lame, false);
+    key_state_free(ks_lame, false, to_link);
     *ks_lame = *ks;
 
     key_state_init(session, ks);
@@ -1771,7 +1793,7 @@ key_state_soft_reset(struct tls_session *session)
 void
 tls_session_soft_reset(struct tls_multi *tls_multi)
 {
-    key_state_soft_reset(&tls_multi->session[TM_ACTIVE]);
+    key_state_soft_reset(&tls_multi->session[TM_ACTIVE], NULL);
 }
 
 /*
@@ -2714,8 +2736,15 @@ write_outgoing_tls_ciphertext(struct tls_session *session, bool *continue_tls_pr
 
 static bool
 check_outgoing_ciphertext(struct key_state *ks, struct tls_session *session,
-                          bool *continue_tls_process)
+                          struct buffer *to_link, bool *continue_tls_process)
 {
+    if (to_link->len)
+    {
+        dmsg(D_TLS_DEBUG,
+             "Deferring outgoing ciphertext, previous packet not written out yet");
+        return true;
+    }
+
     /* Outgoing Ciphertext to reliable buffer */
     if (ks->state >= S_START)
     {
@@ -2896,7 +2925,7 @@ tls_process_state(struct tls_multi *multi, struct tls_session *session, struct b
         }
     }
 
-    if (!check_outgoing_ciphertext(ks, session, &continue_tls_process))
+    if (!check_outgoing_ciphertext(ks, session, to_link, &continue_tls_process))
     {
         goto error;
     }
@@ -2914,7 +2943,7 @@ error:
     /* Shut down the TLS session but do a last read from the TLS
      * object to be able to read potential TLS alerts */
     key_state_ssl_shutdown(&ks->ks_ssl);
-    check_outgoing_ciphertext(ks, session, &continue_tls_process);
+    check_outgoing_ciphertext(ks, session, to_link, &continue_tls_process);
 
     /* Put ourselves in the pre error state that will only send out the
      * control channel packets but nothing else */
@@ -3038,13 +3067,13 @@ tls_process(struct tls_multi *multi, struct tls_session *session, struct buffer 
             session->opt->aead_usage_limit,
             ks->crypto_options.key_ctx_bi.decrypt.plaintext_blocks + ks->n_packets,
             session->opt->aead_usage_limit);
-        key_state_soft_reset(session);
+        key_state_soft_reset(session, to_link);
     }
 
     /* Kill lame duck key transition_window seconds after primary key negotiation */
     if (lame_duck_must_die(session, wakeup))
     {
-        key_state_free(ks_lame, true);
+        key_state_free(ks_lame, true, to_link);
         msg(D_TLS_DEBUG_LOW, "TLS: tls_process: killed expiring key");
     }
 
@@ -3137,6 +3166,55 @@ tls_process(struct tls_multi *multi, struct tls_session *session, struct buffer 
     return false;
 }
 
+static void
+check_keystate_buf_not_used(struct buffer *to_link, const struct key_state *ks)
+{
+    if (ks->state == S_UNDEF || !to_link || !to_link->data)
+    {
+        return;
+    }
+
+    uint8_t *dataptr = to_link->data;
+
+    /* we don't expect send_reliable to be NULL when state is
+     * not S_UNDEF, but people have reported crashes nonetheless,
+     * therefore we better catch this event, report and exit.
+     */
+    if (!ks->send_reliable)
+    {
+        msg(M_FATAL,
+            "ERROR: ks.send_reliable (key-id %d), is NULL "
+            "while key state is %s. Exiting.",
+            ks->key_id, state_name(ks->state));
+    }
+
+    for (int j = 0; j < ks->send_reliable->size; j++)
+    {
+        if (ks->send_reliable->array[j].buf.data == dataptr)
+        {
+            msg(M_INFO,
+                "Warning buffer of freed TLS session is still in"
+                " use (key-id %d, ks.send_reliable->array[%d])",
+                ks->key_id, j);
+
+            goto used;
+        }
+    }
+
+    if (ks->ack_write_buf.data == dataptr)
+    {
+        msg(M_INFO, "Warning buffer of freed TLS session is still in use "
+                    "(ks.ack_write_buf, key-id %d)",
+            ks->key_id);
+
+        goto used;
+    }
+    return;
+
+used:
+    to_link->len = 0;
+    to_link->data = 0;
+}
 
 /**
  * This is a safe guard function to double check that a buffer from a session is
@@ -3148,11 +3226,11 @@ tls_process(struct tls_multi *multi, struct tls_session *session, struct buffer 
 static void
 check_session_buf_not_used(struct buffer *to_link, struct tls_session *session)
 {
-    uint8_t *dataptr = to_link->data;
-    if (!dataptr)
+    if (!to_link || !to_link->data)
     {
         return;
     }
+    const uint8_t *dataptr = to_link->data;
 
     /* Checks buffers in tls_wrap */
     if (session->tls_wrap.work.data == dataptr)
@@ -3170,42 +3248,8 @@ check_session_buf_not_used(struct buffer *to_link, struct tls_session *session)
 
     for (int i = 0; i < KS_SIZE; i++)
     {
-        struct key_state *ks = &session->key[i];
-        if (ks->state == S_UNDEF)
-        {
-            continue;
-        }
-
-        /* we don't expect send_reliable to be NULL when state is
-         * not S_UNDEF, but people have reported crashes nonetheless,
-         * therefore we better catch this event, report and exit.
-         */
-        if (!ks->send_reliable)
-        {
-            msg(M_FATAL,
-                "ERROR: session->key[%d]->send_reliable is NULL "
-                "while key state is %s. Exiting.",
-                i, state_name(ks->state));
-        }
-
-        for (int j = 0; j < ks->send_reliable->size; j++)
-        {
-            if (ks->send_reliable->array[j].buf.data == dataptr)
-            {
-                msg(M_INFO,
-                    "Warning buffer of freed TLS session is still in"
-                    " use (session->key[%d].send_reliable->array[%d])",
-                    i, j);
-
-                goto used;
-            }
-        }
-        if (ks->ack_write_buf.data == dataptr)
-        {
-            msg(M_INFO, "Warning buffer of freed TLS session is still in use (session->key[%d].ack_write_buf)", i);
-
-            goto used;
-        }
+        const struct key_state *ks = &session->key[i];
+        check_keystate_buf_not_used(to_link, ks);
     }
     return;
 
@@ -3299,13 +3343,11 @@ tls_multi_process(struct tls_multi *multi, struct buffer *to_link,
                 if (i == TM_ACTIVE && ks_lame->state >= S_GENERATED_KEYS
                     && !multi->opt.single_session)
                 {
-                    check_session_buf_not_used(to_link, session);
-                    move_session(multi, TM_LAME_DUCK, TM_ACTIVE, true);
+                    move_session(multi, TM_LAME_DUCK, TM_ACTIVE, true, to_link);
                 }
                 else
                 {
-                    check_session_buf_not_used(to_link, session);
-                    reset_session(multi, session);
+                    reset_session(multi, session, to_link);
                 }
             }
         }
@@ -3358,7 +3400,7 @@ tls_multi_process(struct tls_multi *multi, struct buffer *to_link,
      */
     if (lame_duck_must_die(&multi->session[TM_LAME_DUCK], wakeup))
     {
-        tls_session_free(&multi->session[TM_LAME_DUCK], true);
+        tls_session_free(&multi->session[TM_LAME_DUCK], true, to_link);
         msg(D_TLS_DEBUG_LOW, "TLS: tls_multi_process: killed expiring key");
     }
 
@@ -3373,8 +3415,7 @@ tls_multi_process(struct tls_multi *multi, struct buffer *to_link,
      */
     if (TLS_AUTHENTICATED(multi, &multi->session[TM_INITIAL].key[KS_PRIMARY]))
     {
-        check_session_buf_not_used(to_link, &multi->session[TM_ACTIVE]);
-        move_session(multi, TM_ACTIVE, TM_INITIAL, true);
+        move_session(multi, TM_ACTIVE, TM_INITIAL, true, to_link);
         tas = tls_authentication_status(multi);
         msg(D_TLS_DEBUG_LOW,
             "TLS: tls_multi_process: initial untrusted "
@@ -3776,7 +3817,7 @@ tls_pre_decrypt(struct tls_multi *multi, const struct link_socket_actual *from, 
                 goto error;
             }
 
-            key_state_soft_reset(session);
+            key_state_soft_reset(session, NULL);
 
             dmsg(D_TLS_DEBUG, "TLS: received P_CONTROL_SOFT_RESET_V1 s=%d sid=%s", i,
                  session_id_print(&sid, &gc));

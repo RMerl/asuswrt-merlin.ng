@@ -40,21 +40,32 @@
  *  @{ */
 
 
-#define RELIABLE_ACK_SIZE                       \
-    8 /**< The maximum number of packet IDs     \
-       *   waiting to be acknowledged which can \
-       *   be stored in one \c reliable_ack     \
-       *   structure. */
+#define RELIABLE_ACK_SIZE 8
+/**< The maximum number of packet IDs
+ *   waiting to be acknowledged which can
+ *   be stored in one \c reliable_ack
+ *   structure. */
 
-#define RELIABLE_CAPACITY                      \
-    12 /**< The maximum number of packets that \
-        *   the reliability layer for one VPN  \
-        *   tunnel in one direction can store. */
+#define RELIABLE_CAPACITY 12
+/**< The maximum number of packets that
+ *   the reliability layer for one VPN
+ *   tunnel in one direction can store. */
 
-#define N_ACK_RETRANSMIT                      \
-    3 /**< We retry sending a packet early if \
-       *   this many later packets have been  \
-       *   ACKed. */
+#define N_ACK_RETRANSMIT 3
+/**< We retry sending a packet early if
+ *   this many later packets have been
+ *   ACKed. */
+
+#define RELIABLE_MAX_TIMEOUT_SHIFT 6
+/**< Maximum shift or doubling in exponential backoff
+ * we allow. This is a safeguard against an unbounded
+ * exponential backoff. With the default timeout of 2s this
+ * equals 128s */
+
+#define RELIABLE_MAX_INITIAL_TIMEOUT (1 << 16)
+/**< Maximum initial timeout (--tls-timeout) we accept.
+ * Bounded so that shifting it by RELIABLE_MAX_TIMEOUT_SHIFT
+ * cannot overflow an int. */
 
 /**
  * The acknowledgment structure in which packet IDs are stored for later
@@ -94,9 +105,9 @@ struct reliable
 {
     int size;
     interval_t initial_timeout;
-    packet_id_type packet_id;
-    int offset; /**< Offset of the bufs in the reliable_entry array */
-    bool hold;  /* don't xmit until reliable_schedule_now is called */
+    packet_id_type packet_id; /**< Packet ID for the next packet to be sent out. */
+    int offset;               /**< Offset of the bufs in the reliable_entry array */
+    bool hold;                /* don't xmit until reliable_schedule_now is called */
     struct reliable_entry array[RELIABLE_CAPACITY];
 };
 
@@ -177,6 +188,17 @@ reliable_ack_empty(struct reliable_ack *ack)
 {
     return !ack->len;
 }
+
+/**
+ * check that pid is inside the window of possible outstanding packets
+ * of size RELIABLE_CAPACITY, ie inside the range
+ * [rel->packet_id - RELIABLE_CAPACITY, rel->packet_id).
+ *
+ * rel->packet is the *next* packet id to be sent out, so it is not
+ * included in the valid range.
+ */
+int
+validate_packet_id_window(struct reliable *rel, packet_id_type pid);
 
 /**
  * Returns the number of packets that need to be acked.

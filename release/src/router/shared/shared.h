@@ -322,6 +322,7 @@ static inline char *wan_if_eth(void)
 #define IS_ROG_QOS()            (nvram_get_int("qos_enable") == 0 && nvram_get_int("rog_enable") == 1) // QoS Disable, Gear Accelerator enable
 #define IS_RB_QOS()             (nvram_get_int("rb_enable") == 1)   // Router Boost QoS (OPPO)
 #define IS_CAKE_QOS()		(nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 9)   // Cake QoS
+#define IS_BCMTM_QOS()		(nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 8)	// BCM Traffic Manager (PI2/WRED)
 
 /* Guest network mark */
 #if defined(RTCONFIG_HND_ROUTER_BE_4916)

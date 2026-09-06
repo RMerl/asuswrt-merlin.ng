@@ -1928,6 +1928,9 @@ extern void wan_add_resolv_dnsmasq_ipv6(FILE* fp, int wan6_unit);
 /* qos.c */
 #ifdef HND_ROUTER
 extern int start_cake(void);
+#if defined(BCM4912) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+extern int start_bcm_tm(void);
+#endif
 #endif
 extern void set_codel_patch(void);
 extern void remove_codel_patch(void);

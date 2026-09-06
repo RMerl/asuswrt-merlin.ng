@@ -8188,7 +8188,7 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 	char wan_ifname[32] = {0};
 #endif
 
-	if(IS_NON_AQOS() || IS_ROG_QOS()){
+	if((IS_NON_AQOS() && !IS_BCMTM_QOS()) || IS_ROG_QOS()){
 			add_iQosRules(wan_if);
 	}
 	else {
@@ -8517,7 +8517,7 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 		wan_max_unit = WAN_UNIT_MULTICAST_IPTV_MAX;
 #endif
 
-	if(IS_NON_AQOS() || IS_ROG_QOS()){
+	if((IS_NON_AQOS() && !IS_BCMTM_QOS()) || IS_ROG_QOS()){
 		for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
 #if defined(RTCONFIG_HND_ROUTER_BE_4916)
 			if(!is_phy_connect2(unit))

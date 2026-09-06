@@ -18718,11 +18718,11 @@ void hnd_nat_ac_init(int bootup)
 {
 	int routing_mode = is_routing_enabled();
 
-	// A.QOS : not to disable fc
-	nvram_set_int("fc_disable", nvram_get_int("fc_disable_force") || (routing_mode && IS_NON_AQOS() && !IS_RB_QOS()) ? 1 : 0);
+	// A.QOS/BCMTM : not to disable fc
+	nvram_set_int("fc_disable", nvram_get_int("fc_disable_force") || (routing_mode && IS_NON_AQOS() && !IS_RB_QOS() && !IS_BCMTM_QOS()) ? 1 : 0);
 
-	// A.QOS : no need to disable runner
-	nvram_set_int("runner_disable", nvram_get_int("runner_disable_force") || (routing_mode && IS_NON_AQOS() && !IS_RB_QOS()) ? 1 : 0);
+	// A.QOS/BCMTM : no need to disable runner
+	nvram_set_int("runner_disable", nvram_get_int("runner_disable_force") || (routing_mode && IS_NON_AQOS() && !IS_RB_QOS() && !IS_BCMTM_QOS()) ? 1 : 0);
 
 #ifdef RTCONFIG_HND_ROUTER_BE_4916
 	/*

@@ -23234,6 +23234,9 @@ int init_nvram(void)
 #ifdef HND_ROUTER
 	add_rc_support("cake");
 #endif
+#if (defined(BCM4912) || defined(RTCONFIG_HND_ROUTER_BE_4916)) && !defined(BCM6765) && !defined(BCM6764)
+	add_rc_support("hw_aqm");
+#endif
 
 #ifdef RTCONFIG_NTPD
 	add_rc_support("ntpd");

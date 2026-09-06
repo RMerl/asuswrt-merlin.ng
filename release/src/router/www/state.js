@@ -566,6 +566,7 @@ if(isSupport("UI4") && !parent.webWrapper){
 	}
 }
 var cake_support = isSupport("cake");
+var hw_aqm_support = isSupport("hw_aqm");
 var igd2_support = isSupport("igd2");
 var nfsd_support = isSupport("nfsd");
 var dnsfilter_support = isSupport("dnsfilter");

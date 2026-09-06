@@ -2684,7 +2684,7 @@ int add_iQosRules(char *pcWANIF)
 			return -1;
 	}
 
-	if (pcWANIF == NULL || nvram_get_int("qos_type") == 1) return -1;
+	if (pcWANIF == NULL || nvram_get_int("qos_type") == 1 || nvram_get_int("qos_type") == 8) return -1;
 
 	if (IS_TQOS()) {
 		status = add_qos_rules(pcWANIF);
@@ -2746,6 +2746,11 @@ int start_iQos(void)
 	else if (IS_CAKE_QOS()) {
 		status = start_cake();
 	}
+#if defined(BCM4912) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+	else if (IS_BCMTM_QOS()) {
+		status = start_bcm_tm();
+	}
+#endif
 #endif
 
 /* OPPO */
@@ -2921,4 +2926,156 @@ int start_cake(void)
 
 	return 0;
 }
+
+#if defined(BCM4912) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+
+#define QOS_MIN_QPKTS       8
+#define QOS_MAX_QPKTS       16384
+#define QOS_FALLBACK_QPKTS  1364
+#define QOS_TARGET_MS       100
+#define QOS_WRED_TARGET_MS  10
+int start_bcm_tm(void)
+{
+	unsigned long obw;
+	FILE *f;
+	unsigned int target_latency, qsize, dropalg;
+	unsigned int wred_qsize;
+	int packet_size;
+	int wred_lo = 0, wred_hi = 0;
+	char nvname[sizeof("wan0_XXXXXXXX")];
+	const char *wan_ifname;
+	const char *wan_proto;
+
+#if defined(BCM4912)
+	dropalg = 2;
+#elif defined(BCM6765) || defined(BCM6764)
+	logmessage("qos", "%s: Model not supported", __FUNCTION__);
+	return -1; // Archer Unsupported
+#elif defined(RTCONFIG_HND_ROUTER_BE_4916)
+	dropalg = 4;
 #endif
+
+	wan_ifname = get_wanx_ifname(wan_primary_ifunit());
+
+#if defined(RTCONFIG_MULTISERVICE_WAN)
+	char wan_ifname_phy[IFNAMSIZ] = {0};
+
+	if (is_mswan_enabled()) {
+		char *p;
+
+		strlcpy(wan_ifname_phy, nvram_safe_get("wan_ifnames"), sizeof(wan_ifname_phy));
+		if ((p = strchr(wan_ifname_phy, ' ')) != NULL)
+			*p = '\0';
+		if (!wan_ifname_phy[0])
+			strlcpy(wan_ifname_phy, WAN_IF_ETH, sizeof(wan_ifname_phy));
+
+		wan_ifname = wan_ifname_phy;
+	}
+#endif
+
+	snprintf(nvname, sizeof(nvname), "wan%d_proto", wan_primary_ifunit());
+	wan_proto = nvram_safe_get(nvname);
+	if (strcmp(wan_proto, "dhcp") && strcmp(wan_proto, "static") && strcmp(wan_proto, "bridge")) {
+		logmessage("qos", "WAN protocol %s is not supported by HW AQM", wan_proto);
+		return -1;
+	}
+
+	obw = strtoul(nvram_safe_get("qos_obw"), NULL, 10);
+
+	if (obw == 0)
+		obw = 1024000;
+
+	snprintf(nvname, sizeof(nvname), "wan%d_mtu", wan_primary_ifunit());
+	packet_size = nvram_get_int(nvname) + 38;	// include L2 overhead
+	if (packet_size - 38 < 576)
+		packet_size = 1538;
+
+	/* setqsize hard cap: always sized off a fixed generous target. */
+	qsize = (obw * QOS_TARGET_MS / 8) / packet_size;
+	if (qsize < QOS_MIN_QPKTS)
+		qsize = QOS_MIN_QPKTS;
+	else if (qsize > QOS_MAX_QPKTS)
+		qsize = QOS_MAX_QPKTS;
+
+	if (dropalg == 2) {
+		target_latency = nvram_get_int("qos_tm_latency");
+		if (target_latency == 0 || target_latency > 1000)
+			target_latency = QOS_WRED_TARGET_MS;
+
+		wred_qsize = (obw * target_latency / 8) / packet_size;
+		if (wred_qsize < QOS_MIN_QPKTS)
+			wred_qsize = QOS_MIN_QPKTS;
+		else if (wred_qsize > QOS_MAX_QPKTS)
+			wred_qsize = QOS_MAX_QPKTS;
+
+		wred_lo = wred_qsize * 20 / 100;
+		wred_hi = wred_qsize * 80 / 100;
+	}
+
+	if((f = fopen(qosfn, "w")) == NULL) return -2;
+
+	/* Stop/start rules */
+	fprintf(f,
+		"#!/bin/sh\n"
+		"WANIF=%s\n"
+		"OBW=%lu\n"
+		"QSIZE=%d\n"
+		"case \"$1\" in\n"
+		"start)\n"
+		"\tif [ ! -f /tmp/qos_tm_orig_qsize ]; then\n"
+		"\t\torig=$(tmctl getqcfg --devtype 0 --if $WANIF --qid 0 2>/dev/null | "
+		"sed -n 's/.*qsize *: *\\([0-9]*\\).*/\\1/p')\n"
+		"\t\tcase \"$orig\" in ''|*[!0-9]*) orig=;; esac\n"
+		"\t\t[ -n \"$orig\" ] && echo \"$orig\" > /tmp/qos_tm_orig_qsize\n"
+		"\tfi\n"
+
+		"\tif [ ! -f /tmp/qos_tm_orig_stop_tmctl_qos ]; then\n"
+		"\t\tnvram get stop_tmctl_qos > /tmp/qos_tm_orig_stop_tmctl_qos\n"
+		"\tfi\n"
+		"\tnvram set stop_tmctl_qos=1\n"
+		"\ttmctl porttminit --devtype 0 --if $WANIF --flag 1 --numqueues 8\n"
+		"\ttmctl setportshaper --devtype 0 --if $WANIF --shapingrate $OBW --minrate 0\n"
+		"\ttmctl setqcfg --devtype 0 --if $WANIF --qid 0 --priority 0 --weight 1 --schedmode 1\n"
+		"\ttmctl setqsize --devtype 0 --if $WANIF --qid 0 --qsize $QSIZE\n"
+
+		"\ttmctl %s --devtype 0 --if $WANIF --qid 0 --dropalg %d "
+			"--loredminthr %d --loredmaxthr %d --hiredminthr %d --hiredmaxthr %d --priomask0 0xff --priomask1 0xff\n"
+		"\t;;\n\n"
+		"stop)\n"
+		"\tif [ -f /tmp/qos_tm_orig_qsize ]; then\n"
+		"\t\toriqsize=$(cat /tmp/qos_tm_orig_qsize)\n"
+		"\t\trm -f /tmp/qos_tm_orig_qsize\n"
+		"\telse\n"
+		"\t\toriqsize=%d\n"
+		"\tfi\n"
+		"\ttmctl setportshaper --devtype 0 --if $WANIF --shapingrate 0 --minrate 0\n"
+		"\ttmctl setqcfg --devtype 0 --if $WANIF --qid 0 --priority 0 --weight 1 --schedmode 1\n"
+		"\ttmctl setqsize --devtype 0 --if $WANIF --qid 0 --qsize \"$oriqsize\"\n"
+		"\ttmctl setqdropalg --devtype 0 --if $WANIF --qid 0 --dropalg 0 "
+			"--loredminthr 0 --loredmaxthr 0 --hiredminthr 0 --hiredmaxthr 0 --priomask0 0xff --priomask1 0xff\n"
+		"\tif [ -f /tmp/qos_tm_orig_stop_tmctl_qos ]; then\n"
+		"\t\torig_stop_tmctl_qos=$(cat /tmp/qos_tm_orig_stop_tmctl_qos)\n"
+		"\t\trm -f /tmp/qos_tm_orig_stop_tmctl_qos\n"
+		"\telse\n"
+		"\t\torig_stop_tmctl_qos=0\n"
+		"\tfi\n"
+		"\tnvram set stop_tmctl_qos=\"$orig_stop_tmctl_qos\"\n"
+		"\t;;\n"
+		"*)\n"
+		"esac\n",
+		wan_ifname,
+		obw,
+		qsize,
+		(dropalg == 4 ? "setqdropalg" : "setqdropalgx"), dropalg,
+		wred_lo, wred_hi, wred_lo, wred_hi,
+		QOS_FALLBACK_QPKTS);
+
+	fclose(f);
+	chmod(qosfn, 0755);
+	run_custom_script("qos-start", 120, "init", NULL);
+	eval((char *)qosfn, "start");
+
+	return 0;
+}
+#endif // models
+#endif // HND

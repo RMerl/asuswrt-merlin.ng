@@ -292,6 +292,9 @@ var runner_disable_orig = '<% nvram_get("runner_disable"); %>';
 var qos_xobw_orig = parseInt(httpApi.nvramGet(["qos_xobw"], true).qos_xobw);	//shapping UL speed /PrimaryWAN
 var qos_xobw1_orig = parseInt(httpApi.nvramGet(["qos_xobw1"], true).qos_xobw1);	//shapping UL speed /SecondaryWAN
 
+var wan_proto_orig = httpApi.nvramGet(["wan" + active_wan_unit + "_proto"], true)["wan" + active_wan_unit + "_proto"];
+var hw_aqm_proto_support = (wan_proto_orig == "dhcp" || wan_proto_orig == "static" || wan_proto_orig == "bridge");
+
 var bwdpi_app_rulelist = "<% nvram_get("bwdpi_app_rulelist"); %>".replace(/&#60/g, "<");
 var category_title = ["", "<#Adaptive_Game#>", "<#Adaptive_Stream#>", "<#Adaptive_Message#>", "<#Adaptive_WebSurf#>","<#Adaptive_FileTransfer#>", "<#Adaptive_Others#>", "<#Adaptive_eLearning#>"];
 var cat_id_array = [[9,20], [8], [4], [0,5,6,15,17], [13,24], [1,3,14], [7,10,11,21,23], [4,13]];
@@ -477,7 +480,7 @@ function initial(){
 				document.getElementById('settingSelection').style.display = "none";
 			}
 
-			if((cake_support && (qos_type == 9)) || (codel_support && (qos_type != 1))){
+			if((cake_support && (qos_type == 9)) || (codel_support && (qos_type != 1) && (qos_type != 8))){
 				document.getElementById('qos_overhead_tr').style.display = "";
 			}
 			if((cake_support) && (qos_type == 9)){
@@ -542,6 +545,12 @@ function initial(){
 		document.getElementById('cake_type_link').style.display = "";
 	} else {
 		$('#cake_desc').hide();
+	}
+	if(hw_aqm_support && hw_aqm_proto_support){
+		document.getElementById('hw_aqm_type').style.display = "";
+		document.querySelector('label[for="hw_aqm_type"]').style.display = "";
+	} else {
+		$('#hw_aqm_desc').hide();
 	}
 }
 
@@ -695,12 +704,12 @@ function validForm(){
 
 		if(qos_type != 2){	//not Bandwidth Limiter
 
-			if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && (document.form.obw.value.length == 0 || document.form.obw.value == 0)){		// To check field is 0 && Traditional QoS
+			if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3 || qos_type == 8) && (document.form.obw.value.length == 0 || document.form.obw.value == 0)){		// To check field is 0 && Traditional QoS
 				alert("<#QoS_invalid_zero#>");
 				error_obw++;
 
 			}
-			else if( (((qos_type == 1 || qos_type == 9) && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && !validator.rangeFloat(document.form.obw, 0, 9999999999, "")){
+			else if( (((qos_type == 1 || qos_type == 9) && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3 || qos_type == 8) && !validator.rangeFloat(document.form.obw, 0, 9999999999, "")){
 				error_obw++;
 			}
 
@@ -1033,6 +1042,7 @@ function change_qos_type(value){
 		document.getElementById('trad_type').checked = true;
 		document.getElementById('bw_limit_type').checked = false;
 		document.getElementById('cake_type').checked = false;
+		document.getElementById('hw_aqm_type').checked = false;
 	if(geforceNow_support)
 			document.getElementById('GeForce_type').checked = false;
     //if(router_boost_support) {
@@ -1062,6 +1072,7 @@ function change_qos_type(value){
 		document.getElementById('int_type').checked = true;
 		document.getElementById('trad_type').checked = false;
 		document.getElementById('cake_type').checked = false;
+		document.getElementById('hw_aqm_type').checked = false;
 		document.getElementById('bw_limit_type').checked = false;		
     document.getElementById('bandwidth_setting_tr').style.display = "";
 		if(geforceNow_support)
@@ -1097,6 +1108,7 @@ function change_qos_type(value){
 		document.getElementById('trad_type').checked = false;
 		document.getElementById('bw_limit_type').checked = true;
 		document.getElementById('cake_type').checked = false;
+		document.getElementById('hw_aqm_type').checked = false;
     if(geforceNow_support)
 			document.getElementById('GeForce_type').checked = false;
     //if(router_boost_support)
@@ -1131,6 +1143,7 @@ function change_qos_type(value){
     //  document.getElementById('router_boost_tr').style.display = "none";
     document.getElementById('bandwidth_setting_tr').style.display = "none";
 		document.getElementById('cake_type').checked = false;
+		document.getElementById('hw_aqm_type').checked = false;
 		show_up_down(1);
 		document.getElementById('list_table').style.display = "none";
 		if (codel_support) {
@@ -1153,6 +1166,7 @@ function change_qos_type(value){
 		document.getElementById('trad_type').checked = false;
 		document.getElementById('bw_limit_type').checked = false;
 		document.getElementById('cake_type').checked = true;
+		document.getElementById('hw_aqm_type').checked = false;
 		if(geforceNow_support)
 			document.getElementById('GeForce_type').checked = false;
 		document.getElementById('bandwidth_setting_tr').style.display = "";
@@ -1176,6 +1190,36 @@ function change_qos_type(value){
 		}
 		else{
 			show_up_down(1);
+		}
+		show_settings("NonAdaptive");
+	}
+	else if(value == 8){		//HW AQM
+		document.getElementById('int_type').checked = false;
+		document.getElementById('trad_type').checked = false;
+		document.getElementById('bw_limit_type').checked = false;
+		document.getElementById('cake_type').checked = false;
+		document.getElementById('hw_aqm_type').checked = true;
+		if(geforceNow_support)
+			document.getElementById('GeForce_type').checked = false;
+		document.getElementById('bandwidth_setting_tr').style.display = "none";
+		show_up_down(1);
+		document.getElementById('download_tr').style.display = "none";
+		document.getElementById('wan_2_tr').style.display = "none";
+		document.getElementById('upload2_tr').style.display = "none";
+		document.getElementById('download2_tr').style.display = "none";
+		document.getElementById('list_table').style.display = "none";
+		document.getElementById('qos_overhead_tr').style.display = "none";
+		if (cake_support) {
+			document.getElementById('qos_mpu').style.display = "none";
+			document.getElementById('qos_mpu_label').style.display = "none";
+		}
+		if(document.form.qos_type_orig.value == 8 && document.form.qos_enable_orig.value != 0){
+			document.form.action_script.value = "restart_qos;restart_firewall";
+		}
+		else{
+			document.form.action_script.value = "reboot";
+			document.form.next_page.value = "QoS_EZQoS.asp";
+			document.form.action_wait.value = "<% get_default_reboot_time(); %>";
 		}
 		show_settings("NonAdaptive");
 	}
@@ -2024,6 +2068,7 @@ function set_overhead(entry) {
 															<li id="qos_desc"><#EzQoS_desc_Traditional#></li>
 															<li><#EzQoS_desc_Bandwidth_Limiter#></li>
 															<li id="cake_desc"><span style="font-weight:bolder;font-size:14px;">Cake</span> is an automatic queue management algorithm that takes care of ensuring fairness in traffic queueing without requiring manual configuration.</li>
+														<li id="hw_aqm_desc"><span style="font-weight:bolder;font-size:14px;">HW AQM</span> is a hardware-accelerated Active Queue Management that shapes the upload queue in the network processor to reduce bufferbloat.</li>
 										     </ul>
 														<#EzQoS_desc_note#>
 													</div>
@@ -2119,6 +2164,7 @@ function set_overhead(entry) {
 												<input id="bw_limit_type" name="qos_type_radio" value="2" onClick="change_qos_type(this.value);" type="radio" <% nvram_match("qos_type", "2","checked"); %>><a class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 7)"><label for="bw_limit_type"><#Bandwidth_Limiter#></label></a>
 											  <span id="GeForceNow_item" style="display: none;"><input id="GeForce_type" name="qos_type_radio" value="3" onClick="change_qos_type(this.value);" type="radio" <% nvram_match("qos_type", "3","checked"); %>><a class="hintstyle" href="javascript:void(0);"><label for="GeForce_type">GeForce NOW QoS</label></a></span>
 												<input id="cake_type" name="qos_type_radio" value="9" onClick="change_qos_type(this.value);" style="display:none;" type="radio" <% nvram_match("qos_type", "9","checked"); %>><a id="cake_type_link" style="display:none;" class="hintstyle" href="javascript:void(0);" onClick="openHint(50, 32);"><label for="cake_type">Cake</label></a>
+												<input id="hw_aqm_type" name="qos_type_radio" value="8" onClick="change_qos_type(this.value);" style="display:none;" type="radio" <% nvram_match("qos_type", "8","checked"); %>><label for="hw_aqm_type" style="display:none;">HW AQM</label>
 										  </td>
 										</tr>
 										<tr id="qos_overhead_tr" style="display:none">

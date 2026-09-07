@@ -20225,6 +20225,9 @@ check_ddr_done:
 			stop_dpi_engine_service(0);
 #endif
 			del_iQosRules();
+#ifdef HND_ROUTER
+			eval("fc","flush");
+#endif
 		}
 		if(action & RC_SERVICE_START) {
 #ifdef HND_ROUTER

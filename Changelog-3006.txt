@@ -10,6 +10,23 @@ Asuswrt-Merlin 3006.xxx Changelog
          actual 3.5.x library.  A similar shim for 1.0.0 was
          also implemented for the RT-BE58_Go's Trend Micro
          HNS engine.  (RSDNTWK)
+
+  - NEW: Hardware-accelerated AQM QoS implemented, using
+         Broadcom's traffic manager.  Wifi 6 devices will
+         use the WRED algo, while Wifi 7 uses PI2.
+         This is not compatible with BCM676x devices,
+         like the RT-BE92U or RT-BE58_Go.
+
+         AQM helps reducing bufferbloat through improved queue
+         management.  This will only affect the Upload, as
+         Asus is already applying queue management on the
+         downstream using another Broadcom engine.
+
+         It is recommended to set your upload speed to around
+         95% of your real upload speed.
+
+         It only works for dhcp/static mode (so, no PPPoE).
+
   - NEW: Wireless Log will now report infos for Repeater,
          Media Bridge and WISP upstream link
   - NEW: IPv6 support in Tor.  Previously, any IPv6 traffic
@@ -17,12 +34,13 @@ Asuswrt-Merlin 3006.xxx Changelog
   - UPDATED: amtm to 7.0.  (decoderman)
   - UPDATED: tor to 0.4.9.11.
   - UPDATED: OpenSSL 3.5 to 3.5.8.
+  - UPDATED: OpenVPN 2.7.7.
   - UPDATED: zoneinfo data to 2026c.
-  - CHANGED: Kernel backports to mark the B53-based CPUs
-             as not being vulnerable to Spectre V2 and
-             Meltdown.  This tells the kernel to skip
-             software mitigation, avoiding their associated
-             performance penalties.  (leonpano2006)
+  - CHANGED: Kernel backports to mark the B53-based CPUs as not
+             being vulnerable to Spectre V2 and Meltdown.
+             This tells the kernel to skip software mitigation,
+             avoiding their associated performance
+             penalties.  (leonpano2006)
   - CHANGED: Tweaks to OpenVPN Server and Tor pages.  Use
              the new CSS radio switcher instead of old
              switcherplugin.
@@ -33,6 +51,8 @@ Asuswrt-Merlin 3006.xxx Changelog
            Media Bridge modes.
   - FIXED: Interface selection missing from Speed Test
            (GT-BE19000AI)
+  - FIXED: AdaptiveQoS Bandwidth Monitor shwowing the
+           wrong traffic rates (patch from Asus)
 
 
 3006.102.8_4 (20-Aug-2026)

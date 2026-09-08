@@ -1574,7 +1574,7 @@
             <span id="bandwidth-tab-divider" class="tab-navigation__divider" style="display:none;"></span>
             <button id="bandwidth-tab-btn" class="tab-navigation__item" data-tab="bandwidth" style="display:none;"><#Bandwidth_Limiter#></button>
             <span class="tab-navigation__divider"></span>
-            <button class="tab-navigation__item" data-tab="cake">Cake</button>
+            <button class="tab-navigation__item" data-tab="aqm">AQM</button>
         </nav>
     </div>
     <div id="tab-section-aiqoe" class="qoe-container tab-content">
@@ -2038,23 +2038,31 @@
         </div>
     </div>
 
-    <div id="tab-section-cake" class="container tab-content pt-5" style="display: none;">
+    <div id="tab-section-aqm" class="container tab-content pt-5" style="display: none;">
         <div class="row">
-            <div class="col-12">
-                <h2>Cake</h2>
-            </div>
             <div class="col-12 col-md-6 col-lg-4 mb-4">
                 <div class="switch-div-bw">
-                    <div class="switch-div-title">CAKE</div>
+                    <div id="aqm-switch-title" class="switch-div-title">AQM</div>
                     <div id="enable_cake_btn" class="toggle-button with-text">
                         <div class="toggle-button-handle"></div>
                     </div>
                 </div>
+                <div id="aqm-type-row" class="mt-3" style="display:none;">
+                    <label class="d-block mb-2" style="font-size:var(--font-size-16);">Algorithm</label>
+                    <div class="btn-group w-100" role="group" aria-label="AQM algorithm">
+                        <input type="radio" class="btn-check form-check-input" name="aqm_type_radio" id="aqm_type_cake" value="9" autocomplete="off" checked>
+                        <label class="btn btn-color form-check-label" for="aqm_type_cake">Cake</label>
+
+                        <input type="radio" class="btn-check form-check-input" name="aqm_type_radio" id="aqm_type_hwaqm" value="8" autocomplete="off">
+                        <label class="btn btn-color form-check-label" for="aqm_type_hwaqm">HW AQM</label>
+                    </div>
+                </div>
+                <div id="aqm-type-desc" class="mt-2" style="display:none; font-size:1rem; color:var(--text-secondary);"></div>
             </div>
 
             <div class="col-12">
-                <div id="cake-bandwidth-row" class="row setting-row gap-sm-2 gap-lg-0 mt-3">
-                    <div class="col-12 col-sm-12 col-lg-4">
+                <div id="cake-bandwidth-row" class="row setting-row gap-sm-2 gap-lg-0 mt-3" style="max-width:700px;">
+                    <div class="col-12 col-sm-12 col-lg-6">
                         <div class="bandwidth-cell">
                             <label for="cake_upload">Upload bandwidth</label>
                             <div class="d-flex align-items-center w-100">
@@ -2063,7 +2071,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-sm-12 col-lg-4">
+                    <div class="col-12 col-sm-12 col-lg-6" id="cake-download-col">
                         <div class="bandwidth-cell">
                             <label for="cake_download">Download bandwidth</label>
                             <div class="d-flex align-items-center w-100">
@@ -2076,7 +2084,7 @@
             </div>
 
             <div class="col-12">
-                <div class="setting-row mt-3">
+                <div id="cake-overhead-row" class="setting-row mt-3" style="max-width:700px;">
                     <div class="d-flex align-items-center gap-3">
                         <div class="bandwidth-cell">
                             <label for="cake_overhead">Packet Overhead</label>
@@ -3202,7 +3210,7 @@
 
     /* End Bandwidth Limiter */
 
-    /* Cake UI: initialize and apply */
+    /* AQM (Cake / HW AQM) UI: initialize and apply */
     (function () {
         const overheadPresets = [
             {atm: "1", overhead: "48", mpu: "0", label: "Conservative default"},
@@ -3220,10 +3228,60 @@
         const enableBtn = document.getElementById("enable_cake_btn");
         const uploadInput = document.getElementById("cake_upload");
         const downloadInput = document.getElementById("cake_download");
-        
+        const downloadCol = document.getElementById("cake-download-col");
+        const overheadRow = document.getElementById("cake-overhead-row");
+
         const applyBtn = document.getElementById("cake_apply_btn");
 
         if (!enableBtn || !applyBtn) return;
+
+        const bandwidthRow = document.getElementById("cake-bandwidth-row");
+        const active_wan_unit = httpApi.hookGet("get_wan_unit", true);
+        const wan_proto = httpApi.nvramGet(["wan" + active_wan_unit + "_proto"], true)["wan" + active_wan_unit + "_proto"];
+        const hwAqmProtoSupport = (wan_proto == "dhcp" || wan_proto == "static" || wan_proto == "bridge");
+        const hwAqmSupport = (typeof isSupport === "function") && !!isSupport("hw_aqm") && hwAqmProtoSupport;
+        const aqmTypeRow = document.getElementById("aqm-type-row");
+        const aqmTypeDesc = document.getElementById("aqm-type-desc");
+        const aqmSwitchTitle = document.getElementById("aqm-switch-title");
+        const aqmTypeCake = document.getElementById("aqm_type_cake");
+        const aqmTypeHwAqm = document.getElementById("aqm_type_hwaqm");
+
+        const aqmTypeDescriptions = {
+            "9": "Automatic queue management algorithm that takes care of ensuring fairness in traffic queueing without requiring manual configuration. Not compatible with hardware NAT acceleration.",
+            "8": "Hardware-accelerated Active Queue Management that shapes the upload queue in the network processor to reduce bufferbloat."
+        };
+
+        function isHwAqmSelected() {
+            return hwAqmSupport && aqmTypeHwAqm && aqmTypeHwAqm.checked;
+        }
+
+        // Hides every AQM setting (algorithm choice, bandwidth, overhead) while the
+        // master switch is off, and further trims the fields down to just Upload
+        // when HW AQM is the selected algorithm.
+        function updateSettingsVisibility() {
+            const enabled = enableBtn.classList.contains('active');
+            const hwAqm = isHwAqmSelected();
+
+            if (aqmTypeRow) aqmTypeRow.style.display = (enabled && hwAqmSupport) ? "" : "none";
+            if (aqmTypeDesc) {
+                aqmTypeDesc.style.display = enabled ? "" : "none";
+                aqmTypeDesc.textContent = aqmTypeDescriptions[hwAqm ? "8" : "9"];
+            }
+            if (bandwidthRow) bandwidthRow.style.display = enabled ? "" : "none";
+            if (downloadCol) downloadCol.style.display = (enabled && !hwAqm) ? "" : "none";
+            if (overheadRow) overheadRow.style.display = (enabled && !hwAqm) ? "" : "none";
+        }
+
+        if (hwAqmSupport) {
+            // Multiple algorithms available: let the user pick.
+            [aqmTypeCake, aqmTypeHwAqm].forEach(input => {
+                if (input) input.addEventListener("change", updateSettingsVisibility);
+            });
+        } else if (aqmSwitchTitle) {
+            // Only Cake is available on this platform: make that clear next to the switch
+            // instead of showing a selector with a single, non-obvious choice.
+            aqmSwitchTitle.textContent = "CAKE";
+        }
 
         // stored values we want to preserve when applying
         let stored_mpu = "0", stored_overhead = "0", stored_atm = "0";
@@ -3318,8 +3376,16 @@
                     "qos_atm"
                 ], true);
 
-                const isCake = (data.qos_enable == "1" && data.qos_type == "9");
+                const isHwAqmType = hwAqmSupport && data.qos_type == "8";
+                const isCake = (data.qos_enable == "1" && (data.qos_type == "9" || isHwAqmType));
                 enableBtn.classList.toggle('active', isCake);
+
+                if (isHwAqmType) {
+                    if (aqmTypeHwAqm) aqmTypeHwAqm.checked = true;
+                } else if (aqmTypeCake) {
+                    aqmTypeCake.checked = true;
+                }
+                updateSettingsVisibility();
 
                 if (uploadInput) {
                     const obw = parseInt(data.qos_obw, 10) || 0;
@@ -3346,18 +3412,12 @@
 
         enableBtn.addEventListener('click', () => {
             enableBtn.classList.toggle('active');
-            if (!enableBtn.classList.contains('active')) {
-                httpApi.nvramSet({
-                    "qos_enable": "0",
-                    "action_mode": "apply",
-                    "rc_service": "restart_qos;restart_ark"
-                });
-                showLoading(3);
-            }
+            updateSettingsVisibility();
         });
 
         applyBtn.addEventListener('click', () => {
             const enabled = enableBtn.classList.contains('active');
+            const hwAqm = isHwAqmSelected();
 
             const ulVal = (uploadInput && uploadInput.value) ? Number(uploadInput.value) : 0;
             const dlVal = (downloadInput && downloadInput.value) ? Number(downloadInput.value) : 0;
@@ -3366,15 +3426,19 @@
                 "action_mode": "apply",
                 "rc_service": "restart_qos;restart_ark",
                 "qos_enable": enabled ? "1" : "0",
-                "qos_type": enabled ? "9" : "0",
-                "qos_obw": String(Math.round(ulVal * 1024)),
-                "qos_ibw": String(Math.round(dlVal * 1024)),
-                "qos_mpu": (mpuInput && mpuInput.value) ? String(mpuInput.value) : stored_mpu || "0",
-                "qos_overhead": (overheadInput && overheadInput.value) ? String(overheadInput.value) : stored_overhead || "0",
-                "qos_atm": (atmSelect && atmSelect.value) ? String(atmSelect.value) : stored_atm || "0"
+                "qos_type": enabled ? (hwAqm ? "8" : "9") : "0",
+                "qos_obw": String(Math.round(ulVal * 1024))
             };
 
-            // When enabling CAKE, also disable ARK features
+            // HW AQM only shapes the upload queue; leave download/overhead settings untouched
+            if (!hwAqm) {
+                payload["qos_ibw"] = String(Math.round(dlVal * 1024));
+                payload["qos_mpu"] = (mpuInput && mpuInput.value) ? String(mpuInput.value) : stored_mpu || "0";
+                payload["qos_overhead"] = (overheadInput && overheadInput.value) ? String(overheadInput.value) : stored_overhead || "0";
+                payload["qos_atm"] = (atmSelect && atmSelect.value) ? String(atmSelect.value) : stored_atm || "0";
+            }
+
+            // When enabling AQM, also disable ARK features
             if (enabled) {
                 payload["ark_qoe_enable"] = "0";
                 payload["ark_limiter_enable"] = "0";

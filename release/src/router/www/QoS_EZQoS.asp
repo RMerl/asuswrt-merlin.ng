@@ -925,6 +925,21 @@ function determineActionScript(){
         }
     document.form.action_wait.value = "15";
 	}
+	else if((document.form.qos_type.value == "8" || document.form.qos_type.value == "9" ||
+			 document.form.qos_type_orig.value == "8" || document.form.qos_type_orig.value == "9") &&
+			!(document.form.qos_type_orig.value == "0" && document.form.qos_enable_orig.value == "1")){
+		//Enabling/disabling Cake or HW AQM does not need a reboot, unless switching from an enabled Traditional QoS
+		if(router_boost_support) {
+			if(mtk_support)
+				document.form.action_script.value = "restart_routerboost;restart_qos;restart_firewall;";
+			else
+				document.form.action_script.value = "restart_routerboost;restart_wireless;restart_qos;restart_firewall;";
+    }
+    else {
+      document.form.action_script.value = "restart_qos;restart_firewall;";
+    }
+    document.form.action_wait.value = "15";
+	}
 	else if(document.form.qos_enable.value == "1" && document.form.qos_type.value == "1" && (ctf_fa_mode != "2" || qca_support)){
 		//BCM: Support FA but disable FA ,or not support FA. QCA Models
 		if(router_boost_support) {

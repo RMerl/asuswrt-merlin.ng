@@ -352,7 +352,7 @@ wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 int
 ej_wl_unit_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 {
-	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
+	char tmp[128], prefix[] = "wlXXXXXXXXXX_", prefix2[] = "wlXXXXXXXXXX_";
 	char *name;
 	char name_vif[] = "wlX.Y_XXXXXXXXXX";
 	struct maclist *auth;
@@ -401,6 +401,7 @@ ej_wl_unit_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 #endif
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 
+	snprintf(prefix2, sizeof(prefix2), "wl%d_", unit);
 	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
 
 	wl_ioctl(name, WLC_GET_RADIO, &val, sizeof(val));
@@ -456,7 +457,7 @@ ej_wl_unit_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 
 // DFS status
 #ifdef RTCONFIG_BCMWL6
-	if (!nvram_match(strlcat_r(prefix, "reg_mode", tmp, sizeof(tmp)), "h"))
+	if (!nvram_match(strlcat_r(prefix2, "reg_mode", tmp, sizeof(tmp)), "h"))
 		goto sta_list;
 
 	memset(buf, 0, sizeof(buf));

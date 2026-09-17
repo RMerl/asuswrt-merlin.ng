@@ -137,17 +137,23 @@ $.getJSON("/ajax/logFilter.json", function(data){
 var height = 0;
 function get_log_data(){
 	var h = 0;
-    $.ajax({
+
+	if (!document.getElementById("auto_refresh").checked) {
+		setTimeout(get_log_data, 3000)
+		return;
+	}
+
+	$.ajax({
 		url: '/appGet.cgi?hook=nvram_dump(\"syslog.log\",\"syslog.sh\")',
 		dataType: 'text',
 		error: function(xhr){
-      		setTimeout(get_log_data, 1000);
+			setTimeout(get_log_data, 1000);
 		},
 		success: function(response){
 			var logString = htmlEnDeCode.htmlEncode(response.toString().slice(26,-4));
-    		h = $("#textarea").scrollTop();
+			h = $("#textarea").scrollTop();
 			var _log = '';
-			if((document.getElementById("auto_refresh").checked) && !(height > 0 && h < height)){
+			if(!(height > 0 && h < height)){
 				var _string = logString.split('\n');
 				for(var i=0;i<_string.length;i++){
 					var found = filter.find(function(e){

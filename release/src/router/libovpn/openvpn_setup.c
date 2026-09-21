@@ -1259,8 +1259,8 @@ void ovpn_write_dh(ovpn_sconf_t *sconf, int unit) {
 					len = DH_bits(dhparams);
 					OPENSSL_free(dhparams);
 				}
-				if ((len != 0) && (len < 1024))
-					logmessage("openvpn","WARNING: DH for server %d is too weak (%d bit, must be at least 1024 bit). Using a pre-generated 2048-bit PEM.", unit, len);
+				if ((len != 0) && (len < 2048))
+					logmessage("openvpn","WARNING: DH for server %d is too weak (%d bit, must be at least 2048 bit). Using a pre-generated 2048-bit PEM.", unit, len);
 			}
 			fclose(fp);
 		}

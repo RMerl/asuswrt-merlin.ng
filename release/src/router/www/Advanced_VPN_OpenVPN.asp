@@ -1623,7 +1623,7 @@ function handle_ipv6_submit_settings(){
 												<div id="radio_VPNServer_enable"></div>
 												<script type="text/javascript">
 													$("#radio_VPNServer_enable").addClass("icon_switch");
-													if(document.form.VPNServer_enable.value == "1")
+													if(vpn_server_enable == "1")
 														$("#radio_VPNServer_enable").addClass("on");
 													else
 														$("#radio_VPNServer_enable").removeClass("on");

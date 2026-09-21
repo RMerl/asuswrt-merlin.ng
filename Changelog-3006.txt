@@ -9,12 +9,7 @@ Asuswrt-Merlin 3006.xxx Changelog
          the openssl 1.1.1 library, redirecting calls to the
          actual 3.5.x library.  A similar shim for 1.0.0 was
          also implemented for the RT-BE58_Go's Trend Micro
-         HNS engine.
-
-         Note that OpenSSL 3.x has some stricter requirements
-         than 1.1.1.  OpenVPN servers using a weak DH for
-         instance might need to generate a 2048-bit DH.
-         (RSDNTWK)
+         HNS engine.  (RSDNTWK)
 
   - NEW: Hardware-accelerated AQM QoS implemented, using
          Broadcom's traffic manager.  Wifi 6 devices will

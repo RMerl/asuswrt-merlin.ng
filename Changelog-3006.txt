@@ -1,7 +1,7 @@
 Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
-3006.102.9 (xx-xxx-xxxx)
+3006.102.9 (23-Sept-2026)
   - NEW: Migrated all devices to OpenSSL 3.5 (except GT-BE19000AI,
          which was already on that version).
          For closed source components linked against

@@ -10702,6 +10702,7 @@ int wdg_monitor_main(int argc, char *argv[])
 void auto_firmware_check_merlin()
 {
 	int periodic_check = 0;
+	static time_t periodic_check_timestamp = 0;
 	static int period_retry = 0;
 	static int bootup_check_period = 3;	//wait 3 times(90s) to check
 	static int bootup_check = 1;
@@ -10726,8 +10727,12 @@ void auto_firmware_check_merlin()
 	time(&now);
 	localtime_r(&now, &local);
 
-	if(local.tm_hour == (2 + rand_hr) && local.tm_min == rand_min) //at 2 am + random offset to check
+	if(local.tm_hour == (2 + rand_hr) && local.tm_min == rand_min &&
+	   uptime() - periodic_check_timestamp > 60) { //at 2 am + random offset to check, once per minute
 		periodic_check = 1;
+		period_retry = 0;
+		periodic_check_timestamp = uptime();
+	}
 
 	if (bootup_check || periodic_check || period_retry!=0)
 	{

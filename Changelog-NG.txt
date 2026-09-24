@@ -12,6 +12,7 @@ Asuswrt-Merlin Changelog
          would leak outside of the proxy.  (Claude)
   - UPDATED: amtm to 7.0. (decoderman)
   - UPDATED: tor to 0.4.9.11.
+  - UPDATED: openvpn to 2.7.7.
   - UPDATED: zoneinfo data to 2026c.
   - CHANGED: Tweaks to OpenVPN Server and Tor pages.  Use 
              the new CSS radio switcher instead of old

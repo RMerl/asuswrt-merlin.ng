@@ -1,5 +1,5 @@
 #! /usr/bin/env perl
-# Copyright 2018-2025 The OpenSSL Project Authors. All Rights Reserved.
+# Copyright 2018-2026 The OpenSSL Project Authors. All Rights Reserved.
 #
 # Licensed under the Apache License 2.0 (the "License").  You may not use
 # this file except in compliance with the License.  You can obtain a copy
@@ -175,8 +175,12 @@ SKIP: {
                     "-rawin", "-digest", "sha256");
     };
 
+    # -verifyrecover outputs the recovered payload (binary, without a
+    # trailing newline), which would otherwise be echoed into the TAP
+    # stream by run() and corrupt it, so redirect it to a file.
     ok(run(app((['openssl', 'pkeyutl', '-verifyrecover', '-in', $sigfile,
-                 '-pubin', '-inkey', srctop_file('test', 'testrsapub.pem')]))),
+                 '-pubin', '-inkey', srctop_file('test', 'testrsapub.pem')],
+                stdout => 'rsa_verifyrecover.out'))),
        "RSA: Verify signature with -verifyrecover");
 
     subtest "RSA CLI signature and verification with pkeyopt" => sub {

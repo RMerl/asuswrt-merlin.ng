@@ -30,6 +30,7 @@ written consent.
 #include <linux/kernel.h>
 #include <linux/of.h>
 #include <linux/i2c.h>
+#include <linux/ethtool.h>
 #include <wan_drv.h>
 #include <trxbus.h>
 #include "opticaldet.h" /* for TRX_SIG_ACTIVE_POLARITY defines */
@@ -166,6 +167,20 @@ int trxbus_module_present(int bus)
     return try_detect_enable(b);
 }
 EXPORT_SYMBOL(trxbus_module_present);
+
+/* Newer enet composites (TUF-BE3600 GPL, used by RT-BE58U) reference these.
+ * This bcmsfp revision has no per-module eeprom ops: report failure. */
+int trxbus_module_eeprom(int bus, struct ethtool_eeprom *ee, u8 *data)
+{
+    return -1;
+}
+EXPORT_SYMBOL(trxbus_module_eeprom);
+
+int trxbus_module_info(int bus, struct ethtool_modinfo *modinfo)
+{
+    return -1;
+}
+EXPORT_SYMBOL(trxbus_module_info);
 
 /* Called from sfp driver probe. setup the dev pointer as upper driver need certain cage
    property before the SFP module is actually plugged in

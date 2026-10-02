@@ -10422,6 +10422,10 @@ endif
 
 cevent_app-install: cevent_app
 	+$(MAKE) -C $(CEVENT_APP_DIR) install EXTRA_LDFLAGS=$(EXTRA_LDFLAGS) INSTALLDIR=$(INSTALLDIR)/cevent_app
+ifeq ($(BUILD_NAME),RT-BE58U)
+	# rc starts /bin/ceventd; the SDK installs it to /usr/sbin
+	install -d $(INSTALLDIR)/cevent_app/bin && ln -sf ../usr/sbin/ceventd $(INSTALLDIR)/cevent_app/bin/ceventd
+endif
 
 cevent_app-clean:
 	+$(MAKE) -C $(CEVENT_APP_DIR) clean EXTRA_LDFLAGS=$(EXTRA_LDFLAGS)

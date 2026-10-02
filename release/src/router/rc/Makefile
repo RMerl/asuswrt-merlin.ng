@@ -1392,6 +1392,12 @@ endif
 else
 	@cd $(INSTALLDIR)/sbin && ln -sf rc init
 endif
+ifeq ($(BUILD_NAME),RT-BE58U)
+	@# open replacements for the hw_auth-gated wlceventd/roamast (no V1 hw_auth.o published)
+	@install -D -m 0755 be58u_wifi_events.sh $(INSTALLDIR)/usr/sbin/be58u_wifi_events.sh
+	@install -D -m 0755 be58u_wifi_events_start.sh $(INSTALLDIR)/usr/sbin/be58u_wifi_events_start.sh
+	@install -D -m 0755 be58u_roam_helper.sh $(INSTALLDIR)/usr/sbin/be58u_roam_helper.sh
+endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc console
 	@cd $(INSTALLDIR)/sbin && ln -sf rc hotplug
 	@cd $(INSTALLDIR)/sbin && ln -sf rc service

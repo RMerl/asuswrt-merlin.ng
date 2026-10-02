@@ -4202,6 +4202,13 @@ int start_wlceventd(void)
 	if (mediabridge_mode())
 		return ret;
 
+#if defined(RTBE58U)
+	/* no V1 hw_auth.o is published, so the closed wlceventd exits;
+	 * log client (dis)associations via hostapd_cli instead */
+	system("/usr/sbin/be58u_wifi_events_start.sh >/dev/null 2>&1 &");
+	return 0;
+#endif
+
 	ret = _eval(ev_argv, NULL, 0, &pid);
 
 	return ret;
@@ -24422,6 +24429,9 @@ void start_nbr_monitor(void){
 void stop_roamast(void){
 	if (pids("roamast"))
 		killall_tk("roamast");
+#if defined(RTBE58U)
+	system("kill -9 $(cat /var/run/be58u_roam_helper.pid 2>/dev/null) 2>/dev/null; rm -f /var/run/be58u_roam_helper.pid");
+#endif
 }
 
 void start_roamast(void){
@@ -24440,6 +24450,13 @@ void start_roamast(void){
 
 	if (nvram_match("roamast_disable", "1") || nvram_match("x_Setting", "0"))
 		return;
+
+#if defined(RTBE58U)
+	/* closed roamast is hw_auth-gated (no V1 object published): use the
+	 * open 802.11v BSS-transition helper instead */
+	system("/usr/sbin/be58u_roam_helper.sh >/dev/null 2>&1 &");
+	return;
+#endif
 
 #ifdef RTCONFIG_FAST_ACL_SET
 	if (nvram_match("watchdog_wait_a_moment", "1"))

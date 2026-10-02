@@ -1,0 +1,53 @@
+diff --git a/platform/raspberrypi/agent/scripts/tdk_platform_utility.sh b/platform/raspberrypi/agent/scripts/tdk_platform_utility.sh
+index 56fb1c0..506e3a1 100755
+--- a/platform/raspberrypi/agent/scripts/tdk_platform_utility.sh
++++ b/platform/raspberrypi/agent/scripts/tdk_platform_utility.sh
+@@ -37,6 +37,34 @@ getCMMACAddress()
+     echo $macaddress
+ }
+
++#get the AP0 DTIM interval
++getAp0DTIMInterval()
++{
++    ap0dtim=`wl -i wl0 dtim`
++    echo $ap0dtim
++}
++
++#get the AP1 DTIM interval
++getAp1DTIMInterval()
++{
++    ap1dtim=`wl -i wl1 dtim`
++    echo $ap1dtim
++}
++
++#get the AP0 Obss Coexistence
++getRadio0ObssCoexistenceEnable()
++{
++    ap0obsscoex=`wl -i wl0 obss_coex`
++    echo $ap0obsscoex
++}
++
++#get the AP1 Obss Coexistence
++getRadio1ObssCoexistenceEnable()
++{
++    ap1obsscoex=`wl -i wl1 obss_coex`
++    echo $ap1obsscoex
++}
++
+ # Store the arguments to a variable
+ event=$1
+ processName=$2
+@@ -49,5 +77,13 @@ case $event in
+         killProcess;;
+    "getCMMACAddress")
+         getCMMACAddress;;
++   "getAp0DTIMInterval")
++        getAp0DTIMInterval;;
++   "getAp1DTIMInterval")
++        getAp1DTIMInterval;;
++   "getRadio0ObssCoexistenceEnable")
++        getRadio0ObssCoexistenceEnable;;
++   "getRadio1ObssCoexistenceEnable")
++        getRadio1ObssCoexistenceEnable;;
+    *) echo "Invalid Argument passed";;
+ esac

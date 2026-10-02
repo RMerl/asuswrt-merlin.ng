@@ -1,0 +1,55 @@
+##########################################################################################################
+#
+# This file contains a factory reset database in text format
+#
+# If no USP database exists when OB-USP-AGENT starts, then OB-USP-AGENT will create a database containing
+# the parameters specified in a text file located by the '-r' option.
+# Example:
+#    obuspa -p -v 4 -r factory_reset_example.txt
+#
+# Each line of this file contains either a comment (denoted by '#' at the start of the line)
+# or a USP data model parameter and its factory reset value.
+# The parameter and value are separated by whitespace.
+# The value may optionally be enclosed in speech marks "" (this is the only way to specify an empty string)
+#
+##########################################################################################################
+
+#
+# The following parameters will definitely need modifying
+#
+
+# Controller's websocket server (for agent initiated sessions)
+Device.LocalAgent.Controller.1.EndpointID "self::usp-controller.com"
+Device.LocalAgent.Controller.1.MTP.1.WebSocket.Host "usp-controller.com"
+Device.LocalAgent.Controller.1.MTP.1.WebSocket.Port "80"
+Device.LocalAgent.Controller.1.MTP.1.WebSocket.Path "/usp"
+Device.LocalAgent.Controller.1.MTP.1.WebSocket.EnableEncryption "false"
+
+# Agent's websocket server (for controller initiated sessions)
+Device.LocalAgent.MTP.1.WebSocket.Port "8080"
+Device.LocalAgent.MTP.1.WebSocket.Path "/usp"
+Device.LocalAgent.MTP.1.WebSocket.EnableEncryption "false"
+
+
+#
+# The following parameters may be modified
+#
+Device.LocalAgent.MTP.1.Alias "cpe-1"
+Device.LocalAgent.MTP.1.Enable "true"
+Device.LocalAgent.MTP.1.Protocol "WebSocket"
+Device.LocalAgent.MTP.1.WebSocket.KeepAliveInterval "30"
+Device.LocalAgent.Controller.1.Alias "cpe-1"
+Device.LocalAgent.Controller.1.Enable "true"
+Device.LocalAgent.Controller.1.AssignedRole "Device.LocalAgent.ControllerTrust.Role.1"
+Device.LocalAgent.Controller.1.PeriodicNotifInterval "86400"
+Device.LocalAgent.Controller.1.PeriodicNotifTime "0001-01-01T00:00:00Z"
+Device.LocalAgent.Controller.1.USPNotifRetryMinimumWaitInterval "5"
+Device.LocalAgent.Controller.1.USPNotifRetryIntervalMultiplier "2000"
+Device.LocalAgent.Controller.1.ControllerCode ""
+Device.LocalAgent.Controller.1.MTP.1.Alias "cpe-1"
+Device.LocalAgent.Controller.1.MTP.1.Enable "true"
+Device.LocalAgent.Controller.1.MTP.1.Protocol "WebSocket"
+Device.LocalAgent.Controller.1.MTP.1.WebSocket.KeepAliveInterval "30"
+Device.LocalAgent.Controller.1.MTP.1.WebSocket.SessionRetryMinimumWaitInterval "5"
+Device.LocalAgent.Controller.1.MTP.1.WebSocket.SessionRetryIntervalMultiplier "2000"
+Internal.Reboot.Cause "LocalFactoryReset"

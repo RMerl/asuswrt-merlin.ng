@@ -1,0 +1,1 @@
+dependson: public/libs/cares public/libs/curl public/apps/mosquitto public/libs/sqlite public/libs/bcm_sslconf public/libs/jsonc public/libs/zlib private/libs/bcm_generic_hal private/libs/bcm_webproto private/libs/bcm_zbus_intf public/libs/websockets public/libs/vlan_subif-linux_std

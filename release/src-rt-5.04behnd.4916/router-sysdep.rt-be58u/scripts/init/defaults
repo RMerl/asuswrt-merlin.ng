@@ -1,0 +1,49 @@
+#!/bin/bash
+
+prev=$PWD
+dloc="/proc/brcm/blxparms/"
+cd $dloc
+for i in defaults_*
+do
+  if [ -e "$i" ] 
+  then
+    defaults=1
+  fi
+done
+
+if [ -n "$defaults" ]; then
+
+   # Get defaults partition device parameters
+   # TODO: Add support for managed flashes
+   defaults_mount_line=`mount|grep defaults`
+   ubivol=${defaults_mount_line%% *}
+   fstype=${defaults_mount_line##*type } 
+   fstype=${fstype%% *} 
+   mntpnt=${defaults_mount_line##*on } 
+   mntpnt=${mntpnt%% *}
+
+   if [ -z "$mntpnt" ]; then echo "Error: defaults partition not mounted!"; fi
+
+   ### now populate it
+   >>/mnt/defaults/defaults.txt
+   cp /mnt/defaults/defaults.txt /tmp/
+   for i in defaults_*
+   do
+     j=${i#defaults_}
+     # echo "remove $j"
+     grep -v "^$j=" /tmp/defaults.txt > /tmp/d2.txt
+     # echo "------"
+     # cat /tmp/d2.txt
+     # echo "------"
+     cp /tmp/d2.txt /tmp/defaults.txt
+     echo "$j="`cat $i` >> /tmp/defaults.txt
+   done
+   cp /tmp/defaults.txt /mnt/defaults/
+   rm /tmp/defaults.txt
+   cat /mnt/defaults/defaults.txt
+
+   mount -t $fstype -oremount,ro $ubivol $mntpnt
+fi
+
+cd $prev
+

@@ -1,0 +1,55 @@
+diff --git a/json_object.c b/json_object.c
+index 458163c..e22f9d1 100644
+--- a/json_object.c
++++ b/json_object.c
+@@ -687,6 +687,38 @@ struct json_object* json_object_new_int64(int64_t i)
+ 	return jso;
+ }
+ 
++uint64_t json_object_get_uint64(const struct json_object *jso)
++{
++
++	int64_t cint;
++	
++	if (!jso)
++		return 0;
++	switch(jso->o_type)
++	{
++	case json_type_int:
++		if(jso->o.c_int64 < 0)
++			return 0;
++		else 
++			return jso->o.c_int64;
++	case json_type_double:
++		if (jso->o.c_double >=  (double) UINT64_MAX)
++			return UINT64_MAX;
++		if (jso->o.c_double <= 0 )
++			return 0;
++		return (uint64_t)jso->o.c_double;
++			
++	case json_type_boolean:
++		return jso->o.c_boolean;
++	case json_type_string:
++		if (json_parse_int64(get_string_component(jso), &cint) == 0)
++			return cint>0 ? (uint64_t)cint : 0;
++		/* FALLTHRU */
++	default:
++		return 0;
++	}
++}
++
+ int64_t json_object_get_int64(const struct json_object *jso)
+ {
+ 	int64_t cint;
+diff --git a/json_object.h b/json_object.h
+index 073d80c..2313760 100644
+--- a/json_object.h
++++ b/json_object.h
+@@ -763,6 +763,7 @@ JSON_EXPORT int json_object_int_inc(struct json_object *obj, int64_t val);
+  * @returns an int64
+  */
+ JSON_EXPORT int64_t json_object_get_int64(const struct json_object *obj);
++JSON_EXPORT uint64_t json_object_get_uint64(const struct json_object *obj);
+ 
+ 
+ /** Set the int64_t value of a json_object

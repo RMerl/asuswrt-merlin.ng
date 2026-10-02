@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+  <head>
+    <style type="text/css">
+      div.additional-license-text-list {display:block}
+      body {font-family: Helvetica, Arial, sans-serif;}
+      pre {white-space: pre-wrap;}
+    </style>
+    <title>Open Source Software Information</title>
+  </head>
+
+  <body>
+    <h1>OPEN SOURCE SOFTWARE INFORMATION</h1>
+    <div>
+      <p>Licenses, acknowledgments and required copyright notices for 
+      open source components:</p>
+    </div>
+    
+        <div class="oss-table-of-contents">
+            {% for about_object in abouts %}
+                <p><a href="#component_{{ loop.index0 }}">{{ about_object.name.value }}{% if about_object.version.value %} {{ about_object.version.value }}{% endif %}</a></p>
+            {% endfor %}
+        </div>
+
+    <hr/>
+
+
+    {% for about_object in abouts %}
+        <div class="oss-component" id="component_{{ loop.index0 }}">
+            <h3 class="component-name">{{ about_object.name.value }}
+                {% if about_object.version.value %}{{ about_object.version.value }}{% endif %}
+            </h3>
+            {% if about_object.license_expression.value %}
+                <p>This component is licensed under 
+                {{ about_object.license_expression.value }}
+            {% endif %}
+            {% if about_object.license_key.value %}
+                {% if about_object.license_file.value %}
+                    {% for lic_file_name in about_object.license_file.value %}
+                        <pre>{{ about_object.license_file.value[lic_file_name] | e}}</pre>
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <hr/>
+
+    <h3><a id="End">End</a></h3>
+    <i>This file was generated with AboutCode Toolkit version: {{ tkversion }} on: {{ utcnow }} (UTC)</i>
+    </body>
+</html>
+

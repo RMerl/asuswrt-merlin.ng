@@ -1,0 +1,22 @@
+diff -Naur obuspa_orig/src/include/vendor_api.h obuspa_new/src/include/vendor_api.h
+--- obuspa_orig/src/include/vendor_api.h	2022-06-28 02:09:22.000000000 -0700
++++ obuspa_new/src/include/vendor_api.h	2022-07-11 16:21:49.992333190 -0700
+@@ -54,5 +54,18 @@
+ int VENDOR_GetFactoryResetParams(kv_vector_t *kvv);
+ #endif
+ 
++#ifdef BDK_USP
++int vendorRegisterOpLocalAgent(void);
++int vendorRegisterOpController(void);
++int vendorRegisterOpCtrust(void);
++int vendorRegisterOpIpDiag(void);
++int vendorRegisterOpDslDiag(void);
++int vendorRegisterOpFirmware(void);
++int vendorRegisterOpConfigFile(void);
++int vendorRegisterOpModsw(void);
++
++int vendorRegisterEventBulkdata(void);
++#endif  /* BDK_USP */
++
+ #endif
+ 

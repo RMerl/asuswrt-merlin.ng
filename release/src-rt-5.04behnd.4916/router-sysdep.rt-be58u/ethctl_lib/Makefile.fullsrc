@@ -1,0 +1,34 @@
+OBJS := ethctl_api.o sha256.o
+
+#CFLAGS += -Werror -Wfatal-errors
+
+CFLAGS += -DCONFIG_BCM9$(BRCM_CHIP) 
+
+# These are public API headers needed by other apps which want to call this lib.
+# Private/internal headers should not be listed here.
+HEADERS := 
+
+# from Bcmbuild.mk
+HEADER_INSTALL_DIR    := $(BCM_FSBUILD_DIR)/private/include
+
+all: $(LIB)
+	mkdir -p $(HEADER_INSTALL_DIR)
+
+$(LIB): $(OBJS)
+	$(CC) -shared $(BCM_LD_FLAGS) -Wl,--whole-archive,-soname,$(notdir $@) -o $@ $(OBJS) -Wl,--no-whole-archive
+
+
+clean:
+	rm -f *.o *.d $(LIB)
+	rm -f $(LIB_INSTALL_DIR)/$(LIB)
+	rm -f $(addprefix $(HEADER_INSTALL_DIR)/,$(HEADERS))
+
+binaryonly_prepare:
+	-cp $(LIB) $(mdir)/$(SAVED)
+	-$(MAKE) -f $(name) clean
+	rm -f $(mdir)/*.c $(mdir)/*.h $(mdir)/Makefile.fullsrc
+
+
+# Generate and use dependencies.
+CFLAGS += -MD -I$(HND_SRC)/userspace/private/include/ -I$(HND_SRC)/bcmdrivers/opensource/phy/
+-include $(OBJS:%.o=%.d)

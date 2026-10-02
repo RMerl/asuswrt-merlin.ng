@@ -1,0 +1,3 @@
+dependson: private/libs/ethswctl public/libs/bcm_flashutil  public/libs/bcm_util
+condition: ifneq ($(strip $(BUILD_ETHSWCTL)),)
+

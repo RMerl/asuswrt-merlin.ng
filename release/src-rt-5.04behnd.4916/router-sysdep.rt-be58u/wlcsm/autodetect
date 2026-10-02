@@ -1,0 +1,4 @@
+
+condition: ifneq ($(strip $(BUILD_BRCM_CPEROUTER)),)
+makeflags: all
+

@@ -1,0 +1,13 @@
+diff --git a/systemd_units/ccspwifiagent.service b/systemd_units/ccspwifiagent.service
+index 4053ed24..0d128664 100644
+--- a/systemd_units/ccspwifiagent.service
++++ b/systemd_units/ccspwifiagent.service
+@@ -31,6 +31,6 @@ ExecStart=/usr/bin/CcspWifiSsp -subsys $Subsys
+ ExecStopPost=/bin/sh -c 'echo "`date`: Stopping/Restarting CcspWifiSsp" >> ${PROCESS_RESTART_LOG}'
+ Restart=always
+ 
+-[Install]
+-WantedBy=multi-user.target
++#[Install]
++#WantedBy=multi-user.target
+ 

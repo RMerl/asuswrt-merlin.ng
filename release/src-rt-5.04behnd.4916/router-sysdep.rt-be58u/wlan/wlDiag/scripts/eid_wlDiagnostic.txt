@@ -1,0 +1,5 @@
+BEGIN
+  eid         = EID_WLDIAG
+  name        = wlDiagnostic
+  flags       = EIF_MDM|EIF_MESSAGING_CAPABLE|EIF_MULTIPLE_INSTANCES
+END

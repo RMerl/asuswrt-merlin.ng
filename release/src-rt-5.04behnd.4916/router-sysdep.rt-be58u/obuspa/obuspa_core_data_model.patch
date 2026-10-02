@@ -1,0 +1,136 @@
+diff -Naur obuspa_orig/src/core/database.c obuspa_new/src/core/database.c
+--- obuspa_orig/src/core/database.c	2022-10-31 11:07:04.642937412 -0700
++++ obuspa_new/src/core/database.c	2022-10-31 15:20:09.136720733 -0700
+@@ -53,6 +53,10 @@
+ #include "text_utils.h"
+ #include "vendor_api.h"
+ 
++#ifdef BDK_USP
++#include "bdk_usp.h"
++#endif
++
+ //--------------------------------------------------------------------
+ // Prepared SQL statements
+ typedef enum
+@@ -336,7 +340,11 @@
+     }
+ 
+     // Finally set the reboot cause to "RemoteFactoryReset"
++#ifdef BDK_USP
++    err = DEVICE_LOCAL_AGENT_SetRebootCause("RemoteFactoryReset");
++#else
+     err = DATA_MODEL_SetParameterInDatabase(reboot_cause_path, "RemoteFactoryReset");
++#endif
+     if (err != USP_ERR_OK)
+     {
+         return;
+diff -Naur obuspa_orig/src/core/dm_exec.c obuspa_new/src/core/dm_exec.c
+--- obuspa_orig/src/core/dm_exec.c	2023-03-28 11:22:54.232037740 -0700
++++ obuspa_new/src/core/dm_exec.c	2023-03-28 14:30:34.020092161 -0700
+@@ -251,6 +251,11 @@
+ void ProcessSocketActivity(socket_set_t *set);
+ void ProcessMessageQueueSocketActivity(socket_set_t *set);
+ 
++#ifdef BDK_USP
++void BDK_ProcessSocketActivity(socket_set_t *set);
++void BDK_UpdateSocketSet(socket_set_t *set);
++#endif
++
+ /*********************************************************************//**
+ **
+ ** DM_EXEC_Init
+@@ -1073,6 +1078,10 @@
+     // Add the message queue receiving socket to the socket set
+     SOCKET_SET_AddSocketToReceiveFrom(mq_rx_socket, MAX_SOCKET_TIMEOUT, set);
+ 
++#ifdef BDK_USP
++    BDK_UpdateSocketSet(set);
++#endif
++
+     // Update socket timeout time with the time to the next timer
+     delay_ms = SYNC_TIMER_TimeToNext();
+     SOCKET_SET_UpdateTimeout(delay_ms, set);
+@@ -1094,6 +1103,11 @@
+     // Process any pending message queue activity first - this allows internal state to be updated before controllers query it
+     ProcessMessageQueueSocketActivity(set);
+ 
++#ifdef BDK_USP
++    //Process BDK messages
++    BDK_ProcessSocketActivity(set);
++#endif
++
+     // Process the socket, if there is any activity from a CLI client
+     CLI_SERVER_ProcessSocketActivity(set);
+ }
+diff -Naur obuspa_orig/src/core/dm_trans.c obuspa_new/src/core/dm_trans.c
+--- obuspa_orig/src/core/dm_trans.c	2022-09-06 18:37:54.000000000 -0700
++++ obuspa_new/src/core/dm_trans.c	2022-09-12 10:37:59.569693516 -0700
+@@ -394,6 +394,12 @@
+             if (dt->op == kDMOp_Add)
+             {
+                 // Remove an aborted added object
++#ifdef BDK_USP
++                /* if operation fails, delete all objects created previously */
++                dm_del_group_cb_t group_del;
++                group_del = group_vendor_hooks[0].del_group_cb;
++                group_del(0, dt->path);
++#endif
+                 DM_INST_VECTOR_Remove(&inst);
+             }
+             else if (dt->op == kDMOp_Del)
+diff -Naur obuspa_orig/src/core/path_resolver.c obuspa_new/src/core/path_resolver.c
+--- obuspa_orig/src/core/path_resolver.c	2022-09-06 18:37:54.000000000 -0700
++++ obuspa_new/src/core/path_resolver.c	2022-09-12 10:35:44.678827301 -0700
+@@ -2034,7 +2034,13 @@
+             if ((permission_bitmask & PERMIT_OPER)==0)
+             {
+                 USP_ERR_SetMessage("%s: No permission to perform operation %s", __FUNCTION__, path);
++#ifdef BDK_USP
++                /* this should be fixed in the next release of the obuspa and can be removed at that time */
++                /* TP164, usp_conformance 1_28, permission error is expected instead of command failure */
++                return USP_ERR_PERMISSION_DENIED;
++#else
+                 return USP_ERR_COMMAND_FAILURE;
++#endif                
+             }
+             break;
+ 
+diff -Naur obuspa_orig/src/core/usp_register.c obuspa_new/src/core/usp_register.c
+--- obuspa_orig/src/core/usp_register.c	2023-03-28 11:22:54.236037740 -0700
++++ obuspa_new/src/core/usp_register.c	2023-03-28 14:34:02.076093167 -0700
+@@ -650,7 +650,11 @@
+     }
+ 
+     // Add this path to the data model
++#ifdef BDK_USP
++    node = DM_PRIV_AddSchemaPath(path, kDMNodeType_VendorParam_ReadOnly, SUPPRESS_PRE_EXISTANCE_ERR);
++#else
+     node = DM_PRIV_AddSchemaPath(path, kDMNodeType_VendorParam_ReadOnly, 0);
++#endif
+     if (node == NULL)
+     {
+         return USP_ERR_INTERNAL_ERROR;
+@@ -701,7 +705,11 @@
+     }
+ 
+     // Add this path to the data model
++#ifdef BDK_USP
++    node = DM_PRIV_AddSchemaPath(path, kDMNodeType_VendorParam_ReadWrite, SUPPRESS_PRE_EXISTANCE_ERR);
++#else
+     node = DM_PRIV_AddSchemaPath(path, kDMNodeType_VendorParam_ReadWrite, 0);
++#endif
+     if (node == NULL)
+     {
+         return USP_ERR_INTERNAL_ERROR;
+@@ -1110,7 +1118,11 @@
+     }
+ 
+     // Add this path to the data model
++#ifdef BDK_USP
++    node = DM_PRIV_AddSchemaPath(path, kDMNodeType_Object_MultiInstance, SUPPRESS_PRE_EXISTANCE_ERR);
++#else
+     node = DM_PRIV_AddSchemaPath(path, kDMNodeType_Object_MultiInstance, 0);
++#endif
+     if (node == NULL)
+     {
+         return USP_ERR_INTERNAL_ERROR;

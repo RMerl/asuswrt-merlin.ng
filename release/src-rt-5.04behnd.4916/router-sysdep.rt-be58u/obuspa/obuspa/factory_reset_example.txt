@@ -1,0 +1,58 @@
+##########################################################################################################
+#
+# This file contains a factory reset database in text format
+#
+# If no USP database exists when OB-USP-AGENT starts, then OB-USP-AGENT will create a database containing
+# the parameters specified in a text file located by the '-r' option.
+# Example:
+#    obuspa -p -v 4 -r factory_reset_example.txt
+#
+# Each line of this file contains either a comment (denoted by '#' at the start of the line)
+# or a USP data model parameter and its factory reset value.
+# The parameter and value are separated by whitespace.
+# The value may optionally be enclosed in speech marks "" (this is the only way to specify an empty string)
+#
+##########################################################################################################
+
+#
+# The following parameters will definitely need modifying
+#
+Device.LocalAgent.Controller.1.EndpointID "self::usp-controller.com"
+Device.STOMP.Connection.1.Host "usp-controller.com"
+Device.STOMP.Connection.1.Username "username"
+Device.STOMP.Connection.1.Password "password"
+
+#
+# The following parameters may be modified
+#
+Device.LocalAgent.MTP.1.Alias "cpe-1"
+Device.LocalAgent.MTP.1.Enable "true"
+Device.LocalAgent.MTP.1.Protocol "STOMP"
+Device.LocalAgent.MTP.1.STOMP.Reference "Device.STOMP.Connection.1"
+Device.LocalAgent.MTP.1.STOMP.Destination "/queue/agent-1"
+Device.LocalAgent.Controller.1.Alias "cpe-1"
+Device.LocalAgent.Controller.1.Enable "true"
+Device.LocalAgent.Controller.1.AssignedRole "Device.LocalAgent.ControllerTrust.Role.1"
+Device.LocalAgent.Controller.1.PeriodicNotifInterval "86400"
+Device.LocalAgent.Controller.1.PeriodicNotifTime "0001-01-01T00:00:00Z"
+Device.LocalAgent.Controller.1.USPNotifRetryMinimumWaitInterval "5"
+Device.LocalAgent.Controller.1.USPNotifRetryIntervalMultiplier "2000"
+Device.LocalAgent.Controller.1.ControllerCode ""
+Device.LocalAgent.Controller.1.MTP.1.Alias "cpe-1" 
+Device.LocalAgent.Controller.1.MTP.1.Enable "true"
+Device.LocalAgent.Controller.1.MTP.1.Protocol "STOMP"
+Device.LocalAgent.Controller.1.MTP.1.STOMP.Reference "Device.STOMP.Connection.1"
+Device.LocalAgent.Controller.1.MTP.1.STOMP.Destination "controller-notify-dest""
+Device.STOMP.Connection.1.Alias "cpe-1"
+Device.STOMP.Connection.1.Enable "true"
+Device.STOMP.Connection.1.Port "61613"
+Device.STOMP.Connection.1.EnableEncryption "false"
+Device.STOMP.Connection.1.VirtualHost "/"
+Device.STOMP.Connection.1.EnableHeartbeats "true"
+Device.STOMP.Connection.1.OutgoingHeartbeat "30000"
+Device.STOMP.Connection.1.IncomingHeartbeat "300000"
+Device.STOMP.Connection.1.ServerRetryInitialInterval "60"
+Device.STOMP.Connection.1.ServerRetryIntervalMultiplier "2000"
+Device.STOMP.Connection.1.ServerRetryMaxInterval "30720"
+Internal.Reboot.Cause "LocalFactoryReset"
+

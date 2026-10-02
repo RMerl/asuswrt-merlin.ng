@@ -1,0 +1,83 @@
+--- ori_libevent-2.1.12-stable/bufferevent-internal.h	2019-07-26 19:40:44.000000000 +0800
++++ libevent-2.1.12-stable/bufferevent-internal.h	2022-09-30 14:12:41.548739963 +0800
+@@ -78,7 +78,7 @@
+ 
+ struct bufferevent_rate_limit_group {
+ 	/** List of all members in the group */
+-	LIST_HEAD(rlim_group_member_list, bufferevent_private) members;
++	LIST_HEAD_LIBEVENT(rlim_group_member_list, bufferevent_private) members;
+ 	/** Current limits for the group. */
+ 	struct ev_token_bucket rate_limit;
+ 	struct ev_token_bucket_cfg rate_limit_cfg;
+
+--- ori_libevent-2.1.12-stable/evbuffer-internal.h	2019-02-11 05:26:04.000000000 +0800
++++ libevent-2.1.12-stable/evbuffer-internal.h	2022-09-30 14:12:41.544740271 +0800
+@@ -148,7 +148,7 @@
+ 	struct event_callback deferred;
+ 
+ 	/** A doubly-linked-list of callback functions */
+-	LIST_HEAD(evbuffer_cb_queue, evbuffer_cb_entry) callbacks;
++	LIST_HEAD_LIBEVENT(evbuffer_cb_queue, evbuffer_cb_entry) callbacks;
+ 
+ 	/** The parent bufferevent object this evbuffer belongs to.
+ 	 * NULL if the evbuffer stands alone. */
+
+--- ori_libevent-2.1.12-stable/event-internal.h	2020-07-05 20:01:34.000000000 +0800
++++ libevent-2.1.12-stable/event-internal.h	2022-09-30 14:12:41.544740271 +0800
+@@ -344,7 +344,7 @@
+ 	struct evutil_weakrand_state weakrand_seed;
+ 
+ 	/** List of event_onces that have not yet fired. */
+-	LIST_HEAD(once_event_list, event_once) once_events;
++	LIST_HEAD_LIBEVENT(once_event_list, event_once) once_events;
+ 
+ };
+
+--- ori_libevent-2.1.12-stable/compat/sys/queue.h	2019-01-26 17:53:41.000000000 +0800
++++ libevent-2.1.12-stable/compat/sys/queue.h	2022-09-30 14:12:41.552739654 +0800
+@@ -137,7 +137,7 @@
+ /*
+  * List definitions.
+  */
+-#define LIST_HEAD(name, type)						\
++#define LIST_HEAD_LIBEVENT(name, type)						\
+ struct name {								\
+ 	struct type *lh_first;	/* first element */			\
+ }
+
+--- ori_libevent-2.1.12-stable/include/event2/event_struct.h	2019-07-31 16:25:44.000000000 +0800
++++ libevent-2.1.12-stable/include/event2/event_struct.h	2022-09-30 14:11:56.996329674 +0800
+@@ -94,13 +94,13 @@
+ }
+ #endif /* !LIST_ENTRY */
+ 
+-#ifndef LIST_HEAD
++#ifndef LIST_HEAD_LIBEVENT
+ #define EVENT_DEFINED_LISTHEAD_
+-#define LIST_HEAD(name, type)						\
++#define LIST_HEAD_LIBEVENT(name, type)						\
+ struct name {								\
+ 	struct type *lh_first;  /* first element */			\
+ 	}
+-#endif /* !LIST_HEAD */
++#endif /* !LIST_HEAD_LIBEVENT */
+ 
+ struct event;
+ 
+@@ -163,14 +163,14 @@
+ #undef TAILQ_HEAD
+ #endif
+ 
+-LIST_HEAD (event_dlist, event); 
++LIST_HEAD_LIBEVENT (event_dlist, event); 
+ 
+ #ifdef EVENT_DEFINED_LISTENTRY_
+ #undef LIST_ENTRY
+ #endif
+ 
+ #ifdef EVENT_DEFINED_LISTHEAD_
+-#undef LIST_HEAD
++#undef LIST_HEAD_LIBEVENT
+ #endif
+ 
+ #ifdef __cplusplus

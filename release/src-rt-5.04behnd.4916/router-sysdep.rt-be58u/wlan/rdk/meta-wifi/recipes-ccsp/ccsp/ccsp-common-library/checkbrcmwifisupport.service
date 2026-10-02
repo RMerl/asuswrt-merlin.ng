@@ -1,0 +1,11 @@
+[Unit]
+Description=Check WIFI support on Broadcom Device
+
+After=broadcom-wifi-drivers.service
+Requires=broadcom-wifi-drivers.service
+
+[Service]
+Type=forking
+ExecStart=/bin/sh -c '/usr/ccsp/wifi/brcm_checkwifi.sh'
+
+StandardOutput=syslog+console

@@ -1,0 +1,8 @@
+OSS_REFERENCE_Name: rbtree
+OSS_REFERENCE_Version: 3.0.5
+OSS_REFERENCE_License: BSD-like
+OSS_REFERENCE_DownloadURL: https://opensource.apple.com/source/network_cmds/network_cmds-481.20.1/unbound/util/rbtree.c
+OSS_REFERENCE_BroadcomURL: 
+OSS_Broadcom_RelativePath: ./rbtree.c
+OSS_Broadcom_comment: the rbtree implementation was pulled from opensource.apple.com and put inside the Broadcom gen_util lib.
+

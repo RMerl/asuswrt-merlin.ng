@@ -1,0 +1,3 @@
+dependson: private/libs/xdslctl public/libs/cms_msg public/libs/cms_util public/libs/bcm_flashutil public/libs/bcm_boardctl 
+condition: ifneq ($(or $(strip $(BUILD_DSLDIAGD)),$(strip $(BUILD_BEEP_DSLDIAGD))),)
+

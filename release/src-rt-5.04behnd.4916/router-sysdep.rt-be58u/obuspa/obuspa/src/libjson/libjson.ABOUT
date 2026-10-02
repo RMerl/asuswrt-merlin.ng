@@ -1,0 +1,12 @@
+about_resource: .
+name: JSON
+homepage_url: http://ccodearchive.net/info/json.html
+download_url: http://ccodearchive.net/tarballs/with-deps/json.tar.bz2
+licenses:
+    -   key: mit
+        name: MIT License
+        file: ccan/json/LICENSE
+        spdx_license_key: MIT
+copyright: Copyright (C) 2011 Joseph A. Adams (joeyadams3.14159@gmail.com)
+
+

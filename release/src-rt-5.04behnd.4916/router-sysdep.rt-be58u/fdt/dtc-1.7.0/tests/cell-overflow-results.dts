@@ -1,0 +1,7 @@
+/dts-v1/;
+
+/ {
+	prop1 = < 0 >;
+	prop2 = < 0xffffffff >;
+	prop3 = < 0 >;
+};

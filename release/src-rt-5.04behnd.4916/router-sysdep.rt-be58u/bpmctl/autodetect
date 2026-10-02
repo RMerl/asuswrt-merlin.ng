@@ -1,0 +1,4 @@
+
+condition: ifneq ($(strip $(BUILD_BPMCTL)),)
+makeflags: $(BUILD_BPMCTL)
+

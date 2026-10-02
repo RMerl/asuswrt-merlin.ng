@@ -1,0 +1,40 @@
+/dts-v1/;
+
+/ {
+	node_label: node {
+		keep-me {};
+		remove-me {};
+
+		subnode1 {
+			property-inline1;
+			property-inline2;
+			property-inline3;
+		};
+
+		subnode2 {
+			property-inline1;
+		};
+
+		subnode3 {
+			property-inline1;
+		};
+	};
+
+	node2_label: node2 {
+		property-inline1;
+	};
+};
+/omit-if-no-ref/ &{node_label/subnode1};
+/omit-if-no-ref/ &node2_label;
+/delete-node/ &{node_label/subnode3};
+
+&{node_label/} {
+	/delete-node/ remove-me;
+
+	subnode4 { };
+};
+
+label: &{node_label/subnode1} {
+	selfref = &{node_label/subnode1};
+	add-me { };
+};

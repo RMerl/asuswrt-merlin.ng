@@ -1,0 +1,84 @@
+#!/bin/bash
+# This script configures interrupt & thread affinity regarding to WLAN.
+#
+
+. /bin/wlinc.sh
+
+# Check for arguments.
+# User should give at least one argument to the program.
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 <command> [option]"
+    echo "  <command> [option]"
+    echo "   auto                  auto configure"
+    echo "   show                  show affinity status"
+    echo "             nvram         -- only nvram settings"
+    echo "   set                   set affinity using menu"
+    echo "             interrupt     -- only interrupts"
+    echo "             thread        -- only processes"
+    echo "             advanced      -- use advanced menu"
+    echo "   unset                 clear all nvram affinity settings"
+    echo "   save                  save all affinity settings"
+    echo "             asdefault     -- as default settings"
+    echo "   apply                 apply all affinity settings"
+    exit 64
+
+fi
+
+# Parse the first argument
+case "$1" in
+    auto)
+        auto_config
+        exit 0
+        ;;
+
+    unset) 
+        unset_wifi_pin_cfg;
+        ;;
+    set)
+        case "$2" in
+            interrupt)
+                pin_wifi_interrupt $3
+                ;;
+            thread)
+                pin_wifi_processes $3
+                ;;
+            advanced)
+                pin_wifi_proc_advanced
+                ;;
+            *)
+                pin_wifi_interrupt 
+                pin_wifi_processes 
+                ;;
+        esac
+        list_wifi_process
+        ;;
+    save) 
+        case "$2" in
+            asdefault)
+                echo "save config default";
+                save_config_default;
+                ;;
+            *)
+                echo "save config nvram";
+                save_wifi_pin_cfg;
+                ;;
+        esac
+        ;;
+    apply)
+        apply_wifi_pin_cfg;
+        ;;
+    show) 
+        case "$2" in
+            nvram)
+                list_nvram_settings
+                ;;
+            *)
+                list_wifi_process
+                ;;
+        esac 
+        ;;
+    *)
+        echo "unrecognized option [$1]"
+        exit 1
+        ;;
+esac

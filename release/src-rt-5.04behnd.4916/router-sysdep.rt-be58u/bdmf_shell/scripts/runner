@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#LINUX_VERSION=`uname -r`
+if [ "$1" = "enable" ]
+then
+    #insmod /lib/modules/${LINUX_VERSION}/extra/pktrunner.ko
+    fcctl config --hw-accel 1
+
+    pwr config --cpuspeed on
+    echo "Changing power settings. Setting cpu frequency setting to adaptive."
+elif [ "$1" = "disable" ]
+then
+    #rmmod pktrunner
+    fcctl config --hw-accel 0
+
+    pwr config --cpuspeed off
+    echo "Changing power settings. Forcing cpu to max frequency."
+    echo "   Set cpuspeed to on(pwr config --cpuspeed on) to make it adaptive again"
+else
+    echo "Usage: runner enable; runner disable"
+fi

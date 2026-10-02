@@ -1,0 +1,1 @@
+rtpolicy $@ >> /var/rtpolicy.log 2>&1 &

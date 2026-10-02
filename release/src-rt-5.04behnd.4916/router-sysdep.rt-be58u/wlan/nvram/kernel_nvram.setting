@@ -1,0 +1,9 @@
+hapd_enable=1
+acs_version=2
+#following four entries is for cevent
+ceventd_enable=1
+ceventd_out=/tmp/ce0.log
+wl_cevent=1
+ceventd_eventmask=0x1000000000010000000000000000000000410002831fff
+mbo_enable=1
+#crash_log_backup_dir=/data/crash_log

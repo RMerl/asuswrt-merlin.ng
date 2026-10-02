@@ -1,0 +1,3 @@
+dependson: public/libs/cms_util
+condition: ifneq ($(strip $(BUILD_XDSLCTL)),)
+

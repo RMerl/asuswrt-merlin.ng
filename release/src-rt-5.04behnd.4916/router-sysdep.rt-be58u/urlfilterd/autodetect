@@ -1,0 +1,4 @@
+condition: ifneq ($(strip $(BUILD_URLFILTER)),)
+makeflags: $(BUILD_URLFILTER)
+
+

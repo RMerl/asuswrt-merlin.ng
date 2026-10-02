@@ -1,0 +1,10 @@
+--- orig_mtd-utils-2.1.5/config.sub	2018-02-25 00:00:57.000000000 +0800
++++ mtd-utils-2.1.5/config.sub	2022-11-15 16:42:10.441971094 +0800
+@@ -245,6 +245,7 @@
+ 	1750a | 580 \
+ 	| a29k \
+ 	| aarch64 | aarch64_be \
++	| aarch64-buildroot-linux | arm-buildroot-linux | aarch64-unknown-linux | arm-unknown-linux \
+ 	| alpha | alphaev[4-8] | alphaev56 | alphaev6[78] | alphapca5[67] \
+ 	| alpha64 | alpha64ev[4-8] | alpha64ev56 | alpha64ev6[78] | alpha64pca5[67] \
+ 	| am33_2.0 \

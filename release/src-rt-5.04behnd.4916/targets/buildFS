@@ -325,6 +325,14 @@ find $TARGETS_DIR/$ROOTFS/lib/modules -name "*.ko"
    fi
 fi
 
+# RT-BE58U: use the stock ASUS binary network/radio modules for this board.
+# The transplanted TUF-BE3600/RT-BE92U builds hang the SoC while bcm_enet
+# uploads the XPHY firmware; stock modules resolve fully against this kernel.
+if [ "$BUILD_NAME" == "RT-BE58U" ] && [ -d $BUILD_DIR/router-sysdep.rt-be58u/stock_modules ]; then
+   echo "RT-BE58U: overriding kernel modules with stock binaries"
+   cp -av $BUILD_DIR/router-sysdep.rt-be58u/stock_modules/. $TARGETS_DIR/$ROOTFS/lib/modules/${kd}/
+fi
+
 if [ -f $TARGETS_DIR/$PROFILE/filesystem.tgz ]
 then
   echo "consumer build -- not dynamically generating bcm-base-drivers.sh"

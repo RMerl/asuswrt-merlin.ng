@@ -16,6 +16,20 @@
 #include "ssltestlib.h"
 #include "testutil.h"
 
+#ifndef OPENSSL_NO_DTLS1_2_METHOD
+static ossl_inline void ossl_sleep(unsigned int millis)
+{
+# ifdef OPENSSL_SYS_VXWORKS
+    struct timespec ts;
+    ts.tv_sec = (long int)(millis / 1000);
+    ts.tv_nsec = (long int)(millis % 1000) * 1000000ul;
+    nanosleep(&ts, NULL);
+# else
+    usleep(millis * 1000);
+# endif
+}
+#endif
+
 static char *cert = NULL;
 static char *privkey = NULL;
 static unsigned int timer_cb_count;
@@ -415,6 +429,303 @@ static int test_swap_app_data(void)
     return testresult;
 }
 
+#ifndef OPENSSL_NO_DTLS1_2_METHOD
+
+#define NUM_RETRANSMITS 3
+
+typedef struct {
+    BIO *bio;
+    int allowed;
+    int write_calls;
+} frag_bio;
+
+static int frag_write(BIO *bio, const char *buf, size_t len, size_t *written)
+{
+    frag_bio *f = BIO_get_data(bio);
+
+    BIO_clear_retry_flags(bio);
+
+    f->write_calls++;
+
+    if (f->allowed <= 0) {
+        BIO_set_retry_write(bio);
+        *written = 0;
+        return 0;
+    }
+    f->allowed--;
+
+    if (!BIO_write_ex(f->bio, buf, len, written)) {
+        return 0;
+    }
+
+    return 1;
+}
+
+static int frag_read(BIO *bio, char *buf, size_t buf_len, size_t *readbytes)
+{
+    frag_bio *f = BIO_get_data(bio);
+    return BIO_read_ex(f->bio, buf, buf_len, readbytes);
+}
+
+static long frag_ctrl(BIO *bio, int cmd, long num, void *ptr)
+{
+    frag_bio *f = BIO_get_data(bio);
+    return BIO_ctrl(f->bio, cmd, num, ptr);
+}
+
+static int frag_puts(BIO *bio, const char *str)
+{
+    size_t written;
+    return frag_write(bio, str, strlen(str), &written) ? (int)written : -1;
+}
+
+static int frag_create(BIO *bio)
+{
+    frag_bio *f = OPENSSL_zalloc(sizeof(*f));
+    if (f == NULL)
+        return 0;
+    BIO_set_data(bio, f);
+    BIO_set_init(bio, 1);
+    return 1;
+}
+
+static int frag_destroy(BIO *bio)
+{
+    frag_bio *f = BIO_get_data(bio);
+    if (f == NULL)
+        return 1;
+
+    BIO_free(f->bio);
+    OPENSSL_free(f);
+    BIO_set_data(bio, NULL);
+    BIO_set_init(bio, 0);
+    return 1;
+}
+
+static BIO_METHOD *frag_method(void)
+{
+    static BIO_METHOD *m = NULL;
+    if (m == NULL) {
+        m = BIO_meth_new(BIO_TYPE_SOURCE_SINK | BIO_TYPE_FILTER, "fragment-limited dgram");
+        BIO_meth_set_write_ex(m, frag_write);
+        BIO_meth_set_read_ex(m, frag_read);
+        BIO_meth_set_ctrl(m, frag_ctrl);
+        BIO_meth_set_puts(m, frag_puts);
+        BIO_meth_set_create(m, frag_create);
+        BIO_meth_set_destroy(m, frag_destroy);
+    }
+    return m;
+}
+
+static BIO *frag_new(BIO *bio, int allowed)
+{
+    BIO *b = BIO_new(frag_method());
+    frag_bio *f;
+    if (b == NULL) {
+        BIO_free(bio);
+        return NULL;
+    }
+    f = BIO_get_data(b);
+    f->bio = bio;
+    f->allowed = allowed;
+    return b;
+}
+
+/* CVE-2026-84782: verify retransmit timer does not corrupt a parked write */
+static int test_dtls_client_retransmit(void)
+{
+    SSL_CTX *sctx = NULL, *cctx = NULL;
+    SSL *serverssl = NULL, *clientssl = NULL;
+    int testresult = 0;
+    int ret, err, i;
+    struct timeval tv;
+    static unsigned char alpn[750];
+    size_t j, used = 0;
+    BIO *c_to_s_bio = NULL;
+    BIO *frag_wbio;
+    frag_bio *fb;
+    int write_calls_before;
+
+    if (!TEST_true(create_ssl_ctx_pair(DTLS_server_method(),
+            DTLS_client_method(),
+            DTLS1_2_VERSION, DTLS1_2_VERSION,
+            &sctx, &cctx, cert, privkey)))
+        return 0;
+
+    SSL_CTX_set_verify(cctx, SSL_VERIFY_NONE, NULL);
+
+    for (j = 0; j < 3; j++) {
+        char name[250];
+        int n = snprintf(name, sizeof(name),
+            "proto-%04u-%s", (unsigned int)j,
+            "padpadpadpadpadpadpadpadpadpadpadpadpadpadpad"
+            "padpadpadpadpadpadpadpadpadpadpadpadpadpadpad"
+            "padpadpadpadpadpadpadpadpadpadpadpadpadpadpad"
+            "padpadpadpadpadpadpadpadpadpadpadpadpadpadpad"
+            "padpadpadpadpadpadpadpadpadpadpadpadpadpad");
+
+        if (!TEST_int_ge(n, 0) || !TEST_size_t_lt((size_t)n, sizeof(name)))
+            goto end;
+        if (!TEST_size_t_le(used + 1 + (size_t)n, sizeof(alpn)))
+            goto end;
+
+        alpn[used++] = (unsigned char)n;
+        memcpy(alpn + used, name, (size_t)n);
+        used += (size_t)n;
+    }
+    if (!TEST_false(SSL_CTX_set_alpn_protos(cctx, alpn, (unsigned int)used)))
+        goto end;
+
+    if (!TEST_true(create_ssl_objects(sctx, cctx, &serverssl, &clientssl,
+            NULL, NULL)))
+        goto end;
+
+    SSL_set_options(clientssl, SSL_OP_NO_QUERY_MTU);
+    if (!TEST_true(SSL_set_mtu(clientssl, 256)))
+        goto end;
+
+    c_to_s_bio = SSL_get_wbio(clientssl);
+
+    if (!TEST_ptr(c_to_s_bio) || !TEST_true(BIO_up_ref(c_to_s_bio)))
+        goto end;
+
+    frag_wbio = frag_new(c_to_s_bio, 1);
+    if (!TEST_ptr(frag_wbio)) {
+        BIO_free(c_to_s_bio);
+        goto end;
+    }
+    fb = BIO_get_data(frag_wbio);
+
+    SSL_set0_wbio(clientssl, frag_wbio);
+
+    DTLS_set_timer_cb(clientssl, timer_cb);
+
+    ret = SSL_connect(clientssl);
+    if (!TEST_int_le(ret, 0)
+        || !TEST_int_eq(SSL_get_error(clientssl, ret), SSL_ERROR_WANT_WRITE))
+        goto end;
+
+    fb->allowed = 100;
+
+    for (i = 0; i < NUM_RETRANSMITS; i++) {
+        write_calls_before = fb->write_calls;
+
+        if (!TEST_int_gt((int)DTLSv1_get_timeout(clientssl, &tv), 0))
+            goto end;
+
+        ossl_sleep((unsigned int)(tv.tv_sec * 1000 + tv.tv_usec / 1000) + 10);
+
+        if (!TEST_int_ge((int)DTLSv1_handle_timeout(clientssl), 0))
+            goto end;
+
+        if (!TEST_int_eq(fb->write_calls, write_calls_before))
+            goto end;
+    }
+
+    ret = SSL_connect(clientssl);
+    err = SSL_get_error(clientssl, ret);
+
+    if (!TEST_false(err == SSL_ERROR_SSL || err == SSL_ERROR_SYSCALL))
+        goto end;
+
+    testresult = 1;
+end:
+    SSL_free(serverssl);
+    SSL_free(clientssl);
+    SSL_CTX_free(sctx);
+    SSL_CTX_free(cctx);
+
+    return testresult;
+}
+
+static int test_dtls_server_retransmit(void)
+{
+    SSL_CTX *sctx = NULL, *cctx = NULL;
+    SSL *serverssl = NULL, *clientssl = NULL;
+    int testresult = 0;
+    int ret, err, i;
+    struct timeval tv;
+    BIO *s_to_c_bio = NULL;
+    BIO *frag_wbio;
+    frag_bio *fb;
+    int write_calls_before;
+
+    if (!TEST_true(create_ssl_ctx_pair(DTLS_server_method(),
+            DTLS_client_method(),
+            DTLS1_2_VERSION, DTLS1_2_VERSION,
+            &sctx, &cctx, cert, privkey)))
+        return 0;
+
+    if (!TEST_true(SSL_CTX_set_cipher_list(cctx, "AES128-SHA")))
+        goto end;
+
+    if (!TEST_true(create_ssl_objects(sctx, cctx, &serverssl, &clientssl,
+            NULL, NULL)))
+        goto end;
+
+    SSL_set_options(serverssl, SSL_OP_NO_QUERY_MTU);
+    if (!TEST_true(SSL_set_mtu(serverssl, 256)))
+        goto end;
+
+    s_to_c_bio = SSL_get_wbio(serverssl);
+
+    if (!TEST_ptr(s_to_c_bio) || !TEST_true(BIO_up_ref(s_to_c_bio)))
+        goto end;
+
+    frag_wbio = frag_new(s_to_c_bio, 2);
+    if (!TEST_ptr(frag_wbio)) {
+        BIO_free(s_to_c_bio);
+        goto end;
+    }
+    fb = BIO_get_data(frag_wbio);
+
+    SSL_set0_wbio(serverssl, frag_wbio);
+
+    DTLS_set_timer_cb(serverssl, timer_cb);
+
+    if (!TEST_int_le(SSL_connect(clientssl), 0))
+        goto end;
+
+    ret = SSL_accept(serverssl);
+    if (!TEST_int_le(ret, 0)
+        || !TEST_int_eq(SSL_get_error(serverssl, ret), SSL_ERROR_WANT_WRITE))
+        goto end;
+
+    fb->allowed = 100;
+
+    for (i = 0; i < NUM_RETRANSMITS; i++) {
+        write_calls_before = fb->write_calls;
+
+        if (!TEST_int_gt((int)DTLSv1_get_timeout(serverssl, &tv), 0))
+            goto end;
+
+        ossl_sleep((unsigned int)(tv.tv_sec * 1000 + tv.tv_usec / 1000) + 10);
+
+        if (!TEST_int_ge((int)DTLSv1_handle_timeout(serverssl), 0))
+            goto end;
+
+        if (!TEST_int_eq(fb->write_calls, write_calls_before))
+            goto end;
+    }
+
+    ret = SSL_accept(serverssl);
+    err = SSL_get_error(serverssl, ret);
+
+    if (!TEST_false(err == SSL_ERROR_SSL || err == SSL_ERROR_SYSCALL))
+        goto end;
+
+    testresult = 1;
+end:
+    SSL_free(serverssl);
+    SSL_free(clientssl);
+    SSL_CTX_free(sctx);
+    SSL_CTX_free(cctx);
+
+    return testresult;
+}
+
+#endif
+
 int setup_tests(void)
 {
     if (!TEST_ptr(cert = test_get_argument(0))
@@ -426,6 +737,10 @@ int setup_tests(void)
     ADD_TEST(test_cookie);
     ADD_TEST(test_dtls_duplicate_records);
     ADD_TEST(test_swap_app_data);
+#ifndef OPENSSL_NO_DTLS1_2_METHOD
+    ADD_TEST(test_dtls_client_retransmit);
+    ADD_TEST(test_dtls_server_retransmit);
+#endif
 
     return 1;
 }

@@ -297,6 +297,8 @@ int tls1_change_cipher_state(SSL *s, int which)
                      ERR_R_INTERNAL_ERROR);
             goto err;
         }
+        if (which & SSL3_CC_READ)
+            s->s3->read_ccm_tag_len = taglen;
     } else {
         if (!EVP_CipherInit_ex(dd, c, NULL, key, iv, (which & SSL3_CC_WRITE))) {
             SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS1_CHANGE_CIPHER_STATE,

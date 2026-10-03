@@ -1530,6 +1530,8 @@ typedef struct {
 typedef struct ssl3_state_st {
     long flags;
     size_t read_mac_secret_size;
+    /* Tag length of the active read cipher, including during renegotiation. */
+    size_t read_ccm_tag_len;
     unsigned char read_mac_secret[EVP_MAX_MD_SIZE];
     size_t write_mac_secret_size;
     unsigned char write_mac_secret[EVP_MAX_MD_SIZE];

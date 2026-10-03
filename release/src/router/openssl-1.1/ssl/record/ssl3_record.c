@@ -1034,6 +1034,24 @@ int tls1_enc(SSL *s, SSL3_RECORD *recs, size_t n_recs, int sending)
                 & EVP_CIPH_FLAG_AEAD_CIPHER) {
                 unsigned char *seq;
 
+                /* Reject publicly invalid lengths before AEAD processing. */
+                if (!sending) {
+                    size_t overhead = 0;
+
+                    if (EVP_CIPHER_mode(enc) == EVP_CIPH_GCM_MODE) {
+                        overhead = EVP_GCM_TLS_EXPLICIT_IV_LEN
+                                   + EVP_GCM_TLS_TAG_LEN;
+                    } else if (EVP_CIPHER_mode(enc) == EVP_CIPH_CCM_MODE) {
+                        overhead = EVP_CCM_TLS_EXPLICIT_IV_LEN
+                                   + s->s3->read_ccm_tag_len;
+                    } else if (EVP_CIPHER_nid(enc) == NID_chacha20_poly1305) {
+                        overhead = EVP_CHACHAPOLY_TLS_TAG_LEN;
+                    }
+                    /* TLS sends bad_record_mac; DTLS discards the record. */
+                    if (reclen[ctr] < overhead)
+                        return 0;
+                }
+
                 seq = sending ? RECORD_LAYER_get_write_sequence(&s->rlayer)
                     : RECORD_LAYER_get_read_sequence(&s->rlayer);
 

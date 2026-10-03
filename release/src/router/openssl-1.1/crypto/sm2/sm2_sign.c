@@ -12,6 +12,7 @@
 #include "crypto/sm2.h"
 #include "crypto/sm2err.h"
 #include "crypto/ec.h" /* ec_group_do_inverse_ord() */
+#include "crypto/bn.h" /* fixed-top / Montgomery constant-time BN helpers */
 #include "internal/numbers.h"
 #include <openssl/err.h>
 #include <openssl/evp.h>
@@ -191,11 +192,16 @@ static ECDSA_SIG *sm2_sig_gen(const EC_KEY *key, const BIGNUM *e)
     EC_POINT *kG = NULL;
     BN_CTX *ctx = NULL;
     BIGNUM *k = NULL;
-    BIGNUM *rk = NULL;
     BIGNUM *r = NULL;
     BIGNUM *s = NULL;
     BIGNUM *x1 = NULL;
     BIGNUM *tmp = NULL;
+    BN_MONT_CTX *mont = EC_GROUP_get_mont_data(group);
+
+    if (mont == NULL) {
+        SM2err(SM2_F_SM2_SIG_GEN, ERR_R_EC_LIB);
+        goto done;
+    }
 
     kG = EC_POINT_new(group);
     ctx = BN_CTX_new();
@@ -206,7 +212,6 @@ static ECDSA_SIG *sm2_sig_gen(const EC_KEY *key, const BIGNUM *e)
 
     BN_CTX_start(ctx);
     k = BN_CTX_get(ctx);
-    rk = BN_CTX_get(ctx);
     x1 = BN_CTX_get(ctx);
     tmp = BN_CTX_get(ctx);
     if (tmp == NULL) {
@@ -239,24 +244,62 @@ static ECDSA_SIG *sm2_sig_gen(const EC_KEY *key, const BIGNUM *e)
             SM2err(SM2_F_SM2_SIG_GEN, ERR_R_INTERNAL_ERROR);
             goto done;
         }
-
-        /* try again if r == 0 or r+k == n */
-        if (BN_is_zero(r))
-            continue;
-
-        if (!BN_add(rk, r, k)) {
-            SM2err(SM2_F_SM2_SIG_GEN, ERR_R_INTERNAL_ERROR);
+        /*
+         * Pin the nonce to a fixed, value-independent width and flag it
+         * BN_FLG_CONSTTIME, so its magnitude does not leak through operand
+         * lengths in the scalar copy inside the ladder or in the arithmetic
+         * below.  BN_priv_rand_range() is kept so the nonce value itself
+         * is unchanged; only its representation is pinned.
+         */
+        BN_set_flags(k, BN_FLG_CONSTTIME);
+        if (!bn_set_top_fixed(k, bn_get_top(order))) {
+            SM2err(SM2_F_SM2_SIG_GEN, ERR_R_BN_LIB);
             goto done;
         }
 
-        if (BN_cmp(rk, order) == 0)
+        /* try again if r == 0 or r + k == n */
+        if (BN_is_zero(r))
             continue;
 
+        /*
+         * Since 0 < r < n and 0 < k < n, r + k == n is the same as
+         * k == n - r.  Both operands of the subtraction are public, so
+         * compute it in the open and then compare against the nonce with a
+         * fixed-width constant-time comparison.  A BN_cmp() on r + k would
+         * branch on whether the sum carried into an extra word, which
+         * depends on the value of k.
+         */
+        if (!BN_sub(tmp, order, r)
+            || !bn_set_top_fixed(tmp, bn_get_top(order))) {
+            SM2err(SM2_F_SM2_SIG_GEN, ERR_R_BN_LIB);
+            goto done;
+        }
+
+        if (CRYPTO_memcmp(bn_get_words(k), bn_get_words(tmp),
+                bn_get_top(order) * sizeof(BN_ULONG))
+            == 0)
+            continue;
+
+        /*
+         * s = ((1 + dA)^-1 * (k - r * dA)) mod order
+         *
+         * Computed with fixed-top / Montgomery constant-time primitives, so
+         * that the running time does not depend on the secret k or dA (the
+         * generic BN_mod_mul()/BN_sub() used previously reduce via BN_div(),
+         * whose timing is value dependent).  This mirrors the ECDSA path.
+         *
+         * s holds (1 + dA)^-1 throughout; the (k - r * dA) term is built in
+         * tmp.  bn_mul_mont_fixed_top() with one operand in the Montgomery
+         * domain yields the plain product, and the final
+         * BN_mod_mul_montgomery() returns the user-visible, normalised value.
+         */
         if (!BN_add(s, dA, BN_value_one())
                 || !ec_group_do_inverse_ord(group, s, s, ctx)
-                || !BN_mod_mul(tmp, dA, r, order, ctx)
-                || !BN_sub(tmp, k, tmp)
-                || !BN_mod_mul(s, s, tmp, order, ctx)) {
+                || !bn_to_mont_fixed_top(tmp, r, mont, ctx)
+                || !bn_mul_mont_fixed_top(tmp, tmp, dA, mont, ctx)
+                || !bn_mod_sub_fixed_top(tmp, k, tmp, order)
+                || !bn_to_mont_fixed_top(tmp, tmp, mont, ctx)
+                || !BN_mod_mul_montgomery(s, tmp, s, mont, ctx)) {
             SM2err(SM2_F_SM2_SIG_GEN, ERR_R_BN_LIB);
             goto done;
         }

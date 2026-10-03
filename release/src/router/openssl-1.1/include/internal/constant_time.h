@@ -267,6 +267,19 @@ static ossl_inline size_t value_barrier_s(size_t a)
     return r;
 }
 
+#ifdef BN_ULONG
+static ossl_inline BN_ULONG value_barrier_bn(BN_ULONG a)
+{
+#if !defined(OPENSSL_NO_ASM) && defined(__GNUC__)
+    BN_ULONG r;
+    __asm__("" : "=r"(r) : "0"(a));
+#else
+    volatile BN_ULONG r = a;
+#endif
+    return r;
+}
+#endif
+
 static ossl_inline unsigned int constant_time_select(unsigned int mask,
                                                      unsigned int a,
                                                      unsigned int b)

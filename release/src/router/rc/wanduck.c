@@ -645,6 +645,9 @@ int do_ping_detect(int wan_unit, const char *target)
 	char cmd[512];
 	int count, ret = -1;
 	int debug = nvram_get_int("ping_debug");
+#if defined(RTCONFIG_IPV6) && defined(RTCONFIG_USB_MODEM)
+	struct in6_addr pdp_target;
+#endif
 
 	/* can be default target, if necesary *//*
 	if (!target)
@@ -654,7 +657,8 @@ int do_ping_detect(int wan_unit, const char *target)
 	/* Check for valid domain to avoid shell escaping */
 	if (!is_valid_domainname(target)
 #if defined(RTCONFIG_IPV6) && defined(RTCONFIG_USB_MODEM)
-		&& !(dualwan_unit__usbif(wan_unit) && modem_pdp == 2)
+		&& !(dualwan_unit__usbif(wan_unit) && modem_pdp == 2
+			&& inet_pton(AF_INET6, target, &pdp_target) == 1)
 #endif
 			)
 		return -1;

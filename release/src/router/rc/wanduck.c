@@ -2462,7 +2462,7 @@ void send_page(int wan_unit, int sfd, char *file_dest, char *url){
 	char timebuf[100];
 	char dut_addr[64];
 	char dut_proto[16];
-	char dut_port[5];
+	char dut_port[6];
 	char redirection[100];
 	char indexpage[128];
 	int i=0, wl_url_hit=0;

@@ -17,6 +17,12 @@ Asuswrt-Merlin Changelog
   - CHANGED: Tweaks to OpenVPN Server and Tor pages.  Use 
              the new CSS radio switcher instead of old
              switcherplugin.
+  - CHANGED: Stop forcing FTP TLS to be (re-)enabled after
+             a firmware upgrade.
+  - FIXED: Various issues with Dual WAN failover/failback,
+           and DNS probing (TheUnboundDeveloper/Claude)
+  - FIXED: Various issues with the "Internet is down"
+           redirection page (TheUnboundDeveloper/Claude)
 
 
 3004.388.12_2 (20-Aug-2026)

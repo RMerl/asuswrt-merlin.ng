@@ -2419,6 +2419,9 @@ _dprintf("nat_rule: start_nat_rules 3.\n");
 	}
 }
 
+/* Accept time of each redirect client slot, used to drop idle clients */
+static long client_accept_ts[MAX_USER];
+
 void close_socket(int sockfd, char type){
 	close(sockfd);
 	FD_CLR(sockfd, &allset);
@@ -5102,6 +5105,18 @@ _dprintf("nat_rule: stop_nat_rules 7.\n");
 		start_demand_ppp(current_wan_unit, 1);
 
 WANDUCK_SELECT:
+		/* Drop redirect clients that connected but never sent anything.
+		 * close_socket() indexes by the global fd_i, so iterate with it. */
+		{
+			long sweep_now = uptime();
+			for(fd_i = 0; fd_i <= maxi; ++fd_i){
+				if(client[fd_i].sfd >= 0 && sweep_now - client_accept_ts[fd_i] > 30){
+					FD_CLR(client[fd_i].sfd, &rset);	// already copied from allset
+					close_socket(client[fd_i].sfd, T_HTTP);
+				}
+			}
+		}
+
 		if((nready = select(maxfd+1, &rset, NULL, NULL, &tval)) <= 0)
 			continue;
 
@@ -5121,6 +5136,7 @@ WANDUCK_SELECT:
 				if(client[fd_i].sfd < 0){
 					client[fd_i].sfd = cur_sockfd;
 					client[fd_i].type = T_HTTP;
+					client_accept_ts[fd_i] = uptime();
 					break;
 				}
 			}

@@ -2581,7 +2581,7 @@ void parse_dst_url(char *page_src){
 	memset(host, 0, sizeof(host));
 
 	for(i = 0; i < strlen(page_src); ++i){
-		if(i >= PATHLEN)
+		if(i >= PATHLEN-1)
 			break;
 
 		if(page_src[i] == ' ' || page_src[i] == '?'){
@@ -2596,7 +2596,7 @@ void parse_dst_url(char *page_src){
 		hp += 6;
 		j = 0;
 		for(i = 0; i < strlen(hp); ++i){
-			if(i >= 64)
+			if(i >= (int)sizeof(host)-1)
 				break;
 
 			if(hp[i] == '\r' || hp[i] == '\n'){

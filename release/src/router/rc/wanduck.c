@@ -953,7 +953,7 @@ int do_dns_detect(int wan_unit)
 		if (p) *p = '\0';
 		if (inet_pton(AF_INET, wan_dns, &dns_server) != 1) {
 			_dprintf("dns server %s is error\n", wan_dns);
-			return -1;
+			goto dns_timeout;	// we're the forked child, must not return
 		}
 		dns_server_sock.sin_family = AF_INET;
 		dns_server_sock.sin_port = htons(53);

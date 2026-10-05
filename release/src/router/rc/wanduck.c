@@ -2618,7 +2618,8 @@ void handle_http_req(int sfd, char *line){
 		parse_dst_url(line+5);
 
 		len = strlen(dst_url);
-		if((dst_url[len-4] == '.') &&
+		if((len >= 4) &&
+				(dst_url[len-4] == '.') &&
 				(dst_url[len-3] == 'i') &&
 				(dst_url[len-2] == 'c') &&
 				(dst_url[len-1] == 'o')){

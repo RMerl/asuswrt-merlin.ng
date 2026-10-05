@@ -4998,6 +4998,9 @@ _dprintf("nat_rule: stop_nat_rules 7.\n");
 
 				handle_wan_line(other_wan_unit, rule_setup);
 				switch_wan_line(other_wan_unit, 0);
+				/* changed_count[] of the primary was used as the fail-back counter,
+				 * start clean or the next DISCONN scan switches straight back. */
+				set_disconn_count(other_wan_unit, S_IDLE);
 			}
 			else if(conn_state[other_wan_unit] == PHY_RECONN
 #ifdef RTCONFIG_DSL

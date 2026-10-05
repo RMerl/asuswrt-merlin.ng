@@ -903,7 +903,7 @@ int do_dns_detect(int wan_unit)
 		/* ret > 0: status has been read, return real status
 		 * ret = 0: child timeout or dead w/o status, return 0
 		 * ret < 0: child read error, return -1 */
-		if (ret >= sizeof(status))
+		if (ret == (int)sizeof(status))
 			ret = status;
 		else if (ret != 0)
 			ret = -1;

@@ -2805,7 +2805,7 @@ void run_http_serv(int sockfd){
 
 	memset(line, 0, sizeof(line));
 
-	if((n = read(sockfd, line, MAXLINE)) == 0){	// client close
+	if((n = read(sockfd, line, sizeof(line)-1)) == 0){	// client close
 		close_socket(sockfd, T_HTTP);
 
 		return;

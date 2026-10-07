@@ -206,6 +206,12 @@ check_tls(struct context *c)
                 register_signal(c->sig, SIGTERM, "auth-control-exit");
             }
         }
+        else if (tmp_status == TLSMP_RESTART)
+        {
+            /* The session cannot recover on its own. Kill the connection so
+             * that it is set up again from scratch */
+            register_signal(c->sig, SIGUSR1, "dco key state desync");
+        }
 
         interval_future_trigger(&c->c2.tmp_int, wakeup);
     }
@@ -533,6 +539,23 @@ schedule_exit(struct context *c)
     {
         return false;
     }
+
+    /* DCO iroutes must be removed now, because the delay introduced by this
+     * timer can create a race condition:
+     * the same client may reconnect before the old instance is purged, leading
+     * to DCO iroutes removal *after* reconnection, thus killing the routes
+     * for the new instance too.
+     *
+     * Standard/virtual iroutes (non-DCO case) are not affected because the
+     * last connecting client claiming the iroutes takes ownership. Therefore
+     * they are not removed during delayed cleanup.
+     */
+    if (c->did_dco_iroutes)
+    {
+        c->did_dco_iroutes = false;
+        dco_delete_iroutes(&c->net_ctx, c);
+    }
+
     tls_set_single_session(c->c2.tls_multi);
     update_time();
     reset_coarse_timers(c);
@@ -2099,14 +2122,6 @@ multi_io_process_flags(struct context *c, struct event_set *es, struct link_sock
         {
             socket |= EVENT_READ;
         }
-    }
-
-    /*
-     * outgoing bcast buffer waiting to be sent?
-     */
-    if (flags & IOW_MBUF)
-    {
-        socket |= EVENT_WRITE;
     }
 
     /*

@@ -5101,6 +5101,7 @@ start_ddns(char *caller, int isAidisk)
 	int unit, asus_ddns = 0;
 	pid_t pid;
 	int ddns_check_retry = nvram_get_int("ddns_check_retry");
+	int force_update = caller && strcmp(caller, "force") == 0;
 	char *log_title, *ddns_act, *ddns_cache;
 
 	char ipv6_service_cur[16] = {0};
@@ -5120,7 +5121,7 @@ start_ddns(char *caller, int isAidisk)
 		}
 
 		/* MAX Retry Count mechanism */
-		if (caller == NULL) { // not from watchdog
+		if (caller == NULL || force_update) { // not a watchdog retry
 			//logmessage("ddns", "Reset DDNS Retry.\n");
 			nvram_set("ddns_check_retry", "10");
 		}
@@ -5257,7 +5258,8 @@ start_ddns(char *caller, int isAidisk)
 	snprintf(ipv6_service_cur, sizeof(ipv6_service_cur), "%s", nvram_safe_get(ipv6_nvname_by_unit("ipv6_service", unit)));
 	logmessage(log_title, "current ipv6_service: %s | old ipv6_service: %s\n", ipv6_service_cur, nvram_safe_get("ddns_ipv6_service_old"));
 
-	if (inet_addr_(wan_ip) == inet_addr_(nvram_safe_get("ddns_ipaddr")) &&
+	if (!force_update &&
+		inet_addr_(wan_ip) == inet_addr_(nvram_safe_get("ddns_ipaddr")) &&
 		strcmp(nvram_safe_get("ddns_server_x"), nvram_safe_get("ddns_server_x_old")) == 0 &&
 		strcmp(nvram_safe_get("ddns_hostname_x"), nvram_safe_get("ddns_hostname_old")) == 0
 #if defined(RTCONFIG_IPV6) && defined(RTCONFIG_INADYN)
@@ -5421,7 +5423,8 @@ start_ddns(char *caller, int isAidisk)
 	}
 		logmessage(log_title, "Clear ddns cache.");
 #else
-		if ((!nvram_match("ddns_server_x_old", "") && strcmp(nvram_safe_get("ddns_server_x"), nvram_safe_get("ddns_server_x_old")) != 0)
+		if (force_update ||
+			(!nvram_match("ddns_server_x_old", "") && strcmp(nvram_safe_get("ddns_server_x"), nvram_safe_get("ddns_server_x_old")) != 0)
 			|| (!nvram_match("ddns_hostname_old", "") && strcmp(nvram_safe_get("ddns_hostname_x"), nvram_safe_get("ddns_hostname_old")) != 0)
 			|| (inet_addr_(wan_ip) != inet_addr_(nvram_safe_get("ddns_ipaddr")))
 #ifdef RTCONFIG_IPV6
@@ -5517,12 +5520,14 @@ start_ddns(char *caller, int isAidisk)
 			inadyn_argv[idx++] = "/sbin/ddns_updated";
 			inadyn_argv[idx++] = "-l";
 			inadyn_argv[idx++] = nvram_get_int("ddns_debug") ? "debug" : "notice";
+			if (force_update
 #ifdef RTCONFIG_LETSENCRYPT
-			if (asus_le) {
+				|| asus_le
+#endif
+			) {
 				inadyn_argv[idx++] = "-1";
 				inadyn_argv[idx++] = "--force";
 			}
-#endif
 			inadyn_argv[idx] = NULL;
 		} else { // AiDisk register DDNS
 			int idx = 0;
@@ -5540,7 +5545,7 @@ start_ddns(char *caller, int isAidisk)
 				fprintf(fp, "custom namecheap {\n");
 				fprintf(fp, "ddns-server = dynamicdns.park-your-domain.com\n");
 				// We store the domain.tld in the username nvram
-				fprintf(fp, "ddns-path = \"/update?domain=%%u&password=%%p&host=%%h\"\n");
+				fprintf(fp, "ddns-path = \"/update?domain=%%u&password=%%p&host=%%h&ip=%%i\"\n");
 			} else {
 				fprintf(fp, "provider %s {\n", service);
 			}

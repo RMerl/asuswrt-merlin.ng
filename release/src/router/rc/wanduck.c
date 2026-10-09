@@ -1353,7 +1353,7 @@ int passivesock(char *service, int protocol_num, int qlen){
 	else
 		type = SOCK_STREAM;
 
-	s = socket(PF_INET, type, protocol_num);
+	s = socket(PF_INET, type | SOCK_CLOEXEC, protocol_num);
 	if(s < 0){
 		perror("cannot create socket");
 

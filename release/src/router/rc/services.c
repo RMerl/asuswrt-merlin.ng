@@ -11783,9 +11783,8 @@ void start_CP(void)
 		}
 	}
 	if(conn_flag){
-		nvram_set_int("nat_state", NAT_STATE_UPDATE);
 		_dprintf("nat_rule: start_nat_rules CP.\n");
-		start_nat_rules();
+		reload_nat_rules();
 	}else{
 		_dprintf("nat_rule: stop_nat_rules CP.\n");
 		stop_nat_rules();
@@ -12181,9 +12180,8 @@ void start_chilli(void)
 		}
 	}
 	if(conn_flag){
-		nvram_set_int("nat_state", NAT_STATE_UPDATE);
 		_dprintf("nat_rule: start_nat_rules chilli.\n");
-		start_nat_rules();
+		reload_nat_rules();
 	}else{
 		_dprintf("nat_rule: stop_nat_rules chilli.\n");
 		stop_nat_rules();
@@ -22331,11 +22329,36 @@ int run_app_script(const char *pkg_name, const char *pkg_action)
 	return 0;
 }
 
-int start_nat_rules(void)
+static int lock_nat_rules(sigset_t *oldset)
+{
+	sigset_t set;
+	int lock;
+
+	/* wanduck's SIGTERM handler also reloads the NAT rules. */
+	sigemptyset(&set);
+	sigaddset(&set, SIGTERM);
+	if (sigprocmask(SIG_BLOCK, &set, oldset) < 0)
+		return -1;
+
+	lock = file_lock("nat_rules");
+	if (lock < 0)
+		sigprocmask(SIG_SETMASK, oldset, NULL);
+
+	return lock;
+}
+
+static void unlock_nat_rules(int lock, sigset_t *oldset)
+{
+	file_unlock(lock);
+	sigprocmask(SIG_SETMASK, oldset, NULL);
+}
+
+static int _start_nat_rules(int force)
 {
 	char *fn = NAT_RULES, ln[PATH_MAX];
 	struct stat s;
-	int ret, retry, nat_state;
+	int ret, retry, nat_state, lock;
+	sigset_t oldset;
 
 	// all rules applied directly according to currently status, wanduck help to triger those not cover by normal flow
 #if defined(RTAC58U) || defined(RTAC59U) || defined(RTAX58U) || defined(RTAX56U)
@@ -22344,22 +22367,33 @@ int start_nat_rules(void)
 		;
 	else
 #endif
- 	if (nvram_match("x_Setting", "0"))
+	if (nvram_match("x_Setting", "0"))
 		return stop_nat_rules();
+
+	/* Keep the rules, NAT state and conntrack timeouts in the same transition. */
+	lock = lock_nat_rules(&oldset);
+	if (lock < 0)
+		return nvram_get_int("nat_state");
+
+	/* A pending reload must not be lost while waiting for another transition. */
+	if (force)
+		nvram_set_int("nat_state", NAT_STATE_UPDATE);
 
 	nat_state = nvram_get_int("nat_state");
 	if (nat_state == NAT_STATE_NORMAL) {
 #if defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
 		setup_ct_timeout(TRUE);
-		setup_udp_timeout(TRUE);
 #endif
+		setup_udp_timeout(TRUE);
+		unlock_nat_rules(lock, &oldset);
 		return nat_state;
-}
+	}
 
 	retry = 6;
 	while (lstat(NAT_RULES, &s) || (ret = S_ISLNK(s.st_mode) ? readlink(NAT_RULES, ln, sizeof(ln) - 1) : s.st_size) <= 0) {
 		if (retry <= 0) {
 _dprintf("nat_rule: the nat rule file was gone.\n");
+			unlock_nat_rules(lock, &oldset);
 			return nvram_get_int("nat_state");
 		}
 
@@ -22412,29 +22446,51 @@ _dprintf("nat_rule: the nat rule file was not ready. wait %d seconds...\n", retr
 	run_wgc_fw_nat_scripts();
 #endif
 
-	if (ret != 0)
+	if (ret != 0) {
+		unlock_nat_rules(lock, &oldset);
 		return nvram_get_int("nat_state");
+	}
 
 	nvram_set_int("nat_state", NAT_STATE_NORMAL);
 
 	setup_ct_timeout(TRUE);
 	setup_udp_timeout(TRUE);
+	unlock_nat_rules(lock, &oldset);
 
 	run_custom_script("nat-start", 0, NULL, NULL);
 
 	return NAT_STATE_NORMAL;
 }
 
+int start_nat_rules(void)
+{
+	return _start_nat_rules(FALSE);
+}
+
+int reload_nat_rules(void)
+{
+	return _start_nat_rules(TRUE);
+}
+
 int stop_nat_rules(void)
 {
-	int ret, nat_state;
+	int ret, nat_state, lock;
+	sigset_t oldset;
+
+	lock = lock_nat_rules(&oldset);
+	if (lock < 0)
+		return nvram_get_int("nat_state");
 
 	nat_state = nvram_get_int("nat_state");
-	if (nat_state == NAT_STATE_REDIRECT)
+	if (nat_state == NAT_STATE_REDIRECT) {
+		unlock_nat_rules(lock, &oldset);
 		return nat_state;
+	}
 
-	if (!nvram_get_int("nat_redirect_enable"))
+	if (!nvram_get_int("nat_redirect_enable")) {
+		unlock_nat_rules(lock, &oldset);
 		return nat_state;
+	}
 
 #if defined(RTCONFIG_SOC_IPQ8074)
 	if (is_router_mode()) {
@@ -22446,13 +22502,16 @@ int stop_nat_rules(void)
 	_dprintf("%s: apply the redirect_rules state %d ret %d\n", __FUNCTION__, nat_state, ret);
 	rule_apply_checking("services", __LINE__, REDIRECT_RULES, ret);
 
-	if (ret != 0)
+	if (ret != 0) {
+		unlock_nat_rules(lock, &oldset);
 		return nvram_get_int("nat_state");
+	}
 
 	nvram_set_int("nat_state", NAT_STATE_REDIRECT);
 
 	setup_ct_timeout(FALSE);
 	setup_udp_timeout(FALSE);
+	unlock_nat_rules(lock, &oldset);
 
 	return NAT_STATE_REDIRECT;
 }

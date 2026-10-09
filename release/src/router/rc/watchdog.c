@@ -7853,6 +7853,7 @@ void regular_ddns_check(void)
 	char prefix[sizeof("wanXXXXXXXXXX_")], *host;
 	struct in_addr ip_addr;
 	struct hostent *hostinfo;
+	int force_update;
 
 	//_dprintf("regular_ddns_check...\n");
 
@@ -7895,6 +7896,8 @@ void regular_ddns_check(void)
 	if (!nvram_match("wans_mode", "lb") && !is_wan_connect(wan_unit))
 		return;
 
+	force_update = (wan_unit != last_unit);
+
 	// Only check nvram IP for internal IP check mode
 	if (nvram_get_int("ddns_realip_x") == 0) {
 		snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
@@ -7902,19 +7905,13 @@ void regular_ddns_check(void)
 		//_dprintf("%s ?= %s\n", nvram_pf_get(prefix, "ipaddr"), inet_ntoa(ip_addr));
 		if (nvram_pf_match(prefix, "ipaddr", inet_ntoa(ip_addr)))
 			return;
+		force_update = 1;
 	}
 	
 	//_dprintf("WAN IP change!\n");
-	if (wan_unit != last_unit) {
-#ifndef RTCONFIG_INADYN
-		unlink("/tmp/ddns.cache");
-#else
-		system("rm -f /var/cache/inadyn/*.cache");
-#endif
-	}
 	logmessage("watchdog", "Hostname/IP mapping error! Restart ddns.");
 	stop_ddns();
-	start_ddns(NULL, 0);
+	start_ddns(force_update ? "force" : NULL, 0);
 
 	return;
 }
@@ -11810,7 +11807,7 @@ wdp:
 		if ((period) && (++ddns_update_timer >= (DAY_PERIOD * period))) {
 			ddns_update_timer = 0;
 			logmessage("watchdog", "Forced DDNS update (after %d days)", period);
-			notify_rc("restart_ddns");
+			notify_rc("restart_ddns force");
 		} else {
 			ddns_check();
 		}

@@ -2774,6 +2774,7 @@ extern void update_macfilter_relist();
 #endif
 
 extern int start_nat_rules(void);
+extern int reload_nat_rules(void);
 extern int stop_nat_rules(void);
 extern int start_syslogd(void);
 extern void stop_syslogd(void);

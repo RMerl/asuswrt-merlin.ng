@@ -488,8 +488,7 @@ static void safe_leave(int signo){
 	rule_setup = 0;
 	conn_changed_state[current_wan_unit] = CONNED; // for cleaning the redirect rules.
 
-	nvram_set_int("nat_state", NAT_STATE_INITIALIZING);
-	nat_state = start_nat_rules();
+	nat_state = reload_nat_rules();
 
 	remove(WANDUCK_PID_FILE);
 

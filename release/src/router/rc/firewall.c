@@ -2269,9 +2269,8 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 
 	if(is_phy_connect2(wan_unit)){
 		/* force nat update */
-		nvram_set_int("nat_state", NAT_STATE_UPDATE);
 _dprintf("nat_rule: start_nat_rules 1.\n");
-		start_nat_rules();
+		reload_nat_rules();
 	}
 	else
 _dprintf("%s: nat_rule: skip nat_rules because of no PHY.\n", __func__);
@@ -2814,9 +2813,8 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 	for (unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit) {
 		if(is_phy_connect(unit)){
 			/* force nat update */
-			nvram_set_int("nat_state", NAT_STATE_UPDATE);
 _dprintf("nat_rule: start_nat_rules 2.\n");
-			start_nat_rules();
+			reload_nat_rules();
 			break;
 		}
 		else

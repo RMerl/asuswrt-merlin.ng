@@ -2955,23 +2955,9 @@ int start_bcm_tm(void)
 	dropalg = 4;
 #endif
 
-	wan_ifname = get_wanx_ifname(wan_primary_ifunit());
+	char wan_ifname_phy[IFNAMSIZ];
 
-#if defined(RTCONFIG_MULTISERVICE_WAN)
-	char wan_ifname_phy[IFNAMSIZ] = {0};
-
-	if (is_mswan_enabled()) {
-		char *p;
-
-		strlcpy(wan_ifname_phy, nvram_safe_get("wan_ifnames"), sizeof(wan_ifname_phy));
-		if ((p = strchr(wan_ifname_phy, ' ')) != NULL)
-			*p = '\0';
-		if (!wan_ifname_phy[0])
-			strlcpy(wan_ifname_phy, WAN_IF_ETH, sizeof(wan_ifname_phy));
-
-		wan_ifname = wan_ifname_phy;
-	}
-#endif
+	wan_ifname = get_wan_phy_ifname(wan_primary_ifunit(), wan_ifname_phy, sizeof(wan_ifname_phy));
 
 	snprintf(nvname, sizeof(nvname), "wan%d_proto", wan_primary_ifunit());
 	wan_proto = nvram_safe_get(nvname);

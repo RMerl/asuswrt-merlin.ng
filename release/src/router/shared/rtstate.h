@@ -542,6 +542,7 @@ extern int is_phy_connect2(int unit);
 extern int is_ip_conflict(int unit);
 extern int get_wan_unit(char *ifname);
 extern char *get_wan_ifname(int unit);
+extern char *get_wan_phy_ifname(int unit, char *buf, size_t len);
 #ifdef RTCONFIG_IPV6
 extern char *get_wan6_ifname(int unit);
 extern int get_wan6_unit(char* ifname);

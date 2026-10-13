@@ -3,10 +3,14 @@ Asuswrt-Merlin 3006.xxx Changelog
 
 3006.102.10 (xx-xxx-2026)
   - UPDATED: OpenSSL to 3.5.9.
+  - UPDATED: OpenVPN to 2.7.8.
   - FIXED: Various issues with Dual WAN failover/failback,
            and DNS probing (TheUnboundDeveloper/Claude)
   - FIXED: Various issues with the "Internet is down"
            redirection page (TheUnboundDeveloper/Claude)
+  - FIXED: HW AQM wouldn't work if you used a tagged
+           WAN interface. Now treat it like we treat
+           Multiservice WAN connections.
 
 
 3006.102.9 (23-Sept-2026)

@@ -366,6 +366,9 @@ int update_SDN_iptables(const MTLAN_T *pmtl, const char *logdrop, const char *lo
 					fprintf(fp, "-A %s -i %s -p udp -m multiport --dports 53,67,68 -j %s\n", SDN_FILTER_INPUT_CHAIN, pmtl->nw_t.ifname, logaccept);
 				}
 
+				// DNS TCP port
+				fprintf(fp, "-A %s -i %s -p tcp --dport 53 -j %s\n", SDN_FILTER_INPUT_CHAIN, pmtl->nw_t.ifname, logaccept);
+
 				// access host service
 				if (!pmtl->sdn_t.ahs_sw)
 				{

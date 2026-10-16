@@ -26,9 +26,9 @@ AiMesh_Node_desc2=Mergeţi la pagina de setări AiMesh a ruterului existent pent
 AiMesh_Notice1=Modificările aduse setărilor dvs. wireless vor afecta rețeaua dvs. poligonală!
 AiMesh_Add_Another_Node_confirm=Vreți să adăugați alt nod?
 AiMesh_Add_Another_Node=Adăugați alt nod
-AiMesh_Adding_Node=Adding the AiMesh node...
-AiMesh_Node_joining=The node is joining the network...
-AiMesh_Node_activating=Activating your mesh network...
+AiMesh_Adding_Node=Se adaugă nodul AiMesh...
+AiMesh_Node_joining=Nodul se alătură rețelei...
+AiMesh_Node_activating=Se activează rețeaua dvs. mesh...
 AiMesh_backhaul_band_5GHz-2_desc1=is now used as dedicated WiFi backhaul under AiMesh mode.
 AiMesh_backhaul_band_5GHz-2_desc11=%@ este acum folosit ca backhaul WiFi dedicat în modul AiMesh.
 AiMesh_backhaul_band_5GHz-2_desc2=Mergeți <span class="faq-link" onclick="parent.location.href=\'/Advanced_Wireless_Content.asp\'">aici</span> pentru a afla setările wireless detaliate.
@@ -83,6 +83,8 @@ AiMesh_Topology_Line_Wired_Great=Conexiune prin cablu de calitate excelentă
 AiMesh_Topology_Line_Wired_Normal=Conexiune prin cablu de calitate normală
 AiMesh_Topology_FAQ_old=Pentru informații detaliate privind calitatea noua interfață grafică AiMesh, consultați această secțiune de întrebări frecvente.
 AiMesh_Topology_FAQ=Pentru informații detaliate privind calitatea noua interfață grafică AiMesh, consultați această <a id="Intro_AiMesh">secțiune de întrebări frecvente</a>.
+AiMesh_Topology_inst_FAQ_old=Pentru instrucțiuni privind configurarea sistemului AiMesh, consultați acest FAQ.
+AiMesh_Topology_inst_FAQ=Pentru instrucțiuni privind configurarea sistemului AiMesh, consultați acest <a id='connect_line_info_faq'>FAQ</a>.
 AiMesh_OB_hint=Pentru performanță optimă, recomandăm utilizarea unui model mai nou pentru nodul dvs. Utilizarea dispozitivelor vechi poate limita stabilitatea și viteza generală a rețelei AiMesh.
 AiMesh_Add_Anyway=Adaugă oricum
 AiMesh_Proceed_Anyway=Continuă oricum
@@ -102,7 +104,7 @@ APSurvey_msg_connect_open_wlan=Încercaţi să vă conectaţi la o reţea nesecu
 APSurvey_msg_connected=Sunteţi deja conectat la acest punct de acces.
 APSurvey_msg_non_support_Auth=Metoda de autentificare nu este acceptată.
 APSurvey_msg_waiting_to_connect=Aşteptaţi, dispozitivul ZVMODELVZ se conectează la
-ASUS_Registration=Deveniți un membru ASUS și primiți cele mai noi informații despre produse. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Înregistrați-vă acum!</a>
+ASUS_Registration=Deveniți un membru ASUS și primiți cele mai noi informații despre produse. <a style='color:var(--wrt-badge-warning-color,#FC0)' target='_blank' href='https://account.asus.com'>Înregistrați-vă acum!</a>
 ASUS_Notice=NOTIFICARE DE LA ASUS
 ASUS_privacy_desc=Rețineți că utilizatorii trebuie să accepte să-și partajeze informațiile înainte de a utiliza DDNS, conexiunea la distanță (aplicația ASUS Router, aplicația Lyra, AiCloud, AiDisk), AiProtection, analizorul de trafic, analizorul de aplicații, funcția de adaptare QoS, funcția Game Boost și istoricul web. În orice moment, utilizatorii pot să caute în conținutul condițiilor din această pagină sau să înceteze partajarea informațiilor cu alte părți, alegând opțiunea <a style="font-weight: bolder;">Retragere</a>.
 ASUS_eula_desc0=Bun venit la utilizarea DDNS/Conexiunea la distanță(aplicația ASUS Router/aplicația Lyra/AiCloud/AiDisk). Citiţi cu atenţie următoarele informații:
@@ -370,7 +372,7 @@ CTL_UpgradeNight=Upgrade Noaptea
 CTL_UpgradeNow=Upgrade Acum
 default_passwd_checkbox=Utilizați parola de Autentificare locală implicită
 default_passwd_desc=Parola criptată implicită de Autentificare locală asigură un proces de conectare securizat atunci când vă conectați la acest dispozitiv de rețea ASUS la nivel local.
-defaultHint=Pentru detalii suplimentare, vizitaţi <a style="font-weight: bolder;text-decoration: underline;color:#000000;" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
+defaultHint=Pentru detalii suplimentare, vizitaţi <a style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#000000);" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
 Detect_consume_warning1=* Un pachet ping de dimensiuni minime consumăaproximativ 128 de baiţi pe interval. Prin urmare, detectorul ping va consuma
 Detect_consume_warning2=Mbaiţi pe lună
 Disconnected=Deconectat
@@ -409,7 +411,7 @@ OpenDNS_Home=OpenDNS Home
 OpenDNS_Family=OpenDNS Familie
 Yandex_Safe=Yandex Safe
 Yandex_Family=Yandex Familie
-Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:#FFCC00;" href="DNSFilter.asp"> DNSFilter </a> este activat - orice este configurat acolo la altceva decât Fără filtrare sau Router va ocoli serverele DNS Privacy.
+Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:var(--wrt-badge-warning-color,#FFCC00);" href="DNSFilter.asp"> DNSFilter </a> este activat - orice este configurat acolo la altceva decât Fără filtrare sau Router va ocoli serverele DNS Privacy.
 Enable_user_target=Activare ţintădefinităde utilizator
 Enable_Login_Captcha=Activare Captcha conectare
 Encrypted_field=Câmp criptat.
@@ -616,7 +618,7 @@ Offline_desc2=Au fost efectuate modificări la adresa IP sau numărul de port. V
 Offline_desc3=Pentru a accesa setările ZVMODELVZ, reconectaţi-vă la reţeaua wireless şi utilizaţi adresa IP şi numărul de port actualizate.
 OP_AP_desc=În modul Punct de acces, dispozitivul ZVMODELVZ se conectează la un router wireless printr-un cablu Ethernet pentru a extinde aria de acoperire cu semnal şi pentru a face reţeaua disponibilă şi celorlalţi clienţi din reţea. În acest mod, funcţiile firewall, de partajare IP şi NAT sunt dezactivate în mod implicit.
 AiMesh_AP_desc=În modul AP, ruterele AiMesh pot fi conectate la un ruter wireless printr-un cablu Ethernet pentru extinderea semnalului wireless la alţi clienţi din reţea. În acest mod, funcţiile firewall, de partajare IP şi NAT sunt dezactivate în mod implicit.
-OP_AP_hint=De asemenea, puteţi accesa <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">http://findasus.local</a> pentru a căuta şi a introduce dispozitivul pe pagina de configurare.
+OP_AP_hint=De asemenea, puteţi accesa <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">http://findasus.local</a> pentru a căuta şi a introduce dispozitivul pe pagina de configurare.
 OP_AP_item=Mod punct de acces
 AiMesh_AP_item=Mod Punct de acces (AP) / Mod ruter AiMesh în AP
 OP_Choose=Choose operation mode
@@ -635,7 +637,7 @@ OP_MB_desc4=Configuraţi un dispozitiv ZVMODELVZ ca router şi celălalt dispozi
 OP_MB_desc5=Comutaţi la modul Media Bridge (Punte media) pentru a asigura o conexiune WiFi, pentru conectarea simultană a mai multor dispozitive media.
 OP_MB_desc6=În modul punte, doar dispozitivele wireless se conectează la P-AP. Dispozitivele clientului trebuie conectate la puntea media cu un cablu de reţea.
 OP_MB_desc7=ZVMODELVZ în modul punte media. Adresa IP a fost modificată.
-OP_MB_desc8=Descărcaţi <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:#FC0;'>Device Discovery Utility</a> pentru a identifica adresa IP a punţii media.
+OP_MB_desc8=Descărcaţi <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>Device Discovery Utility</a> pentru a identifica adresa IP a punţii media.
 OP_MB_desc9=Verificaţi dacă aţi deconectat cablul de reţea de la portul WAN.
 OP_RE_desc=În modul Repeater (Repetator), dispozitivul ZVMODELVZ se conectează wireless la o reţea wireless existentă, cu scopul de a extinde aria de acoperire. În acest mod, funcţiile firewall, de partajare IP şi NAT sunt dezactivate.
 OP_RE_desc1=Adresa IP LAN a ZVMODELVZ ar putea fi modificată.
@@ -685,7 +687,7 @@ QIS_adminpass_confirm0=Noua parolă este identică cu parola implicită a sistem
 QIS_adminpass_confirm1=Dacă nu schimbaţi parola implicită (admin), ruterul dvs. va fi vulnerabil faţă de ameninţările de securitate, iar alte persoane vor putea ghici cu uşurinţă parola de conectare. Sigur păstraţi această parolă, chiar dacă nu oferă siguranţă?
 [###MODEL_DEP###][PL-AC56][PL-N12]QIS_adminpass_confirm1=Dacă nu schimbaţi parola implicită (admin), PLC. va fi vulnerabil faţă de ameninţările de securitate, iar alte persoane vor putea ghici cu uşurinţă parola de conectare. Sigur păstraţi această parolă, chiar dacă nu oferă siguranţă?
 QIS_apextended_usedefault=Utilizaţi setările implicite (aceleaşi setări ca cele ale reţelei pe care doriţi să o extindeţi)
-QIS_AP_connect_hint=Once the new SSID is connected, you can go to %1$@ for more advanced settings.
+QIS_AP_connect_hint=După ce noul SSID este conectat, puteți accesa %1$@ pentru setări mai avansate.
 QIS_auto_ip_conn_Setup=Configurare a conexiunii cu IP automat
 QIS_autoMAC_desc1=Se începe clonarea adresei MAC a computerului, pentru a fi utilizată de către router.
 QIS_autoMAC_desc2=Aşteptaţi...
@@ -817,7 +819,7 @@ qis_simple_wls_recmd=(Recomandat)
 QIS_SmartConn_ISPDesc=Furnizorul dumneavoastră de servicii trebuie să vă ofere un document cu informațiile despre numele de utilizator și parolă. Acest model este doar un exemplu.
 QIS_SmartConn_ISPDesc2=Introduceți numele de utilizator și parola pentru conexiunea la internet. Aceste setări v-au fost oferite de furnizorul dumneavoastră de servicii.
 QIS_SmartConn_ISPDesc3=Introduceți numele de utilizator și parola PPPoE furnizate de furnizorul dvs. de servicii de internet (ISP) pentru conexiunea la internet.
-QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:#FC0;">xxxxxxxx@hinet.net</span>
+QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:var(--wrt-badge-warning-color,#FC0);">xxxxxxxx@hinet.net</span>
 QIS_SmartConn_Scen1=Scenariul 1 de conectare
 QIS_SmartConn_Scen2=Scenariul 2 de conectare
 QIS_SmartConn_StaticDesc=Furnizorul dumneavoastră de servicii trebuie să vă ofere informațiile legate de adresa IP, subnet mask, gateway si adresa DNS. Dacă nu aveți aceste informții, vă rugăm contactați furnizorul de servicii.
@@ -999,10 +1001,10 @@ QKSet_ISP_desc=Obţineţi informaţiile necesare referitoare la setările conexi
 QKSet_ISP_desc2=Conectare cu IP static eşuată.
 QKSet_ISP_desc3=Conectare cu IP automat eşuată. Puteţi efectua aici configurarea manuală.
 QKSet_ISP_head=Setare informaţii ISP
-QKset_restore_0=Faceţi clic pe <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Restabilire setări</label></a> pentru a încărca setările configuraţiei salvate.
-QKset_restore_1=Faceţi clic pe <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Restabilire setări</label></a> pentru a restabili configuraţia dacă aţi făcut backup la setările de configurare, înainte de a reseta routerul.
-QKset_setup_manual_0=Faceţi clic pe <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Setare manuală</label></a> pentru a configura manual reţeaua wireless, dacă cunoaşteţi tipul de conexiune ISP.
-QKset_setup_manual_1=Faceţi clic pe <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Setare manuală</label></a> pentru a configura manual setările avansate ale routerului sau a configura ZVMODELVZ să funcţioneze în
+QKset_restore_0=Faceţi clic pe <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Restabilire setări</label></a> pentru a încărca setările configuraţiei salvate.
+QKset_restore_1=Faceţi clic pe <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Restabilire setări</label></a> pentru a restabili configuraţia dacă aţi făcut backup la setările de configurare, înainte de a reseta routerul.
+QKset_setup_manual_0=Faceţi clic pe <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Setare manuală</label></a> pentru a configura manual reţeaua wireless, dacă cunoaşteţi tipul de conexiune ISP.
+QKset_setup_manual_1=Faceţi clic pe <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Setare manuală</label></a> pentru a configura manual setările avansate ale routerului sau a configura ZVMODELVZ să funcţioneze în
 QKset_skip_setup=Sunteţi un expert în reţele wireless şi doriţi să omiteţi expertul de configurare internet?
 QKSet_type_desc=Selectați tipul de conexiune la internet oferit de către furnizorul dvs. de servicii internet.
 QKSet_type_head=Tip conexiune WAN Internet
@@ -1026,13 +1028,13 @@ Select_ISPfile=Selectaţi profilul ISP-ului
 Select_menu_default=Selectaţi o opţiune
 Sign_in_title=Conectaţi-vă cu contul routerului ASUS
 [###MODEL_DEP###][RP-AC87][RP-AC68U][RP-AC66U][RP-AC55][RP-AC53][RP-AC52][RP-AC51][RP-AC92]Sign_in_title=Conectaţi-vă cu contul repetator ASUS
-SLM_Ask=Ask Router Assistant...
-SLM_Loading=Loading...
-SLM_Thinking=Thinking...
-SLM_not_installed=Please double check that the router assistant is running in Portainer and that the port (8090) is not overlapping with other services. Also, ensure that slm-asus is running in Portainer. If the problem persists, try restoring AiBoard.
-SLM_no_response=Service is activating. Please try again in about 3 minutes.
-SLM_low_percent=Sorry, unable to answer the question.
-SLM_disclaimer=Router Assistant might not always be accurate. This feature is currently available in English only. Please verify important information yourself.
+SLM_Ask=Întrebați Router Assistant...
+SLM_Loading=Se încarcă…
+SLM_Thinking=Se procesează...
+SLM_not_installed=Vă rugăm să verificați că Router Assistant rulează în Portainer și că portul (8090) nu intră în conflict cu alte servicii. De asemenea, asigurați-vă că slm-asus rulează în Portainer. Dacă problema persistă, încercați să restaurați AiBoard.
+SLM_no_response=Serviciul se activează. Vă rugăm să încercați din nou în aproximativ 3 minute.
+SLM_low_percent=Ne pare rău, nu se poate răspunde la întrebare.
+SLM_disclaimer=Router Assistant poate să nu fie întotdeauna precis. Această funcție este disponibilă momentan doar în limba engleză. Vă rugăm să verificați informațiile importante pe cont propriu.
 SLM_not_installed_CN=请确认路由助手在Portainer中运行且端口（8092）未与其他服务重叠，确认slm-asus-cn也在Portainer中运行。若问题仍然存在，请恢复AiBoard。
 SLM_no_response_CN=服务正在激活中，请约3分钟后重试。
 SLM_low_percent_CN=对不起，无法回答该问题.
@@ -1053,6 +1055,7 @@ Status_RAM=RAM
 Status_Used=Utilizat
 Status_Free=Liber
 Status_Total=Total
+Status_LoggingIn=Se conectează…
 statusTitle_AP=Stare punct de acces
 statusTitle_System=ASUS ZVMODELVZ
 System_act_connections=Conexiuni active
@@ -1077,7 +1080,7 @@ TBVLAN_UPort=Port fără etichetă
 TBVLAN_TPort=Port cu etichetă
 TBVLAN_WirelessInf=Interfață wireless
 TBVLAN_EditSubnetProfile=Editare profil subrețea
-TBVLAN_Subnet_desc=Selectați subrețeaua creată sau selectați &quot;New Subnet&quot; (Subrețea nouă) pentru a crea o subrețea nouă pentru VLAN. Dacă aveți nevoie de configurații DHCP suplimentare, le puteți configura pe <a style='color:#FFF; text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> serverul DHCP</a>.
+TBVLAN_Subnet_desc=Selectați subrețeaua creată sau selectați &quot;New Subnet&quot; (Subrețea nouă) pentru a crea o subrețea nouă pentru VLAN. Dacă aveți nevoie de configurații DHCP suplimentare, le puteți configura pe <a style='color:var(--wrt-text-color,#FFF); text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> serverul DHCP</a>.
 TBVLAN_BindingInf=Interfață de legare
 TBVLAN_NoBindingInf=Nicio interfață de legare disponibilă
 TBVLAN_BindingInf_Hint=Adăugați o interfață de legare
@@ -1108,20 +1111,20 @@ WANPPPAuthText=PPP Authentication
 WAN_type_detected=WAN type detected
 WAN_auto_detected=Detecție automată WAN
 web_redirect_case1_suggestion1=Cablul trebuie să fie conectat la portul WAN ZVMODELVZ și modemul dvs.
-web_redirect_case1_suggestion2=Verificați dacă <a style='color:#FFF' href='/Advanced_OperationMode_Content.asp'>Mod de funcționare</a> trebuie schimbat.
-web_redirect_case2_suggestion1=Cont sau parolă PPPoE incorect, <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>verificați</a>.
+web_redirect_case1_suggestion2=Verificați dacă <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_OperationMode_Content.asp'>Mod de funcționare</a> trebuie schimbat.
+web_redirect_case2_suggestion1=Cont sau parolă PPPoE incorect, <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>verificați</a>.
 web_redirect_case2_title1=Eroare de autentificare PPoE
 web_redirect_case3_button=Schimbați tipul WAN
-web_redirect_case3_suggestion1=Asigurați-vă că <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>Setări de conectare</a> sunt corecte.
-web_redirect_case5_suggestion1=Activați <a style='color:#FFF' href='/'>Conexiune WAN</a>
+web_redirect_case3_suggestion1=Asigurați-vă că <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>Setări de conectare</a> sunt corecte.
+web_redirect_case5_suggestion1=Activați <a style='color:var(--wrt-text-color,#FFF)' href='/'>Conexiune WAN</a>
 web_redirect_case5_suggestion2=Asigurați-vă că modemul USB este pornit.
-web_redirect_case5_suggestion3=Schimbați <a style='color:#FFF' href='/Advanced_Modem_Content.asp'>Setări modem USB</a>.
+web_redirect_case5_suggestion3=Schimbați <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_Modem_Content.asp'>Setări modem USB</a>.
 web_redirect_case5_title1=Conexiunea la WAN a fost dezactivată.
 web_redirect_case5_title2=Modemul USB nu este conectat.
 web_redirect_case6_desc1=Faceți clic pe [Înainte] pentru a utiliza următoarea adresă IP:
 web_redirect_case6_desc2=Asigurați-vă că toate serviciile relevante utilizează adresa IP nouă (de exemplu, Redirecționare porturi, DMZ etc.)
 web_redirect_case8_suggestion1=Confirmați dacă PA mamă se poate conecta la internet.
-web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>Schimbare setări conexiune</a>.
+web_redirect_case8_suggestion2=<a style='color:var(--wrt-text-color,#FFF)' href='/QIS_wizard.htm?flag=manual'>Schimbare setări conexiune</a>.
 web_redirect_case8_title=Imposibil de conectat la PA mamă.
 web_redirect_case9_suggestion1=Asigurați-vă că routerul AiMesh este pornit.
 web_redirect_case9_suggestion2=Reporniți ruterul AiMesh și încercați din nou.
@@ -1171,6 +1174,11 @@ Web_Title=Router wireless ASUS ZVMODELVZ
 [###MODEL_DEP###][YY]Web_Title=Punct de acces ASUS ZVMODELVZ
 Web_Title2=ZVMODELVZ
 Web_DOMAIN_NAME=ZVDOMAIN_NAMEVZ
+WiFi_MLO_connect_confirmTitle=Utilizați conexiunea MLO
+WiFi_MLO_same_model_desc=MLO (Multi-Link Operation) este acceptat în prezent numai între routere ASUS de același model. Dacă modelele sunt diferite, conexiunea poate eșua.
+WiFi_MLO_connect_try=Încercați să vă conectați utilizând MLO.
+WiFi_MLO_connect_veto=Utilizați în schimb o conexiune standard pe o singură bandă.
+WiFi_MLO_connect_confirm=Doriți să utilizați conexiunea MLO?
 wireless_configured=Configurat
 Wireless_name=Nume wireless
 wireless_router=Router wireless
@@ -1253,6 +1261,7 @@ ADSL_FW_note=Notă:
 adsl_fw_ver_itemname=Versiune driver DSL
 adsl_link_sts_itemname=Stare legătură DSL
 adv_wl_desc=Configuraţi mai jos informaţiile conexe reţelei wireless.
+AiBoard_rescue_fail=Recuperarea AI Board a eșuat
 AiCloud_account_status=Stare cont
 AiCloud_account_unlock=Deblocare
 aicloud_bandwidth1=Aveţi nevoie de o conexiune la Internet în bandă largă pentru a beneficia de cea mai bună experienţă de vizionare şi audiţie. Citiţi recomandările de mai jos:
@@ -1365,12 +1374,12 @@ AiMesh_FindNode_confirm=Nu-mi pot găsi nodul AiMesh.
 AiMesh_FindNode_confirm_WPS=Modul WPS va fi activat atunci când se caută un nod AiMesh.
 AiMesh_FindNode_Desc=Căutați noduri AiMesh disponibile în apropiere care să se înscrie în sistemul dvs. AiMesh.
 AiMesh_FindNode_Not=Nu s-a putut găsi niciun nod AiMesh în apropiere.
-AiMesh_FindNode_Not_advA=Dacă acest dispozitiv are rolul de <span style='color:#569AC7;'> router AiMesh </span>, verificați următoarele și încercați din nou.
+AiMesh_FindNode_Not_advA=Dacă acest dispozitiv are rolul de <span style='color:var(--wrt-link-color,#569AC7);'> router AiMesh </span>, verificați următoarele și încercați din nou.
 AiMesh_FindNode_Not_advA1=Nodul dvs. AiMesh este pornit
 AiMesh_FindNode_Not_advA2=Nodul dvs. AiMesh are cel mai recent firmware
 AiMesh_FindNode_Not_advA3=Setările nodului dvs. AiMesh au fost resetate la valorile implicite
 AiMesh_FindNode_Not_advA4=Apropiați nodul dvs. AiMesh de routerul AiMesh
-AiMesh_FindNode_Not_advB=Dacă acest dispozitiv are rolul de <span style='color:#569AC7;'>nod AiMesh</span>, verificați următoarele și încercați din nou.
+AiMesh_FindNode_Not_advB=Dacă acest dispozitiv are rolul de <span style='color:var(--wrt-link-color,#569AC7);'>nod AiMesh</span>, verificați următoarele și încercați din nou.
 AiMesh_FindNode_Not_advB1=Apăsați butonul de resetare de pe dispozitiv și așteptați.
 AiMesh_FindNode_Not_advB2=Conectați-vă la interfața grafică a routerului dvs. AiMesh și faceți clic pe pictograma AiMesh.
 AiMesh_FindNode_Not_advB3=Dacă nu puteți găsi pictograma AiMesh în interfața grafică a routerului, actualizați firmware-ul routerului dvs. AiMesh.
@@ -1447,7 +1456,7 @@ AiMesh_NodeLocation25=Garaj
 AiMesh_NodeLocation26=Primul etaj
 AiMesh_NodeLocation27=Cameră de jocuri
 AiMesh_NodeLocation28=Sală de gimnastică
-AiMesh_NodeLocation29=Outdoor
+AiMesh_NodeLocation29=Exterior
 AiMesh_OfflineTips=Sfaturi offline
 AiMesh_OfflineTips1=Asigurați-vă că nodul dvs. AiMesh este pornit.
 AiMesh_OfflineTips2=Reporniți nodul AiMesh și încercați din nou.
@@ -1661,7 +1670,7 @@ AiProtection_sites_block_desc=Restricționează accesul la site-uri Web rău int
 [###MODEL_DEP###][GT-AC5300]AiProtection_sites_block_desc=Blocarea site-urilor malițioase restricționeazăaccesul la site-urile malițioase cunoscute pentru a împiedica malware-ul, phishingul, spamul, adware-ul, hackingul sau ransomware-ul săatace dispozitivul dvs. de rețea.
 AiProtection_sites_blocking=Blocare site-uri rău intenționate
 AiProtection_ARK_Malicious_Site_blocking=Blocarea site-urilor malițioase și a dispozitivelor infectate
-AiProtection_ARK_Malicious_Site_blocking_desc=Restricționați accesul la site-urile web malițioase cunoscute pentru a vă proteja rețeaua împotriva programelor malware, phishingului, spamului, adware-ului, hackingului și atacurilor de tip ransomware.
+AiProtection_ARK_Malicious_Site_blocking_desc=Restricționați accesul la site-uri web malițioase cunoscute pentru a vă proteja rețeaua împotriva malware-ului, phishing-ului, spam-ului, hacking-ului și atacurilor ransomware.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]AiProtection_sites_blocking=Blocare site-uri rău intenționate
 AiProtection_sites_trust=Adăugați un domeniu de încredere și deblocați-l cu AiProtection
 AiProtection_sites_trust_add=Adăugați un domeniu în lista albă
@@ -1670,7 +1679,7 @@ AiProtection_title_BandwidthUtil=Utilizarea lățimii de bandă
 AiProtection_title_BandwidthUtil_desc1=Vărugăm săintroduceți lățimea de bandăde internet pentru încărcare și descărcare.
 AiProtection_title_BandwidthUtil_desc2=ROG ZVMODELVZ utilizeazăaceste informații privind lățimea de bandăpentru a asigura cel mai bun trafic pentru dispozitivele dvs. de joc.
 AiProtection_title_Dashboard=Panou de control joc
-AiProtection_title_Dashboard_add_card=Add card
+AiProtection_title_Dashboard_add_card=Adăugare card
 AiProtection_title_Dashboard_desc=Panoul de control ROG ZVMODELVZ văpermite săconfigurați cele mai bune setări și săvămonitorizați în timp real rețeaua de jocuri.
 AiProtection_title_Dashboard_title=Panou de control
 AiProtection_title_GameWiFi=WiFi dedicat pentru jocuri
@@ -1704,18 +1713,19 @@ AiProtection_TrackerBlocking=Blocare trackere
 AiProtection_TrackerBlocking_Desc=Blocarea trackerelor ajută la detectarea și blocarea cererilor de urmărire de pe site-uri web, agenți de publicitate sau platforme terțe de analiză, protejând confidențialitatea, reducând scurgerea de date și accelerând încărcarea paginilor.
 AiProtection_AdvertisementBlocking_Desc=Blocarea reclamelor ajută la blocarea surselor comune de reclame pentru a reduce interferențele, a îmbunătăți navigarea și a reduce riscurile de securitate. De asemenea, puteți activa AdGuard DNS pentru o protecție suplimentară.
 AiProtection_AdvertisementBlocking_Enabled=Blocarea reclamelor activată
-AiProtection_AdvertisementBlocking_edserv=Edge Server
-AiProtection_AdvertisementBlocking_edserv_desc=A self-hosted edge server on router. Provides detailed network insights, advanced control, and enhanced home privacy.
-AiProtection_AdvertisementBlocking_cloudserv=Cloud Server
-AiProtection_AdvertisementBlocking_cloudserv_desc=Extends protection across multiple sites via the cloud.
-AiProtection_AdvertisementBlocking_filter=Triple level content filter
-AiProtection_AdvertisementBlocking_trigger=Blocks ads with one click.
+AiProtection_AdvertisementBlocking_edserv=Server Edge
+AiProtection_AdvertisementBlocking_edserv_desc=Un server edge auto-găzduit pe router. Oferă informații detaliate despre rețea, control avansat și confidențialitate îmbunătățită acasă.
+AiProtection_AdvertisementBlocking_cloudserv=Server Cloud
+AiProtection_AdvertisementBlocking_cloudserv_desc=Extinde protecția pe mai multe locații prin cloud.
+AiProtection_AdvertisementBlocking_filter=Filtru de conținut pe trei niveluri
+AiProtection_AdvertisementBlocking_trigger=Blochează reclamele cu un singur clic.
 AiProtection_TrackerBlocking_Enabled=Blocarea urmăririi activată
 AiProtection_select_device=Selectați un dispozitiv sau introduceți un MAC sau IP valid
 AiProtection_rule_exist=Acest dispozitiv are deja o regulă. Vă rugăm să o eliminați înainte de a crea una nouă.
 ArkMigrationNote=Notă
 ArkMigrationNote_1=Din cauza confidențialității și optimizărilor sistemului, %@ utilizează acum detectarea locală. Regulile existente ale profilului trebuie reconfigurate manual.
 ArkMigrationNote_2=Aceste funcții nu sunt compatibile cu firmware-ul anterior; revenirea la o versiune anterioară necesită resetarea din fabrică.
+ArkAiProtectionInfo=Unele site-uri pot fi afectate de blocarea reclamelor sau a urmăririi din cauza utilizării acestor servicii. Dacă aveți probleme la accesarea unui site, dezactivați funcțiile de mai sus și reîncărcați pagina.
 FamilyContentBlock=Blocare conținut familial
 BwLimiter_Switch=Comutator limitator lățime de bandă
 BwLimiter_Download=Lățime de bandă descărcare
@@ -1724,6 +1734,7 @@ BwLimiter_NewDevice=Dispozitiv nou
 BwLimiter_Status=Stare
 BwLimiter_Delete=Ștergere
 SearchDevice_By_Name_Mac_Ip=Caută nume dispozitiv, MAC sau IP
+SearchDevice_By_Name_Mac_Ip_Subnet=Căutați Numele Dispozitivului, MAC, IP sau Subnet
 BwLimiter_Target=Ţintă
 BwLimiter_enter_bandwidth=Introduceți o valoare de lățime de bandă.
 BwLimiter_max=Regulile de limitare a lățimii de bandă au atins maximumul (32).
@@ -1874,7 +1885,7 @@ Bandwidth_Setting=Bandwidth Setting
 BasicConfig_EnableDHCPFilter_itemname=Activare filtru DHCP
 BasicConfig_EnableDownloadMachine_itemname=Activaţi Download Master?
 BasicConfig_EnableDownloadShare_itemname=Activaţi Download Share?
-BasicConfig_EnableiTunesServer_itemname=Activaţi serverul iTunes?
+BasicConfig_EnableiTunesServer_itemname=Activaţi serverul iTunes
 BasicConfig_EnableMediaServer_itemname=Activare UPnP
 BlackList=Listă neagră
 Block=Blocare
@@ -1965,7 +1976,9 @@ btn_go=MERGEŢI
 btn_goSetting=Acces setări
 btn_remove=Eliminare
 btn_send=Trimite
+btn_resend=Retrimite
 btn_to_WAN=setările WAN
+btn_verify=Verifică
 Capability=Capabilitate
 Captcha=Captcha
 Captcha_note=Introduceţi captcha.
@@ -1976,7 +1989,7 @@ ChooseOthers_Hint=Alegeți alte opțiuni și încercați din nou.
 collect_no_info_SWISS=Nu colectează informații despre utilizatori și este guvernat de legile privind confidențialitate din Elveția.
 Client_Name=Nume client
 Client_Icon=Pictograma
-Client_Icon_change=Change Icon
+Client_Icon_change=Schimbă pictograma
 Client_Icon_overload=Pictograma client depășește limita de încărcare, eliminați cel puțin o pictogramă client, apoi încercați să încărcați din nou.
 Clientlist_block_internet=Blocare acces la internet
 Clientlist_block_internet_max=Limita maximă este de 16 clienți. Verificați lista de clienți la programarea orei.
@@ -2111,7 +2124,7 @@ CTL_finished=Finalizată
 CTL_format=Formatare
 CTL_Generate=Generare
 CTL_help=Ajutor
-CTL_later=Later
+CTL_later=Mai târziu
 CTL_link=Link
 CTL_localdevice=Dispozitiv local
 CTL_login=Login
@@ -2122,15 +2135,16 @@ CTL_reconnection=Reconectare automată
 CTL_refresh=Reîmprospătare
 CTL_Reset_OOB=Resetare
 CTL_restore=Restaurare
+CTL_restore_again=Restaurați din nou
 CTL_scan=Scanare
 CTL_search=Căutare
 CTL_secure=Securizare ruter
 CTL_upgrade=Actualizare
 CTL_upload=încărcare
-CTL_upload_img=Upload image
+CTL_upload_img=Încarcă imagine
 CTL_initialize=Initialize
 Current=Stare conexiune
-Current_peak=Peak
+Current_peak=Vârf
 Current_band=Frecvenţă curentă
 current_settings=Setări curente
 Custom=Personalizată
@@ -2158,6 +2172,9 @@ DDNS_https_cert_alert=Selectați fișierul corect cu certificatul SSL.
 DDNS_ipv6_update=Actualizare IPv6
 DDNS_ipv6_update_desc=În cazul în care mediul de rețea al clientului utilizează o adresă de rețea IPv6, activarea acestei caracteristici va rezolva domeniul la o adresă de rețea IPv6 mai întâi la accesarea dispozitivului la distanță.
 DDNS_ssl_cert=Certificat SSL
+DDNS_status=Stare DDNS
+DDNS_reg_result=Rezultatul înregistrării DDNS
+DDNS_root_ca=Certificat rădăcină/Certificat intermediar
 DDNS_termofservice_Title=Termenii serviciului
 DDNS_transfer=Transfer ASUS DDNS name
 DDNS_verification_enable=Verificare IP WAN şi nume gazdă
@@ -2179,10 +2196,10 @@ Device_type_03_AP=Punct de acces
 Device_type_04_NS=NAS
 Device_type_05_IC=Cameră IP
 Device_type_06_OD=Alte dispozitive
-deviceDiscorvy2=În modul Repeater (Repetator), adresa IP alocată prin DHCP se modifică. Instalaţi şi utilizaţi <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a>  pentru a obţine noua adresă IP a ruterului wireless.
-deviceDiscorvy3=În modul punct de acces, adresa IP atribuită prin DHCP se schimbă. Instalaţi şi utilizaţi <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">utilitarul de descoperire a dispozitivelor</a>   pentru a detecta adresa IP a routerului wireless.
-AiMesh_deviceDiscorvy3=Dacă Ruterele AiMesh sunt în modul AP, adresa IP atribuită prin DHCP se schimbă. Pentru detectarea adresei IP a unui ruter, instalaţi şi utilizaţi <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> (Utilitarul Descoperire dispozitiv).
-deviceDiscorvy4=În modul Media Bridge, adresa IP alocată prin DHCP se modifică. Instalaţi şi utilizaţi <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a>  pentru a obţine noua adresă IP a ruterului wireless.
+deviceDiscorvy2=În modul Repeater (Repetator), adresa IP alocată prin DHCP se modifică. Instalaţi şi utilizaţi <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a>  pentru a obţine noua adresă IP a ruterului wireless.
+deviceDiscorvy3=În modul punct de acces, adresa IP atribuită prin DHCP se schimbă. Instalaţi şi utilizaţi <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">utilitarul de descoperire a dispozitivelor</a>   pentru a detecta adresa IP a routerului wireless.
+AiMesh_deviceDiscorvy3=Dacă Ruterele AiMesh sunt în modul AP, adresa IP atribuită prin DHCP se schimbă. Pentru detectarea adresei IP a unui ruter, instalaţi şi utilizaţi <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> (Utilitarul Descoperire dispozitiv).
+deviceDiscorvy4=În modul Media Bridge, adresa IP alocată prin DHCP se modifică. Instalaţi şi utilizaţi <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a>  pentru a obţine noua adresă IP a ruterului wireless.
 DeviceSecurity11a_display1_sectiondesc=Filtrul MAC wireless vă permite să controlaţi pachetele de la dispozitivele cu adrese MAC specificate în reţeaua LAN.
 DHCP_query_freq=Frecvenţă interogare DHCP
 DHCPaggressive=Mod agresiv
@@ -2359,13 +2376,16 @@ Enable_ncb_Non_Block=Nu se blochează
 Enable_ncb_Limited_Block=Blocare limitată
 Enable_ncb_All_Block=Blocare completă
 Encap_mode_help=Dispozitivul ZVMODELVZ oferă două moduri pentru încapsularea sau transportarea protocoalelor LAN şi WAN prin ATM. Selectaţi modul de încapsulare corespunzător.
+Energy_Saving_conflict_hint1=Comportamentul real poate diferi din cauza interacțiunilor dintre funcția principală și setările de economisire a energiei.
+Energy_Saving_conflict_hint2=Pentru a asigura un comportament consecvent între funcția principală și economisirea energiei, setările curente vor fi aplicate cu prioritate.
+Energy_Saving_affected_setting=Setări afectate: (%@)
 Ethernet_wan=WAN Ethernet
 Excute=Instalare
 Excute_processing=Se instalează...
 External=Doar externă
 Extend_TTL_Value=Extindeţi valoarea TTL
 EZQoS=Gestionare EZQoS a lăţimii de bandă
-EzQoS_bandwidth_note1=Obțineți informațiile legate de lățimea de bandă de la furnizorul de servicii Internet sau accesați adresa <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:#FC0;">http://speedtest.net</a> to check bandwidth.
+EzQoS_bandwidth_note1=Obțineți informațiile legate de lățimea de bandă de la furnizorul de servicii Internet sau accesați adresa <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);">http://speedtest.net</a> to check bandwidth.
 EzQoS_bandwidth_note2=Valoarea implicităeste 0, ceea ce înseamnălățime de bandănelimitată.
 EzQoS_desc=QoS (Quality of Service - Calitatea serviciului) asigură lățime de bandă pentru activități și aplicații cu prioritate.
 EzQoS_desc_Adaptive=<span style="font-weight:bolder;font-size:14px;">QoS Adaptiv</span> asigură lățime de bandă la intrare și la ieșire pentru aplicații și activități cu prioritate prin intermediul unor presetări predefinite prin glisare și fixare: jocuri, redare în flux a conținutului media, VoIP, navigare pe Web și transfer de fișiere.
@@ -2432,11 +2452,11 @@ feedback_email_alert=Formatul adresei de e-mail nu este valabil.
 feedback_email_confirm=Câmpul adresei de E-mail este gol. Sigur doriți să continuați?
 feedback_extra_info=Informaţii suplimentare privind depanarea
 feedback_fail0=Eroare la trimiterea feedbackului. Verificaţi conexiunea la internetşi reîncercaţi.
-feedback_fail1=<span style="color:#FC0;">Sistemul nu s-a putut conecta la serverul de e-mail.</span> Puteţi trimite un e-mail direct la adresa
+feedback_fail1=<span style="color:var(--wrt-badge-warning-color,#FC0);">Sistemul nu s-a putut conecta la serverul de e-mail.</span> Puteţi trimite un e-mail direct la adresa
 feedback_fail2=Copiaţi doar conţinutul de mai josşi lipiţi-l ca fiind conţinutul e-mailului dvs.
 feedback_fail3=Descărcați următoarele fișiere de depanare și adăugați-le ca atașament la e-mail:
 feedback_fail0_new=Sistemul nu a reușit să se conecteze la serverul de feedback.
-feedback_fail1_new=<span>Dacă aveți probleme de utilizare sau aveți nevoie de asistență tehnică, contactați mai întâi Centrul de Servicii pentru Clienți ASUS&nbsp;<a class="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Suport Oficial | ASUS Global)</a>.</span>
+feedback_fail1_new=<span>Dacă aveți probleme de utilizare sau aveți nevoie de asistență tehnică, contactați mai întâi Centrul de Servicii pentru Clienți ASUS&nbsp;<a class="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Suport Oficial | ASUS Global)</a>.</span>
 feedback_fail2_new=De asemenea, puteți trimite fișierul de eroare detectat la router_feedback@asus.com pentru a oferi sugestii de îmbunătățire echipei de dezvoltare. Mulțumim.
 feedback_fail_BindGoogle=Sau puteți să <a id="bind_google">asociați contul dvs. Google</a> pentru a trimite feedback prin e-mail.
 feedback_format_alert=The format is not valid.
@@ -2458,7 +2478,7 @@ feedback_note3=Prin transmiterea feedbackului dvs., sunteţi de acord cu faptul 
 [###MODEL_DEP###][DSL-AX82U][DSL-AC68U][DSL-N55U][DSL-N55U-B]feedback_note3=Prin transmiterea feedbackului dvs., sunteţi de acord cu faptul că ASUS poate utiliza acest feedback pentru a îmbunătăţi produsele sale precum routerul cu modem xDSL.
 feedback_note4=Dacă aveţi o urgenţă, contactaţi echipa locală de asistenţă tehnică.
 feedback_note5=Feedback-ul este în curs. Reboot-ul poate cauza terminarea programului și feedback-ul nu poate fi completat. Vă rugăm să reporniți mai târziu.
-feedback_note6=<span>Acest sistem nu oferă răspunsuri individuale. Dacă aveți probleme de utilizare sau aveți nevoie de asistență tehnică, vă rugăm să contactați Centrul de Servicii pentru Clienți ASUS</span>&nbsp;<a id="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Suport Oficial | ASUS Global)</a>.
+feedback_note6=<span>Acest sistem nu oferă răspunsuri individuale. Dacă aveți probleme de utilizare sau aveți nevoie de asistență tehnică, vă rugăm să contactați Centrul de Servicii pentru Clienți ASUS</span>&nbsp;<a id="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Suport Oficial | ASUS Global)</a>.
 feedback_note7=Echipa noastră profesionistă va fi dedicată să vă servească. Mulțumim.
 feedback_Occasion_interrupt=Întreruperi ocazionale
 feedback_optional=* Opţional
@@ -2619,7 +2639,7 @@ FW_auto_upgrade_desc=Instalați automat actualizările de sistem în timpul nop�
 FW_auto_upgrade_desc1=Unele actualizări care abordează probleme esențiale de securitate sau care respectă cerințe legale/reglementare vor fi totuși instalate automat, chiar dacă actualizarea automată a firmware-ului este dezactivată.
 FW_auto_upgrade_note=Când este activată, routerul instalează automat noul firmware la ora preferată de dumneavoastră.
 FW_beta_check=Doresc să recuperez firmware-ul beta.
-FW_desc0=Obțineți cea mai recentă versiune de firmware din <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/" target="_blank">site-ul de asistență ASUS</a>
+FW_desc0=Obțineți cea mai recentă versiune de firmware din <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/" target="_blank">site-ul de asistență ASUS</a>
 FW_desc1=Vizitaţi site-ul de asistenţă ASUS https://www.asus.com/support/ pentru a obţine cel mai recent firmware.
 fw_downloading=Descărcare Firmware
 FW_item1=ID produs
@@ -2628,9 +2648,9 @@ FW_item2_aiboard=Versiune firmware AI Board
 FW_item5=Fişier firmware nou
 FW_manual_update=Actualizarea manuală a firmware-ului
 FW_n0=Cea mai recentă versiune de firmware include actualizări din versiunea anterioară.
-FW_n2=În cazul în care procesul de upgrade nu reușește, ZVMODELVZ intră automat în modul de urgență. Semnalele LED de pe partea frontală a ZVMODELVZ vor indica o astfel de situație.Vizitați <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS Download Center</a> pentru a descărca utilitarul ASUS Firmware Restoration.
-FW_n3=Check on <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="" target="_blank">FAQ</a> for more instructions.
-FW_n4=Check on <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: #FFCC00;\" href=\"\" target=\"_blank\">FAQ</a> for more instructions.
+FW_n2=În cazul în care procesul de upgrade nu reușește, ZVMODELVZ intră automat în modul de urgență. Semnalele LED de pe partea frontală a ZVMODELVZ vor indica o astfel de situație.Vizitați <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS Download Center</a> pentru a descărca utilitarul ASUS Firmware Restoration.
+FW_n3=Consultați <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="" target="_blank">FAQ</a> pentru instrucțiuni suplimentare.
+FW_n4=Consultați <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: var(--wrt-badge-warning-color,#FFCC00);\" href=\"\" target=\"_blank\">FAQ</a> pentru instrucțiuni suplimentare.
 FW_n5=În ceea ce privește colectarea datelor pentru actualizările de firmware/securitate, consultați „NOTIFICAREA DE CONFIDENȚIALITATE ASUS (pentru actualizări de firmware/securitate)” de la pagina „Administrare -> Confidențialitate”.
 FW_note=Notă:
 FW_note_AiMesh=O actualizare manuală a firmware-ului va actualiza doar routerele/nodurile AiMesh selectate atunci când se utilizează sistemul AiMesh. Asigurați-vă că încărcați versiunea AiMesh corectă pentru fiecare router/nod aplicabil.
@@ -2689,7 +2709,8 @@ Gaming_Server_Acceleration=Accelerarea serverului de jocuri
 Gear_Accelerator=Accelerator dispozitive
 Gear_Accelerator_desc=Prioritizare dispozitiv joc
 Gear_Accelerator_desc1=Prioritizați dispozitivele pe care jucați pentru cea mai bună experiență de gaming.
-Gear_Accelerator_List=Seznam igralnih naprav
+Gear_Accelerator_List=Lista dispozitivelor de joc
+Gear_Accelerator_confirm=Pentru a activa %@, accelerarea hardware va fi dezactivată, ceea ce poate reduce viteza rețelei. Doriți să continuați?
 Game_Ark_Devices_identification=Identificarea dispozitivelor de joc
 Game_Ark_Devices_identification_desc=Identificarea dispozitivelor de joc prioritizează inteligent traficul de rețea pentru dispozitivele conectate.
 Game_Ark_First_desc=GameFirst V este livrat împreună cu plăci de bază, laptopuri și desktopuri ROG pentru a optimiza traficul de rețea pentru jocurile PC online.
@@ -2706,12 +2727,12 @@ GB_account_type2=Cont avansat Router
 GB_ended_date=Încheiat la data
 GB_ended_date_desc=WTFast oferă fiecărui utilizator nou o perioadă de probă de 14 zile, care se referă numai contul avansat cu mai multe opțiuni de server proxy. La expirarea perioadei de probă, vă mai puteți bucura de un abonament pe viață cu caracteristici de cont de bază, care este gratuit și cu limite de trafic.
 GB_ended_date_type0=Utilizați acum contul de bază gratuit router.
-GB_management_note1=Atunci când utilizați Game Boost furnizat de WTFast, sunteți de acord cu <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:#008DE5;">Termenii de utilizare</a></span> și <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:#008DE5;">Politica de confidențialitate</a></span> WTFast.
-GB_management_note2=După cum se menționează în renunțarea la responsabilitate de pe pagina noastră de produse, WTFast continuă să lucreze la dezvoltarea suportului pentru jocuri de consolă. Pentru o listă a jocurilor care sunt suportate în prezent, consultați <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:#008DE5;">această listă</a>. (actualizată în mod regulat)
+GB_management_note1=Atunci când utilizați Game Boost furnizat de WTFast, sunteți de acord cu <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Termenii de utilizare</a></span> și <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Politica de confidențialitate</a></span> WTFast.
+GB_management_note2=După cum se menționează în renunțarea la responsabilitate de pe pagina noastră de produse, WTFast continuă să lucreze la dezvoltarea suportului pentru jocuri de consolă. Pentru o listă a jocurilor care sunt suportate în prezent, consultați <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">această listă</a>. (actualizată în mod regulat)
 GB_management_note3=Performanța GPN variază în funcție de ISP sau locația dvs. Asigurați-vă că firmware-ul este mereu actualizat.
-GB_management_note4=Cum selectez un server GPN bun? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:#008DE5;">Aici</a></span> Cum pot obține cea mai bună experiență de joc? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:#008DE5;">Aici</a></span>
-GB_management_note5=Cum folosesc WTFast pe routerul ASUS? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:#008DE5;">Aici</a></span>
-GB_mobile=Mobile Game Mode
+GB_management_note4=Cum selectez un server GPN bun? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Aici</a></span> Cum pot obține cea mai bună experiență de joc? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Aici</a></span>
+GB_management_note5=Cum folosesc WTFast pe routerul ASUS? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Aici</a></span>
+GB_mobile=Mod Joc Mobil
 GB_mobile_desc=Accelerați-vă jocurile pe mobil
 GB_mobile_desc1=Descărcați și instalați aplicația ASUS Router. Activați modul joc pe mobil în aplicație pentru a asigura cea mai bună experiență de gaming.
 GB_mobile_desc_short=Descărcați și instalați aplicația ASUS Router.
@@ -2832,7 +2853,7 @@ HSDPAConfig_hsdpa_enable_hint2=Dacă doriţi să schimbaţi tipul de conexiune, 
 HSDPAConfig_hsdpa_enable_itemname=Activare modem USB
 HSDPAConfig_hsdpa_mode_itemname=Mod modem USB
 HSDPAConfig_hsdpa_mode_itemdesc=Conectarea adaptorului USB în ZVMODELVZ şi transformarea acestuia într-un ruter mobil.
-HSDPAConfig_hsdpa_mode_status=USB Modem Status
+HSDPAConfig_hsdpa_mode_status=Stare modem USB
 HSDPAConfig_isp_itemdesc=Selectaţi furnizorul dvs. de servicii Internet (ISP).
 HSDPAConfig_ISP_itemname=ISP
 HSDPAConfig_password_itemdesc=Introduceţi parola.
@@ -3013,8 +3034,8 @@ IPv6_WAN_Selection=Selecție WAN
 IPv6_xpass=Xpass
 isp_br_gvt_note=Dacă sunteţi utilizator GTV, introduceţi numele de utilizator <b>turbonet@turbonet</b> şi parola <b>gvt25</b>. În caz contrar, introduceţi numele de utilizator şi parola furnizate de ISP-ul dvs.
 isp_profile=Selectaţi profilul ISP-ului pentru a configura setări speciale legate de acesta.
-iTunesServer=iTunes Server
-iTunesServer_itemname=iTunes Server Name
+iTunesServer=Server iTunes
+iTunesServer_itemname=Nume server iTunes
 Jitter=Jitter
 JS_access_type=Please select at least one Access Type.
 JS_badconnection=Conectarea la dispozitivul ZVMODELVZ a eşuat. Faceţi clic pe OK pentru a trimite din nou solicitarea de conectare sau pe Revocare pentru a opri procesul de conectare.
@@ -3113,7 +3134,7 @@ LANHostConfig_x_DDNS_retrieve_IP_note=[Internal] Înregistrați un nume de domen
 LANHostConfig_x_DDNS_update_confirm=Adresa IP, serverul şi numele de gazdănu s-au modificat de la ultima actualizare. Dacădoriţi săactualizaţi, faceţi clic pe [Da].
 LANHostConfig_x_DDNSEnable_itemname=DDNS
 LANHostConfig_x_DDNSEnable_sectiondesc=DDNS (Dynamic Domain Name System – sistem de denumire dinamică a domeniilor) este un serviciu care permite clienţilor din reţea să se conecteze la routerului wireless chiar şi cu o adresă IP publică dinamică, prin intermediul numelui de domeniu înregistrat.
-LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:#FFFFFF;">Pentru informații suplimentare, consultați <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">această întrebare frecventă</a>.
+LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:var(--wrt-text-color,#FFFFFF);">Pentru informații suplimentare, consultați <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">această întrebare frecventă</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc3=Numele gazdei a fost înregistrat cu succes. Puteţi utiliza adresa "[hostname].asuscomm.com" pentru a accesa serviciul din reţeaua de acasă, prin WAN. Folosiţi adresa "[hostname].asuscomm.com" pentru a vă accesa reţeaua de la distanţă.<p>Mergeţi la Setări avansate > WAN pentru a configura setările de redirecţionare a porturilor sau setările DMZ pentru a permite altor clienţi WAN să vă acceseze reţeaua de la distanţă.<p> Dacă doriţi să configuraţi routerul wireless de la distanţă, mergeţi <a href="/Advanced_System_Content.asp?af=misc_http_x" target="_blank" style="text-decoration: underline; font-family:Lucida Console;">aici</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc4=Routerul actual utilizează un IP privat.
 LANHostConfig_x_DDNSEnable_faq1=Introducere și configurare DDNS
@@ -3340,7 +3361,7 @@ month=luna
 MoreConfig=Mai multe opţiuni de configurare
 MPPE_Encryp=Criptare MPPE
 mssid_time_remaining=Timp rămas
-multiservice_WAN=Multi-Service WAN
+multiservice_WAN=WAN multi-serviciu
 NAT_Acceleration=Accelerare NAT
 NAT_AccelerationDesc=Când este activată opțiunea Accelerare NAT, switch-ul poate gestiona singur pachetele de rețea și poate ocoli procesorul. Se poate mări debitul NAT dar este posibil ca anumite funcții să nu aibă precizie, cum ar fi programare timp, QoS tradițional și limitator lățime de bandă în rețeaua oaspete etc. Dacă setați opțiunea Accelerare NAT pe automat, aceasta va fi dezactivată automat la activarea acestor funcții.
 NAT_Acceleration_ctf_disable=Traficul NAT este procesat de CPU.
@@ -3355,7 +3376,7 @@ NAT_IPSec_Passthrough=Trecere IPSec
 NAT_L2TP_Passthrough=Trecere L2TP
 NAT_lacp=Legătură / Agregare link
 NAT_lacpDesc=Acest element are diferite nume: Agregare porturi / Legătură / Formare echipă/Agregare link / 802.3ad
-NAT_lacp_disable_note=Change IPTV/ VOIP port settings to LAN5/ LAN6 will disable Bonding/ Link aggregation function. Are you sure to do it?
+NAT_lacp_disable_note=Schimbarea setărilor portului IPTV/ VOIP la LAN5/ LAN6 va dezactiva funcția Bonding/ Link aggregation. Sunteți sigur că doriți să faceți acest lucru?
 NAT_lacp_note=Activați compatibilitatea Bonding (802.3ad) pentru clientul dvs. prin cablu, apoi conectați clientul la portul LAN1 sau LAN2 al routerului.
 NAT_passthrough_desc=Activaţi opţiunea NAT Passthrough (Trecere NAT) pentru a permite unei reţele private virtuale (Virtual Private Network – VPN) să treacă prin router şi să ajungă la clienţii din reţea.
 NAT_PPTP_Passthrough=Trecere PPTP
@@ -3415,8 +3436,8 @@ note_hide_SSID_WPS=Dacă doriți să activați WPS, trebuie mai întâi să deza
 note_up_to_date=Note: New patch will be updated regularly, please keep your firmware stay up to date.
 Notice=Notificare
 Notification_Item=Element de notificare
-Notification_security_update=Security Update Notification
-Notification_security_desc=Monitor this log to stay informed about system security changes that may affect your network.
+Notification_security_update=Notificare actualizare securitate
+Notification_security_desc=Monitorizați acest jurnal pentru a rămâne informat despre modificările de securitate ale sistemului care pot afecta rețeaua dvs.
 Now=Acum
 number_of_client=Numărul clientului
 NSlookup_help=Accesaţi <a href="https://iplookup.asus.com/nslookup.php" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">https://iplookup.asus.com/nslookup.php</a> pentru a căuta o adresă statică pentru utilizare cu serviciul ASUS DDNS.
@@ -3440,7 +3461,7 @@ ParentalCtrl_default=În mod implicit, accesul la internet este limitat pe inter
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_default=În mod implicit, accesul la internet este limitat pe intervale de timp.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]ParentalCtrl_default=Dispozitivele care sunt adăugate la funcția de control parental vor avea accesul la internet restricționat în mod implicit.
 ParentalCtrl_deny=Respingere
-ParentalCtrl_disable_NAT=Dezactivați <a id="disable_NAT" style="color:#FC0;text-decoration: underline;" href="" target="_blank">Accelerare NAT</a> pentru un control mai precis al programării.
+ParentalCtrl_disable_NAT=Dezactivați <a id="disable_NAT" style="color:var(--wrt-badge-warning-color,#FC0);text-decoration: underline;" href="" target="_blank">Accelerare NAT</a> pentru un control mai precis al programării.
 ParentalCtrl_Enable=Activare control parental
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_Enable=Activare Controlul accesului dispozitivului
 ParentalCtrl_Enable_TS=Activare Time Scheduling (Programare în timp)
@@ -3749,6 +3770,7 @@ select_service=Selectaţi numele serviciului.
 select_usb_device=Selectare dispozitiv USB
 select_usb_mode=USB Mode
 select_wireless_MAC=Selectaţi adresa MAC a clientului wireless.
+Sending_str=Se trimite…
 Send_mail=Trimitere e-mail
 Serial_Number=Număr de serie
 Servers_Center=Centru servere
@@ -3773,7 +3795,8 @@ Setting_initialize_desc_ai=Resetarea routerului principal la setările din fabri
 Setting_lock_main_unit=Blochează unitatea principală
 Setting_lock_main_unit_desc1=Când este activată, acest dispozitiv este limitat la rolul de unitate principală și nu poate intra într-o altă rețea ca nod.
 Setting_lock_main_unit_desc2=Notă: Modificarea acestui statut va declanșa o resetare la setările din fabrică și va necesita reconfigurare.
-Setting_lock_main_unit_confirm=Modificarea statutului „Blochează unitatea principală” necesită o resetare la setările din fabrică. Aceasta va șterge toate setările actuale de rețea.
+Setting_lock_main_unit_desc3=Dacă aveți o rețea mesh activă cu noduri Nodes conectate la acest CAP, rețineți că aceste noduri Nodes trebuie, de asemenea, resetate manual după resetarea CAP la setările din fabrică.
+Setting_lock_main_unit_confirm=Modificarea statutului „Blochează unitatea principală” necesită o „resetare la setările din fabrică”. Aceasta va șterge toate setările actuale de rețea.
 Setting_save_itemdesc=Faceţi clic pe [Salvare] pentru a salva setările de configuraţie ale dispozitivului ZVMODELVZ într-un fişier. NOTĂ: Acest fişier de rezervă vă permite să restabiliţi setările de configuraţie ale routerului.
 Setting_save_itemdesc_ai=Salvarea setărilor nu include configurațiile sau datele sistemului AI Board.
 Setting_save_itemname=Salvare setare
@@ -3782,7 +3805,7 @@ Setting_upload_hint=Formatul sau calea fişierului nu este nevalidă.
 Setting_upload_itemdesc=Specificaţi calea şi numele fişierului de setări şi apoi faceţi clic pe [Upload] (Încărcare) pentru a scrie fişierul în dispozitivul ZVMODELVZ. Aşteptaţi 60 de secunde pentru ca dispozitivul ZVMODELVZ să repornească.
 [###MODEL_DEP###][RT-N65U]Setting_upload_itemdesc=Specificaţi calea şi numele fişierului de setări şi apoi faceţi clic pe Upload (Încărcare). Aşteptaţi 90 de secunde pentru ca dispozitivul ZVMODELVZ să repornească.
 Setting_upload_itemname=Restabilire setări
-Setting_remove_passwd=Click on this checkbox if you want to share the config file for debugging. Since the original password in the config file will be removed, please do not import the file into your router.
+Setting_remove_passwd=Bifați această casetă dacă doriți să partajați fișierul de configurare pentru depanare. Deoarece parola originală va fi eliminată din fișier, nu importați fișierul în routerul dvs.
 Setting_ai_board=Setări AI Board
 Setting_ai_board_fw_ver=Versiune firmware AI Board
 Setting_ai_dk_Apps=Aplicații Docker
@@ -3819,8 +3842,11 @@ Setting_rescue_ai_FWUpload=Încărcați firmware-ul
 Setting_rescue_ai_FWInstall=Instalați firmware-ul
 Setting_rescue_ai_appInstall=Instalați APP
 Setting_rescue_ai_complete=Salvarea AI Board a fost finalizată.
+Setting_rescue_ai_Interrupted=Restaurarea AI Board a fost întreruptă
+Setting_rescue_ai_Interrupted_desc1=Procesul de restaurare a eșuat din cauza unei întreruperi neașteptate sau a unei pierderi de alimentare.
+Setting_rescue_ai_Interrupted_desc2=Asigurați-vă că există o conexiune stabilă la alimentare și încercați din nou.
 Setting_prog_ai_currStep=Etapa curentă:
-Setting_prog_ai_Note=Notă: Sistemul funcționează normal. Vă rugăm să nu întrerupeți operațiunea.
+Setting_prog_ai_Note=Notă: Sistemul funcționează normal. Nu întrerupeți procesul și asigurați-vă că există o sursă de alimentare și o conexiune la internet stabile.
 Setting_prog_ai_serveralTime=Acest proces poate dura câteva minute.
 Settings=Setări
 Setup_note=Faceți clic <a id="redirect_to_setup">aici</a> pentru a modifica. Vă rugăm consultați <a id="redirect_to_FAQ">secțiunea Întrebări frecvente</a> entru mai multe detalii.
@@ -3876,7 +3902,7 @@ smart_connect_STA=Politică selectare STA
 smart_connect_STA_counts=Contorizări
 smart_connect_STA_dwell=Timp de staționare
 smart_connect_STA_window=Durată afișare fereastră
-smart_connect_status=Smart Connect Status
+smart_connect_status=Stare Smart Connect
 smart_connect_Steering=Stare declanșator cu direcționare
 smart_connect_Bandwidth=Utilizare lățime de bandă
 smart_sync=AiCloud Sync
@@ -3987,10 +4013,33 @@ SDN_Scenarios_desc=Doriți să adăugați o rețea wireless suplimentară pentru
 SDN_MainFH_for_clients=MLO Fronthaul pentru clienți
 SDN_MainFH_keep_Hint=At least one main network must be retained.
 SDN_MainFH_Smart_Connect_Hint=Deoarece regula Smart Connect a fost creată, vă rugăm să alegeți o singură bandă WiFi.
+SDN_mlo_switch_fh_hint1=Este permis un singur fronthaul MLO activ.
+SDN_mlo_switch_fh_hint2=Doriți să dezactivați MLO Fronthaul pentru %1$@ și să activați %2$@?
 SDN_Sync_To_All_Node=Sincronizați cu toate nodurile AiMesh
 SDN_Sync_To_All_Node_Hint=Dacă nodurile AiMesh sunt modele mai vechi sau WiFi-ul a atins capacitatea maximă, nu va fi posibilă sincronizarea tuturor nodurilor AiMesh. Vă rugăm să selectați nodurile de sincronizat din meniul de mai jos.
 SDN_Sync_limitation_Hint=Pentru nodurile AiMesh mai vechi, există limitări în sincronizarea tuturor benzilor.
 SDN_MainFH_WiFi_conflict=%1$@ bandă(ele) WiFi au fost utilizate. Rețelele %2$@ (%3$@) în conflict vor fi eliminate după aplicarea setărilor.
+SDN_Auth_WPA3_only_subtext1=Cel mai înalt nivel de securitate, doar conexiuni WPA3.
+SDN_Auth_WPA3_only_subtext2=(Notă: Dispozitivele vechi fără suport WPA3 este posibil să nu se poată conecta.)
+SDN_Auth_WPA3_dual=Opțiunea standard de securitate în mod dual.
+SDN_Auth_WPA3_dual_desc=Dispozitivele moderne utilizează WPA3, iar cele vechi WPA2.
+SDN_Auth_WPA3_dual_mode=Mod compatibilitate
+SDN_Auth_WPA3_dual_mode_subtext1=Opțiune îmbunătățită de securitate în mod dual optimizată pentru dispozitive mai vechi cu suprascriere RSN.
+SDN_Auth_WPA3_dual_mode_subtext2=Asigură conectarea dispozitivelor vechi, păstrând dispozitivele moderne pe WPA3.
+SDN_Auth_WPA3_dual_mode_subtext3=(Notă: Unele dispozitive din generația intermediară pot utiliza WPA2.)
+SDN_Auth_WPA3_subtext=O opțiune de securitate îmbunătățită, optimizată pentru dispozitivele mai vechi prin utilizarea RSN overriding. Oferă securitate maximă dispozitivelor moderne, menținând în același timp conexiuni stabile pentru clienții care nu sunt moderni.
+SDN_WiFi_Mode_Only6G_Hint=Pentru a respecta standardele globale WiFi, toate rețelele din banda de 6 GHz trebuie să utilizeze aceeași generație WiFi.
+SDN_WiFi_Mode_24G_Hint=Banda de 2,4 GHz funcționează conform setărilor modului WiFi.
+SDN_Compatibility_Mode_Off=Modul de compatibilitate este dezactivat.
+SDN_Compatibility_Mode_24=Mod de compatibilitate 2,4 GHz
+SDN_Balance_Mode=Echilibrat
+SDN_Balance_Mode_desc=Echilibru optim între performanță și compatibilitatea dispozitivelor.
+SDN_Balance_Mode_desc1=Banda de 2,4 GHz funcționează în modul WiFi 6.
+SDN_Ultra_Compatibility_Mode=Compatibilitate maximă
+SDN_Ultra_Compatibility_Mode_desc=Asigură o conectivitate stabilă pentru dispozitivele IoT mai vechi sau existente.
+SDN_Ultra_Compatibility_Mode_desc1=Banda de 2,4 GHz funcționează în modul WiFi 4.
+SDN_IPv6_FreeWiFi_Hint=Notă: Free WiFi nu acceptă mediile doar cu IPv6. Asigurați-vă că IPv4 sau Dual-Stack este activat pentru redirecționarea clientului.
+SDN_IPv6_MessageBoard_Hint=Notă: Message Board nu acceptă mediile doar cu IPv6. Asigurați-vă că IPv4 sau Dual-Stack este activat pentru client.
 t2BC=Configuraţie de bază
 t2LAN=LAN
 t2Misc=Diverse
@@ -4066,7 +4115,9 @@ TZ02=Insula Midway, Samoa
 TZ03=Hawaii
 TZ04=Alaska
 TZ05=Ora Pacificului (SUA, Canada)
+TZ05_1=Vancouver, Whitehorse
 TZ06=Ora zonei muntoase (SUA, Canada)
+TZ06_1=Edmonton, Yellowknife
 TZ07=Arizona
 TZ08=Mazatlan
 TZ10=Saskatchewan
@@ -4222,7 +4273,7 @@ usb_tls_conflict=Opțiunea Permite conectare anonimă este în conflict cu setă
 usb_tls_conflict_WANacc=Acces WAN este în conflict cu setările TLS.
 usb_uninstalling=Se dezinstalează aplicaţia din dispozitivul de stocare USB...
 usb_unmount=Funcţia USB este dezactivată.
-use_DevDiscoveryUtil=Instalaţi şi utilizaţi <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">utilitarul de descoperire a dispozitivelor</a> pentru a detecta adresa IP a routerului wireless.
+use_DevDiscoveryUtil=Instalaţi şi utilizaţi <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">utilitarul de descoperire a dispozitivelor</a> pentru a detecta adresa IP a routerului wireless.
 Username=Nume utilizator
 Username_Pwd=Nume utilizator şi parolă
 UserQoS_desc=Din lista verticală cu reguli QoS definite de utilizator, puteţi stabili prioritatea pentru aplicaţiile sau dispozitivele din reţea folosind cinci niveluri. În funcţie de nivelul de prioritate, QoS utilizează următoarele metode la trimiterea pachetelor de date:<ul><li>Modifică ordinea pachetelor transmise prin reţea, fapt ce se referă la ordinea în care pachetele sunt trimise către Internet.</li><li>Pachetele cu prioritate redusă sunt omise pentru a se asigura transmiterea pachetelor cu prioritate ridicată. Prioritatea ridicată pentru pachetele de ieşire se va aplica şi pentru pachetele de intrare.</li><li>Dacă nu sunt transmise pachete de la aplicaţiile cu prioritate ridicată, întreaga rată de transmitere a conexiunii Internet va fi disponibilă pentru pachetele cu prioritate redusă.</li></ul>
@@ -4232,6 +4283,7 @@ UserQoS_transferred_hint=În coloana [Transferat], setaţi limita de trafic în 
 UserQoSRule_desc_zero=Activaţi QoS apoi setaţi regulile definite de utilizator.
 UserQoSRule_desc_one=În mod implicit, prioritatea pentru lăţimea de bandă pentru încărcare şi descărcare este "Redusă". Dacă nu există o regulă cu privire la prioritatea pentru lăţimea de bandă, prioritatea pentru lăţimea de bandă pentru încărcare şi descărcare este "Redusă".
 Utility=Utilitar
+Verifying_str=Se verifică…
 Video_Find=Găsiţi videoclipuri demonstrative
 Video_Link1=Faceţi clic pentru a deschide tutorialul video.
 View_List=Vizualizare listă
@@ -4330,7 +4382,7 @@ vpn_openvpn_required_acc_pwd=Sunt necesare numele de utilizator și parola pentr
 vpn_openvpnc_importCA=Import fişier CA
 vpn_openvpnc_importovpn=Import fişire .ovpn
 vpn_openvpnc_manual=Importaţi fişierul CA sau editaţi fişierul .ovpn manual.
-vpn_privateIP_hint=Routerul wireless utilizează în prezent o adresă IP WAN privată (192.168.x.x, 10.x.x.x sau 172.16.x.x). Consultați <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:#FC0;'>Întrebări frecvente</a> și configurați redirecționarea porturilor.
+vpn_privateIP_hint=Routerul wireless utilizează în prezent o adresă IP WAN privată (192.168.x.x, 10.x.x.x sau 172.16.x.x). Consultați <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>Întrebări frecvente</a> și configurați redirecționarea porturilor.
 vpn_preshared_key=Pre-shared Key (Secret)
 vpn_preshared_key_hint=Enter Pre-shared Key
 vpn_switch_confirm=ASUSWRT acceptă doar o singură conexiune la serverul VPN la un moment dat. Dacă activaţi opţiunea \"OpenVPN server\" (Server OpenVPN), opţiunea \"PPTP server\" (Server PPTP) este dezactivată în mod automat. Sunteţi sigur că doriţi să activaţi funcţia VPN server (Server VPN)?
@@ -4401,6 +4453,16 @@ vpn_wireguard_client_faq=Cum se configurează clientul WireGuard® în VPN Fusio
 vpn_wireguard_client_config=Please use the following configuration to set up your WireGuard client.
 vpn_wireguard_qr_desc=Please download WireGuard App from Google Play or Apple Store, then use the APP to scan the QR Code to connect to this server.
 vpn_wireguard_qr_foriOS=For iOS users, you must assign a specific DNS server to WireGuard app before accessing the internet through WireGuard Server.
+vpn_wireguard_ep_mode=Mod Endpoint
+vpn_wireguard_ep_src=Sursa numelui de gazdă
+vpn_wireguard_ep_system_ddns=DDNS de sistem
+vpn_wireguard_ep_custom=Nume de gazdă personalizat
+vpn_wireguard_ep_desc=Modul Auto determină automat Endpoint pe baza stării curente a rețelei. În modul DDNS, puteți selecta un DDNS configurat în setările sistemului sau puteți introduce un nume de gazdă personalizat.
+vpn_wireguard_ep_custom_desc=Numele de gazdă personalizat este independent de setările DDNS din setările de sistem. Pentru a asigura o conexiune reușită, asigurați-vă că numele de gazdă personalizat poate fi rezolvat corect la adresa IP a routerului.
+vpn_wireguard_ep_ddns_hint=DDNS nu este activat. Accesați „Setări > WAN > DDNS” pentru a finaliza configurarea. În caz contrar, acest Endpoint nu va funcționa corect.
+vpn_wireguard_ep_ddns_disable_confirm=După ce DDNS este dezactivat, este posibil ca profilurile VPN care utilizează acest DDNS să nu poată stabili o conexiune. Doriți să continuați?
+vpn_wireguard_ep_custom_blank=Introduceți un nume de gazdă personalizat.
+vpn_wireguard_ep_custom_invalid=Format nevalid pentru numele gazdei. Introduceți un FQDN valid, cum ar fi vpn.example.com. Nu includeți http://, https://, un număr de port sau o cale URL.
 vpnc_auth=Autentificare VPN
 vpnc_auth_for_clients=Autentificare VPN pentru clienții VPN
 vpnc_Client_Cert=Certificat client
@@ -4426,6 +4488,32 @@ vpnc_profile_assignALL=Aplicare la toate dispozitivele
 vpnc_profile_assignDevice=Atribuire dispozitive la acest profil
 vpnc_profile_del=Ștergeți profilul
 vpnc_profile_select_suggest=Selectați alt profil VPN pentru a anula WAN-ul implicit de internet.
+vpnc_ssk_login=Conectați-vă la contul dvs. Surfshark
+vpnc_ssk_login_note=Introduceți contul și parola.
+vpnc_ssk_invalid_long=Contul sau parola este prea lungă (max. 128 de caractere).
+vpnc_ssk_invalid_char=Contul sau parola conține caractere nevalide.
+vpnc_ssk_invalid_format=Format nevalid pentru cont sau parolă.
+vpnc_ssk_login_AuthCode=Introduceți codul de verificare din 6 cifre trimis pe e-mail sau generat de aplicația Authenticator.
+vpnc_ssk_login_AuthCode_enter=Introduceți codul de verificare din 6 cifre.
+vpnc_ssk_login_AuthCode_confirm=Nu ați primit codul de verificare? Faceți clic pe „Retrimite” de mai sus și vă vom trimite un nou cod de verificare.
+vpnc_ssk_login_AuthCode_resender=Retrimiterea este disponibilă în %1$@s
+vpnc_ssk_login_ErrMsg1=Cont sau parolă incorectă.
+vpnc_ssk_login_ErrMsg2=Serverul Surfshark nu este disponibil. Încercați din nou mai târziu.
+vpnc_ssk_login_ErrMsg4=Eroare de configurare. Verificați setările.
+vpnc_ssk_login_ErrMsg41=Eroare de configurare.
+vpnc_ssk_login_ErrMsg5=Eroare de rețea. Nu se poate conecta la Surfshark.
+vpnc_ssk_login_ErrMsgDef=Conectarea a eșuat. Încercați din nou.
+vpnc_ssk_login_success=Conectarea la Surfshark a reușit.
+vpnc_ssk_login_success_note=Close this notice and complete your VPN settings.
+vpnc_ssk_logout_confirm=Sunteți sigur că doriți să vă deconectați din cont?
+vpnc_ssk_Failed_resend=Retrimiterea codului a eșuat. Încercați din nou.
+vpnc_ssk_Failed_verification=Cod de verificare nevalid. Încercați din nou.
+vpnc_ssk_KeyPair_max=Contul dvs. Surfshark a atins numărul maxim de perechi de chei VPN (50). Pentru a crea o nouă conexiune VPN, eliminați perechile de chei neutilizate din contul dvs. Surfshark, apoi încercați din nou.
+vpnc_ssk_Missing_credent=Lipsesc datele de autentificare. Închideți aplicația și conectați-vă din nou.
+vpnc_ssk_Timeout_login=Cererea de conectare a expirat. Încercați din nou.
+vpnc_ssk_Timeout_resend=Retrimiterea a expirat. Încercați din nou.
+vpnc_ssk_Timeout_verification=Cererea de verificare a expirat. Încercați din nou.
+vpnc_ssk_Timeout_network=Eroare de rețea. Încercați din nou.
 vpnc_step=Pentru a porni o conexiune VPN, urmaţi paşii de mai jos:
 vpnc_step1=Adăugaţi un profil
 vpnc_step2=Selectaţi un tip de conexiune VPN
@@ -4433,6 +4521,7 @@ vpnc_step3=Introduceţi informaţiile de autentificare VPN oferite de furnizorul
 vpnc_title=Client VPN
 vpnc_peer=Pereche
 vpnc_pppoe_dis_nat_confirm=Când utilizați un client VPN cu o conexiune PPPoE, routerul dvs. va reporni automat pentru a dezactiva Accelerare NAT. Sigur doriţi să continuaţi?
+vpnc_kill_switch_desc=If enabled, this feature blocks all internet traffic instantly if the VPN drops to prevent IP and data leaks. Connection will be suspended until the VPN successfully reconnects or the feature is disabled.
 WAN_barrier=Barieră
 WAN_Cfg_Ethernet_WAN=Configuraţi setările de reţea WAN Ethernet pentru dispozitivul ZVMODELVZ.
 WAN_default_route=Rută prestabilită
@@ -4497,7 +4586,7 @@ WANTCPMSSOptionText=Opțiune TCP MSS
 WANTCPMSSOptionComm1Text=octeţi
 WANVLANIDText=VLAN ID
 WANAggregation=Agregare WAN
-WANAggregation_desc=Funcţia de agregare WAN combină două conexiuni de reţea pentru a creşte viteza WAN până la 2 Gbps. Conectaţi portul #WAN şi portul LAN 4 ale routerului la porturile LAN ale modemului (asiguraţi-vă că utilizaţi două cabluri cu aceeaşi specificaţie). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Întrebări frecvente despre agregarea WAN</a>
+WANAggregation_desc=Funcţia de agregare WAN combină două conexiuni de reţea pentru a creşte viteza WAN până la 2 Gbps. Conectaţi portul #WAN şi portul LAN 4 ale routerului la porturile LAN ale modemului (asiguraţi-vă că utilizaţi două cabluri cu aceeaşi specificaţie). <a id="wanAgg_faq" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">Întrebări frecvente despre agregarea WAN</a>
 WANAggregation_enable=Activare agregare WAN
 WANAggregation_disable_dualwan=Routerul dvs. are activată funcţia Dual WAN. Activarea funcţiei de agregare WAN va dezactiva funcţia Dual WAN. Sigur doriţi să continuaţi?
 WANAggregation_disable_WANAggregation=Routerul dvs. are activată funcţia de agregare WAN. Activarea funcţiei Dual WAN va dezactiva funcţia de agregare WAN. Sigur doriţi să continuaţi?
@@ -4506,13 +4595,13 @@ WANAggregation_PortConflict_hint2=Funcţia IPTV utilizează portul LAN 4 al rout
 WANAggregation_disable_IPTVDualWAN=Routerul dvs. are activate atât funcţia Dual WAN, cât şi funcţia IPTV. Activarea funcţiei de agregare WAN va dezactiva funcţiile Dual WAN şi IPTV pentru a. preveni conflictele între porturi. Sigur doriţi să continuaţi?
 WANAggregation_help_WAN=Asiguraţi-vă că portul #WAN al routerului şi portul LAN al modemului au fost conectate utilizându-se două cabluri cu aceeaşi specificaţie.
 WANAggregation_help_LAN=Asiguraţi-vă că portul LAN 4 al routerului şi portul LAN al modemului au fost conectate utilizându-se două cabluri cu aceeaşi specificaţie.
-WANAggregation_goto_WAN=Pentru a activa funcţia de agregare WAN, accesaţi pagina <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">Conectarea la internet prin WAN</a>.
+WANAggregation_goto_WAN=Pentru a activa funcţia de agregare WAN, accesaţi pagina <a href="Advanced_WAN_Content.asp" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">Conectarea la internet prin WAN</a>.
 WANAggregation_help_desc=Dacă configurarea agregării WAN nu este reușită, urmaţi paşii de mai jos pentru a reîncerca.
 WANAggregation_help_step1=Asigurați-vă că porturile LAN de la modem sunt deja conectate cu cablu la #WAN și LAN 4 de la router.
 WANAggregation_help_step2=Asigurați-vă că modemul dvs. a activat 802.3ad
 WANAggregation_help_step3=Confirmați că utilizaţi două cabluri cu aceeași specificație (fie gigabit și gigabit sau 10/100 și 10/100 Mbps)
 WANAggregation_help_step4=Reporniți ruterul
-WANAggregation_help_final=Dacă pașii de mai sus eșuează, raportați problema pe <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>site-ul de asistență ASUS</a>.
+WANAggregation_help_final=Dacă pașii de mai sus eșuează, raportați problema pe <a href='https://www.asus.com/support/' target='_blank' style='color:var(--wrt-text-color,#000);text-decoration:underline;'>site-ul de asistență ASUS</a>.
 WANAggregation_wanType_hint=Agregarea WAN nu acceptă tipuri WAN cum ar fi PPPoE, PPTP și L2TP. Dacă tipul WAN se modifică la PPPoE, PPTP sau L2TP, agregarea WAN va fi dezactivată automat. Sigur doriţi să continuaţi?
 WebGUI_issue=Nu poate accesa pagina firmware
 wechat=WeChat
@@ -4627,8 +4716,8 @@ WLANConfig11b_display31_sectiondesc=Selectaţi opţiunea [WDS Only] (Numai WDS) 
 WLANConfig11b_display32_sectiondesc=Asiguraţi-vă că acest router wireless şi punctul de acces la care doriţi să vă conectaţi utilizează acelaşi canal.
 WLANConfig11b_display33_sectiondesc=Introduceţi adresa MAC a punctului de acces la distanţă în lista cu puncte de acces la distanţă şi deschideţi interfaţa de gestionare WDS a punctului de acces la distanţă, introducând adresa MAC a acestui router wireless.
 WLANConfig11b_display34_sectiondesc=Pentru a beneficia de performanţe maxime, mergeţi la Setări avansate > Wireless > General şi alocaţi aceeaşi lăţime de bandă pentru canal, acelaşi canal de control şi acelaşi canal de extensie pentru fiecare ruter din reţea.
-WLANConfig11b_display41_sectiondesc=În acest moment utilizaţi lăţime de bandă canal automat. Faceţi clic pe <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">aici</a> pentru a modifica.
-WLANConfig11b_display42_sectiondesc=În acest moment utilizaţi canalul automat. Faceţi clic pe <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">aici</a> pentru a modifica.
+WLANConfig11b_display41_sectiondesc=În acest moment utilizaţi lăţime de bandă canal automat. Faceţi clic pe <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">aici</a> pentru a modifica.
+WLANConfig11b_display42_sectiondesc=În acest moment utilizaţi canalul automat. Faceţi clic pe <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">aici</a> pentru a modifica.
 WLANConfig11b_display5_sectiondesc=Wireless Professional Setting (Setare wireless profesională) vă permite configurarea parametrilor suplimentari pentru reţeaua wireless. Se recomandă utilizarea valorilor implicite.
 WLANConfig11b_display6_sectiondesc=WPS (WiFi Protected Setup – Configurare protejată WiFi) permite crearea simplă şi în siguranţă a unei reţele wireless. Puteţi configura funcţia WPS aici, prin introducerea codului PIN sau prin apăsarea butonului WPS.
 WLANConfig11b_EChannel_acs_ch13=Auto select channel including channel 12, 13
@@ -4686,6 +4775,7 @@ WLANConfig11b_x_APMode_option2=Hybrid
 WLANConfig11b_x_APSD_itemdesc=Vă permite să activaţi sau să dezactivaţi funcţia APSD (Automatic Power Save Delivery – Economisire automată energie) a WMM.
 WLANConfig11b_x_APSD_itemname=Activare APSD a WMM
 WLANConfig11b_x_Airtime_Fairness=Repartizare echitabilă a spectrului radio
+WLANConfig11b_x_ApplyAllBands_hint=Această ajustare va fi aplicată tuturor setărilor de bandă.
 WLANConfig11b_x_Airtime_Fairness_itemdesc=Provide Airtime Fairness between multiple links
 WLANConfig11b_x_Auto=Opţiunea Wireless Mode (Mod wireless) trebuie să fie setată la Auto (Automat).
 WLANConfig11b_x_Beacon_itemdesc=Beacon Interval (Interval semnalizator) reprezintă timpul dintre un semnalizator şi următorul. Valoarea implicită este 100 (unitatea este milisecundă (1/1000 dintr-o secundă)). Reduceţi intervalul dintre semnalizatori pentru a îmbunătăţi performanţa de transmitere într-un mediu instabil, ajutând clienţii aflaţi în roaming, dar crescând consumul de energie.
@@ -4782,11 +4872,11 @@ WLANConfig11b_x_WPSMode_itemdesc=Puteţi selecta [Cod PIN client] sau [Push Butt
 WLANConfig11b_x_WPSMode_itemname=Metodă WPS:
 WLANConfig11b_x_WPSPIN_itemdesc=Introduceţi un număr format din opt cifre ca şi cod PIN pentru client.<p>
 WLANConfig11b_x_WPSPIN_itemname=Cod PIN client
-WLANConfig11n_Auto_note=Reţeaua [Auto (Automat)] nu este compatibilă cu metoda de autentificare aferentă reţelei oaspete existentă (TKIP sau WEP). Mergeţi la <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;"> Reţeaua oaspete </a> şi schimbaţi metoda de autentificare.
+WLANConfig11n_Auto_note=Reţeaua [Auto (Automat)] nu este compatibilă cu metoda de autentificare aferentă reţelei oaspete existentă (TKIP sau WEP). Mergeţi la <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;"> Reţeaua oaspete </a> şi schimbaţi metoda de autentificare.
 WLANConfig11n_automode_limition_hint=În modul Auto (Automat) cu criptare WEP sau TKIP, dispozitivul ZVMODELVZ acceptă o rată de transmitere maximă de 54 Mbps.
 WLANConfig11n_automode_limition_hint1=Schimbaţi-o cu standardul WPA2-Personal.
-WLANConfig11n_NAC_note=Reţeaua [N+AC] nu este compatibilă cu metoda de autentificare aferentă reţelei oaspete existentă (TKIP sau WEP). Mergeţi la <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;"> Reţeaua oaspete </a> şi schimbaţi metoda de autentificare.
-WLANConfig11n_NOnly_note=Reţeaua [N Only] nu este compatibilă cu metoda de autentificare aferentă reţelei oaspete existentă (TKIP sau WEP). Mergeţi la <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;"> Reţeaua oaspete </a> şi schimbaţi metoda de autentificare.
+WLANConfig11n_NAC_note=Reţeaua [N+AC] nu este compatibilă cu metoda de autentificare aferentă reţelei oaspete existentă (TKIP sau WEP). Mergeţi la <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;"> Reţeaua oaspete </a> şi schimbaţi metoda de autentificare.
+WLANConfig11n_NOnly_note=Reţeaua [N Only] nu este compatibilă cu metoda de autentificare aferentă reţelei oaspete existentă (TKIP sau WEP). Mergeţi la <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;"> Reţeaua oaspete </a> şi schimbaţi metoda de autentificare.
 WLANConfig11ax_AXOnly_note=By enabling AX only mode, if devices do not support 802.11ax(WiFi 6), will not able to connect to this band.
 WLANConfig11n_PremblesType_itemdesc=Tipul de preambul defineşte lungimea blocului CRC (Cyclic Redundancy Check – verificare redundanţă ciclică), care este o tehnică de detectate a erorilor de transmitere a datelor între dispozitivele wireless. Vă recomandăm să configuraţi toate dispozitivele wireless cu acelaşi tip de preambul. Folosiţi un preambul scurt pentru dispozitivele wireless din zone cu trafic de reţea intens. Utilizaţi un preambul lung pentru dispozitive wireless mai vechi.
 WLANConfig11n_PremblesType_itemname=802.11b mode
@@ -4904,11 +4994,21 @@ Captive_Portal_Above=peste
 Captive_Portal_Selected_Color=Culoare selectată
 Captive_Portal_Local=Local
 Configuration=Configuraţie
-Configuration_dark_mode=Dark
-Configuration_light_mode=Light
-Configuration_theme=Theme
-Configuration_fancy_theme=Fancy
+Configuration_dark_mode=Întunecat
+Configuration_light_mode=Luminos
+Configuration_theme=Temă
+Configuration_fancy_theme=Elegant
+Configuration_flat_theme=Plat
 Continuous_Mode=безперервний режим
+View_Details=Vizualizați detalii
+NetworkMap_Clients=Clienți
+NetworkMap_Guest_Clients=Clienți oaspeți
+NetworkMap_Add_AiMesh_Hint=Adăugați mai multe noduri AiMesh pentru a extinde acoperirea rețelei WiFi.
+Dashboard_Show_more=Afișați mai multe
+Dashboard_Show_less=Afișați mai puțin
+Dashboard_Expand=Extindeți
+Dashboard_Refreshing=Se reîmprospătează
+Dashboard_Last_updated=Ultima actualizare
 CTL_Apply_Enable=Aplică și Activează
 FreeWiFi_AccessPolicy=Politică de acces
 FreeWiFi_AccountSetting_desc1=Account Setting (Configurare cont) reprezintă o metodă facilă de configurare a unui cont de invitat care vă permite să păstrați baza de date cu conturi de invitați și să vă securizați rețeaua pentru invitați. Clientul asociat trebuie să introducă informațiile următoare pentru cont și parolă pentru a se conecta, înainte de a avea accesa la internet.
@@ -4992,7 +5092,7 @@ menu_privacy=Politica
 ASUS_Notice_Privacy=NOTIFICARE ASUS (privind confidențialitatea)
 Distributing_IP=Distribuire adresă IP...
 LED_Brightness=Luminozitate ecran LED
-LED_disabled_hint=This change will disable the special LED effect for the %1$@.
+LED_disabled_hint=Această modificare va dezactiva efectul LED special pentru %1$@.
 WiFi_Network_List=Listă de rețele WiFi
 Searching_WiFi_Network=Se caută o rețea WiFi în apropiere...
 BoostKey=Tastă Boost
@@ -5162,7 +5262,7 @@ Notice_Message_3=Am citit, nu mai afișa.
 CTL_Decline=Refuz
 Outdoor_desc_title=Warning
 Outdoor_active_desc_1=Activarea modului exterior va restricționa AiMesh și poate cauza deconectarea nodului rețelei.
-Outdoor_active_desc_2=Pentru a respecta reglementările, sistemul va scana canalele timp de aproximativ 1 minut pentru a evita interferențele radarului meteo. <span style="color:#FC0">Dacă sunt detectate semnale radar, va comuta la 2.4GHz, cauzând o deconectare temporară. Canalul afectat va fi blocat timp de 30 de minute.</span>
+Outdoor_active_desc_2=Pentru a respecta reglementările, sistemul va scana canalele timp de aproximativ 1 minut pentru a evita interferențele radarului meteo. <span style="color:var(--wrt-badge-warning-color,#FC0)">Dacă sunt detectate semnale radar, va comuta la 2.4GHz, cauzând o deconectare temporară. Canalul afectat va fi blocat timp de 30 de minute.</span>
 Outdoor_active_desc_3=Modul exterior acceptă doar modurile Router și AP.
 Outdoor_active_desc_4=Canalele exterioare disponibile variază în funcție de țară/regiune.
 Outdoor_inactive_desc_1=Dezactivarea acestui mod va reporni temporar conexiunea wireless și va deconecta toate dispozitivele.
@@ -5193,6 +5293,7 @@ WiFi_DFS_REENTRY=REINTRARE DFS
 WiFi_ch_conflict=Conflict de canal
 WiFi_Regulatory=Reglementare
 WiFi_OFF=WiFi Oprit
+WiFi8_6G_enable_hint=Banda de 6 GHz funcționează în prezent în modul WiFi 7. Pentru a activa WiFi 8, activați „WiFi 8” în setările Wireless Professional pentru 6 GHz.
 Vendor=Producător
 Connected_AP=AP conectat
 Network_SDN=Rețea(SDN)

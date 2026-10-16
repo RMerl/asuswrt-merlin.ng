@@ -1,0 +1,14 @@
+iptables-translate -t filter -A INPUT -p tcp -m multiport --dports 80,81 -j ACCEPT
+nft 'add rule ip filter INPUT ip protocol tcp tcp dport { 80, 81 } counter accept'
+
+iptables-translate -t filter -A INPUT -p tcp -m multiport --dports 80:88 -j ACCEPT
+nft 'add rule ip filter INPUT ip protocol tcp tcp dport 80-88 counter accept'
+
+iptables-translate -t filter -A INPUT -p tcp -m multiport ! --dports 80:88 -j ACCEPT
+nft 'add rule ip filter INPUT ip protocol tcp tcp dport != 80-88 counter accept'
+
+iptables-translate -t filter -A INPUT -p tcp -m multiport --sports 50 -j ACCEPT
+nft 'add rule ip filter INPUT ip protocol tcp tcp sport 50 counter accept'
+
+iptables-translate -t filter -I INPUT -p tcp -m multiport --ports 10
+nft 'insert rule ip filter INPUT ip protocol tcp tcp sport . tcp dport { 0-65535 . 10, 10 . 0-65535 } counter'

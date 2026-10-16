@@ -80,8 +80,10 @@
 
 #ifdef RTCONFIG_IPV6
 char wan6face[IFNAMSIZ + 1];
-// RFC-4890, sec. 4.3.1
-const int allowed_icmpv6[] = { 1, 2, 3, 4, /*128,*/ 129 };
+// RFC-4890, sec. 4.3.1 - error messages, accepted ahead of the state INVALID drop
+const int allowed_icmpv6_errors[] = { 1, 2, 3, 4 };
+// RFC-4890, sec. 4.3.1 - informational, subject to the state INVALID check
+const int allowed_icmpv6[] = { /*128,*/ 129 };
 // RFC-4890, sec. 4.4.1
 const int allowed_local_icmpv6[] =
 	{ 130, 131, 132, 133, 134, 135, 136,
@@ -1688,6 +1690,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	FILE *fp;
 	char lan_class[32];
 	char name[PATH_MAX];
+	char tmp[32];
 	int wan_unit;
 #ifdef RTCONFIG_MULTIWAN_CFG
 	int wanx_rules = 0;
@@ -1797,6 +1800,11 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	}
 #endif
 #endif
+
+	/* Add rule to jump to VUPNP chain when UPNP is enabled*/
+	snprintf(tmp, sizeof(tmp), "wan%d_upnp_enable", wan_primary_ifunit());
+	if (nvram_get_int(tmp) == 1)
+		fprintf(fp, "-A PREROUTING -j VUPNP\n");
 
 	/* VSERVER chain */
 	if (inet_addr_(wan_ip)) {
@@ -3602,6 +3610,13 @@ static inline int enable_gre_for_ecm(int unit, FILE *fp) { return 0; }
 #endif
 
 #ifdef RTCONFIG_IPSEC
+/* Set by ipsec_intranet_access_FORWARD() below, consumed by
+ * ipsec_intranet_flush_ecm(). Deferring the actual ECM/HW-NAT flush this
+ * way (instead of doing it inline) lets the caller flush only after the
+ * new DROP rule has actually been loaded via iptables-restore -- see the
+ * comment on ipsec_intranet_flush_ecm() for why that ordering matters. */
+static int ipsec_block_intranet_need_ecm_flush = 0;
+
 void ipsec_intranet_access_FORWARD(FILE *fp, char *lan_ip)
 {
 	char name[] = {"ipsec_profile_1"};
@@ -3612,12 +3627,82 @@ void ipsec_intranet_access_FORWARD(FILE *fp, char *lan_ip)
 		if(fp && lan_ip && (strlen(lan_ip) > 0))
 		{
 			/*
-			**	iptables -t filter -A IPSEC_DROP_SUBNET_ICMP -s 10.10.10.0/24 -d 192.168.50.0/24 -j DROP
+			**	iptables -t filter -A IPSEC_DROP_SUBNET_ICMP -s 10.10.10.0/24 -d 192.168.50.1/255.255.255.0 -j DROP
 			*/
 			get_virtual_subnet(name, virtual_subnet, sizeof(virtual_subnet));
 			if(strlen(virtual_subnet) > 0)
 			{
-				fprintf(fp, "-A IPSEC_DROP_SUBNET_ICMP -s %s.0/24 -d %s/24 -j DROP\n", virtual_subnet, lan_ip);
+				/* Use the configured lan_netmask instead of a hardcoded /24 --
+				 * iptables accepts a dotted-decimal netmask here just as well
+				 * as a CIDR prefix length (no conversion needed), matching
+				 * the established pattern elsewhere in this file, e.g.:
+				 *   fprintf(fp, "-A INPUT ! -i br0 -d %s/%s -j DROP\n",
+				 *           nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
+				 * Hardcoding /24 would leave some LAN addresses reachable
+				 * (or match the wrong subnet) when lan_netmask isn't
+				 * 255.255.255.0. */
+				fprintf(fp, "-A IPSEC_DROP_SUBNET_ICMP -s %s.0/24 -d %s/%s -j DROP\n", virtual_subnet, lan_ip, nvram_safe_get("lan_netmask"));
+
+				/* This rule alone has no effect on connections that were
+				 * already offloaded to hardware NAT acceleration (ECM/SFE)
+				 * before ipsec_block_intranet was turned on -- accelerated
+				 * flows bypass the Linux netfilter FORWARD chain entirely,
+				 * so the DROP above never sees their packets. Flush the
+				 * acceleration table so those flows get re-evaluated by
+				 * this rule instead of continuing to bypass it.
+				 *
+				 * Only do this on the 0->1 transition (tracked via the
+				 * ipsec_block_intranet_last shadow nvram, since this
+				 * function is re-run fresh on every restart_firewall and
+				 * a static local would not survive that), not on every
+				 * firewall rebuild: restart_firewall fires for many
+				 * unrelated settings elsewhere on the router, and
+				 * defunct_all flushes ECM's *entire* flow table, so
+				 * flushing unconditionally here would repeatedly disrupt
+				 * every other client's already-accelerated traffic too,
+				 * not just IPsec-related flows.
+				 *
+				 * NOTE: reinit_ecm(-1) is NOT what we want here -- it only
+				 * writes to ecm_db/defunct_all when it is disabling ECM
+				 * entirely (act == 0, i.e. qca_sfe == 0). Since qca_sfe
+				 * stays 1 (we still want HW NAT acceleration for everyone
+				 * else), that path never runs and reinit_ecm(-1) ends up
+				 * a no-op. Flush the flow table directly instead, without
+				 * touching whether ECM itself stays enabled. Confirmed
+				 * this debugfs node exists on this platform.
+				 *
+				 * Don't flush right here though -- at this point the DROP
+				 * rule above has only been written into the /tmp/filter_rules
+				 * file being built up in fp, not actually loaded yet (that
+				 * happens later, via iptables-restore, once the caller
+				 * finishes building the whole ruleset). Flushing now would
+				 * open a window where already-offloaded flows get re-
+				 * established and re-accelerated under the OLD rules before
+				 * the new DROP rule is actually in effect, letting them keep
+				 * bypassing it. Just record that a flush is needed; the
+				 * caller runs it via ipsec_intranet_flush_ecm() right after
+				 * iptables-restore.
+				 *
+				 * Only mark this transition "handled" (both the flush
+				 * request and the ipsec_block_intranet_last bookkeeping)
+				 * here, inside the branch that actually wrote the DROP
+				 * rule above -- not unconditionally whenever
+				 * ipsec_block_intranet is "1". If lan_ip is empty or
+				 * get_virtual_subnet() fails (the branches below), nothing
+				 * was actually enforced this round; marking last="1"
+				 * anyway would make a later successful run within the same
+				 * boot (once the underlying failure clears) look like "not
+				 * a new transition" and silently skip the flush it still
+				 * needs. "Unset" represents "0" (sysinit() clears this key
+				 * at boot, and nvram_match() against an unset key is false
+				 * regardless of what it's compared to), so leaving it
+				 * untouched on failure is enough -- no write needed for
+				 * the "nothing happened" case either. */
+				if(!nvram_match("ipsec_block_intranet_last", "1"))
+				{
+					ipsec_block_intranet_need_ecm_flush = 1;
+					nvram_set("ipsec_block_intranet_last", "1");
+				}
 			}
 			else
 			{
@@ -3631,6 +3716,31 @@ void ipsec_intranet_access_FORWARD(FILE *fp, char *lan_ip)
 			_dprintf("[firewall][%s]Null pointer or empty lan IP.\n", __FUNCTION__);
 		}
 	}
+	else if(nvram_match("ipsec_block_intranet_last", "1"))
+	{
+		nvram_unset("ipsec_block_intranet_last");
+	}
+}
+
+/* Call this right after the iptables-restore that loads the ruleset
+ * ipsec_intranet_access_FORWARD() just wrote a DROP rule into -- flushing
+ * the ECM/HW-NAT flow table only makes sense once that DROP rule is
+ * actually in effect. Flushing earlier (e.g. while /tmp/filter_rules is
+ * still being built) would let flows re-establish and get re-accelerated
+ * under the still-active OLD rules, letting them keep bypassing the new
+ * DROP rule even after this restart_firewall finishes. */
+void ipsec_intranet_flush_ecm(void)
+{
+	if(!ipsec_block_intranet_need_ecm_flush)
+		return;
+	ipsec_block_intranet_need_ecm_flush = 0;
+
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074) || defined(RTCONFIG_SOC_IPQ60XX) \
+ || defined(RTCONFIG_SOC_IPQ50XX) || defined(RTCONFIG_SOC_IPQ53XX)
+	f_write_string("/sys/kernel/debug/ecm/ecm_db/defunct_all", "1", 0, 0);
+#elif defined(RTCONFIG_RALINK_MT7621) || defined(RTCONFIG_MT798X) || defined(RTCONFIG_MT799X)
+	reinit_hwnat(-1);
+#endif
 }
 #endif /* RTCONFIG_IPSEC */
 
@@ -5061,6 +5171,10 @@ TRACE_PT("writing Parental Control\n");
 			fprintf(fp_ipv6, "-A INPUT -m state --state RELATED,ESTABLISHED -j %s\n", logaccept);
 			fprintf(fp_ipv6, "-A INPUT -i %s -m state --state NEW -j %s\n", lan_if, "ACCEPT");
 			fprintf(fp_ipv6, "-A INPUT -i %s -m state --state NEW -j %s\n", "lo", "ACCEPT");
+			/* RFC-4890 sec. 4.3.1: accept ICMPv6 errors ahead of the INVALID drop;
+			 * the MAP-E tunnel endpoint needs Packet Too Big for the outer flow. */
+			for (n = 0; n < sizeof(allowed_icmpv6_errors)/sizeof(int); ++n)
+				fprintf(fp_ipv6, "-A INPUT -p ipv6-icmp --icmpv6-type %d -j %s\n", allowed_icmpv6_errors[n], logaccept);
 			fprintf(fp_ipv6, "-A INPUT -m state --state INVALID -j %s\n", logdrop);
 		}
 #endif
@@ -5201,8 +5315,17 @@ TRACE_PT("writing Parental Control\n");
 			if (nvram_match("switch_wantag", "movistar")) {
 				fprintf(fp, "-A INPUT -i %s -s 10.0.0.0/255.0.0.0 -j DROP\n", movistar_wan);
 				fprintf(fp, "-A INPUT -i %s -s 172.16.0.0/255.255.15.0 -j DROP\n", movistar_wan);
+#if defined(IPVLAN3)
+				char *eth10_if = get_wan_ifname(WAN_UNIT_IPTV);
+				char *eth11_if = get_wan_ifname(WAN_UNIT_VOIP);
+				if (!eth10_if || !*eth10_if) eth10_if = "eth0.v2";
+				if (!eth11_if || !*eth11_if) eth11_if = "eth0.v3";
+				fprintf(fp, "-A INPUT -i %s -s 172.16.0.0/255.255.15.0 -j ACCEPT\n", eth10_if);
+				fprintf(fp, "-A INPUT -i %s -s 10.31.255.134/255.255.255.255 -j ACCEPT\n", eth11_if);
+#else
 				fprintf(fp, "-A INPUT -i vlan2 -s 172.16.0.0/255.255.15.0 -j ACCEPT\n");
 				fprintf(fp, "-A INPUT -i vlan3 -s 10.31.255.134/255.255.255.255 -j ACCEPT\n");
+#endif
 				fprintf(fp, "-A INPUT -p udp --dport 520 -j %s\n", "ACCEPT");
 			}
 		}
@@ -5618,9 +5741,20 @@ TRACE_PT("writing Parental Control\n");
 
 	/* Drop the wrong state, INVALID, packets */
 	fprintf(fp, "-A FORWARD -m state --state INVALID -j %s\n", logdrop);
+
+	/* Add rule to jump to FUPNP chain when upnp is enabled */
+	snprintf(tmp, sizeof(tmp), "wan%d_upnp_enable", wan_primary_ifunit());
+	if (nvram_get_int(tmp) == 1)
+		fprintf(fp, "-A FORWARD -j FUPNP\n");
+
 //#if 0
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled()) {
+		/* RFC-4890 sec. 4.3.1: ICMPv6 error messages must not be dropped.
+		 * On MAP-E/IPoE, Packet Too Big may be tagged INVALID by conntrack,
+		 * so accept error types ahead of the INVALID drop to keep PMTUD working. */
+		for (i = 0; i < sizeof(allowed_icmpv6_errors)/sizeof(int); ++i)
+			fprintf(fp_ipv6, "-A FORWARD -p ipv6-icmp --icmpv6-type %d -j %s\n", allowed_icmpv6_errors[i], logaccept);
 		fprintf(fp_ipv6, "-A FORWARD -m state --state INVALID -j %s\n", logdrop);
 	}
 #endif
@@ -6228,6 +6362,14 @@ TRACE_PT("write wl filter\n");
 	if (fp) fclose(fp);
 	evalRet = eval("iptables-restore", "/tmp/filter_rules");
 	rule_apply_checking("firewall", __LINE__, "/tmp/filter_rules", evalRet);
+#ifdef RTCONFIG_IPSEC
+	/* If iptables-restore failed, the DROP rule isn't actually in effect --
+	 * flushing here would disrupt other clients' accelerated traffic for
+	 * no benefit, and would also clear the pending-flush flag, permanently
+	 * losing this flush attempt instead of retrying it next rebuild. */
+	if(!evalRet)
+		ipsec_intranet_flush_ecm();
+#endif
 
 #ifdef RTCONFIG_PROTECTION_SERVER
 	kill_pidfile_s(PROTECT_SRV_PID_PATH, SIGUSR1);
@@ -6846,6 +6988,10 @@ TRACE_PT("writing Parental Control\n");
 			fprintf(fp_ipv6, "-A INPUT -m state --state RELATED,ESTABLISHED -j %s\n", logaccept);
 			fprintf(fp_ipv6, "-A INPUT -i %s -m state --state NEW -j %s\n", lan_if, "ACCEPT");
 			fprintf(fp_ipv6, "-A INPUT -i %s -m state --state NEW -j %s\n", "lo", "ACCEPT");
+			/* RFC-4890 sec. 4.3.1: accept ICMPv6 errors ahead of the INVALID drop;
+			 * the MAP-E tunnel endpoint needs Packet Too Big for the outer flow. */
+			for (n = 0; n < sizeof(allowed_icmpv6_errors)/sizeof(int); ++n)
+				fprintf(fp_ipv6, "-A INPUT -p ipv6-icmp --icmpv6-type %d -j %s\n", allowed_icmpv6_errors[n], logaccept);
 			fprintf(fp_ipv6, "-A INPUT -m state --state INVALID -j %s\n", logdrop);
 		}
 #endif
@@ -6873,8 +7019,17 @@ TRACE_PT("writing Parental Control\n");
 			if (nvram_match("switch_wantag", "movistar")) {
 				fprintf(fp, "-A INPUT -i %s -s 10.0.0.0/255.0.0.0 -j DROP\n", movistar_wan);
 				fprintf(fp, "-A INPUT -i %s -s 172.16.0.0/255.255.15.0 -j DROP\n", movistar_wan);
+#if defined(IPVLAN3)
+				char *eth10_if = get_wan_ifname(WAN_UNIT_IPTV);
+				char *eth11_if = get_wan_ifname(WAN_UNIT_VOIP);
+				if (!eth10_if || !*eth10_if) eth10_if = "eth0.v2";
+				if (!eth11_if || !*eth11_if) eth11_if = "eth0.v3";
+				fprintf(fp, "-A INPUT -i %s -s 172.16.0.0/255.255.15.0 -j ACCEPT\n", eth10_if);
+				fprintf(fp, "-A INPUT -i %s -s 10.31.255.134/255.255.255.255 -j ACCEPT\n", eth11_if);
+#else
 				fprintf(fp, "-A INPUT -i vlan2 -s 172.16.0.0/255.255.15.0 -j ACCEPT\n");
 				fprintf(fp, "-A INPUT -i vlan3 -s 10.31.255.134/255.255.255.255 -j ACCEPT\n");
+#endif
 				fprintf(fp, "-A INPUT -p udp --dport 520 -j %s\n", "ACCEPT");
 			}
 		}
@@ -7419,6 +7574,15 @@ TRACE_PT("writing Parental Control\n");
 
 	/* Drop the wrong state, INVALID, packets */
 	fprintf(fp, "-A FORWARD -m state --state INVALID -j %s\n", logdrop);
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled()) {
+		/* RFC-4890 sec. 4.3.1: ICMPv6 error messages must not be dropped.
+		 * On MAP-E/IPoE, Packet Too Big may be tagged INVALID by conntrack,
+		 * so accept error types ahead of any INVALID drop to keep PMTUD working. */
+		for (i = 0; i < sizeof(allowed_icmpv6_errors)/sizeof(int); ++i)
+			fprintf(fp_ipv6, "-A FORWARD -p ipv6-icmp --icmpv6-type %d -j %s\n", allowed_icmpv6_errors[i], logaccept);
+	}
+#endif
 #if 0
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled()) {
@@ -8103,6 +8267,14 @@ TRACE_PT("write wl filter\n");
 	if (fp) fclose(fp);
 	evalRet = eval("iptables-restore", "/tmp/filter_rules");
 	rule_apply_checking("firewall", __LINE__, "/tmp/filter_rules", evalRet);
+#ifdef RTCONFIG_IPSEC
+	/* If iptables-restore failed, the DROP rule isn't actually in effect --
+	 * flushing here would disrupt other clients' accelerated traffic for
+	 * no benefit, and would also clear the pending-flush flag, permanently
+	 * losing this flush attempt instead of retrying it next rebuild. */
+	if(!evalRet)
+		ipsec_intranet_flush_ecm();
+#endif
 
 #ifdef RTCONFIG_PROTECTION_SERVER
 	kill_pidfile_s(PROTECT_SRV_PID_PATH, SIGUSR1);
@@ -8975,6 +9147,9 @@ int start_firewall(int wanunit, int lanunit)
 	char rp_if[32] = {0};
 
 	if (!is_routing_enabled())
+		return -1;
+
+	if (get_ipv4_service_by_unit(wanunit) == WAN_BRIDGE)
 		return -1;
 
 	if (getpid() != 1 && getuid() != 0) {

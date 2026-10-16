@@ -1,0 +1,39 @@
+.TH ARPTABLES-RESTORE 8 "March 2019" "" ""
+.\"
+.\" Man page written by Jesper Dangaard Brouer <brouer@redhat.com> based on a
+.\" Man page written by Harald Welte <laforge@gnumonks.org>
+.\" It is based on the iptables-restore man page.
+.\"
+.\"	This program is free software; you can redistribute it and/or modify
+.\"	it under the terms of the GNU General Public License as published by
+.\"	the Free Software Foundation; either version 2 of the License, or
+.\"	(at your option) any later version.
+.\"
+.\"	This program is distributed in the hope that it will be useful,
+.\"	but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"	GNU General Public License for more details.
+.\"
+.\"	You should have received a copy of the GNU General Public License
+.\"	along with this program; if not, write to the Free Software
+.\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.\"
+.\"
+.SH NAME
+arptables-restore \(em Restore ARP Tables (nft-based)
+.SH SYNOPSIS
+\fBarptables\-restore\fP
+.SH DESCRIPTION
+.PP
+.B arptables-restore
+is used to restore ARP Tables from data specified on STDIN or
+via a file as first argument.
+Use I/O redirection provided by your shell to read from a file
+.TP
+.B arptables-restore
+flushes (deletes) all previous contents of the respective ARP Table.
+.SH AUTHOR
+Jesper Dangaard Brouer <brouer@redhat.com>
+.SH SEE ALSO
+\fBarptables\-save\fP(8), \fBarptables\fP(8)
+.PP

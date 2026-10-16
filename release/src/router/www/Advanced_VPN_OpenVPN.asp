@@ -29,8 +29,8 @@
 	position:absolute;
 	border-radius: 5px;
 	z-index:200;
-	background-color:#2B373B;
-	box-shadow: 3px 3px 10px #000;
+	background-color:var(--surface-panel, #2B373B);
+	box-shadow: var(--wrt-card-shadow, 3px 3px 10px #000);
 	display:none;
 }
 
@@ -1119,7 +1119,7 @@ function allowed_openvpn_clientlist(){
 
 	code +='<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="openvpn_clientlist_table">';
 	if(openvpn_clientlist_row.length == 1)
-		code +='<tr><td style="color:#FFCC00;" colspan="6"><#IPConnection_VSList_Norule#></td>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="6"><#IPConnection_VSList_Norule#></td>';
 	else{
 		for(var i = 1; i < openvpn_clientlist_row.length; i++){
 			code +='<tr id="row'+i+'">';
@@ -1473,7 +1473,7 @@ function handle_ipv6_submit_settings(){
 		</tr>
 		<tr>
 			<div style="margin-left:30px; margin-top:10px;">
-				<p><#vpn_openvpn_KC_Edit1#> <span style="color:#FFCC00;">----- BEGIN xxx ----- </span>/<span style="color:#FFCC00;"> ----- END xxx -----</span> <#vpn_openvpn_KC_Edit2#>
+				<p><#vpn_openvpn_KC_Edit1#> <span style="color:var(--wrt-badge-warning-color,#FFCC00);">----- BEGIN xxx ----- </span>/<span style="color:var(--wrt-badge-warning-color,#FFCC00);"> ----- END xxx -----</span> <#vpn_openvpn_KC_Edit2#>
 				<p>Limit: 7999 characters per field
 			</div>
 			<div style="margin:5px;*margin-left:-5px;width: 730px; height: 2px;" class="splitLine"></div>
@@ -1547,14 +1547,14 @@ function handle_ipv6_submit_settings(){
 	<!--===================================Beginning of Client Key Content===========================================-->
 	<div style="padding: 30px; padding-top: 10px;">
 		<div>OpenVPN TLS-Crypt-V2 Client Key</div>
-		<div style="padding-top:20px; padding-bottom:20px;">Copy this key to your client's configuration file (inside <span style="color:#FFCC00;">&lt;tls-crypt-v2&gt;</span>...<span style="color:#FFCC00;">&lt;/tls-crypt-v2&gt;</span> tags)</div>
+		<div style="padding-top:20px; padding-bottom:20px;">Copy this key to your client's configuration file (inside <span style="color:var(--wrt-badge-warning-color,#FFCC00);">&lt;tls-crypt-v2&gt;</span>...<span style="color:var(--wrt-badge-warning-color,#FFCC00);">&lt;/tls-crypt-v2&gt;</span> tags)</div>
 		<textarea rows="20" class="textarea_ssh_table textarea_ssh_font" id="clientKey_textarea" cols="65" readonly spellcheck="false"></textarea>
 		<div style="margin-top:20px; justify-content: center; display:flex; flex-direction:row; gap:0.5em;">
 			<input class="button_gen" type="button" onclick="copy_clientKey();" value="Copy">
 			<input class="button_gen" type="button" onclick="close_clientKey_panel();" value="Close">
 		</div>
 		<div style="margin-top:10px; height:1.2em; justify-content: center; display:flex; flex-direction:row;">
-			<span id="key_copied_notice" style="display:none;color:#FFCC00;margin-top:5px;">Key copied to clipboard!</span>
+			<span id="key_copied_notice" style="display:none;color:var(--wrt-badge-warning-color,#FFCC00);margin-top:5px;">Key copied to clipboard!</span>
 		</div>
 	</div>
 	<!--===================================Ending of Client Key Content===========================================-->
@@ -1601,7 +1601,7 @@ function handle_ipv6_submit_settings(){
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc">OpenVPN Server Settings</div>
 									<div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div>
-									<div id="privateIP_notes" class="formfontdesc" style="display:none;color:#FFCC00;"></div>
+									<div id="privateIP_notes" class="formfontdesc" style="display:none;color:var(--wrt-badge-warning-color,#FFCC00);"></div>
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 										<thead>
 										<tr>

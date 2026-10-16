@@ -349,6 +349,10 @@ extern int ej_wl_rate_5g_2(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wl_rate_6g(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wl_rate_6g_2(int eid, webs_t wp, int argc, char_t **argv);
 #endif
+#if (defined(RTCONFIG_WIFI8) || defined(WIFI7_SDK_20250506)) && defined(RTCONFIG_MLO)
+extern int wl_mlo_mb_link_status(char *ifname, char *ssid_buf, int ssid_len, int *rate, int *rssi);
+extern int wl_mlo_mb_ap_ssid(char *ifname, char *ssid_buf, int ssid_len);
+#endif
 #ifdef CONFIG_BCMWL5
 extern int ej_wl_cap_2g(int eid, webs_t wp, int argc, char **argv);
 extern int ej_wl_cap_5g(int eid, webs_t wp, int argc, char **argv);
@@ -373,6 +377,7 @@ extern int ej_wps_info_6g(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wps_info_6g_2(int eid, webs_t wp, int argc, char_t **argv);
 #endif
 extern int ej_nat_accel_status(int eid, webs_t wp, int argc, char_t **argv);
+extern int ej_hw_accel_status(int eid, webs_t wp, int argc, char_t **argv);
 #ifdef RTCONFIG_PROXYSTA
 int ej_wl_auth_psta(int eid, webs_t wp, int argc, char_t **argv);
 #endif
@@ -457,6 +462,7 @@ extern int ej_bcmbsd_def_policy(int eid, webs_t wp, int argc, char_t **argv);
 #if defined(RTCONFIG_LACP) && defined(RTCONFIG_BONDING_WAN)
 extern int ej_lacp_wan(int eid, webs_t wp, int argc, char_t **argv);
 #endif
+extern int ej_ip_route_get(int eid, webs_t wp, int argc, char_t **argv);
 
 #if 0
 static int nvram_check_and_set(char *name, char *value);
@@ -479,6 +485,11 @@ extern void sdn_set_fbwifi(void);
 
 extern int app_auth(char *authinfo, char *authpass);
 
+#ifdef RTCONFIG_SURFSHARK
+extern void do_surfshark_login_cgi(char *url, FILE *stream);
+extern void do_surfshark_2fa_cgi(char *url, FILE *stream);
+#endif
+
 #if defined(RTCONFIG_ASD) || defined(RTCONFIG_AHS)
 extern void do_set_security_update_cgi(char *url, FILE *stream);
 extern void do_get_security_update_cgi(char *url, FILE *stream);
@@ -488,7 +499,6 @@ extern void do_set_ASUS_privacy_policy_cgi(char *url, FILE *stream);
 extern void do_get_ASUS_privacy_policy_cgi(char *url, FILE *stream);
 
 extern void do_get_nonce_cgi(char *url, FILE *stream);
-extern void do_register_app_cnonce_cgi(char *url, FILE *stream);
 extern int validate_httpd_auth_v2(char *authorization_t, char *id, char *cnonce);
 #ifdef RTCONFIG_BCM_AFC
 extern void do_send_afc_location_cgi(char *url, FILE *stream);
@@ -2647,7 +2657,7 @@ ej_dump(int eid, webs_t wp, int argc, char_t **argv)
 				, nvram_safe_get("dsllog_fwver")
 				, nvram_safe_get("fb_comment")
 				);
-			ret += websWrite(wp, buf);
+			ret += websWrite(wp, "%s", buf);
 		}
 	}
 #else /* RTCONFIG_DSL */
@@ -2689,7 +2699,7 @@ ej_dump(int eid, webs_t wp, int argc, char_t **argv)
 				, nvram_safe_get("firmver"), nvram_safe_get("buildno"), nvram_safe_get("extendno")
 				, nvram_safe_get("fb_comment")
 				);
-			ret += websWrite(wp, buf);
+			ret += websWrite(wp, "%s", buf);
 		}
 	}
 #endif /* RTCONFIG_DSL */
@@ -3247,6 +3257,14 @@ static void do_html_get(char *url, int len, char *boundary){
 	}
 
 	init_cgi(post_buf);
+}
+
+static void remove_get_payload(char *url, FILE *stream, int len, char *boundary){
+
+	char *query = NULL;
+
+	query = url;
+	strsep(&query, "?");
 }
 
 extern struct nvram_tuple router_defaults[];
@@ -3841,7 +3859,7 @@ int validate_instance(webs_t wp, char *name, json_object *root, json_object *act
 				found |= NVRAM_MODIFIED_SDN_BIT;
 #ifdef RTCONFIG_CFGSYNC
 				save_changed_param(cfg_root, tmp, value);
-#endif			
+#endif
 			}
 		}
 	}
@@ -4150,7 +4168,7 @@ int nvram_check(char *name, char *value, struct nvram_tuple *t, char *output)
 		str1 = strtok(val, "<");
 		while (str1 != NULL) {
 			str2 = strchr(str1, '>');
-			if(str2-str1 > 64 || strlen(str2)-1 > 110){
+			if(str2 == NULL || str2-str1 > 64 || strlen(str2)-1 > 110){
 				dbg("nvram_check fail: nvram acc %s over length\n", name);
 				ret = 1;
 				break;
@@ -4843,13 +4861,13 @@ int validate_apply(webs_t wp, json_object *root)
 
 					if( strstr(orig_wans_dualwan, "none") && (strstr(orig_wans_dualwan, "usb") == NULL) &&
 					    strstr(wans_dualwan, "usb") && (strstr(wans_dualwan, "none") == NULL) &&
-					   (strstr(wans_dualwan, orig_primary) || strstr(wans_dualwan, orig_second)) ){ //Add USB
+					   ((orig_primary && strstr(wans_dualwan, orig_primary)) || (orig_second && strstr(wans_dualwan, orig_second))) ){ //Add USB
 						wans_dualwan_usb |= NVRAM_MODIFIED_DUALWAN_ADDUSB;
 					}
 					else if( strstr(orig_wans_dualwan, "usb") && (strstr(orig_wans_dualwan, "none") == NULL) &&
 					    strncmp(orig_wans_dualwan, "usb", 3) && // exclude {usb, wan}  =>  {wan, none}
 					    strstr(wans_dualwan, "none") && (strstr(wans_dualwan, "usb") == NULL) &&
-					   (strstr(wans_dualwan, orig_primary) || strstr(wans_dualwan, orig_second)) ){ //Remove USB
+					   ((orig_primary && strstr(wans_dualwan, orig_primary)) || (orig_second && strstr(wans_dualwan, orig_second))) ){ //Remove USB
 						wans_dualwan_usb |= NVRAM_MODIFIED_DUALWAN_REMOVEUSB;
 					}
 					/*else if(!strcmp(orig_primary, new_second) && !strcmp(orig_second, new_primary)){ // Exchange Value
@@ -4874,6 +4892,8 @@ int validate_apply(webs_t wp, json_object *root)
 					dbg("validate %s=%s is illegal\n", name, value);
 					continue;
 				}
+				if(!check_apply_nvram_lan_only(name))
+					continue;
 
 				/* log no prefix nvram */
 				nvram_modify_log(name, nvram_safe_get(name), value, activity_obj);
@@ -4890,7 +4910,6 @@ int validate_apply(webs_t wp, json_object *root)
 				 && nvram_match("rgbled_qis_running", "1"))
 					set_rgbled(RGBLED_QIS_FINISH);
 #endif
-
 				nvram_set(name, value);
 #ifdef RTAC68U
 				if (is_dpsta_repeater() && access_point_mode() && !strcmp(name, "wlc_psta") && !nvram_get_int(name))
@@ -5028,7 +5047,7 @@ int validate_apply(webs_t wp, json_object *root)
 #endif
                         nvram_modified_sdn = nvram_modified = 1;
 					}
-#endif	
+#endif
 				}
 
 				if (!strcmp(name, "vlan_trunklist")) {
@@ -5177,6 +5196,7 @@ int validate_apply(webs_t wp, json_object *root)
 #endif
 				}
 			}else if(fromapp_flag != 0) {
+				reg_default_final_token();
 				nvram_set("x_Setting", "1");
 				notify_rc("restart_firewall");
 			}
@@ -5975,7 +5995,7 @@ static void clear_residual_bw_qos_state(void)
 		return;
 
 	if (nvram_get_int("qos_enable") != 0) {
-		_dprintf("%s: all SDN bw limiter disabled and qos_bw_rulelist entries are off, clear qos_enable\n", __func__);
+		HTTPD_DBG("all SDN bw limiter disabled and qos_bw_rulelist entries are off, clear qos_enable\n");
 		nvram_set_int("qos_enable", 0);
 	}
 }
@@ -9639,7 +9659,6 @@ int get_amas_info(struct json_object *json_object_ptr) { //get cap and re info
 	P_CM_CLIENT_TABLE p_client_tbl;
 	void *shared_client_info=(void *) 0;
 	int i = 0;
-	int j = 0;
 	char ip_buf[16] = {0};
 	char alias_buf[33] = {0};
 	char rmac_buf[32] = {0};
@@ -9653,8 +9672,6 @@ int get_amas_info(struct json_object *json_object_ptr) { //get cap and re info
 	char model_name_buf[33] = {0};
 	char fwver_buf[33] = {0};
 	char newfwver_buf[33] = {0};
-	struct json_object *allBrMacListObj = NULL;
-	struct json_object *macEntryObj = NULL;
 	int online = 0;
 	struct json_object *amas_client_attr = NULL;
 
@@ -9673,13 +9690,8 @@ int get_amas_info(struct json_object *json_object_ptr) { //get cap and re info
 		return 0;
 	}
 
-	allBrMacListObj = json_object_from_file(MAC_LIST_JSON_FILE);
-
 	p_client_tbl = (P_CM_CLIENT_TABLE)shared_client_info;
 	for(i = 0; i < p_client_tbl->count; i++) {
-		char macList[1024] = {0};
-		char *p = NULL;
-
 		memset(alias_buf, 0, sizeof(alias_buf));
 		memset(ip_buf, 0, sizeof(ip_buf));
 		memset(rmac_buf, 0, sizeof(rmac_buf));
@@ -9744,26 +9756,6 @@ int get_amas_info(struct json_object *json_object_ptr) { //get cap and re info
 		/* new firmware version */
 		snprintf(newfwver_buf, sizeof(newfwver_buf), "%s", p_client_tbl->newFwVer[i]);
 
-		if (allBrMacListObj) {
-			json_object_object_get_ex(allBrMacListObj, rmac_buf, &macEntryObj);
-			if (macEntryObj) {
-				int macEntryLen = json_object_array_length(macEntryObj);
-
-				if (macEntryLen) {
-					memset(macList, 0, sizeof(macList));
-					p = macList;
-					p += snprintf(p, sizeof(macList), "[");
-					for (j = 0; j < macEntryLen; j++) {
-						struct json_object *entry = json_object_array_get_idx(macEntryObj, j);
-						if (j) p += snprintf(p, sizeof(macList), ",");
-						p += snprintf(p, sizeof(macList), "\"%s\"", json_object_get_string(entry));
-					}
-					p += snprintf(p, sizeof(macList), "]");
-				}
-			}
-		}
-
-
 		if (i == 0)	/* DUT info */
 			online = 1;
 		else
@@ -9779,7 +9771,6 @@ int get_amas_info(struct json_object *json_object_ptr) { //get cap and re info
 		json_object_object_add(amas_client_attr, "ap2g", json_object_new_string((strcmp(ap2g_buf, "00:00:00:00:00:00")) ? ap2g_buf : ""));
 		json_object_object_add(amas_client_attr, "ap5g", json_object_new_string((strcmp(ap5g_buf, "00:00:00:00:00:00")) ? ap5g_buf : ""));
 		json_object_object_add(amas_client_attr, "ap5g1", json_object_new_string((strcmp(ap5g1_buf, "00:00:00:00:00:00")) ? ap5g1_buf : ""));
-		json_object_object_add(amas_client_attr, "wired_mac", json_object_new_string((strlen(macList)) ? macList : "[]"));
 		json_object_object_add(amas_client_attr, "pap2g", json_object_new_string((strlen(pap2g_buf)) ? pap2g_buf : ""));
 		json_object_object_add(amas_client_attr, "rssi2g", json_object_new_string((strlen(rssi2g_buf)) ? rssi2g_buf : ""));
 		json_object_object_add(amas_client_attr, "pap5g", json_object_new_string((strlen(pap5g_buf)) ? pap5g_buf : ""));
@@ -9792,9 +9783,6 @@ int get_amas_info(struct json_object *json_object_ptr) { //get cap and re info
 	}
 
 	shmdt(shared_client_info);
-
-	if (allBrMacListObj)
-		json_object_put(allBrMacListObj);
 
 	file_unlock(lock);
 
@@ -12788,7 +12776,7 @@ ftpServerTree_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 		return 0;
 	}
 	else
-		websWrite(wp,buf);
+		websWrite(wp,"%s",buf);
 
 	return 0;
 }
@@ -12920,31 +12908,54 @@ static void prefer_node_convert_nvram(char *re_mac, char *target_bssid, char *co
 	int shm_client_tbl_id;
 	P_CM_CLIENT_TABLE p_client_tbl;
 	void *shared_client_info = (void *)0;
- 	unsigned char ea[MAC_LEN];
+	unsigned char ea[MAC_LEN];
 	char ap2g_buf[18] = {};
 	char ap5g_buf[18] = {};
 	char ap5g1_buf[18] = {};
 	char ap6g_buf[18] = {};
 	int i;
 	char buf[128] = {}, tmp[32] = {};
+	char amas_wlc_key[sizeof("amas_wlcXXX_target_bssid")] = {};
+#ifdef RTCONFIG_MULTILAN_MWL
+	char ap6g1_buf[18] = {};
+	char base_apDwb_buf[18] = "00:00:00:00:00:00";
+	int base_dwb_band_type;
+	int base_sdn_support;
+	int target_sdn_support;
+	int is_dwb_band;
+	int bt;
+	int dual_5g_applicable;
+	int dual_6g_applicable;
+	int obtained;
+	char target_bssid_candidate[128] = {};
+#endif
 
 	/* Init Map table structure */
-	enum { BAND2G = 0, BAND5G = 1, BAND5G1 = 2, BAND6G = 3};
-	struct client_node_model_s
-	{
+#ifdef RTCONFIG_MULTILAN_MWL
+	enum { BAND2G = 0, BAND5G = 1, BAND5G1 = 2, BAND6G = 3, BAND6G1 = 4, BAND_MAX = 5 };
+#else
+	enum { BAND2G = 0, BAND5G = 1, BAND5G1 = 2, BAND6G = 3, BAND_MAX = 4 };
+#endif
+	struct client_node_model_s {
 		int bandNum;
-		int wlc_type[4];
+		int wlc_type[BAND_MAX];
 		int support_2g;
 		int support_5g;
 		int support_5g1;
 		int support_6g;
+#ifdef RTCONFIG_MULTILAN_MWL
+		int support_6g1;
+#endif
 	} client_model;
 	memset(&client_model, 0, sizeof(client_model));
 
-	struct target_node_model_s
-	{
+	struct target_node_model_s {
 		int bandNum;
-		char wl_ap_bssid[4][18];
+		char wl_ap_bssid[BAND_MAX][18];
+#ifdef RTCONFIG_MULTILAN_MWL
+		char wl_ap_fh_bssid[BAND_MAX][18];
+		char wl_ap_iot_bssid[BAND_MAX][18];
+#endif
 	} target_model;
 	memset(&target_model, 0, sizeof(target_model));
 
@@ -12973,19 +12984,16 @@ static void prefer_node_convert_nvram(char *re_mac, char *target_bssid, char *co
 				p_client_tbl->ap2g[i][0], p_client_tbl->ap2g[i][1],
 				p_client_tbl->ap2g[i][2], p_client_tbl->ap2g[i][3],
 				p_client_tbl->ap2g[i][4], p_client_tbl->ap2g[i][5]);
-
 			/* 5G */
 			snprintf(ap5g_buf, sizeof(ap5g_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
 				p_client_tbl->ap5g[i][0], p_client_tbl->ap5g[i][1],
 				p_client_tbl->ap5g[i][2], p_client_tbl->ap5g[i][3],
 				p_client_tbl->ap5g[i][4], p_client_tbl->ap5g[i][5]);
-
 			/* 5G1 */
 			snprintf(ap5g1_buf, sizeof(ap5g1_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
 				p_client_tbl->ap5g1[i][0], p_client_tbl->ap5g1[i][1],
 				p_client_tbl->ap5g1[i][2], p_client_tbl->ap5g1[i][3],
 				p_client_tbl->ap5g1[i][4], p_client_tbl->ap5g1[i][5]);
-
 			/* 6G */
 			snprintf(ap6g_buf, sizeof(ap6g_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
 				p_client_tbl->ap6g[i][0], p_client_tbl->ap6g[i][1],
@@ -12996,25 +13004,53 @@ static void prefer_node_convert_nvram(char *re_mac, char *target_bssid, char *co
 				client_model.support_2g = 1;
 			else
 				client_model.support_2g = 0;
-
 			if (strcmp(ap5g_buf, "00:00:00:00:00:00"))
 				client_model.support_5g = 1;
 			else
 				client_model.support_5g = 0;
-
 			if (strcmp(ap5g1_buf, "00:00:00:00:00:00"))
 				client_model.support_5g1 = 1;
 			else
 				client_model.support_5g1 = 0;
-
 			if (strcmp(ap6g_buf, "00:00:00:00:00:00"))
 				client_model.support_6g = 1;
 			else
 				client_model.support_6g = 0;
-
 			client_model.bandNum = p_client_tbl->bandnum[i];
+#ifdef RTCONFIG_MULTILAN_MWL
+			/* 6G1 */
+			snprintf(ap6g1_buf, sizeof(ap6g1_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+				p_client_tbl->ap6g1[i][0], p_client_tbl->ap6g1[i][1],
+				p_client_tbl->ap6g1[i][2], p_client_tbl->ap6g1[i][3],
+				p_client_tbl->ap6g1[i][4], p_client_tbl->ap6g1[i][5]);
+			if (strcmp(ap6g1_buf, "00:00:00:00:00:00"))
+				client_model.support_6g1 = 1;
+			else
+				client_model.support_6g1 = 0;
+			/* DWB BSSID — matched against band BH BSSIDs to identify DWB band type */
+			snprintf(base_apDwb_buf, sizeof(base_apDwb_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+				p_client_tbl->apDwb[i][0], p_client_tbl->apDwb[i][1],
+				p_client_tbl->apDwb[i][2], p_client_tbl->apDwb[i][3],
+				p_client_tbl->apDwb[i][4], p_client_tbl->apDwb[i][5]);
+#endif
 		}
 	}
+
+#ifdef RTCONFIG_MULTILAN_MWL
+	/* Determine DWB band type by matching DWB BSSID against per-band BH BSSIDs.
+	 * Non-SDN base RE does not report apDwb, so base_apDwb_buf stays "00:00:00:00:00:00". */
+	base_dwb_band_type = -1;
+	if (strcmp(base_apDwb_buf, "00:00:00:00:00:00") != 0) {
+		if (!strcmp(base_apDwb_buf, ap5g_buf))
+			base_dwb_band_type = BAND5G;
+		else if (!strcmp(base_apDwb_buf, ap5g1_buf))
+			base_dwb_band_type = BAND5G1;
+		else if (!strcmp(base_apDwb_buf, ap6g_buf))
+			base_dwb_band_type = BAND6G;
+		else if (!strcmp(base_apDwb_buf, ap6g1_buf))
+			base_dwb_band_type = BAND6G1;
+	}
+#endif
 
 	i = 0;
 	if (client_model.support_2g == 1) {
@@ -13033,68 +13069,157 @@ static void prefer_node_convert_nvram(char *re_mac, char *target_bssid, char *co
 		client_model.wlc_type[i] = BAND6G;
 		i++;
 	}
+#ifdef RTCONFIG_MULTILAN_MWL
+	if (client_model.support_6g1 == 1) {
+		client_model.wlc_type[i] = BAND6G1;
+		i++;
+	}
+#endif
 
-	/* Step 2. Get target node band number & type */
+	/* Step 2. Get target node BSSIDs */
 	ether_atoe(target_bssid, ea);
 	for(i = 0 ; i < p_client_tbl->count; i++) {
 		if (memcmp(p_client_tbl->realMacAddr[i], ea, MAC_LEN) == 0) {
-			/* 2.4G */
+			/* 2G BH */
 			snprintf(ap2g_buf, sizeof(ap2g_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
 				p_client_tbl->ap2g[i][0], p_client_tbl->ap2g[i][1],
 				p_client_tbl->ap2g[i][2], p_client_tbl->ap2g[i][3],
 				p_client_tbl->ap2g[i][4], p_client_tbl->ap2g[i][5]);
-
-			/* 5G */
+			if (strcmp(ap2g_buf, "00:00:00:00:00:00")) {
+				toUpperCase(ap2g_buf);
+				strncpy(target_model.wl_ap_bssid[BAND2G], ap2g_buf, sizeof(target_model.wl_ap_bssid[BAND2G]) - 1);
+			} else {
+				target_model.wl_ap_bssid[BAND2G][0] = '\0';
+			}
+			/* 5G BH */
 			snprintf(ap5g_buf, sizeof(ap5g_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
 				p_client_tbl->ap5g[i][0], p_client_tbl->ap5g[i][1],
 				p_client_tbl->ap5g[i][2], p_client_tbl->ap5g[i][3],
 				p_client_tbl->ap5g[i][4], p_client_tbl->ap5g[i][5]);
-
-			/* 5G1 */
+			if (strcmp(ap5g_buf, "00:00:00:00:00:00")) {
+				toUpperCase(ap5g_buf);
+				strncpy(target_model.wl_ap_bssid[BAND5G], ap5g_buf, sizeof(target_model.wl_ap_bssid[BAND5G]) - 1);
+			} else {
+				target_model.wl_ap_bssid[BAND5G][0] = '\0';
+			}
+			/* 5G1 BH */
 			snprintf(ap5g1_buf, sizeof(ap5g1_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
 				p_client_tbl->ap5g1[i][0], p_client_tbl->ap5g1[i][1],
 				p_client_tbl->ap5g1[i][2], p_client_tbl->ap5g1[i][3],
 				p_client_tbl->ap5g1[i][4], p_client_tbl->ap5g1[i][5]);
-
-			/* 6G */
+			if (strcmp(ap5g1_buf, "00:00:00:00:00:00")) {
+				toUpperCase(ap5g1_buf);
+				strncpy(target_model.wl_ap_bssid[BAND5G1], ap5g1_buf, sizeof(target_model.wl_ap_bssid[BAND5G1]) - 1);
+			} else {
+				target_model.wl_ap_bssid[BAND5G1][0] = '\0';
+			}
+			/* 6G BH */
 			snprintf(ap6g_buf, sizeof(ap6g_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
 				p_client_tbl->ap6g[i][0], p_client_tbl->ap6g[i][1],
 				p_client_tbl->ap6g[i][2], p_client_tbl->ap6g[i][3],
 				p_client_tbl->ap6g[i][4], p_client_tbl->ap6g[i][5]);
-
-			if (strcmp(ap2g_buf, "00:00:00:00:00:00")) {
-				toUpperCase(ap2g_buf);
-				strncpy(target_model.wl_ap_bssid[BAND2G], ap2g_buf, sizeof(target_model.wl_ap_bssid[BAND2G]) - 1);
-			}
-			else {
-				target_model.wl_ap_bssid[BAND2G][0] = '\0';
-			}
-
-			if (strcmp(ap5g_buf, "00:00:00:00:00:00")) {
-				toUpperCase(ap5g_buf);
-				strncpy(target_model.wl_ap_bssid[BAND5G], ap5g_buf, sizeof(target_model.wl_ap_bssid[BAND5G]) - 1);
-			}
-			else {
-				target_model.wl_ap_bssid[BAND5G][0] = '\0';
-			}
-
-			if (strcmp(ap5g1_buf, "00:00:00:00:00:00")) {
-				toUpperCase(ap5g1_buf);
-				strncpy(target_model.wl_ap_bssid[BAND5G1], ap5g1_buf, sizeof(target_model.wl_ap_bssid[BAND5G1]) - 1);
-			}
-			else {
-				target_model.wl_ap_bssid[BAND5G1][0] = '\0';
-			}
-
 			if (strcmp(ap6g_buf, "00:00:00:00:00:00")) {
 				toUpperCase(ap6g_buf);
 				strncpy(target_model.wl_ap_bssid[BAND6G], ap6g_buf, sizeof(target_model.wl_ap_bssid[BAND6G]) - 1);
-			}
-			else {
+			} else {
 				target_model.wl_ap_bssid[BAND6G][0] = '\0';
 			}
-
 			target_model.bandNum = p_client_tbl->bandnum[i];
+#ifdef RTCONFIG_MULTILAN_MWL
+			/* 6G1 BH */
+			snprintf(ap6g1_buf, sizeof(ap6g1_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+				p_client_tbl->ap6g1[i][0], p_client_tbl->ap6g1[i][1],
+				p_client_tbl->ap6g1[i][2], p_client_tbl->ap6g1[i][3],
+				p_client_tbl->ap6g1[i][4], p_client_tbl->ap6g1[i][5]);
+			if (strcmp(ap6g1_buf, "00:00:00:00:00:00")) {
+				toUpperCase(ap6g1_buf);
+				strncpy(target_model.wl_ap_bssid[BAND6G1], ap6g1_buf, sizeof(target_model.wl_ap_bssid[BAND6G1]) - 1);
+			} else {
+				target_model.wl_ap_bssid[BAND6G1][0] = '\0';
+			}
+			/* MainFH BSSIDs */
+			snprintf(ap2g_buf, sizeof(ap2g_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+				p_client_tbl->ap2g_fh[i][0], p_client_tbl->ap2g_fh[i][1],
+				p_client_tbl->ap2g_fh[i][2], p_client_tbl->ap2g_fh[i][3],
+				p_client_tbl->ap2g_fh[i][4], p_client_tbl->ap2g_fh[i][5]);
+			if (strcmp(ap2g_buf, "00:00:00:00:00:00")) {
+				toUpperCase(ap2g_buf);
+				strncpy(target_model.wl_ap_fh_bssid[BAND2G], ap2g_buf, sizeof(target_model.wl_ap_fh_bssid[BAND2G]) - 1);
+			}
+			snprintf(ap5g_buf, sizeof(ap5g_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+				p_client_tbl->ap5g_fh[i][0], p_client_tbl->ap5g_fh[i][1],
+				p_client_tbl->ap5g_fh[i][2], p_client_tbl->ap5g_fh[i][3],
+				p_client_tbl->ap5g_fh[i][4], p_client_tbl->ap5g_fh[i][5]);
+			if (strcmp(ap5g_buf, "00:00:00:00:00:00")) {
+				toUpperCase(ap5g_buf);
+				strncpy(target_model.wl_ap_fh_bssid[BAND5G], ap5g_buf, sizeof(target_model.wl_ap_fh_bssid[BAND5G]) - 1);
+			}
+			snprintf(ap5g1_buf, sizeof(ap5g1_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+				p_client_tbl->ap5g1_fh[i][0], p_client_tbl->ap5g1_fh[i][1],
+				p_client_tbl->ap5g1_fh[i][2], p_client_tbl->ap5g1_fh[i][3],
+				p_client_tbl->ap5g1_fh[i][4], p_client_tbl->ap5g1_fh[i][5]);
+			if (strcmp(ap5g1_buf, "00:00:00:00:00:00")) {
+				toUpperCase(ap5g1_buf);
+				strncpy(target_model.wl_ap_fh_bssid[BAND5G1], ap5g1_buf, sizeof(target_model.wl_ap_fh_bssid[BAND5G1]) - 1);
+			}
+			snprintf(ap6g_buf, sizeof(ap6g_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+				p_client_tbl->ap6g_fh[i][0], p_client_tbl->ap6g_fh[i][1],
+				p_client_tbl->ap6g_fh[i][2], p_client_tbl->ap6g_fh[i][3],
+				p_client_tbl->ap6g_fh[i][4], p_client_tbl->ap6g_fh[i][5]);
+			if (strcmp(ap6g_buf, "00:00:00:00:00:00")) {
+				toUpperCase(ap6g_buf);
+				strncpy(target_model.wl_ap_fh_bssid[BAND6G], ap6g_buf, sizeof(target_model.wl_ap_fh_bssid[BAND6G]) - 1);
+			}
+			snprintf(ap6g1_buf, sizeof(ap6g1_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+				p_client_tbl->ap6g1_fh[i][0], p_client_tbl->ap6g1_fh[i][1],
+				p_client_tbl->ap6g1_fh[i][2], p_client_tbl->ap6g1_fh[i][3],
+				p_client_tbl->ap6g1_fh[i][4], p_client_tbl->ap6g1_fh[i][5]);
+			if (strcmp(ap6g1_buf, "00:00:00:00:00:00")) {
+				toUpperCase(ap6g1_buf);
+				strncpy(target_model.wl_ap_fh_bssid[BAND6G1], ap6g1_buf, sizeof(target_model.wl_ap_fh_bssid[BAND6G1]) - 1);
+			}
+			/* IoT FH BSSIDs */
+			snprintf(ap2g_buf, sizeof(ap2g_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+				p_client_tbl->ap2g_iot_fh[i][0], p_client_tbl->ap2g_iot_fh[i][1],
+				p_client_tbl->ap2g_iot_fh[i][2], p_client_tbl->ap2g_iot_fh[i][3],
+				p_client_tbl->ap2g_iot_fh[i][4], p_client_tbl->ap2g_iot_fh[i][5]);
+			if (strcmp(ap2g_buf, "00:00:00:00:00:00")) {
+				toUpperCase(ap2g_buf);
+				strncpy(target_model.wl_ap_iot_bssid[BAND2G], ap2g_buf, sizeof(target_model.wl_ap_iot_bssid[BAND2G]) - 1);
+			}
+			snprintf(ap5g_buf, sizeof(ap5g_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+				p_client_tbl->ap5g_iot_fh[i][0], p_client_tbl->ap5g_iot_fh[i][1],
+				p_client_tbl->ap5g_iot_fh[i][2], p_client_tbl->ap5g_iot_fh[i][3],
+				p_client_tbl->ap5g_iot_fh[i][4], p_client_tbl->ap5g_iot_fh[i][5]);
+			if (strcmp(ap5g_buf, "00:00:00:00:00:00")) {
+				toUpperCase(ap5g_buf);
+				strncpy(target_model.wl_ap_iot_bssid[BAND5G], ap5g_buf, sizeof(target_model.wl_ap_iot_bssid[BAND5G]) - 1);
+			}
+			snprintf(ap5g1_buf, sizeof(ap5g1_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+				p_client_tbl->ap5g1_iot_fh[i][0], p_client_tbl->ap5g1_iot_fh[i][1],
+				p_client_tbl->ap5g1_iot_fh[i][2], p_client_tbl->ap5g1_iot_fh[i][3],
+				p_client_tbl->ap5g1_iot_fh[i][4], p_client_tbl->ap5g1_iot_fh[i][5]);
+			if (strcmp(ap5g1_buf, "00:00:00:00:00:00")) {
+				toUpperCase(ap5g1_buf);
+				strncpy(target_model.wl_ap_iot_bssid[BAND5G1], ap5g1_buf, sizeof(target_model.wl_ap_iot_bssid[BAND5G1]) - 1);
+			}
+			snprintf(ap6g_buf, sizeof(ap6g_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+				p_client_tbl->ap6g_iot_fh[i][0], p_client_tbl->ap6g_iot_fh[i][1],
+				p_client_tbl->ap6g_iot_fh[i][2], p_client_tbl->ap6g_iot_fh[i][3],
+				p_client_tbl->ap6g_iot_fh[i][4], p_client_tbl->ap6g_iot_fh[i][5]);
+			if (strcmp(ap6g_buf, "00:00:00:00:00:00")) {
+				toUpperCase(ap6g_buf);
+				strncpy(target_model.wl_ap_iot_bssid[BAND6G], ap6g_buf, sizeof(target_model.wl_ap_iot_bssid[BAND6G]) - 1);
+			}
+			snprintf(ap6g1_buf, sizeof(ap6g1_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+				p_client_tbl->ap6g1_iot_fh[i][0], p_client_tbl->ap6g1_iot_fh[i][1],
+				p_client_tbl->ap6g1_iot_fh[i][2], p_client_tbl->ap6g1_iot_fh[i][3],
+				p_client_tbl->ap6g1_iot_fh[i][4], p_client_tbl->ap6g1_iot_fh[i][5]);
+			if (strcmp(ap6g1_buf, "00:00:00:00:00:00")) {
+				toUpperCase(ap6g1_buf);
+				strncpy(target_model.wl_ap_iot_bssid[BAND6G1], ap6g1_buf, sizeof(target_model.wl_ap_iot_bssid[BAND6G1]) - 1);
+			}
+#endif
 		}
 	}
 
@@ -13105,25 +13230,144 @@ static void prefer_node_convert_nvram(char *re_mac, char *target_bssid, char *co
 	res = json_object_new_object();
 
 	toUpperCase(target_bssid);
-	memset(&buf, 0, sizeof(tmp));
+	memset(buf, 0, sizeof(buf));
 	if (strlen(target_bssid) > 0) {
 		snprintf(tmp, sizeof(tmp), "<%s", target_bssid);
 		strlcat(buf, tmp, sizeof(buf));
-	} else {
-		buf[0] = '\0';
 	}
 	json_object_object_add(res, "amas_wlc_target_bssid", json_object_new_string(buf));
 
+#ifdef RTCONFIG_MULTILAN_MWL
+	base_sdn_support = is_sdn_supported(re_mac);
+	target_sdn_support = is_sdn_supported(target_bssid);
+
+	/*
+	 * MWL_BUILD_BSSID_CANDIDATE(bt, arr, d5g, d6g):
+	 *   Build target_bssid_candidate from BSSID array arr[] for band type bt.
+	 *   d5g: base single-5G vs target dual-5G → <5G-2_BSSID<5G-1_BSSID
+	 *   d6g: base single-6G vs target dual-6G → <6G-1_BSSID<6G-2_BSSID
+	 */
+#define MWL_BUILD_BSSID_CANDIDATE(bt, arr, d5g, d6g) \
+	do { \
+		memset(target_bssid_candidate, 0, sizeof(target_bssid_candidate)); \
+		if ((bt) == BAND2G) { \
+			if (strlen((arr)[BAND2G]) > 0) { \
+				snprintf(tmp, sizeof(tmp), "<%s", (arr)[BAND2G]); \
+				strlcat(target_bssid_candidate, tmp, sizeof(target_bssid_candidate)); \
+			} \
+		} else if (d5g) { \
+			if (strlen((arr)[BAND5G1]) > 0) { \
+				snprintf(tmp, sizeof(tmp), "<%s", (arr)[BAND5G1]); \
+				strlcat(target_bssid_candidate, tmp, sizeof(target_bssid_candidate)); \
+			} \
+			if (strlen((arr)[BAND5G]) > 0) { \
+				snprintf(tmp, sizeof(tmp), "<%s", (arr)[BAND5G]); \
+				strlcat(target_bssid_candidate, tmp, sizeof(target_bssid_candidate)); \
+			} \
+		} else if ((bt) == BAND5G) { \
+			if (strlen((arr)[BAND5G]) > 0) { \
+				snprintf(tmp, sizeof(tmp), "<%s", (arr)[BAND5G]); \
+				strlcat(target_bssid_candidate, tmp, sizeof(target_bssid_candidate)); \
+			} \
+		} else if ((bt) == BAND5G1) { \
+			if (strlen((arr)[BAND5G1]) > 0) { \
+				snprintf(tmp, sizeof(tmp), "<%s", (arr)[BAND5G1]); \
+				strlcat(target_bssid_candidate, tmp, sizeof(target_bssid_candidate)); \
+			} \
+		} else if (d6g) { \
+			if (strlen((arr)[BAND6G]) > 0) { \
+				snprintf(tmp, sizeof(tmp), "<%s", (arr)[BAND6G]); \
+				strlcat(target_bssid_candidate, tmp, sizeof(target_bssid_candidate)); \
+			} \
+			if (strlen((arr)[BAND6G1]) > 0) { \
+				snprintf(tmp, sizeof(tmp), "<%s", (arr)[BAND6G1]); \
+				strlcat(target_bssid_candidate, tmp, sizeof(target_bssid_candidate)); \
+			} \
+		} else if ((bt) == BAND6G) { \
+			if (strlen((arr)[BAND6G]) > 0) { \
+				snprintf(tmp, sizeof(tmp), "<%s", (arr)[BAND6G]); \
+				strlcat(target_bssid_candidate, tmp, sizeof(target_bssid_candidate)); \
+			} \
+		} else if ((bt) == BAND6G1) { \
+			if (strlen((arr)[BAND6G1]) > 0) { \
+				snprintf(tmp, sizeof(tmp), "<%s", (arr)[BAND6G1]); \
+				strlcat(target_bssid_candidate, tmp, sizeof(target_bssid_candidate)); \
+			} \
+		} \
+	} while (0)
+#endif
+
 	for (i = 0; i < client_model.bandNum; i++) {
-		memset(&buf, 0, sizeof(tmp));
-		char amas_wlc_target_bssid[] = "amas_wlcXXX_target_bssid";
-		snprintf(amas_wlc_target_bssid, sizeof(amas_wlc_target_bssid), "amas_wlc%d_target_bssid", i);
-		if (client_model.wlc_type[i] == BAND2G) {  // 2.4G
+		memset(buf, 0, sizeof(buf));
+		snprintf(amas_wlc_key, sizeof(amas_wlc_key), "amas_wlc%d_target_bssid", i);
+#ifdef RTCONFIG_MULTILAN_MWL
+		bt = client_model.wlc_type[i];
+		/* is_dwb_band: this wlc index is the DWB band on the base RE */
+		is_dwb_band = (base_sdn_support && bt == base_dwb_band_type);
+		/* dual_5g_applicable: base has single 5G but target has dual 5G */
+		dual_5g_applicable = (bt == BAND5G && !client_model.support_5g1 &&
+			strlen(target_model.wl_ap_bssid[BAND5G1]) > 0);
+		/* dual_6g_applicable: base has single 6G but target has dual 6G */
+		dual_6g_applicable = (bt == BAND6G && !client_model.support_6g1 &&
+			strlen(target_model.wl_ap_bssid[BAND6G1]) > 0);
+		obtained = 0;
+		if (!base_sdn_support && target_sdn_support) {
+			/* Case 1: base no-SDN, target SDN
+			 * non-dwb: MainFH → IoT FH → no bssid
+			 * dwb:     MainFH → MainBH */
+			if (!is_dwb_band) {
+				MWL_BUILD_BSSID_CANDIDATE(bt, target_model.wl_ap_fh_bssid,
+					dual_5g_applicable, dual_6g_applicable);
+				if (strlen(target_bssid_candidate) > 0) {
+					strlcpy(buf, target_bssid_candidate, sizeof(buf));
+					obtained = 1;
+				}
+				if (!obtained) {
+					MWL_BUILD_BSSID_CANDIDATE(bt, target_model.wl_ap_iot_bssid,
+						dual_5g_applicable, dual_6g_applicable);
+					if (strlen(target_bssid_candidate) > 0)
+						strlcpy(buf, target_bssid_candidate, sizeof(buf));
+				}
+			} else {
+				MWL_BUILD_BSSID_CANDIDATE(bt, target_model.wl_ap_fh_bssid,
+					dual_5g_applicable, dual_6g_applicable);
+				if (strlen(target_bssid_candidate) > 0) {
+					strlcpy(buf, target_bssid_candidate, sizeof(buf));
+					obtained = 1;
+				}
+				if (!obtained) {
+					MWL_BUILD_BSSID_CANDIDATE(bt, target_model.wl_ap_bssid,
+						dual_5g_applicable, dual_6g_applicable);
+					if (strlen(target_bssid_candidate) > 0)
+						strlcpy(buf, target_bssid_candidate, sizeof(buf));
+				}
+			}
+		} else if (base_sdn_support && !target_sdn_support) {
+			/* Case 2: base SDN, target no-SDN → MainBH */
+			MWL_BUILD_BSSID_CANDIDATE(bt, target_model.wl_ap_bssid,
+				dual_5g_applicable, dual_6g_applicable);
+			if (strlen(target_bssid_candidate) > 0)
+				strlcpy(buf, target_bssid_candidate, sizeof(buf));
+		} else if (!base_sdn_support && !target_sdn_support) {
+			/* Case 3: both no-SDN → MainBH */
+			MWL_BUILD_BSSID_CANDIDATE(bt, target_model.wl_ap_bssid,
+				dual_5g_applicable, dual_6g_applicable);
+			if (strlen(target_bssid_candidate) > 0)
+				strlcpy(buf, target_bssid_candidate, sizeof(buf));
+		} else {
+			/* Case 4: both SDN → MainBH */
+			MWL_BUILD_BSSID_CANDIDATE(bt, target_model.wl_ap_bssid,
+				dual_5g_applicable, dual_6g_applicable);
+			if (strlen(target_bssid_candidate) > 0)
+				strlcpy(buf, target_bssid_candidate, sizeof(buf));
+		}
+#else
+		if (client_model.wlc_type[i] == BAND2G) {
 			if (strlen(target_model.wl_ap_bssid[BAND2G]) > 0) {
 				snprintf(tmp, sizeof(tmp), "<%s", target_model.wl_ap_bssid[BAND2G]);
 				strlcat(buf, tmp, sizeof(buf));
 			}
-		} else if (client_model.wlc_type[i] == BAND5G || client_model.wlc_type[i] == BAND5G1) {  // 5G, 5G1
+		} else if (client_model.wlc_type[i] == BAND5G || client_model.wlc_type[i] == BAND5G1) {
 			if (strlen(target_model.wl_ap_bssid[BAND5G1]) > 0) {
 				snprintf(tmp, sizeof(tmp), "<%s", target_model.wl_ap_bssid[BAND5G1]);
 				strlcat(buf, tmp, sizeof(buf));
@@ -13132,19 +13376,19 @@ static void prefer_node_convert_nvram(char *re_mac, char *target_bssid, char *co
 				snprintf(tmp, sizeof(tmp), "<%s", target_model.wl_ap_bssid[BAND5G]);
 				strlcat(buf, tmp, sizeof(buf));
 			}
-		} else if (client_model.wlc_type[i] == BAND6G) {  // 6G
+		} else if (client_model.wlc_type[i] == BAND6G) {
 			if (strlen(target_model.wl_ap_bssid[BAND6G]) > 0) {
 				snprintf(tmp, sizeof(tmp), "<%s", target_model.wl_ap_bssid[BAND6G]);
 				strlcat(buf, tmp, sizeof(buf));
 			}
 		}
-
-		if (strlen(buf) > 0) {
-			json_object_object_add(res, amas_wlc_target_bssid, json_object_new_string(buf));
-		} else {
-			json_object_object_add(res, amas_wlc_target_bssid, json_object_new_string(""));
-		}
+#endif
+		json_object_object_add(res, amas_wlc_key, json_object_new_string(buf));
 	}
+#ifdef RTCONFIG_MULTILAN_MWL
+#undef MWL_BUILD_BSSID_CANDIDATE
+#endif
+
 	snprintf(config_converted, size, "%s", json_object_to_json_string(res));
 	json_object_put(res);
 
@@ -13419,7 +13663,7 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 			p = strchr(system_cmd, ' ');
 			if (sel && (get_nr_wan_unit() < 2 || !p))
 				sel = 0;
-			wan = get_wan_ifname(atoi(u));
+			wan = sel ? get_wan_ifname(atoi(u)) : NULL;
 			if (sel && (!wan || *wan == '\0')) {
 				dbg("%s: Can't get WAN interface of unit %s\n", __func__, u? u : "NULL");
 				sel = 0;
@@ -13474,10 +13718,6 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 			sys_script("syscmd.sh");
 
 		}
-		else if(!strcmp(current_url, "Main_AdmStatus_Content.asp"))
-		{
-			system_cmd_test(system_cmd, SystemCmd, sizeof(SystemCmd));
-		}
 		else if(!strcmp(current_url, "Main_ConnStatus_Content.asp") &&
 			(strncasecmp(system_cmd, "netstat-nat", 11) == 0)){
 			strlcpy(SystemCmd, system_cmd, sizeof(SystemCmd));
@@ -13521,7 +13761,8 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 	}
 	else if (!strcmp(action_mode, "logout")) // but, every one can reset it by this call
 	{
-		websRedirect(wp, "Logout.asp");
+		http_logout(&login_uip_tmp, cookies_buf, check_user_agent(user_agent));
+		websRedirect(wp, "Main_Login.asp");
 	}
 	else if (!strcmp(action_mode, "change_wl_unit"))
 	{
@@ -14515,22 +14756,30 @@ wps_finish:
 			event_id = EID_HTTPD_SELF_OPTIMIZE;
 #endif
 
-		snprintf(event_msg, sizeof(event_msg), HTTPD_SLAVE_MSG, event_id, slave_mac);
-
-		if (strlen(event_msg))
+		if (slave_mac && isValidMacAddress(slave_mac)) {
+			snprintf(event_msg, sizeof(event_msg), HTTPD_SLAVE_MSG, event_id, slave_mac);
 			send_cfgmnt_event(event_msg);
+		} else {
+			HTTPD_DBG("invalid slave_mac\n");
+		}
 	}
 	else if (!strcmp(action_mode, "reset_default")) {
 		char event_msg[1024] = {0}, mac_list[512] = {0};
 		char *nv, *nvp, *b;
 		char *slave_mac = get_cgi_json("slave_mac", root);
 		int first = 1, event_id = EID_HTTPD_RESET_DEFAULT;
+		int invalid_mac = 0;
 
 		strlcat(mac_list, "[", sizeof(mac_list));
 		if (slave_mac) {
 			nv = nvp = strdup(slave_mac);
 			if (nv && (strlen(nv) > 0)) {
 				while ((b = strsep(&nvp, ",")) != NULL) {
+					if (!isValidMacAddress(b)) {
+						HTTPD_DBG("invalid mac\n");
+						invalid_mac = 1;
+						break;
+					}
 					if (first)
 						first = 0;
 					else
@@ -14544,10 +14793,14 @@ wps_finish:
 		}
 		strlcat(mac_list, "]", sizeof(mac_list));
 
-		snprintf(event_msg, sizeof(event_msg), HTTPD_SLAVE_LIST_MSG, event_id, mac_list);
+		if (invalid_mac) {
+			HTTPD_DBG("abort due to invalid mac in list\n");
+		} else {
+			snprintf(event_msg, sizeof(event_msg), HTTPD_SLAVE_LIST_MSG, event_id, mac_list);
 
-		if (strlen(event_msg))
-			send_cfgmnt_event(event_msg);
+			if (strlen(event_msg))
+				send_cfgmnt_event(event_msg);
+		}
 	}
 	else if (!strcmp(action_mode, "start_wps_registrar")) {
 		char event_msg[64] = {0};
@@ -14565,39 +14818,52 @@ wps_finish:
 		char *re_mac = get_cgi_json("re_mac", root);
 		char *new_re_mac = get_cgi_json("new_re_mac", root);
 
-		if (!re_mac && !new_re_mac)
+		if (!re_mac && !new_re_mac) {
 			snprintf(event_msg, sizeof(event_msg), HTTPD_OB_AVAILABLE_MSG,
 				EID_HTTPD_ONBOARDING, OB_TYPE_AVAILABLE);
-		else if (re_mac && new_re_mac)
-			snprintf(event_msg, sizeof(event_msg), HTTPD_OB_LOCK_MSG,
-				EID_HTTPD_ONBOARDING, OB_TYPE_LOCKED, re_mac, new_re_mac);
+		} else if (re_mac && new_re_mac) {
+			if (isValidMacAddress(re_mac) && isValidMacAddress(new_re_mac)) {
+				snprintf(event_msg, sizeof(event_msg), HTTPD_OB_LOCK_MSG,
+					EID_HTTPD_ONBOARDING, OB_TYPE_LOCKED, re_mac, new_re_mac);
+			} else {
+				HTTPD_DBG("invalid mac input\n");
+			}
+		}
 
 		if (strlen(event_msg))
 			send_cfgmnt_event(event_msg);
 	}
-        else if (!strcmp(action_mode, "ob_selection")) {
+	else if (!strcmp(action_mode, "ob_selection")) {
 		char event_msg[128] = {0};
 		char *new_re_mac = get_cgi_json("new_re_mac", root);
 		char *ob_path = get_cgi_json("ob_path", root);
 
-		snprintf(event_msg, sizeof(event_msg), HTTPD_OB_SELECTION_MSG,
-			EID_HTTPD_ONBOARDING, OB_TYPE_AVAILABLE, new_re_mac ? : "",
-			ob_path ? atoi(ob_path) : 0);
+		if (new_re_mac && !isValidMacAddress(new_re_mac)) {
+			HTTPD_DBG("invalid new_re_mac\n");
+		} else {
+			snprintf(event_msg, sizeof(event_msg), HTTPD_OB_SELECTION_MSG,
+				EID_HTTPD_ONBOARDING, OB_TYPE_AVAILABLE, new_re_mac ? : "",
+				ob_path ? (int)strtol(ob_path, NULL, 10) : 0);
 
-		if (strlen(event_msg))
-			send_cfgmnt_event(event_msg);
-        }
+			if (strlen(event_msg))
+				send_cfgmnt_event(event_msg);
+		}
+	}
 	else if (!strcmp(action_mode, "config_changed")) {
 		char event_msg[4096] = {0};
 		char *re_mac = get_cgi_json("re_mac", root);
 		char *config = get_cgi_json("config", root);
 		if (re_mac && config) {
-			snprintf(event_msg, sizeof(event_msg), HTTPD_CONFIG_CHANGED_MSG,
-				EID_HTTPD_CONFIG_CHANGED, re_mac, config);
-			send_cfgmnt_event(event_msg);
+			if (!isValidMacAddress(re_mac)) {
+				HTTPD_DBG("invalid re_mac\n");
+			} else {
+				snprintf(event_msg, sizeof(event_msg), HTTPD_CONFIG_CHANGED_MSG,
+					EID_HTTPD_CONFIG_CHANGED, re_mac, config);
+				send_cfgmnt_event(event_msg);
+			}
+		} else {
+			HTTPD_DBG("re_mac or config invalid");
 		}
-		else
-			_dprintf("re_mac or config invalid");
 	}
 	else if (!strcmp(action_mode, "rbk_fw")) {
 		char *model = get_cgi_json("model", root);
@@ -14630,7 +14896,7 @@ wps_finish:
 		!strcmp(action_mode, "re_reconnect") ||
 		!strcmp(action_mode, "force_roaming")
 	) {
-		char event_msg[1024] = {0}, mac_list[512] = {0}, data[1024] = {0};
+		char event_msg[2048] = {0}, mac_list[1024] = {0}, data[512] = {0};
 		char *dev_list = get_cgi_json("device_list", root);
 		char *client_mac = get_cgi_json("client_mac", root);
 		char *block_time = get_cgi_json("block_time", root);
@@ -14638,12 +14904,18 @@ wps_finish:
 		char *nv, *nvp, *b;
 		int first = 1, event_id = 0;
 		char value[128];
+		int invalid_dev_mac = 0;
 
 		strlcat(mac_list, "[", sizeof(mac_list));
 		if (dev_list) {
 			nv = nvp = strdup(dev_list);
 			if (nv && (strlen(nv) > 0)) {
 				while ((b = strsep(&nvp, ",")) != NULL) {
+					if (!isValidMacAddress(b)) {
+						HTTPD_DBG("invalid dev\n");
+						invalid_dev_mac = 1;
+						break;
+					}
 					if (first)
 						first = 0;
 					else
@@ -14657,43 +14929,55 @@ wps_finish:
 		}
 		strlcat(mac_list, "]", sizeof(mac_list));
 
-		if (!strcmp(action_mode, "device_reboot")) {
-			event_id = EID_HTTPD_REBOOT;
-		} else if (!strcmp(action_mode, "re_reconnect")) {
-			event_id = EID_HTTPD_RE_RECONNECT;
-		} else if (!strcmp(action_mode, "force_roaming")) {
-			if (client_mac) {
-				event_id = EID_HTTPD_FORCE_ROAMING;
-				strlcat(data, "{", sizeof(data));
-				memset(value, 0, sizeof(value));
-				snprintf(value, sizeof(value), "\"%s\":\"%s\"", STA, client_mac);
-				strlcat(data, value, sizeof(data));
-				if (block_time) {
+		if (invalid_dev_mac) {
+			HTTPD_DBG("abort due to invalid mac in list\n");
+		} else {
+			if (!strcmp(action_mode, "device_reboot")) {
+				event_id = EID_HTTPD_REBOOT;
+			} else if (!strcmp(action_mode, "re_reconnect")) {
+				event_id = EID_HTTPD_RE_RECONNECT;
+			} else if (!strcmp(action_mode, "force_roaming")) {
+				if (client_mac && isValidMacAddress(client_mac)) {
+					event_id = EID_HTTPD_FORCE_ROAMING;
+					strlcat(data, "{", sizeof(data));
 					memset(value, 0, sizeof(value));
-					snprintf(value, sizeof(value), ",\"%s\":\"%s\"", BLOCK_TIME, block_time);
+					snprintf(value, sizeof(value), "\"%s\":\"%s\"", STA, client_mac);
 					strlcat(data, value, sizeof(data));
-				}
+					if (block_time) {
+						if (isValid_digit_string(block_time)) {
+							memset(value, 0, sizeof(value));
+							snprintf(value, sizeof(value), ",\"%s\":\"%s\"", BLOCK_TIME, block_time);
+							strlcat(data, value, sizeof(data));
+						} else {
+							HTTPD_DBG("invalid block_time\n");
+						}
+					}
 
-				if (target_ap) {
-					memset(value, 0, sizeof(value));
-					snprintf(value, sizeof(value), ",\"%s\":\"%s\"", TARGET_AP, target_ap);
-					strlcat(data, value, sizeof(data));
+					if (target_ap) {
+						if (isValidMacAddress(target_ap)) {
+							memset(value, 0, sizeof(value));
+							snprintf(value, sizeof(value), ",\"%s\":\"%s\"", TARGET_AP, target_ap);
+							strlcat(data, value, sizeof(data));
+						} else {
+							HTTPD_DBG("invalid target_ap\n");
+						}
+					}
+					strlcat(data, "}", sizeof(data));
+				} else {
+					HTTPD_DBG("no client mac or invalid client mac\n");
 				}
-				strlcat(data, "}", sizeof(data));
+			} else {
+				HTTPD_DBG("can't find event id\n");
 			}
-			else
-				dbg("no client mac\n");
-		}
-		else
-			dbg("can't find event id\n");
 
-		if (event_id > 0) {
-			if (strlen(data) == 0)
-				strlcpy(data, "{}", sizeof(data));
+			if (event_id > 0) {
+				if (strlen(data) == 0)
+					strlcpy(data, "{}", sizeof(data));
 
-			snprintf(event_msg, sizeof(event_msg), HTTPD_ACTION_MSG,
-				event_id, mac_list, data);
-			send_cfgmnt_event(event_msg);
+				snprintf(event_msg, sizeof(event_msg), HTTPD_ACTION_MSG,
+					event_id, mac_list, data);
+				send_cfgmnt_event(event_msg);
+			}
 		}
 	}    
 #ifdef RTCONFIG_BHCOST_OPT
@@ -14703,15 +14987,18 @@ wps_finish:
 		char *re_mac = get_cgi_json("re_mac", root);
 		char *target_bssid = get_cgi_json("target_bssid", root);
 
-		prefer_node_convert_nvram(re_mac, target_bssid, config_converted, sizeof(config_converted));
-
 		if (re_mac && target_bssid) {
-			snprintf(event_msg, sizeof(event_msg), HTTPD_CONFIG_CHANGED_MSG,
-				EID_HTTPD_CONFIG_CHANGED, re_mac, config_converted);
-			send_cfgmnt_event(event_msg);
+			if (!isValidMacAddress(re_mac) || (strlen(target_bssid) > 0 && !isValidMacAddress(target_bssid))) {
+				HTTPD_DBG("invalid re_mac or target_bssid\n");
+			} else {
+				prefer_node_convert_nvram(re_mac, target_bssid, config_converted, sizeof(config_converted));
+				snprintf(event_msg, sizeof(event_msg), HTTPD_CONFIG_CHANGED_MSG,
+					EID_HTTPD_CONFIG_CHANGED, re_mac, config_converted);
+				send_cfgmnt_event(event_msg);
+			}
+		} else {
+			HTTPD_DBG("re_mac or target_bssid invalid\n");
 		}
-		else
-			_dprintf("re_mac or target_bssid invalid");
 	}
 #endif
 #endif
@@ -15495,7 +15782,7 @@ int inc_uploadImg(FILE * stream, int *len, uint32 *imageLen)
 
 		if(strncmp(buf, "------", 6) == 0) {
 			memset(boundary, 0, sizeof(boundary));
-			strncpy(boundary, buf, strlen(buf));
+			strlcpy(boundary, buf, sizeof(boundary));
 			boundaryLen = strlen(buf) - 2;
 		}
 
@@ -16732,7 +17019,11 @@ do_vpnupload_post(char *url, FILE *stream, int len, char *boundary)
 		if (!strncasecmp(post_buf, "Content-Disposition:", 20)) {
 			if(strstr(post_buf, "name=\"file\""))
 				break;
-			else if(strstr(post_buf, "name=\"")) {
+			/* only allow keys in the vpn/vpnc_ NVRAM namespace: this loop takes
+			 * the request-supplied part name verbatim as an nvram_set() key, so
+			 * any other prefix would let an authenticated request write arbitrary
+			 * (non-VPN) NVRAM variables. */
+			else if(strstr(post_buf, "name=\"vpn")) {
 				offset = strlen(post_buf);
 				if(fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream))
 				{
@@ -16750,9 +17041,10 @@ do_vpnupload_post(char *url, FILE *stream, int len, char *boundary)
 						if(p)
 						{
 							*(p++) = '\0';
-							value = strstr(p, "\r\n\r\n") + 4;
-							if(value)
+							p = strstr(p, "\r\n\r\n");
+							if(p)
 							{
+								value = p + 4;
 								p = strstr(value, "\r");
 								if(p)
 								{
@@ -17750,6 +18042,17 @@ enum {
 	IKEV2CERT_TIMEOUT
 };
 
+static int is_valid_cert_filename(const char *name) {
+	if (!name || *name == '\0') return 0;
+	if (strlen(name) > 63) return 0;
+	for (const char *p = name; *p; p++) {
+		if (!isalnum((unsigned char)*p) &&
+		    *p != '.' && *p != '-' && *p != '_')
+			return 0;
+	}
+	return 1;
+}
+
 static void
 do_caupload_post(char *url, FILE *stream, int len, char *boundary)
 {
@@ -17784,7 +18087,7 @@ do_caupload_post(char *url, FILE *stream, int len, char *boundary)
 					char *token = strtok(org_file_name, "\"");
 					if(token != NULL){
 						token = strtok(NULL, "\"");
-						if(token != NULL)
+						if(token != NULL && is_valid_cert_filename(token))
 							nvram_set("ca_manage_file_name_ca", token);
 					}
 				}
@@ -17796,7 +18099,7 @@ do_caupload_post(char *url, FILE *stream, int len, char *boundary)
 					char *token = strtok(org_file_name, "\"");
 					if(token != NULL){
 						token = strtok(NULL, "\"");
-						if(token != NULL)
+						if(token != NULL && is_valid_cert_filename(token))
 							nvram_set("ca_manage_file_name_ca", token);
 					}
 				}
@@ -17808,7 +18111,7 @@ do_caupload_post(char *url, FILE *stream, int len, char *boundary)
 					char *token = strtok(org_file_name, "\"");
 					if(token != NULL){
 						token = strtok(NULL, "\"");
-						if(token != NULL)
+						if(token != NULL && is_valid_cert_filename(token))
 							nvram_set("ca_manage_file_name_ca", token);
 					}
 				}
@@ -17832,9 +18135,10 @@ do_caupload_post(char *url, FILE *stream, int len, char *boundary)
 						if(p)
 						{
 							*(p++) = '\0';
-							value = strstr(p, "\r\n\r\n") + 4;
-							if(value)
+							p = strstr(p, "\r\n\r\n");
+							if(p)
 							{
+								value = p + 4;
 								p = strstr(value, "\r");
 								if(p)
 								{
@@ -17947,9 +18251,10 @@ do_ipsecupload_post(char *url, FILE *stream, int len, char *boundary)
 						if(p)
 						{
 							*(p++) = '\0';
-							value = strstr(p, "\r\n\r\n") + 4;
-							if(value)
+							p = strstr(p, "\r\n\r\n");
+							if(p)
 							{
+								value = p + 4;
 								p = strstr(value, "\r");
 								if(p)
 								{
@@ -18296,7 +18601,7 @@ do_set_ipsec_clientlist_cgi(char *url, FILE *stream)
     }
 
 	json_root = json_tokener_parse(ipsec_clientlist);
-	if((json_root = json_tokener_parse(ipsec_clientlist)) != NULL){
+	if((json_root = json_tokener_parse(ipsec_clientlist)) != NULL && json_object_get_type(json_root) == json_type_object){
 		json_object_object_foreach(json_root, key, val) {
 			client_num++;
 			if(client_num > IPSEC_CLIENT_NUM){  //over rule limit
@@ -18780,9 +19085,10 @@ do_ipsec_s2s_upload_post(char *url, FILE *stream, int len, char *boundary)
 						if(p)
 						{
 							*(p++) = '\0';
-							value = strstr(p, "\r\n\r\n") + 4;
-							if(value)
+							p = strstr(p, "\r\n\r\n");
+							if(p)
 							{
+								value = p + 4;
 								p = strstr(value, "\r");
 								if(p)
 								{
@@ -19061,12 +19367,18 @@ set_ig_config(char *url, FILE *stream, int ig_client_opt)
 
 	if(ig_client_list != NULL){
 		json_root = json_tokener_parse(ig_client_list);
-		if((json_root = json_tokener_parse(ig_client_list)) != NULL){
+		if((json_root = json_tokener_parse(ig_client_list)) != NULL && json_object_get_type(json_root) == json_type_object){
 			json_object_object_foreach(json_root, key, val) {
 				client_num++;
 				if(client_num > max_rule){  //over rule limit
 					HTTPD_DBG("over rule limit\n");
 					ret = HTTP_OVER_MAX_RULE_LIMIT;
+					goto FINISH;
+				}
+
+				if(!is_valid_ig_client_name(key)){
+					HTTPD_DBG("invalid ig client name\n");
+					ret = HTTP_INVALID_NAME;
 					goto FINISH;
 				}
 
@@ -19102,6 +19414,12 @@ set_ig_config(char *url, FILE *stream, int ig_client_opt)
 
 				if((vstrsep(word, ">", &name, &passwd, &desc, &ts, &active, &lan_access)) < 5){
 					continue;
+				}
+
+				if(!is_valid_ig_client_name(name)){
+					HTTPD_DBG("invalid ig client name\n");
+					ret = HTTP_INVALID_NAME;
+					goto FINISH;
 				}
 
 				if(ig_client_opt == 1)
@@ -19254,7 +19572,7 @@ static void do_get_app_client_stats(char *url, FILE *stream) {
  FINISH:
 
     if (res==0 && retObj!=NULL) {
-        websWrite(stream, json_object_to_json_string(retObj), ret);
+        websWrite(stream, "%s", json_object_to_json_string(retObj));
     }
     else {
         websWrite(stream, "{}");
@@ -19299,7 +19617,7 @@ static void do_dns_block_stats(char *url, FILE *stream) {
 
 FINISH:
     if (res==0 && retObj!=NULL) {
-        websWrite(stream, json_object_to_json_string(retObj), ret);
+        websWrite(stream, "%s", json_object_to_json_string(retObj));
     }
     else {
         websWrite(stream, "{}");
@@ -19349,7 +19667,7 @@ static void do_dns_block_list(char *url, FILE *stream) {
     res = dns_block_list_json(&retObj);
 
     if (res==0 && retObj!=NULL) {
-        websWrite(stream, json_object_to_json_string(retObj), ret);
+        websWrite(stream, "%s", json_object_to_json_string(retObj));
     }
     else {
         websWrite(stream, "{}");
@@ -19992,8 +20310,16 @@ static void do_lp55xx_cgi(char *url, FILE *stream)
 
 	do_json_decode(root);
 	char *action_mode = get_cgi_json("action_mode", root);
-	int lp55xx_enable = safe_atoi(get_cgi_json("lp55xx_enable", root));
+	char *lp55xx_enable_str = get_cgi_json("lp55xx_enable", root);
+	int lp55xx_enable;
 	int prestate = 0;
+
+	if (!action_mode || !lp55xx_enable_str) {
+		websWrite(stream, "0\n");
+		json_object_put(root);
+		return;
+	}
+	lp55xx_enable = safe_atoi(lp55xx_enable_str);
 
 	if (!strcmp(action_mode, "LedCtrlLC")) {
 		nvram_set_int("lp55xx_lp5523_user_enable", lp55xx_enable);
@@ -20915,46 +21241,12 @@ void do_get_timezone_cgi(char *url, FILE *stream){
 	json_object_put(res);
 }
 
-#ifdef RTCONFIG_DEMOUI
-static char no_cache_IE7[] =
-"Cache-Control: max-age=31536000"
-;
-
-static char no_cache[] =
-"Cache-Control: max-age=31536000"
+char no_cache[] =
+"Cache-Control: max-age=3, must-revalidate"
 ;
 
 char cache_object[] =
-"Cache-Control: max-age=31536000"
-;
-
-char cache_object_60[] =
-"Cache-Control: max-age=31536000"
-;
-#else
-static char no_cache_IE7[] =
-"Cache-Control: no-cache, no-store, must-revalidate\r\n"
-"Pragma: no-cache\r\n"
-"Expires: 0"
-;
-
-static char no_cache[] =
-"Cache-Control: no-cache, no-store, must-revalidate\r\n"
-"Pragma: no-cache\r\n"
-"Expires: 0"
-;
-
-char cache_object[] =
-"Cache-Control: max-age=3600"
-;
-
-char cache_object_60[] =
-"Cache-Control: max-age=60"
-;
-#endif
-
-char cache_long_object[] =
-"Cache-Control: max-age=31536000"
+"Cache-Control: max-age=300, must-revalidate"
 ;
 
 static char syslog_txt[] =
@@ -21289,9 +21581,10 @@ do_splash_page_post(char *url, FILE *stream, int len, char *boundary) {
 						if(p)
 						{
 							*(p++) = '\0';
-							value = strstr(p, "\r\n\r\n") + 4;
-							if(value)
+							p = strstr(p, "\r\n\r\n");
+							if(p)
 							{
+								value = p + 4;
 								p = strstr(value, "\r");
 								if(p)
 								{
@@ -21409,9 +21702,10 @@ do_splash_page_post_SDN(char *url, FILE *stream, int len, char *boundary) {
 						if(p)
 						{
 							*(p++) = '\0';
-							value = strstr(p, "\r\n\r\n") + 4;
-							if(value)
+							p = strstr(p, "\r\n\r\n");
+							if(p)
 							{
+								value = p + 4;
 								p = strstr(value, "\r");
 								if(p)
 								{
@@ -21501,9 +21795,10 @@ do_splash_page_del(char *url, FILE *stream, int len, char *boundary) {
 						if(p)
 						{
 							*(p++) = '\0';
-							value = strstr(p, "\r\n\r\n") + 4;
-							if(value)
+							p = strstr(p, "\r\n\r\n");
+							if(p)
 							{
+								value = p + 4;
 								p = strstr(value, "\r");
 								if(p)
 								{
@@ -21811,6 +22106,64 @@ do_set_ark_migration_done_cgi(char *url, FILE *stream)
 	}
 
 	websWrite(stream, "{\"change_status\":\"%d\"}", ret);
+}
+
+static void
+do_ark_wbl_cgi(char *url, FILE *stream)
+{
+	struct json_object *resp = json_object_new_object();
+	struct json_object *root = json_object_new_object();
+	char *action = NULL;
+	char *domain = NULL;
+	int ret = ARK_WLIST_ERROR_INVALID_ACTION;
+	int get_handled = 0;
+
+	do_json_decode(root);
+
+	if (json_object_object_length(root) == 0) {
+		HTTPD_DBG("no JSON body, reject\n");
+		goto END;
+	}
+
+	action = safe_get_cgi_json("action", root);
+	domain = safe_get_cgi_json("domain", root);
+
+	if (action == NULL)
+		goto END;
+
+	if (!strcmp(action, "add")) {
+		ret = ark_white_list(ARK_WLIST_ACTION_ADD, domain, NULL, 0);
+	}
+	else if (!strcmp(action, "del")) {
+		ret = ark_white_list(ARK_WLIST_ACTION_DELETE, domain, NULL, 0);
+	}
+	else if (!strcmp(action, "get")) {
+		char *wlist_buf = calloc(1, MAX_DOMAIN_SIZE);
+		if (!wlist_buf) {
+			HTTPD_DBG("calloc failed\n");
+			goto END;
+		}
+		ret = ark_white_list(ARK_WLIST_ACTION_GET, NULL, wlist_buf, MAX_DOMAIN_SIZE);
+		json_object_object_add(resp, "status", json_object_new_int(ret));
+		if (ret == ARK_WLIST_SUCCESS) {
+			struct json_object *wlist_json = json_tokener_parse(wlist_buf);
+			if (wlist_json)
+				json_object_object_add(resp, "data", wlist_json);
+			else
+				json_object_object_add(resp, "status", json_object_new_int(ARK_WLIST_ERROR_JSON_PARSE));
+		}
+		free(wlist_buf);
+		get_handled = 1;
+	}
+
+	HTTPD_DBG("action=%s, domain=%s, status=%d\n", action ? action : "NULL", domain ? domain : "NULL", ret);
+
+END:
+	if (!get_handled)
+		json_object_object_add(resp, "status", json_object_new_int(ret));
+	websWrite(stream, "%s\n", json_object_to_json_string(resp));
+	if (root) json_object_put(root);
+	if (resp) json_object_put(resp);
 }
 #endif
 
@@ -23840,12 +24193,19 @@ do_cfg_onboarding_cgi(char *url, FILE *stream)
 	char *flag = get_cgi_json("flag", cfg);
 
 	if(strcmp(id, "donot_search") != 0){
-		if (!re_mac && !new_re_mac)
+		if (!re_mac && !new_re_mac) {
 			snprintf(event_msg, sizeof(event_msg), HTTPD_OB_AVAILABLE_MSG,
 				EID_HTTPD_ONBOARDING, OB_TYPE_AVAILABLE);
-		else if (re_mac && new_re_mac)
-			snprintf(event_msg, sizeof(event_msg), HTTPD_OB_LOCK_MSG,
-				EID_HTTPD_ONBOARDING, OB_TYPE_LOCKED, re_mac, new_re_mac);
+		}
+		else if (re_mac && new_re_mac) {
+			if (isValidMacAddress(re_mac) && isValidMacAddress(new_re_mac)) {
+				snprintf(event_msg, sizeof(event_msg), HTTPD_OB_LOCK_MSG,
+					EID_HTTPD_ONBOARDING, OB_TYPE_LOCKED, re_mac, new_re_mac);
+			}
+			else {
+				HTTPD_DBG("invalid mac input\n");
+			}
+		}
 
 		if (strlen(event_msg))
 			send_cfgmnt_event(event_msg);
@@ -24106,6 +24466,11 @@ do_set_iperf3_svr_cgi(char *url, FILE *stream)
 	rc_service = safe_get_cgi_json("rc_service", root);
 	iperf3_svr_port = safe_get_cgi_json("iperf3_svr_port", root);
 
+	if(strcmp(rc_service, "start_iperf3_server") != 0 && strcmp(rc_service, "stop_iperf3_server") != 0){
+		ret = HTTP_INVALID_INPUT;
+		goto FINISH;
+	}
+
 	if(!isValid_digit_string(iperf3_svr_port)) {
 		ret = HTTP_INVALID_INPUT;
 		goto FINISH;
@@ -24146,6 +24511,11 @@ do_set_iperf3_cli_cgi(char *url, FILE *stream)
 	iperf3_cli_buf_len = safe_get_cgi_json("iperf3_cli_buf_len", root);
 	iperf3_cli_interval = safe_get_cgi_json("iperf3_cli_interval", root);
 	iperf3_cli_reverse = safe_get_cgi_json("iperf3_cli_reverse", root);
+
+	if(strcmp(rc_service, "start_iperf3_client") != 0 && strcmp(rc_service, "stop_iperf3_client") != 0){
+		ret = HTTP_INVALID_INPUT;
+		goto FINISH;
+	}
 
 	if(illegal_ipv4_address(iperf3_cli_host)){
 		ret = HTTP_INVALID_IPADDR;
@@ -24432,6 +24802,9 @@ do_get_wl_sched_cgi(char *url, FILE *stream) {
 	do_json_decode(root);
 
 	char *unit = get_cgi_json("unit", root);
+
+	if(!unit)
+		unit = "all";
 
 	snprintf(timestamp, sizeof(timestamp), "%lu", now);
 	json_object_object_add(wl_sched_all_obj, "timestamp", json_object_new_string(timestamp));
@@ -26709,7 +27082,22 @@ static void do_get_diag_avg_data(char *url, FILE *stream) {
     int query_duration = atoi(duration);
     int query_point = atoi(point);
     int query_end_time = atoi(ts);
-    int query_start_time = query_end_time - query_point*query_duration;
+    if (query_duration<=0 || query_duration>86400 || query_point<0) {
+        ret = HTTP_INVALID_INPUT;
+        goto FINISH;
+    }
+
+    long long query_start_time_64 = (long long)query_end_time - (long long)query_point*(long long)query_duration;
+    if (query_start_time_64<INT_MIN || query_start_time_64>INT_MAX) {
+        ret = HTTP_INVALID_INPUT;
+        goto FINISH;
+    }
+    int query_start_time = (int)query_start_time_64;
+
+    if (query_start_time>query_end_time) {
+        ret = HTTP_INVALID_INPUT;
+        goto FINISH;
+    }
     
     HTTPD_DBG("do_get_diag_avg_data, db=%s, content=%s, start=%d, end=%d, duration=%d\n", db, content, query_start_time, query_end_time, query_duration);
 
@@ -26717,7 +27105,7 @@ static void do_get_diag_avg_data(char *url, FILE *stream) {
 
 FINISH:
     if (res==CODB_OK && retObj!=NULL) {
-        websWrite(stream, json_object_to_json_string(retObj), ret);
+        websWrite(stream, "%s", json_object_to_json_string(retObj));
     }
     else {
         websWrite(stream, "{}");
@@ -26753,7 +27141,22 @@ static void do_get_diag_active_client(char *url, FILE *stream) {
     int query_duration = atoi(duration);
     int query_point = atoi(point);
     int query_end_time = atoi(ts);
-    int query_start_time = query_end_time - query_point*query_duration;
+    if (query_duration<=0 || query_duration>86400 || query_point<0) {
+        ret = HTTP_INVALID_INPUT;
+        goto FINISH;
+    }
+
+    long long query_start_time_64 = (long long)query_end_time - (long long)query_point*(long long)query_duration;
+    if (query_start_time_64<INT_MIN || query_start_time_64>INT_MAX) {
+        ret = HTTP_INVALID_INPUT;
+        goto FINISH;
+    }
+    int query_start_time = (int)query_start_time_64;
+
+    if (query_start_time>query_end_time) {
+        ret = HTTP_INVALID_INPUT;
+        goto FINISH;
+    }
     
     HTTPD_DBG("do_get_diag_active_client, start=%d, end=%d, duration=%d\n", query_start_time, query_end_time, query_duration);
 
@@ -26761,7 +27164,7 @@ static void do_get_diag_active_client(char *url, FILE *stream) {
 
 FINISH:
     if (res==CODB_OK && retObj!=NULL) {
-        websWrite(stream, json_object_to_json_string(retObj), ret);
+        websWrite(stream, "%s", json_object_to_json_string(retObj));
     }
     else {
         websWrite(stream, "{}");
@@ -26816,9 +27219,20 @@ static void do_get_diag_content_data(char *url, FILE *stream) {
         query_end_time = atoi(ts);
         qyery_limit = atoi(limit);
         qyery_point = atoi(point);
-        query_start_time = query_end_time - query_duration*qyery_point;
-        
-        if (query_start_time>query_end_time || query_duration>86400) {
+
+        if (query_duration<=0 || query_duration>86400 || qyery_point<0) {
+            ret = HTTP_INVALID_INPUT;
+            goto FINISH;
+        }
+
+        long long query_start_time_64 = (long long)query_end_time - (long long)query_duration*(long long)qyery_point;
+        if (query_start_time_64<INT_MIN || query_start_time_64>INT_MAX) {
+            ret = HTTP_INVALID_INPUT;
+            goto FINISH;
+        }
+        query_start_time = (int)query_start_time_64;
+
+        if (query_start_time>query_end_time) {
             ret = HTTP_INVALID_INPUT;
             goto FINISH;
         }
@@ -26858,7 +27272,7 @@ static void do_get_diag_content_data(char *url, FILE *stream) {
 
 FINISH:
     if (res==CODB_OK && retObj!=NULL) {
-        websWrite(stream, json_object_to_json_string(retObj), ret);
+        websWrite(stream, "%s", json_object_to_json_string(retObj));
     }
     else {
         websWrite(stream, "{}");
@@ -26917,7 +27331,7 @@ static void do_get_diag_latest_content_data(char *url, FILE *stream) {
 
 FINISH:
     if (res==CODB_OK && retObj!=NULL) {
-        websWrite(stream, json_object_to_json_string(retObj), ret);
+        websWrite(stream, "%s", json_object_to_json_string(retObj));
     }
     else {
         websWrite(stream, "{}");
@@ -26954,8 +27368,24 @@ static void do_get_diag_eth_traffic_data(char *url, FILE *stream) {
     int query_duration = atoi(duration);
     int query_point = atoi(point);
     int query_end_time = atoi(ts);
-    int query_start_time = query_end_time - query_point*query_duration;
     int is_bh = atoi(bh);
+
+    if (query_duration<=0 || query_duration>86400 || query_point<0) {
+        ret = HTTP_INVALID_INPUT;
+        goto FINISH;
+    }
+
+    long long query_start_time_64 = (long long)query_end_time - (long long)query_point*(long long)query_duration;
+    if (query_start_time_64<INT_MIN || query_start_time_64>INT_MAX) {
+        ret = HTTP_INVALID_INPUT;
+        goto FINISH;
+    }
+    int query_start_time = (int)query_start_time_64;
+
+    if (query_start_time>query_end_time) {
+        ret = HTTP_INVALID_INPUT;
+        goto FINISH;
+    }
 
     HTTPD_DBG("do_get_diag_eth_traffic_data, start=%d, end=%d, duration=%d, is_bh=%d\n", query_start_time, query_end_time, query_duration, is_bh);
 
@@ -26963,7 +27393,7 @@ static void do_get_diag_eth_traffic_data(char *url, FILE *stream) {
 
 FINISH:
     if (res==CODB_OK && retObj!=NULL) {
-        websWrite(stream, json_object_to_json_string(retObj), ret);
+        websWrite(stream, "%s", json_object_to_json_string(retObj));
     }
     else {
         websWrite(stream, "{}");
@@ -27147,9 +27577,10 @@ do_upload_wgc_config_post(char *url, FILE *stream, int len, char *boundary)
 						if(p)
 						{
 							*(p++) = '\0';
-							value = strstr(p, "\r\n\r\n") + 4;
-							if(value)
+							p = strstr(p, "\r\n\r\n");
+							if(p)
 							{
+								value = p + 4;
 								p = strstr(value, "\r");
 								if(p)
 								{
@@ -27403,7 +27834,7 @@ static void do_CoBrand_img(char *url, FILE *stream)
 		lowercase_pid[i] = tolower(*p);
 		p++;
 	}
-	*p = '\0';
+	lowercase_pid[i] = '\0';
 
 	snprintf(file_extension, sizeof(file_extension), "%s", dotPosition);
 	*dotPosition = '\0';
@@ -28468,91 +28899,122 @@ do_esr_get_history_cgi(char *url, FILE *stream)
 //2008.08 magic{
 struct mime_handler mime_handlers[] =
 {
-	{ "Main_Login.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
+	{ "Main_Login.asp", "text/html", no_cache, do_html_post_and_get, do_ej, NULL },
 #ifdef RTCONFIG_CAPTCHA
-	{ "captcha.gif", "image/gif", no_cache_IE7, NULL, do_captcha_file, NULL },
+	{ "captcha.gif", "image/gif", no_cache, NULL, do_captcha_file, NULL },
 #endif
 #ifdef RTCONFIG_WIREGUARD
-	{ "wgs_client.png", "image/png", no_cache_IE7, NULL, do_wgs_client_png, NULL },
+	{ "wgs_client.png", "image/png", cache_object, NULL, do_wgs_client_png, do_auth },
 	{ "wgs_client.conf", "application/octet-stream", NULL, NULL, do_wgs_client_conf, do_auth },
-	{ "upload_wgc_config.cgi*", "text/html", no_cache_IE7, do_upload_wgc_config_post, do_upload_wgc_config_cgi, do_auth },
- #endif
-	{ "Nologin.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "error_page.htm*", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "blocking.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-#ifdef RTCONFIG_WIFI_SON
-	{ "message.htm", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
+	{ "upload_wgc_config.cgi*", "text/html", no_cache, do_upload_wgc_config_post, do_upload_wgc_config_cgi, do_auth },
 #endif
-	{ "gotoHomePage.htm", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "ure_success.htm", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "ureip.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	//{ "remote.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
+	{ "Nologin.asp", "text/html", no_cache, do_html_post_and_get, do_ej, NULL },
+	{ "error_page.htm*", "text/html", no_cache, do_html_post_and_get, do_ej, NULL },
+	{ "blocking.asp", "text/html", no_cache, do_html_post_and_get, do_ej, NULL },
+#ifdef RTCONFIG_WIFI_SON
+	{ "message.htm", "text/html", no_cache, do_html_post_and_get, do_ej, NULL },
+#endif
+	{ "gotoHomePage.htm", "text/html", no_cache, do_html_post_and_get, do_ej, NULL },
+	{ "ure_success.htm", "text/html", no_cache, do_html_post_and_get, do_ej, NULL },
+	{ "ureip.asp", "text/html", no_cache, do_html_post_and_get, do_ej, NULL },
+	//{ "remote.asp", "text/html", no_cache, do_html_post_and_get, do_ej, NULL },
 	{ "md5.js", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "js/jquery.js", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "js/jquery-ui.js", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "mobile/js/jquery.mobile.js", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "js/bootstrap.bundle.min.js", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "js/chart.min.js", "text/javascript", cache_object, NULL, do_file, NULL },
-	{ "js/https_redirect/https_redirect.js", "text/javascript", no_cache_IE7, NULL, do_ej, NULL },
+	{ "js/https_redirect/https_redirect.js", "text/javascript", no_cache, NULL, do_ej, NULL },
 	{ "ajax/ouiDB.json", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "js/chart.min.js", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "require/require.min.js", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "calendar/jquery-ui.js", "text/javascript", cache_object, NULL, do_file, NULL },
-	{ "httpd_check.xml", "text/xml", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "repage.json", "application/json", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "chdom.json", "application/json", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
+	{ "httpd_check.xml", "text/xml", no_cache, do_html_post_and_get, do_ej, NULL },
+	{ "repage.json", "application/json", no_cache, do_html_post_and_get, do_ej, NULL },
+	{ "chdom.json", "application/json", no_cache, do_html_post_and_get, do_ej, NULL },
 #ifdef RTCONFIG_AMAS
-	{ "chcap.json", "application/json", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "cfg_onboarding.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_cfg_onboarding_cgi, do_auth },
+	{ "chcap.json", "application/json", no_cache, do_html_post_and_get, do_ej, NULL },
+	{ "cfg_onboarding.cgi", "text/html", no_cache, do_html_post_and_get, do_cfg_onboarding_cgi, do_auth },
 #ifdef RTCONFIG_AMAS_CENTRAL_CONTROL
-	{ "backup_cfg_cntrl.cgi*", "application/octet-stream", no_cache_IE7, do_html_post_and_get, do_backup_cfg_cntrl_cgi, do_auth },
-	{ "upload_cfg_cntrl.cgi*", "application/octet-stream", no_cache_IE7, do_upload_cfg_cntrl_post, do_upload_cfg_cntrl_cgi, do_auth },
+	{ "backup_cfg_cntrl.cgi*", "application/octet-stream", no_cache, do_html_post_and_get, do_backup_cfg_cntrl_cgi, do_auth },
+	{ "upload_cfg_cntrl.cgi*", "application/octet-stream", no_cache, do_upload_cfg_cntrl_post, do_upload_cfg_cntrl_cgi, do_auth },
 #endif
 #endif
-	{ "wlc_status.json", "application/json", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "get_webdavInfo.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_webdavInfo_asp, NULL },
-	{ "appGet_image_path.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_appGet_image_path_cgi, NULL },
-	{ "login.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_login_cgi, NULL },
-	{ "login_v2.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_login_v2_cgi, NULL },
-	{ "get_Nonce.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_nonce_cgi, NULL },
-	{ "register_app_cnonce.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_register_app_cnonce_cgi, NULL },
-	{ "update_clients.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "update_networkmapd.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "update_customList.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "manifest.appcache", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "offline.htm", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "wcdma_list.js", "text/javascript", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "help_content.js", "text/javascript", cache_object, do_html_post_and_get, do_ej, do_auth },
-	{ "httpd_check.htm", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "manifest.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "update_cloudstatus.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "update_applist.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "update_appstate.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "WAN_info.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "detwan.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_detwan_cgi, do_auth },
-	{ "message.htm", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "fonts/*.ttf", "application/x-font-ttf", cache_object, NULL, do_file, NULL },
-	{ "fonts/*.otf", "application/x-font-otf", cache_object, NULL, do_file, NULL },
-	{ "fonts/*.woff", "application/font-woff", cache_object, NULL, do_file, NULL },
+	{ "wlc_status.json", "application/json", no_cache, do_html_post_and_get, do_ej, do_auth },
+    { "get_webdavInfo.asp", "text/html", no_cache, do_html_post_and_get, do_webdavInfo_asp, NULL },
+    { "appGet_image_path.cgi", "text/html", no_cache, do_html_post_and_get, do_appGet_image_path_cgi, NULL },
+    { "login.cgi", "text/html", no_cache, do_html_post_and_get, do_login_cgi, NULL },
+    { "login_v2.cgi", "text/html", no_cache, do_html_post_and_get, do_login_v2_cgi, NULL },
+    { "get_Nonce.cgi", "text/html", no_cache, do_html_post_and_get, do_get_nonce_cgi, NULL },
+    { "update_clients.asp", "text/html", no_cache, do_html_post_and_get, do_ej, do_auth },
+    { "update_networkmapd.asp", "text/html", no_cache, do_html_post_and_get, do_ej, do_auth },
+    { "update_customList.asp", "text/html", no_cache, do_html_post_and_get, do_ej, do_auth },
+    { "manifest.appcache", "text/html", no_cache, do_html_post_and_get, do_ej, NULL },
+    { "offline.htm", "text/html", no_cache, do_html_post_and_get, do_ej, NULL },
+    { "wcdma_list.js", "text/javascript", cache_object, do_html_post_and_get, do_ej, do_auth },
+    { "help_content.js", "text/javascript", cache_object, do_html_post_and_get, do_ej, do_auth },
+    { "httpd_check.htm", "text/html", no_cache, do_html_post_and_get, do_ej, NULL },
+    { "manifest.asp", "text/html", no_cache, do_html_post_and_get, do_ej, NULL },
+    { "update_cloudstatus.asp", "text/html", no_cache, do_html_post_and_get, do_ej, do_auth },
+    { "update_applist.asp", "text/html", no_cache, do_html_post_and_get, do_ej, do_auth },
+    { "update_appstate.asp", "text/html", no_cache, do_html_post_and_get, do_ej, do_auth },
+    { "WAN_info.asp", "text/html", no_cache, do_html_post_and_get, do_ej, NULL },
+    { "detwan.cgi*", "text/html", no_cache, do_html_post_and_get, do_detwan_cgi, do_auth },
+    { "message.htm", "text/html", no_cache, do_html_post_and_get, do_ej, NULL },
+    { "fonts/*.ttf", "application/x-font-ttf", cache_object, NULL, do_file, NULL },
+    { "fonts/*.otf", "application/x-font-otf", cache_object, NULL, do_file, NULL },
+    { "fonts/*.woff", "application/font-woff", cache_object, NULL, do_file, NULL },
+    { "css/architecture.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "css/bootstrap-customize.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "css/bootstrap.min.css", "text/css", cache_object, NULL, do_file, NULL },
+    { "adaptive_mobile.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "aidisk.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "AiDisk_style.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "aimesh_system_settings.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "aimesh_topology.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "amesh.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "app_installation.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "basic.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "customize.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "device-map.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "effect.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "form_style.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "gameprofile.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "gundam.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "icon.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "index_style.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "light_effect.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "main_login.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "networkMap.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "NM_style.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "notification.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "qis.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "rog_cod.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "table.css", "text/css", no_cache, NULL, do_file, NULL },
+    { "tmmenu.css", "text/css", no_cache, NULL, do_file, NULL },
 #ifdef RTCONFIG_FINDASUS
-	{ "findasus.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_findasus_cgi, do_auth },
-	{ "find_device.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
+	{ "findasus.cgi", "text/html", no_cache, do_html_post_and_get, do_findasus_cgi, do_auth },
+	{ "find_device.asp", "text/html", no_cache, do_html_post_and_get, do_ej, do_auth },
 #endif
-	{ "blocking_request.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_blocking_request_cgi, NULL },
-	{ "blocking.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_blocking_cgi, do_auth },
-	{ "get_timezone.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_timezone_cgi, do_auth },
+	{ "blocking_request.cgi", "text/html", no_cache, do_html_post_and_get, do_blocking_request_cgi, NULL },
+	{ "blocking.cgi", "text/html", no_cache, do_html_post_and_get, do_blocking_cgi, do_auth },
+	{ "get_timezone.cgi", "text/html", no_cache, do_html_post_and_get, do_get_timezone_cgi, do_auth },
+#ifdef RTCONFIG_SURFSHARK
+	{ "surfshark_login.cgi", "text/html", no_cache, do_html_post_and_get, do_surfshark_login_cgi, do_auth },
+	{ "surfshark_2fa.cgi",   "text/html", no_cache, do_html_post_and_get, do_surfshark_2fa_cgi,   do_auth },
+#endif
 #if defined(RTCONFIG_HNS) || defined(RTCONFIG_BWDPI)
-	{ "getDpiInfo.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_DpiInfo_cgi, do_auth },
-	{ "delDpiInfo.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_del_DpiInfo_cgi, do_auth },
-	{ "AiProtection_MaliciousSitesBlocking.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_dpi_mals_ej, do_auth },
-	{ "AiProtection_IntrusionPreventionSystem.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_dpi_vp_ej, do_auth },
-	{ "AiProtection_InfectedDevicePreventBlock.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_dpi_cc_ej, do_auth },
-	{ "AiProtection_WebProtector.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_webs_filter_ej, do_auth },
-	{ "AdaptiveQoS_WebHistory.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_web_history_ej, do_auth },
+	{ "getDpiInfo.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_DpiInfo_cgi, do_auth },
+	{ "delDpiInfo.cgi*", "text/html", no_cache, do_html_post_and_get, do_del_DpiInfo_cgi, do_auth },
+	{ "AiProtection_MaliciousSitesBlocking.asp", "text/html", no_cache, do_html_post_and_get, do_dpi_mals_ej, do_auth },
+	{ "AiProtection_IntrusionPreventionSystem.asp", "text/html", no_cache, do_html_post_and_get, do_dpi_vp_ej, do_auth },
+	{ "AiProtection_InfectedDevicePreventBlock.asp", "text/html", no_cache, do_html_post_and_get, do_dpi_cc_ej, do_auth },
+	{ "AiProtection_WebProtector.asp", "text/html", no_cache, do_html_post_and_get, do_webs_filter_ej, do_auth },
+	{ "AdaptiveQoS_WebHistory.asp", "text/html", no_cache, do_html_post_and_get, do_web_history_ej, do_auth },
 #endif
 #ifdef RTCONFIG_BWDPI
-	{ "TrafficAnalyzer_Statistic.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_traffic_analyzer_ej, do_auth },
-	{ "AdaptiveQoS_Bandwidth_Monitor.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_bandwidth_monitor_ej, do_auth },
+	{ "TrafficAnalyzer_Statistic.asp", "text/html", no_cache, do_html_post_and_get, do_traffic_analyzer_ej, do_auth },
+	{ "AdaptiveQoS_Bandwidth_Monitor.asp", "text/html", no_cache, do_html_post_and_get, do_bandwidth_monitor_ej, do_auth },
 #endif
     { "images/Model_product.png", "image/png", cache_object, do_html_post_and_get, do_ModelProduct_png, NULL },
     { "images/product_location.png", "image/png", cache_object, do_html_post_and_get, do_CoBrand_img, NULL },
@@ -28573,38 +29035,41 @@ struct mime_handler mime_handlers[] =
     { "images/New_ui/bg_content_ROG.png", "image/png", cache_object, do_html_post_and_get, do_CoBrand_img, NULL },
 #endif
 #ifdef RTCONFIG_TS_UI
-	{ "images/New_ui/middown_bg.png", "image/png", cache_long_object, NULL, do_CoBrand_img, NULL },
-	{ "images/New_ui/midup_bg.png", "image/png", cache_long_object, do_html_post_and_get, do_CoBrand_img, NULL },
-	{ "images/New_ui/login_bg.png", "image/png", cache_long_object, do_html_post_and_get, do_CoBrand_img, NULL },
-	{ "images/New_ui/logo_TX.png", "image/png", cache_long_object, do_html_post_and_get, do_CoBrand_img, NULL },
-	{ "images/New_ui/TX-logo.png", "image/png", cache_long_object, do_html_post_and_get, do_CoBrand_img, NULL },
-	{ "images/gundam_bg.png", "image/png", cache_long_object, do_html_post_and_get, do_CoBrand_img, NULL },
-	{ "images/New_ui/rt.jpg", "image/jpeg", cache_long_object, do_html_post_and_get, do_CoBrand_img, NULL },
-	{ "images/New_ui/ap.jpg", "image/jpeg", cache_long_object, do_html_post_and_get, do_CoBrand_img, NULL },
-	{ "images/New_ui/re.jpg", "image/jpeg", cache_long_object, do_html_post_and_get, do_CoBrand_img, NULL },
-	{ "images/New_ui/mb.jpg", "image/jpeg", cache_long_object, do_html_post_and_get, do_CoBrand_img, NULL },
+	{ "images/New_ui/middown_bg.png", "image/png", cache_object, NULL, do_CoBrand_img, NULL },
+	{ "images/New_ui/midup_bg.png", "image/png", cache_object, do_html_post_and_get, do_CoBrand_img, NULL },
+	{ "images/New_ui/login_bg.png", "image/png", cache_object, do_html_post_and_get, do_CoBrand_img, NULL },
+	{ "images/New_ui/logo_TX.png", "image/png", cache_object, do_html_post_and_get, do_CoBrand_img, NULL },
+	{ "images/New_ui/TX-logo.png", "image/png", cache_object, do_html_post_and_get, do_CoBrand_img, NULL },
+	{ "images/gundam_bg.png", "image/png", cache_object, do_html_post_and_get, do_CoBrand_img, NULL },
+	{ "images/New_ui/rt.jpg", "image/jpeg", cache_object, do_html_post_and_get, do_CoBrand_img, NULL },
+	{ "images/New_ui/ap.jpg", "image/jpeg", cache_object, do_html_post_and_get, do_CoBrand_img, NULL },
+	{ "images/New_ui/re.jpg", "image/jpeg", cache_object, do_html_post_and_get, do_CoBrand_img, NULL },
+	{ "images/New_ui/mb.jpg", "image/jpeg", cache_object, do_html_post_and_get, do_CoBrand_img, NULL },
 #endif
-	{ "**.xml", "text/xml", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "**.htm*", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "**.asp*", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "**.appcache", "text/cache-manifest", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "nt_content.json", "application/json", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
+	{ "**.xml", "text/xml", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "**.htm*", "text/html", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "**.asp*", "text/html", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "**.dict", "text/txt", cache_object, NULL, do_file, do_auth },
+	{ "**.appcache", "text/cache-manifest", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "nt_content.json", "application/json", no_cache, do_html_post_and_get, do_ej, do_auth },
 #ifdef RTCONFIG_DSL_TCLINUX
 	{ "TCC.log.*", "application/octet-stream", NULL, NULL, do_diag_log_file, do_auth },
 #endif
+	{ "fb_data.tgz.gz", "application/octet-stream", NULL, NULL, do_file, do_auth },
+	{ "fb_data.tgz.gz.part.*", "application/octet-stream", NULL, NULL, do_file, do_auth },
 	{ "**.part.*", "application/octet-stream", NULL, NULL, do_file, NULL },
 	{ "**.gz", "application/octet-stream", NULL, NULL, do_file, NULL },
 	{ "**.tgz", "application/octet-stream", NULL, NULL, do_file, NULL },
 	{ "**.zip", "application/octet-stream", NULL, NULL, do_file, NULL },
 	{ "**.ipk", "application/octet-stream", NULL, NULL, do_file, NULL },
-	{ "RWD_UI/rwd_component.css", "text/css", cache_object, do_html_post_and_get, do_file, NULL },
+	{ "RWD_UI/rwd_component.css", "text/css", no_cache, do_html_post_and_get, do_file, NULL },
 #ifdef RTCONFIG_MULTILAN_CFG
-	{ "SDN/sdn.css", "text/css", cache_object, do_html_post_and_get, do_file, NULL },
+	{ "SDN/sdn.css", "text/css", no_cache, do_html_post_and_get, do_file, NULL },
 #endif
 #ifdef RTCONFIG_AMAS
-	{ "aimesh/aimesh_topology.css", "text/css", cache_object, do_html_post_and_get, do_file, NULL },
+	{ "aimesh/aimesh_topology.css", "text/css", no_cache, do_html_post_and_get, do_file, NULL },
 #endif
-	{ "**.css", "text/css", cache_object, NULL, do_file, NULL },
+	{ "**.css", "text/css", no_cache, NULL, do_file, NULL },
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)
 	{ "images/New_ui/asustitle.png", "image/png", cache_object, do_html_post_and_get, do_file, NULL },
 	{ "images/New_ui/smh_step_2_text.png", "image/png", cache_object, do_html_post_and_get, do_file, NULL },
@@ -28625,19 +29090,47 @@ struct mime_handler mime_handlers[] =
 	{ "**.swf", "application/x-shockwave-flash", NULL, NULL, do_file, NULL  },
 	{ "**.htc", "text/x-component", NULL, NULL, do_file, NULL  },
 	{ "js/asus_policy.js", "text/javascript", no_cache, do_html_post_and_get, do_ej, do_auth },
-	{ "state.js", "text/javascript", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "require/modules/menuTree.js", "text/javascript", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "js/basic.js", "text/javascript", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "chanspec.js", "text/javascript", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "**.js", "text/javascript", cache_object_60, do_html_post_and_get, do_ej, do_auth },
+	// end Viz
+	{ "md5.js", "text/javascript", cache_object, NULL, do_file, NULL },
+	{ "js/jquery.js", "text/javascript", cache_object, NULL, do_file, NULL },
+	{ "calendar/jquery-ui.js", "text/javascript", cache_object, NULL, do_file, NULL },
+	{ "js/jquery-ui.js", "text/javascript", cache_object, NULL, do_file, NULL },
+	{ "mobile/js/jquery.mobile.js", "text/javascript", cache_object, NULL, do_file, NULL },
+	{ "js/bootstrap.bundle.min.js", "text/javascript", cache_object, NULL, do_file, NULL },
+	{ "js/chart.min.js", "text/javascript", cache_object, NULL, do_file, NULL },
+	{ "js/https_redirect/https_redirect.js", "text/javascript", no_cache, NULL, do_ej, NULL },
+	{ "require/require.min.js", "text/javascript", cache_object, NULL, do_file, NULL },
+	{ "js/qrcode/jquery.qrcode.min.js", "text/javascript", cache_object, remove_get_payload, do_file, NULL },
+	{ "wcdma_list.js", "text/javascript", cache_object, do_html_post_and_get, do_ej, do_auth },
+	{ "help_content.js", "text/javascript", cache_object, do_html_post_and_get, do_ej, do_auth },
+	{ "state.js", "text/javascript", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "client_function.js", "text/javascript", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "form.js", "text/javascript", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "general.js", "text/javascript", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "help.js", "text/javascript", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "js/oauth.js", "text/javascript", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "js/table/tableValidator.js", "text/javascript", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "mobile/js/login_state.js", "text/javascript", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "notification.js", "text/javascript", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "remote.js", "text/javascript", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "require/modules/amesh.js", "text/javascript", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "require/modules/diskList.js", "text/javascript", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "require/modules/menuTree.js", "text/javascript", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "validator.js", "text/javascript", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "VPN/vpns_openvpn.js", "text/javascript", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "js/support_site.js", "text/javascript", cache_object, do_html_post_and_get, do_file, do_auth },
+	{ "js/gameProfile.js", "text/javascript", cache_object, do_html_post_and_get, do_file, do_auth },
+	{ "**.js", "text/javascript", cache_object, do_html_post_and_get, do_ej, do_auth },
 	{ "**.mjs", "text/javascript", cache_object, do_html_post_and_get, do_ej, do_auth },
 #ifdef RTCONFIG_MULTILAN_CFG
-	{ "SDN/Captive_Portal/FreeWiFi_template.json", "application/json", cache_long_object, do_html_post_and_get, do_ej, do_auth },
-	{ "SDN/Captive_Portal/MessageBoard_template.json", "application/json", cache_long_object, do_html_post_and_get, do_ej, do_auth },
-	{ "ajax/freewifi_tos.json", "application/json", cache_long_object, do_html_post_and_get, do_ej, do_auth },
+	{ "SDN/Captive_Portal/FreeWiFi_template.json", "application/json", cache_object, do_html_post_and_get, do_file, do_auth },
+	{ "SDN/Captive_Portal/MessageBoard_template.json", "application/json", cache_object, do_html_post_and_get, do_file, do_auth },
+	{ "ajax/freewifi_tos.json", "application/json", cache_object, do_html_post_and_get, do_file, do_auth },
 #endif
-	{ "ajax/DNS_List.json", "application/json", cache_long_object, do_html_post_and_get, do_ej, do_auth },
-	{ "**.json", "application/json", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
+	{ "manifest.json", "application/json", no_cache, do_html_post_and_get, do_file, do_auth },
+	{ "ajax/DNS_List.json", "application/json", cache_object, do_html_post_and_get, do_file, do_auth },
+	{ "js/indexing.json", "application/json", cache_object, do_html_post_and_get, do_file, do_auth },
+	{ "**.json", "application/json", no_cache, do_html_post_and_get, do_ej, do_auth },
 	{ "**.cab", "text/txt", NULL, NULL, do_file, do_auth },
 	{ "**.CFG", "application/octet-stream", NULL, do_html_post_and_get, do_prf_file, do_auth },
 	{ "uploadIconFile.tar", "application/x-tar", NULL, NULL, do_uploadIconFile_file, do_auth },
@@ -28645,74 +29138,74 @@ struct mime_handler mime_handlers[] =
 	{ "upnp.log", "application/octet-stream", NULL, NULL, do_upnp_file, do_auth },
 	{ "upnpc_xml.log", "application/octet-stream", NULL, NULL, do_upnpc_xml_file, do_auth },
 	{ "mDNSNetMonitor.log", "application/octet-stream", NULL, NULL, do_dnsnet_file, do_auth },
-	{ "ftpServerTree.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_ftpServerTree_cgi, do_auth },//andi
+	{ "ftpServerTree.cgi*", "text/html", no_cache, do_html_post_and_get, do_ftpServerTree_cgi, do_auth },//andi
 	{ "**.ovpn", "application/x-openvpn-profile", NULL, NULL, do_prf_ovpn_file, do_auth },
-	{ "QIS_default.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_qis_default, do_auth },
-	{ "page_default.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_page_default, do_auth },
-	{ "apply.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_apply_cgi, do_auth },
-	{ "applyapp.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_apply_cgi, do_auth },
-	{ "wl_apply.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_wl_apply_cgi, do_auth },
-	{ "appGet.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_appGet_cgi, do_auth },
-	{ "upgrade.cgi*", "text/html", no_cache_IE7, do_upgrade_post, do_upgrade_cgi, do_auth},
-	{ "upload.cgi*", "text/html", no_cache_IE7, do_upload_post, do_upload_cgi, do_auth },
-	{ "set_ASUS_EULA.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ASUS_EULA_cgi, do_auth },
-	{ "set_ASUS_NEW_EULA.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ASUS_NEW_EULA_cgi, do_auth },
-	{ "set_ASUS_privacy_policy.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ASUS_privacy_policy_cgi, do_auth },
-	{ "get_ASUS_privacy_policy.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ASUS_privacy_policy_cgi, do_auth },
-	{ "set_TM_EULA.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_TM_EULA_cgi, do_auth },
-	{ "set_app_mnt.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_app_mnt_cgi, do_auth },
-	{ "get_app_mnt.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_app_mnt_cgi, do_auth },
+	{ "QIS_default.cgi", "text/html", no_cache, do_html_post_and_get, do_qis_default, do_auth },
+	{ "page_default.cgi", "text/html", no_cache, do_html_post_and_get, do_page_default, do_auth },
+	{ "apply.cgi*", "text/html", no_cache, do_html_post_and_get, do_apply_cgi, do_auth },
+	{ "applyapp.cgi*", "text/html", no_cache, do_html_post_and_get, do_apply_cgi, do_auth },
+	{ "wl_apply.cgi*", "text/html", no_cache, do_html_post_and_get, do_wl_apply_cgi, do_auth },
+	{ "appGet.cgi*", "text/html", no_cache, do_html_post_and_get, do_appGet_cgi, do_auth },
+	{ "upgrade.cgi*", "text/html", no_cache, do_upgrade_post, do_upgrade_cgi, do_auth},
+	{ "upload.cgi*", "text/html", no_cache, do_upload_post, do_upload_cgi, do_auth },
+	{ "set_ASUS_EULA.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_ASUS_EULA_cgi, do_auth },
+	{ "set_ASUS_NEW_EULA.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_ASUS_NEW_EULA_cgi, do_auth },
+	{ "set_ASUS_privacy_policy.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_ASUS_privacy_policy_cgi, do_auth },
+	{ "get_ASUS_privacy_policy.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_ASUS_privacy_policy_cgi, do_auth },
+	{ "set_TM_EULA.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_TM_EULA_cgi, do_auth },
+	{ "set_app_mnt.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_app_mnt_cgi, do_auth },
+	{ "get_app_mnt.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_app_mnt_cgi, do_auth },
 #ifdef RTCONFIG_AI_SERVICE
-	{ "upgrade_aisom.cgi*", "text/html", no_cache_IE7, do_upgrade_aisom_post, do_upgrade_aisom_cgi, do_auth},
-	{ "get_aisom_upgrade_info.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_aisom_upgrade_info_cgi, do_auth},
-	{ "ai_chpass.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_ai_chpass_cgi, do_auth},
-	{ "get_ai_docker_images_info.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ai_docker_images_info_cgi, do_auth},
-	{ "get_ai_docker_container.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ai_docker_container_info_cgi, do_auth},
-	{ "ai_board_slm.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_ai_board_slm_cgi, do_auth},
+	{ "upgrade_aisom.cgi*", "text/html", no_cache, do_upgrade_aisom_post, do_upgrade_aisom_cgi, do_auth},
+	{ "get_aisom_upgrade_info.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_aisom_upgrade_info_cgi, do_auth},
+	{ "ai_chpass.cgi*", "text/html", no_cache, do_html_post_and_get, do_ai_chpass_cgi, do_auth},
+	{ "get_ai_docker_images_info.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_ai_docker_images_info_cgi, do_auth},
+	{ "get_ai_docker_container.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_ai_docker_container_info_cgi, do_auth},
+	{ "ai_board_slm.cgi*", "text/html", no_cache, do_html_post_and_get, do_ai_board_slm_cgi, do_auth},
 	{ "set_AI_board_EULA.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_AI_board_EULA_cgi, do_auth },
 #endif
 #ifdef RTCONFIG_ENERGY_SAVE
-	{ "esr_get_history.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_esr_get_history_cgi, do_auth},
+	{ "esr_get_history.cgi*", "text/html", no_cache, do_html_post_and_get, do_esr_get_history_cgi, do_auth},
 #endif
 #if defined(RTCONFIG_HNS) || defined(RTCONFIG_BWDPI)
-	{ "wrs_wbl.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_wrs_wbl_cgi, do_auth },
+	{ "wrs_wbl.cgi*", "text/html", no_cache, do_html_post_and_get, do_wrs_wbl_cgi, do_auth },
 #ifndef RTCONFIG_AI_SERVICE
-	{ "mobile_game_mode.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_mobile_game_mode_cgi, do_auth },
-	{ "mobile_dev_mode.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_mobile_dev_mode_cgi, do_auth },
+	{ "mobile_game_mode.cgi*", "text/html", no_cache, do_html_post_and_get, do_mobile_game_mode_cgi, do_auth },
+	{ "mobile_dev_mode.cgi*", "text/html", no_cache, do_html_post_and_get, do_mobile_dev_mode_cgi, do_auth },
 #endif
 #endif
-	{ "unreg_ASUSDDNS.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_unreg_ASUSDDNS_cgi, do_auth },
-    { "clean_ddns.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_clean_ddns_cgi, do_auth },
+	{ "unreg_ASUSDDNS.cgi*", "text/html", no_cache, do_html_post_and_get, do_unreg_ASUSDDNS_cgi, do_auth },
+    { "clean_ddns.cgi*", "text/html", no_cache, do_html_post_and_get, do_clean_ddns_cgi, do_auth },
 #ifdef RTCONFIG_HTTPS
-	{ "upload_cert_key.cgi*", "text/html", no_cache_IE7, do_upload_cert_key, do_upload_cert_key_cgi, do_auth },
+	{ "upload_cert_key.cgi*", "text/html", no_cache, do_upload_cert_key, do_upload_cert_key_cgi, do_auth },
 #endif
 	/* No auth, allow user to download root certificate in HTTP to HTTPS redirection page of AA sku. */
-	{ "cert.crt", "application/x-x509-ca-cert", no_cache_IE7, NULL, do_download_cacert_cgi, NULL },
+	{ "cert.crt", "application/x-x509-ca-cert", no_cache, NULL, do_download_cacert_cgi, NULL },
 
 	{ "cacert_key.tar", "application/x-tar", NULL, do_html_post_and_get, do_download_cacert_key_cgi, do_auth },
 	{ "cert_key.tar", "application/x-tar", NULL, do_html_post_and_get, do_download_cert_key_cgi, do_auth },
 	{ "cert.tar", "application/x-tar", NULL, do_html_post_and_get, do_download_cert_cgi, do_auth },
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)
-	{ "get_IFTTTPincode.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_IFTTTPincode_cgi, do_auth },
-	{ "send_IFTTTPincode.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_send_IFTTTPincode_cgi, do_auth },
-	{ "get_IFTTTtoken.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_IFTTTtoken_cgi, NULL },
-	{ "alexa_block_internet.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_alexa_block_internet_cgi, do_auth },
+	{ "get_IFTTTPincode.cgi", "text/html", no_cache, do_html_post_and_get, do_get_IFTTTPincode_cgi, do_auth },
+	{ "send_IFTTTPincode.cgi", "text/html", no_cache, do_html_post_and_get, do_send_IFTTTPincode_cgi, do_auth },
+	{ "get_IFTTTtoken.cgi", "text/html", no_cache, do_html_post_and_get, do_get_IFTTTtoken_cgi, NULL },
+	{ "alexa_block_internet.cgi", "text/html", no_cache, do_html_post_and_get, do_alexa_block_internet_cgi, do_auth },
 #endif
 #ifdef RTCONFIG_NOTIFICATION_CENTER
-	{ "nc_new_wifi_notice.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_nc_new_wifi_notice_cgi, do_auth },
-	{ "nc_exist_wifi_notice.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_nc_exist_wifi_notice_cgi, do_auth },
-	{ "nc_new_wifi_notice_app.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_nc_new_wifi_notice_app_cgi, do_auth },
-	{ "nc_exist_wifi_notice_app.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_nc_exist_wifi_notice_app_cgi, do_auth },
-	{ "nc_notice.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_nc_notice_cgi, do_auth },
-	{ "get_nt_db.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_nt_db_cgi, do_auth },
-	{ "update_InfectedEventJson_security.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_update_InfectedEventJson_security_cgi, do_auth },
-	{ "get_ccevent_data.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ccevent_data_cgi, do_auth },
-	{ "get_nc_conf.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_nc_conf_cgi, do_auth },
+	{ "nc_new_wifi_notice.cgi", "text/html", no_cache, do_html_post_and_get, do_nc_new_wifi_notice_cgi, do_auth },
+	{ "nc_exist_wifi_notice.cgi", "text/html", no_cache, do_html_post_and_get, do_nc_exist_wifi_notice_cgi, do_auth },
+	{ "nc_new_wifi_notice_app.cgi", "text/html", no_cache, do_html_post_and_get, do_nc_new_wifi_notice_app_cgi, do_auth },
+	{ "nc_exist_wifi_notice_app.cgi", "text/html", no_cache, do_html_post_and_get, do_nc_exist_wifi_notice_app_cgi, do_auth },
+	{ "nc_notice.cgi", "text/html", no_cache, do_html_post_and_get, do_nc_notice_cgi, do_auth },
+	{ "get_nt_db.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_nt_db_cgi, do_auth },
+	{ "update_InfectedEventJson_security.cgi*", "text/html", no_cache, do_html_post_and_get, do_update_InfectedEventJson_security_cgi, do_auth },
+	{ "get_ccevent_data.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_ccevent_data_cgi, do_auth },
+	{ "get_nc_conf.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_nc_conf_cgi, do_auth },
 #endif
-	{ "block_device_internet.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_block_device_internet_cgi, do_auth },
-	{ "enable_remote_control.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_enable_remote_control_cgi, do_auth },
-	{ "check_Auth.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_check_Auth_cgi, do_auth },
-	{ "auto_guestnetwork.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_auto_guestnetwork_cgi, do_auth },
+	{ "block_device_internet.cgi", "text/html", no_cache, do_html_post_and_get, do_block_device_internet_cgi, do_auth },
+	{ "enable_remote_control.cgi", "text/html", no_cache, do_html_post_and_get, do_enable_remote_control_cgi, do_auth },
+	{ "check_Auth.cgi", "text/html", no_cache, do_html_post_and_get, do_check_Auth_cgi, do_auth },
+	{ "auto_guestnetwork.cgi", "text/html", no_cache, do_html_post_and_get, do_auto_guestnetwork_cgi, do_auth },
 	{ "syslog.txt*", "text/plain", syslog_txt, do_html_post_and_get, do_log_cgi, do_auth },
 #ifdef RTCONFIG_QTN  //RT-AC87U
 	{ "tmp/qtn_diagnostics.cgi*", "application/octet-stream", NULL, NULL, do_qtn_diagnostics, do_auth },
@@ -28720,271 +29213,268 @@ struct mime_handler mime_handlers[] =
 #ifdef RTCONFIG_USB_MODEM
 	{ "modemlog.txt*", "text/plain", modemlog_txt, do_html_post_and_get, do_modemlog_cgi, do_auth },
 #endif
-#ifdef RTCONFIG_TCPDUMP
-	{ "udhcpc.pcap*", "application/octet-stream", NULL, NULL, do_file, NULL },
-	{ "**.pcap*", "application/octet-stream", NULL, NULL, do_file, NULL },
-#endif
 #ifdef RTCONFIG_DUMP4000
 	{ "**.pcap*", "application/octet-stream", NULL, NULL, do_file, NULL },
 #endif
 #ifdef RTCONFIG_DSL
-	{ "dsllog.cgi*", "text/txt", no_cache_IE7, do_html_post_and_get, do_adsllog_cgi, do_auth },
+	{ "dsllog.cgi*", "text/txt", no_cache, do_html_post_and_get, do_adsllog_cgi, do_auth },
 #endif
 	// Viz 2010.08 vvvvv
-	{ "update.cgi*", "text/javascript", no_cache_IE7, do_html_post_and_get, do_update_cgi, do_auth }, // jerry5
-	{ "bwm/*.gz", NULL, no_cache, do_html_post_and_get, wo_bwmbackup, do_auth }, /* jerry5 */
+	{ "update.cgi*", "text/javascript", no_cache, do_html_post_and_get, do_update_cgi, do_auth }, // jerry5
+	{ "bwm/*.gz", NULL, no_cache, do_html_post_and_get, wo_bwmbackup, do_auth }, // jerry5
 	// end Viz  ^^^^^^^^
 	{ "**.pac", "application/x-ns-proxy-autoconfig", NULL, NULL, do_file, NULL },
 	{ "wpad.dat", "application/x-ns-proxy-autoconfig", NULL, NULL, do_file, NULL },
 #ifdef TRANSLATE_ON_FLY
-	{ "change_lang.cgi*", "text/html", no_cache_IE7, do_lang_post, do_lang_cgi, do_auth },
-	{ "change_location.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_change_location_cgi, do_auth },
+	{ "change_lang.cgi*", "text/html", no_cache, do_lang_post, do_lang_cgi, do_auth },
+	{ "change_location.cgi*", "text/html", no_cache, do_html_post_and_get, do_change_location_cgi, do_auth },
 #endif //TRANSLATE_ON_FLY
 #if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)) || defined(RTCONFIG_UBIFS)
 	{ "backup_jffs*.tar", "application/x-tar", NULL, NULL, do_jffs_file, do_auth },
-	{ "jffsupload.cgi*", "text/html", no_cache_IE7, do_jffsupload_post, do_jffsupload_cgi, do_auth },
+	{ "jffsupload.cgi*", "text/html", no_cache, do_jffsupload_post, do_jffsupload_cgi, do_auth },
 #endif
 #ifdef RTCONFIG_OPENVPN
-	{ "vpnupload.cgi*", "text/html", no_cache_IE7, do_vpnupload_post, do_vpnupload_cgi, do_auth },
+	{ "vpnupload.cgi*", "text/html", no_cache, do_vpnupload_post, do_vpnupload_cgi, do_auth },
 	{ "server_ovpn.cert", "application/x-x509-ca-cert", NULL, do_html_post_and_get, do_server_ovpn_file, do_auth },
-	{ "upload_server_ovpn_cert.cgi*", "text/html", no_cache_IE7, do_upload_server_ovpn_cert_post, do_upload_server_ovpn_cert_cgi, do_auth },
+	{ "upload_server_ovpn_cert.cgi*", "text/html", no_cache, do_upload_server_ovpn_cert_post, do_upload_server_ovpn_cert_cgi, do_auth },
 #endif
 #ifdef RTCONFIG_CAPTIVE_PORTAL
-	{ "jffs/customized_splash/**.json", "application/json", NULL, NULL, do_file, NULL }, /* */
-	{ "splash_page.cgi*", "text/html", no_cache_IE7, do_splash_page_post, do_splash_page_cgi, do_auth },
+	{ "jffs/customized_splash/**.json", "application/json", NULL, NULL, do_file, NULL },
+	{ "splash_page.cgi*", "text/html", no_cache, do_splash_page_post, do_splash_page_cgi, do_auth },
 #ifdef RTCONFIG_MULTILAN_CFG
-	{ "splash_page_SDN.cgi*", "text/html", no_cache_IE7, do_splash_page_post_SDN, do_splash_page_cgi, do_auth },
+	{ "splash_page_SDN.cgi*", "text/html", no_cache, do_splash_page_post_SDN, do_splash_page_cgi, do_auth },
 #endif
-	{ "splash_page_del.cgi*", "text/html", no_cache_IE7, do_splash_page_del, do_splash_page_cgi, do_auth },
+	{ "splash_page_del.cgi*", "text/html", no_cache, do_splash_page_del, do_splash_page_cgi, do_auth },
 #endif
 #ifdef RTCONFIG_IPSEC
 	{ "ipsec.log", "application/octet-stream", NULL, NULL, do_ipsec_file, do_auth },
-	{ "clear_file.cgi*", "text/javascript", no_cache_IE7, do_html_post_and_get, do_clear_file_cgi, do_auth },
-	{ "ipsecupload.cgi*", "text/html", no_cache_IE7, do_ipsecupload_post, do_ipsecupload_cgi, do_auth },
-	{ "caupload.cgi*", "text/html", no_cache_IE7, do_caupload_post, NULL, do_auth },
-	{ "renew_ikev2_cert_key.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_renew_ikev2_cert_key, do_auth },
+	{ "clear_file.cgi*", "text/javascript", no_cache, do_html_post_and_get, do_clear_file_cgi, do_auth },
+	{ "ipsecupload.cgi*", "text/html", no_cache, do_ipsecupload_post, do_ipsecupload_cgi, do_auth },
+	{ "caupload.cgi*", "text/html", no_cache, do_caupload_post, NULL, do_auth },
+	{ "renew_ikev2_cert_key.cgi*", "text/html", no_cache, do_html_post_and_get, do_renew_ikev2_cert_key, do_auth },
 	{ "renew_ikev2_cert_mobile.pem", "application/x-pem-file", NULL, NULL, do_renew_ikev2_cert_pem, do_auth },
 	{ "renew_ikev2_cert_windows.der", "application/x-x509-ca-cert", NULL, NULL, do_renew_ikev2_cert_der, do_auth },
 	{ "ikev2_cert_mobile.pem", "application/x-pem-file", NULL, NULL, do_ikev2_cert_pem, do_auth },
 	{ "ikev2_cert_windows.der", "application/x-x509-ca-cert", NULL, NULL, do_ikev2_cert_der, do_auth },
-	{ "get_ipsec_clientlist.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ipsec_clientlist_cgi, do_auth },
-	{ "set_ipsec_clientlist.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ipsec_clientlist_cgi, do_auth },
-	{ "ipsec_cert_info.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_ipsec_cert_info_cgi, do_auth },
-	{ "get_ipsec_profile.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ipsec_profile_cgi, do_auth },
-	{ "set_ipsec_profile.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ipsec_profile_cgi, do_auth },
-	{ "upload_server_ipsec_cert.cgi*", "text/html", no_cache_IE7, do_upload_server_ipsec_cert_post, do_upload_server_ipsec_cert_cgi, do_auth },
+	{ "get_ipsec_clientlist.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_ipsec_clientlist_cgi, do_auth },
+	{ "set_ipsec_clientlist.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_ipsec_clientlist_cgi, do_auth },
+	{ "ipsec_cert_info.cgi*", "text/html", no_cache, do_html_post_and_get, do_ipsec_cert_info_cgi, do_auth },
+	{ "get_ipsec_profile.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_ipsec_profile_cgi, do_auth },
+	{ "set_ipsec_profile.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_ipsec_profile_cgi, do_auth },
+	{ "upload_server_ipsec_cert.cgi*", "text/html", no_cache, do_upload_server_ipsec_cert_post, do_upload_server_ipsec_cert_cgi, do_auth },
 	{ "ipsec_s2s.conf", "application/octet-stream", NULL, NULL, do_ipsec_s2s_conf, do_auth },
-	{ "ipsec_s2s_upload.cgi*", "text/html", no_cache_IE7, do_ipsec_s2s_upload_post, do_ipsec_s2s_upload_cgi, do_auth },
+	{ "ipsec_s2s_upload.cgi*", "text/html", no_cache, do_ipsec_s2s_upload_post, do_ipsec_s2s_upload_cgi, do_auth },
 	{ "server_ipsec.cert", "application/x-x509-ca-cert", NULL, do_html_post_and_get, do_server_ipsec_file, do_auth },
 #ifdef RTCONFIG_INSTANT_GUARD
-	{ "get_IG_pre_shared_key.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_IG_pre_shared_key_cgi, do_auth },
-	{ "get_ig_config.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ig_config_cgi, do_auth },
-	{ "set_ig_config.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ig_config_cgi, do_auth },
-	{ "get_ig_guest_config.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ig_guest_config_cgi, do_auth },
-	{ "set_ig_guest_config.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ig_guest_config_cgi, do_auth },
-	{ "get_ig_sharelink.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ig_sharelink_cgi, do_auth },
-	{ "enable_ig_guest.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_enable_ig_guest_cgi, NULL },
+	{ "get_IG_pre_shared_key.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_IG_pre_shared_key_cgi, do_auth },
+	{ "get_ig_config.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_ig_config_cgi, do_auth },
+	{ "set_ig_config.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_ig_config_cgi, do_auth },
+	{ "get_ig_guest_config.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_ig_guest_config_cgi, do_auth },
+	{ "set_ig_guest_config.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_ig_guest_config_cgi, do_auth },
+	{ "get_ig_sharelink.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_ig_sharelink_cgi, do_auth },
+	{ "enable_ig_guest.cgi*", "text/html", no_cache, do_html_post_and_get, do_enable_ig_guest_cgi, NULL },
 #endif
 #endif
 #ifdef RTCONFIG_IG_SITE2SITE
-	{ "get_ig_s2s_sharelink.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ig_s2s_sharelink_cgi, do_auth },
-	{ "enable_ig_s2s_client.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_enable_ig_s2s_client_cgi, do_auth },
-	{ "enable_ig_s2s_server.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_enable_ig_s2s_server_cgi, NULL },
-	{ "ig_s2s_link.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_ig_s2s_link_cgi, do_auth },
-	{ "enable_wireguard_client.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_enable_wireguard_client_cgi, do_auth },
-	{ "delete_wireguard_client.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_delete_wireguard_client_cgi, do_auth },
-	{ "get_wgc_connect_status.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_wgc_connect_status_cgi, do_auth },
-	{ "get_sharelink_status.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_sharelink_status_cgi, NULL },
-	{ "get_wgsc_list.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_wgsc_list_cgi, do_auth },
-	{ "del_wgsc_list.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_del_wgsc_list_cgi, do_auth },
+	{ "get_ig_s2s_sharelink.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_ig_s2s_sharelink_cgi, do_auth },
+	{ "enable_ig_s2s_client.cgi*", "text/html", no_cache, do_html_post_and_get, do_enable_ig_s2s_client_cgi, do_auth },
+	{ "enable_ig_s2s_server.cgi*", "text/html", no_cache, do_html_post_and_get, do_enable_ig_s2s_server_cgi, NULL },
+	{ "ig_s2s_link.cgi*", "text/html", no_cache, do_html_post_and_get, do_ig_s2s_link_cgi, do_auth },
+	{ "enable_wireguard_client.cgi*", "text/html", no_cache, do_html_post_and_get, do_enable_wireguard_client_cgi, do_auth },
+	{ "delete_wireguard_client.cgi*", "text/html", no_cache, do_html_post_and_get, do_delete_wireguard_client_cgi, do_auth },
+	{ "get_wgc_connect_status.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_wgc_connect_status_cgi, do_auth },
+	{ "get_sharelink_status.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_sharelink_status_cgi, NULL },
+	{ "get_wgsc_list.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_wgsc_list_cgi, do_auth },
+	{ "del_wgsc_list.cgi*", "text/html", no_cache, do_html_post_and_get, do_del_wgsc_list_cgi, do_auth },
 #endif
-	{ "deleteOfflineClient.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_deleteOfflineClient_cgi, do_auth },
+	{ "deleteOfflineClient.cgi*", "text/html", no_cache, do_html_post_and_get, do_deleteOfflineClient_cgi, do_auth },
 #ifdef RTCONFIG_QCA_PLC_UTILS
-	{ "plc.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_plc_cgi, do_auth },
+	{ "plc.cgi*", "text/html", no_cache, do_html_post_and_get, do_plc_cgi, do_auth },
 #endif
 #if defined(RTCONFIG_LP5523) || defined(RTCONFIG_ZENWIFI_RGBLED)
-	{ "lp55xx.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_lp55xx_cgi, do_auth },
+	{ "lp55xx.cgi*", "text/html", no_cache, do_html_post_and_get, do_lp55xx_cgi, do_auth },
 #endif
 #if defined(RTCONFIG_WIFI_SON)
-	{ "athX_state.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_athX_state_cgi, do_auth },
+	{ "athX_state.cgi*", "text/html", no_cache, do_html_post_and_get, do_athX_state_cgi, do_auth },
 #endif
 
 #ifdef RTCONFIG_NETOOL
-	{ "netool.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_netool_cgi, do_auth },
+	{ "netool.cgi*", "text/html", no_cache, do_html_post_and_get, do_netool_cgi, do_auth },
 #endif
 #if defined(HND_ROUTER) && defined(RTCONFIG_VISUALIZATION)
-	{ "json.cgi*", "application/json", no_cache_IE7, (void *) vis_do_json_set, vis_do_json_get, do_auth },
+	{ "json.cgi*", "application/json", no_cache, (void *) vis_do_json_set, vis_do_json_get, do_auth },
 	{ "visdata.db*", "application/octet-stream", NULL, (void *) vis_do_visdbdwnld_cgi, NULL, do_auth },
 #endif
 #if 0 // obsoleted, RTCONFIG_RGBLED
-	{ "aurargb.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_aurargb_cgi, do_auth },
+	{ "aurargb.cgi*", "text/html", no_cache, do_html_post_and_get, do_aurargb_cgi, do_auth },
 #endif
 #if defined(RTCONFIG_RGBLED)
-	{ "enable_aura_rgb.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_enable_aura_rgb_cgi, do_auth },
-	{ "set_aura_rgb.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_aura_rgb_cgi, do_auth },
-	{ "get_aura_rgb.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_aura_rgb_cgi, do_auth },
+	{ "enable_aura_rgb.cgi*", "text/html", no_cache, do_html_post_and_get, do_enable_aura_rgb_cgi, do_auth },
+	{ "set_aura_rgb.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_aura_rgb_cgi, do_auth },
+	{ "get_aura_rgb.cgi", "text/html", no_cache, do_html_post_and_get, do_get_aura_rgb_cgi, do_auth },
 #endif
-	{ "cleanlog.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_cleanlog_cgi, do_auth },
-	{ "update_wlanlog.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_update_wlanlog_cgi, do_auth },
-	{ "rog_first_qos.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_rog_first_qos_cgi, do_auth },
-	{ "feedback_mail.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_feedback_mail_cgi, do_auth },
+	{ "cleanlog.cgi*", "text/html", no_cache, do_html_post_and_get, do_cleanlog_cgi, do_auth },
+	{ "update_wlanlog.cgi*", "text/html", no_cache, do_html_post_and_get, do_update_wlanlog_cgi, do_auth },
+	{ "rog_first_qos.cgi*", "text/html", no_cache, do_html_post_and_get, do_rog_first_qos_cgi, do_auth },
+	{ "feedback_mail.cgi*", "text/html", no_cache, do_html_post_and_get, do_feedback_mail_cgi, do_auth },
 	{ "dfb_log.cgi", "application/octet-stream", NULL, do_html_post_and_get, do_dfb_log_file, do_auth },
-	{ "clean_offline_clientlist.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_clean_offline_clientlist_cgi, do_auth },
-	{ "set_fw_path.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_set_fw_path_cgi, do_auth },
+	{ "clean_offline_clientlist.cgi", "text/html", no_cache, do_html_post_and_get, do_clean_offline_clientlist_cgi, do_auth },
+	{ "set_fw_path.cgi", "text/html", no_cache, do_html_post_and_get, do_set_fw_path_cgi, do_auth },
 #ifdef RTCONFIG_IPERF3
-	{ "set_iperf3_svr.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_set_iperf3_svr_cgi, do_auth },
-	{ "set_iperf3_cli.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_set_iperf3_cli_cgi, do_auth },
-	{ "get_iperf3_state.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_iperf3_state_cgi, do_auth },
+	{ "set_iperf3_svr.cgi", "text/html", no_cache, do_html_post_and_get, do_set_iperf3_svr_cgi, do_auth },
+	{ "set_iperf3_cli.cgi", "text/html", no_cache, do_html_post_and_get, do_set_iperf3_cli_cgi, do_auth },
+	{ "get_iperf3_state.cgi", "text/html", no_cache, do_html_post_and_get, do_get_iperf3_state_cgi, do_auth },
 #endif
 #if defined(RTCONFIG_AMAZON_WSS)
-	{ "amazon_wss.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_amazon_wss_cgi, do_auth },
+	{ "amazon_wss.cgi*", "text/html", no_cache, do_html_post_and_get, do_amazon_wss_cgi, do_auth },
 #endif
 #ifdef RTCONFIG_INTERNETCTRL
-	{ "internet_ctrl.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_internet_ctrl_cgi, do_auth },
+	{ "internet_ctrl.cgi*", "text/html", no_cache, do_html_post_and_get, do_internet_ctrl_cgi, do_auth },
 #endif
 #ifdef RTCONFIG_ACCOUNT_BINDING
-	{ "get_eptoken.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_eptoken_cgi, NULL },
-	{ "asusrouter_request_token.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_asusrouter_request_token_cgi, NULL },
-	{ "asusrouter_request_access_token.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_asusrouter_request_access_token_cgi, NULL },
-	{ "endpoint_request_token.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_endpoint_request_token_cgi, NULL },
+	{ "get_eptoken.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_eptoken_cgi, NULL },
+	{ "asusrouter_request_token.cgi*", "text/html", no_cache, do_html_post_and_get, do_asusrouter_request_token_cgi, NULL },
+	{ "asusrouter_request_access_token.cgi*", "text/html", no_cache, do_html_post_and_get, do_asusrouter_request_access_token_cgi, NULL },
+	{ "endpoint_request_token.cgi*", "text/html", no_cache, do_html_post_and_get, do_endpoint_request_token_cgi, NULL },
 #endif
 #ifdef RTCONFIG_WL_SCHED_V2
-	{ "get_wl_sched.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_wl_sched_cgi, do_auth },
-	{ "set_wl_sched.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_wl_sched_cgi, do_auth },
+	{ "get_wl_sched.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_wl_sched_cgi, do_auth },
+	{ "set_wl_sched.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_wl_sched_cgi, do_auth },
 #endif
 #if defined(RTCONFIG_OOKLA) || defined(RTCONFIG_OOKLA_LITE)
-	{ "ookla_speedtest_exe.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_ookla_speedtest_exe_cgi, do_auth },
-	{ "ookla_speedtest_write_history.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_ookla_speedtest_write_history_cgi, do_auth },
-	{ "set_ookla_speedtest_state.cgi", "text/html", no_cache_IE7, do_html_post_and_get, set_ookla_speedtest_state_cgi, do_auth },
-	{ "set_ookla_speedtest_start_time.cgi", "text/html", no_cache_IE7, do_html_post_and_get, set_ookla_speedtest_start_time_cgi, do_auth },
+	{ "ookla_speedtest_exe.cgi", "text/html", no_cache, do_html_post_and_get, do_ookla_speedtest_exe_cgi, do_auth },
+	{ "ookla_speedtest_write_history.cgi", "text/html", no_cache, do_html_post_and_get, do_ookla_speedtest_write_history_cgi, do_auth },
+	{ "set_ookla_speedtest_state.cgi", "text/html", no_cache, do_html_post_and_get, set_ookla_speedtest_state_cgi, do_auth },
+	{ "set_ookla_speedtest_start_time.cgi", "text/html", no_cache, do_html_post_and_get, set_ookla_speedtest_start_time_cgi, do_auth },
 #endif
-	{ "del_client_data.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_del_client_data_cgi, do_auth },
+	{ "del_client_data.cgi*", "text/html", no_cache, do_html_post_and_get, do_del_client_data_cgi, do_auth },
 #if defined(RTCONFIG_AURALED) \
 	|| defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) \
 	|| defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) \
 	|| defined(GS7) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI)
-	{ "set_ledg.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ledg_cgi, do_auth },
+	{ "set_ledg.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_ledg_cgi, do_auth },
 #endif
 #if defined(GTAX6000)
-         { "set_antled.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_antled_cgi, do_auth },
+         { "set_antled.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_antled_cgi, do_auth },
 #endif
 #ifdef RTCONFIG_PC_REWARD
-	{ "set_pc_reward.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_pc_reward_cgi, do_auth },
-	{ "get_pc_reward.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_pc_reward_cgi, do_auth },
+	{ "set_pc_reward.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_pc_reward_cgi, do_auth },
+	{ "get_pc_reward.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_pc_reward_cgi, do_auth },
 #endif
 #ifdef RTCONFIG_TC_GAME_ACC
-	{ "get_download_info", "text/html", no_cache_IE7, do_html_post_and_get, tc_get_download_info_cgi, NULL },
+	{ "get_download_info", "text/html", no_cache, do_html_post_and_get, tc_get_download_info_cgi, NULL },
 	{ "INO", "application/octet-stream", NULL, NULL, tencent_send_file, NULL },
 #endif
 #ifdef RTCONFIG_JFFS2USERICON
-	{ "get_usericon_md5.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_usericon_md5_cgi, do_auth },
-	{ "backup_all_usericon.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_backup_all_usericon_cgi, do_auth },
-	{ "upload_all_usericon.cgi*", "application/octet-stream", no_cache_IE7, do_upload_all_usericon_post, do_upload_all_usericon_cgi, do_auth },
+	{ "get_usericon_md5.cgi", "text/html", no_cache, do_html_post_and_get, do_get_usericon_md5_cgi, do_auth },
+	{ "backup_all_usericon.cgi", "text/html", no_cache, do_html_post_and_get, do_backup_all_usericon_cgi, do_auth },
+	{ "upload_all_usericon.cgi*", "application/octet-stream", no_cache, do_upload_all_usericon_post, do_upload_all_usericon_cgi, do_auth },
 #endif
 #ifdef RTCONFIG_INTERNAL_GOBI
-	{ "do_modem_simstatus.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_modem_simstatus_cgi, do_auth },
-	{ "do_modem_fwupgrade.cgi", "text/html", no_cache_IE7, do_lte_upgrade_post, do_lte_upgrade_cgi, do_auth },
-	{ "do_sms_read_msg.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_sms_read_msg_cgi, do_auth },
-	{ "sms_update_userstatus.cgi", "text/html", no_cache_IE7, do_html_post_and_get, sms_update_userstatus_cgi, do_auth },
-	{ "do_sms_delete_msg.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_sms_delete_msg_cgi, do_auth },
-	{ "do_sms_send_msg.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_sms_send_msg_cgi, do_auth },
-	{ "do_sms_read_draft.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_sms_read_draft_cgi, do_auth },
-	{ "do_sms_save_draft.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_sms_save_draft_cgi, do_auth },
-	{ "do_sms_send_draft.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_sms_send_draft_cgi, do_auth },
+	{ "do_modem_simstatus.cgi", "text/html", no_cache, do_html_post_and_get, do_modem_simstatus_cgi, do_auth },
+	{ "do_modem_fwupgrade.cgi", "text/html", no_cache, do_lte_upgrade_post, do_lte_upgrade_cgi, do_auth },
+	{ "do_sms_read_msg.cgi", "text/html", no_cache, do_html_post_and_get, do_sms_read_msg_cgi, do_auth },
+	{ "sms_update_userstatus.cgi", "text/html", no_cache, do_html_post_and_get, sms_update_userstatus_cgi, do_auth },
+	{ "do_sms_delete_msg.cgi", "text/html", no_cache, do_html_post_and_get, do_sms_delete_msg_cgi, do_auth },
+	{ "do_sms_send_msg.cgi", "text/html", no_cache, do_html_post_and_get, do_sms_send_msg_cgi, do_auth },
+	{ "do_sms_read_draft.cgi", "text/html", no_cache, do_html_post_and_get, do_sms_read_draft_cgi, do_auth },
+	{ "do_sms_save_draft.cgi", "text/html", no_cache, do_html_post_and_get, do_sms_save_draft_cgi, do_auth },
+	{ "do_sms_send_draft.cgi", "text/html", no_cache, do_html_post_and_get, do_sms_send_draft_cgi, do_auth },
 #endif
 #if defined(RTCONFIG_DNSQUERY_INTERCEPT)
-        { "get_app_client_stats.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_app_client_stats, do_auth },
-        { "get_dns_block_stats.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_dns_block_stats, do_auth },
-        { "get_dns_block_list.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_dns_block_list, do_auth },
-        { "get_dns_block_list_insert_or_update.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_dns_block_list_insert_or_update, do_auth },
-        { "get_dev_type_query.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_dev_type_query, do_auth },
+        { "get_app_client_stats.cgi", "text/html", no_cache, do_html_post_and_get, do_get_app_client_stats, do_auth },
+        { "get_dns_block_stats.cgi", "text/html", no_cache, do_html_post_and_get, do_dns_block_stats, do_auth },
+        { "get_dns_block_list.cgi", "text/html", no_cache, do_html_post_and_get, do_dns_block_list, do_auth },
+        { "get_dns_block_list_insert_or_update.cgi", "text/html", no_cache, do_html_post_and_get, do_dns_block_list_insert_or_update, do_auth },
+        { "get_dev_type_query.cgi", "text/html", no_cache, do_html_post_and_get, do_get_dev_type_query, do_auth },
 #endif
 #if defined(RTCONFIG_CONNDIAG) || defined(RTCONFIG_NEW_PHYMAP)
-	{ "get_port_status.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_port_status_cgi, do_auth },
-	{ "exec_force_cable_diag.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_exec_force_cable_diag_cgi, do_auth },
+	{ "get_port_status.cgi", "text/html", no_cache, do_html_post_and_get, do_get_port_status_cgi, do_auth },
+	{ "exec_force_cable_diag.cgi", "text/html", no_cache, do_html_post_and_get, do_exec_force_cable_diag_cgi, do_auth },
 #endif
 #if defined(RTCONFIG_CONNDIAG)
-	{ "get_diag_wifi_traffic.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_diag_wifi_traffic_cgi, do_auth },
-	{ "get_diag_eth_traffic.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_diag_eth_traffic_cgi, do_auth },
-	{ "get_diag_sta_traffic.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_diag_sta_traffic_cgi, do_auth },
+	{ "get_diag_wifi_traffic.cgi", "text/html", no_cache, do_html_post_and_get, do_get_diag_wifi_traffic_cgi, do_auth },
+	{ "get_diag_eth_traffic.cgi", "text/html", no_cache, do_html_post_and_get, do_get_diag_eth_traffic_cgi, do_auth },
+	{ "get_diag_sta_traffic.cgi", "text/html", no_cache, do_html_post_and_get, do_get_diag_sta_traffic_cgi, do_auth },
 #endif
 #if defined(RTCONFIG_CONNDIAG) && defined(RTCONFIG_LIB_CODB)
-    { "get_diag_avg_data.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_diag_avg_data, do_auth },
-    { "get_diag_active_client.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_diag_active_client, do_auth },
-    { "get_diag_content_data.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_diag_content_data, do_auth },
-    { "get_diag_eth_traffic_data.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_diag_eth_traffic_data, do_auth },
-	{ "get_diag_latest_content_data.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_diag_latest_content_data, do_auth },
+    { "get_diag_avg_data.cgi", "text/html", no_cache, do_html_post_and_get, do_get_diag_avg_data, do_auth },
+    { "get_diag_active_client.cgi", "text/html", no_cache, do_html_post_and_get, do_get_diag_active_client, do_auth },
+    { "get_diag_content_data.cgi", "text/html", no_cache, do_html_post_and_get, do_get_diag_content_data, do_auth },
+    { "get_diag_eth_traffic_data.cgi", "text/html", no_cache, do_html_post_and_get, do_get_diag_eth_traffic_data, do_auth },
+	{ "get_diag_latest_content_data.cgi", "text/html", no_cache, do_html_post_and_get, do_get_diag_latest_content_data, do_auth },
 #endif
 #if defined(RTCONFIG_CONNDIAG) && defined(RTCONFIG_LIB_CODB) && defined(RTCONFIG_DNS_PING)
-    { "dns_ping.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_dns_ping, do_auth},
+    { "dns_ping.cgi", "text/html", no_cache, do_html_post_and_get, do_dns_ping, do_auth},
 #endif
 #if defined(RTCONFIG_CD_IPERF)
-	{ "do_iperf.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_iperf, do_auth},
+	{ "do_iperf.cgi", "text/html", no_cache, do_html_post_and_get, do_iperf, do_auth},
 #endif
 #ifdef RTCONFIG_TIME_QUOTA
-	{ "get_time_quota_profile.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_time_quota_profile_cgi, do_auth },
-	{ "set_time_quota_profile.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_set_time_quota_profile_cgi, do_auth },
-	{ "get_time_quota_profile_list.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_time_quota_profile_list_cgi, do_auth },
-	{ "get_tq_group_use_sec_weekly.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_tq_group_use_sec_weekly_cgi, do_auth },
-	{ "get_tq_client_use_day_traffic.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_tq_client_use_day_traffic_cgi, do_auth },
-	{ "get_tq_client_use_hour_traffic.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_tq_client_use_hour_traffic_cgi, do_auth },
+	{ "get_time_quota_profile.cgi", "text/html", no_cache, do_html_post_and_get, do_get_time_quota_profile_cgi, do_auth },
+	{ "set_time_quota_profile.cgi", "text/html", no_cache, do_html_post_and_get, do_set_time_quota_profile_cgi, do_auth },
+	{ "get_time_quota_profile_list.cgi", "text/html", no_cache, do_html_post_and_get, do_get_time_quota_profile_list_cgi, do_auth },
+	{ "get_tq_group_use_sec_weekly.cgi", "text/html", no_cache, do_html_post_and_get, do_get_tq_group_use_sec_weekly_cgi, do_auth },
+	{ "get_tq_client_use_day_traffic.cgi", "text/html", no_cache, do_html_post_and_get, do_get_tq_client_use_day_traffic_cgi, do_auth },
+	{ "get_tq_client_use_hour_traffic.cgi", "text/html", no_cache, do_html_post_and_get, do_get_tq_client_use_hour_traffic_cgi, do_auth },
 #endif
-	{ "get_custom_clientlist.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_custom_clientlist_cgi, do_auth },
-	{ "set_family_group.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_set_family_group_cgi, do_auth },
+	{ "get_custom_clientlist.cgi", "text/html", no_cache, do_html_post_and_get, do_get_custom_clientlist_cgi, do_auth },
+	{ "set_family_group.cgi", "text/html", no_cache, do_html_post_and_get, do_set_family_group_cgi, do_auth },
 #ifdef RTCONFIG_AUPNPC
-	{ "get_upnpc_redirection_list.cgi", "text/html", no_cache_IE7, do_html_post_and_get, get_upnpc_redirection_list_cgi, do_auth },
+	{ "get_upnpc_redirection_list.cgi", "text/html", no_cache, do_html_post_and_get, get_upnpc_redirection_list_cgi, do_auth },
 #endif
-	{ "chpass.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_chpass_cgi, do_auth },
-	{ "get_cta_info.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_cta_info_cgi, NULL },
-	{ "upload_config_sync.cgi*", "text/html", no_cache_IE7, do_upload_config_sync_post, do_upload_config_sync_cgi, do_auth },
-	{ "upload_blacklist_config.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_upload_blacklist_config_cgi, do_auth },
-	{ "start_config_sync.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_start_config_sync_cgi, do_auth },
-	{ "save_all_profile.cgi*", "application/octet-stream", no_cache_IE7, do_html_post_and_get, do_save_all_profile_cgi, do_auth },
+	{ "chpass.cgi*", "text/html", no_cache, do_html_post_and_get, do_chpass_cgi, do_auth },
+	{ "get_cta_info.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_cta_info_cgi, NULL },
+	{ "upload_config_sync.cgi*", "text/html", no_cache, do_upload_config_sync_post, do_upload_config_sync_cgi, do_auth },
+	{ "upload_blacklist_config.cgi*", "text/html", no_cache, do_html_post_and_get, do_upload_blacklist_config_cgi, do_auth },
+	{ "start_config_sync.cgi*", "text/html", no_cache, do_html_post_and_get, do_start_config_sync_cgi, do_auth },
+	{ "save_all_profile.cgi*", "application/octet-stream", no_cache, do_html_post_and_get, do_save_all_profile_cgi, do_auth },
 #if 0 //Temporarily mark unused code
 #if defined(RTCONFIG_TUNNEL) && defined(RTCONFIG_ACCOUNT_BINDING)
-	{ "oauth_callback.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_oauth_callback_cgi, do_auth },
+	{ "oauth_callback.cgi*", "text/html", no_cache, do_html_post_and_get, do_oauth_callback_cgi, do_auth },
 #endif
 #endif
 #ifdef RTCONFIG_FBWIFI
-    { "aae_fbwifi2_reg.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_aae_fbwifi2_reg_cgi, do_auth },
+    { "aae_fbwifi2_reg.cgi*", "text/html", no_cache, do_html_post_and_get, do_aae_fbwifi2_reg_cgi, do_auth },
 #endif
 #ifdef RTCONFIG_USB_WAN_BACKUP
-    { "set_usb_bk.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_usb_bk_cgi, do_auth },
+    { "set_usb_bk.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_usb_bk_cgi, do_auth },
 #endif
 #ifdef RTCONFIG_NEWSITE_PROVISIONING
-    { "get_provision_pincode.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_provision_pincode_cgi, do_auth },
+    { "get_provision_pincode.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_provision_pincode_cgi, do_auth },
 #endif
 #ifdef RTCONFIG_SOFTWIRE46
-	{ "s46reset.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_s46reset_cgi, do_auth },
+	{ "s46reset.cgi*", "text/html", no_cache, do_html_post_and_get, do_s46reset_cgi, do_auth },
 #endif
 #if defined(RTCONFIG_ASD) || defined(RTCONFIG_AHS)
-	{ "set_security_update.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_security_update_cgi, do_auth },
-	{ "get_security_update.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_security_update_cgi, do_auth },
+	{ "set_security_update.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_security_update_cgi, do_auth },
+	{ "get_security_update.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_security_update_cgi, do_auth },
 #endif
 #ifdef RTCONFIG_MULTILAN_CFG
-	{ "create_sdn_profile.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_create_sdn_profile_cgi, do_auth },
-	{ "create_sdn_mwl.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_create_sdn_mwl_cgi, do_auth },
-	{ "create_sdn_legacy.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_create_sdn_legacy_cgi, do_auth },
-	{ "mld_enable.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_mld_enable_cgi, do_auth },
-	{ "reset_sdn_rule.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_reset_sdn_rule_cgi, do_auth },
+	{ "create_sdn_profile.cgi*", "text/html", no_cache, do_html_post_and_get, do_create_sdn_profile_cgi, do_auth },
+	{ "create_sdn_mwl.cgi*", "text/html", no_cache, do_html_post_and_get, do_create_sdn_mwl_cgi, do_auth },
+	{ "create_sdn_legacy.cgi*", "text/html", no_cache, do_html_post_and_get, do_create_sdn_legacy_cgi, do_auth },
+	{ "mld_enable.cgi*", "text/html", no_cache, do_html_post_and_get, do_mld_enable_cgi, do_auth },
+	{ "reset_sdn_rule.cgi*", "text/html", no_cache, do_html_post_and_get, do_reset_sdn_rule_cgi, do_auth },
 #endif
 #ifdef RTCONFIG_BCM_AFC
-	{ "get_afc_info_json.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_afc_info_json_cgi, do_auth },
-	{ "get_afc_info.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_afc_info_cgi, do_auth },
-	{ "set_afc_enable.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_afc_enable_cgi, do_auth },
-	{ "send_afc_location.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_send_afc_location_cgi, do_auth },
-	{ "get_afc_challenge.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_afc_challenge_cgi, do_auth },
+	{ "get_afc_info_json.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_afc_info_json_cgi, do_auth },
+	{ "get_afc_info.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_afc_info_cgi, do_auth },
+	{ "set_afc_enable.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_afc_enable_cgi, do_auth },
+	{ "send_afc_location.cgi*", "text/html", no_cache, do_html_post_and_get, do_send_afc_location_cgi, do_auth },
+	{ "get_afc_challenge.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_afc_challenge_cgi, do_auth },
 #endif
 #if defined(RTCONFIG_GTBOOSTER)
-	{ "getArkInfo.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ArkInfo_cgi, do_auth },
-	{ "delArkInfo.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_del_ArkInfo_cgi, do_auth },
-	{ "getArkLog.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ArkLog_cgi, do_auth },
-	{ "getArkLogCount.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ArkLogCount_cgi, do_auth },
+	{ "getArkInfo.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_ArkInfo_cgi, do_auth },
+	{ "delArkInfo.cgi*", "text/html", no_cache, do_html_post_and_get, do_del_ArkInfo_cgi, do_auth },
+	{ "getArkLog.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_ArkLog_cgi, do_auth },
+	{ "getArkLogCount.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_ArkLogCount_cgi, do_auth },
 	{ "delArkLog.cgi*", "text/html", no_cache, do_html_post_and_get, do_delArkLog_cgi, do_auth },
 	{ "get_ark_migration_done.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_ark_migration_done_cgi, do_auth },
 	{ "set_ark_migration_done.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_ark_migration_done_cgi, do_auth },
+	{ "ark_wbl.cgi*", "text/html", no_cache, do_html_post_and_get, do_ark_wbl_cgi, do_auth },
 #endif
-	{ "set_wl_band.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_wl_band_cgi, do_auth },
+	{ "set_wl_band.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_wl_band_cgi, do_auth },
 	{ NULL, NULL, NULL, NULL, NULL, NULL }
 };
 
@@ -29028,6 +29518,7 @@ struct except_mime_handler except_mime_handlers[] = {
 	{ "athX_state.cgi", MIME_EXCEPTION_NOAUTH_FIRST},
 #endif
 	{ "login.cgi", MIME_EXCEPTION_NOPASS},
+	{ "manifest.json", MIME_EXCEPTION_NOAUTH_ALL},
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)
 	{ "get_IFTTTtoken.cgi", MIME_EXCEPTION_NOPASS},
 #endif
@@ -32564,7 +33055,7 @@ void ej_cgi_get(int eid, webs_t wp, int argc, char **argv)
 
 	for (i = 0; i < argc; ++i) {
 		v = get_cgi(argv[i]);
-		if (v) ret += websWrite(wp, v);
+		if (v) ret += websWrite(wp, "%s", v);
 	}
 }
 
@@ -33668,49 +34159,95 @@ ej_dns_wanStat_detail(int eid, webs_t wp, int argc, char_t **argv)
 #endif
 
 #if defined(RTCONFIG_OOKLA) || defined(RTCONFIG_OOKLA_LITE)
-/* define */
-#if defined(RTCONFIG_OOKLA_LITE)
-#define OOKLA_FOLDER      "/tmp/OOKLA/"
-#else
-#define OOKLA_FOLDER      "/jffs/.sys/OOKLA/"
-#endif
-#define OOKLA_RESULT      OOKLA_FOLDER"ookla_result"
-#define OOKLA_HISTORY     OOKLA_FOLDER"ookla_history"
-#define OOKLA_HISTORY_T   OOKLA_FOLDER"ookla_history_t"
-#define OOKLA_SERVERS     OOKLA_FOLDER"ookla_servers"
-#define OOKLA_HISTORY_MAX 49
-#if defined(RTCONFIG_ETH_MONITOR)
-#define ETH_MONITOR_RESULT      OOKLA_FOLDER"ookla_data"
-#endif
+/* Parse ookla_quota nvram and validate format/range.
+ * Returns  0 if allowed,
+ *         -1 if quota exceeded or format invalid,
+ *         -2 if QIS/FRS not active (RTCONFIG_HND_ROUTER_BE_4916 only).
+ * Does NOT write nvram — counter is updated only on successful test.
+ *
+ * RTCONFIG_HND_ROUTER_BE_4916: requires x_Setting==1 (QIS+FRS Active);
+ *   Phase 1 = first 100 uses free, Phase 2 = 3 uses per 24hr thereafter.
+ * All other models: Phase 2 only (3 uses per 24hr, no Phase 1 quota).
+ */
+static int
+ookla_check_quota(void)
+{
+	int phase1_cnt = 0, daily_cnt = 0;
+	long daily_ts = 0;
+	char ookla_quota[20] = {0};
+	char repair_buf[20];
+	FILE *fp;
+	time_t now;
 
-enum{
-		OOKLA_STATE_IDLE = 0,
-		OOKLA_STATE_RUN,
-		OOKLA_STATE_ERR_DISCON,
-		OOKLA_STATE_ERR_TIMEOUT,
-		OOKLA_STATE_ERR_TERMINATE,
-		OOKLA_STATE_ERR_UNKNOWN
-};
-
-
-/* debug */
-#define OOKLA_DEBUG       "/tmp/OOKLA_DEBUG"
-#define OOKLA_DBG(fmt,args...) \
-	if(f_exists(OOKLA_DEBUG) > 0) { \
-		dbg("[OOKLA][%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
+	/* Format invalid or values out of range: reset to fully-exhausted state */
+	snprintf(ookla_quota, sizeof(ookla_quota), "%s", nvram_safe_get("ookla_quota"));
+	if (sscanf(ookla_quota, "%d<%ld<%d",
+	           &phase1_cnt, &daily_ts, &daily_cnt) != 3
+	    || phase1_cnt < 0    || phase1_cnt > OOKLA_QUOTA_PHASE1_MAX
+	    || daily_ts < 0
+	    || daily_cnt < 0 || daily_cnt > OOKLA_QUOTA_DAILY_MAX) {
+		now = time(NULL);
+		snprintf(repair_buf, sizeof(repair_buf), "%d<%ld<%d",
+		         OOKLA_QUOTA_PHASE1_MAX, (long)now, OOKLA_QUOTA_DAILY_MAX);
+		nvram_set("ookla_quota", repair_buf);
+		nvram_commit();
+		return -1;
 	}
+
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+	/* Require QIS complete + FRS Active before allowing speedtest */
+	if (!nvram_match("x_Setting", "1"))
+		return -2;
+
+	if (phase1_cnt < OOKLA_QUOTA_PHASE1_MAX)
+		return 0;  /* Phase 1: allowed */
+#else
+	phase1_cnt = OOKLA_QUOTA_PHASE1_MAX;  /* non-4916/4918: always Phase 2 */
+#endif
+
+	/* Phase 2: 24-hour sliding window */
+	now = time(NULL);
+
+	/* Expired counting period counts as fresh start */
+	if (((long)now - daily_ts) >= OOKLA_QUOTA_WINDOW_SEC || daily_ts > (long)now)
+		return 0;
+
+	return (daily_cnt >= OOKLA_QUOTA_DAILY_MAX) ? -1 : 0;
+}
 
 static int
 ookla_exec(char *type, char *id, char *iface)
 {
 	int pid;
 	int retval = 0;
-	char *iface_arg;
 	char *config = NULL;
+	char *cmd[24] = {0};
+	int cmd_idx = 0;
+	FILE *fp;
+	struct ookla_cmd_profile profile;
 
 	OOKLA_DBG(" type=%s, id=%s, iface=%s\n", type, id, iface);
 
-	config = "https://config.speedtest.net/v1/embed/4tiouex6gsnzq55o/config";
+	/* Quota check for actual tests (type=""), not for server list (type="list") */
+	if (!strcmp(type, "")) {
+		int quota_ret = ookla_check_quota();
+		if (quota_ret != 0) {
+			const char *err_msg = (quota_ret == -2) ? "not_active" : "quota exceeded";
+			OOKLA_DBG("quota check failed: %s\n", err_msg);
+			if (!f_exists(OOKLA_FOLDER))
+				mkdir(OOKLA_FOLDER, 0666);
+			if ((fp = fopen(OOKLA_RESULT, "w")) != NULL) {
+				fprintf(fp, "{\"error\":\"%s\"}\n", err_msg);
+				fclose(fp);
+			}
+			nvram_set_int("ookla_state", OOKLA_STATE_ERR_TERMINATE);
+			return -1;
+		}
+	}
+
+	profile = ookla_get_cmd_profile();
+	config = profile.config;
+	OOKLA_DBG(" config=%s, tcp_discard=%d, is_eos=%d\n", profile.config, profile.use_broadcom_tcp_discard, profile.is_eos);
 
 	/* check folder and files */
 	if (!f_exists(OOKLA_FOLDER))
@@ -33719,28 +34256,71 @@ ookla_exec(char *type, char *id, char *iface)
 	/* kill old ookla process */
 	if (pidof("ookla") > 0) doSystem("killall -9 ookla");
 
-	if (!strcmp(iface, ""))
-		iface_arg = NULL;
-	else
-		iface_arg = "-I";
-
 	nvram_set_int("ookla_state", OOKLA_STATE_RUN);
+	cmd[cmd_idx++] = "ookla";
+	cmd[cmd_idx++] = "-c";
+	cmd[cmd_idx++] = config;
+	cmd[cmd_idx++] = "-f";
+	cmd[cmd_idx++] = "jsonl";
+	if (profile.use_broadcom_tcp_discard) {
+		cmd[cmd_idx++] = "-O";
+		cmd[cmd_idx++] = "broadcomTcpDiscardValue:40";
+		cmd[cmd_idx++] = "-O";
+		cmd[cmd_idx++] = "broadcomTcpDiscardEnable:true";
+	}
+
 	if (!strcmp(type, "") && !strcmp(id, "")) {
-		char *cmd[] = {"ookla", "-c", config, "-f", "jsonl", iface_arg, iface, NULL};
+		if (strcmp(iface, "")) {
+			cmd[cmd_idx++] = "-I";
+			cmd[cmd_idx++] = iface;
+		}
+		cmd[cmd_idx] = NULL;
 		if (f_exists(OOKLA_RESULT)) unlink(OOKLA_RESULT);
 		retval = _eval(cmd, ">"OOKLA_RESULT, 0, &pid);
 	}
 	else if (!strcmp(type, "list") && !strcmp(id, "")) {
-		char *cmd[] = {"ookla", "-c", config, "-f", "jsonl", "-L", NULL};
+		cmd[cmd_idx++] = "-L";
+		cmd[cmd_idx] = NULL;
 		if (f_exists(OOKLA_SERVERS)) unlink(OOKLA_SERVERS);
 		retval = _eval(cmd, ">"OOKLA_SERVERS, 0, &pid);
 	}
 	else if (!strcmp(type, "") && strcmp(id, "")) {
 		/* check xss for input "id" */
 		if (check_xss_blacklist(id, 0)) return retval;
-		char *cmd[] = {"ookla", "-c", config, "-f", "jsonl", "-s", id, iface_arg, iface, NULL};
+		cmd[cmd_idx++] = "-s";
+		cmd[cmd_idx++] = id;
+		if (strcmp(iface, "")) {
+			cmd[cmd_idx++] = "-I";
+			cmd[cmd_idx++] = iface;
+		}
+		cmd[cmd_idx] = NULL;
 		if (f_exists(OOKLA_RESULT)) unlink(OOKLA_RESULT);
 		retval = _eval(cmd, ">"OOKLA_RESULT, 0, &pid);
+	}
+
+	/* Launch background quota monitor for actual tests (not list).
+	 * Records ookla pid as session ID so the monitor can verify it is
+	 * watching the correct run. The phase1 flag tells the script whether
+	 * Phase 1 applies.
+	 */
+	if (!strcmp(type, "") && pid > 0) {
+		char session[16];
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+		const char *phase1 = "1";
+#else
+		const char *phase1 = "0";
+#endif
+		snprintf(session, sizeof(session), "%d", pid);
+		/* Write session file */
+		FILE *sfp;
+		if ((sfp = fopen(OOKLA_SESSION, "w")) != NULL) {
+			fprintf(sfp, "%s\n", session); fclose(sfp);
+		}
+		/* Launch background quota monitor binary */
+		int mon_pid;
+		char *mon[] = {"ookla_quota_mon", session, (char *)phase1, NULL};
+		_eval(mon, NULL, 0, &mon_pid);
+		OOKLA_DBG("monitor launched: session=%s phase1=%s\n", session, phase1);
 	}
 
 #if defined(RTCONFIG_ETH_MONITOR)
@@ -33891,6 +34471,49 @@ ej_ookla_speedtest_get_history(int eid, webs_t wp, int argc, char_t **argv)
 	return retval;
 }
 
+static int
+ej_ookla_speedtest_get_quota(int eid, webs_t wp, int argc, char_t **argv)
+{
+	int phase1_cnt = 0, daily_cnt = 0;
+	long daily_ts = 0;
+	long reset_remaining = -1;
+	int remaining_cnt = 0;
+	time_t now;
+
+	if (sscanf(nvram_safe_get("ookla_quota"), "%d<%ld<%d",
+	           &phase1_cnt, &daily_ts, &daily_cnt) != 3
+	    || phase1_cnt < 0    || phase1_cnt > OOKLA_QUOTA_PHASE1_MAX
+	    || daily_ts < 0
+	    || daily_cnt < 0 || daily_cnt > OOKLA_QUOTA_DAILY_MAX) {
+		websWrite(wp, "{}");
+		return 0;
+	}
+
+#if !defined(RTCONFIG_HND_ROUTER_BE_4916)
+	phase1_cnt = OOKLA_QUOTA_PHASE1_MAX;  /* non-4916/4918: always Phase 2, report accordingly */
+#endif
+
+	if (phase1_cnt >= OOKLA_QUOTA_PHASE1_MAX) {
+		now = time(NULL);
+		if (((long)now - daily_ts) >= OOKLA_QUOTA_WINDOW_SEC || daily_ts > (long)now) {
+			reset_remaining = 0;
+			remaining_cnt = OOKLA_QUOTA_DAILY_MAX;
+		} else {
+			reset_remaining = OOKLA_QUOTA_WINDOW_SEC - ((long)now - daily_ts);
+			remaining_cnt = OOKLA_QUOTA_DAILY_MAX - daily_cnt;
+			if (remaining_cnt < 0)
+				remaining_cnt = 0;
+		}
+	} else {
+		remaining_cnt = OOKLA_QUOTA_PHASE1_MAX - phase1_cnt;
+	}
+
+	websWrite(wp, "{\"remaining_cnt\":%d,\"reset_remaining\":%ld}",
+	          remaining_cnt, reset_remaining);
+
+	return 0;
+}
+
 static void
 do_ookla_speedtest_write_history_cgi(char *url, FILE *stream)
 {
@@ -33900,7 +34523,7 @@ do_ookla_speedtest_write_history_cgi(char *url, FILE *stream)
 	struct json_object *root = json_object_new_object();
 
 	do_json_decode(root);
-	speedTest_history = get_cgi_json("speedTest_history", root);
+	speedTest_history = safe_get_cgi_json("speedTest_history", root);
 
 	OOKLA_DBG(" speedTest_history= (%d) %s\n", strlen(speedTest_history), speedTest_history);
 
@@ -33927,7 +34550,7 @@ set_ookla_speedtest_state_cgi(char *url, FILE *stream)
 	struct json_object *root = json_object_new_object();
 
 	do_json_decode(root);
-	ookla_state = get_cgi_json("ookla_state", root);
+	ookla_state = safe_get_cgi_json("ookla_state", root);
 	OOKLA_DBG(" ookla_state = %s\n", ookla_state);
 
 	nvram_set("ookla_state", ookla_state);
@@ -35363,6 +35986,11 @@ sms_update_userstatus_cgi(char *url, FILE *stream)
 	do_json_decode(root);
 	id = get_cgi_json("id", root);
 	user_status = get_cgi_json("user_status", root);
+	if(!id || !user_status){
+		if(root != NULL)
+			json_object_put(root);
+		return;
+	}
 
 	if(check_if_file_exist(SMS_RECORD)){
 		lock = file_lock(SMS_RECORD);
@@ -35413,6 +36041,11 @@ do_sms_delete_msg_cgi(char *url, FILE *stream)
 
 	do_json_decode(root);
 	id = get_cgi_json("id", root);
+	if(!id){
+		if(root != NULL)
+			json_object_put(root);
+		return;
+	}
 
 	if(!strcmp(id, "all"))
 		eval("/usr/sbin/modem_status.sh", "del_sms_all");
@@ -37149,18 +37782,19 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 				if (macEntryLen) {
 					memset(macList, 0, sizeof(macList));
 					p = macList;
-					p += snprintf(p, sizeof(macList), "[");
+					p += snprintf(p, (size_t)(macList + sizeof(macList) - p), "[");
 					for (j = 0; j < macEntryLen; j++) {
 						entry = json_object_array_get_idx(macEntryObj, j);
-						if(strlen(macList)+3+strlen(json_object_get_string(entry)) > sizeof(macList) -2)
-						{
+						const char *s = json_object_get_string(entry);
+						if ((size_t)(macList + sizeof(macList) - p) < strlen(s) + 4) {
 							_dprintf("too many macList entries. \n");
 							break;
 						}
-						if (j) p += snprintf(p, sizeof(macList), ",");
-						p += snprintf(p, sizeof(macList), "\"%s\"", json_object_get_string(entry));
+						if (j) p += snprintf(p, (size_t)(macList + sizeof(macList) - p), ",");
+						p += snprintf(p, (size_t)(macList + sizeof(macList) - p), "\"%s\"", s);
 					}
-					p += snprintf(p, sizeof(macList), "]");
+					if ((size_t)(macList + sizeof(macList) - p) > 1)
+						snprintf(p, (size_t)(macList + sizeof(macList) - p), "]");
 				}
 			}
 		}
@@ -38943,10 +39577,15 @@ ej_get_vpnc_status(int eid, webs_t wp, int argc, char **argv)
 #ifdef RTCONFIG_WIREGUARD
 			else if(prof[i].protocol == VPNC_PROTO_WG)
 			{
+#ifdef RTCONFIG_MULTILAN_CFG
+				snprintf(attr_name1, sizeof(attr_name1), "vpnc%d_state_t", prof[i].vpnc_idx);
+				state_t = nvram_get_int(attr_name1);
+#else
 				if (is_wgc_connected(prof[i].config.wg.wg_idx))
 					state_t = 2;
 				else
 					state_t = 1;
+#endif
 				sb_state_t = 0;
 				snprintf(tmp, sizeof(tmp), i? "<%d>%d>%d": "%d>%d>%d", state_t, sb_state_t, prof[i].vpnc_idx);
 				websWrite(wp, "%s", tmp);
@@ -39613,6 +40252,154 @@ ej_get_wl_bandwidth(int eid, webs_t wp, int argc, char **argv) {
 
 	return 0;
 }
+
+#if (defined(RTCONFIG_WIFI8) || defined(WIFI7_SDK_20250506)) && defined(RTCONFIG_MLO)
+static int
+ej_mlo_mb_link(int eid, webs_t wp, int argc, char **argv) {
+
+	int wl_unit, rate, rssi, is_mlo, is_uplink, connected;
+	char prefix[16] = {0};
+	char ifname[16] = {0};
+	char band[4] = {0};
+	/* wl_mlo_mb_link_status()/wl_mlo_mb_ap_ssid() format the SSID through
+	 * wl_format_ssid_utf8(), which passes valid UTF-8 sequences through
+	 * verbatim but still escapes any other non-printable byte as "\xNN"
+	 * (4 chars) - worst case 32 SSID bytes need 4*32+1 bytes, same as
+	 * SSID_FMT_BUF_LEN in web-broadcom.c. A 33-byte buffer here would
+	 * overflow on a peer AP broadcasting a binary SSID. */
+	char ssid_buf[4 * 32 + 1] = {0};
+	struct json_object *root = json_object_new_object();
+	struct json_object *bands = json_object_new_array();
+	struct json_object *band_obj = NULL;
+
+	if(wl_band_list[0][0] == '\0')
+		gen_wl_nband_array();
+
+	for(wl_unit = 0; wl_unit < num_of_wl_if(); wl_unit++) {
+
+		snprintf(prefix, sizeof(prefix), "wl%d_", wl_unit);
+		strlcpy(ifname, nvram_pf_safe_get(prefix, "ifname"), sizeof(ifname));
+
+		strlcpy(band, wl_band_list[wl_unit], sizeof(band));
+		band[2] = '\0';
+
+		is_mlo = (is_mlo_media_bridge() && wl_mlo_config_is_member(wl_unit)) ? 1 : 0;
+		/* is_psta() covers both this MLO member (mld_enable=1) and the
+		 * single-band wlc_band uplink radio (mld_enable=0), so the real
+		 * link status is queried for either case. */
+		is_uplink = is_psta(wl_unit);
+
+		band_obj = json_object_new_object();
+		json_object_object_add(band_obj, "band_id", json_object_new_string(wl_band_list[wl_unit]));
+		json_object_object_add(band_obj, "band", json_object_new_string(band));
+
+		if(is_uplink) {
+			/* wireless-bridge uplink radio: only report the SSID/rate/rssi
+			 * when the link is actually up and associated, not just the
+			 * configured target. */
+			connected = wl_mlo_mb_link_status(ifname, ssid_buf, sizeof(ssid_buf), &rate, &rssi);
+
+			if(connected)
+				json_object_object_add(band_obj, "ssid", json_object_new_string(ssid_buf));
+			else
+				json_object_object_add(band_obj, "ssid", NULL);
+
+			if(connected && rate > 0)
+				json_object_object_add(band_obj, "linkrate", json_object_new_int(rate / 2));
+			else
+				json_object_object_add(band_obj, "linkrate", NULL);
+
+			if(connected)
+				json_object_object_add(band_obj, "rssi", json_object_new_int(rssi));
+			else
+				json_object_object_add(band_obj, "rssi", NULL);
+		} else {
+			/* Not the uplink radio: report the live over-the-air SSID
+			 * (null if the radio isn't actually up), not the nvram
+			 * config value, which can be stale or mirrored from the
+			 * uplink target. */
+			if(wl_mlo_mb_ap_ssid(ifname, ssid_buf, sizeof(ssid_buf)))
+				json_object_object_add(band_obj, "ssid", json_object_new_string(ssid_buf));
+			else
+				json_object_object_add(band_obj, "ssid", NULL);
+			json_object_object_add(band_obj, "linkrate", NULL);
+			json_object_object_add(band_obj, "rssi", NULL);
+		}
+
+		json_object_object_add(band_obj, "is_mlo", json_object_new_boolean(is_mlo));
+
+		json_object_array_add(bands, band_obj);
+	}
+
+	json_object_object_add(root, "bands", bands);
+
+	websWrite(wp, "%s", json_object_to_json_string(root));
+
+	json_object_put(root);
+
+	return 0;
+}
+
+/* Streams /tmp/ap_mlo_multilink.txt straight through: it is already the JSON
+ * array written by wlcscan_write_mlo_multilink_file() (rc/sysdeps/broadcom/
+ * broadcom.c), one object per MLO-capable network that has a visible SSID and
+ * an actual multi-link (more than one BSSID under the same MLD MAC Address).
+ * The file is refreshed on every "wlcscan" run; a missing/empty file just
+ * means no such network has been found yet.
+ */
+static int
+ej_get_ap_mlo_multilink(int eid, webs_t wp, int argc, char_t **argv)
+{
+	FILE *fp;
+	char buf[MAX_LINE_SIZE];
+	int ret_l = 0, lock, wrote = 0, fd;
+
+	lock = file_lock("sitesurvey");
+	/* O_NOFOLLOW: this path is under the world-writable /tmp; refuse to read
+	 * through a symlink another local process may have planted there ahead
+	 * of us - fopen(path, "r") alone would happily follow it and this hook
+	 * would stream whatever file it points to straight back to the web UI. */
+	fd = open("/tmp/ap_mlo_multilink.txt", O_RDONLY | O_NOFOLLOW);
+	if (fd < 0 || (fp = fdopen(fd, "r")) == NULL) {
+		if (fd >= 0)
+			close(fd);
+		file_unlock(lock);
+		return websWrite(wp, "[]");
+	}
+
+	while (fgets(buf, sizeof(buf), fp)) {
+		ret_l += websWrite(wp, "%s", buf);
+		wrote = 1;
+	}
+	fclose(fp);
+	file_unlock(lock);
+
+	if (!wrote)
+		ret_l += websWrite(wp, "[]");
+
+	return ret_l;
+}
+#else
+/* Neither RTCONFIG_WIFI8/WIFI7_SDK_20250506 nor RTCONFIG_MLO is enabled in this
+ * build, so there is no MLO data to report - but still define these hooks
+ * (returning a valid, empty result) instead of leaving the "get_mlo_mb_link"/
+ * "get_ap_mlo_multilink" ejusb patterns unregistered. An unmatched <% %> tag
+ * silently emits nothing (see ej.c: call()), so e.g. apscan.asp's
+ * `ap_mlo_multilink = [<% get_ap_mlo_multilink(); %>][0];` would otherwise
+ * degrade to `[][0]` (undefined) instead of an empty array, breaking any JS
+ * that expects to iterate over it.
+ */
+static int
+ej_mlo_mb_link(int eid, webs_t wp, int argc, char **argv) {
+	return websWrite(wp, "{\"bands\":[]}");
+}
+
+static int
+ej_get_ap_mlo_multilink(int eid, webs_t wp, int argc, char_t **argv)
+{
+	return websWrite(wp, "[]");
+}
+#endif
 
 static int
 ej_get_wl_channel_list(int eid, webs_t wp, int argc, char **argv, int unit) {
@@ -41759,7 +42546,7 @@ static int ej_get_led_aura_next_sched(int eid, webs_t wp, int argc, char **argv)
 
 	// find out next schedule or current schedule
 	if (find_sched_v2_next_sched(sched_buf, now, &next_wday, &next_hour, &next_minute, next_raw_rule, next_raw_rule_size) == 0) {
-		int buf[8];
+		char buf[8];
 		char *sched_type = NULL;
 		//printf("raw : %s\nCurrent time: %s, next schedule: wday=%d %02d:%02d\n", next_raw_rule, ctime(&now), next_wday, next_hour, next_minute);
 
@@ -42338,7 +43125,7 @@ static int ej_get_operation_mode(int eid, webs_t wp, int argc, char **argv)
 		sw_mode == 2 && wlc_psta == 2 && mlo_rp == 1
 	){
 		strlcpy(ui_sw_mode, "rp", sizeof(ui_sw_mode));
-	} 
+	}
 	else if (
 		sw_mode == 3 && wlc_psta == 2 && mlo_mb == 1
         ){
@@ -42353,7 +43140,7 @@ static int ej_get_operation_mode(int eid, webs_t wp, int argc, char **argv)
 	else if (
 		(sw_mode == 3 && wlc_psta == 1 && wlc_express == 0) ||
 		(sw_mode == 3 && wlc_psta == 3 && wlc_express == 0) ||
-		(sw_mode == 2 && wlc_psta == 1 && wlc_express == 0) 
+		(sw_mode == 2 && wlc_psta == 1 && wlc_express == 0)
 	){
 		strlcpy(ui_sw_mode, "mb", sizeof(ui_sw_mode));
 	}
@@ -42465,6 +43252,22 @@ static int ej_get_ark_app_list(int eid, webs_t wp, int argc, char **argv)
     }
 
     return 0;
+}
+
+static int ej_check_ark_setting(int eid, webs_t wp, int argc, char **argv)
+{
+	websWrite(wp, "%d", is_ARK_service());
+	return 0;
+}
+
+int ej_ark_disable_hw_accel_status(int eid, webs_t wp, int argc, char **argv)
+{
+	return websWrite(wp, "%d", ark_disable_hw_accel());
+}
+
+int ej_ark_feature_nat_notice(int eid, webs_t wp, int argc, char **argv)
+{
+	return websWrite(wp, "%s", ark_feature_nat_notice());
 }
 #endif
 
@@ -42587,7 +43390,7 @@ struct ej_handler ej_handlers[] = {
 	{ "wps_info_2g", ej_wps_info_2g},
 	{ "wps_info_5g", ej_wps_info_5g},
 	{ "wps_info_5g_2", ej_wps_info_5g_2},
-#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)	
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
 	{ "wps_info_6g", ej_wps_info_6g},
 	{ "wps_info_6g_2", ej_wps_info_6g_2},
 #endif
@@ -42806,12 +43609,18 @@ struct ej_handler ej_handlers[] = {
 #endif	
 #endif
 	{ "nat_accel_status", ej_nat_accel_status },
+	{ "hw_accel_status", ej_hw_accel_status },
 	{ "get_wl_channel_list_2g", ej_get_wl_channel_list_2g },
 	{ "get_wl_channel_list_5g", ej_get_wl_channel_list_5g },
 	{ "get_wl_channel_list_5g_2", ej_get_wl_channel_list_5g_2 },
 	{ "get_wl_channel_list_6g", ej_get_wl_channel_list_6g },
 	{ "get_wl_channel_list_6g_2", ej_get_wl_channel_list_6g_2 },
 	{ "get_wl_bandwidth", ej_get_wl_bandwidth },
+	/* ej_mlo_mb_link()/ej_get_ap_mlo_multilink() are always defined (real
+	 * implementation or an empty-result stub - see their #else branch above),
+	 * so register them unconditionally rather than gating on the MLO macros. */
+	{ "get_mlo_mb_link", ej_mlo_mb_link},
+	{ "get_ap_mlo_multilink", ej_get_ap_mlo_multilink},
 #ifdef RTCONFIG_PROXYSTA
 	{ "wlc_psta_state", ej_wl_auth_psta},
 #endif
@@ -42898,6 +43707,7 @@ struct ej_handler ej_handlers[] = {
 	{ "ookla_speedtest_get_result", ej_ookla_speedtest_get_result},
 	{ "ookla_speedtest_get_servers", ej_ookla_speedtest_get_servers},
 	{ "ookla_speedtest_get_history", ej_ookla_speedtest_get_history},
+	{ "ookla_speedtest_get_quota", ej_ookla_speedtest_get_quota},
 #ifdef RTCONFIG_ETH_MONITOR
 	{ "speedtest_get_eth_monitor_result", ej_speedtest_get_eth_monitor_result},
 #endif
@@ -43050,6 +43860,7 @@ struct ej_handler ej_handlers[] = {
 #if defined(RTCONFIG_LACP) && defined(RTCONFIG_BONDING_WAN)
 	{ "lacp_wan", ej_lacp_wan },
 #endif
+	{ "ip_route_get", ej_ip_route_get },
 #ifdef RTCONFIG_SCHED_V2
 #if defined(RTCONFIG_LED_SCHED) || defined(RTCONFIG_LED_NIGHT_SCHED) || defined(RTCONFIG_AURA_SCHED) || defined(RTCONFIG_AURA_NIGHT_SCHED)
 	{ "get_led_aura_next_sched", ej_get_led_aura_next_sched },
@@ -43077,6 +43888,9 @@ struct ej_handler ej_handlers[] = {
 #endif
 #if defined(RTCONFIG_GTBOOSTER)
 	{ "get_ark_app_list", ej_get_ark_app_list},
+	{ "check_ark_setting", ej_check_ark_setting },
+	{ "ark_disable_hw_accel_status", ej_ark_disable_hw_accel_status },
+	{ "ark_feature_nat_notice", ej_ark_feature_nat_notice },
 #endif
 	{ "get_operation_mode", ej_get_operation_mode },
 #ifdef RTCONFIG_AI_SERVICE
@@ -43378,6 +44192,29 @@ ej_lacp_wan(int eid, webs_t wp, int argc, char_t **argv)
 	return retval;
 }
 #endif
+
+ej_ip_route_get(int eid, webs_t wp, int argc, char_t **argv)
+{
+	FILE *pfp;
+	char buf[32];
+	int retval = 0;
+
+	memset(buf, 0, sizeof(buf));
+	if (!is_router_mode()) goto exit;
+
+	pfp = popen("ip route get 8.8.8.8 | awk \'{for(i=1;i<=NF;i++) if($i==\"dev\"){print $(i+1); exit}}\'", "r");
+	if (pfp != NULL) {
+		fgets(buf, 32, pfp);
+		pclose(pfp);
+	}
+exit:
+	{
+		char *nl = strchr(buf, '\n');
+		if (nl) *nl = '\0';
+	}
+	retval += websWrite(wp, "{\"ip_route_get\":\"%s\"}", buf);
+	return retval;
+}
 
 int is_wlif_up(const char *ifname)
 {
@@ -43917,6 +44754,8 @@ int convert_security_radius(int sdn_idx, char *sdn_pass, int len)
 
 	foreach_60(word, sdn_pass, word_next){
 		radius_idx = strrchr(word, '>');
+		if (!radius_idx)
+			continue;
 		*radius_idx = '\0';
 		snprintf(buf, sizeof(buf), "<%s>%d", word, sdn_idx);
 		strlcat(tmp_pass, buf, sizeof(tmp_pass));

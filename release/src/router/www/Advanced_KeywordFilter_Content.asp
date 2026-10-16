@@ -39,7 +39,7 @@ function show_keyword_rulelist(){
 	var code = "";
 	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table" id="keyword_rulelist_table">'; 
 	if(keyword_rulelist_row.length == 1)
-		code +='<tr><td style="color:#FFCC00;"><#IPConnection_VSList_Norule#></td>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);"><#IPConnection_VSList_Norule#></td>';
 	else{
 		for(var i =1; i < keyword_rulelist_row.length; i++){
 			code +='<tr id="row'+i+'">';

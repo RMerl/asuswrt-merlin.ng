@@ -43,6 +43,50 @@
 // get_account_list's name were char type.
 #endif
 
+/*
+ * A folder name ends up as a raw, unescaped %s inside smb.conf / webdav
+ * config (write_smb_conf.c, write_webdav_conf.c). CR/LF can close the
+ * generated smb.conf section early and inject arbitrary directives (e.g.
+ * "root preexec"); write_webdav_conf.c additionally embeds the name inside
+ * a double-quoted lighttpd regex string ("^/webdav/%s/%s($|/)"), where a
+ * bare '"' ends that string early (and '\' could be used to smuggle one
+ * past a naive escape check) without needing any line break at all.
+ * Samba itself performs %-substitution (%U, %H, %G, %(...), ...) on the
+ * "path" value it reads back out of smb.conf (source3/param/loadparm.c's
+ * lp_pathname(), source3/lib/substitute.c) -- a folder literally named
+ * "%H" makes the generated "path = <mount>/%H" resolve, at connect time,
+ * to the connecting user's home directory instead of the directory that
+ * was actually created, no CR/LF/quote/backslash required at all. Reject
+ * a bare '%' too; folder names have no legitimate need for it.
+ *
+ * add_folder()/mod_folder() build full_path as a plain "mount_path/folder"
+ * concatenation and pass it straight to mkdir()/rename(), with no
+ * canonicalization or containment check. Without rejecting '/' here too, a
+ * folder name such as "../../../etc/cron.d" would let an authenticated Web
+ * user (httpd runs as root) escape the USB mount point entirely -- reject
+ * any '/' in the name, and reject the exact single-component name ".."
+ * (which needs no '/' of its own to mean "parent directory").
+ *
+ * Reject all of these both when a folder is created/renamed by this system
+ * and when one is merely found on a mounted volume that may have been
+ * populated by another device.
+ */
+static int folder_name_has_illegal_char(const char *const name){
+	const char *p;
+
+	if(name == NULL)
+		return 0;
+
+	if(!strcmp(name, ".") || !strcmp(name, ".."))
+		return 1;
+
+	for(p = name; *p != '\0'; ++p){
+		if(*p == '\n' || *p == '\r' || *p == '"' || *p == '\\' || *p == '%' || *p == '/')
+			return 1;
+	}
+
+	return 0;
+}
 
 extern void set_file_integrity(const char *const file_name){
 	unsigned long file_size;
@@ -113,7 +157,7 @@ extern int check_file_integrity(const char *const file_name){
 	return 1;
 }
 
-extern int get_folder_list(const char *const mount_path, int *sh_num, char ***folder_list){
+static int get_folder_list_once(const char *const mount_path, int *sh_num, char ***folder_list){
 	char **tmp_folder_list, target[16];
 	int len, i;
 	char *list_file, *list_info;
@@ -239,8 +283,91 @@ extern int get_folder_list(const char *const mount_path, int *sh_num, char ***fo
 	free(list_info);
 
 	*folder_list = tmp_folder_list;
-	
+
 	return *sh_num;
+}
+
+/*
+ * A cached name that originally contained '\n' was itself split across
+ * extra physical lines when it was written (fprintf("sh_name%d=%s\n", ...)
+ * with an embedded '\n' in the value), so get_folder_list_once()'s
+ * newline-delimited parser truncates the value it hands back *before* that
+ * embedded '\n' -- the truncated fragment folder_name_has_illegal_char()
+ * later checks may no longer contain any illegal character at all, even
+ * though the raw line it came from did. Detect that case structurally
+ * instead: a clean file has exactly one "sh_num=" line plus one "sh_nameN="
+ * line per folder; any extra line means some entry's name leaked line
+ * breaks into the file, so treat the whole cache as stale.
+ *
+ * Fail closed: if this check can't actually read the file (malloc/I-O
+ * failure), that's "unable to prove the cache is clean", not "clean" --
+ * report it as corrupt so the caller rescans/refuses instead of trusting a
+ * cache it never actually validated.
+ */
+static int folder_list_cache_looks_corrupt(const char *const mount_path, int sh_num){
+	char *list_file, *list_info;
+	int len, lines, i;
+
+	len = strlen(mount_path) + strlen("/.__folder_list.txt");
+	list_file = (char *)malloc(sizeof(char) * (len + 1));
+	if(list_file == NULL)
+		return 1;
+	snprintf(list_file, (len + 1), "%s/.__folder_list.txt", mount_path);
+	list_file[len] = 0;
+
+	list_info = read_whole_file(list_file);
+	free(list_file);
+	if(list_info == NULL)
+		return 1;
+
+	lines = 0;
+	for(i = 0; list_info[i] != '\0'; ++i)
+		if(list_info[i] == '\n')
+			++lines;
+
+	free(list_info);
+
+	return lines != sh_num + 1;
+}
+
+/*
+ * .__folder_list.txt is only re-scanned (via initial_folder_list(), which
+ * calls the now-filtered get_all_folder()) when its integrity marker is
+ * missing/stale. A file written before this check existed can still be on
+ * disk with a folder name containing CR/LF, and would otherwise keep being
+ * trusted and fed as-is into write_smb_conf.c / write_webdav_conf.c forever.
+ * Detect that leftover case here and force one re-scan to self-heal it.
+ */
+extern int get_folder_list(const char *const mount_path, int *sh_num, char ***folder_list){
+	int result, i;
+	int needs_rescan = 0;
+
+	result = get_folder_list_once(mount_path, sh_num, folder_list);
+	if(result <= 0)
+		return result;
+
+	for(i = 0; i < *sh_num; ++i){
+		if(folder_name_has_illegal_char((*folder_list)[i])){
+			needs_rescan = 1;
+			break;
+		}
+	}
+
+	if(!needs_rescan && folder_list_cache_looks_corrupt(mount_path, *sh_num))
+		needs_rescan = 1;
+
+	if(!needs_rescan)
+		return result;
+
+	usb_dbg("get_folder_list: stale/corrupt cache in \"%s\", rescanning.\n", mount_path);
+	free_2_dimension_list(sh_num, folder_list);
+
+	if(initial_folder_list(mount_path) != 0){
+		usb_dbg("get_folder_list: failed to rescan \"%s\"; refusing to return the stale cache.\n", mount_path);
+		return -1;
+	}
+
+	return get_folder_list_once(mount_path, sh_num, folder_list);
 }
 
 extern int get_all_folder(const char *const mount_path, int *sh_num, char ***folder_list){
@@ -263,7 +390,12 @@ extern int get_all_folder(const char *const mount_path, int *sh_num, char ***fol
 		
 		if(test_if_System_folder(dp->d_name) == 1)
 			continue;
-		
+
+		if(folder_name_has_illegal_char(dp->d_name)){
+			usb_dbg("get_all_folder: skip \"%s\" in \"%s\", it contains illegal characters.\n", dp->d_name, mount_path);
+			continue;
+		}
+
 		len = strlen(mount_path)+strlen("/")+strlen(dp->d_name);
 		testdir = (char *)malloc(sizeof(char)*(len+1));
 		if(testdir == NULL){
@@ -1682,6 +1814,10 @@ extern int add_folder(const char *const account, const char *const mount_path, c
 		usb_dbg("add_folder: No input, \"folder\".\n");
 		return -1;
 	}
+	if(folder_name_has_illegal_char(folder)){
+		usb_dbg("add_folder: \"%s\" contains illegal characters.\n", folder);
+		return -1;
+	}
 
 	// 1. test if creatting the folder
 	result = test_if_exist_share(mount_path, folder);
@@ -2063,6 +2199,14 @@ extern int mod_folder(const char *const mount_path, const char *const folder, co
 	}
 	if(new_folder == NULL || strlen(new_folder) <= 0){
 		usb_dbg("No input, \"new_folder\".\n");
+		return -1;
+	}
+	if(folder_name_has_illegal_char(folder)){
+		usb_dbg("mod_folder: \"%s\" contains illegal characters.\n", folder);
+		return -1;
+	}
+	if(folder_name_has_illegal_char(new_folder)){
+		usb_dbg("mod_folder: \"%s\" contains illegal characters.\n", new_folder);
 		return -1;
 	}
 

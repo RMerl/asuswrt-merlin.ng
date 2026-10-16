@@ -1,0 +1,8 @@
+iptables-translate -A INPUT -m pkttype --pkt-type broadcast -j DROP
+nft 'add rule ip filter INPUT pkttype broadcast counter drop'
+
+iptables-translate -A INPUT -m pkttype ! --pkt-type unicast -j DROP
+nft 'add rule ip filter INPUT pkttype != unicast counter drop'
+
+iptables-translate -A INPUT -m pkttype --pkt-type multicast -j ACCEPT
+nft 'add rule ip filter INPUT pkttype multicast counter accept'

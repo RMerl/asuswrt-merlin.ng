@@ -1,0 +1,5 @@
+iptables-translate -A INPUT -m connlabel --label 40
+nft 'add rule ip filter INPUT ct label 40 counter'
+
+iptables-translate -A INPUT -m connlabel ! --label 40 --set
+nft 'add rule ip filter INPUT ct label set 40 ct label and 40 != 40 counter'

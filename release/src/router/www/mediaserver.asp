@@ -78,12 +78,12 @@
 	overflow:hidden;
 }
 .folderClicked{
-	color:#569AC7;
+	color:var(--wrt-link-color,#569AC7);
 	font-size:14px;
 	cursor:text;
 }
 .lastfolderClicked{
-	color:#FFFFFF;
+	color:var(--wrt-text-color,#FFFFFF);
 	cursor:pointer;
 }
 .dlna_path_td{
@@ -732,7 +732,7 @@ function show_dlna_path(){
 	
 	code +='<table width="98%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="dlna_path_table">';
 	if(dms_dir_x_array_row.length == 1)
-		code +='<tr><td style="color:#FFCC00;" colspan="6"><#IPConnection_VSList_Norule#></td></tr>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="6"><#IPConnection_VSList_Norule#></td></tr>';
 	else{		
 		for(var i = 1; i < dms_dir_x_array_row.length; i++){
 			var tmp_type = "";
@@ -895,7 +895,7 @@ function set_dms_dir(obj){
        	<tr>
        		<th><#iTunesServer_itemname#></th>
 					<td>
-						<div><input name="daapd_friendly_name" type="text" style="margin-left:15px;" class="input_32_table" maxlength="32" placeholder="<% nvram_get("lan_hostname"); %>" value="<% nvram_get("daapd_friendly_name"); %>" autocorrect="off" autocapitalize="off"><br/><div id="alert_msg1" style="color:#FC0;margin-left:10px;"></div></div>
+						<div><input name="daapd_friendly_name" type="text" style="margin-left:15px;" class="input_32_table" maxlength="32" placeholder="<% nvram_get("lan_hostname"); %>" value="<% nvram_get("daapd_friendly_name"); %>" autocorrect="off" autocapitalize="off"><br/><div id="alert_msg1" style="color:var(--wrt-badge-warning-color,#FFCC00);margin-left:10px;"></div></div>
 					</td>
       	</tr>
       	</table> 
@@ -930,13 +930,13 @@ function set_dms_dir(obj){
 										 }
 									);
 							</script>
-							<div id="noUSB" style="color:#FC0;display:none;margin-left:17px;padding-top:2px;padding-bottom:2px;"><#no_usb_found#></div>
+							<div id="noUSB" style="color:var(--wrt-badge-warning-color,#FFCC00);display:none;margin-left:17px;padding-top:2px;padding-bottom:2px;"><#no_usb_found#></div>
         		</td>
        	</tr>
        	<tr>
        		<th><#DLNA_itemname#></th>
 					<td>
-						<div><input name="dms_friendly_name" type="text" style="margin-left:15px;" class="input_32_table" maxlength="32" placeholder="<% nvram_get("lan_hostname"); %>" value="<% nvram_get("dms_friendly_name"); %>" autocorrect="off" autocapitalize="off"><br/><div id="alert_msg2" style="color:#FC0;margin-left:10px;"></div></div>
+						<div><input name="dms_friendly_name" type="text" style="margin-left:15px;" class="input_32_table" maxlength="32" placeholder="<% nvram_get("lan_hostname"); %>" value="<% nvram_get("dms_friendly_name"); %>" autocorrect="off" autocapitalize="off"><br/><div id="alert_msg2" style="color:var(--wrt-badge-warning-color, #FFCC00);margin-left:10px;"></div></div>
 					</td>
       	</tr>
    			<tr>

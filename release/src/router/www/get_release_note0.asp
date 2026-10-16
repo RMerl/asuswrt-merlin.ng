@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <link rel="stylesheet" type="text/css" href="/css/business-white.css">
@@ -38,7 +38,7 @@ function GenContent(){
 </script>		
 </head>		
 <body onload="GenContent();reSize();">
-<textarea cols='63' rows='18' wrap='normal' id="noteArea0" readonly='readonly' style='width:98%; font-family:Courier New, Courier, mono; font-size:13px;color:#FFFFFF;background-color:rgb(43, 55, 59); word-wrap:normal; border:0px;'>
+<textarea cols='63' rows='18' wrap='normal' id="noteArea0" readonly='readonly' style='width:98%; font-family:Courier New, Courier, mono; font-size:13px;color:var(--wrt-text-color,#FFFFFF);background-color:rgb(43, 55, 59); word-wrap:normal; border:0px;'>
 </textarea>
 </body>
 </html>

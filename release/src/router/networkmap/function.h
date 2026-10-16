@@ -22,4 +22,6 @@ static inline void format_conn_time(uint64_t total_sec, char *dest, size_t dest_
 	snprintf(dest, dest_sz, "%02u:%02u:%02u", hr, min, sec);
 }
 
+int is_mac(const char *str);
+
 #endif

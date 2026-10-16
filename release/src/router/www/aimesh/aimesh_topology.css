@@ -468,7 +468,7 @@
 	background: transparent;
 }
 .location_info_bg span.location_hint{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	position: relative;
 	margin-left: 18px;
 	font-size: 14px;

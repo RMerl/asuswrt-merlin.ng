@@ -636,6 +636,7 @@ static void load(int new)
 				}
 
 				if (i > (3 * 60)) {
+					refresh_tz_env();	/* pick up runtime timezone change before syslog() */
 					syslog(LOG_WARNING, "Problem loading %s. Still trying...", save_path);
 				}
 			}

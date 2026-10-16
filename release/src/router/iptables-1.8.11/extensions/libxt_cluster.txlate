@@ -1,0 +1,26 @@
+iptables-translate -A PREROUTING -t mangle -i eth1 -m cluster --cluster-total-nodes 2 --cluster-local-node 1 --cluster-hash-seed 0xdeadbeef -j MARK --set-mark 0xffff
+nft 'add rule ip mangle PREROUTING iifname "eth1" jhash ct original saddr mod 2 seed 0xdeadbeef eq 1 meta pkttype set host counter meta mark set 0xffff'
+
+iptables-translate -A PREROUTING -t mangle -i eth1 -m cluster --cluster-total-nodes 1 --cluster-local-node 1 --cluster-hash-seed 0xdeadbeef -j MARK --set-mark 0xffff
+nft 'add rule ip mangle PREROUTING iifname "eth1" jhash ct original saddr mod 1 seed 0xdeadbeef eq 1 meta pkttype set host counter meta mark set 0xffff'
+
+iptables-translate -A PREROUTING -t mangle -i eth1 -m cluster --cluster-total-nodes 2 --cluster-local-nodemask 1 --cluster-hash-seed 0xdeadbeef -j MARK --set-mark 0xffff
+nft 'add rule ip mangle PREROUTING iifname "eth1" jhash ct original saddr mod 2 seed 0xdeadbeef eq 1 meta pkttype set host counter meta mark set 0xffff'
+
+iptables-translate -A PREROUTING -t mangle -i eth1 -m cluster --cluster-total-nodes 1 --cluster-local-nodemask 1 --cluster-hash-seed 0xdeadbeef -j MARK --set-mark 0xffff
+nft 'add rule ip mangle PREROUTING iifname "eth1" jhash ct original saddr mod 1 seed 0xdeadbeef eq 1 meta pkttype set host counter meta mark set 0xffff'
+
+iptables-translate -A PREROUTING -t mangle -i eth1 -m cluster --cluster-total-nodes 32 --cluster-local-node 32 --cluster-hash-seed 0xdeadbeef -j MARK --set-mark 0xffff
+nft 'add rule ip mangle PREROUTING iifname "eth1" jhash ct original saddr mod 32 seed 0xdeadbeef eq 32 meta pkttype set host counter meta mark set 0xffff'
+
+iptables-translate -A PREROUTING -t mangle -i eth1 -m cluster --cluster-total-nodes 32 --cluster-local-nodemask 32 --cluster-hash-seed 0xdeadbeef -j MARK --set-mark 0xffff
+nft 'add rule ip mangle PREROUTING iifname "eth1" jhash ct original saddr mod 32 seed 0xdeadbeef eq 6 meta pkttype set host counter meta mark set 0xffff'
+
+iptables-translate -A PREROUTING -t mangle -i eth1 -m cluster --cluster-total-nodes 32 --cluster-local-nodemask 5 --cluster-hash-seed 0xdeadbeef -j MARK --set-mark 0xffff
+nft 'add rule ip mangle PREROUTING iifname "eth1" jhash ct original saddr mod 32 seed 0xdeadbeef { 0, 2 } meta pkttype set host counter meta mark set 0xffff'
+
+iptables-translate -A PREROUTING -t mangle -i eth1 -m cluster --cluster-total-nodes 7 --cluster-local-nodemask 9 --cluster-hash-seed 0xdeadbeef -j MARK --set-mark 0xffff
+nft 'add rule ip mangle PREROUTING iifname "eth1" jhash ct original saddr mod 7 seed 0xdeadbeef { 0, 3 } meta pkttype set host counter meta mark set 0xffff'
+
+iptables-translate -A PREROUTING -t mangle -i eth1 -m cluster --cluster-total-nodes 7 --cluster-local-node 5 --cluster-hash-seed 0xdeadbeef -j MARK --set-mark 0xffff
+nft 'add rule ip mangle PREROUTING iifname "eth1" jhash ct original saddr mod 7 seed 0xdeadbeef eq 5 meta pkttype set host counter meta mark set 0xffff'

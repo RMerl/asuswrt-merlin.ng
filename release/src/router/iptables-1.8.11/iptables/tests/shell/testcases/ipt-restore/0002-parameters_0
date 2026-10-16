@@ -1,0 +1,20 @@
+#!/bin/sh
+
+set -e
+
+# make sure wait options are accepted
+
+clean_tempfile()
+{
+	if [ -n "${tmpfile}" ]; then
+		rm -f "${tmpfile}"
+	fi
+}
+
+trap clean_tempfile EXIT
+
+tmpfile=$(mktemp) || exit 1
+
+$XT_MULTI iptables-save -f $tmpfile
+$XT_MULTI iptables-restore $tmpfile
+$XT_MULTI iptables-restore -w 5 $tmpfile

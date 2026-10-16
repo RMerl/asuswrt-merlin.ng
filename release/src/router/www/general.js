@@ -480,6 +480,8 @@ function openLink(s){
                         tourl = "https://dash.cloudflare.com/sign-up";
                 else if (document.form.ddns_server_x.value == 'PUBYUN.COM')
                         tourl = "https://www.pubyun.com";
+                else if (document.form.ddns_server_x.value == 'DYNV6.COM')
+                        tourl = "https://dynv6.com";
 		else if (document.form.ddns_server_x.value == 'WWW.TUNNELBROKER.NET')
 			tourl = "https://www.tunnelbroker.net/register.php";
 		else if (document.form.ddns_server_x.value == 'WWW.ASUS.COM')
@@ -500,6 +502,10 @@ function openLink(s){
 			tourl = "https://freedns.afraid.org/signup/";
 		else if (document.form.ddns_server_x.value == 'FREEMYIP.COM')
 			tourl = "https://freemyip.com";
+		else if (document.form.ddns_server_x.value == 'DUCKDNS.ORG')
+			tourl = "https://www.duckdns.org/";
+		else if (document.form.ddns_server_x.value == 'DNSPOD.CN')
+			tourl = "https://www.dnspod.cn";
 		else	tourl = "";
 		link = window.open(tourl, "DDNSLink","toolbar=yes,location=yes,directories=no,status=yes,menubar=yes,scrollbars=yes,resizable=yes,copyhistory=no,width=640,height=480");
 	}

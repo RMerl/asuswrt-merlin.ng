@@ -703,12 +703,16 @@ int init_gpio(void)
 	if((gpio_pin = (use_gpio = nvram_get_int("pwr_usb_gpio")) & 0xff) != 0xff){
 #ifndef RTCONFIG_HND_GPIO
 		enable = (use_gpio&GPIO_ACTIVE_LOW)==0 ? 1 : 0;
+#else
+		enable = 1;
 #endif
 		set_gpio(gpio_pin, enable);
 	}
 	if((gpio_pin = (use_gpio = nvram_get_int("pwr_usb_gpio2")) & 0xff) != 0xff){
 #ifndef RTCONFIG_HND_GPIO
 		enable = (use_gpio&GPIO_ACTIVE_LOW)==0 ? 1 : 0;
+#else
+		enable = 1;
 #endif
 		set_gpio(gpio_pin, enable);
 	}
@@ -1082,7 +1086,7 @@ int do_led_control(int which, int mode)
 
 #if (defined(RTAX9000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTCONFIG_MXL_826XX) || defined(RTBE58_GO) || defined(RTBE92U)) && !defined(RTCONFIG_BCM_MFG)
 	if ((which == LED_WAN_NORMAL) && (mode == LED_ON)) {
-#if defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTBE58_GO) || defined(RTBE55) || defined(GT7) || defined(GS7_PRO_MAX)
+#if defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTBE58_GO) || defined(RTBE55) || defined(GT7)
 		if (hnd_get_phy_status("eth0") == 0)
 #elif defined(RTBE82M)
 		if (!mxl_get_phy_status(0))
@@ -1090,6 +1094,8 @@ int do_led_control(int which, int mode)
 		if (!mxl_get_phy_status(3))
 #elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U)
 		if (is_router_mode() && nvram_match("wan_ifname", "vlan4094") && !rtk_get_phy_status(1))
+#elif defined(GS7_PRO_MAX)
+		if (is_router_mode() && (hnd_get_phy_status("eth0") == 0) && (hnd_get_phy_status("vlan4094") == 0))
 #else
 		if (hnd_get_phy_status(0) == 0)
 #endif

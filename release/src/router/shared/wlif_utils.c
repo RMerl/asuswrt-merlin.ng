@@ -982,6 +982,8 @@ int wl_wlif_block_mac(void *hdl, char *ifname, struct ether_addr addr, int timeo
 
 	if (timeout != 0) {
 		data = (static_maclist_t *) malloc(sizeof(static_maclist_t));
+		if (data == NULL)
+			return FALSE;
 		strncpy(data->ifname, ifname, IFNAMSIZ - 1);
 		data->ifname[IFNAMSIZ - 1] = '\0';
 		data->flag = flag;

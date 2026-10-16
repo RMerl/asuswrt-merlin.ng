@@ -5,7 +5,7 @@ var sorterApi = {
 	"clickID" : "",
 	"borderTopCss" : "1px solid #222",
 	"borderBottomCss" : "1px solid #222",
-	"borderCssClick" : "1px solid #FC0",
+	"borderCssClick" : "1px solid var(--wrt-badge-warning-color,#FC0)",
 	sortJson : function(_jsonObj, _key, _sortType)	{
 		var sortJsonObj = _jsonObj.slice();
 		switch (_sortType) {

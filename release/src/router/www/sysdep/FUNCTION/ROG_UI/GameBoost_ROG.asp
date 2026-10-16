@@ -739,7 +739,7 @@ function render_apps(apps_array, obj_icon, apps_field){
 	}
 
 	if(code == ""){
-		code = "<tr><td colspan='3' style='text-align:center;color:#FFCC00'><div style='padding:5px 0px;border-top:solid 1px #333;'><#Bandwidth_monitor_noList#></div></td></tr>";
+		code = "<tr><td colspan='3' style='text-align:center;color:var(--wrt-badge-warning-color,#FFCC00)'><div style='padding:5px 0px;border-top:solid 1px #333;'><#Bandwidth_monitor_noList#></div></td></tr>";
 	}
 
 	$(apps_field).empty();

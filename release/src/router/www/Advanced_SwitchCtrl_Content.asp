@@ -29,7 +29,7 @@
 }
 
 .businessStyle:link{
-	color: #262626 !important;
+	color: var(--wrt-text-color, #262626) !important;
 }
 
 #autowan_hint_div{
@@ -38,10 +38,10 @@
 	width: 600px;
 	height: 550px;
 	margin-left: 40%;
-	background-color: #232629;
-	box-shadow: 3px 3px 10px #000;
+	background-color: var(--surface-panel, #232629);
+	box-shadow: var(--wrt-card-shadow, 3px 3px 10px #000);
 	border-radius: 4px;
-	border: 2px solid #818181;
+	border: 2px solid var(--border-default, #818181);
 	font-size: 13px;
 }
 
@@ -930,9 +930,9 @@ function get_default_wan_name(){
 													<div id="lacp_desc" style="display:none; margin-top: 5px;"><span id="lacp_note"><#NAT_lacp_note#></span></div>
 													<div id = "lacp_port_selection" style="display: none; flex-direction: column; margin-top: 5px;">
 														<div style="display: flex;"><input type="radio" name="lacp_port_select" value="0" checked><div id="lacp_first_option">1G LAN5 and 10G LAN6</div></div>
-														<div id= "disable_first_option_hint" style="margin-left: 20px; color: #FFCC00;"></div>
+														<div id= "disable_first_option_hint" style="margin-left: 20px; color: var(--wrt-badge-warning-color,#FFCC00);"></div>
 														<div style="display: flex;"><div><input type="radio" name="lacp_port_select" value="1"></div><div id="two_10g_lacp">10G WAN/LAN1 and 10G LAN6</div></div>
-														<div id= "disable_two_10g_hint" style="margin-left: 20px; color: #FFCC00;"></div>
+														<div id= "disable_two_10g_hint" style="margin-left: 20px; color: var(--wrt-badge-warning-color,#FFCC00);"></div>
 													</div>
 												</td>
 											</tr>

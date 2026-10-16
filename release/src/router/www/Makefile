@@ -108,6 +108,8 @@ endif
 ifeq ($(RTCONFIG_UI4), y)
 	cp -rfL $(TOP)/www/sysdep/FUNCTION/UI4/* $(INSTALLDIR)/www/
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/white_04.gif
+	rm -rf $(INSTALLDIR)/www/js/ui3_indexing.json
+	rm -rf $(INSTALLDIR)/www/js/ui3_search.js
 endif
 
 ifeq ($(HND_ROUTER),y)
@@ -355,6 +357,7 @@ endif
 
 ifeq ($(RTCONFIG_DASHBOARD), y)
 	cp -rf $(INSTALLDIR)/www/dashboard/index.html $(INSTALLDIR)/www/index.html
+	cp -rf $(INSTALLDIR)/www/dashboard/manifest.json $(INSTALLDIR)/www/manifest.json
 	cp -rf $(INSTALLDIR)/www/dashboard/pages $(INSTALLDIR)/www/
 ifneq ($(and $(RTCONFIG_IPSEC),$(RTCONFIG_INSTANT_GUARD)), y)
 	rm -rf $(INSTALLDIR)/www/pages/ig.html
@@ -363,6 +366,7 @@ endif
 	cp -rf $(INSTALLDIR)/www/dashboard/ajax/* $(INSTALLDIR)/www/ajax/
 	cp -rf $(INSTALLDIR)/www/dashboard/css/* $(INSTALLDIR)/www/css/
 	cp -rf $(INSTALLDIR)/www/dashboard/images/* $(INSTALLDIR)/www/images/
+	cp -rf $(INSTALLDIR)/www/dashboard/datatables $(INSTALLDIR)/www/
 endif
 
 ifeq ($(RTCONFIG_AUTODICT), y)
@@ -372,7 +376,14 @@ ifeq ($(RTCONFIG_AUTODICT), y)
 	$(ASUSWRTTOOLSDIR)/LnxDictPrep $(ASUSWRTTOOLSDIR) dictctrl.txt $(BUILD_NAME) HdrMapping.txt . $(INSTALLDIR)/www $(SRCBASE)/image/dictenum.txt $(SRCBASE)/image/dict_prep.txt
 	# generate sh file for clear up html and dict auto enum
 	# this is for compression
+ifeq ($(RTCONFIG_FORCE_AUTODICT), y)
 	$(ASUSWRTTOOLSDIR2)/genshfile.pl $(ASUSWRTTOOLSDIR2) $(INSTALLDIR) $(SRCBASE)/image/compress.sh $(SRCBASE)/image/dictenum.txt $(SRCBASE)/image/output2.txt $(BUILD_NAME) $(SRCBASE)/image/output3.txt
+else
+	for F in $(wildcard *.dict); do \
+		./gendict.pl $(BUILD_NAME) $$F $(INSTALLDIR)/www/$$F; \
+	done
+	$(ASUSWRTTOOLSDIR2)/genshfile-noautodict.pl $(ASUSWRTTOOLSDIR2) $(INSTALLDIR) $(SRCBASE)/image/compress.sh $(SRCBASE)/image/dictenum.txt $(SRCBASE)/image/output2.txt $(BUILD_NAME) $(SRCBASE)/image/output3.txt
+endif
 	chmod 777 $(SRCBASE)/image/compress.sh
 	sh $(SRCBASE)/image/compress.sh
 else
@@ -704,11 +715,10 @@ ifneq ($(RTCONFIG_BWDPI)$(RTCONFIG_BWDPI_DEP),y)
 ifneq ($(RTCONFIG_HNS),y)
 	rm -rf $(INSTALLDIR)/www/AiProtection_HomeProtection.asp
 	rm -rf $(INSTALLDIR)/www/images/New_ui/HomeProtection.png
+	rm -rf $(INSTALLDIR)/www/images/New_ui/Web_Apps_Restriction.png
 endif
 endif
 	rm -rf $(INSTALLDIR)/www/AiProtection_ContentFilter.asp
-else
-	rm -rf $(INSTALLDIR)/www/images/New_ui/Web_Apps_Restriction.png
 endif
 
 ifneq ($(RTCONFIG_ADBLOCK),y)

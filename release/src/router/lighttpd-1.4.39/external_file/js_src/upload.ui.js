@@ -125,7 +125,6 @@ function hideUploadPanel(){
 }
 
 function createUploadLayout(){
-	
 	if ($("#main_table").length <= 0){
 
 		var html = "";
@@ -249,7 +248,14 @@ function clearFileInput(id)
     newInput.name = oldInput.name; 
     newInput.className = oldInput.className; 
     newInput.style.cssText = oldInput.style.cssText; 
-    // TODO: copy any other relevant attributes 
+
+    // TODO: copy any other relevant attributes
+    if (oldInput.hasAttribute("webkitdirectory")) {
+        newInput.setAttribute("webkitdirectory", "");
+    }
+    if (oldInput.hasAttribute("directory")) {
+        newInput.setAttribute("directory", "");
+    }
 
     oldInput.parentNode.replaceChild(newInput, oldInput);
     

@@ -167,7 +167,7 @@ function genGameList(){
 	code += '</tr>';
 		
 	if(list_array == ''){
-		code += '<tr><td colspan="2" style="color:#FFCC00;">No data in table.</td></tr>';
+		code += '<tr><td colspan="2" style="color:var(--wrt-badge-warning-color,#FFCC00);">No data in table.</td></tr>';
 	}
 	else{
 		for(i=0; i<list_array.length; i++){
@@ -613,7 +613,7 @@ function enableGearUp(){
 															<a id="android_link" href="https://play.google.com/store/apps/details?id=com.asus.aihome" target="_blank">
 																<div style="width:124px;height:36px;background:url('images/googleplay.png') no-repeat;background-size:100%;"></div>
 															</a>
-															<a id="android_cn_link" style="display:none" href="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/ASUSRouter_Android_Release.apk" target="_blank">
+															<a id="android_cn_link" style="display:none" href="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/ASUSRouter_Android_Release.apk" target="_blank" rel="noreferrer">
 																<div class="android_font">Android</div>
 															</a>
 														</div>

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+[[ $XT_MULTI == *xtables-nft-multi ]] || { echo "skip $XT_MULTI"; exit 0; }
+nft -v >/dev/null || exit 0
+
+set -e
+
+unshare -n bash -c "nft -f $(dirname $0)/0010-nft-native.txt;
+  diff -u -Z $(dirname $0)/0010-iptables-nft-save.txt <($XT_MULTI iptables-save | grep -v '^#')"

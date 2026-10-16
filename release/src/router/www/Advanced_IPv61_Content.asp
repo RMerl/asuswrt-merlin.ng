@@ -1210,7 +1210,7 @@ function genWANSoption(){
 					<tr id="ipv61_ipaddr_r">
 						<th><#ipv6_lan_addr#></th>	<!-- for other ipv6 proto -->
 		     		<td>
-						  <div id="ipv61_ipaddr_span" name="ipv61_ipaddr_span" style="color:#FFFFFF;margin-left:8px;"></div>
+						  <div id="ipv61_ipaddr_span" name="ipv61_ipaddr_span" style="color:var(--wrt-text-color,#FFFFFF);margin-left:8px;"></div>
 		     		</td>
 		     	</tr>				  
 				  
@@ -1223,7 +1223,7 @@ function genWANSoption(){
 					<tr id="ipv61_prefix_length_r">
 						<th><#Prefix_lan_Length#></th>
 						<td>
-						  <div id="ipv61_prefix_length_span" name="ipv61_prefix_length_span" style="color:#FFFFFF;margin-left:8px;"></div>
+						  <div id="ipv61_prefix_length_span" name="ipv61_prefix_length_span" style="color:var(--wrt-text-color,#FFFFFF);margin-left:8px;"></div>
 		     		</td>
 		     	</tr>
 		     			
@@ -1236,7 +1236,7 @@ function genWANSoption(){
 					<tr id="ipv61_prefix_r">
 						<th><#IPv6_lan_Prefix#></th>
 		     		<td>
-						  <div id="ipv61_prefix_span" name="ipv61_prefix_span" style="color:#FFFFFF;margin-left:8px;"></div>
+						  <div id="ipv61_prefix_span" name="ipv61_prefix_span" style="color:var(--wrt-text-color,#FFFFFF);margin-left:8px;"></div>
 						</td>
 					</tr>		     	     	
 		     	
@@ -1250,7 +1250,7 @@ function genWANSoption(){
 					<tr>
 		     		<th><#LANHostConfig_MinAddress_itemname#></th>	<!-- DHCP pool start -->
 		     		<td>
-		     				<input type="text" maxlength="19" class="input_20_table" name="ipv61_prefix_span_for_start" style="color:#BBBBBB" readonly autocorrect="off" autocapitalize="off">		     				
+		     				<input type="text" maxlength="19" class="input_20_table" name="ipv61_prefix_span_for_start" style="color:var(--wrt-text-muted-color,#BBBBBB)" readonly autocorrect="off" autocapitalize="off">		     				
 		     				::
 		     				<input type="text" maxlength="4" class="input_6_table" name="ipv61_dhcp_start_start" autocorrect="off" autocapitalize="off" >
 		     		</td>
@@ -1259,7 +1259,7 @@ function genWANSoption(){
 		     	<tr>
 		     		<th><#LANHostConfig_MaxAddress_itemname#></th>	<!-- DHCP pool end -->
 		     		<td>
-		     			<input type="text" maxlength="19" class="input_20_table" name="ipv61_prefix_span_for_end" style="color:#BBBBBB" readonly autocorrect="off" autocapitalize="off">
+		     			<input type="text" maxlength="19" class="input_20_table" name="ipv61_prefix_span_for_end" style="color:var(--wrt-text-muted-color,#BBBBBB)" readonly autocorrect="off" autocapitalize="off">
 		     			::
 		     			<input type="text" maxlength="4" class="input_6_table" name="ipv61_dhcp_end_end" autocorrect="off" autocapitalize="off">
 		     		</td>

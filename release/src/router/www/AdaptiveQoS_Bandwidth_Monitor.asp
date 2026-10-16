@@ -1510,7 +1510,7 @@ function update_apps_tarffic(mac, obj, new_element) {
     },
     success: function(response){
 		render_apps(array_traffic, obj, new_element);
-        render_app_icon(array_traffic);
+		render_app_icon(array_traffic);
 		apps_time_flag = setTimeout(function(){
 			update_apps_tarffic(mac,obj,new_element)
 		}, detect_interval*1000);
@@ -1527,7 +1527,7 @@ function update_apps_tarffic_Dns(mac, obj, new_element) {
     },
     success: function(response){
 		render_apps(array_traffic, obj, new_element);
-        render_app_icon(array_traffic);
+		render_app_icon(array_traffic);
 		apps_time_flag = setTimeout(function(){
 			update_apps_tarffic_Dns(mac,obj,new_element)
 		}, detect_interval*1000);

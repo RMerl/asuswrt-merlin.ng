@@ -1,0 +1,79 @@
+#!/bin/bash
+
+RC=0
+COUNTR=$RANDOM$RANDOM
+
+$XT_MULTI iptables-restore -c <<EOF
+*filter
+:INPUT ACCEPT [1:23]
+:FOO - [0:0]
+[12:345] -A INPUT -i lo -p icmp -m comment --comment "$COUNTR"
+[22:123] -A FOO -m comment --comment one
+[44:123] -A FOO -m comment --comment two
+[66:123] -A FOO -m comment --comment three
+COMMIT
+EOF
+EXPECT="*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:FOO - [0:0]
+[0:0] -A INPUT -i lo -p icmp -m comment --comment "$COUNTR"
+[0:0] -A FOO -m comment --comment one
+[0:0] -A FOO -m comment --comment two
+[0:0] -A FOO -m comment --comment three
+COMMIT"
+
+COUNTER=$($XT_MULTI iptables-save -c |grep "comment $COUNTR"| cut -f 1 -d " ")
+if [ $COUNTER != "[12:345]" ]; then
+	echo "Counter $COUNTER is wrong, expected 12:345"
+	RC=1
+fi
+
+$XT_MULTI iptables -Z FOO 2
+COUNTER=$($XT_MULTI iptables-save -c | grep "comment two"| cut -f 1 -d " ")
+if [ $COUNTER != "[0:0]" ]; then
+	echo "Counter $COUNTER is wrong, should have been zeroed"
+	RC=1
+fi
+COUNTER=$($XT_MULTI iptables-save -c | grep "comment three"| cut -f 1 -d " ")
+if [ $COUNTER != "[66:123]" ]; then
+	echo "Counter $COUNTER is wrong, should not have been zeroed"
+	RC=1
+fi
+
+$XT_MULTI iptables -Z FOO
+COUNTER=$($XT_MULTI iptables-save -c |grep "comment $COUNTR"| cut -f 1 -d " ")
+if [ $COUNTER = "[0:0]" ]; then
+	echo "Counter $COUNTER is wrong, should not have been zeroed"
+	RC=1
+fi
+
+for c in one two; do
+	COUNTER=$($XT_MULTI iptables-save -c |grep "comment $c"| cut -f 1 -d " ")
+	if [ $COUNTER != "[0:0]" ]; then
+		echo "Counter $COUNTER is wrong, should have been zeroed at rule $c"
+		RC=1
+	fi
+done
+
+$XT_MULTI iptables -Z
+COUNTER=$($XT_MULTI iptables-save -c |grep "comment $COUNTR"| cut -f 1 -d " ")
+
+if [ $COUNTER != "[0:0]" ]; then
+	echo "Counter $COUNTER is wrong, expected 0:0 after -Z"
+	RC=1
+fi
+
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI iptables-save -c | grep -v '^#')
+if [ $? -ne 0 ]; then
+	echo "Diff error: counters were not zeroed"
+	RC=1
+fi
+
+$XT_MULTI iptables -D INPUT -i lo -p icmp -m comment --comment "$COUNTR"
+$XT_MULTI iptables -D FOO -m comment --comment one
+$XT_MULTI iptables -D FOO -m comment --comment two
+$XT_MULTI iptables -D FOO -m comment --comment three
+$XT_MULTI iptables -X FOO
+exit $RC

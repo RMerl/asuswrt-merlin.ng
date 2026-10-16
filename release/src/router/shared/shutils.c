@@ -171,14 +171,18 @@ char *
 fd2str(int fd)
 {
 	char *buf = NULL;
-	size_t count = 0, n;
+	size_t count = 0;
+	ssize_t n;
 
 	do {
 		buf = realloc(buf, count + 512);
 		n = read(fd, buf + count, 512);
-		if (n < 0) {
-			free(buf);
-			buf = NULL;
+		if (n <= 0) {
+			if (n < 0) {
+				free(buf);
+				buf = NULL;
+			}
+			break;
 		}
 		count += n;
 	} while (n == 512);
@@ -2495,13 +2499,99 @@ sysfail:
  return NULL;
 }
 
+/* Root directory that holds all kernel module (.ko) files. */
+#define KMOD_ROOT	"/lib/modules"
+
+/* modprobe treats '-' and '_' as interchangeable in module names, so
+ * normalize '-' to '_' before comparing a module name with a .ko filename.
+ */
+static void normalize_mod_name(char *s)
+{
+	for (; *s; s++) {
+		if (*s == '-')
+			*s = '_';
+	}
+}
+
+/* Recursively search @dir for a file named "<target>.ko" (an optional
+ * compression suffix such as .gz/.xz is ignored). @target must already be
+ * normalized ('-' -> '_'). Returns 1 on the first match, 0 otherwise.
+ */
+static int find_ko_in_dir(const char *dir, const char *target)
+{
+	DIR *dp;
+	struct dirent *de;
+	char path[PATH_MAX];
+	char base[128], *dot;
+	int found = 0;
+
+	if ((dp = opendir(dir)) == NULL)
+		return 0;
+
+	while (!found && (de = readdir(dp)) != NULL) {
+		if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, ".."))
+			continue;
+
+		snprintf(path, sizeof(path), "%s/%s", dir, de->d_name);
+
+		/* Descend into subdirectories. Fall back to stat() when the
+		 * filesystem does not report the entry type in d_type.
+		 */
+		if (de->d_type == DT_DIR) {
+			found = find_ko_in_dir(path, target);
+			continue;
+		} else if (de->d_type == DT_UNKNOWN) {
+			struct stat st;
+			if (stat(path, &st) == 0 && S_ISDIR(st.st_mode)) {
+				found = find_ko_in_dir(path, target);
+				continue;
+			}
+		}
+
+		/* Regular file: match "<name>.ko" against the target. */
+		strlcpy(base, de->d_name, sizeof(base));
+		if ((dot = strstr(base, ".ko")) == NULL)
+			continue;
+		*dot = '\0';
+
+		normalize_mod_name(base);
+		if (!strcmp(base, target))
+			found = 1;
+	}
+
+	closedir(dp);
+	return found;
+}
+
+/* Return 1 if the .ko file for kernel module @mod exists under KMOD_ROOT,
+ * 0 otherwise.
+ */
+static int mod_ko_exists(const char *mod)
+{
+	char target[128];
+
+	if (!mod || !*mod)
+		return 0;
+
+	strlcpy(target, mod, sizeof(target));
+	normalize_mod_name(target);
+
+	return find_ko_in_dir(KMOD_ROOT, target);
+}
+
 int modprobe_q(const char *mod)
 {
+	if (!mod_ko_exists(mod))
+		return -1;
+
 	return eval("modprobe", "-q" , (char *)mod);
 }
 
 int modprobe_r(const char *mod)
 {
+	if (!mod_ko_exists(mod))
+		return -1;
+
 #if 1
 	return eval("modprobe", "-r", (char *)mod);
 #else
@@ -3550,7 +3640,7 @@ fail:
 }
 
 /* Safe popen: execute argv[] safely */
-static int safe_popen_argv(const char *path, char *const argv[], pid_t *child_pid) {
+int safe_popen_argv(const char *path, char *const argv[], pid_t *child_pid) {
 	int pipefd[2];
 	pid_t pid;
 

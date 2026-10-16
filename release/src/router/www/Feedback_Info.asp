@@ -333,7 +333,7 @@ function CheckFBState(){
 	font-family: Arial, Helvetica, sans-serif;
 }
 .feedback_info_1 span{
-	color:#FFCC00;
+	color:var(--wrt-badge-warning-color,#FFCC00);
 }
 </style>	
 </head>
@@ -389,16 +389,16 @@ function CheckFBState(){
 <div id="fb_fail_dsl" style="display:none;" class="feedback_info_1">
 	<#feedback_fail0#>
 	<br><br>
-	<#feedback_fail1#> : ( <a href="mailto:broadband_feedback@asus.com?Subject=<%nvram_get("productid");%>" target="_top" style="color:#FFCC00;">broadband_feedback@asus.com </a>) <#feedback_fail2#>
+	<#feedback_fail1#> : ( <a href="mailto:broadband_feedback@asus.com?Subject=<%nvram_get("productid");%>" target="_top" style="color:var(--wrt-badge-warning-color,#FFCC00);">broadband_feedback@asus.com </a>) <#feedback_fail2#>
 	<br>
 	<#feedback_fail3#> :
 	<br>
 	<ul>
-		<li id="dbg_dsl_file" style="display:none;"><span onClick="get_split_feedback(1);" style="text-decoration: underline; color:#FFCC00; cursor:pointer;"><#feedback_debug_file#></span></li>
-		<li id="dbg_dsl_seg_a" style="display:none;"><span onClick="get_split_feedback('a');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_a</span></li>
-		<li id="dbg_dsl_seg_b" style="display:none;"><span onClick="get_split_feedback('b');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_b</span></li>
-		<li id="dbg_dsl_seg_c" style="display:none;"><span onClick="get_split_feedback('c');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_c</span></li>
-		<li id="dbg_dsl_seg_d" style="display:none;"><span onClick="get_split_feedback('d');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_d</span></li>
+		<li id="dbg_dsl_file" style="display:none;"><span onClick="get_split_feedback(1);" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;"><#feedback_debug_file#></span></li>
+		<li id="dbg_dsl_seg_a" style="display:none;"><span onClick="get_split_feedback('a');" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;">get_split_feedback_a</span></li>
+		<li id="dbg_dsl_seg_b" style="display:none;"><span onClick="get_split_feedback('b');" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;">get_split_feedback_b</span></li>
+		<li id="dbg_dsl_seg_c" style="display:none;"><span onClick="get_split_feedback('c');" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;">get_split_feedback_c</span></li>
+		<li id="dbg_dsl_seg_d" style="display:none;"><span onClick="get_split_feedback('d');" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;">get_split_feedback_d</span></li>
 	</ul>
 </div>
 
@@ -406,11 +406,11 @@ function CheckFBState(){
 	<#feedback_fail0_new#>&nbsp;<#feedback_fail1_new#>&nbsp;<#feedback_fail2_new#>
 	<br>
 	<ul>
-		<li id="dbg_rt_file" style="display:none;"><span onClick="get_split_feedback(1);" style="text-decoration: underline; color:#FFCC00; cursor:pointer;"><#feedback_debug_file#></span></li>
-		<li id="dbg_rt_seg_a" style="display:none;"><span onClick="get_split_feedback('a');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_a</span></li>
-		<li id="dbg_rt_seg_b" style="display:none;"><span onClick="get_split_feedback('b');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_b</span></li>
-		<li id="dbg_rt_seg_c" style="display:none;"><span onClick="get_split_feedback('c');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_c</span></li>
-		<li id="dbg_rt_seg_d" style="display:none;"><span onClick="get_split_feedback('d');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_d</span></li>
+		<li id="dbg_rt_file" style="display:none;"><span onClick="get_split_feedback(1);" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;"><#feedback_debug_file#></span></li>
+		<li id="dbg_rt_seg_a" style="display:none;"><span onClick="get_split_feedback('a');" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;">get_split_feedback_a</span></li>
+		<li id="dbg_rt_seg_b" style="display:none;"><span onClick="get_split_feedback('b');" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;">get_split_feedback_b</span></li>
+		<li id="dbg_rt_seg_c" style="display:none;"><span onClick="get_split_feedback('c');" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;">get_split_feedback_c</span></li>
+		<li id="dbg_rt_seg_d" style="display:none;"><span onClick="get_split_feedback('d');" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;">get_split_feedback_d</span></li>
 	</ul>
 </div>
 
@@ -421,31 +421,31 @@ function CheckFBState(){
 
 <div id="fb_gen_tarball_dsl_id" style="display:none;" class="feedback_info_1">
 	<br>
-	You can send an email directly to : ( <a href="mailto:broadband_feedback@asus.com?Subject=<%nvram_get("productid");%>" target="_top" style="color:#FFCC00;">broadband_feedback@asus.com </a>) <!--Untranslated-->
+	You can send an email directly to : ( <a href="mailto:broadband_feedback@asus.com?Subject=<%nvram_get("productid");%>" target="_top" style="color:var(--wrt-badge-warning-color,#FFCC00);">broadband_feedback@asus.com </a>) <!--Untranslated-->
 	<br>
 	<#feedback_fail3#> :
 	<br>
 	<ul>
-		<li id="dbg_gen_dsl_file" style="display:none;"><span onClick="get_split_feedback(1);" style="text-decoration: underline; color:#FFCC00; cursor:pointer;"><#feedback_debug_file#></span></li>
-		<li id="dbg_gen_dsl_seg_a" style="display:none;"><span onClick="get_split_feedback('a');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_a</span></li>
-		<li id="dbg_gen_dsl_seg_b" style="display:none;"><span onClick="get_split_feedback('b');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_b</span></li>
-		<li id="dbg_gen_dsl_seg_c" style="display:none;"><span onClick="get_split_feedback('c');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_c</span></li>
-		<li id="dbg_gen_dsl_seg_d" style="display:none;"><span onClick="get_split_feedback('d');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_d</span></li>
+		<li id="dbg_gen_dsl_file" style="display:none;"><span onClick="get_split_feedback(1);" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;"><#feedback_debug_file#></span></li>
+		<li id="dbg_gen_dsl_seg_a" style="display:none;"><span onClick="get_split_feedback('a');" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;">get_split_feedback_a</span></li>
+		<li id="dbg_gen_dsl_seg_b" style="display:none;"><span onClick="get_split_feedback('b');" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;">get_split_feedback_b</span></li>
+		<li id="dbg_gen_dsl_seg_c" style="display:none;"><span onClick="get_split_feedback('c');" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;">get_split_feedback_c</span></li>
+		<li id="dbg_gen_dsl_seg_d" style="display:none;"><span onClick="get_split_feedback('d');" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;">get_split_feedback_d</span></li>
 	</ul>
 </div>
 
 <div id="fb_gen_tarball_id" style="display:none;" class="feedback_info_1">
 	<br>
-	You can send an email directly to : ( <a href="mailto:router_feedback@asus.com?Subject=<%nvram_get("productid");%>" target="_top" style="color:#FFCC00;">router_feedback@asus.com </a>) <!--Untranslated-->
+	You can send an email directly to : ( <a href="mailto:router_feedback@asus.com?Subject=<%nvram_get("productid");%>" target="_top" style="color:var(--wrt-badge-warning-color,#FFCC00);">router_feedback@asus.com </a>) <!--Untranslated-->
 	<br>
 	<#feedback_fail3#> :
 	<br>
 	<ul>
-		<li id="dbg_gen_rt_file" style="display:none;"><span onClick="get_split_feedback(1);" style="text-decoration: underline; color:#FFCC00; cursor:pointer;"><#feedback_debug_file#></span></li>
-		<li id="dbg_gen_rt_seg_a" style="display:none;"><span onClick="get_split_feedback('a');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_a</span></li>
-		<li id="dbg_gen_rt_seg_b" style="display:none;"><span onClick="get_split_feedback('b');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_b</span></li>
-		<li id="dbg_gen_rt_seg_c" style="display:none;"><span onClick="get_split_feedback('c');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_c</span></li>
-		<li id="dbg_gen_rt_seg_d" style="display:none;"><span onClick="get_split_feedback('d');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_d</span></li>
+		<li id="dbg_gen_rt_file" style="display:none;"><span onClick="get_split_feedback(1);" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;"><#feedback_debug_file#></span></li>
+		<li id="dbg_gen_rt_seg_a" style="display:none;"><span onClick="get_split_feedback('a');" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;">get_split_feedback_a</span></li>
+		<li id="dbg_gen_rt_seg_b" style="display:none;"><span onClick="get_split_feedback('b');" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;">get_split_feedback_b</span></li>
+		<li id="dbg_gen_rt_seg_c" style="display:none;"><span onClick="get_split_feedback('c');" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;">get_split_feedback_c</span></li>
+		<li id="dbg_gen_rt_seg_d" style="display:none;"><span onClick="get_split_feedback('d');" style="text-decoration: underline; color:var(--wrt-badge-warning-color,#FFCC00); cursor:pointer;">get_split_feedback_d</span></li>
 	</ul>
 </div>
 
@@ -480,7 +480,7 @@ function CheckFBState(){
 	<div class="feedback_info_0">The debug log of diagnostic DSL captured.</div>
 	<br>
 	<br>
-	<div class="feedback_info_1">Please send us an email directly ( <a id="Email_subject" href="" target="_top" style="color:#FFCC00;">broadband_feedback@asus.com</a> ). Simply copy from following text area and paste as mail content. <br><div onClick="reset_diag_state();" style="text-decoration: underline; font-family:Lucida Console; cursor:pointer;">Click here to download the debug log and add as mail attachment.</div></div>
+	<div class="feedback_info_1">Please send us an email directly ( <a id="Email_subject" href="" target="_top" style="color:var(--wrt-badge-warning-color,#FFCC00);">broadband_feedback@asus.com</a> ). Simply copy from following text area and paste as mail content. <br><div onClick="reset_diag_state();" style="text-decoration: underline; font-family:Lucida Console; cursor:pointer;">Click here to download the debug log and add as mail attachment.</div></div>
 	<br>
 	<textarea name="fb_send_debug_log_content" cols="70" rows="15" style="width:90%; margin-left:25px; font-family:'Courier New', Courier, mono; font-size:13px;background:#475A5F;color:#FFFFFF;" readonly></textarea>
 	<br>	

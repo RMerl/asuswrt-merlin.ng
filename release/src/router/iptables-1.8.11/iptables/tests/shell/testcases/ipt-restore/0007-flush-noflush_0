@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Make sure iptables-restore without --noflush does not flush tables other than
+# those contained in the dump it's reading from
+
+set -e
+
+$XT_MULTI iptables-restore <<EOF
+*nat
+-A POSTROUTING -j ACCEPT
+COMMIT
+EOF
+
+EXPECT="*nat
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+-A POSTROUTING -j ACCEPT
+COMMIT"
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI iptables-save | grep -v '^#')
+
+$XT_MULTI iptables-restore <<EOF
+*filter
+-A FORWARD -j ACCEPT
+COMMIT
+EOF
+
+EXPECT="*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+-A FORWARD -j ACCEPT
+COMMIT
+*nat
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+-A POSTROUTING -j ACCEPT
+COMMIT"
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI iptables-save | grep -v '^#')

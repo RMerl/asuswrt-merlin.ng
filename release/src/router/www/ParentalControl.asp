@@ -239,7 +239,7 @@ function gen_mainTable(){
 	code +='<th width="20%"><#ParentalCtrl_time#></th>';
 	code +='<th width="20%"><#list_add_delete#></th></tr>';
 
-	code += '<tr><td style="border-bottom:2px solid #000;">';
+	code += '<tr><td style="border-bottom:2px solid var(--border-default, #000);">';
 	code += '<select id="newrule_Enable" class="input_option">';
 	code += '<option value="0"><#btn_disable#></option>';
 	code += '<option value="1" selected><#diskUtility_time#></option>';
@@ -252,7 +252,7 @@ function gen_mainTable(){
 	code +='<td style="border-bottom:2px solid #000;">--</td>';
 	code +='<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onClick="addRow_main()" value=""></td></tr>';
 	if(client_time_sche_json.length == 0)
-		code += '<tr><td style="color:#FFCC00;" colspan="4"><#IPConnection_VSList_Norule#></td></tr>';
+		code += '<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="4"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		//user icon
 		var userIconBase64 = "NoIcon";
@@ -408,7 +408,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	if(flag == 1){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color="#FFCC00";
+		childsel.style.color="var(--wrt-badge-warning-color,#FFCC00)";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#LANHostConfig_ManualDHCPMacaddr_itemdesc#>";		
 		document.getElementById("check_mac").style.display = "";
@@ -416,7 +416,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	}else if(flag ==2){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color="#FFCC00";
+		childsel.style.color="var(--wrt-badge-warning-color,#FFCC00)";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#IPConnection_x_illegal_mac#>";		
 		document.getElementById("check_mac").style.display = "";
@@ -689,7 +689,7 @@ function show_inner_tab(){
 						<ol id="desc_note_item" class="hint-color" style="margin:-5px 0px 3px -18px;*margin-left:18px;">
 							<li><#ParentalCtrl_default#></li>
 							<li id="nat_desc"><#ParentalCtrl_disable_NAT#></li>
-						</ol>	
+						</ol>
 					</td>
 				</tr>
 			</table>

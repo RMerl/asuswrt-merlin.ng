@@ -1,0 +1,88 @@
+#!/bin/bash
+
+RC=0
+
+$XT_MULTI iptables -6 -A FORWARD -j ACCEPT
+rc=$?
+if [[ $rc -ne 2 ]]; then
+	echo "'iptables -6' returned $rc instead of 2"
+	RC=1
+fi
+
+$XT_MULTI ip6tables -4 -A FORWARD -j ACCEPT
+rc=$?
+if [[ $rc -ne 2 ]]; then
+	echo "'ip6tables -4' returned $rc instead of 2"
+	RC=1
+fi
+
+RULESET='*filter
+-4 -A FORWARD -d 10.0.0.1 -j ACCEPT
+-6 -A FORWARD -d fec0:10::1 -j ACCEPT
+COMMIT
+'
+EXPECT4='-P FORWARD ACCEPT
+-A FORWARD -d 10.0.0.1/32 -j ACCEPT'
+EXPECT6='-P FORWARD ACCEPT
+-A FORWARD -d fec0:10::1/128 -j ACCEPT'
+EXPECT_EMPTY='-P FORWARD ACCEPT'
+
+echo "$RULESET" | $XT_MULTI iptables-restore || {
+	echo "iptables-restore failed!"
+	RC=1
+}
+diff -u -Z <(echo -e "$EXPECT4") <($XT_MULTI iptables -S FORWARD) || {
+	echo "unexpected iptables ruleset"
+	RC=1
+}
+diff -u -Z <(echo -e "$EXPECT_EMPTY") <($XT_MULTI ip6tables -S FORWARD) || {
+	echo "unexpected non-empty ip6tables ruleset"
+	RC=1
+}
+
+$XT_MULTI iptables -F FORWARD
+
+echo "$RULESET" | $XT_MULTI ip6tables-restore || {
+	echo "ip6tables-restore failed!"
+	RC=1
+}
+diff -u -Z <(echo -e "$EXPECT6") <($XT_MULTI ip6tables -S FORWARD) || {
+	echo "unexpected ip6tables ruleset"
+	RC=1
+}
+diff -u -Z <(echo -e "$EXPECT_EMPTY") <($XT_MULTI iptables -S FORWARD) || {
+	echo "unexpected non-empty iptables ruleset"
+	RC=1
+}
+
+$XT_MULTI ip6tables -F FORWARD
+
+$XT_MULTI iptables -4 -A FORWARD -d 10.0.0.1 -j ACCEPT || {
+	echo "iptables failed!"
+	RC=1
+}
+diff -u -Z <(echo -e "$EXPECT4") <($XT_MULTI iptables -S FORWARD) || {
+	echo "unexpected iptables ruleset"
+	RC=1
+}
+diff -u -Z <(echo -e "$EXPECT_EMPTY") <($XT_MULTI ip6tables -S FORWARD) || {
+	echo "unexpected non-empty ip6tables ruleset"
+	RC=1
+}
+
+$XT_MULTI iptables -F FORWARD
+
+$XT_MULTI ip6tables -6 -A FORWARD -d fec0:10::1 -j ACCEPT || {
+	echo "ip6tables failed!"
+	RC=1
+}
+diff -u -Z <(echo -e "$EXPECT6") <($XT_MULTI ip6tables -S FORWARD) || {
+	echo "unexpected ip6tables ruleset"
+	RC=1
+}
+diff -u -Z <(echo -e "$EXPECT_EMPTY") <($XT_MULTI iptables -S FORWARD) || {
+	echo "unexpected non-empty iptables ruleset"
+	RC=1
+}
+
+exit $RC

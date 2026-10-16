@@ -27,14 +27,14 @@
 	width:650px;
 	height:200px;
 	position:absolute;
-	background: #293438;
+	background: var(--surface-panel, #293438);
 	z-index:10;
 	margin: 0 0 0 300px;
 	border-radius:10px;
 	display: none;
 }
 .confirm-button{
-	background: linear-gradient(#233438 0%, #0F1011 100%);
+	background: var(--surface-panel, linear-gradient(#233438 0%, #0F1011 100%));
 	border-radius: 8px;
 	height:33px;
 	cursor: pointer;
@@ -227,7 +227,7 @@ function generateBarTable(){
 			code += '<div class="list-margin">';
 			code += '<div>'+ targetObj.name +'</div>';
 			code += '<div class="flexbox flex-a-center">';
-			code += '<div class="bar-container" style="background-color:#FC0;"><div class="bar-cal" style="width:'+ percent +'%;"></div></div>';
+			code += '<div class="bar-container" style="background-color:var(--wrt-badge-warning-color,#FC0);"><div class="bar-cal" style="width:'+ percent +'%;"></div></div>';
 			code += '<div class="list-count">'+ targetObj.hit +'</div>';
 			code += '</div></div>';
 		}
@@ -589,7 +589,7 @@ function genWhitelist(list){
 	var _list = list.data;
 	var _list_length = Object.keys(_list).length;
 	for(var i=0; i< _list_length; i++){
-		code += '<div style="display:flex;margin: 12px 6px;justify-content: space-between;align-items: center;padding:0 6px 6px 0;border-bottom: 1px solid #667881 ">';
+		code += '<div style="display:flex;margin: 12px 6px;justify-content: space-between;align-items: center;padding:0 6px 6px 0;border-bottom: 1px solid var(--border-default, #667881) ">';
 		code += '<div style="font-size:14px;word-break:break-all">'+ _list[i] +'</div>';
 		code += '<div class="icon-container icon-delete" onclick="deleteWhitelist(\''+ _list[i] +'\')"></div>';
 		code += '</div>';

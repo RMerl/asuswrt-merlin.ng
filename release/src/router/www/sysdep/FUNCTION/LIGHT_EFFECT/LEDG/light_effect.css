@@ -532,10 +532,14 @@
 	user-select: none;
 }
 .all_led_off {
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	font-size: 14px;
 	padding: 0px 10px 10px 10px;
 	display: none;
+}
+.faq-link {
+	color: var(--wrt-badge-warning-color,#FC0);
+	text-decoration: underline !important;
 }
 #default_set {
 	text-decoration: underline;

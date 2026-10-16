@@ -1,0 +1,106 @@
+#!/bin/sh
+
+case "$XT_MULTI" in
+*xtables-nft-multi)
+	;;
+*)
+	echo "skip $XT_MULTI"
+	exit 0
+	;;
+esac
+
+sfx=$(mktemp -u "XXXXXXXX")
+nsa="nsa-$sfx"
+nsb="nsb-$sfx"
+nsc="nsc-$sfx"
+
+cleanup()
+{
+	ip netns del "$nsa"
+	ip netns del "$nsb"
+	ip netns del "$nsc"
+}
+
+trap cleanup EXIT
+
+assert_fail()
+{
+	if [ $1 -eq 0 ]; then
+		echo "FAILED: $2"
+		exit 1
+	fi
+}
+
+assert_pass()
+{
+	if [ $1 -ne 0 ]; then
+		echo "FAILED: $2"
+		exit 2
+	fi
+}
+
+ip netns add "$nsa"
+ip netns add "$nsb"
+ip netns add "$nsc"
+
+ip link add name c_b netns "$nsc" type veth peer name b_c netns "$nsb"
+ip link add name s_b netns "$nsa" type veth peer name b_s netns "$nsb"
+ip netns exec "$nsb" ip link add name br0 type bridge
+
+ip -net "$nsb" link set b_c up
+ip netns exec "$nsb" ip link set b_s up
+ip netns exec "$nsb" ip addr add 10.167.11.254/24 dev br0
+ip netns exec "$nsb" ip link set br0 up
+ip netns exec "$nsb" ip link set b_c master br0
+ip netns exec "$nsb" ip link set b_s master br0
+ip netns exec "$nsc" ip addr add 10.167.11.2/24 dev c_b
+ip netns exec "$nsc" ip link set c_b up
+ip -net "$nsa" addr add 10.167.11.1/24 dev s_b
+ip -net "$nsa" link set s_b up
+
+ip netns exec "$nsc" ping -q 10.167.11.1 -c1 >/dev/null  || exit 1
+
+bf_bridge_mac1=`ip netns exec "$nsb" cat /sys/class/net/b_s/address`
+bf_bridge_mac0=`ip netns exec "$nsb" cat /sys/class/net/b_c/address`
+bf_client_mac1=`ip netns exec "$nsc" cat /sys/class/net/c_b/address`
+bf_server_mac1=`ip netns exec "$nsa" cat /sys/class/net/s_b/address`
+
+bf_server_ip1="10.167.11.1"
+bf_bridge_ip0="10.167.11.254"
+bf_client_ip1="10.167.11.2"
+pktsize=64
+
+# --among-src [mac,IP]
+among="$bf_bridge_mac0=$bf_bridge_ip0,$bf_client_mac1=$bf_client_ip1"
+ip netns exec "$nsb" $XT_MULTI ebtables -F
+ip netns exec "$nsb" $XT_MULTI ebtables -A FORWARD \
+	-p ip --ip-dst $bf_server_ip1 --among-src "$among" -j DROP > /dev/null
+ip netns exec "$nsc" ping -q $bf_server_ip1 -c 1 -s $pktsize -W 1 >/dev/null
+assert_fail $? "--among-src [match]"
+
+# ip netns exec "$nsb" $XT_MULTI ebtables -L --Ln --Lc
+
+among="$bf_bridge_mac0=$bf_bridge_ip0,$bf_client_mac1=$bf_client_ip1"
+ip netns exec "$nsb" $XT_MULTI ebtables -F
+ip netns exec "$nsb" $XT_MULTI ebtables -A FORWARD \
+	-p ip --ip-dst $bf_server_ip1 ! --among-src "$among" -j DROP > /dev/null
+ip netns exec "$nsc" ping $bf_server_ip1 -c 1 -s $pktsize -W 1 >/dev/null
+assert_pass $? "--among-src [not match]"
+
+# --among-dst [mac,IP]
+among="$bf_client_mac1=$bf_client_ip1,$bf_server_mac1=$bf_server_ip1"
+ip netns exec "$nsb" $XT_MULTI ebtables -F
+ip netns exec "$nsb" $XT_MULTI ebtables -A FORWARD \
+	-p ip --ip-src $bf_client_ip1 --among-dst "$among" -j DROP > /dev/null
+ip netns exec "$nsc" ping -q $bf_server_ip1 -c 1 -s $pktsize -W 1 > /dev/null
+assert_fail $? "--among-dst [match]"
+
+# ! --among-dst [mac,IP]
+among="$bf_client_mac1=$bf_client_ip1,$bf_server_mac1=$bf_server_ip1"
+ip netns exec "$nsb" $XT_MULTI ebtables -F
+ip netns exec "$nsb" $XT_MULTI ebtables -A FORWARD \
+	-p ip --ip-src $bf_client_ip1 ! --among-dst "$among" -j DROP > /dev/null
+ip netns exec "$nsc" ping -q $bf_server_ip1 -c 1 -s $pktsize -W 1 > /dev/null
+assert_pass $? "--among-dst [not match]"
+
+exit 0

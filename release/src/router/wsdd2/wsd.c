@@ -922,6 +922,14 @@ static int wsd_parse_http_header(int fd, struct endpoint *ep,
 	if (!endpointlen)
 		endpointlen = strlen(wsd_endpoint);
 
+	/*
+	 * strstr() returns NULL when the request line has no CRLF.
+	 * Guard before dereferencing to avoid a NULL write (CWE-476 DoS).
+	 */
+	if (!eol) {
+		ep->errstr = __FUNCTION__ ": Missing CRLF in request line";
+		return 400;
+	}
 	*eol = '\0';
 	if (strncmp(p, "POST /", 6) != 0) {
 		ep->errstr = __FUNCTION__ ": Only POST method supported";

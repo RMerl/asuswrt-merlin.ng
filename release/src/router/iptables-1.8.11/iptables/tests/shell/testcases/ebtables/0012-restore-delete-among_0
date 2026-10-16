@@ -1,0 +1,18 @@
+#!/bin/bash -e
+
+case "$XT_MULTI" in
+*xtables-nft-multi)
+	;;
+*)
+	echo "skip $XT_MULTI"
+	exit 0
+	;;
+esac
+
+RULESET='*filter
+-A FORWARD --among-dst de:ad:0:be:ee:ff,c0:ff:ee:0:ba:be
+-A FORWARD --among-dst de:ad:0:be:ee:ff'
+
+$XT_MULTI ebtables-restore <<< "$RULESET"
+echo "$RULESET" | sed -e 's/-A/-D/' | $XT_MULTI ebtables-restore --noflush
+

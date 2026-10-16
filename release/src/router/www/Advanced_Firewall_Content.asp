@@ -381,7 +381,7 @@ function showfilter_lwlist(){
 
 	code +='<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="filter_lwlist_table">';
 	if(filter_lwlist_row.length == 1)
-		code +='<tr><td style="color:#FFCC00;" colspan="6"><#IPConnection_VSList_Norule#></td>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="6"><#IPConnection_VSList_Norule#></td>';
 	else{
 		for(var i = 1; i < filter_lwlist_row.length; i++){
 			code +='<tr id="row'+i+'">';
@@ -515,9 +515,9 @@ function updateDateTime(){
 							</div>
 						</div>
 
-		  				<div class="formfontdesc hint-color" style="color:#FFCC00;"><#FirewallConfig_display4_sectiondesc#></div>	
-		  				<div id="svc_hint_div" class="warning_desc" style="display:none;"><span onClick="location.href='Advanced_System_Content.asp?af=ntp_server0'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"><#General_x_SystemTime_syncNTP#></span></div>
-		  				<div id="timezone_hint_div" class="warning_desc" style="display:none;"><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"></span></div>
+		  				<div class="formfontdesc hint-color" style="color:var(--wrt-badge-warning-color,#FFCC00);"><#FirewallConfig_display4_sectiondesc#></div>	
+		  				<div id="svc_hint_div" class="warning_desc" style="display:none;"><span onClick="location.href='Advanced_System_Content.asp?af=ntp_server0'" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;cursor:pointer;"><#General_x_SystemTime_syncNTP#></span></div>
+		  				<div id="timezone_hint_div" class="warning_desc" style="display:none;"><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;cursor:pointer;"></span></div>
 
 
 						<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">

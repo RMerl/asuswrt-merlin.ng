@@ -331,3 +331,94 @@
 	margin-left: 5px;
 	margin-bottom: 10px;
 }
+
+
+/* ==================== UI4 overrides ====================
+   Scoped via [data-asuswrt-color][data-asuswrt-theme] — both attributes
+   are only co-set when running under UI4 (basic.js + state.js propagation).
+   Uses design tokens from color-table.css / wrt-ui-alias-tokens.css. */
+[data-asuswrt-color][data-asuswrt-theme] .fullScreen {
+	background-color: rgba(var(--surface-invert-rgb, 0, 0, 0), 0.5);
+	opacity: 1;
+	filter: none;
+}
+[data-asuswrt-color][data-asuswrt-theme] .createNewRule {
+	background-color: var(--surface-panel, #2B373B);
+	color: var(--text-primary);
+	border: 1px solid var(--border-subtle);
+	border-radius: 8px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+	padding: 24px;
+	width: 480px;
+	min-width: 360px;
+	max-width: calc(100vw - 32px);
+}
+[data-asuswrt-color][data-asuswrt-theme] .createNewRule .pureText {
+	color: var(--text-primary);
+	font-size: 14px;
+	font-weight: 500;
+}
+[data-asuswrt-color][data-asuswrt-theme] .createNewRule > .pureText:first-child {
+	font-size: 18px;
+	font-weight: 600;
+	margin-right: 32px;
+}
+[data-asuswrt-color][data-asuswrt-theme] .createNewRule .divisionLine {
+	background: var(--border-subtle);
+	height: 1px;
+	filter: none;
+	margin: 14px 0;
+}
+[data-asuswrt-color][data-asuswrt-theme] .createNewRule .inputText,
+[data-asuswrt-color][data-asuswrt-theme] .createNewRule .inputSelect,
+[data-asuswrt-color][data-asuswrt-theme] .createNewRule .inputTextAndPullArrow {
+	background-color: var(--surface-card);
+	color: var(--text-primary);
+	border: 1px solid var(--border-subtle);
+	border-radius: 4px;
+	height: 32px;
+	line-height: 30px;
+	padding-left: 8px;
+	font-family: inherit;
+	font-size: 13px;
+	box-sizing: border-box;
+}
+[data-asuswrt-color][data-asuswrt-theme] .createNewRule .inputText:focus,
+[data-asuswrt-color][data-asuswrt-theme] .createNewRule .inputSelect:focus {
+	outline: none;
+	border-color: var(--brand-primary, #1984d6);
+}
+[data-asuswrt-color][data-asuswrt-theme] .createNewRule .actionButtonFrame {
+	display: flex;
+	justify-content: flex-end;
+	gap: 12px;
+	float: none;
+	width: auto;
+}
+[data-asuswrt-color][data-asuswrt-theme] .createNewRule .actionButtonOK,
+[data-asuswrt-color][data-asuswrt-theme] .createNewRule .actionButtonCancel {
+	float: none;
+	height: 36px;
+	line-height: 36px;
+	padding: 0 20px;
+	width: auto;
+	min-width: 80px;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 500;
+}
+[data-asuswrt-color][data-asuswrt-theme] .createNewRule .actionButtonOK {
+	background-color: var(--brand-primary, #1984d6);
+	color: var(--text-on-emphasis, #ffffff);
+}
+[data-asuswrt-color][data-asuswrt-theme] .createNewRule .actionButtonCancel {
+	background-color: var(--surface-hover, transparent);
+	color: var(--text-primary);
+	border: 1px solid var(--border-subtle);
+}
+[data-asuswrt-color][data-asuswrt-theme] .createNewRule .hint {
+	color: var(--text-danger, #ef4444);
+}
+[data-asuswrt-color][data-asuswrt-theme] .createNewRule .confirm {
+	color: var(--brand-primary, #1984d6);
+}

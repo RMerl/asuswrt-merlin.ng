@@ -27,6 +27,33 @@ var bootinterval;
 var current_page = window.location.pathname.split("/").pop();
 var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
+// systime_millsec / boottime 是 state.js 裡 "<% uptime(); %>" 的快照，時間點是
+// 瀏覽器「上一次真的抓 state.js」的時刻。UI4 的 settings.html 殼裡重新進入本頁時
+// state.js 常常直接由快取回傳（帶 ETag 的 GET 會被 WebKit/Chrome 重用），時鐘與
+// 開機時間就會從那個舊快照開始跑。所以開始跑錶前先向 CGI 重新對時。
+// 僅 UI4 走這條路；舊 UI 每次進頁都是整頁載入，維持原本行為。
+function syncSystemTime(callback){
+	$.ajax({
+		url: '/appGet.cgi?hook=uptime()',
+		dataType: 'json',
+		cache: false,
+		success: function(res){
+			var uptimeStr_now = (res && res.uptime) ? res.uptime : "";
+			// 與 state.js 相同的位置解析：Ex "Wed, 29 Jul 2026 11:53:38 +0800(1234 secs since boot)"
+			// 去掉時區後綴，讓顯示的時間就是路由器的牆上時間（不受瀏覽器時區影響）。
+			var millsec_now = Date.parse(uptimeStr_now.substring(8,11) + " " + uptimeStr_now.substring(5,7) + " " +
+			                            uptimeStr_now.substring(17,25) + " " + uptimeStr_now.substring(12,16));
+			var boottime_now = parseInt(uptimeStr_now.substring(32,42));
+			if(!isNaN(millsec_now)) systime_millsec = millsec_now;
+			if(!isNaN(boottime_now)) boottime = boottime_now;
+		},
+		complete: function(){
+			// 對時失敗就沿用 state.js 的快照（原本行為），不要讓時鐘不動。
+			if(callback) callback();
+		}
+	});
+}
+
 function showclock(){
 	JS_timeObj.setTime(systime_millsec);
 	systime_millsec += 1000;
@@ -74,10 +101,20 @@ function showDST(){
 
 function initial(){
 	show_menu();
-	showclock();
-	showbootTime();
-	clockinterval = setInterval(showclock, 1000);
-	bootinterval = setInterval(showbootTime, 1000);
+	if(isSupport("UI4")){
+		syncSystemTime(function(){
+			showclock();
+			showbootTime();
+			clockinterval = setInterval(showclock, 1000);
+			bootinterval = setInterval(showbootTime, 1000);
+		});
+	}
+	else{
+		showclock();
+		showbootTime();
+		clockinterval = setInterval(showclock, 1000);
+		bootinterval = setInterval(showbootTime, 1000);
+	}
 	showDST();
 	document.getElementById('textarea').scrollTop = 9999999;//make Scroll_y bottom
 	setTimeout(get_log_data, 100);
@@ -227,8 +264,8 @@ function get_log_data(){
 											<tr>
 												<th width="20%"><#General_x_SystemTime_itemname#></th>
 												<td>
-														<span id="system_time" class="devicepin" style="color:#FFFFFF;"></span>
-													<br><span id="dstzone" style="display:none;margin-left:5px;color:#FFFFFF;"></span>
+														<span id="system_time" class="devicepin" style="color:var(--wrt-text-color,#FFFFFF);"></span>
+													<br><span id="dstzone" style="display:none;margin-left:5px;color:var(--wrt-text-color,#FFFFFF);"></span>
 												</td>
 											</tr>
 											<tr>
@@ -297,7 +334,7 @@ function get_log_data(){
 												</form>
 											</td>
 											<td width="50%" align="left">
-												<form method="post" name="form2" action="syslog.txt">
+												<form method="post" name="form2" action="/syslog.txt">
 													<input type="submit" onClick="onSubmitCtrl(this, ' Save ');" value="<#CTL_onlysave#>" class="button_gen">
 												</form>
 											</td>

@@ -192,10 +192,17 @@ var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Fa
 var faq_href3 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=127";
 var orig_mtu = '<% nvram_get("wan_mtu"); %>';
 var default_wan_mtu = httpApi.nvramDefaultGet(["wan_mtu"]).wan_mtu;
+var wan_mtu_max = 1500;
+var wan_pppoe_mtu_max = (isSupport("mtk") || isSupport("qca") || !isSupport("no_jumbo_frame")) ? 1500 : 1492;
+var mtu_last_changed = "";
 
 const eth_wan_list = httpApi.hookGet("get_ethernet_wan_list", true);
 
 function initial(){
+	document.getElementById("wan_mtu_range_hint").textContent = "1280 - " + wan_mtu_max;
+	$(document).on("input", "input[name='wan_mtu']", function() { mtu_last_changed = "wan_mtu"; });
+	$(document).on("input", "input[name='wan_pppoe_mtu']", function() { mtu_last_changed = "wan_pppoe_mtu"; });
+	$(document).on("input", "input[name='wan_pppoe_mru']", function() { mtu_last_changed = "wan_pppoe_mru"; });
 	if (dnspriv_support) {
 		if (dnsfilter_support)
 			var dnsfilter_enable = '<% nvram_get("dnsfilter_enable_x"); %>';
@@ -1034,21 +1041,26 @@ function validForm(){
 	}
 	
 	if(wan_type == "pppoe"){
-		if(!validator.numberRange(document.form.wan_pppoe_mtu, 128, 1492)
-				|| !validator.numberRange(document.form.wan_pppoe_mru, 128, 1492))
+		if(!validator.numberRange(document.form.wan_pppoe_mtu, 128, wan_pppoe_mtu_max)
+				|| !validator.numberRange(document.form.wan_pppoe_mru, 128, wan_pppoe_mtu_max))
 			return false;
 
-		/* reset wan_mtu to default value */
-		if($("#wan_mtu_tr").css("display") != "none"){
-			if(document.form.wan_mtu.value != "") {
-				if(parseInt(document.form.wan_pppoe_mtu.value) + 8 > parseInt(document.form.wan_mtu.value)){
+		/* adjust mtu pair based on which field the user last changed */
+		if(document.form.wan_mtu.value != "") {
+			if(mtu_last_changed == "wan_mtu"){
+				if((parseInt(document.form.wan_pppoe_mtu.value) + 8 > parseInt(document.form.wan_mtu.value)) || 
+				   (parseInt(document.form.wan_pppoe_mru.value) + 8 > parseInt(document.form.wan_mtu.value))){
 					document.form.wan_pppoe_mtu.value = parseInt(document.form.wan_mtu.value) - 8;
+					document.form.wan_pppoe_mru.value = document.form.wan_pppoe_mtu.value;
 				}
 			}
-		}
-		else if(document.form.wan_mtu.value != default_wan_mtu){
-			document.form.wan_mtu.value = default_wan_mtu;
-			document.form.wan_mtu.disabled = false;
+			else{
+				var max_pppoe = Math.max(parseInt(document.form.wan_pppoe_mtu.value), parseInt(document.form.wan_pppoe_mru.value));
+				if(max_pppoe + 8 > parseInt(document.form.wan_mtu.value)){
+					document.form.wan_mtu.value = max_pppoe + 8;
+					document.form.wan_mtu.disabled = false;
+				}
+			}
 		}
 	
 		if(!validator.string(document.form.wan_pppoe_service)
@@ -1131,8 +1143,8 @@ function validForm(){
 		 if(!validator.string(document.form.wan_heartbeat_x))
 		 	return false;
 
-	if($("#wan_mtu_tr").css("display") != "none" && (orig_mtu != "" || document.form.wan_mtu.value.length > 0)) {
-		if(!validator.numberRange(document.form.wan_mtu, 1280, 1500)) {
+	if(wan_type != "pppoe" && $("#wan_mtu_tr").css("display") != "none" && (orig_mtu != "" || document.form.wan_mtu.value.length > 0)) {
+		if(!validator.numberRange(document.form.wan_mtu, 1280, wan_mtu_max)) {
 			document.form.wan_mtu.focus();
 			document.form.wan_mtu.select();
 			return false;
@@ -1212,7 +1224,9 @@ function change_wan_type(wan_type, flag){
 		change_wan_dhcp_enable(flag);
 	else
 		change_wan_dhcp_enable(1);
-	
+
+	document.form.wan_mtu.value = orig_mtu;
+
 	if(wan_type == "pppoe"){
 		showhide("wan_DHCP_opt",0);
 		inputCtrl(document.form.wan_vendorid, 0);
@@ -1289,7 +1303,7 @@ function change_wan_type(wan_type, flag){
 			document.form.bond_wan_radio.value = "0";
 		}
 
-		inputCtrl(document.form.wan_mtu, 1);
+		inputCtrl(document.form.wan_mtu, 0);
 	}
 	else if(wan_type == "l2tp"){
 		showhide("wan_DHCP_opt",0);
@@ -1329,6 +1343,7 @@ function change_wan_type(wan_type, flag){
 		}
 
 		inputCtrl(document.form.wan_mtu, 1);
+		if(parseInt(document.form.wan_mtu.value) > 1500) document.form.wan_mtu.value = 1500;
 	}
 	else if(wan_type == "static"){
 		showhide("wan_DHCP_opt",0);
@@ -1385,6 +1400,7 @@ function change_wan_type(wan_type, flag){
 		}
 
 		inputCtrl(document.form.wan_mtu, 1);
+		if(parseInt(document.form.wan_mtu.value) > 1500) document.form.wan_mtu.value = 1500;
 	}
 	else if(Softwire46_support && (wan_type == "lw4o6" || wan_type == "map-e" || wan_type == "v6plus" || wan_type == "ocnvc" || wan_type == "dslite" || wan_type == "v6opt")){
 		showhide("wan_DHCP_opt",0);
@@ -1430,6 +1446,7 @@ function change_wan_type(wan_type, flag){
 		}
 
 		inputCtrl(document.form.wan_mtu, 1);
+		if(parseInt(document.form.wan_mtu.value) > 1500) document.form.wan_mtu.value = 1500;
 	}
 	else{	// Automatic IP or 802.11 MD or ""		
 		showhide("wan_DHCP_opt",1);
@@ -1490,6 +1507,7 @@ function change_wan_type(wan_type, flag){
 		}
 
 		inputCtrl(document.form.wan_mtu, 1);
+		if(parseInt(document.form.wan_mtu.value) > 1500) document.form.wan_mtu.value = 1500;
 	}
 }
 
@@ -1800,7 +1818,7 @@ function show_dnspriv_rulelist(){
 
 	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table" id="dnspriv_rulelist_table">';
 	if(dnspriv_rulelist_row.length == 1)
-		code +='<tr><td style="color:#FFCC00;" colspan="5"><#IPConnection_VSList_Norule#></td></tr>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="5"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		for(var i = 1; i < dnspriv_rulelist_row.length; i++){
 			code +='<tr id="row'+i+'">';
@@ -2653,7 +2671,7 @@ function get_default_wan_name(){
 								<td>
 									<input type="radio" name="bond_wan_radio" class="input" value="1" onclick="return change_common_radio(this, 'LANHostConfig', 'bond_wan', '1')" <% nvram_match("bond_wan", "1", "checked"); %>><#checkbox_Yes#>
 									<input type="radio" name="bond_wan_radio" class="input" value="0" onclick="return change_common_radio(this, 'LANHostConfig', 'bond_wan', '0')" <% nvram_match("bond_wan", "0", "checked"); %>><#checkbox_No#>
-									<div id="wanAgg_desc" style="color:#FFCC00;"><#WANAggregation_desc#></div>
+									<div id="wanAgg_desc" style="color:var(--wrt-badge-warning-color,#FFCC00);"><#WANAggregation_desc#></div>
 									<select id="wanports_bond_menu" class="input_option" style="display:none;" name="wanports_bond" onchange="change_wanAggre_desc();" disabled>
 										<option value="0 1" <% find_word("wanports_bond", "1", "selected"); %>>LAN 1</option>
 										<option value="0 2" <% find_word("wanports_bond", "2", "selected"); %>>LAN 2</option>
@@ -3094,7 +3112,7 @@ function get_default_wan_name(){
         	<tr>
           	<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,15);"><#PPPConnection_x_HostNameForISP_itemname#></a></th>
           	<td>
-          		<div><input type="text" name="wan_hostname" class="input_32_table" maxlength="32" value="<% nvram_get("wan_hostname"); %>" onkeypress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off"><br/><span id="alert_msg1" style="color:#FC0;"></span></div>
+          		<div><input type="text" name="wan_hostname" class="input_32_table" maxlength="32" value="<% nvram_get("wan_hostname"); %>" onkeypress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off"><br/><span id="alert_msg1" style="color:var(--wrt-badge-warning-color,#FFCC00);"></span></div>
           	</td>
         	</tr>
         	<tr>
@@ -3136,7 +3154,7 @@ function get_default_wan_name(){
 				<#PPPConnection_x_PPPoEMTU_itemname#>
 			</th>
 			<td>
-				<input type="text" maxlength="5" name="wan_mtu" class="input_6_table" value="<% nvram_get("wan_mtu"); %>" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"/>&nbsp;1280 - 1500
+				<input type="text" maxlength="5" name="wan_mtu" class="input_6_table" value="<% nvram_get("wan_mtu"); %>" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"/>&nbsp;<span id="wan_mtu_range_hint"></span>
 			</td>
 		</tr>
 		</table>

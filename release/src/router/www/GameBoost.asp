@@ -30,7 +30,7 @@
 }
 body{
 	margin: 0;
-	color:#FFF;
+	color:var(--wrt-text-color,#FFFFFF);
 }
 
 .GB_background{
@@ -52,12 +52,12 @@ body{
 .function_name{
 	padding: 5px 10px;
 	font-size: 20px;
-	color: #FFCC66;
+	color: var(--wrt-badge-warning-color, #FFCC66);
 }
 
 .function_desc{
 	font-size: 16px;
-	color: #949393;
+	color: var(--wrt-text-muted-color, #949393);
 	padding-left:10px;
 	margin: 15px 0;
 }
@@ -152,18 +152,18 @@ body{
 }
 .btn{
 	background-color: #990000;
-	color: #EBE8E8;
+	color: var(--wrt-text-muted-color, #EBE8E8);
 }
 .btn:hover{
 	background-color: #D30606;
-	color: #FFF;
+	color: var(--wrt-text-color,#FFFFFF);
 }
 
 #gameList_block{
 	position: absolute;
 	width: 700px;
 	height: 600px;
-	background-color: #444f53;
+	background-color: var(--surface-panel, #444f53);
 	z-index: 199;
 	padding: 12px 18px;
 	overflow-y: auto;
@@ -360,7 +360,7 @@ function genGameList(){
         </tr>`;
 		
 	if (list_array == '') {
-        code += `<tr><td colspan="2" style="color:#FFCC00;"><#IPConnection_VSList_Norule#></td></tr>`;
+        code += `<tr><td colspan="2" style="color:var(--wrt-badge-warning-color,#FFCC00);"><#IPConnection_VSList_Norule#></td></tr>`;
     }
 	else{
 		for (let i = 0; i < list_array.length; i++) {
@@ -787,7 +787,7 @@ function showThirdPartyPolicy(party){
 											<td align="left">
 
 												<div style="display:table-cell;background:url('/images/New_ui/game.svg');width:77px;height:77px;background-size: 100%;"></div>
-												<div class="formfonttitle" style="display:table-cell;font-size:26px;font-weight:bold;color:#EBE8E8;vertical-align:middle">Game</div>
+												<div class="formfonttitle" style="display:table-cell;font-size:26px;font-weight:bold;color:var(--wrt-text-muted-color,#EBE8E8);vertical-align:middle">Game</div>
 											</td>
 										</tr>
 									</table>
@@ -866,8 +866,8 @@ function showThirdPartyPolicy(party){
 															<a id="android_link" href="https://play.google.com/store/apps/details?id=com.asus.aihome" target="_blank">
 																<div style="width:124px;height:36px;background:url('images/googleplay.png') no-repeat;background-size:100%;"></div>
 															</a>
-															<a id="android_cn_link" style="display:none" href="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/ASUSRouter_Android_Release.apk" target="_blank">
-																<div style="width:124px;height:36px;border:1px solid #BDBDBD;border-radius: 6px;text-align: center;line-height: 36px;font-size:20px;">Android</div>
+															<a id="android_cn_link" style="display:none" href="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/ASUSRouter_Android_Release.apk" target="_blank" rel="noreferrer">
+																<div style="width:124px;height:36px;border:1px solid var(--border-default, #BDBDBD);border-radius: 6px;text-align: center;line-height: 36px;font-size:20px;">Android</div>
 															</a>
 														</div>
 														<div style="margin: 0 12px">

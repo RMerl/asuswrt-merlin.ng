@@ -29,12 +29,12 @@
 	-moz-border-radius: 5px;
 	border-radius: 5px;
 	z-index:500;
-	background-color:#2B373B;
+	background-color:var(--surface-panel, #2B373B);
 	margin-left: 34%;
 	margin-top: 10px;
 	width:650px;
 	display:none;
-	box-shadow: 3px 3px 10px #000;
+	box-shadow: var(--wrt-card-shadow, 3px 3px 10px #000);
 }
 </style>
 
@@ -155,7 +155,7 @@ function show_subnet_list(){
 	code +='<table width="98%" align="center" cellpadding="4" cellspacing="0"  class="list_table" id="subnet_list_table">';
 
 	if(subnet_rulelist_array.length == 0)
-		code +='<tr><td style="color:#FFCC00;" colspan="8">No subnet rules</td>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="8">No subnet rules</td>';
 	else{
 		Object.keys(subnet_rulelist_array).forEach(function(key){
 			code += '<tr id="row'+key+'">';
@@ -719,7 +719,7 @@ function showdhcp_staticlist(){
 	var clientListEventData = [];
 	code += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="dhcp_staticlist_table">';
 	if(Object.keys(manually_dhcp_list_array).length == 0)
-		code += '<tr><td style="color:#FFCC00;"><#IPConnection_VSList_Norule#></td></tr>';
+		code += '<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);"><#IPConnection_VSList_Norule#></td></tr>';
 	else {
 		//user icon
 		var userIconBase64 = "NoIcon";
@@ -891,7 +891,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	if(flag == 1){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color="#FFCC00";
+		childsel.style.color="var(--wrt-badge-warning-color,#FFCC00)";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#LANHostConfig_ManualDHCPMacaddr_itemdesc#>";
 		document.getElementById("check_mac").style.display = "";
@@ -901,7 +901,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	}else if(flag == 2){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color="#FFCC00";
+		childsel.style.color="var(--wrt-badge-warning-color,#FFCC00)";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#IPConnection_x_illegal_mac#>";
 		document.getElementById("check_mac").style.display = "";

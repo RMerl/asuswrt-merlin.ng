@@ -1,0 +1,29 @@
+ebtables-translate -A FORWARD -p ip6 --ip6-src ! dead::beef/64 -j ACCEPT
+nft 'add rule bridge filter FORWARD ip6 saddr != dead::/64 counter accept'
+
+ebtables-translate -A FORWARD -p ip6 ! --ip6-dst dead:beef::/64 -j ACCEPT
+nft 'add rule bridge filter FORWARD ip6 daddr != dead:beef::/64 counter accept'
+
+ebtables-translate -I FORWARD -p ip6 --ip6-dst f00:ba::
+nft 'insert rule bridge filter FORWARD ip6 daddr f00:ba:: counter'
+
+ebtables-translate -I OUTPUT -o eth0 -p ip6 --ip6-tclass 0xff
+nft 'insert rule bridge filter OUTPUT oifname "eth0" ip6 dscp 0x3f counter'
+
+ebtables-translate -A FORWARD -p ip6 --ip6-proto tcp --ip6-dport 22
+nft 'add rule bridge filter FORWARD ether type ip6 tcp dport 22 counter'
+
+ebtables-translate -A FORWARD -p ip6 --ip6-proto udp --ip6-sport 1024:65535
+nft 'add rule bridge filter FORWARD ether type ip6 udp sport 1024-65535 counter'
+
+ebtables-translate -A FORWARD -p ip6 --ip6-proto 253
+nft 'add rule bridge filter FORWARD ether type ip6 meta l4proto 253 counter'
+
+ebtables-translate -A FORWARD -p ip6  --ip6-protocol icmpv6 --ip6-icmp-type "echo-request"
+nft 'add rule bridge filter FORWARD icmpv6 type 128 counter'
+
+ebtables-translate -A FORWARD -p ip6 --ip6-protocol icmpv6  --ip6-icmp-type 1/1
+nft 'add rule bridge filter FORWARD icmpv6 type 1 icmpv6 code 1 counter'
+
+ebtables-translate -A FORWARD -p ip6 --ip6-protocol icmpv6 ! --ip6-icmp-type 1:10
+nft 'add rule bridge filter FORWARD icmpv6 type != 1-10 counter'

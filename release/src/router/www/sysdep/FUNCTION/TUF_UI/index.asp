@@ -1735,13 +1735,11 @@ function popupEditBlock(clientObj){
 					connectModeTip = "<#Radio#>: <#PASS_score4#>\n";
 					break;
 			}
-			if(stainfo_support) {
-				if(clientObj.curTx != "")
-					connectModeTip += "Tx Rate: " + clientObj.curTx + "\n";
-				if(clientObj.curRx != "")
-					connectModeTip += "Rx Rate: " + clientObj.curRx + "\n";
-				connectModeTip += "<#Access_Time#>: " + clientObj.wlConnectTime + "";
-			}
+			if(clientObj.curTx != "")
+				connectModeTip += "Tx Rate: " + clientObj.curTx + "\n";
+			if(clientObj.curRx != "")
+				connectModeTip += "Rx Rate: " + clientObj.curRx + "\n";
+			connectModeTip += "<#Access_Time#>: " + clientObj.wlConnectTime + "";
 		}
 
 		if(!isSwMode("MB")){
@@ -2157,7 +2155,7 @@ function showClientIcon() {
 	var custom_usericon_length = custom_usericon_row.length;
 	code +='<table width="95%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="usericon_table">';
 	if(custom_usericon_length == 1) {
-		code +='<tr><td style="color:#FFCC00;" colspan="4"><#IPConnection_VSList_Norule#></td></tr>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="4"><#IPConnection_VSList_Norule#></td></tr>';
 		document.getElementById('edit_usericon_block').style.height = "145px";
 	}
 	else {
@@ -2194,7 +2192,7 @@ function delClientIcon(rowdata) {
 	if(trCount == 0) {
 		var code = "";
 		code +='<table width="95%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="usericon_table">';
-		code +='<tr><td style="color:#FFCC00;" colspan="4"><#IPConnection_VSList_Norule#></td></tr>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="4"><#IPConnection_VSList_Norule#></td></tr>';
 		code +='</table>';
 		document.getElementById('edit_usericon_block').style.height = "145px";
 		document.getElementById("usericon_block").innerHTML = code;
@@ -2807,7 +2805,7 @@ if (isSupport("AURA_SCHED")) {
 							<strong id="rssi_status" class="index_status" style="font-size:14px;"></strong>
 						</div>
 						<div id="wanAggr_div" style="margin-top:5px;display:none;">
-							<span style="font-size:14px;font-family: Verdana, Arial, Helvetica, sans-serif; color: #FFCC00;">WAN Aggregation:</span>
+							<span style="font-size:14px;font-family: Verdana, Arial, Helvetica, sans-serif; color: var(--wrt-badge-warning-color,#FFCC00);">WAN Aggregation:</span>
 							<strong id="wan_bonding_status" class="index_status" style="font-size:14px;"></strong>
 						</div>
 					</td>

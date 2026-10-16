@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+
+[[ $XT_MULTI == *xtables-nft-multi ]] || { echo "skip $XT_MULTI"; exit 0; }
+
+comment1="foo bar"
+comment2="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+for ipt in iptables ip6tables; do
+	for comment in "$comment1" "$comment2"; do
+		$XT_MULTI $ipt -A INPUT -m comment --comment "$comment" -j ACCEPT
+		$XT_MULTI $ipt -D INPUT -m comment --comment "$comment" -j ACCEPT
+	done
+done

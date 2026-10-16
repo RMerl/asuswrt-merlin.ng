@@ -10,8 +10,9 @@
 
 #include <dirent.h>
 
-
 #include <shared.h>
+
+#include <fcntl.h>
 
 #include "api.h"
 #include "log.h"
@@ -76,21 +77,60 @@ void getTimeInMillis(char* timestamp_str) {
 }
 
 #ifdef RTCONFIG_AMAS_CENTRAL_CONTROL
-void backup_cfg_mnt() {
 
+static int write_first_n_lines(const char *tmp_path, const char *out_path, int n) {
+    FILE *r = fopen(tmp_path, "r");
+    if (!r) return -1;
+
+    int outfd = open(out_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (outfd < 0) {
+        fclose(r);
+        return -1;
+    }
+
+    char line[1024]={0};
+    int cnt = 0;
+    while (cnt < n && fgets(line, sizeof(line), r)) {
+        size_t len = strlen(line);
+        ssize_t w = write(outfd, line, len);
+        (void)w;
+        cnt++;
+    }
+
+    close(outfd);
+    fclose(r);
+    return 0;
+}
+
+void backup_cfg_mnt() {
     FILE *fp = NULL;
 
-    char cmd[128] = {0}, stat_file[128] = {0};
+    char stat_file[128] = {0};
     char line_buf_s[300], filename[MAX_FILENAME_LEN], file_path[MAX_FILEPATH_LEN];
     char *line_buf = NULL;
 
     struct stat st = {0};
     int file_update_time = 0;
 
-    snprintf(cmd, sizeof(cmd), "ls -RAlet %s |  head -n 2 > %s", AMASCNTRL_BACKUP_PATH, LS_LAST_TIME);
-    system(cmd);
+    char tmpl[] = "/tmp/ls_tmp_XXXXXX";
+    int fd = mkstemp(tmpl);
+    if (fd < 0) {
+        return;
+    }
+    close(fd);
 
-    //Cdbg(API_DBG, "cmd = %s", cmd);
+    int rc = safe_do_system_to_file(tmpl, 0, "ls -RAlet %s", AMASCNTRL_BACKUP_PATH);
+    if (rc != 0) {
+        unlink(tmpl);
+        return;
+    }
+
+    if (write_first_n_lines(tmpl, LS_LAST_TIME, 2) != 0) {
+        unlink(tmpl);
+        return;
+    }
+
+    unlink(tmpl);
 
     int i = 0;
     if ((fp = fopen(LS_LAST_TIME, "r"))) {
@@ -99,11 +139,24 @@ void backup_cfg_mnt() {
             i++;
             // Cdbg(API_DBG, "i = %d, line_buf = %s", i, line_buf);
             if(i == 1) {
-                sscanf(line_buf, "%[^:]", file_path);
+                if (sscanf(line_buf, "%[^:]", file_path) != 1) {
+                    fclose(fp);
+                    unlink(LS_LAST_TIME);
+                    return;
+                }
             } 
             else if(i == 2) {
-                sscanf(line_buf, "%*s%*s%*s%*s%*s%*s%*s%*s%*s%*s%s", filename);
-                snprintf(stat_file, sizeof(stat_file), "%s/%s",  file_path,  filename);
+                if (sscanf(line_buf, "%*s%*s%*s%*s%*s%*s%*s%*s%*s%*s%s", filename) != 1) {
+                    fclose(fp);
+                    unlink(LS_LAST_TIME);
+                    return;
+                }
+
+                if (snprintf(stat_file, sizeof(stat_file), "%s/%s", file_path, filename) >= sizeof(stat_file)) {
+                    fclose(fp);
+                    unlink(LS_LAST_TIME);
+                    return;
+                }
 
                 if (lstat(stat_file, &st) == 0) {
                     file_update_time = st.st_mtim.tv_sec;
@@ -117,6 +170,8 @@ void backup_cfg_mnt() {
         }
 
         fclose(fp);
+
+        unlink(LS_LAST_TIME);
     }
 }
 #endif  // RTCONFIG_AMAS_CENTRAL_CONTROL

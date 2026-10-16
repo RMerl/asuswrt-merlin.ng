@@ -1,0 +1,3 @@
+:PREROUTING,OUTPUT
+*raw
+-j NOTRACK;=;OK

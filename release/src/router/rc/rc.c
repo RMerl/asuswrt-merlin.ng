@@ -107,7 +107,7 @@ double wl_get_txpwr_target_max(char *name);
 double get_wifi_maxpower(int target_unit);
 #endif
 
-#if defined(RTCONFIG_LIB_CODB)
+#if defined(RTCONFIG_LIB_CODB) && defined(RTCONFIG_FU_TEST)
 /* codb_utils.h is not in $(STAGEDIR) directory, declare function prototype instead. */
 extern int codb_test();
 #endif
@@ -1140,9 +1140,9 @@ static int rctest_main(int argc, char *argv[])
 		if(nvram_match("acscli2_acs_restart", "1") && !nvram_match("force_restart_acsd2", "1")) {
 			foreach (word, _acs_restart_ifnames, next) {
 				snprintf(cmd, sizeof(cmd), "acs_cli2 -i %s acs_restart", word);
+				safe_do_system("acs_cli2 -i %s acs_restart", word);
 				avbl_reset_exclvalid(word);
 				_dprintf("%s, do %s\n", __func__, cmd);
-				system(cmd);
 				sleep(1);
 			}
 		}
@@ -1254,7 +1254,7 @@ static int rctest_main(int argc, char *argv[])
 		}
 	}
 #endif
-#if defined(RTCONFIG_LIB_CODB)
+#if defined(RTCONFIG_LIB_CODB) && defined(RTCONFIG_FU_TEST)
 	else if (strcmp(argv[1], "codb_test")==0) {
 		codb_test();
 #if 0		
@@ -1302,173 +1302,6 @@ static int rctest_main(int argc, char *argv[])
 	}
 #endif
 #if defined(RTCONFIG_TUNNEL) && defined(RTCONFIG_ACCOUNT_BINDING)
-	else if (strcmp(argv[1], "aae_refresh_userticket")==0) {
-		char event[AAE_MAX_IPC_PACKET_SIZE];
-		char out[AAE_MAX_IPC_PACKET_SIZE];
-		snprintf(event, sizeof(event), AAE_DDNS_GENERIC_MSG, AAE_EID_DDNS_REFRESH_TOKEN);
-		aae_sendIpcMsgAndWaitResp(MASTIFF_IPC_SOCKET_PATH, event, strlen(event), out, sizeof(out), 10);
-		json_object *root = NULL;
-		json_object *ddnsObj = NULL;
-		json_object *eidObj = NULL;
-		json_object *stsObj = NULL;
-		root = json_tokener_parse((char *)out);
-		json_object_object_get_ex(root, AAE_DDNS_PREFIX, &ddnsObj);
-		json_object_object_get_ex(ddnsObj, AAE_IPC_EVENT_ID, &eidObj);
-		json_object_object_get_ex(ddnsObj, AAE_IPC_STATUS, &stsObj);
-		if (!ddnsObj || !eidObj || !stsObj)
-			printf("Failed to aae_refresh_userticket\n");
-		else {
-			int eid = json_object_get_int(eidObj);
-			const char *status = json_object_get_string(stsObj);
-			if ((eid == AAE_EID_DDNS_REFRESH_TOKEN) && (!strcmp(status, "0")))
-				printf("Success to aae_refresh_userticket\n");
-			else
-				printf("Failed to aae_refresh_userticket\n");
-		}
-		json_object_put(root);
-	}
-	else if (strcmp(argv[1], "aae_refresh_deviceticket")==0) {
-		char event[AAE_MAX_IPC_PACKET_SIZE];
-		char out[AAE_MAX_IPC_PACKET_SIZE];
-		snprintf(event, sizeof(event), AAE_NTC_GENERIC_MSG, AAE_EID_NTC_REFRESH_DEVICE_TICKET);
-		aae_sendIpcMsgAndWaitResp(MASTIFF_IPC_SOCKET_PATH, event, strlen(event), out, sizeof(out), 10);
-		json_object *root = NULL;
-		json_object *ntcObj = NULL;
-		json_object *eidObj = NULL;
-		json_object *stsObj = NULL;
-		root = json_tokener_parse((char *)out);
-		json_object_object_get_ex(root, AAE_NTC_PREFIX, &ntcObj);
-		json_object_object_get_ex(ntcObj, AAE_IPC_EVENT_ID, &eidObj);
-		json_object_object_get_ex(ntcObj, AAE_IPC_STATUS, &stsObj);
-		if (!ntcObj || !eidObj || !stsObj)
-			printf("Failed to aae_refresh_deviceticket\n");
-		else {
-			int eid = json_object_get_int(eidObj);
-			const char *status = json_object_get_string(stsObj);
-			if ((eid == AAE_EID_NTC_REFRESH_DEVICE_TICKET) && (!strcmp(status, "0")))
-				printf("Success to aae_refresh_deviceticket\n");
-			else
-				printf("Failed to aae_refresh_deviceticket\n");
-		}
-		json_object_put(root);
-	}
-	else if (strcmp(argv[1], "aae_send_payload2")==0) {
-		char event[AAE_MAX_IPC_PACKET_SIZE];
-		char out[AAE_MAX_IPC_PACKET_SIZE];
-		snprintf(event, sizeof(event), AAE_HTTPD_PAYLOAD2_MSG, AAE_EID_HTTPD_PAYLOAD2, "{\"oauth_dm_cusid\":\"45a008e300c4e1a7739ac60e14da27854e4c6d6774475be258e7f64e8db33b79\", \"mobile_deviceid\":\"8588309ead48e0a818d3d552c74ef14e\", \"dm_ticket\":\"test\"}");
-		aae_sendIpcMsgAndWaitResp(MASTIFF_IPC_SOCKET_PATH, event, strlen(event), out, sizeof(out), 5);
-		json_object *root = NULL;
-		json_object *httpdObj = NULL;
-		json_object *eidObj = NULL;
-		json_object *stsObj = NULL;
-		root = json_tokener_parse((char *)out);
-		json_object_object_get_ex(root, AAE_HTTPD_PREFIX, &httpdObj);
-		json_object_object_get_ex(httpdObj, AAE_IPC_EVENT_ID, &eidObj);
-		json_object_object_get_ex(httpdObj, AAE_IPC_STATUS, &stsObj);
-		if (!httpdObj || !eidObj || !stsObj)
-			printf("Failed to aae_send_payload2\n");
-		else {
-			int eid = json_object_get_int(eidObj);
-			const char *status = json_object_get_string(stsObj);
-			if ((eid == AAE_EID_HTTPD_PAYLOAD2) && (!strcmp(status, "0")))
-				printf("Success to aae_send_payload2\n");
-			else
-				printf("Failed to aae_send_payload2\n");
-		}
-		json_object_put(root);
-	}
-	else if (strcmp(argv[1], "aae_account_reg")==0) {
-		char event[AAE_MAX_IPC_PACKET_SIZE];
-		char out[AAE_MAX_IPC_PACKET_SIZE];
-		snprintf(event, sizeof(event), AAE_HTTPD_ACCOUNT_REG_MSG, AAE_EID_HTTPD_ACCOUNT_REG, "{\"oauth_type\":\"GOOGLE\", \"username\":\"gemini.plus0668@gmail.com\", \"password\":\"eyJhbGciOiJSUzI1NiIsImtpZCI6IjM4ZjM4ODM0NjhmYzY1OWFiYjQ0NzVmMzYzMTNkMjI1ODVjMmQ3Y2EiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI1Mjg3NTcxMzYzNC1wY245ODRwN3QwMmJjaGlkZGNhdWw4cjFiZ3YwcGkzZy5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsImF1ZCI6IjUyODc1NzEzNjM0LXA3bGs5OWViaTM5aWNta2FhMDdrdjdmcjhyMnU0MzZnLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwic3ViIjoiMTEzNjUxMjYyNzk3MjIyNzc1NzY3IiwiZW1haWwiOiJnZW1pbmkucGx1czA2NjhAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsIm5hbWUiOiJKZXJyeSBMaW4iLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUFUWEFKeS1tMUNCTi1QS3N1YS00Q0EzWXJiQWgtbmdSM0s3YTlfNXBPMG89czk2LWMiLCJnaXZlbl9uYW1lIjoiSmVycnkiLCJmYW1pbHlfbmFtZSI6IkxpbiIsImxvY2FsZSI6InpoLVRXIiwiaWF0IjoxNjUzOTc5NDIxLCJleHAiOjE2NTM5ODMwMjF9.D-ttK5G9PcdEjTR1-7C-TaUEaIeXHM3kyQBjpFNAjRD67dQrDA_Slu13ZEGsADQ_F7NARIbCGvxVj6Ko0giHZBLPalssIDmn4mebegIsppt53X9ZJczVpzDth9_zrzkAMjfiHnl6_lTH2WBktQYG_VDosUh-YPI51_TUeVojB7pVYBdre5dHZ9uW6Mt5CFwPQhesnziTQBIoaT8_8n07ehClcT8SOfkN8ZYDbgHSJYLPAnSG8cLrRH-MhyS8EECyGUEGhQWQ45saFTtdhfSZ3GoeEl6dpaRAacLd8XIJ6o855mP2eOD8ZnZtDi8JeX8lQXxU0rl_XbPrmF5AsmbC0Q\"}");
-		aae_sendIpcMsgAndWaitResp(MASTIFF_IPC_SOCKET_PATH, event, strlen(event), out, sizeof(out), 10);
-		printf("out=%s, out len=%lu\n", out, sizeof(out));
-		json_object *root = NULL;
-		json_object *httpdObj = NULL;
-		json_object *eidObj = NULL;
-		json_object *stsObj = NULL;
-		json_object *accountregObj = NULL;
-		json_object *cusidObj = NULL;
-		json_object *refreshticketObj = NULL;
-		json_object *userticketObj = NULL;
-		root = json_tokener_parse((char *)out);
-		json_object_object_get_ex(root, AAE_HTTPD_ACCOUNT_REG_PREFIX, &httpdObj);
-		if (httpdObj) {
-			json_object_object_get_ex(httpdObj, AAE_IPC_EVENT_ID, &eidObj);
-			json_object_object_get_ex(httpdObj, AAE_IPC_STATUS, &stsObj);
-			json_object_object_get_ex(httpdObj, AAE_HTTPD_ACCOUNT_REG_PREFIX, &accountregObj);
-			if (eidObj && stsObj && accountregObj) {
-				json_object_object_get_ex(accountregObj, OAUTH_CUSID, &cusidObj);
-				json_object_object_get_ex(accountregObj, OAUTH_REFRESH_TICKET, &refreshticketObj);
-				json_object_object_get_ex(accountregObj, OAUTH_USER_TICKET, &userticketObj);
-
-				int eid = json_object_get_int(eidObj);
-				const char *status = json_object_get_string(stsObj);
-				if ((eid == AAE_EID_HTTPD_ACCOUNT_REG) && (!strcmp(status, "0"))) {
-					const char *cusid = json_object_get_string(cusidObj);
-					const char *refresh_ticket = json_object_get_string(refreshticketObj);
-					const char *user_ticket = json_object_get_string(userticketObj);
-					printf("Success to aae_account_reg, cusid=%s, refresh_ticket=%s, user_ticket=%s\n", cusid, refresh_ticket, user_ticket);
-					json_object_put(root);
-					return 0;
-				}	
-			}
-		}
-		
-		json_object_put(root);
-
-		printf("Failed to aae_account_reg\n");
-	}
-	else if (strcmp(argv[1], "aae_fbwifi2_reg")==0) {
-		char event[AAE_MAX_IPC_PACKET_SIZE];
-		char out[AAE_MAX_IPC_PACKET_SIZE];
-		snprintf(event, sizeof(event), AAE_HTTPD_FBWIFI2_REG_MSG, AAE_EID_HTTPD_FBWIFI2_REG, "{\"devicename\":\"testRouter\", \"hw_version\":\"1.0.0\", \"sw_version\":\"1.0.0\", \"bssids\":[\"04:42:1a:6b:50:00\",\"04:42:1a:6b:50:08\"], \"ssids\":[\"ASUS_00_XT12\", \"ASUS_00_XT12_5G-1\"]}");
-		aae_sendIpcMsgAndWaitResp(MASTIFF_IPC_SOCKET_PATH, event, strlen(event), out, sizeof(out), 5);
-		json_object *root = NULL;
-		json_object *httpdObj = NULL;
-		json_object *eidObj = NULL;
-		json_object *stsObj = NULL;
-		root = json_tokener_parse((char *)out);
-		json_object_object_get_ex(root, AAE_HTTPD_PREFIX, &httpdObj);
-		json_object_object_get_ex(httpdObj, AAE_IPC_EVENT_ID, &eidObj);
-		json_object_object_get_ex(httpdObj, AAE_IPC_STATUS, &stsObj);
-		if (!httpdObj || !eidObj || !stsObj)
-			printf("Failed to aae_fbwifi2_reg\n");
-		else {
-			int eid = json_object_get_int(eidObj);
-			const char *status = json_object_get_string(stsObj);
-			if ((eid == AAE_EID_HTTPD_FBWIFI2_REG) && (!strcmp(status, "0")))
-				printf("Success to aae_fbwifi2_reg\n");
-			else
-				printf("Failed to aae_fbwifi2_reg\n");
-		}
-		json_object_put(root);
-	}
-	else if (strcmp(argv[1], "aae_httpd_refresh_deviceticket")==0) {
-		char event[AAE_MAX_IPC_PACKET_SIZE];
-		char out[AAE_MAX_IPC_PACKET_SIZE];
-		snprintf(event, sizeof(event), AAE_HTTPD_REFRESH_DEVICE_TICKET_MSG, AAE_EID_HTTPD_REFRESH_DEVICE_TICKET);
-		aae_sendIpcMsgAndWaitResp(MASTIFF_IPC_SOCKET_PATH, event, strlen(event), out, sizeof(out), 5);
-		json_object *root = NULL;
-		json_object *httpdObj = NULL;
-		json_object *eidObj = NULL;
-		json_object *stsObj = NULL;
-		root = json_tokener_parse((char *)out);
-		json_object_object_get_ex(root, AAE_HTTPD_PREFIX, &httpdObj);
-		json_object_object_get_ex(httpdObj, AAE_IPC_EVENT_ID, &eidObj);
-		json_object_object_get_ex(httpdObj, AAE_IPC_STATUS, &stsObj);
-		if (!httpdObj || !eidObj || !stsObj)
-			printf("Failed to aae_httpd_refresh_deviceticket1\n");
-		else {
-			int eid = json_object_get_int(eidObj);
-			const char *status = json_object_get_string(stsObj);
-			if ((eid == AAE_EID_HTTPD_REFRESH_DEVICE_TICKET) && (!strcmp(status, "0")))
-				printf("Success to aae_httpd_refresh_deviceticket2\n");
-			else
-				printf("Failed to aae_httpd_refresh_deviceticket3\n");
-		}
-		json_object_put(root);
-	}
 #if defined(RTCONFIG_RAST_TEST) || defined(RTCONFIG_FU_TEST)
 	else if (strcmp(argv[1], "11k_req")==0) {
 		if (argv[2]) {
@@ -1627,7 +1460,7 @@ static int rctest_main(int argc, char *argv[])
 
 		// find out next schedule or current schedule
 		if (find_sched_v2_next_sched(sched_buf, now, &next_wday, &next_hour, &next_minute, next_raw_rule, next_raw_rule_size) == 0) {
-			int buf[8];
+			char buf[8];
 			char *sched_type = NULL;
 			//printf("raw : %s\nCurrent time: %s, next schedule: wday=%d %02d:%02d\n", next_raw_rule, ctime(&now), next_wday, next_hour, next_minute);
 
@@ -2482,6 +2315,70 @@ static int rctest_main(int argc, char *argv[])
 			check_wlx_nband_type();
 		}
 #endif
+#if defined(RTCONFIG_CSIMON)
+		else if (strcmp(argv[1], "csi_mon_server") == 0) {
+#define MAX_PER_LINE 8
+#define MAX_RECORD_ROWS 32
+#define BUFSIZE (MAX_PER_LINE * MAX_RECORD_ROWS * sizeof(uint32_t))
+			if (argc < 4) {
+				printf("Usage: %s <ip> <port>\n", argv[1]);
+				return 1;
+			}
+
+			int port = safe_atoi(argv[3]);
+			char ip_addr[24];
+			int sockfd;
+			struct sockaddr_in servaddr, cliaddr;
+			socklen_t len;
+			uint8_t buf[BUFSIZE];
+
+			snprintf(ip_addr, sizeof(ip_addr), "%s", argv[2]);
+			if (!is_valid_ip4(ip_addr)) {
+				printf("IP %s is invalid IPv4 IP address\n", ip_addr);
+				return 1;
+			}
+
+			sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+			if (sockfd < 0) {
+				perror("socket");
+				return 1;
+			}
+
+			memset(&servaddr, 0, sizeof(servaddr));
+			servaddr.sin_family = AF_INET;
+			servaddr.sin_addr.s_addr = inet_addr(ip_addr);
+			servaddr.sin_port = htons(port);
+
+			if (bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) {
+				perror("bind");
+				close(sockfd);
+				return 1;
+			}
+
+			printf("UDP receiver binding on %s:%d ...\n", ip_addr, port);
+			while (1) {
+				len = sizeof(cliaddr);
+				ssize_t n = recvfrom(sockfd, buf, sizeof(buf), 0, (struct sockaddr *)&cliaddr, &len);
+				if (n <= 0) continue;
+				printf("Received %zd bytes:\n", n);
+
+				int total = n / sizeof(uint32_t);
+				uint32_t *data = (uint32_t*)buf;
+				for (int i = 0; i < total; ++i) {
+					printf("0x%08x ", data[i]);
+					if ((i+1) % MAX_PER_LINE == 0) printf("\n");
+				}
+				printf("\n====\n");
+			}
+
+			close(sockfd);
+			return 0;
+		}
+#endif
+		//else if (strcmp(argv[1], "l2port") == 0) {
+		//	_dprintf(" chk mac[%s] is from port:%d\n", argv[2], mxl_find_mac_port(argv[2]));
+		//	return 0;
+		//}
 		else {
 			printf("what?\n");
 		}
@@ -3159,6 +3056,9 @@ static const applets_t applets[] = {
 	{ "alt_watchdog",		alt_watchdog_main		}, // <-- add by Andrew
 #endif
 	{ "watchdog",			watchdog_main			},
+#if defined(RTCONFIG_HINET_MESH_SNOOPER)
+	{ "mod_snooper",		mod_snooper_main		},
+#endif
 	{ "check_watchdog",		check_watchdog_main		},
 	{ "fwupg_flashing",		fwupg_flashing_main		},
 #ifdef RTCONFIG_AI_SERVICE
@@ -3338,6 +3238,7 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_MXL_826XX
 	{ "mxlmonitor",			mxlmonitor_main			},
 #endif
+	{ "cdmonitor",			cdmonitor_main			},
 #if defined(GT7) || defined(GS7_PRO_MAX)
 	{ "ext84991",			ext84991_main			},
 #endif
@@ -3366,11 +3267,17 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_SPEEDTEST
 	{ "speedtest",			speedtest_main			},
 #endif
+#if defined(RTCONFIG_OOKLA) || defined(RTCONFIG_OOKLA_LITE)
+	{ "ookla_quota_mon",		ookla_quota_mon_main		},
+#endif
 #if defined(RTCONFIG_HNS)
 	{ "hns_debug",			hns_main			},
 #endif
 #if defined(RTCONFIG_BWDPI) || defined(RTCONFIG_HNS)
 	{ "rsasign_sig_check",		rsasign_sig_check_main		},
+#endif
+#if defined(RTCONFIG_GTBOOSTER)
+	{ "rsasign_sigArk_check",	rsasign_sigArk_check_main	},
 #endif
 #if defined(RTCONFIG_BWDPI)
 	{ "bwdpi",			bwdpi_main			},

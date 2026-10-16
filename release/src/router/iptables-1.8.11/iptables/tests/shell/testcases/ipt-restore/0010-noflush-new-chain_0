@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+# assert input feed from buffer doesn't trip over
+# added nul-chars from parsing chain line.
+
+$XT_MULTI iptables-restore --noflush <<EOF
+*filter
+:foobar - [0:0]
+-A foobar -j ACCEPT
+COMMIT
+EOF

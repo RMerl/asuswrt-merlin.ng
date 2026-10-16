@@ -11,6 +11,7 @@ extern "C"
 #if FID_VLAN_MAP_ENABLE
 int get_fid_vlan(uint16_t vid);
 int fid_vlan_cfg(uint8_t en, uint16_t vid);
+void fid_vlan_reset(void);
 int get_port_fid_tag_bp(uint8_t port, uint8_t fid);
 int port_fid_tag_bp_cfg(uint8_t en, uint8_t port, uint8_t fid);
 #endif

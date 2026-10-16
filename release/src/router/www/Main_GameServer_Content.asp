@@ -29,7 +29,7 @@
 	}
 	.tableApi_table th{
 		background: #0000;
-		color: #a9a9a9;
+		color: var(--wrt-text-muted-color, #a9a9a9);
 	}
 
 	.data_tr_hover {

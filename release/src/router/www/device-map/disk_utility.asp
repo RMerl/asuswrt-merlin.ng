@@ -12,27 +12,27 @@
 <style>
 a:link {
 	text-decoration: underline;
-	color: #FFFFFF;
+	color: var(--wrt-text-color,#FFFFFF);
 }
 a:visited {
 	text-decoration: underline;
-	color: #FFFFFF;
+	color: var(--wrt-text-color,#FFFFFF);
 }
 a:hover {
 	text-decoration: underline;
-	color: #FFFFFF;
+	color: var(--wrt-text-color,#FFFFFF);
 }
 a:active {
 	text-decoration: none;
-	color: #FFFFFF;
+	color: var(--wrt-text-color,#FFFFFF);
 }
 #updateProgress_bg{
 	margin-top:5px;
 	height:30px;
 	width:97%;
-	background: #596E74;
-	border-top: 1px solid #929EA1;
-	border-bottom: 1px solid #929eA1;
+	background: var(--wrt-card-surface-2-bg, #596E74);
+	border-top: 1px solid var(--border-default, #929EA1);
+	border-bottom: 1px solid var(--border-default, #929eA1);
 }
 .font_style{
 	font-family: Verdana, Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
@@ -496,7 +496,7 @@ function reset_force_stop(){
 			<table border="0" width="98%" align="center" height="100px;"><tr>
 				<td style="vertical-align:top" height="100px;">
 					<span id="log_field" >
-						<textarea cols="15" rows="13" readonly="readonly" id="textarea_disk0" class="textarea_bg" style="resize:none;display:none;width:98%; font-family:'Courier New', Courier, mono; font-size:11px;color:#FFFFFF;"></textarea>
+						<textarea cols="15" rows="13" readonly="readonly" id="textarea_disk0" class="textarea_bg" style="resize:none;display:none;width:98%; font-family:'Courier New', Courier, mono; font-size:11px;color:var(--wrt-text-color,#FFFFFF);"></textarea>
 					</span>
 				</td>
 			</tr></table>

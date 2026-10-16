@@ -17,25 +17,25 @@
 .Bar_container{
 	width:85%;
 	height:21px;
-	border:1px inset #999;
+	border:1px inset var(--border-default, #999);
 	margin:0 auto;
 	margin-top:20px \9;
-	background-color:#FFFFFF;
+	background-color:var(--wrt-card-bg, #FFFFFF);
 	z-index:100;
 }
 #proceeding_img_text{
 	position:absolute; 
 	z-index:101; 
-	font-size:11px; color:#000000; 
+	font-size:11px; color:var(--wrt-text-color, #000000); 
 	line-height:21px;
 	width: 83%;
 }
 #proceeding_img{
 	height:21px;
-	background: #D7E8F4;
-	background: -webkit-linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%);
-	background: -o-linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%);
-	background: linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%);
+	background: var(--surface-panel, #D7E8F4);
+	background: var(--surface-panel, -webkit-linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%));
+	background: var(--surface-panel, -o-linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%));
+	background: var(--surface-panel, linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%));
 }
 .icon_logo {
 	background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2278%22%20height%3D%2216%22%20fill%3D%22none%22%20viewBox%3D%220%200%2078%2016%22%3E%3Cg%20id%3D%22Group%22%3E%3Cg%20id%3D%22logo-001%201%22%20clip-path%3D%22url(%23clip0_3231_54081)%22%3E%3Cpath%20id%3D%22Vector_____0_0_IPMZGMXGWB%22%20fill%3D%22%232D2926%22%20d%3D%22M37.824%200H24.159C20.991%200%2019.582%201.983%2019.264%203.872V0H11.68C10.622%200%2010.111%200.321%209.6%201.057L7.52%204.097H37.825V0H37.824ZM0%2016H5.44L12.256%204.991L7.392%204.511L0%2016ZM43.105%200H38.625V4.097H43.105V0V0ZM71.54%206.4L57.522%205.568C57.522%207.713%2058.932%209.154%2061.332%209.344L71.315%2010.11C72.081%2010.176%2072.561%2010.366%2072.561%2011.009C72.561%2011.617%2072.015%2011.841%2070.896%2011.841H57.297V16H71.187C75.57%2016%2077.491%2014.463%2077.491%2010.974C77.491%207.841%2075.764%206.656%2071.539%206.401L71.54%206.4Z%22%2F%3E%3Cpath%20id%3D%22Vector_____0_1_EZQCLJZIEV%22%20fill%3D%22%232D2926%22%20d%3D%22M57.344%205.568L52.929%205.313V10.017C52.929%2011.489%2052.194%2011.938%2049.634%2011.938H46.114C44.004%2011.938%2043.106%2011.33%2043.106%2010.018V4.868L38.626%204.546V10.401H38.529C38.273%208.705%2037.634%206.722%2033.375%206.431L19.36%205.503C19.36%207.649%2020.897%208.926%2023.298%209.182L33.056%2010.173C33.823%2010.235%2034.4%2010.46%2034.4%2011.103C34.4%2011.807%2033.823%2011.869%2032.928%2011.869H19.2V5.471L14.72%205.185V16H32.957C37.019%2016%2038.332%2013.89%2038.526%2012.128H38.622C39.133%2014.912%2041.564%2016%2045.692%2016H50.234C55.067%2016%2057.34%2014.529%2057.34%2011.07V5.569H57.344V5.568ZM77.181%204.097V0H62.141C59.009%200%2057.599%201.94%2057.351%203.81C57.3465%203.83172%2057.3442%203.85382%2057.344%203.876V0H52.929V4.097H77.181Z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cdefs%3E%3CclipPath%20id%3D%22clip0_3231_54081%22%3E%3Cpath%20fill%3D%22white%22%20d%3D%22M0%200H78V16H0z%22%2F%3E%3C%2FclipPath%3E%3C%2Fdefs%3E%3C%2Fsvg%3E");
@@ -49,7 +49,7 @@
 	margin-top: 2%;
 	font-family: Helvetica, Arial;
 	font-size: 16pt;
-	color: #262626;
+	color: var(--wrt-text-color, #262626);
 	text-align: left;
 	font-weight: bolder;
 }
@@ -74,13 +74,13 @@
 	margin: auto;
 }
 .fw_upload_button {
-	background-color: #fff;
+	background-color: var(--wrt-card-bg, #fff);
 	border-radius: 50px;
 	height: 7vh;
 	width: 35%;
 	font-size: 4vh;
-	color: #006ce1;
-	border: 1px solid #006ce1;
+	color: var(--brand-primary, #006ce1);
+	border: 1px solid var(--brand-primary, #006ce1);
 	text-align: center;
 	line-height: 7vh;
 	cursor: pointer;

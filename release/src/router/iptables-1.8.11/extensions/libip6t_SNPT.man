@@ -1,0 +1,30 @@
+Provides stateless source IPv6-to-IPv6 Network Prefix Translation (as described
+by RFC 6296).
+.PP
+You have to use this target in the
+.B mangle
+table, not in the
+.B nat
+table. It takes the following options:
+.TP
+\fB\-\-src\-pfx\fP [\fIprefix/\fP\fIlength]
+Set source prefix that you want to translate and length
+.TP
+\fB\-\-dst\-pfx\fP [\fIprefix/\fP\fIlength]
+Set destination prefix that you want to use in the translation and length
+.PP
+You have to use the DNPT target to undo the translation. Example:
+.IP
+ip6tables \-t mangle \-I POSTROUTING \-s fd00::/64 ! \-o vboxnet0
+\-j SNPT \-\-src-pfx fd00::/64 \-\-dst-pfx 2001:e20:2000:40f::/64
+.IP
+ip6tables \-t mangle \-I PREROUTING \-i wlan0 \-d 2001:e20:2000:40f::/64
+\-j DNPT \-\-src-pfx 2001:e20:2000:40f::/64 \-\-dst\-pfx fd00::/64
+.PP
+You may need to enable IPv6 neighbor proxy:
+.IP
+sysctl \-w net.ipv6.conf.all.proxy_ndp=1
+.PP
+You also have to use the
+.B NOTRACK
+target to disable connection tracking for translated flows.

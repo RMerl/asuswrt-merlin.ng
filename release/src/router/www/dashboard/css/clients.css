@@ -360,9 +360,105 @@
     height: 1px;
     background-color: var(--bg-divide-line-color);
 }
+.divide-line-inset {
+    margin-left: 16px;
+    margin-right: 16px;
+}
 .clientBorder{
     border: 1px solid var(--bg-divide-line-color);
     border-radius: 16px;
+}
+
+/* ===== Client card redesign (用戶數) ===== */
+.card-header-link {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-link-color, var(--primary-btn-normal-fill));
+    cursor: pointer;
+    white-space: nowrap;
+}
+.card-header-link-arrow {
+    font-size: 16px;
+    line-height: 1;
+}
+.clients-summary {
+    padding: 8px 4px 4px;
+}
+/* .clients-donut 的尺寸寫在 dashboard.html inline style —
+   SPA 重載時 stylesheet 套用晚於 inline script 執行，
+   尺寸放這裡會讓 Chart.js 先用整欄寬度建 canvas（閃大圖） */
+.clients-legend-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+}
+.clients-legend-toggle,
+.nodes-legend-toggle {
+    cursor: pointer;
+    user-select: none;
+}
+.clients-legend-row.legend-row-hidden {
+    opacity: 0.45;
+}
+.clients-legend-row.legend-row-hidden .legend-label {
+    text-decoration: line-through;
+}
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    margin-right: 10px;
+    display: inline-block;
+    flex: 0 0 12px;
+}
+.legend-dot-wired {
+    background-color: var(--chart-circle-1);
+}
+.legend-dot-wireless {
+    background-color: var(--chart-circle-2-2);
+}
+.legend-dot-online {
+    border-radius: 50%;
+    background-color: var(--text-secondary-color, #9aa0a6);
+}
+.legend-label {
+    color: var(--text-title-color);
+    font-size: 14px;
+}
+.legend-value {
+    color: var(--text-value-color);
+    font-size: 16px;
+    font-weight: bolder;
+}
+.clients-band-title {
+    color: var(--text-secondary-color, var(--text-title-color));
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+.clients-band-row {
+    padding: 10px 2px;
+}
+.clients-band-icon {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--wrt-card-content-emphasis-bg);
+}
+.clients-band-name {
+    color: var(--text-title-color);
+    font-size: 15px;
+    font-weight: bolder;
+}
+.clients-band-value {
+    color: var(--text-value-color);
+    font-size: 22px;
+    text-align: right;
+    min-width: 28px;
 }
 .icon-color-active-1 {
     background-color: var(--icon-active-color);

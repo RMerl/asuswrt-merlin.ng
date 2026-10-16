@@ -1,0 +1,8 @@
+iptables-translate -A FORWARD -p TCP --dport 22 -j REJECT
+nft 'add rule ip filter FORWARD tcp dport 22 counter reject'
+
+iptables-translate -A FORWARD -p TCP --dport 22 -j REJECT --reject-with icmp-net-unreachable
+nft 'add rule ip filter FORWARD tcp dport 22 counter reject with icmp type net-unreachable'
+
+iptables-translate -A FORWARD -p TCP --dport 22 -j REJECT --reject-with tcp-reset
+nft 'add rule ip filter FORWARD tcp dport 22 counter reject with tcp reset'

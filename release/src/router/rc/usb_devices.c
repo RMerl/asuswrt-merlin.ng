@@ -2728,8 +2728,8 @@ FILE *fp = NULL;
 	char err_str2[100] = {0}; \
 	if (hotplug_pid == -1) hotplug_pid = getpid(); \
 	if (!fp) fp = fopen("/tmp/usb_err", "a+"); \
-	sprintf(err_str, fmt, ##args); \
-	sprintf(err_str2, "PID:%d %s", hotplug_pid, err_str); \
+	snprintf(err_str, sizeof(err_str), fmt, ##args); \
+	snprintf(err_str2, sizeof(err_str2), "PID:%d %s", hotplug_pid, err_str); \
 	fwrite(err_str2, strlen(err_str2), 1,  fp); \
 	fflush(fp); \
 } \
@@ -2898,8 +2898,7 @@ static void optimize_block_device(const char *devname)
 #endif
 	int err;
 
-	memset(blkdev, 0, sizeof(blkdev));
-	strcpy(blkdev, devname);
+	strlcpy(blkdev, devname, sizeof(blkdev));
 	for (p = blkdev; *p; ++p) {
 		if (!isdigit(*p))
 			continue;
@@ -4514,7 +4513,7 @@ int asus_usb_interface(const char *device_name, const char *action)
 			nvram_unset(nvram_usb_path);
 		}
 
-		strcpy(device_type, nvram_safe_get(prefix));
+		strlcpy(device_type, nvram_safe_get(prefix), sizeof(device_type));
 
 #ifdef RTCONFIG_USB_MODEM
 		vid = strtoul(nvram_safe_get(strcat_r(prefix, "_vid", tmp)), NULL, 16);

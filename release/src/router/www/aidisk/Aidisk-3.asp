@@ -272,7 +272,7 @@ function cleandef(){
 				<br/>
 						<div id="ddnsname_input" class="aidiskdesc" style="display:none;">
 							<input type="text" name="DDNSName" id="DDNSName" class="input_25_table" onClick="cleandef()" autocorrect="off" autocapitalize="off">.asuscomm.com
-							<div id="alert_block" style="color:#FFCC00; margin-left:5px; font-size:11px;display:none;">
+							<div id="alert_block" style="color:var(--wrt-badge-warning-color,#FFCC00); margin-left:5px; font-size:11px;display:none;">
 								<span id="alert_str"></span>
 							</div>
 						</div>

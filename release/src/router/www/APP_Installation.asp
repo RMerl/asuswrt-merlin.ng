@@ -82,7 +82,7 @@
 }
 
 .perNode_nohover:hover{
-	background-color: #21333e;
+	background-color: var(--surface-hover, #21333e);
 	*background-color: #21333e;
 }
 </style>
@@ -225,7 +225,7 @@ function update_applist(e){
 					if(apps_array[i][0] == "DM2_Utility")
 						document.getElementById("DMUtilityLink").href = apps_array[i][5]+ "/" + apps_array[i][12];
 						
-					if(apps_array[i][0] == "downloadmaster"){			//set cookie for help.js	
+					if(apps_array[i][0] == "downloadmaster"){			//set cookie for help.js
 						_dm_install = apps_array[i][3];
 						_dm_enable = apps_array[i][4];
 					}	
@@ -439,7 +439,7 @@ function check_appstate(){
 					installPercent = installPercent + proceed;
 				}
 				else{
-					var _apps_depend_do = apps_depend_do.replace(apps_depend_action, "<span style='color:#FC0'>"+apps_depend_action+"</span>");
+					var _apps_depend_do = apps_depend_do.replace(apps_depend_action, "<span style='color:var(--wrt-badge-warning-color, #FFCC00)'>"+apps_depend_action+"</span>");
 
 					document.getElementById("apps_state_desc").innerHTML = "<b>[" + cookie.get("apps_last") + "] " + "<#Excute_processing#> </b>"
 							+"<br> <span style='font-size: 16px;'> <#Excute_processing#>："+_apps_depend_do+"</span>"
@@ -498,7 +498,7 @@ function show_apps(){
 			apps_array.splice(aicloud_idx[0], 1);
 	}
 
-	if(nodm_support){
+	if(nodm_support || isSupport("UI4")){
 		var dm_idx = apps_array.getIndexByValue2D("downloadmaster");
 		if(dm_idx[1] != -1 && dm_idx != -1)
 			apps_array.splice(dm_idx[0], 1);
@@ -723,9 +723,9 @@ function show_apps(){
 			if(	cookie.get("apps_last") == apps_array[i][0] &&
 					hasNewVer(apps_array[i]) && 
 					(sw_mode == 3 || link_internet == "2"))
-				htmlcode += '</div><div style="color:#FC0;margin-top:10px;"><span class="app_action" onclick="apps_form(\'upgrade\',\''+ apps_array[i][0] +'\',\'\');"><#update_available#></span>\n';	
+				htmlcode += '</div><div style="color:var(--wrt-badge-warning-color, #FFCC00);margin-top:10px;"><span class="app_action" onclick="apps_form(\'upgrade\',\''+ apps_array[i][0] +'\',\'\');"><#update_available#></span>\n';
 			else if(cookie.get("apps_last") == apps_array[i][0])
-				htmlcode += "</div><div style=\"color:#FC0;margin-top:10px;margin-left:10px;\"><span class=\"app_no_action\" onclick=\"\"><#liveupdate_up2date#></span>\n";
+				htmlcode += "</div><div style=\"color:var(--wrt-badge-warning-color, #FFCC00);margin-top:10px;margin-left:10px;\"><span class=\"app_no_action\" onclick=\"\"><#liveupdate_up2date#></span>\n";
 
 		}
 		else{
@@ -740,7 +740,7 @@ function show_apps(){
 	
 		// setCookie
 		if(apps_array[i][0] == "downloadmaster"){ // set Cookie
-			//set cookie for help.js		
+			//set cookie for help.js
 			_dm_install = apps_array[i][3];
 			_dm_enable = apps_array[i][4];
 		}
@@ -756,21 +756,21 @@ function show_apps(){
 	if(re_mode == "1"){
 		if($("#upnp_link").length > 0){
 			$("#upnp_link").attr({
-				"style": "color: #FFCC00; text-decoration:underline;",
+				"style": "color: var(--wrt-badge-warning-color,#FFCC00); text-decoration:underline;",
 				"href": "/mediaserver.asp",
 			});
 		}
 
 		if($("#ftp_link").length > 0){
 			$("#ftp_link").attr({
-				"style": "color: #FFCC00; text-decoration:underline;",
+				"style": "color: var(--wrt-badge-warning-color,#FFCC00); text-decoration:underline;",
 				"href": "/Advanced_AiDisk_ftp.asp"
 			});
 		}
 
 		if($("#samba_link").length > 0){
 			$("#samba_link").attr({
-				"style": "color: #FFCC00; text-decoration:underline;",
+				"style": "color: var(--wrt-badge-warning-color,#FFCC00); text-decoration:underline;",
 				"href": "/Advanced_AiDisk_samba.asp"
 			});
 		}
@@ -859,7 +859,7 @@ function show_partition(){
 				if(accessableSize > 1)
 					htmlcode += '<div class="app_desc"><#Availablespace#>: <b>'+ accessableSize+" GB" + '</b></div>'; 
 				else
-					htmlcode += '<div class="app_desc"><#Availablespace#>: <b>'+ accessableSize+" GB <span style=\'color:#FFCC00\'>(Disk quota can not less than 1GB)" + '</span></b></div>'; 
+					htmlcode += '<div class="app_desc"><#Availablespace#>: <b>'+ accessableSize+" GB <span style=\'color:var(--wrt-badge-warning-color,#FFCC00)\'>(Disk quota can not less than 1GB)" + '</span></b></div>';
 
 				htmlcode += '<div class="app_desc"><#Totalspace#>: <b>'+ totalSize+" GB" + '</b></div>'; 
 				htmlcode += '<div class="app_desc"><b>' + usbDevicesList[i].deviceName + '</b></div>'; 
@@ -1032,7 +1032,7 @@ function loginAcc(){
 				<h2><#DM_Install_success#></h2>
 				<table>	
 					<tr>
-					<td><div class="top-heading" style="cursor:pointer;margin-top:10px;height:20px;" id="quick_dmlink"><a id="realLink" href="" target="_blank"><b style="text-decoration:underline;color:#FC0;font-size:16px;"><#DM_launch#></b></></a></div></td>
+					<td><div class="top-heading" style="cursor:pointer;margin-top:10px;height:20px;" id="quick_dmlink"><a id="realLink" href="" target="_blank"><b style="text-decoration:underline;color:var(--wrt-badge-warning-color,#FFCC00);font-size:16px;"><#DM_launch#></b></></a></div></td>
 					<td><div style="margin-left:10px;"><img src="images/New_ui/aidisk/steparrow.png"></div></td>
 					</tr>		
 				</table>
@@ -1045,13 +1045,13 @@ function loginAcc(){
 						<ul style="margin-left:10px;">
 							<br>
 							<li>
-								<a id="faq" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><#DM_title#> FAQ</a>
+								<a id="faq" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:var(--wrt-text-color,#FFFFFF)"><#DM_title#> FAQ</a>
 							</li>
 							<li style="margin-top:10px;">
-								<a id="faq2" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><#DM_title#> Tool FAQ</a>
+								<a id="faq2" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:var(--wrt-text-color,#FFFFFF)"><#DM_title#> Tool FAQ</a>
 							</li>
 							<li style="margin-top:10px;">
-								<a id="DMUtilityLink" href="http://dlcdnet.asus.com/pub/ASUS/wireless/RT-AC5300/UT_Download_Master_2228_Win.zip" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><#DM_Download_Tool#></a>
+								<a id="DMUtilityLink" href="http://dlcdnet.asus.com/pub/ASUS/wireless/RT-AC5300/UT_Download_Master_2228_Win.zip" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:var(--wrt-text-color,#FFFFFF)"><#DM_Download_Tool#></a>
 							</li>
 						</ul>
 					</td>

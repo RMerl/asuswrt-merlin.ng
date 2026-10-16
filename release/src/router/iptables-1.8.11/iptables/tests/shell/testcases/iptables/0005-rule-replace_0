@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# test rule replacement
+
+set -e
+
+# show rules, drop uninteresting policy settings
+ipt_show() {
+	$XT_MULTI iptables -S | grep -v '^-P'
+}
+
+$XT_MULTI iptables -A FORWARD -m comment --comment "rule 1" -j ACCEPT
+$XT_MULTI iptables -A FORWARD -m comment --comment "rule 2" -j ACCEPT
+$XT_MULTI iptables -A FORWARD -m comment --comment "rule 3" -j ACCEPT
+
+$XT_MULTI iptables -R FORWARD 2 -m comment --comment "replaced 2" -j ACCEPT
+
+EXPECT='-A FORWARD -m comment --comment "rule 1" -j ACCEPT
+-A FORWARD -m comment --comment "replaced 2" -j ACCEPT
+-A FORWARD -m comment --comment "rule 3" -j ACCEPT'
+
+diff -u -Z <(echo -e "$EXPECT") <(ipt_show)
+
+$XT_MULTI iptables -R FORWARD 1 -m comment --comment "replaced 1" -j ACCEPT
+
+EXPECT='-A FORWARD -m comment --comment "replaced 1" -j ACCEPT
+-A FORWARD -m comment --comment "replaced 2" -j ACCEPT
+-A FORWARD -m comment --comment "rule 3" -j ACCEPT'
+
+diff -u -Z <(echo -e "$EXPECT") <(ipt_show)
+
+$XT_MULTI iptables -R FORWARD 3 -m comment --comment "replaced 3" -j ACCEPT
+
+EXPECT='-A FORWARD -m comment --comment "replaced 1" -j ACCEPT
+-A FORWARD -m comment --comment "replaced 2" -j ACCEPT
+-A FORWARD -m comment --comment "replaced 3" -j ACCEPT'
+
+diff -u -Z <(echo -e "$EXPECT") <(ipt_show)

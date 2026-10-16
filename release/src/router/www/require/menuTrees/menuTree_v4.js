@@ -184,7 +184,7 @@ define(function () {
                 menuName: "<#UU_Accelerator#>",
                 index: "menu_UU",
                 tab: [
-                    {url: "UUAccelerator.asp", tabName: "<#UU_Accelerator#>"},
+                    {url: "UUAccelerator.html", tabName: "<#UU_Accelerator#>"},
                     {url: "NULL", tabName: "__INHERIT__"}
                 ]
             },
@@ -441,7 +441,6 @@ define(function () {
                 if (!gameMode_support || isUI4) {
                     if (!isSupport("gu_accel") || isUI4) {
                         retArray.push("menu_GameBoost");
-                        retArray.push("menu_UU");
                     }
                 }
 

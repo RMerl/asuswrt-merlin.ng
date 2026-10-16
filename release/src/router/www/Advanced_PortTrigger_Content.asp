@@ -299,7 +299,7 @@ function trigger_validate_duplicate(o, v, l, off){
 		<div class="formfontdesc" style="margin-top:-10px;">
 			<a id="faq" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;"><#menu5_3_3#>&nbspFAQ</a>
 		</div>
-		<div class="formfontdesc" id="lb_note" style="color:#FFCC00; display:none;"><#lb_note_portTrigger#></div>
+		<div class="formfontdesc" id="lb_note" style="color:var(--wrt-badge-warning-color,#FFCC00); display:none;"><#lb_note_portTrigger#></div>
 	
 		<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 					  <thead>

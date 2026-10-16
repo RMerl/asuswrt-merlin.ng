@@ -116,7 +116,7 @@ function showwollist(){
 	var clientListEventData = [];
 	code += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="wollist_table">';
 	if(Object.keys(manually_wol_list_array).length == 0)
-		code += '<tr><td style="color:#FFCC00;"><#IPConnection_VSList_Norule#></td></tr>';
+		code += '<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		//user icon
 		var userIconBase64 = "NoIcon";
@@ -235,7 +235,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	if(flag == 1){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color="#FFCC00";
+		childsel.style.color="var(--wrt-badge-warning-color,#FFCC00)";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#LANHostConfig_ManualDHCPMacaddr_itemdesc#>";		
 		document.getElementById("check_mac").style.display = "";
@@ -243,7 +243,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	}else if(flag ==2){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color="#FFCC00";
+		childsel.style.color="var(--wrt-badge-warning-color,#FFCC00)";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#IPConnection_x_illegal_mac#>";
 		document.getElementById("check_mac").style.display = "";

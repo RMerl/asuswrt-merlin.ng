@@ -1,0 +1,5 @@
+iptables-translate -A INPUT -p tcp --dport 80 -m cpu --cpu 0 -j ACCEPT
+nft 'add rule ip filter INPUT tcp dport 80 cpu 0 counter accept'
+
+iptables-translate -A INPUT -p tcp --dport 80 -m cpu ! --cpu 1 -j ACCEPT
+nft 'add rule ip filter INPUT tcp dport 80 cpu != 1 counter accept'

@@ -568,7 +568,7 @@
 	font-weight: bolder;
 }
 .amesh_quality_text {
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 }
 .amesh_device_info {
 	color: #569AC7;
@@ -627,7 +627,7 @@
 }
 .amesh_title.offline {
 	font-size: 13px;
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	cursor: pointer;
 	font-family: monospace, Courier New, Courier;
 	text-decoration: underline;
@@ -952,7 +952,7 @@
 .aimesh_node_location_hint {
 	width: 60%;
 	float: right;
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	display: none;
 }
 .aimesh_node_client_icon_default {
@@ -984,14 +984,14 @@
 	cursor:pointer;
 }
 .aimesh_manual_fw_update_hint {
-	color: #FFCC00;
+	color: var(--wrt-badge-warning-color,#FFCC00);
 	margin: 10px;
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 13px;
 	display: none;
 }
 .aimesh_fw_update_offline {
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	cursor: pointer;
 	text-decoration: underline;
 	margin-left: 10px;

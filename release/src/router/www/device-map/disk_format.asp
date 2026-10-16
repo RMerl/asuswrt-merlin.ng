@@ -14,9 +14,9 @@
 	margin-top:5px;
 	height:30px;
 	width:97%;
-	background: #596E74;
-	border-top: 1px solid #929EA1;
-	border-bottom: 1px solid #929eA1;
+	background: var(--wrt-card-surface-2-bg, #596E74);
+	border-top: 1px solid var(--border-default, #929EA1);
+	border-bottom: 1px solid var(--border-default, #929eA1);
 }
 </style>
 <script type="text/javascript" src="../require/require.min.js"></script>
@@ -379,7 +379,7 @@ function showLoadingUpdate(){
 		<div style="margin-top:5px;*margin-top:-10px;width:283px;" class="line_horizontal"></div>
 		<div class="formfonttitle_nwm" style="margin-left:10px;margin-bottom:5px;margin-top:10px;"><#format_results#></div>
 		<span id="log_field" >
-			<textarea cols="15" rows="13" readonly="readonly" id="textarea_disk0" class="textarea_bg" style="resize:none;display:;width:93%; font-family:'Courier New', Courier, mono; font-size:11px;margin-left:8px;color:#FFFFFF;"></textarea>
+			<textarea cols="15" rows="13" readonly="readonly" id="textarea_disk0" class="textarea_bg" style="resize:none;display:;width:93%; font-family:'Courier New', Courier, mono; font-size:11px;margin-left:8px;color:var(--wrt-text-color,#FFFFFF);"></textarea>
 		</span>
 		<div style="margin-top:20px;margin-bottom:10px;"align="center">
 			<input id="btn_format" type="button" class="button_gen" onclick="go_format();" value="<#CTL_format#>">

@@ -1,0 +1,5 @@
+iptables-translate -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+nft 'add rule ip filter FORWARD tcp flags syn / syn,rst counter tcp option maxseg size set rt mtu'
+
+iptables-translate -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 90
+nft 'add rule ip filter FORWARD tcp flags syn / syn,rst counter tcp option maxseg size set 90'

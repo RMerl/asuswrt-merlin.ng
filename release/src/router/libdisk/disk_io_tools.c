@@ -57,12 +57,59 @@ int test_if_o_exist(const char *path){
 	return 1;
 }
 
-extern int mkdir_if_none(const char *path){
-	char cmd[PATH_MAX];
+/*
+ * Equivalent to "mkdir -m 0777 -p <path>" but without going through a shell,
+ * so a path built from untrusted input (e.g. containing a single quote)
+ * cannot break out of the intended command.
+ *
+ * "-m MODE -p" only applies MODE (via an explicit chmod, bypassing umask) to
+ * the final/leaf directory; intermediate directories are created with the
+ * ordinary umask-masked mkdir() mode, same as a plain "mkdir -p" would.
+ * Forcing umask(0) for the whole walk would make every intermediate
+ * directory 0777 too, which is *more* permissive than the original
+ * behavior -- so only the leaf gets the explicit chmod() here.
+ */
+static void mkdir_p(const char *path){
+	char buf[PATH_MAX];
+	char *p;
+	size_t len;
 
+	if(strlcpy(buf, path, sizeof(buf)) >= sizeof(buf))
+		return;
+
+	/*
+	 * Strip trailing slashes first. Otherwise a path like "foo/bar/" has
+	 * its true leaf ("foo/bar") created as an "intermediate" by the loop
+	 * below, so the final mkdir(buf, ...) (still "foo/bar/") sees EEXIST
+	 * and the explicit chmod() is skipped -- the leaf then keeps whatever
+	 * umask-masked mode the loop gave it instead of the forced 0777.
+	 */
+	len = strlen(buf);
+	while(len > 1 && buf[len - 1] == '/')
+		buf[--len] = '\0';
+
+	for(p = buf + 1; *p != '\0'; ++p){
+		if(*p == '/'){
+			*p = '\0';
+			mkdir(buf, 0777);
+			*p = '/';
+		}
+	}
+	/*
+	 * Only chmod() when this call actually created the leaf. If it already
+	 * existed as a non-directory (test_if_d_exist() in mkdir_if_none()
+	 * already ruled out an existing directory before calling here), mkdir()
+	 * fails with EEXIST and buf is still that pre-existing file -- chmod()ing
+	 * it anyway would make an unrelated file world-writable, which plain
+	 * "mkdir -p" never did.
+	 */
+	if(mkdir(buf, 0777) == 0)
+		chmod(buf, 0777);
+}
+
+extern int mkdir_if_none(const char *path){
 	if(!test_if_d_exist(path)){
-		snprintf(cmd, sizeof(cmd), "mkdir -m 0777 -p '%s'", (char *)path);
-		system(cmd);
+		mkdir_p(path);
 		return 1;
 	}
 

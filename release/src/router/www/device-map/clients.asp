@@ -19,7 +19,7 @@ p{
 	width: 23px;
 	height: 23px;
 	border-radius: 50%;
-	background: #333;
+	background: var(--wrt-card-surface-2-bg, #333);
 	margin-top: -77px;
 	margin-left: 57px;
 }
@@ -29,7 +29,7 @@ p{
 	margin-top: 4px;
 }
 .ipMethod{
-	background-color: #222;
+	background-color: var(--wrt-card-surface-2-bg, #222);
 	font-size: 10px;
 	font-family: monospace;
 	padding: 2px 3px;
@@ -242,13 +242,11 @@ function drawClientList(tab){
 					connectModeTip = "<#Radio#>: <#PASS_score4#>\n";
 					break;
 			}
-			if(stainfo_support) {
-				if(clientObj.curTx != "")
-					connectModeTip += "Tx Rate: " + clientObj.curTx + "\n";
-				if(clientObj.curRx != "")
-					connectModeTip += "Rx Rate: " + clientObj.curRx + "\n";
-				connectModeTip += "<#Access_Time#>: " + clientObj.wlConnectTime + "";
-			}
+			if(clientObj.curTx != "")
+				connectModeTip += "Tx Rate: " + clientObj.curTx + "\n";
+			if(clientObj.curRx != "")
+				connectModeTip += "Rx Rate: " + clientObj.curRx + "\n";
+			connectModeTip += "<#Access_Time#>: " + clientObj.wlConnectTime + "";
 		}
 
 		if(parent.sw_mode != 4) {
@@ -292,12 +290,12 @@ function drawClientList(tab){
 
 	if(clientHtmlTd == ''){
 		if(networkmap_fullscan == 2)
-			clientHtmlTd = '<div style="color:#FC0;height:30px;text-align:center;margin-top:15px"><#Device_Searching#><img src="/images/InternetScan.gif"></div>';
+			clientHtmlTd = '<div style="color:var(--wrt-badge-warning-color,#FFCC00);height:30px;text-align:center;margin-top:15px"><#Device_Searching#><img src="/images/InternetScan.gif"></div>';
 		else
-			clientHtmlTd = '<div style="color:#FC0;height:30px;text-align:center;margin-top:15px"><#IPConnection_VSList_Norule#></div>';
+			clientHtmlTd = '<div style="color:var(--wrt-badge-warning-color,#FFCC00);height:30px;text-align:center;margin-top:15px"><#IPConnection_VSList_Norule#></div>';
 
 		if(parent.webWrapper)
-			clientHtmlTd = '<div style="color:#000;height:30px;text-align:center;margin-top:50px;font-size: 22px;"><#IPConnection_VSList_Norule#></div>';
+			clientHtmlTd = '<div style="color:var(--wrt-text-color,#000);height:30px;text-align:center;margin-top:50px;font-size: 22px;"><#IPConnection_VSList_Norule#></div>';
 	}
 
 	clientHtml += clientHtmlTd;
@@ -401,11 +399,9 @@ function retOverLibStr(client){
 		overlibStr += "<p><#Device_service_iTune#></p>YES";
 	if(client.isWL > 0){
 		overlibStr += "<p><#Wireless_Radio#>:</p>" + isWL_map[client.isWL]["text"].replace("G", " GHz") + " (" + client.rssi + " dBm)";
-		if(stainfo_support) {
-			overlibStr += "<p>Tx Rate:</p>" + ((client.curTx != "") ? client.curTx : "-");
-			overlibStr += "<p>Rx Rate:</p>" + ((client.curRx != "") ? client.curRx : "-");
-			overlibStr += "<p><#Access_Time#>:</p>" + client.wlConnectTime;
-		}
+		overlibStr += "<p>Tx Rate:</p>" + ((client.curTx != "") ? client.curTx : "-");
+		overlibStr += "<p>Rx Rate:</p>" + ((client.curRx != "") ? client.curRx : "-");
+		overlibStr += "<p><#Access_Time#>:</p>" + client.wlConnectTime;
 	}
 	return overlibStr;
 }

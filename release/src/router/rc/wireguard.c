@@ -16,6 +16,8 @@
 #define WG_PRG_CRU     "/usr/sbin/cru"
 #define WG_WAIT_SYNC   5
 #define WGC_CHK_EP     "WGC_CHK_EP"
+#define WG_TMP_OUTPUT  "/tmp/wg_tmp"
+#define WG_TMP_SCRIPT  "/tmp/wg_sh"
 
 #if 0	// Moved to vpn_utils.c
 typedef enum wg_type{
@@ -29,7 +31,7 @@ enum {
 };
 #endif
 
-#ifdef RTCONFIG_HND_ROUTER
+#if defined(RTCONFIG_HND_ROUTER) && !defined(WIFI7_SDK_20250506) && !defined(RTCONFIG_WIFI8)
 #define BLOG_SKIP_PORT "/proc/blog/skip_wireguard_port"
 #define BLOG_SKIP_NET "/proc/blog/skip_wireguard_network"
 #define WG_NAME_SKIP_NET "hndnet"
@@ -220,7 +222,54 @@ static void _wg_client_check_conf(char* prefix)
 	// route
 }
 
-static void _wg_config_route(char* prefix, char* ifname, int table)
+static int _wg_check_route_exist(const char* prefix, const char* ifname, int table)
+{
+	int ret = 0;
+	char buf[4096] = {0};
+	char word[64] = {0};
+	char *next = NULL;
+	char *p = NULL;
+	char dst[64] = {0};
+	FILE* fp;
+
+	snprintf(buf, sizeof(buf), "%s", nvram_pf_safe_get(prefix, "aips"));
+	foreach_44(word, buf, next)
+	{
+		p = strchr(word, '/');
+		if (p == NULL)
+			continue;
+		if (!strcmp(word, "0.0.0.0/0"))
+			strlcpy(dst, "0.0.0.0/1", sizeof(dst));
+		else if (!strcmp(word, "::/0"))
+			strlcpy(dst, "::/3", sizeof(dst));
+		else
+		{
+			*p = '\0';
+			strlcpy(dst, word, sizeof(dst));
+		}
+		break;
+	}
+
+	fp = fopen(WG_TMP_SCRIPT, "w");
+	if (fp)
+	{
+		fprintf(fp, "#!/bin/sh\n\n");
+		fprintf(fp, "ip route show dev %s table %d > %s\n", ifname, (table)?:254, WG_TMP_OUTPUT);
+		fprintf(fp, "ip -6 route show dev %s table %d >> %s\n", ifname, (table)?:254, WG_TMP_OUTPUT);
+		fclose(fp);
+		chmod(WG_TMP_SCRIPT, S_IRUSR|S_IWUSR|S_IXUSR);
+		eval(WG_TMP_SCRIPT);
+		f_read_string(WG_TMP_OUTPUT, buf, sizeof(buf));
+		if (strstr(buf, dst))
+			ret = 1;
+		unlink(WG_TMP_OUTPUT);
+		unlink(WG_TMP_SCRIPT);
+	}
+
+	return (ret);
+}
+
+static void _wg_config_route(char* prefix, char* ifname, int table, int add)
 {
 	char aips[4096] = {0};
 	char buf[128] = {0};
@@ -231,7 +280,7 @@ static void _wg_config_route(char* prefix, char* ifname, int table)
 	char cmd[256] = {0};
 #endif
 
-	snprintf(table_str, sizeof(table_str), "%d", table);
+	snprintf(table_str, sizeof(table_str), "%d", (table > 0) ? table : 254);
 
 #if !defined(RTCONFIG_MULTILAN_CFG)
 	if (table > 0)
@@ -264,16 +313,8 @@ static void _wg_config_route(char* prefix, char* ifname, int table)
 			continue;
 		if (!strcmp(buf, "0.0.0.0/0"))
 		{
-			if (table > 0)
-			{
-				eval("ip", "route", "add", "0.0.0.0/1", "dev", ifname, "table", table_str);
-				eval("ip", "route", "add", "128.0.0.0/1", "dev", ifname, "table", table_str);
-			}
-			else
-			{
-				eval("ip", "route", "add", "0.0.0.0/1", "dev", ifname);
-				eval("ip", "route", "add", "128.0.0.0/1", "dev", ifname);
-			}
+			eval("ip", "route", (add)?"add":"del", "0.0.0.0/1", "dev", ifname, "table", table_str);
+			eval("ip", "route", (add)?"add":"del", "128.0.0.0/1", "dev", ifname, "table", table_str);
 		}
 		else if (!strcmp(buf, "::/0"))
 		{
@@ -281,19 +322,13 @@ static void _wg_config_route(char* prefix, char* ifname, int table)
 			int i = 0;
 			while (dst[i])
 			{
-				if (table > 0)
-					eval("ip", "route", "add", dst[i], "dev", ifname, "table", table_str);
-				else
-					eval("ip", "route", "add", dst[i], "dev", ifname);
+				eval("ip", "route", (add)?"add":"del", dst[i], "dev", ifname, "table", table_str);
 				i++;
 			}
 		}
 		else
 		{
-			if (table > 0)
-				eval("ip", "route", "add", buf, "dev", ifname, "table", table_str);
-			else
-				eval("ip", "route", "add", buf, "dev", ifname);
+			eval("ip", "route", (add)?"add":"del", buf, "dev", ifname, "table", table_str);
 		}
 	}
 }
@@ -389,7 +424,8 @@ void hnd_skip_wg_all_lan(int add)
 
 static void _wg_client_config_sysdeps(int wg_enable, int unit, const char* prefix)
 {
-#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+#if (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916)) \
+ && !defined(WIFI7_SDK_20250506) && !defined(RTCONFIG_WIFI8)
 	int port = 0;
 
 	/// skip port
@@ -404,7 +440,8 @@ static void _wg_client_config_sysdeps(int wg_enable, int unit, const char* prefi
 
 static void _wg_server_config_sysdeps_client(const char* c_prefix)
 {
-#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+#if (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916)) \
+ && !defined(WIFI7_SDK_20250506) && !defined(RTCONFIG_WIFI8)
 	char path[128] = {0};
 	char aips[4096] = {0};
 	char net[64] = {0};
@@ -428,7 +465,8 @@ static void _wg_server_config_sysdeps_client(const char* c_prefix)
 
 static void _wg_server_config_sysdeps(int wg_enable, int unit, const char* prefix)
 {
-#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+#if (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916)) \
+ && !defined(WIFI7_SDK_20250506) && !defined(RTCONFIG_WIFI8)
 	int port = 0;
 	int c_unit = 0;
 	char c_prefix[16] = {0};
@@ -603,7 +641,7 @@ static void _wg_server_nf_add(int unit, const char* prefix, const char* ifname)
 		}
 #endif
 
-#ifdef RTCONFIG_HND_ROUTER
+#if defined(RTCONFIG_HND_ROUTER) && !defined(WIFI7_SDK_20250506) && !defined(RTCONFIG_WIFI8)
 		fprintf(fp, "iptables -t mangle -I PREROUTING -i %s -j MARK --or 0x1\n", ifname);
 		fprintf(fp, "iptables -t mangle -I POSTROUTING -o %s -j MARK --or 0x1\n", ifname);
 		fprintf(fp, "ip6tables -t mangle -I PREROUTING -i %s -j MARK --or 0x1\n", ifname);
@@ -621,6 +659,9 @@ static void _wg_server_nf_add(int unit, const char* prefix, const char* ifname)
 	get_mtlan_by_idx(SDNFT_TYPE_VPNS, vpns_idx, pmtl, &mtl_sz);
 	if (mtl_sz) {
 		for (i = 0; i < mtl_sz; i++) {
+			// ignore same subnet
+			if (pmtl[i].sdn_t.sdn_idx > 0 && pmtl[i].nw_t.idx == 0)
+				continue;
 			snprintf(path, sizeof(path), "%s/fw_%s_sdn%d.sh", WG_DIR_CONF, ifname, pmtl[i].sdn_t.sdn_idx);
 			fp = fopen(path, "w");
 			if(fp) {
@@ -708,7 +749,7 @@ static void _wg_client_nf_add(int unit, char* prefix, char* ifname)
 		fprintf(fp, "iptables -I WGCF -o %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", ifname);
 		fprintf(fp, "ip6tables -I WGCF -o %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", ifname);
 
-#ifdef RTCONFIG_HND_ROUTER
+#if defined(RTCONFIG_HND_ROUTER) && !defined(WIFI7_SDK_20250506) && !defined(RTCONFIG_WIFI8)
 		fprintf(fp, "iptables -t mangle -I PREROUTING -i %s -j MARK --or 0x1\n", ifname);
 		fprintf(fp, "iptables -t mangle -I POSTROUTING -o %s -j MARK --or 0x1\n", ifname);
 		fprintf(fp, "ip6tables -t mangle -I PREROUTING -i %s -j MARK --or 0x1\n", ifname);
@@ -754,6 +795,9 @@ static void _wg_client_nf_add(int unit, char* prefix, char* ifname)
 	get_mtlan_by_idx(SDNFT_TYPE_VPNC, vpnc_idx, pmtl, &mtl_sz);
 	if (mtl_sz) {
 		for (i = 0; i < mtl_sz; i++) {
+			// ignore same subnet
+			if (pmtl[i].sdn_t.sdn_idx > 0 && pmtl[i].nw_t.idx == 0)
+				continue;
 			snprintf(path, sizeof(path), "%s/fw_%s_sdn%d.sh", WG_DIR_CONF, ifname, pmtl[i].sdn_t.sdn_idx);
 			fp = fopen(path, "w");
 			if(fp) {
@@ -1036,23 +1080,72 @@ static void _wg_server_gen_keys(char* prefix)
 	}
 }
 
-static char* _wg_server_get_endpoint(char* buf, size_t len)
+#define WG_EP_ERR_DDNS		"DDNS_HOSTNAME_UNAVAILABLE"
+#define WG_EP_ERR_CUSTOM	"CUSTOM_ENDPOINT_INVALID"
+#define WG_EP_ERR_AUTO		"ENDPOINT_UNAVAILABLE"
+
+static int _wg_ep_addr_valid(const char* addr)
 {
-	/// Currently, Windows, iOS, Android WireGuard APP prefer IPv4
-	/// even DDNS include both IPv4 and IPv6.
-	if (is_private_subnet(get_wanip()) && ipv6_enabled()) {
-		strlcpy(buf, (getifaddr(get_wan6face(), AF_INET6, 0))?:"", len);
-		if (buf[0])
-			return buf;
+	if (addr == NULL || addr[0] == '\0')
+		return 0;
+
+	/// is_valid_domainname() whitelists [A-Za-z0-9._-], is_valid_ip()
+	/// adds the IPv6 literals it rejects and returns -1 when invalid.
+	return (is_valid_domainname(addr) || is_valid_ip(addr) > 0) ? 1 : 0;
+}
+
+static int _wg_wan_ip4_usable(const char* ip)
+{
+	if (!is_valid_ip4(ip) || inet_addr_(ip) == INADDR_ANY)
+		return 0;
+
+	return is_private_subnet(ip) ? 0 : 1;
+}
+
+static char* _wg_server_get_endpoint(char* prefix, char* buf, size_t len)
+{
+	int ep_mode = nvram_pf_get_int(prefix, "ep_mode");	//0: Auto, 1: DDNS, 2: Custom
+	const char* err;
+
+	buf[0] = '\0';
+
+	if (ep_mode == 1)	// DDNS
+	{
+		if (nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_status"))
+			strlcpy(buf, get_ddns_hostname(), len);
+		err = WG_EP_ERR_DDNS;
+	}
+	else if (ep_mode == 2)	// Custom
+	{
+		strlcpy(buf, nvram_pf_safe_get(prefix, "ep_custom"), len);
+		err = WG_EP_ERR_CUSTOM;
+	}
+	else	// Auto
+	{
+		int wan4_ok = _wg_wan_ip4_usable(get_wanip());
+
+		/// Currently, Windows, iOS, Android WireGuard APP prefer IPv4
+		/// even DDNS include both IPv4 and IPv6. So a global IPv6 only
+		/// outranks DDNS while the WAN IPv4 is unreachable.
+		if (!wan4_ok && ipv6_enabled())
+			strlcpy(buf, (getifaddr(get_wan6face(), AF_INET6, 0))?:"", len);
+
+		if (!buf[0] && nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_status"))
+			strlcpy(buf, get_ddns_hostname(), len);
+
+		if (!buf[0])
+		{
+			strlcpy(buf, get_wanip(), len);
+			if (inet_addr_(buf) == INADDR_ANY)
+				strlcpy(buf, nvram_safe_get("lan_ipaddr"), len);
+		}
+		err = WG_EP_ERR_AUTO;
 	}
 
-	strlcpy(buf, get_ddns_hostname(), len);
-
-	if (!(nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_status") && strlen(buf)))
+	if (!_wg_ep_addr_valid(buf))
 	{
-		strlcpy(buf, get_wanip(), len);
-		if (inet_addr_(buf) == INADDR_ANY)
-			strlcpy(buf, nvram_safe_get("lan_ipaddr"), len);
+		logmessage_normal("WireGuard", "%sep_mode %d has no valid endpoint, use %s.", prefix, ep_mode, err);
+		strlcpy(buf, err, len);
 	}
 
 	return buf;
@@ -1066,6 +1159,7 @@ static void _wg_server_gen_client_conf(char* s_prefix, char* c_prefix, char* c_p
 	char cpsk[WG_KEY_SIZE] = {0};
 	char caips[4096] = {0};
 	char buf[64] = {0};
+	char ep[256] = {0};
 	int psk = nvram_pf_get_int(s_prefix, "psk");
 	int dns = nvram_pf_get_int(s_prefix, "dns");
 	int alive = nvram_pf_get_int(s_prefix, "alive");
@@ -1126,10 +1220,10 @@ static void _wg_server_gen_client_conf(char* s_prefix, char* c_prefix, char* c_p
 
 		fprintf(fp, "AllowedIPs = %s\n", caips);
 
-		if (is_valid_ip6(_wg_server_get_endpoint(buf, sizeof(buf))))
-			fprintf(fp, "Endpoint = [%s]:%d\n", buf, nvram_pf_get_int(s_prefix, "port"));
+		if (is_valid_ip6(_wg_server_get_endpoint(s_prefix, ep, sizeof(ep))))
+			fprintf(fp, "Endpoint = [%s]:%d\n", ep, nvram_pf_get_int(s_prefix, "port"));
 		else
-			fprintf(fp, "Endpoint = %s:%d\n", buf, nvram_pf_get_int(s_prefix, "port"));
+			fprintf(fp, "Endpoint = %s:%d\n", ep, nvram_pf_get_int(s_prefix, "port"));
 
 		if (alive)
 			fprintf(fp, "PersistentKeepalive = %d\n", alive);
@@ -1559,7 +1653,7 @@ void start_wgs(int unit)
 		snprintf(c_prefix, sizeof(c_prefix), "%sc%d_", prefix, c_unit);
 		if (nvram_pf_get_int(c_prefix, "enable") == 0)
 			continue;
-		_wg_config_route(c_prefix, ifname, 0);
+		_wg_config_route(c_prefix, ifname, 0, WG_NF_ADD);
 		/// add priority rule
 		_wg_server_ip_rule_add(c_prefix);
 	}
@@ -1692,8 +1786,12 @@ void start_wgc(int unit)
 	/// netfilter
 	_wg_client_nf_add(unit, prefix, ifname);
 
+#if defined(RTCONFIG_MULTILAN_CFG) && defined(RTCONFIG_VPN_FUSION)
+	// updated by check_wgc_ep for kill switch
+#else
 	/// route
-	_wg_config_route(prefix, ifname, table);
+	_wg_config_route(prefix, ifname, table, WG_NF_ADD);
+#endif
 
 	/// set endpoint route
 	_wg_client_ep_route_add(prefix, table);
@@ -1954,21 +2052,30 @@ void update_wgs_client(int s_unit, int c_unit)
 void update_wgs_client_ep()
 {
 	int s_unit, c_unit;
+	char s_prefix[16] = {0};
 	char path[128] = {0};
 	char p_path[128] = {0};
-	char address[64];
-	char cmd[256] = {0};
+	char address[256] = {0};
+	char ep[sizeof(address) + sizeof("[]") - 1] = {0};
+	char cmd[512] = {0};
 
 	for (s_unit = 1; s_unit <= WG_SERVER_MAX; s_unit++)
 	{
+		snprintf(s_prefix, sizeof(s_prefix), "%s%d_", WG_SERVER_NVRAM_PREFIX, s_unit);
+		_wg_server_get_endpoint(s_prefix, address, sizeof(address));
+
+		if (is_valid_ip6(address))
+			snprintf(ep, sizeof(ep), "[%s]", address);
+		else
+			snprintf(ep, sizeof(ep), "%s", address);
+
 		for (c_unit = 1; c_unit <= WG_SERVER_CLIENT_MAX; c_unit++)
 		{
 			snprintf(path, sizeof(path), "%s/server%d_client%d.conf", WG_DIR_CONF, s_unit, c_unit);
 			snprintf(p_path, sizeof(p_path), "%s/server%d_client%d.png", WG_DIR_CONF, s_unit, c_unit);
 			if(f_exists(path) && f_size(path) > 0)
 			{
-				_wg_server_get_endpoint(address, sizeof(address));
-				snprintf(cmd, sizeof(cmd), "sed -i 's/Endpoint = [^ ]*:/Endpoint = %s:/' %s", address, path);
+				snprintf(cmd, sizeof(cmd), "sed -i 's/Endpoint = [^ ]*:/Endpoint = %s:/' %s", ep, path);
 				system(cmd);
 				eval("qrencode", "-r", path, "-o", p_path);
 			}
@@ -2015,6 +2122,11 @@ void check_wgc_endpoint()
 	char ep_addr_r[1024] = {0};
 	char buf[1024] = {0};
 	char *p;
+#if defined(RTCONFIG_MULTILAN_CFG) && defined(RTCONFIG_VPN_FUSION)
+	char wg_ifname[IFNAMSIZ] = {0};
+	int vpnc_idx = 0, table = 0;
+	vpnc_init();
+#endif
 
 	if(!is_wan_connect(wan_primary_ifunit()))
 		return;
@@ -2025,8 +2137,33 @@ void check_wgc_endpoint()
 		if (nvram_pf_get_int(prefix, "enable") == 0)
 			continue;
 
+#if defined(RTCONFIG_MULTILAN_CFG) && defined(RTCONFIG_VPN_FUSION)
+		snprintf(wg_ifname, sizeof(wg_ifname), "%s%d", WG_CLIENT_IF_PREFIX, unit);
+		vpnc_idx = find_vpnc_idx_by_wgc_unit(unit);
+		table = IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_idx;
+#endif
 		if (is_wgc_connected(unit))
+		{
+#if defined(RTCONFIG_MULTILAN_CFG) && defined(RTCONFIG_VPN_FUSION)
+			if (!_wg_check_route_exist(prefix, wg_ifname, table))
+			{
+				_wg_config_route(prefix, wg_ifname, table, WG_NF_ADD);
+				vpnc_up(vpnc_idx, wg_ifname);
+			}
+#endif
 			continue;
+		}
+#if defined(RTCONFIG_MULTILAN_CFG) && defined(RTCONFIG_VPN_FUSION)
+		else
+		{
+			if (_wg_check_route_exist(prefix, wg_ifname, table))
+			{
+				_wg_config_route(prefix, wg_ifname, table, WG_NF_DEL);
+				update_vpnc_state(vpnc_idx, WAN_STATE_CONNECTING, 0);
+				vpnc_down(vpnc_idx, wg_ifname);
+			}
+		}
+#endif
 
 #if defined(RTCONFIG_UAC_TUNNEL)
 		if (vpnc_use_tunnel(unit, "WireGuard")) {
@@ -2131,6 +2268,10 @@ static void _update_wg_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn,
 
 		/// iptables rules
 		for (i = 0; i < mtl_sz; i++) {
+			// ignore same subnet
+			if (pmtl[i].sdn_t.sdn_idx > 0 && pmtl[i].nw_t.idx == 0)
+				continue;
+
 			// delete old rules for specific sdn
 			snprintf(fpath, sizeof(fpath), "%s/fw_%s_sdn%d.sh", WG_DIR_CONF, wg_ifname, pmtl[i].sdn_t.sdn_idx);
 			if(f_exists(fpath)) {

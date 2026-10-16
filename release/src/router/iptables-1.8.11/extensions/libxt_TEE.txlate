@@ -1,0 +1,11 @@
+# iptables-translate -t mangle -A PREROUTING -j TEE --gateway 192.168.0.2 --oif eth0
+# nft 'add rule ip mangle PREROUTING counter dup to 192.168.0.2 device eth0
+#
+# iptables-translate -t mangle -A PREROUTING -j TEE --gateway 192.168.0.2
+# nft 'add rule ip mangle PREROUTING counter dup to 192.168.0.2
+
+ip6tables-translate -t mangle -A PREROUTING -j TEE --gateway ab12:00a1:1112:acba::
+nft 'add rule ip6 mangle PREROUTING counter dup to ab12:a1:1112:acba::'
+
+ip6tables-translate -t mangle -A PREROUTING -j TEE --gateway ab12:00a1:1112:acba:: --oif eth0
+nft 'add rule ip6 mangle PREROUTING counter dup to ab12:a1:1112:acba:: device eth0'

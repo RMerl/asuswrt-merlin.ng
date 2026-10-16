@@ -1,0 +1,8 @@
+ip6tables-translate -A FORWARD -p TCP --dport 22 -j REJECT
+nft 'add rule ip6 filter FORWARD tcp dport 22 counter reject'
+
+ip6tables-translate -A FORWARD -p TCP --dport 22 -j REJECT --reject-with icmp6-reject-route
+nft 'add rule ip6 filter FORWARD tcp dport 22 counter reject with icmpv6 type reject-route'
+
+ip6tables-translate -A FORWARD -p TCP --dport 22 -j REJECT --reject-with tcp-reset
+nft 'add rule ip6 filter FORWARD tcp dport 22 counter reject with tcp reset'

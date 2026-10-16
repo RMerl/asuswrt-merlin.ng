@@ -1,0 +1,54 @@
+#!/bin/bash
+
+RET=0
+tmpfile=""
+set -x
+
+
+clean_tmpfile()
+{
+        if [ ! -z "$tmpfile" ];then
+                rm -f "$tmpfile"
+        fi
+}
+
+trap clean_tmpfile EXIT
+
+do_diff()
+{
+	A="$1"
+	B="$2"
+
+	AT=$(mktemp)
+	grep -v "^#" "$A" > "$AT"
+
+	diff -u "$AT" "$B"
+
+	x=$?
+	rm -f "$AT"
+	echo "Return $x for $XT_MULTI $A"
+
+	return $x
+}
+
+tmpfile=$(mktemp) || exit 1
+do_simple()
+{
+	iptables="$1"
+	dumpfile="$2"
+
+	$XT_MULTI ${iptables}-restore < "$dumpfile"
+	$XT_MULTI ${iptables}-save | grep -v "^#" > "$tmpfile"
+	sed -i -e 's/-p 47 /-p gre /' "$tmpfile"
+	do_diff $dumpfile "$tmpfile"
+	if [ $? -ne 0 ]; then
+		# cp "$tmpfile" "$dumpfile.got"
+		RET=1
+	fi
+}
+
+do_simple "iptables" $(dirname "$0")/dumps/ipt-save-filter.txt
+do_simple "iptables" $(dirname "$0")/dumps/policy-drop.txt
+do_simple "iptables" $(dirname "$0")/dumps/wireless.txt
+
+exit $RET

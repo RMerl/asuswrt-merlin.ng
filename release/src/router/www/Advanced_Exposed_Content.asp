@@ -195,7 +195,7 @@ function dmz_on_off(){
 									<div class="formfontdesc" style="margin-top:-10px;">
 										<a id="faq" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">DMZ FAQ</a>
 									</div>
-									<div class="formfontdesc" id="lb_note" style="color:#FFCC00; display:none;"><#lb_note_dmz#></div>
+									<div class="formfontdesc" id="lb_note" style="color:var(--wrt-badge-warning-color,#FFCC00); display:none;"><#lb_note_dmz#></div>
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 										<tr>
 											<th><#enable_dmz#></th>

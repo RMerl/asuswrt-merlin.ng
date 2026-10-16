@@ -18,7 +18,7 @@
 }
 body{
 	margin: 0;
-	color:#FFF;
+	color:var(--wrt-text-color,#FFFFFF);
 }
 .switch{
 	position: relative;
@@ -76,11 +76,11 @@ body{
 }
 .btn{
 	background-color: #990000;
-	color: #EBE8E8;
+	color: var(--wrt-text-muted-color, #EBE8E8);
 }
 .btn:hover{
 	background-color: #D30606;
-	color: #FFF;
+	color: var(--wrt-text-color,#FFFFFF);
 }
 
 #gameList_block{
@@ -88,7 +88,7 @@ body{
 	margin-top: -40px;
 	width: 700px;
 	height: 600px;
-	background-color: #000;
+	background-color: var(--surface-panel, #000);
 	z-index: 200;
 	padding: 12px 18px;
 	overflow-y: auto;
@@ -199,7 +199,7 @@ function genGameList() {
 	    </tr>`;
 
     if (list_array == '') {
-        code += `<tr><td colspan="2" style="color:#FFCC00;"><#IPConnection_VSList_Norule#></td></tr>`;
+        code += `<tr><td colspan="2" style="color:var(--wrt-badge-warning-color,#FFCC00);"><#IPConnection_VSList_Norule#></td></tr>`;
     } else {
         for (let i = 0; i < list_array.length; i++) {
             const mac = list_array[i];
@@ -510,7 +510,7 @@ function applyRule() {
 						<div style="padding: 5px 0;font-size:20px;"><#Gear_Accelerator#></div>
 					</td>
 					<td colspan="2">
-						<div style="padding: 5px 10px;font-size:20px;color:#FFCC66"><#Gear_Accelerator_desc#></div>
+						<div style="padding: 5px 10px;font-size:20px;color:var(--wrt-badge-warning-color,#FFCC66)"><#Gear_Accelerator_desc#></div>
 					</td>
 				</tr>
 				<tr>
@@ -523,7 +523,7 @@ function applyRule() {
 						<div style="width:85px;height: 85px;background-image: url('images/New_ui/GameBoost_gamePriority.svg');background-size: 100%;"></div>													
 					</td>
 					<td style="width:400px;height:120px;">
-						<div style="font-size:16px;color:#949393;padding-left:10px;"><#Gear_Accelerator_desc1#></div>
+						<div style="font-size:16px;color:var(--wrt-text-muted-color,#949393);padding-left:10px;"><#Gear_Accelerator_desc1#></div>
 						<div onclick="showGameListField();" class="btn" style="margin: 12px 0;width:100px;height:40px;line-height: 40px;text-align: center;border-radius: 5px;font-size:18px;"><#CTL_add#></div>
 					</td>
 					<td>

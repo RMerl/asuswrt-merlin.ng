@@ -1030,20 +1030,34 @@ obj-$(RTCONFIG_DSL_REMOTE) += dsl_drv_tool
 obj-$(RTCONFIG_DSL_HOST) += dsl_diag
 obj-$(RTCONFIG_DSL_HOST) += dsl_autodet
 
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126))
+IPTABLES_VER := iptables-1.8.11
+else
+ifeq ($(RTCONFIG_IPTABLES1810),y)
+IPTABLES_VER := iptables-1.8.10
+else
+IPTABLES_VER := iptables-1.4.x
+endif
+endif
+
 ifneq ($(RTCONFIG_ALPINE)$(RTCONFIG_LANTIQ)$(RTL8198D),y)
 ifeq ($(KPATH_2636_OR_3X)$(RTACRH18)$(RT4GAC86U)$(RTAX53U)$(RTAX54)$(RT4GAX56)$(if $(filter $(BUILD_NAME),XD4S),y,),y)
 ifeq ($(RTCONFIG_IPTABLES1810),y)
-IPTABLES := iptables-1.8.10
+IPTABLES := $(IPTABLES_VER)
 else
-IPTABLES := iptables-1.4.x
+IPTABLES := $(IPTABLES_VER)
 endif
 IPTC_LIBDIR := $(TOP)/$(IPTABLES)/libiptc/.libs
 ifeq ($(RTCONFIG_IPTABLES1810),y)
 IPTC_LIBS := -lip4tc $(if $(RTCONFIG_IPV6),-lip6tc,)
-obj-y += iptables-1.8.10
+obj-y += $(IPTABLES_VER)
+else
+ifeq ($(IPTABLES_VER),iptables-1.8.11)
+IPTC_LIBS := -lip4tc $(if $(RTCONFIG_IPV6),-lip6tc,)
 else
 IPTC_LIBS := -lip4tc $(if $(RTCONFIG_IPV6),-lip6tc,) -liptc
-obj-y += iptables-1.4.x
+endif
+obj-y += $(IPTABLES_VER)
 endif	
 ifeq ($(HND_ROUTER),y)
 ifeq ($(or $(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916)),y)
@@ -1746,7 +1760,11 @@ endif
 
 obj-n += lsof
 obj-$(RTCONFIG_IPERF) += iperf
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
+obj-$(RTCONFIG_IPERF3) += iperf-3.20
+else
 obj-$(RTCONFIG_IPERF3) += iperf3
+endif
 
 obj-$(RTCONFIG_PUSH_EMAIL) += openssl
 obj-$(RTCONFIG_PUSH_EMAIL) += email-3.1.3
@@ -1933,8 +1951,10 @@ endif
 ifeq ($(BUILD_RDPACTL),y)
 obj-$(HND_ROUTER) += rdpactl
 endif
+ifeq ($(BUILD_VLANCTL),y)
 obj-$(HND_ROUTER) += vlanctl
 obj-$(HND_ROUTER) += vlanctl_lib
+endif
 ifneq ($(or $(RTCONFIG_HND_ROUTER_AX_6710),$(RTCONFIG_HND_ROUTER_BE_4916)),y)
 obj-$(HND_ROUTER) += seltctl
 obj-$(HND_ROUTER) += stlport
@@ -1968,6 +1988,9 @@ obj-$(HND_ROUTER) += fcctl
 obj-$(HND_ROUTER) += fcctl_lib
 obj-$(HND_ROUTER) += scripts
 #obj-$(HND_ROUTER) += stress
+ifeq ($(BUILD_MEMTESTER),y)
+obj-$(HND_ROUTER) += memtester
+endif
 obj-$(HND_ROUTER) += vpmstats
 obj-$(HND_ROUTER) += bcm_boot_launcher
 obj-$(HND_ROUTER) += bdmf_shell
@@ -2070,6 +2093,8 @@ obj-$(RTCONFIG_HD_SPINDOWN) += sd-idle
 obj-$(HND_ROUTER) += dhcpfwd
 obj-$(RTCONFIG_DUPVIF) += dhcpfwd
 obj-$(RTCONFIG_DUPVIF) += dupvif
+
+#obj-$(RTCONFIG_HINET_MESH_SNOOPER) += mod_snooper
 
 obj-$(RTCONFIG_FSMD) += fsmd
 obj-$(RTCONFIG_DNS_PING) += sqlite3
@@ -4225,7 +4250,7 @@ dnsmasq:  $(if $(RTCONFIG_DNSSEC_OPENSSL),openssl,) $(if $(RTCONFIG_DNSSEC_NETTL
 		$(if $(RTCONFIG_USB_EXTRAS),,-DNO_TFTP) \
 		$(if $(RTCONFIG_DNSSEC_OPENSSL),-I$(TOP)/openssl/include -DHAVE_DNSSEC,) \
 		$(if $(RTCONFIG_DNSSEC_NETTLE),-I$(TOP)/nettle/include -I$(TOP)/gmp -DHAVE_DNSSEC -DHAVE_DNSSEC_STATIC -DNO_GOST,)" \
-	CFLAGS="-Os -ffunction-sections -fdata-sections $(EXTRACFLAGS) -std=gnu99 \
+	CFLAGS="-Os -ffunction-sections -DASUSWRT -fdata-sections $(EXTRACFLAGS) -std=gnu99 \
 		$(if $(filter $(BUILD_NAME),RT-AX82_XD6 XD6_V2 ET12),-I$(TOP)/shared -I$(SRCBASE)/include -D$(MODEL),)" \
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections $(EXTRALDFLAGS) \
 		$(if $(filter $(BUILD_NAME),RT-AX82_XD6 XD6_V2 ET12),-L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP_PLATFORM)/wlcsm -lwlcsm,) \
@@ -4609,6 +4634,110 @@ endif
 iptables-1.8.10-clean:
 	[ ! -f iptables-1.8.10/Makefile ] || $(MAKE) -C iptables-1.8.10 KERNEL_DIR=$(LINUX_INC_DIR) distclean
 	@rm -f iptables-1.8.10/Makefile
+
+IPTABLES_1811_BCMMARK_64_PATCH := $(TOP)/iptables-1.8.11/20260506-iptables-BCMMARK-6.4.0.patch
+IPTABLES_1811_BCMMARK_64_STAMP := $(TOP)/iptables-1.8.11/.bcmmark-sdk64-applied
+IPTABLES_1811_BCMMARK_64_PATCH_STRIP := 4
+
+.PHONY: iptables-1.8.11-bcmmark-sync
+iptables-1.8.11-bcmmark-sync:
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20260402))
+	@if [ -f "$(IPTABLES_1811_BCMMARK_64_STAMP)" ]; then \
+		:; \
+	elif cd $(TOP) && patch --dry-run -N -p$(IPTABLES_1811_BCMMARK_64_PATCH_STRIP) < "$(IPTABLES_1811_BCMMARK_64_PATCH)" >/dev/null 2>&1; then \
+		cd $(TOP) && patch -N -p$(IPTABLES_1811_BCMMARK_64_PATCH_STRIP) < "$(IPTABLES_1811_BCMMARK_64_PATCH)"; \
+		touch "$(IPTABLES_1811_BCMMARK_64_STAMP)"; \
+	elif cd $(TOP) && patch --dry-run -R -p$(IPTABLES_1811_BCMMARK_64_PATCH_STRIP) < "$(IPTABLES_1811_BCMMARK_64_PATCH)" >/dev/null 2>&1; then \
+		touch "$(IPTABLES_1811_BCMMARK_64_STAMP)"; \
+	else \
+		echo "iptables-1.8.11 BCMMARK patch state is inconsistent"; \
+		exit 1; \
+	fi
+else
+	@if [ -f "$(IPTABLES_1811_BCMMARK_64_STAMP)" ]; then \
+		if cd $(TOP) && patch --dry-run -R -p$(IPTABLES_1811_BCMMARK_64_PATCH_STRIP) < "$(IPTABLES_1811_BCMMARK_64_PATCH)" >/dev/null 2>&1; then \
+			cd $(TOP) && patch -R -p$(IPTABLES_1811_BCMMARK_64_PATCH_STRIP) < "$(IPTABLES_1811_BCMMARK_64_PATCH)"; \
+		fi; \
+		rm -f "$(IPTABLES_1811_BCMMARK_64_STAMP)"; \
+	elif cd $(TOP) && patch --dry-run -R -p$(IPTABLES_1811_BCMMARK_64_PATCH_STRIP) < "$(IPTABLES_1811_BCMMARK_64_PATCH)" >/dev/null 2>&1; then \
+		cd $(TOP) && patch -R -p$(IPTABLES_1811_BCMMARK_64_PATCH_STRIP) < "$(IPTABLES_1811_BCMMARK_64_PATCH)"; \
+	fi
+endif
+
+iptables-1.8.11/configure:
+	cd iptables-1.8.11 && ./autogen.sh
+
+iptables-1.8.11/Makefile: iptables-1.8.11/configure | iptables-1.8.11-bcmmark-sync
+ifeq ($(HND_ROUTER),y)
+	cd iptables-1.8.11 && $(CONFIGURE) \
+		--prefix=/usr \
+		--bindir=/usr/sbin \
+		--libdir=/usr/lib \
+		--enable-ipv6 \
+		--disable-nftables \
+		--with-kbuild=$(TOOLCHAIN_INCLUDE_DIR) \
+		--target=$(TOOLCHAIN_ARCH_TYPE) \
+		--with-xt-lock-name=/tmp/xtables.lock \
+		LDFLAGS=-L$(INSTALL_DIR)/lib \
+		CFLAGS="-Os $(BRCM_FLAG) -U CONFIG_NVRAM_SIZE -I$(SRCBASE)/kernel/bcmkernel/include/uapi/"
+else ifneq ($(or $(findstring linux-3.10,$(LINUXDIR))),)
+	cd iptables-1.8.11 && $(CONFIGURE) \
+		--prefix=/usr \
+		--bindir=/usr/sbin \
+		--libdir=/usr/lib \
+		--with-kernel=$(KDIR)/include \
+		$(if $(RTCONFIG_IPV6),--enable-ipv6,--disable-ipv6) \
+		CFLAGS="-Os $(EXTRACFLAGS) -U CONFIG_NVRAM_SIZEi -I$(KDIR)/include"
+else
+	cd iptables-1.8.11 && $(CONFIGURE) \
+		--prefix=/usr \
+		--bindir=/usr/sbin \
+		--libdir=/usr/lib \
+		--with-kernel=$(LINUXDIR) \
+		$(if $(RTCONFIG_IPV6),--enable-ipv6,--disable-ipv6) \
+		CFLAGS="-Os $(EXTRACFLAGS) -U CONFIG_NVRAM_SIZE"
+endif
+
+iptables-1.8.11: iptables-1.8.11/Makefile | iptables-1.8.11-bcmmark-sync
+	@$(SEP)
+	$(MAKE) -C $@ KERNEL_DIR=$(LINUX_INC_DIR) COPT_FLAGS="-Os $(EXTRACFLAGS) -U CONFIG_NVRAM_SIZE"
+
+iptables-1.8.11-install: iptables-1.8.11
+	install -D iptables-1.8.11/iptables/.libs/xtables-legacy-multi $(INSTALLDIR)/iptables-1.8.11/usr/sbin/xtables-legacy-multi
+	cd $(INSTALLDIR)/iptables-1.8.11/usr/sbin && \
+		ln -sf xtables-legacy-multi iptables-restore && \
+		ln -sf xtables-legacy-multi iptables-save && \
+		ln -sf xtables-legacy-multi iptables
+	install -d $(INSTALLDIR)/iptables-1.8.11/usr/lib/xtables
+	# install -D iptables-1.8.11/libiptc/.libs/libiptc.so $(INSTALLDIR)/iptables-1.8.11/usr/lib/libiptc.so
+	install -D iptables-1.8.11/libiptc/.libs/libip4tc.so $(INSTALLDIR)/iptables-1.8.11/usr/lib/libip4tc.so
+	cd $(INSTALLDIR)/iptables-1.8.11/usr/lib && \
+		ln -sf libip4tc.so libip4tc.so.2 && \
+		ln -sf libip4tc.so libip4tc.so.2.0.0
+	install -D iptables-1.8.11/libxtables/.libs/lib*.so $(INSTALLDIR)/iptables-1.8.11/usr/lib/
+	cd $(INSTALLDIR)/iptables-1.8.11/usr/lib && \
+		ln -sf libxtables.so libxtables.so.12 && \
+		ln -sf libxtables.so libxtables.so.12.4.0
+	install -D iptables-1.8.11/extensions/*.so $(INSTALLDIR)/iptables-1.8.11/usr/lib/xtables
+
+ifeq ($(RTCONFIG_IPV6),y)
+	cd $(INSTALLDIR)/iptables-1.8.11/usr/sbin && \
+		ln -sf xtables-legacy-multi ip6tables-restore && \
+		ln -sf xtables-legacy-multi ip6tables-save && \
+		ln -sf xtables-legacy-multi ip6tables
+	install -D iptables-1.8.11/libiptc/.libs/libip6tc.so $(INSTALLDIR)/iptables-1.8.11/usr/lib/libip6tc.so
+	cd $(INSTALLDIR)/iptables-1.8.11/usr/lib && \
+		ln -sf libip6tc.so libip6tc.so.2 && \
+		ln -sf libip6tc.so libip6tc.so.2.0.0
+endif
+
+	$(STRIP) $(INSTALLDIR)/iptables-1.8.11/usr/sbin/xtables-legacy-multi
+	$(STRIP) $(INSTALLDIR)/iptables-1.8.11/usr/lib/*.so*
+	$(STRIP) $(INSTALLDIR)/iptables-1.8.11/usr/lib/xtables/*.so*
+
+iptables-1.8.11-clean:
+	[ ! -f iptables-1.8.11/Makefile ] || $(MAKE) -C iptables-1.8.11 KERNEL_DIR=$(LINUX_INC_DIR) distclean
+	@rm -f iptables-1.8.11/Makefile
 
 miniupnpd/config.h: shared/version.h
 ifeq ($(RTCONFIG_IGD2),y)
@@ -5001,8 +5130,18 @@ else
 		WITHOUT_XATTR=1 -C $@
 endif
 
+ifeq ($(HND_ROUTER),y)
+# HND images already get mtd-utils 2.2.1 from router-sysdep/mtd, installed into
+# /bin. This tree is 1.5.0 and installs into /usr/sbin, which the boot PATH
+# ("/usr/sbin:/usr/bin:/sbin:/bin") searches first, so its ubinfo, mtdinfo and
+# nanddump silently shadow the newer ones. mkfs.ubifs is the only binary 2.2.1
+# does not provide (it is configured --without-ubifs), so install just that.
+MTD_UTILS_INSTALL_BINS := BINS=mkfs.ubifs/mkfs.ubifs
+endif
+
 mtd-utils-install:
-	$(MAKE) WITHOUT_XATTR=1 WITHOUT_LZO=1 DESTDIR=$(INSTALLDIR)/mtd-utils -C mtd-utils install
+	$(MAKE) WITHOUT_XATTR=1 WITHOUT_LZO=1 $(MTD_UTILS_INSTALL_BINS) \
+		DESTDIR=$(INSTALLDIR)/mtd-utils -C mtd-utils install
 
 mtd-utils-clean:
 	$(MAKE) -C mtd-utils clean
@@ -5481,7 +5620,7 @@ quagga/stamp-h1:
 	CC=$(CC) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD) \
 	CFLAGS="$(CFLAGS) -Os -Wall -ffunction-sections -fdata-sections -fPIC" \
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
-	$(CONFIGURE) --prefix=/usr --sysconfdir=/etc --enable-shared --disable-static \
+	$(CONFIGURE) --prefix=/usr --sysconfdir=/etc --localstatedir=/var/run --enable-shared --disable-static \
 	--disable-ripngd --disable-ospfd --disable-doc --disable-ospfclient \
 	--disable-ospf6d --disable-bgpd --disable-bgp-announce --disable-babeld \
 	--disable-silent-rules \
@@ -8114,7 +8253,7 @@ strongswan/Makefile: strongswan/configure
 	--with-user=admin \
 	CFLAGS="-O0 -Wall -Wno-format -Wno-format-security -Wno-pointer-sign \
 		-I$(TOP)/openssl/include -I$(STAGEDIR)/usr/include $(EXTRACFLAGS) \
-		$(if $(filter y,$(HND_ROUTER)),$(if $(filter 4908 4912 6813 6756,$(BRCM_CHIP)),-DHND_ROUTER,),)" \
+		$(if $(filter WIFI7_SDK_20250506,$(ASUSWRT_BRCM_SDK_VERSION)),$(if $(filter 6813 6765,$(BRCM_CHIP)),-DXFRM_FORCE_64BIT_LAYOUT,),)" \
 	LDFLAGS="-L$(TOP)/openssl -L$(STAGEDIR)/usr/lib $(EXTRALDFLAGS)" \
 	LIBS="-lssl -lcrypto -lpthread -ldl -lm"
 
@@ -10702,6 +10841,7 @@ endif
 
 .PHONY : bcmtm
 
+ifeq ($(BUILD_VLANCTL),y)
 ifneq ($(PREBUILT_BCMBIN),1)
 vlanctl: vlanctl_lib bcm_flashutil
 else
@@ -10709,10 +10849,19 @@ vlanctl:
 endif
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
 	$(MAKE) -C $(TOPX_DIR)
+else
+vlanctl:
+	@echo "do nothing"
+endif
 
+ifeq ($(BUILD_VLANCTL),y)
 vlanctl-install:
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/vlanctl) $(wildcard vlanctl)))
 	$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/vlanctl install
+else
+vlanctl-install:
+	@echo "do nothing"
+endif
 
 .PHONY : vlanctl
 
@@ -10898,6 +11047,22 @@ stress:
 	$(MAKE) -C $(TOPX_DIR)
 
 .PHONY : stress
+
+ifeq ($(BUILD_MEMTESTER),y)
+memtester:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR)
+
+.PHONY : memtester
+
+# The generic %-clean rule skips packages that only exist under
+# $(TOP_PLATFORM), so provide an explicit clean rule here.
+memtester-clean:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/memtester) $(wildcard memtester)))
+	-@[ ! -d "$(TOPX_DIR)" ] || $(MAKE) -C $(TOPX_DIR) clean
+
+.PHONY : memtester-clean
+endif
 
 vpmstats:
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
@@ -11568,6 +11733,16 @@ dhcpfwd-install:
 	install -D dhcpfwd/dhcpfwd $(INSTALLDIR)/dhcpfwd/usr/sbin/dhcpfwd
 	$(STRIP) $(INSTALLDIR)/dhcpfwd/usr/sbin/dhcpfwd
 
+#mod_snooper:
+#	$(MAKE) -C $@
+
+#mod_snooper-clean:
+#	$(MAKE) -C dhcpfwd clean
+
+#mod_snooper-install:
+#	install -D mod_snooper/mod_snooper $(INSTALLDIR)/mod_snooper/usr/sbin/mod_snooper
+#	$(STRIP) $(INSTALLDIR)/mod_snooper/usr/sbin/mod_snooper
+
 dns_ping: sqlite3 json-c $(if $(RTCONFIG_LIB_CODB),libcodb)
 	@$(SEP)
 	$(MAKE) -C $@
@@ -11733,7 +11908,6 @@ usbmuxd-1.1.1-clean:
 	@rm -rf usbmuxd-1.1.1/Makefile usbmuxd-1.1.1/*/.deps
 endif
 endif
-
 
 #
 # Generic rules

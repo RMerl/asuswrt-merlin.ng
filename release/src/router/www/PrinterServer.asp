@@ -58,12 +58,12 @@
 }
 .MethodDesc{
 	font-style: italic;
-	color: #999;
+	color: var(--wrt-text-muted-color, #999);
 }
 .imdShade{
-	-moz-box-shadow: 15px 15px 10px #333;
-	-webkit-box-shadow: 15px 15px 10px #333;
-	box-shadow: 15px 15px 10px #333;
+	-moz-box-shadow: var(--wrt-card-shadow, 15px 15px 10px #333);
+	-webkit-box-shadow: var(--wrt-card-shadow, 15px 15px 10px #333);
+	box-shadow: var(--wrt-card-shadow, 15px 15px 10px #333);
 }
 .perNode_app_table{
 	width: 740px;
@@ -74,7 +74,7 @@
 }
 
 .perNode_nohover:hover{
-	background-color: #21333e;
+	background-color: var(--surface-hover, #21333e);
 	*background-color: #21333e;
 }
 </style>

@@ -1,0 +1,79 @@
+#!/bin/bash
+
+set -e
+
+DUMP="*filter
+:foo - [0:0]
+:bar - [0:0]
+-A foo -j ACCEPT
+COMMIT
+*nat
+:natfoo - [0:0]
+:natbar - [0:0]
+-A natfoo -j ACCEPT
+COMMIT
+*raw
+:rawfoo - [0:0]
+COMMIT
+*mangle
+:manglefoo - [0:0]
+COMMIT
+*security
+:secfoo - [0:0]
+COMMIT
+"
+
+$XT_MULTI iptables-restore <<< "$DUMP"
+$XT_MULTI ip6tables-restore <<< "$DUMP"
+
+EXPECT="Flushing chain \`INPUT'
+Flushing chain \`FORWARD'
+Flushing chain \`OUTPUT'
+Flushing chain \`bar'
+Flushing chain \`foo'
+Deleting chain \`bar'
+Deleting chain \`foo'
+ACCEPT  all opt -- in * out *  0.0.0.0/0  -> 0.0.0.0/0
+Flushing chain \`PREROUTING'
+Flushing chain \`INPUT'
+Flushing chain \`OUTPUT'
+Flushing chain \`POSTROUTING'
+Flushing chain \`natbar'
+Flushing chain \`natfoo'
+Deleting chain \`natbar'
+Deleting chain \`natfoo'
+ACCEPT  all opt -- in * out *  0.0.0.0/0  -> 0.0.0.0/0
+Flushing chain \`PREROUTING'
+Flushing chain \`OUTPUT'
+Flushing chain \`rawfoo'
+Deleting chain \`rawfoo'
+Flushing chain \`PREROUTING'
+Flushing chain \`INPUT'
+Flushing chain \`FORWARD'
+Flushing chain \`OUTPUT'
+Flushing chain \`POSTROUTING'
+Flushing chain \`manglefoo'
+Deleting chain \`manglefoo'
+Flushing chain \`INPUT'
+Flushing chain \`FORWARD'
+Flushing chain \`OUTPUT'
+Flushing chain \`secfoo'
+Deleting chain \`secfoo'"
+
+EXPECT6=$(sed -e 's/0\.0\.0\.0/::/g' <<< "$EXPECT")
+
+diff -u -Z <(echo "$EXPECT") <($XT_MULTI iptables-restore -v <<< "$DUMP")
+diff -u -Z <(echo "$EXPECT6") <($XT_MULTI ip6tables-restore -v <<< "$DUMP")
+
+DUMP="*filter
+:baz - [0:0]
+-F foo
+-X bar
+-A foo -j ACCEPT
+COMMIT
+"
+
+EXPECT=""
+for ipt in iptables-restore ip6tables-restore; do
+	diff -u -Z <(echo -ne "$EXPECT") <($XT_MULTI $ipt -v --noflush <<< "$DUMP")
+done

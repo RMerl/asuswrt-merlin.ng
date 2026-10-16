@@ -1,0 +1,26 @@
+iptables-translate -A INPUT -p icmp --icmp-type echo-request -m time --weekdays Sa,Su -j REJECT
+nft 'add rule ip filter INPUT icmp type echo-request meta day { 6, 0 } counter reject'
+
+iptables-translate -A INPUT -p icmp --icmp-type echo-request -m time --timestart 12:00 -j REJECT
+nft 'add rule ip filter INPUT icmp type echo-request meta hour "12:00:00"-"23:59:59" counter reject'
+
+iptables-translate -A INPUT -p icmp --icmp-type echo-request -m time --timestop 12:00 -j REJECT
+nft 'add rule ip filter INPUT icmp type echo-request meta hour "00:00:00"-"12:00:00" counter reject'
+
+iptables-translate -A INPUT -p icmp --icmp-type echo-request -m time --datestart 2021 -j REJECT
+nft 'add rule ip filter INPUT icmp type echo-request meta time "2021-01-01 00:00:00"-"2038-01-19 03:14:07" counter reject'
+
+iptables-translate -A INPUT -p icmp --icmp-type echo-request -m time --datestop 2021 -j REJECT
+nft 'add rule ip filter INPUT icmp type echo-request meta time "1970-01-01 00:00:00"-"2021-01-01 00:00:00" counter reject'
+
+iptables-translate -A INPUT -p icmp --icmp-type echo-request -m time --datestop 2021-01-29T00:00:00 -j REJECT
+nft 'add rule ip filter INPUT icmp type echo-request meta time "1970-01-01 00:00:00"-"2021-01-29 00:00:00" counter reject'
+
+iptables-translate -A INPUT -p icmp --icmp-type echo-request -m time --datestart 2020-01-29T00:00:00 --timestart 12:00 -j REJECT
+nft 'add rule ip filter INPUT icmp type echo-request meta time "2020-01-29 00:00:00"-"2038-01-19 03:14:07" meta hour "12:00:00"-"23:59:59" counter reject'
+
+iptables-translate -A INPUT -p icmp --icmp-type echo-request -m time --datestart 2020-01-29T00:00:00 --timestart 12:00 --timestop 19:00 --weekdays Mon,Tue,Wed,Thu,Fri -j REJECT
+nft 'add rule ip filter INPUT icmp type echo-request meta time "2020-01-29 00:00:00"-"2038-01-19 03:14:07" meta hour "12:00:00"-"19:00:00" meta day { 1, 2, 3, 4, 5 } counter reject'
+
+iptables-translate -A INPUT -p icmp --icmp-type echo-request -m time --datestart 2020-01-29T00:00:00 --timestart 12:00 --timestop 19:00 ! --weekdays Mon,Tue,Wed,Thu,Fri -j REJECT
+nft 'add rule ip filter INPUT icmp type echo-request meta time "2020-01-29 00:00:00"-"2038-01-19 03:14:07" meta hour "12:00:00"-"19:00:00" meta day { 6, 0 } counter reject'

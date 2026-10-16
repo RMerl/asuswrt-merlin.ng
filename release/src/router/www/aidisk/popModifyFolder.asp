@@ -140,7 +140,7 @@ function check_folder_length(folder_name){   //Jieming added at 2013/04/16, to d
 	<table width="100%" class="popTable" border="0" align="center" cellpadding="0" cellspacing="0">
 	<thead>
       <tr>
-        <td colspan="2"><span style="color:#FFF"><#ModFolderTitle#></span><img src="../images/button-close.gif" onClick="parent.hidePop('OverlayMask');"></td>
+        <td colspan="2"><span style="color:var(--wrt-text-color,#FFFFFF)"><#ModFolderTitle#></span><img src="../images/button-close.gif" onClick="parent.hidePop('OverlayMask');"></td>
       </tr>
 	</thead>	  
 	<tbody>

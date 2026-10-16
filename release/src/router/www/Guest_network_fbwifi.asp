@@ -587,7 +587,7 @@ function check_gn_if_status(_subunit, _gn_array) {
 										<tr id="FBWiFi_title">
 											<td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;" colspan="2">
 												<span>Facebook WiFi<!--untranslated--></span>
-												<span id="FBWiFi_radio_hint" style="font-size: 14px;display:none;color:#FC0;margin-left:17px;">* <#GuestNetwork_Radio_Status#><a style="font-family:Lucida Console;color:#FC0;text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(0);"><#btn_go#></a>
+												<span id="FBWiFi_radio_hint" style="font-size: 14px;display:none;color:var(--wrt-badge-warning-color,#FFCC00);margin-left:17px;">* <#GuestNetwork_Radio_Status#><a style="font-family:Lucida Console;color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(0);"><#btn_go#></a>
 												</span>
 											</td>
 										</tr>
@@ -614,7 +614,7 @@ function check_gn_if_status(_subunit, _gn_array) {
 										</tr>
 										<tr>
 											<td colspan="2">
-												<div style="color:#FC0;">Please notice that current Facebook WiFi only blocks the access from http:// connections before checking in.<!--untranslated--></div>
+												<div style="color:var(--wrt-badge-warning-color,#FFCC00);">Please notice that current Facebook WiFi only blocks the access from http:// connections before checking in.<!--untranslated--></div>
 											</td>
 										</tr>
 									</table>
@@ -682,7 +682,7 @@ function check_gn_if_status(_subunit, _gn_array) {
 											<th>Frequency</th>
 											<td>
 												<select name="fbwifi_unit" class="input_option"></select>
-												<div id="fbwifi_unit_hint" style="color:#FFCC00;"></div>
+												<div id="fbwifi_unit_hint" style="color:var(--wrt-badge-warning-color,#FFCC00);"></div>
 											</td>
 										</tr>
 										<tr>
@@ -719,17 +719,17 @@ function check_gn_if_status(_subunit, _gn_array) {
 													<div>
 														<input type="button" name="btFBSetting" class="button_gen" value="Setting" onclick="configure_fbwifi();">
 													</div>
-													<div style="margin-top:-30px;margin-bottom:9px;margin-left:130px;font-size:16px;color:#FFCC00;">
+													<div style="margin-top:-30px;margin-bottom:9px;margin-left:130px;font-size:16px;color:var(--wrt-badge-warning-color,#FFCC00);">
 														<#Facebook_WiFi_page_connection#>
 													</div>
 												</div>
 												<div id="divGettingID">
 													<img src="images/InternetScan.gif" />
-													<div style="margin-top:-20px;margin-left:30px;font-size:16px;color:#FFCC00;">
+													<div style="margin-top:-20px;margin-left:30px;font-size:16px;color:var(--wrt-badge-warning-color,#FFCC00);">
 														<#Facebook_WiFi_connecting#>
 													</div>
 												</div>
-												<div id="divWanState" style="font-size:16px;color:#FFCC00;">
+												<div id="divWanState" style="font-size:16px;color:var(--wrt-badge-warning-color,#FFCC00);">
 														<#Facebook_WiFi_disconnected#>
 												</div>
 												

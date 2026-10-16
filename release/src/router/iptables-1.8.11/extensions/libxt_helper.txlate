@@ -1,0 +1,5 @@
+iptables-translate -A FORWARD -m helper --helper sip
+nft 'add rule ip filter FORWARD ct helper "sip" counter'
+
+iptables-translate -A FORWARD -m helper ! --helper ftp
+nft 'add rule ip filter FORWARD ct helper != "ftp" counter'

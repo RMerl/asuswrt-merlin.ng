@@ -97,25 +97,11 @@ var m = new lang();
 var g_storage = new myStorage();
 var g_captcha = -1;
 
-function makeid(){
-    var text = "";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-    for( var i=0; i < 20; i++ )
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-    return text;
-}
-
 $("document").ready(function() {
-	//- create access token
-	var asus_token = ( g_storage.gett('asus_token') == undefined ) ? '' : g_storage.gett('asus_token');
-	if(asus_token==""){
-		asus_token = makeid();
-		g_storage.sett('asus_token', asus_token);
-	}
-	
-	var loc_lan = String(window.navigator.userLanguage || window.navigator.language).toLowerCase();		
+	//- asus_token is issued by the server (Set-Cookie) after a successful
+	//- login; the client must never invent or seed this value itself.
+
+	var loc_lan = String(window.navigator.userLanguage || window.navigator.language).toLowerCase();
 	var lan = ( g_storage.get('lan') == undefined ) ? loc_lan : g_storage.get('lan');
 	m.setLanguage(lan);
 	

@@ -70,7 +70,7 @@
 
     a, .feature-desc {
         font-size: 12px;
-        color: #FC0;
+        color: var(--wrt-badge-warning-color,#FC0);
         height: auto;
         padding-top: 5px;
     }
@@ -122,10 +122,6 @@
 
     .icon-delete, .icon-export-file {
         background-color: var(--textbox-color);
-    }
-
-    .daterangepicker {
-        color: var(--black-alpha-100);
     }
 
     /* Modal Dialog Styles */
@@ -470,7 +466,7 @@
 <div id="whiteThemeWrapper" class="container-fluid mt-3">
     <div class="row">
         <div class="col-12">
-            <div id="content_title" class="formfonttitle"><#AiProtection_title#>
+            <div id="content_title" class="formfonttitle fw-bold"><#AiProtection_title#>
             </div>
             <div class="split-line my-2"></div>
             <div class="d-flex flex-row align-items-center gap-2 mb-3">
@@ -487,8 +483,8 @@
             </div>
         </div>
         <div class="col-12 col-md-6 mb-3">
-            <div class="card pt-2 h-100" id="router_scan_trigger">
-                <div class="card-header d-flex align-items-center"><div class="icon icon-search text-primary icon-size-28"></div><#AiProtection_scan#></div>
+            <div class="card h-100" id="router_scan_trigger">
+                <div class="card-header border-0 d-flex align-items-center"><div class="icon icon-search text-primary icon-size-28"></div><#AiProtection_scan#></div>
                 <div class="card-body d-flex flex-row justify-content-between align-items-center">
                     <div class="router-scan-desc"><#AiProtection_scan_desc#></div>
                     <button type="button" class="btn btn-primary" onclick="openRouterScanModal()">
@@ -498,8 +494,8 @@
             </div>
         </div>
         <div class="col-12 col-md-6 mb-3">
-            <div class="card pt-2 h-100" id="feature_desc">
-                <div class="card-header"><#AiProtection_title#></div>
+            <div class="card h-100" id="feature_desc">
+                <div class="card-header border-0"><#AiProtection_title#></div>
                 <div class="card-body d-flex flex-column gap-3">
                     <div class="card-body-block">
                     </div>
@@ -566,6 +562,7 @@
 
     const _nvram = {
         ...httpApi.nvramGet([
+            "productid", "odmpid",
             "TM_EULA",
             "TM_EULA_time",
             "wrs_protect_enable",
@@ -595,29 +592,14 @@
             "ctf_fa",
             "ark_mals_enable",
             "ark_adblock_enable",
-            "ark_tracker_enable"
+            "ark_tracker_enable",
+            "ark_ids_enable"
         ], true)
     };
 
 
     let supportedFeatures = [];
     window.supportedFeatures = supportedFeatures;
-
-
-    var whitelist = {};
-
-    function getWhitelist() {
-        $.ajax({
-            url: "/wrs_wbl.cgi?action=get&type=0",
-            type: "POST",
-            success: function (response) {
-                let res = JSON.parse(response).data;
-                for (let item of res) {
-                    whitelist[item] = true;
-                }
-            },
-        });
-    }
 
     function genRouterScan() {
         let {
@@ -648,6 +630,11 @@
 
         //check default username/password
         let defaultNamePasswd = httpApi.hookGet("check_acorpw") === "1" ? true : false;
+
+        const useUI4Redirect = (typeof isSupport === "function") && isSupport("UI4");
+        const scanLink = (asp, label) => useUI4Redirect
+            ? `<a href="javascript:void(0)" onclick="pageRedirect('settings','${asp}'); return false;">${label}</a>`
+            : `<a href='/${asp}' target='_blank'>${label}</a>`;
 
         // password strength of wireless
         let score = httpApi.hookGet("check_passwd_strength-wl_key"),
@@ -706,10 +693,11 @@
                             </div>
                             <button
                                 type="button"
-                                class="btn btn-sm mx-3 router-scan-button button-danger">
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${defaultNamePasswd ? "button-danger" : "button-safe"}">
                                 ${
             defaultNamePasswd
-                ? "<a href='/Advanced_System_Content.asp' target='_blank'><#checkbox_No#></a>"
+                ? scanLink("Advanced_System_Content.asp", "<#checkbox_No#>")
                 : "<#checkbox_Yes#>"
         }
                             </button>
@@ -750,7 +738,7 @@
                                 ${
             wlEncryptEnough
                 ? " <#PASS_score3#>"
-                : "<a href='/Advanced_Wireless_Content.asp' target='_blank'><#PASS_score1#></a>"
+                : scanLink("Advanced_Wireless_Content.asp", "<#PASS_score1#>")
         }
                             </button>
                         </div>
@@ -766,7 +754,7 @@
                                 ${!wpsEnable ? "button-safe" : "button-warning"}">
 
                                 ${
-            !wpsEnable ? "<#checkbox_Yes#>" : "<a href='/Advanced_WWPS_Content.asp' target='_blank'><#checkbox_No#></a>"
+            !wpsEnable ? "<#checkbox_Yes#>" : scanLink("Advanced_WWPS_Content.asp", "<#checkbox_No#>")
         }
                             </button>
                         </div>
@@ -781,7 +769,7 @@
                                 class="btn btn-sm mx-3 router-scan-button
                                 ${uPnpHasRisk ? "button-warning" : "button-safe"}">
                                 ${
-            uPnpHasRisk ? "<a href='/" + redirectPage + "' target='_blank'><#checkbox_No#></a>" : "<#checkbox_Yes#>"
+            uPnpHasRisk ? scanLink(redirectPage, "<#checkbox_No#>") : "<#checkbox_Yes#>"
         }
                             </button>
                         </div>
@@ -797,7 +785,7 @@
                                 ${dmzEnable ? "button-warning" : "button-safe"}">
                                 ${
             dmzEnable
-                ? "<a href='/Advanced_Exposed_Content.asp' target='_blank'><#checkbox_No#></a>"
+                ? scanLink("Advanced_Exposed_Content.asp", "<#checkbox_No#>")
                 : "<#checkbox_Yes#>"
         }
                             </button>
@@ -814,7 +802,7 @@
                                 ${portTriggerEnable ? "button-warning" : "button-safe"}">
                                 ${
             portTriggerEnable
-                ? "<a href='/Advanced_PortTrigger_Content.asp' target='_blank'><#checkbox_No#></a>"
+                ? scanLink("Advanced_PortTrigger_Content.asp", "<#checkbox_No#>")
                 : "<#checkbox_Yes#>"
         }
                             </button>
@@ -831,7 +819,7 @@
                                 ${portForwardingEnable ? "button-warning" : "button-safe"}">
                                 ${
             portForwardingEnable
-                ? "<a href='/Advanced_VirtualServer_Content.asp' target='_blank'><#checkbox_No#></a>"
+                ? scanLink("Advanced_VirtualServer_Content.asp", "<#checkbox_No#>")
                 : "<#checkbox_Yes#>"
         }
                             </button>
@@ -848,7 +836,7 @@
                                 ${accessFromWAN ? "button-warning" : "button-safe"}">
                                 ${
             accessFromWAN
-                ? "<a href='/Advanced_System_Content.asp' target='_blank'><#checkbox_No#></a>"
+                ? scanLink("Advanced_System_Content.asp", "<#checkbox_No#>")
                 : "<#checkbox_Yes#>"
         }
                             </button>
@@ -865,7 +853,7 @@
                                 ${pingFromWAN ? "button-warning" : "button-safe"}">
                                 ${
             pingFromWAN
-                ? "<a href='/Advanced_BasicFirewall_Content.asp' target='_blank'><#checkbox_No#></a>"
+                ? scanLink("Advanced_BasicFirewall_Content.asp", "<#checkbox_No#>")
                 : "<#checkbox_Yes#>"
         }
                             </button>
@@ -880,7 +868,7 @@
                                 type="button"
                                 class="btn btn-sm mx-3 router-scan-button
                                 ${ftpAnonymous ? "button-warning" : "button-safe"}">
-                                ${ftpAnonymous ? "<a href='/Advanced_AiDisk_ftp.asp' target='_blank'><#checkbox_No#></a>" : "<#checkbox_Yes#>"}
+                                ${ftpAnonymous ? scanLink("Advanced_AiDisk_ftp.asp", "<#checkbox_No#>") : "<#checkbox_Yes#>"}
                             </button>
                         </div>
                     </div>
@@ -895,7 +883,7 @@
                                 ${sambaAnonymous ? "button-warning" : "button-safe"}">
                                 ${
             sambaAnonymous
-                ? "<a href='/Advanced_AiDisk_samba.asp' target='_blank'><#checkbox_No#></a>"
+                ? scanLink("Advanced_AiDisk_samba.asp", "<#checkbox_No#>")
                 : "<#checkbox_Yes#>"
         }
                             </button>
@@ -990,158 +978,6 @@
 
             document.body.removeChild(element);
         });
-    }
-
-    function manageWhiteList() {
-        let whitelist_length = Object.keys(whitelist).length;
-        const WHITELIST_MAX_LENGTH = 64;
-        let template = `
-        <div class="d-flex justify-content-center mt-5">
-            <div class="card-float">
-                <div class="card-header-float"><#Web_Title2#></div>
-                <div class="card-body-float">
-                    <div><#AiProtection_sites_trust#></div>
-                    <div class="d-flex align-items-center py-2">
-                        <div class="me-auto"><#Domain_Name#></div>
-                        <div class="card-content-float">
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="whitelist_domain_name" value="" />
-                                <button class="btn btn-input-icon" type="button">
-                                    <div role="icon" class="icon-size-24 icon-add-circle" id="addWhitelist"></div>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-3">
-                        <div><#WhiteList#>: <span id="whitelist_length">${whitelist_length}</span>/${WHITELIST_MAX_LENGTH} (<#List_limit#> ${WHITELIST_MAX_LENGTH})</div>
-                        <div class="table-responsive detail-table-height">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th><#Domain_Name#></th>
-                                        <th><#btn_remove#></th>
-                                    </tr>
-                                </thead>
-                                <tbody data-table="whitelist_tbody">
-        `;
-
-        for (let item of Object.keys(whitelist)) {
-            template += `
-            <tr>
-                <td>${item}</td>
-                <td><div role="icon" class="icon-size-24 icon-delete-circle me-3" data-bind="delete_white_list" data-key="${item}"></div></td>
-            </tr>
-        `;
-        }
-
-        template += `
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                </div>
-                <div class="d-flex justify-content-end card-footer-float">
-                    <div class="text-center btn-regular" id="whitelist_close">
-                        <div><#CTL_close#></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-
-        let element = document.createElement("div");
-        element.className = "shadow-bg";
-        element.innerHTML = template;
-        document.body.appendChild(element);
-
-        document.getElementById("addWhitelist").addEventListener("click", function () {
-            let url = document.getElementById("whitelist_domain_name").value;
-            whitelist_length = Object.keys(whitelist).length;
-            let hintElement = document.getElementById("whitelist_domain_name").parentNode.nextElementSibling;
-            let ipformat =
-                /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-
-            let domainNameFormat = /^((?:(?:(?:\w[\.\-\+]?)*)\w)+)((?:(?:(?:\w[\.\-\+]?){0,62})\w)+)\.(\w{2,6})$/;
-            if (hintElement) {
-                hintElement.remove();
-            }
-
-            if (
-                whitelist[url] ||
-                whitelist_length >= WHITELIST_MAX_LENGTH ||
-                url === "" ||
-                (!domainNameFormat.test(url) && !ipformat.test(url))
-            ) {
-                let text = "";
-                if (whitelist[url]) {
-                    text = "<#AiProtection_ErrMsg_duplicate#>";
-                } else if (whitelist_length >= WHITELIST_MAX_LENGTH) {
-                    text = "<#AiProtection_ErrMsg_full#>";
-                } else if (url === "") {
-                    text = "<#AiProtection_ErrMsg_blank#>";
-                } else if (!domainNameFormat.test(url) && !ipformat.test(url)) {
-                    text = "<#AiProtection_ErrMsg_wrong_format#>";
-                }
-
-                let element = document.createElement("div");
-                element.className = "mt-2 hint-text";
-                element.innerHTML = text;
-                document.getElementById("whitelist_domain_name").parentNode.insertAdjacentElement("afterend", element);
-                return false;
-            }
-
-            let target = document.querySelector('[data-table="whitelist_tbody"]');
-            $.ajax({
-                url: "/wrs_wbl.cgi?action=add&type=0&url_type=url&url=" + url,
-                type: "POST",
-                success: function (response) {
-                    whitelist[url] = true;
-                    let trElement = document.createElement("tr");
-                    let code = `
-                    <td>${url}</td>
-                    <td><div role="icon" class="icon-size-24 icon-delete-circle me-3" data-bind="delete_white_list" data-key="${url}"></div></td>
-                `;
-
-                    trElement.innerHTML = code;
-                    target.appendChild(trElement);
-                    whitelist_length = Object.keys(whitelist).length;
-                    document.getElementById("whitelist_length").innerHTML = whitelist_length;
-                    document.getElementById("whitelist_domain_name").value = "";
-                    document.querySelector("[data-key='" + url + "']").addEventListener("click", function () {
-                        delete whitelist[url];
-                        trElement.remove();
-                        whitelist_length = Object.keys(whitelist).length;
-                        document.getElementById("whitelist_length").innerHTML = whitelist_length;
-                    });
-                },
-            });
-        });
-
-        document.getElementById("whitelist_close").addEventListener("click", function () {
-            document.body.removeChild(element);
-        });
-
-        for (let target of document.querySelectorAll("[data-bind='delete_white_list']")) {
-            let trElement = target.parentNode.parentNode;
-            target.addEventListener("click", function () {
-                let url = this.getAttribute("data-key");
-                if (whitelist[url] === undefined) {
-                    return false;
-                }
-
-                $.ajax({
-                    url: "/wrs_wbl.cgi?action=del&type=0&url_type=url&url=" + url,
-                    type: "POST",
-                    success: function (response) {
-                        delete whitelist[url];
-                        trElement.remove();
-                        document.getElementById("whitelist_length").innerHTML = Object.keys(whitelist).length;
-                    },
-                });
-            });
-        }
     }
 
     function showTMEula(type) {
@@ -1240,8 +1076,8 @@
         const tabsHtml = `
             <div class="row">
                 <div class="col-12">
-                    <div class="card pt-2">
-                        <div class="card-header row">
+                    <div class="card">
+                        <div class="card-header border-0 row">
                             <div class="col-6">
                                 <div><#AiProtection_Features#></div>
                             </div>
@@ -1328,7 +1164,7 @@
             chartWidget.init();
             item.chartWidget = chartWidget;
 
-            const detailTableWidget = new DetailTableWidget(item.type, div);
+            const detailTableWidget = new DetailTableWidget(item.type, div, _nvram);
             detailTableWidget.setEraseDbCallback(eraseDB);
             detailTableWidget.init();
             item.detailTableWidget = detailTableWidget;
@@ -1358,6 +1194,12 @@
                 urlBase: "/getArkInfo.cgi"
             },
             {
+                type: "ark_ids",
+                title: `<#AiProtection_two-way_IPS#>`,
+                support: "ark_ids",
+                urlBase: "/getArkInfo.cgi"
+            },
+            {
                 type: "dpi_mals",
                 title: `<#AiProtection_sites_blocking#>`,
                 support: "dpi_mals",
@@ -1372,7 +1214,9 @@
             },
         ];
 
-        supportedFeatures = features.map(f => new AiProtectionFeature(f)).filter(f => f.support);
+        supportedFeatures = features
+            .map(f => new AiProtectionFeature(f, _nvram))
+            .filter(f => f.support);
 
         if (view === "overview") {
             genRouterScan();
@@ -1386,7 +1230,6 @@
         }
 
         initTabs();
-        getWhitelist();
 
         supportedFeatures.forEach(feature => {
             feature.fetchData();

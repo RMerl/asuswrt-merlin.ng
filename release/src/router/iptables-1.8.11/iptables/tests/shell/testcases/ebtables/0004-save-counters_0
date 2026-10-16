@@ -1,0 +1,64 @@
+#!/bin/bash
+
+set -e
+
+# there is no legacy backend to test
+[[ $XT_MULTI == *xtables-nft-multi ]] || { echo "skip $XT_MULTI"; exit 0; }
+
+$XT_MULTI ebtables --init-table
+$XT_MULTI ebtables -A FORWARD -i nodev123 -o nodev432 -j ACCEPT
+$XT_MULTI ebtables -A FORWARD -i nodev432 -o nodev123 -j ACCEPT
+
+EXPECT='Bridge table: filter
+
+Bridge chain: FORWARD, entries: 2, policy: ACCEPT
+-i nodev123 -o nodev432 -j ACCEPT
+-i nodev432 -o nodev123 -j ACCEPT'
+
+echo "ebtables -L FORWARD"
+diff -u <(echo -e "$EXPECT") <($XT_MULTI ebtables -L FORWARD)
+
+EXPECT='Bridge table: filter
+
+Bridge chain: FORWARD, entries: 2, policy: ACCEPT
+-i nodev123 -o nodev432 -j ACCEPT , pcnt = 0 -- bcnt = 0
+-i nodev432 -o nodev123 -j ACCEPT , pcnt = 0 -- bcnt = 0'
+
+echo "ebtables -L FORWARD --Lc"
+diff -u <(echo -e "$EXPECT") <($XT_MULTI ebtables -L FORWARD --Lc)
+
+EXPECT='*filter
+:INPUT ACCEPT
+:FORWARD ACCEPT
+:OUTPUT ACCEPT
+-A FORWARD -i nodev123 -o nodev432 -j ACCEPT
+-A FORWARD -i nodev432 -o nodev123 -j ACCEPT'
+
+echo "ebtables-save"
+diff -u <(echo -e "$EXPECT") <($XT_MULTI ebtables-save | grep -v '^#')
+
+EXPECT='*filter
+:INPUT ACCEPT
+:FORWARD ACCEPT
+:OUTPUT ACCEPT
+[0:0] -A FORWARD -i nodev123 -o nodev432 -j ACCEPT
+[0:0] -A FORWARD -i nodev432 -o nodev123 -j ACCEPT'
+
+echo "ebtables-save -c"
+diff -u <(echo -e "$EXPECT") <($XT_MULTI ebtables-save -c | grep -v '^#')
+
+export EBTABLES_SAVE_COUNTER=yes
+
+# -c flag overrides EBTABLES_SAVE_COUNTER variable
+echo "EBTABLES_SAVE_COUNTER=yes ebtables-save -c"
+diff -u <(echo -e "$EXPECT") <($XT_MULTI ebtables-save -c | grep -v '^#')
+
+EXPECT='*filter
+:INPUT ACCEPT
+:FORWARD ACCEPT
+:OUTPUT ACCEPT
+-A FORWARD -i nodev123 -o nodev432 -j ACCEPT -c 0 0
+-A FORWARD -i nodev432 -o nodev123 -j ACCEPT -c 0 0'
+
+echo "EBTABLES_SAVE_COUNTER=yes ebtables-save"
+diff -u <(echo -e "$EXPECT") <($XT_MULTI ebtables-save | grep -v '^#')

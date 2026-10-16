@@ -48,7 +48,7 @@
 .confirm_contentC{
 	font-size: 12pt;
 	padding:0 15px 20px;
-	color:#FFCC00;
+	color:var(--wrt-badge-warning-color,#FFCC00);
 	text-align:left;
 }
 .confirm_contentD{

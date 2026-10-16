@@ -486,11 +486,9 @@ function genClientList(){
 			clientList[thisClientMacAddr].wtfast = parseInt(thisClient.wtfast);
 			clientList[thisClientMacAddr].internetMode = thisClient.internetMode;
 			clientList[thisClientMacAddr].internetState = thisClient.internetState;
-			if(isSupport("stainfo")) {
-				clientList[thisClientMacAddr].curTx = (thisClient.curTx == "") ? "": thisClient.curTx;
-				clientList[thisClientMacAddr].curRx = (thisClient.curRx == "") ? "": thisClient.curRx;
-				clientList[thisClientMacAddr].wlConnectTime = thisClient.wlConnectTime;
-			}
+			clientList[thisClientMacAddr].curTx = (thisClient.curTx == "") ? "": thisClient.curTx;
+			clientList[thisClientMacAddr].curRx = (thisClient.curRx == "") ? "": thisClient.curRx;
+			clientList[thisClientMacAddr].wlConnectTime = thisClient.wlConnectTime;
 
 			if(isSupport("amas")) {
 				if(thisClient.amesh_isRe != undefined) {
@@ -1066,13 +1064,11 @@ function popClientListEditTable(event) {
 					connectModeTip = "<#Radio#>: <#PASS_score4#>\n";
 					break;
 			}
-			if(isSupport("stainfo")) {
-				if(clientInfo.curTx != "")
-					connectModeTip += "Tx Rate: " + clientInfo.curTx + "\n"; /*untranslated*/
-				if(clientInfo.curRx != "")
-					connectModeTip += "Rx Rate: " + clientInfo.curRx + "\n"; /*untranslated*/
-				connectModeTip += "<#Access_Time#>: " + clientInfo.wlConnectTime + "";
-			}
+			if(clientInfo.curTx != "")
+				connectModeTip += "Tx Rate: " + clientInfo.curTx + "\n"; /*untranslated*/
+			if(clientInfo.curRx != "")
+				connectModeTip += "Rx Rate: " + clientInfo.curRx + "\n"; /*untranslated*/
+			connectModeTip += "<#Access_Time#>: " + clientInfo.wlConnectTime + "";
 		}
 
 		if(sw_mode != 4){
@@ -3339,7 +3335,7 @@ function _buildClientListRowHtml(profileArray, objID) {
 	let txRate = "-";
 	let rxRate = "-";
 	let accessTime = "-";
-	if (isSupport("stainfo") && !(isSwMode('mb') || isSwMode('ew'))) {
+	if (!(isSwMode('mb') || isSwMode('ew'))) {
 		if (p.isWL != 0) {
 			txRate = (p.curTx == "") ? "-" : p.curTx;
 			rxRate = (p.curRx == "") ? "-" : p.curRx;

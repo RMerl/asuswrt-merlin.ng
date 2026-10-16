@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# test for crash when comparing rules with standard target
+
+$XT_MULTI iptables -A FORWARD -i eth23 -o eth42 -j DROP
+$XT_MULTI iptables -D FORWARD -i eth23 -o eth42 -j REJECT
+[[ $? -eq 1 ]] || exit 1
+
+# test incorrect deletion of rules with deviating payload
+# in non-standard target
+
+$XT_MULTI iptables -A FORWARD -i eth23 -o eth42 -j MARK --set-mark 23
+$XT_MULTI iptables -D FORWARD -i eth23 -o eth42 -j MARK --set-mark 42
+[[ $? -eq 1 ]] || exit 1

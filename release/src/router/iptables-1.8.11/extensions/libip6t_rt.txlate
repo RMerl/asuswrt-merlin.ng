@@ -1,0 +1,23 @@
+ip6tables-translate -A INPUT -m rt --rt-type 0 -j DROP
+nft 'add rule ip6 filter INPUT rt type 0 counter drop'
+
+ip6tables-translate -A INPUT -m rt ! --rt-len 22 -j DROP
+nft 'add rule ip6 filter INPUT rt hdrlength != 22 counter drop'
+
+ip6tables-translate -A INPUT -m rt --rt-segsleft 26 -j ACCEPT
+nft 'add rule ip6 filter INPUT rt seg-left 26 counter accept'
+
+ip6tables-translate -A INPUT -m rt --rt-type 0 --rt-len 22 -j DROP
+nft 'add rule ip6 filter INPUT rt type 0 rt hdrlength 22 counter drop'
+
+ip6tables-translate -A INPUT -m rt --rt-type 0 --rt-len 22 ! --rt-segsleft 26 -j ACCEPT
+nft 'add rule ip6 filter INPUT rt type 0 rt seg-left != 26 rt hdrlength 22 counter accept'
+
+ip6tables-translate -A INPUT -m rt --rt-segsleft 13:42 -j ACCEPT
+nft 'add rule ip6 filter INPUT rt seg-left 13-42 counter accept'
+
+ip6tables-translate -A INPUT -m rt --rt-segsleft 0:4294967295 -j ACCEPT
+nft 'add rule ip6 filter INPUT exthdr rt exists counter accept'
+
+ip6tables-translate -A INPUT -m rt ! --rt-segsleft 0:4294967295 -j ACCEPT
+nft 'add rule ip6 filter INPUT rt seg-left != 0-4294967295 counter accept'

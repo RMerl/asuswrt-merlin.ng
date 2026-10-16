@@ -1,4 +1,4 @@
-﻿@font-face{
+@font-face{
 	font-family: Roboto;
     src: url(../fonts/Roboto-Regular.woff) format("woff"),
          url(../fonts/Roboto-Regular.ttf) format("opentype");
@@ -68,16 +68,16 @@ body{
 	margin: 12px 0;
 }
 .wpa3_hint{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	margin: 6px 0;
 }
 .faq-link{
-	color: #FC0 !important;
+	color: var(--wrt-badge-warning-color,#FC0) !important;
 	text-decoration: underline !important;
 	cursor: pointer;
 }
 .wl-ready{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	font-size: 13px;
 }
 .button, .table-body, .table-header{

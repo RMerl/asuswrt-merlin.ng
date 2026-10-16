@@ -475,7 +475,7 @@ function check_vpn(){		//true: lAN ip & VPN client ip conflict
 		  <div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 		  <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
       <div class="formfontdesc"><#LANHostConfig_display1_sectiondesc#></div>
-      <div id="VPN_conflict" class="formfontdesc" style="color:#FFCC00;display:none;"><#LANHostConfig_display1_sectiondesc2#></div>
+      <div id="VPN_conflict" class="formfontdesc" style="color:var(--wrt-badge-warning-color,#FFCC00);display:none;"><#LANHostConfig_display1_sectiondesc2#></div>
 		  
 		  <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 		  
@@ -485,7 +485,7 @@ function check_vpn(){		//true: lAN ip & VPN client ip conflict
 			</th>
 			<td>
 			  <input type="text" maxlength="32" class="input_32_table" name="lan_hostname" value="<% nvram_get("lan_hostname"); %>" onkeypress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off"><br/>
-			  <span id="alert_hostname" style="color:#FC0;"></span>
+			  <span id="alert_hostname" style="color:var(--wrt-badge-warning-color,#FFCC00);"></span>
 			</td>
 		  </tr>
 
@@ -495,7 +495,7 @@ function check_vpn(){		//true: lAN ip & VPN client ip conflict
 			</th>
 			<td>
 			  <input type="text" maxlength="32" class="input_32_table" name="lan_domain" value="<% nvram_get("lan_domain"); %>" onkeypress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off"><br/>
-			  <span id="alert_domain" style="color:#FC0;"></span>
+			  <span id="alert_domain" style="color:var(--wrt-badge-warning-color,#FFCC00);"></span>
 			</td>
 		  </tr>
 

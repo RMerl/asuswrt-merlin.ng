@@ -1,0 +1,23 @@
+#!/bin/bash
+
+[[ $XT_MULTI == *xtables-nft-multi ]] || { echo "skip $XT_MULTI"; exit 0; }
+nft -v >/dev/null || { echo "skip $XT_MULTI (no nft)"; exit 0; }
+
+coproc $XT_MULTI iptables-restore --noflush
+
+cat >&"${COPROC[1]}" <<EOF
+*filter
+:foo [0:0]
+COMMIT
+*filter
+:foo [0:0]
+EOF
+
+sleep 1
+$XT_MULTI iptables-save | grep -q ':foo' || exit 1
+nft flush ruleset
+
+echo "COMMIT" >&"${COPROC[1]}"
+# close the pipe to make iptables-restore exit if it didn't error out yet
+eval "exec ${COPROC[1]}>&-"
+wait $COPROC_PID

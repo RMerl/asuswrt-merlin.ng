@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# Another funny rename bug in libiptc:
+# If there is a chain index bucket with only a single chain in it and it is not
+# the last one and that chain is renamed, a chain index rebuild is triggered.
+# Since TC_RENAME_CHAIN missed to temporarily decrement num_chains value, an
+# extra index is allocated and remains NULL. The following insert of renamed
+# chain then segfaults.
+
+(
+	echo "*filter"
+	# first bucket
+	for ((i = 0; i < 40; i++)); do
+		echo ":chain-a-$i - [0:0]"
+	done
+	# second bucket
+	for ((i = 0; i < 40; i++)); do
+		echo ":chain-b-$i - [0:0]"
+	done
+	# third bucket, just make sure it exists
+	echo ":chain-c-0 - [0:0]"
+	echo "COMMIT"
+) | $XT_MULTI iptables-restore
+
+# rename all chains of the middle bucket
+(
+	echo "*filter"
+	for ((i = 0; i < 40; i++)); do
+		echo "-E chain-b-$i chain-d-$i"
+	done
+	echo "COMMIT"
+) | $XT_MULTI iptables-restore --noflush

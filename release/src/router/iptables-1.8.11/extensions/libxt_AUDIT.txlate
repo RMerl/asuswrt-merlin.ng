@@ -1,0 +1,8 @@
+iptables-translate -t filter -A INPUT -j AUDIT --type accept
+nft 'add rule ip filter INPUT counter log level audit'
+
+iptables-translate -t filter -A INPUT -j AUDIT --type drop
+nft 'add rule ip filter INPUT counter log level audit'
+
+iptables-translate -t filter -A INPUT -j AUDIT --type reject
+nft 'add rule ip filter INPUT counter log level audit'

@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# Missing BROUTING-awareness in ebt_get_current_chain() caused an odd caching bug when restoring:
+# - with --noflush
+# - a second table after the broute one
+# - A policy command but no chain line for BROUTING chain
+
+set -e
+
+case "$XT_MULTI" in
+*xtables-nft-multi)
+	;;
+*)
+	echo "skip $XT_MULTI"
+	exit 0
+	;;
+esac
+
+$XT_MULTI ebtables-restore --noflush <<EOF
+*broute
+-P BROUTING ACCEPT
+*nat
+-P PREROUTING ACCEPT
+COMMIT
+EOF

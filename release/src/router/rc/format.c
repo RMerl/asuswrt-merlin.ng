@@ -303,3 +303,38 @@ void adjust_vpnc_config(void)
 	
 }
 #endif
+
+void adjust_dns_ping_list(void)
+{
+       char *dns_ping_list;
+       char new_list[2048];
+       const char *old_pattern = "<114DNS>114.114.114.115";
+       const char *new_pattern = "<DNSPod>119.29.29.29";
+       const char *p;
+
+       dns_ping_list = nvram_safe_get("dns_ping_list");
+
+       if (dns_ping_list[0] != '\0' && strstr(dns_ping_list, old_pattern) != NULL) {
+               /* Replace old_pattern with new_pattern */
+               memset(new_list, 0, sizeof(new_list));
+               p = dns_ping_list;
+
+               while (*p != '\0' && (int)strlen(new_list) < (int)sizeof(new_list) - 1) {
+                       /* Check if we're at the start of the old pattern */
+                       if (strncmp(p, old_pattern, strlen(old_pattern)) == 0) {
+                               /* Replace with new pattern */
+                               strncat(new_list, new_pattern, sizeof(new_list) - strlen(new_list) - 1);
+                               p += strlen(old_pattern);
+                       } else {
+                               /* Copy character as-is */
+                               int len = strlen(new_list);
+                               new_list[len] = *p;
+                               new_list[len + 1] = '\0';
+                               p++;
+                       }
+               }
+
+               nvram_set("dns_ping_list", new_list);
+       }
+}
+

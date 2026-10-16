@@ -23,7 +23,7 @@
 		font-family: monospace;
 	}
 	.role {
-		color:#A4B7C3;
+		color:var(--wrt-text-muted-color,#A4B7C3);
 		margin-left: 10px;
 	}
 	.model {
@@ -32,20 +32,20 @@
 		margin-top:-5px;
 	}
 	.status_note {
-		color:#A4B7C3;
+		color:var(--wrt-text-muted-color,#A4B7C3);
 		margin-top:18px;
 	}
 	.status_note_status_idx_null {
-		color:#A4B7C3;
+		color:var(--wrt-text-muted-color,#A4B7C3);
 		margin-top:39px;
 	}
 	.status_note_white {
-		color:#A4B7C3;
+		color:var(--wrt-text-muted-color,#A4B7C3);
 		margin-top:2px;
 		font-size:12px;
 	}
 	.status_note_white_status_idx_null {
-		color:#A4B7C3;
+		color:var(--wrt-text-muted-color,#A4B7C3);
 		margin-top:26px;
 		font-size:12px;
 	}
@@ -85,7 +85,7 @@
 	bottom: -3px;
 	height: 1px;
 	width: 95%;
-	border-bottom: 1px solid #3E4E59;
+	border-bottom: 1px solid var(--border-default, #3E4E59);
 }
 .port_status_bg > div{
 	display: flex;
@@ -104,14 +104,14 @@
 	right: -4px;
 	top: -4%;
 	height: 100%;
-	border-left: 1px solid #3E4E59;
+	border-left: 1px solid var(--border-default, #3E4E59);
 }
 .port_status_bg .label_L_bg:before{
 	position: absolute;
 	content: "";
 	top: -4%;
 	height: 100%;
-	border-right: 1px solid #3E4E59;
+	border-right: 1px solid var(--border-default, #3E4E59);
 	left: -6px;
 }
 .port_status_bg .label_W_bg > div, .port_status_bg .label_L_bg > div{
@@ -276,7 +276,7 @@ httpApi.get_VLAN_port_status = function(mac) {
 										data["special_port_name"] = data["special_port_name"] + "G baseT";
 								} else
 									data["special_port_name"] = data["special_port_name"] + "G";
-								
+
 							}
 						}
 					}
@@ -691,7 +691,7 @@ function arrayRemove(arr, value) {
 	});
 }
 
-function update_VLAN_ports() { //ajax update VLAN ports	
+function update_VLAN_ports() { //ajax update VLAN ports
 
 	return VLAN_port_status; //no update temporarily
 }
@@ -793,7 +793,7 @@ function gen_VLAN_port_table(port_profile) {
 			var $port_table_tr_profile = $("<tr>").appendTo($port_table_bg);
 			var $port_table_th_profile = $("<th>").appendTo($port_table_tr_profile);
 			$port_table_th_profile.css({"width":"20%"});
-			$port_table_th_profile.html("SDN (VLAN) Profile"); /* Untranslated */			
+			$port_table_th_profile.html("SDN (VLAN) Profile"); /* Untranslated */
 
 			//Note: modify array
 			var wan_aggregation_array = [];
@@ -806,7 +806,7 @@ function gen_VLAN_port_table(port_profile) {
 			var link_aggregation_ui_display = [];
 			var iptv_ui_display = [];
 			var wan_ui_display = [];
-			var ext_switch_ui_display = [];	
+			var ext_switch_ui_display = [];
 
 			if (port_length > 0) { //With port_info //with empty 0 item
 
@@ -820,7 +820,7 @@ function gen_VLAN_port_table(port_profile) {
 					//var lanport_idx = port_profile[mesh_mac[i]].port[key].portLabel.replace("L", "");
 					var lanport_idx = port_profile[mesh_mac[i]].port[key].portLabel.replace("W", "").replace("L", "");
 					if(col_count<=4){
-						
+
 						var $port_table_td_status = $("<td>").appendTo($port_table_tr_status);
 						$port_table_td_status.css("width", "100px");
 						var $port_table_td_profile = $("<td>").appendTo($port_table_tr_profile);
@@ -852,7 +852,7 @@ function gen_VLAN_port_table(port_profile) {
 						}
 						switch (port_profile[mesh_mac[i]].port[key].status) {
 							case '0': //unplug
-						
+
 									$port_status_icon = $("<div>").appendTo($port_status_title);
 									$port_status_icon.addClass("port_icon unplug");
 									$("<div>").html((port_ui_display_txt=="")? port_max_rate_txt:port_ui_display_txt).appendTo($port_table_td_status);
@@ -960,7 +960,7 @@ function gen_VLAN_port_table(port_profile) {
 						}
 						*/
 
-						// 2. (cap with bit PHY_PORT_CAP_LAN  && with bit PHY_PORT_CAP_WANLAN) && ext_port_id != -1 
+						// 2. (cap with bit PHY_PORT_CAP_LAN  && with bit PHY_PORT_CAP_WANLAN) && ext_port_id != -1
 						if(port_profile[mesh_mac[i]].port[key].detail.cap_support.LAN &&
 							port_profile[mesh_mac[i]].port[key].detail.cap_support.WANLAN &&
 							port_profile[mesh_mac[i]].port[key].ext_port_id != -1){
@@ -1032,9 +1032,9 @@ function gen_VLAN_port_table(port_profile) {
 						// Determine the group based on colX_count
 						var row_colStart = Math.floor((col2_count[r] - 1) / 4) * 4 + 1;
 						var row_colEnd = row_colStart + 3;
-						
+
 						if(row_colStart > 4*r && col2_count[r] >= row_colStart && col2_count[r] <= row_colEnd && row_colStart <= 4*(r+1)){
-							
+
 							var $port_table_td_status = $("<td>").appendTo($port_table_tr_status[r]);
 							$port_table_td_status.css("width", "100px");
 							var $port_table_td_mode = $("<td>").appendTo($port_table_tr_mode[r]);
@@ -1213,7 +1213,7 @@ function gen_VLAN_port_table(port_profile) {
 
 				if (connected_flag == "0") {
 					$("<div>").html("<#Disconnected#>")
-						.css("color", "#FFCC00")
+						.css("color", "var(--wrt-badge-warning-color,#FFCC00)")
 						.css('margin-top', '30px')
 						.appendTo($port_table_tr_status);
 				}
@@ -1257,7 +1257,7 @@ function gen_VLAN_port_table(port_profile) {
 				note_wans_lanport += str_modify.replace('<a>', '<a id="modify_wans">');
 				$("<div>").html(note_wans_lanport).appendTo($target_div).css('text-align','left');
 				$("#modify_wans").attr("href", "Advanced_WANPort_Content.asp")
-					.css("color", "#FFCC00")
+					.css("color", "var(--wrt-badge-warning-color,#FFCC00)")
 					.css("cursor", "pointer")
 					.css("text-decoration", "underline");
 			}
@@ -1284,7 +1284,7 @@ function gen_VLAN_port_table(port_profile) {
 					note_wan_aggregation += str_modify.replace('<a>', '<a id="modify_wan_bonding">');
 					$("<div>").html(note_wan_aggregation).appendTo($target_div).css('text-align','left');
 					$("#modify_wan_bonding").attr("href", "Advanced_WAN_Content.asp")
-						.css("color", "#FFCC00")
+						.css("color", "var(--wrt-badge-warning-color,#FFCC00)")
 						.css("cursor", "pointer")
 						.css("text-decoration", "underline");
 				}
@@ -1338,7 +1338,7 @@ function gen_VLAN_port_table(port_profile) {
 				note_iptv += str_modify.replace('<a>', '<a id="modify_iptv">');
 				$("<div>").html(note_iptv).appendTo($target_div).css('text-align','left');
 				$("#modify_iptv").attr("href", "Advanced_IPTV_Content.asp")
-					.css("color", "#FFCC00")
+					.css("color", "var(--wrt-badge-warning-color,#FFCC00)")
 					.css("cursor", "pointer")
 					.css("text-decoration", "underline");
 			}

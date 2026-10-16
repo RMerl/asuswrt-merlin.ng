@@ -4355,6 +4355,14 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 			puts("ATE_ERROR_INCORRECT_PARAMETER");
 			return EINVAL;
 		}
+#if defined(RTCONFIG_BCMARM) && defined(RTCONFIG_ASUSCTRL)
+		else {	// clean asusctrl and chg_sku when setTerritoryCode success
+			if (asus_ctrl_sku_write("FF")<0)
+				puts("ATE clean asus_ctrl_sku fail");
+			if (asus_ctrl_write("NONE")<0)
+				puts("ATE clean asus_ctrl fail");
+		}
+#endif
 #ifndef CONFIG_BCMWL5
 		getTerritoryCode();
 #endif

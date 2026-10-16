@@ -384,6 +384,10 @@ do {					\
 #define DSL_WAN_PTM_IF	"ptm0"
 #endif
 #define STB_BR_IF		"br101"
+#define MSWAN_IF_PREFIX     "wan"
+#define MSWAN_BR_PREFIX     "br-wan"
+#define MSWAN_V_PREFIX      "vwan"
+#define MSWAN_P_PREFIX      "pwan"
 
 #ifdef RTCONFIG_DSL
 #define DSL_DIAG_DIR       "asus_diagnostic"
@@ -1259,6 +1263,12 @@ extern void clean_mswan_vitf(int wan_unit);
 extern void set_mswan_vitf(MSWAN_PARAM *p);
 extern void update_iptv_ifname(int wan_base_unit);
 extern char* get_mswan_ifname(int wan_unit, char* buf, size_t len);
+#if defined(RTCONFIG_MSWAN_GENERIC) || defined(RTCONFIG_HINET_MESH_BRIDGE)
+extern void config_mswan_br_rule(void);
+#endif
+#ifdef RTCONFIG_HINET_MESH_BRIDGE
+extern void config_hinet_mesh(const char *wan_if);
+#endif
 #ifdef RTCONFIG_HND_ROUTER
 extern int is_wan_port_ext_switch(int base_unit);
 extern void config_mswan_ext_switch_vlan_add(MSWAN_PARAM *p);
@@ -1578,6 +1588,7 @@ extern void adjust_merlin_config();
 extern void adjust_url_urlelist();
 extern void adjust_ddns_config();
 extern void adjust_access_restrict_config();
+extern void adjust_dns_ping_list();
 #if defined(RTCONFIG_VPN_FUSION)
 extern void adjust_vpnc_config(void);
 #endif
@@ -2055,6 +2066,16 @@ extern void erase_nvram(void);
 extern int init_toggle(void);
 extern void btn_check(void);
 extern int watchdog_main(int argc, char *argv[]);
+#if defined(RTCONFIG_HINET_MESH_SNOOPER)
+extern int mod_snooper_main(int argc, char *argv[]);
+#endif
+#ifdef RTCONFIG_ETHMON
+extern int ethmon_main(int argc, char *argv[]);
+#endif
+#ifdef RTCONFIG_IP808AR
+extern int poemon_main(int argc, char *argv[]);
+extern int poeInit_main(int argc, char *argv[]);
+#endif
 #ifdef RTCONFIG_CONNTRACK
 extern int pctime_main(int argc, char *argv[]);
 #endif
@@ -2119,6 +2140,7 @@ extern int rtkmonitor_main(int argc, char *argv[]);
 #ifdef RTCONFIG_MXL_826XX
 extern int mxlmonitor_main(int argc, char *argv[]);
 #endif
+extern int cdmonitor_main(int argc, char *argv[]);
 #if defined(GT7) || defined(GS7_PRO_MAX)
 extern int ext84991_main(int argc, char *argv[]);
 #endif
@@ -2266,6 +2288,7 @@ extern void reset_corefilesize(rlim_t s);
 #define DEBUGLOG_CORE 0x2
 #define DEBUGLOG_SLOG 0x4
 extern void collect_debuglog(int type);
+extern int check_mountpoint(char *mountpoint);
 extern void envsave(const char* path);
 extern int remove_ip_rules(const int pref, const int v6);
 
@@ -2411,6 +2434,8 @@ extern int stop_rtkmonitor(void);
 extern int start_mxlmonitor(void);
 extern int stop_mxlmonitor(void);
 #endif
+extern int start_cdmonitor(void);
+extern int stop_cdmonitor(void);
 #if defined(RTBE92U)
 extern int start_tempsense(void);
 extern int stop_tempsense(void);
@@ -2581,7 +2606,7 @@ enum {
 	,DBLOG_STATE_SENDMAIL_FAIL_OTHER
 	,DBLOG_STATE_ERR_USB
 	,DBLOG_STATE_ERR_OTHERS
-}; //should sync with dblog/daemon/dblog.c
+}; // You should sync it with dblog/daemon/dblog.h
 #endif /* RTCONFIG_DBLOG */
 
 extern unsigned long readFileSize( char *filepath );
@@ -3203,8 +3228,14 @@ extern void config_mssid_isolate(char *ifname, int vif);
 extern void stop_pc_block(void);
 extern void start_pc_block(void);
 #endif
+#if defined(RTCONFIG_HTTPS) || defined(RTCONFIG_ISP_CUSTOMIZE)
+extern int check_rsa_signature(char *fname, char *fsign, char *fpkey);
+#endif
 #ifdef RTCONFIG_HTTPS
 extern int check_rsasign(char *fname);
+#endif
+#if defined(RTCONFIG_GTBOOSTER) && defined(RTCONFIG_HTTPS)
+extern int check_ark_rsasign(char *fname);
 #endif
 #ifdef RTCONFIG_AI_SERVICE
 extern int check_ai_rsasign(char *fname, char *rsa_fname);
@@ -3340,10 +3371,19 @@ extern void stop_gu_service(int status);
 extern void start_gu_service();
 #endif
 
+#if defined(RTCONFIG_GTBOOSTER)
+extern int rsasign_sigArk_check_main(int argc, char *argv[]);
+extern int ark_sig_update_and_rsa_check();
+#endif
+
 //speedtest.c
 extern int speedtest_main(int argc, char **argv);
 extern void wan_bandwidth_detect(void);
 extern int speedtest();
+
+#if defined(RTCONFIG_OOKLA) || defined(RTCONFIG_OOKLA_LITE)
+extern int ookla_quota_mon_main(int argc, char *argv[]);
+#endif
 
 #if defined(RTCONFIG_HNS)
 extern int hns_main(int argc, char **argv);
@@ -3534,6 +3574,7 @@ extern void 	apg_start(void);
 extern void 	apg_stop(void);
 extern void 	apg_hotplug_net(char *interface, int action /* 0:del, 1:add */);
 extern int 		apg_is_wds_vlan_if(char *interface);
+extern int 		apg_is_wds_raw_if(char *interface);
 extern int  	apg_create_wl_vlan(int vid, char *ifnames, char *ret_ifnames, size_t ret_ifnames_bsize);
 extern int	 	apg_destory_wl_vlan(char *vlan_ifnames);
 extern int	 	apg_create_eth_vlan(int vid, char *ifnames, char *ret_ifnames, size_t ret_ifnames_bsize);
@@ -3551,9 +3592,6 @@ extern void apg_destory_vlan_for_lan(void);
 extern unsigned int init_apg(void);
 extern int check_SDN_MAX_VIF(void);
 #endif
-#endif
-#ifdef RTCONFIG_MLO
-extern int check_SDN_MLO();
 #endif
 
 // traffic_limiter.c
@@ -3920,7 +3958,11 @@ extern void add_multi_ppp_routes(int wan_unit);
 extern void del_multi_ppp_routes(int wan_unit);
 extern void set_mtppp_load_balance();
 #endif
-extern void exec_uu();
+#ifdef RTCONFIG_UUPLUGIN
+extern void exec_uu(void);
+extern void start_uuplugin(void);
+extern void stop_uuplugin(void);
+#endif
 #if defined(RTCONFIG_MTK_BSD)
 #define BSD_LOG "/tmp/mtk_mapd.log"
 #define BSD_PATH "/etc/mapd_strng.conf"
@@ -4207,6 +4249,11 @@ extern int realip_main(int argc, char *argv[]);
 
 #if defined(RTCONFIG_IG_SITE2SITE)
 extern int ig_s2s_client_main(int argc, char *argv[]);
+#endif
+
+#if defined(RTCONFIG_LIB_CODB) && defined(RTCONFIG_CONNDIAG) && defined(RTCONFIG_DNS_PING)
+extern void stop_dns_ping(void);
+extern void start_dns_ping(void);
 #endif
 
 void wl_apply_akm_by_auth_mode(int unit, int subunit, char *sp_prefix_auth);

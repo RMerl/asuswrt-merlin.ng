@@ -1848,6 +1848,9 @@ void mtwan_append_s46_resolvconf_ipv4(int wan_unit)
 		strlcpy(wan_dns_buf, nvram_pf_safe_get(wan_prefix, "dns"), sizeof(wan_dns_buf));
 		if (wan_dns_buf[0]) {
 			foreach (wan_dns, wan_dns_buf, next_dns) {
+				if (!is_valid_ip4(wan_dns)) {
+					continue;
+				}
 				if (doSystem("cat /tmp/resolv.conf | grep %s", wan_dns)) {
 					fp = fopen("/tmp/resolv.conf", "a");
 					if(fp) {
@@ -1861,6 +1864,9 @@ void mtwan_append_s46_resolvconf_ipv4(int wan_unit)
 			strlcpy(wan_dns_buf, nvram_pf_safe_get(wan_prefix, "xdns"), sizeof(wan_dns_buf));
 			if (wan_dns_buf[0]) {
 				foreach (wan_dns, wan_dns_buf, next_dns) {
+					if (!is_valid_ip4(wan_dns)) {
+						continue;
+					}
 					if (doSystem("cat /tmp/resolv.conf | grep %s", wan_dns)) {
 						fp = fopen("/tmp/resolv.conf", "a");
 						if(fp) {

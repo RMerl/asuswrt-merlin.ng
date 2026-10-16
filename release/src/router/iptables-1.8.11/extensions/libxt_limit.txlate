@@ -1,0 +1,8 @@
+iptables-translate -A INPUT -m limit --limit 3/m --limit-burst 3
+nft 'add rule ip filter INPUT limit rate 3/minute burst 3 packets counter'
+
+iptables-translate -A INPUT -m limit --limit 10/s --limit-burst 5
+nft 'add rule ip filter INPUT limit rate 10/second burst 5 packets counter'
+
+iptables-translate -A INPUT -m limit --limit 10/s --limit-burst 0
+nft 'add rule ip filter INPUT limit rate 10/second counter'

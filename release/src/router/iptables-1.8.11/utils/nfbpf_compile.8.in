@@ -1,0 +1,70 @@
+.TH NFBPF_COMPILE 8 "" "@PACKAGE_STRING@" "@PACKAGE_STRING@"
+
+.SH NAME
+nfbpf_compile \(em generate bytecode for use with xt_bpf
+.SH SYNOPSIS
+
+.ad l
+.in +8
+.ti -8
+.B nfbpf_compile
+[
+.I LLTYPE
+]
+.I PROGRAM
+
+.ti -8
+.I LLTYPE
+:= {
+.BR EN10MB " | " RAW " | " SLIP " | "
+.I ...
+}
+
+.SH DESCRIPTION
+The
+.B nfbpf_compile
+utility aids in generating BPF byte code suitable for passing to
+the iptables
+.B bpf
+match.
+
+.SH OPTIONS
+
+.TP
+.I LLTYPE
+Link-layer header type to operate on. This is a name as defined in
+.RB < pcap/dlt.h >
+but with the leading
+.B DLT_
+prefix stripped. For use with iptables,
+.B RAW
+should be the right choice (it's also the default if not specified).
+
+.TP
+.I PROGRAM
+The BPF expression to compile, see
+.BR pcap-filter (7)
+for a description of the language.
+
+.SH EXIT STATUS
+The program returns 0 on success, 1 otherwise.
+
+.SH EXAMPLE
+Match incoming TCP packets with size bigger than 100 bytes:
+.P
+.in +8
+.EE
+bpf=$(nfbpf_compile 'tcp and greater 100')
+.br
+iptables -A INPUT -m bpf --bytecode "$bpf" -j ACCEPT
+.RE
+.P
+The description of
+.B bpf
+match in
+.BR iptables-extensions (8)
+lists a few more examples.
+
+.SH SEE ALSO
+.BR iptables-extensions (8),
+.BR pcap-filter (7)

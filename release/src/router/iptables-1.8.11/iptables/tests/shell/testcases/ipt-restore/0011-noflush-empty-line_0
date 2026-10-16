@@ -1,0 +1,16 @@
+#!/bin/bash -e
+
+# make sure empty lines won't break --noflush
+
+cat <<EOF | $XT_MULTI iptables-restore --noflush
+# just a comment followed by innocent empty line
+
+*filter
+-A FORWARD -j ACCEPT
+COMMIT
+EOF
+
+EXPECT='Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination         
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           '
+diff -u <(echo "$EXPECT") <($XT_MULTI iptables -n -L FORWARD)

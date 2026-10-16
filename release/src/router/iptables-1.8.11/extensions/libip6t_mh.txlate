@@ -1,0 +1,14 @@
+ip6tables-translate -A INPUT -p mh --mh-type 1 -j ACCEPT
+nft 'add rule ip6 filter INPUT mh type 1 counter accept'
+
+ip6tables-translate -A INPUT -p mh --mh-type 1:3 -j ACCEPT
+nft 'add rule ip6 filter INPUT mh type 1-3 counter accept'
+
+ip6tables-translate -A INPUT -p mh --mh-type 0:255 -j ACCEPT
+nft 'add rule ip6 filter INPUT exthdr mh exists counter accept'
+
+ip6tables-translate -A INPUT -m mh --mh-type 0:255 -j ACCEPT
+nft 'add rule ip6 filter INPUT exthdr mh exists counter accept'
+
+ip6tables-translate -A INPUT -p mh ! --mh-type 0:255 -j ACCEPT
+nft 'add rule ip6 filter INPUT mh type != 0-255 counter accept'

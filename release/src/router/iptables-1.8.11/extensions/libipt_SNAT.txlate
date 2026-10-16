@@ -1,0 +1,14 @@
+iptables-translate -t nat -A postrouting -o eth0 -j SNAT --to 1.2.3.4
+nft 'add rule ip nat postrouting oifname "eth0" counter snat to 1.2.3.4'
+
+iptables-translate -t nat -A postrouting -o eth0 -j SNAT --to 1.2.3.4-1.2.3.6
+nft 'add rule ip nat postrouting oifname "eth0" counter snat to 1.2.3.4-1.2.3.6'
+
+iptables-translate -t nat -A postrouting -p tcp -o eth0 -j SNAT --to 1.2.3.4:1-1023
+nft 'add rule ip nat postrouting oifname "eth0" ip protocol tcp counter snat to 1.2.3.4:1-1023'
+
+iptables-translate -t nat -A postrouting -o eth0 -j SNAT --to 1.2.3.4 --random
+nft 'add rule ip nat postrouting oifname "eth0" counter snat to 1.2.3.4 random'
+
+iptables-translate -t nat -A postrouting -o eth0 -j SNAT --to 1.2.3.4 --random --persistent
+nft 'add rule ip nat postrouting oifname "eth0" counter snat to 1.2.3.4 random,persistent'

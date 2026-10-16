@@ -1,0 +1,14 @@
+iptables-translate -A INPUT -m iprange --src-range 192.168.25.149-192.168.25.151 -j ACCEPT
+nft 'add rule ip filter INPUT ip saddr 192.168.25.149-192.168.25.151 counter accept'
+
+iptables-translate -A INPUT -m iprange --dst-range 192.168.25.149-192.168.25.151 -j ACCEPT
+nft 'add rule ip filter INPUT ip daddr 192.168.25.149-192.168.25.151 counter accept'
+
+iptables-translate -A INPUT -m iprange --dst-range 3.3.3.3-6.6.6.6 --src-range 4.4.4.4-7.7.7.7 -j ACCEPT
+nft 'add rule ip filter INPUT ip saddr 4.4.4.4-7.7.7.7 ip daddr 3.3.3.3-6.6.6.6 counter accept'
+
+ip6tables-translate -A INPUT -m iprange ! --dst-range ::2d01-::2d03 -j ACCEPT
+nft 'add rule ip6 filter INPUT ip6 daddr != ::2d01-::2d03 counter accept'
+
+ip6tables-translate -A INPUT -m iprange ! --dst-range ::2d01-::2d03 --src-range ::2d01-::2d03 -j ACCEPT
+nft 'add rule ip6 filter INPUT ip6 saddr ::2d01-::2d03 ip6 daddr != ::2d01-::2d03 counter accept'

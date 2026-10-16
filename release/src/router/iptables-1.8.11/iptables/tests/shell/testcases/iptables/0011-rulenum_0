@@ -1,0 +1,93 @@
+#!/bin/bash -x
+
+set -e
+
+load_ruleset() {
+	$XT_MULTI iptables-restore <<EOF
+*filter
+-A FORWARD -m mark --mark 0x1 -c 1 2
+-A FORWARD -m mark --mark 0x2 -c 2 3
+COMMIT
+EOF
+}
+
+load_ruleset
+
+$XT_MULTI iptables -L 0 && exit 1
+
+EXPECT=' 1 2 all -- any any anywhere anywhere mark match 0x1'
+diff -u -b <(echo -e "$EXPECT") <($XT_MULTI iptables -v -L FORWARD 1)
+
+EXPECT=' 2 3 all -- any any anywhere anywhere mark match 0x2'
+diff -u -b <(echo -e "$EXPECT") <($XT_MULTI iptables -v -L FORWARD 2)
+
+[[ -z $($XT_MULTI iptables -L FORWARD 3) ]]
+
+$XT_MULTI iptables -S FORWARD 0 && exit 1
+
+EXPECT='-A FORWARD -m mark --mark 0x1 -c 1 2'
+diff -u <(echo -e "$EXPECT") <($XT_MULTI iptables -v -S FORWARD 1)
+
+EXPECT='-A FORWARD -m mark --mark 0x2 -c 2 3'
+diff -u <(echo -e "$EXPECT") <($XT_MULTI iptables -v -S FORWARD 2)
+
+[[ -z $($XT_MULTI iptables -S FORWARD 3) ]]
+
+$XT_MULTI iptables -v -Z FORWARD 0 && exit 1
+
+[[ -z $($XT_MULTI iptables -v -Z FORWARD 1) ]]
+EXPECT='-A FORWARD -m mark --mark 0x1 -c 0 0
+-A FORWARD -m mark --mark 0x2 -c 2 3'
+diff -u <(echo -e "$EXPECT") <($XT_MULTI iptables -v -S | grep -v '^-P')
+
+[[ -z $($XT_MULTI iptables -v -Z FORWARD 2) ]]
+EXPECT='-A FORWARD -m mark --mark 0x1 -c 0 0
+-A FORWARD -m mark --mark 0x2 -c 0 0'
+diff -u <(echo -e "$EXPECT") <($XT_MULTI iptables -v -S | grep -v '^-P')
+
+$XT_MULTI iptables -v -Z FORWARD 3 && exit 1
+
+load_ruleset
+
+[[ -z $($XT_MULTI iptables -v -L -Z FORWARD 1) ]]
+EXPECT='-A FORWARD -m mark --mark 0x1 -c 0 0
+-A FORWARD -m mark --mark 0x2 -c 2 3'
+diff -u <(echo -e "$EXPECT") <($XT_MULTI iptables -v -S | grep -v '^-P')
+
+[[ -z $($XT_MULTI iptables -v -L -Z FORWARD 2) ]]
+EXPECT='-A FORWARD -m mark --mark 0x1 -c 0 0
+-A FORWARD -m mark --mark 0x2 -c 0 0'
+diff -u <(echo -e "$EXPECT") <($XT_MULTI iptables -v -S | grep -v '^-P')
+
+load_ruleset
+
+$XT_MULTI iptables -v -Z -L FORWARD 0 && exit 1
+
+EXPECT=' 1 2 all -- any any anywhere anywhere mark match 0x1
+Zeroing chain `FORWARD'\'
+diff -u -b <(echo -e "$EXPECT") <($XT_MULTI iptables -v -Z -L FORWARD 1)
+
+EXPECT=' 0 0 all -- any any anywhere anywhere mark match 0x2
+Zeroing chain `FORWARD'\'
+diff -u -b <(echo -e "$EXPECT") <($XT_MULTI iptables -v -Z -L FORWARD 2)
+
+$XT_MULTI iptables -v -Z -L FORWARD 0 && exit 1
+
+EXPECT='Zeroing chain `FORWARD'\'
+diff -u -b <(echo -e "$EXPECT") <($XT_MULTI iptables -v -Z -L FORWARD 3)
+
+load_ruleset
+
+[[ -z $($XT_MULTI iptables -v -D FORWARD 1) ]]
+EXPECT='-A FORWARD -m mark --mark 0x2 -c 2 3'
+diff -u <(echo -e "$EXPECT") <($XT_MULTI iptables -v -S | grep -v '^-P')
+
+load_ruleset
+
+[[ -z $($XT_MULTI iptables -v -D FORWARD 2) ]]
+EXPECT='-A FORWARD -m mark --mark 0x1 -c 1 2'
+diff -u <(echo -e "$EXPECT") <($XT_MULTI iptables -v -S | grep -v '^-P')
+
+$XT_MULTI iptables -v -D FORWARD 3 && exit 1
+
+exit 0

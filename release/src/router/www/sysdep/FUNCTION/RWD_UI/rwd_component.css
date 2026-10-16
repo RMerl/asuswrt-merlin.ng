@@ -470,7 +470,7 @@
 .profile_setting_two_item.hint_btn .title{
 	flex: initial !important;
 	font-size: 16px;
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 }
 .profile_setting_two_item.title_btn{
 	min-height: 90px;
@@ -1532,7 +1532,7 @@
 	display: flex;
 	align-items: center;
 	padding-left: 4%;
-	color: #FFCC00;
+	color: var(--wrt-badge-warning-color,#FFCC00);
 	font-weight: 500;
 	letter-spacing: 0.1px;
 	line-height: 150%;

@@ -190,14 +190,13 @@ function genLogoModelName(filter = ["logo", "model-name", "time"]) {
 			${filter.includes('logo')?`<div class="d-none d-md-block icon-logo-asus ms-3"></div>`:``}
 			${filter.includes('model-name')?`<div class="model-name mx-3"><#Web_Title2#></div>`:``}
 			${filter.includes('time')?`
-			<div role="time-banner" class="d-none px-2 py-1 d-lg-flex flex-row" onclick="goToSystem()">
-				<div class="ps-1 banner-title d-flex flex-column me-2">
-					<#General_x_SystemTime_itemname#>
-					<small class="banner-time-meridiem">${system.time.weekday}</small>
-				</div>
-				<div class="font-weight-bold banner-time my-auto" id="sys_time">
+			<div role="time-banner" class="d-none px-2 py-1 d-lg-flex flex-row align-items-center" onclick="goToSystem()">
+				<div role="icon" class="icon-clock-outline icon-size-20 banner-time-icon me-2"></div>
+				<div class="banner-title me-2"><#General_x_SystemTime_itemname#></div>
+				<div class="font-weight-bold banner-time me-2" id="sys_time">
 					<span>${system.time.current}</span>
 				</div>
+				<small class="banner-time-meridiem">${system.time.weekday}</small>
 			</div>`:``}
 			
 		</div>	
@@ -625,11 +624,13 @@ function genMidHeader() {
 function genTimeBanner() {
 	let code = "";
 	code += `
-		<div role="time-banner" class="mx-2 my-1 px-2 py-1">
-			<div class="ps-1 banner-title"><#General_x_SystemTime_itemname#></div>
-			<div class="font-weight-bold banner-time" id="sys_time">
+		<div role="time-banner" class="mx-2 my-1 px-2 py-1 d-flex flex-row align-items-center">
+			<div role="icon" class="icon-clock-outline icon-size-20 banner-time-icon me-2"></div>
+			<div class="banner-title me-2"><#General_x_SystemTime_itemname#></div>
+			<div class="font-weight-bold banner-time me-2" id="sys_time">
 				<span>${system.time.current}</span>
 			</div>
+			<small class="banner-time-meridiem">${system.time.weekday}</small>
 		</div>
 	`;
 
@@ -785,7 +786,7 @@ function pageRedirect(target, lastPage) {
 	}
 	else {
 		var interval_id = window.setInterval(function(){}, 9999);
-		for (var i = 1; i <= interval_id; i++) {if(i != sysTimeTimer)window.clearInterval(i);}
+		for (var i = 1; i <= interval_id; i++) {if(i !== sysTimeTimer && i !== top.checkAuthInterval)window.clearInterval(i);}
 		setTimeout(checkNotification, 3000);
 		$(`.nav-menu`).removeClass("menu-clicked");
 		$(`.manu-${target}`).addClass("menu-clicked");
@@ -829,6 +830,13 @@ function pageRedirect(target, lastPage) {
 
 var ntCallbackEvent = [];
 function checkNotification(){
+	// 韌體燒錄進度 overlay（settings.html 的 #settings-upgrade-overlay）顯示期間
+	// 暫停通知輪詢（webs_state_flag / get_cfg_clientlist / get_newob_onboardinglist），
+	// 只保留排程，overlay 移除後自動恢復。
+	if(document.getElementById('settings-upgrade-overlay')){
+		setTimeout(checkNotification, 3000);
+		return;
+	}
 	import('/js/dashboard-nt.js')
 		.then(({ getNotifications }) => {
 			var notification = getNotifications();

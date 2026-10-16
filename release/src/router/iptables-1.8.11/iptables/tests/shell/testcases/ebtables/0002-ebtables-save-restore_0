@@ -1,0 +1,117 @@
+#!/bin/bash
+
+set -e
+#set -x
+
+# there is no legacy backend to test
+[[ $XT_MULTI == *xtables-nft-multi ]] || { echo "skip $XT_MULTI"; exit 0; }
+
+# fill ebtables manually
+
+$XT_MULTI ebtables --init-table
+$XT_MULTI ebtables -A INPUT -p IPv4 -i lo -j ACCEPT
+$XT_MULTI ebtables -P FORWARD DROP
+$XT_MULTI ebtables -A OUTPUT -s ff:ff:ff:ff:ff:ff/ff:ff:ff:ff:ff:ff -j DROP
+$XT_MULTI ebtables -N foo
+$XT_MULTI ebtables -A foo -p length --802_3-sap 0x23 -j ACCEPT
+$XT_MULTI ebtables -A foo -p length --802_3-sap 0xaa --802_3-type 0x1337 -j ACCEPT
+#$XT_MULTI ebtables -A foo --among-dst fe:ed:ba:be:00:01,fe:ed:ba:be:00:02,fe:ed:ba:be:00:03 -j ACCEPT
+$XT_MULTI ebtables -A foo -p ARP --arp-gratuitous -j ACCEPT
+$XT_MULTI ebtables -A foo -p ARP --arp-opcode Request -j ACCEPT
+$XT_MULTI ebtables -A foo -p ARP --arp-ip-src 10.0.0.1 -j ACCEPT
+$XT_MULTI ebtables -A foo -p ARP --arp-ip-dst 10.0.0.0/8 -j ACCEPT
+$XT_MULTI ebtables -A foo -p ARP --arp-mac-src fe:ed:ba:be:00:01 -j ACCEPT
+$XT_MULTI ebtables -A foo -p ARP --arp-mac-dst fe:ed:ba:be:00:01/ff:ff:ff:00:00:00 -j ACCEPT
+
+$XT_MULTI ebtables -A foo -p IPv4 --ip-src 10.0.0.1 -j ACCEPT
+$XT_MULTI ebtables -A foo -p IPv4 --ip-dst 10.0.0.0/8 -j ACCEPT
+$XT_MULTI ebtables -A foo -p IPv4 --ip-tos 0x10 -j ACCEPT
+$XT_MULTI ebtables -A foo -p IPv4 --ip-protocol tcp -j ACCEPT
+#$XT_MULTI ebtables -A foo -p IPv4 --ip-sport 23 -j ACCEPT
+#$XT_MULTI ebtables -A foo -p IPv4 --ip-dport 1024:4096 -j ACCEPT
+
+$XT_MULTI ebtables -A foo -p IPv6 --ip6-src feed:babe::1 -j ACCEPT
+$XT_MULTI ebtables -A foo -p IPv6 --ip6-dst feed:babe::/64 -j ACCEPT
+$XT_MULTI ebtables -A foo -p IPv6 --ip6-proto tcp -j ACCEPT
+#$XT_MULTI ebtables -A foo -p IPv6 --ip6-sport 23 -j ACCEPT
+#$XT_MULTI ebtables -A foo -p IPv6 --ip6-dport 1024:4096 -j ACCEPT
+
+$XT_MULTI ebtables -A foo --limit 100 --limit-burst 42 -j ACCEPT
+$XT_MULTI ebtables -A foo --log
+$XT_MULTI ebtables -A foo -j mark --mark-set 0x23 --mark-target ACCEPT
+$XT_MULTI ebtables -A foo --nflog
+$XT_MULTI ebtables -A foo --pkttype-type multicast -j ACCEPT
+$XT_MULTI ebtables -A foo --stp-type config -j ACCEPT
+#$XT_MULTI ebtables -A foo --vlan-id 42 -j ACCEPT
+
+$XT_MULTI ebtables -A foo -p length --802_3-sap 0x23 --limit 100 -j ACCEPT
+$XT_MULTI ebtables -A foo --pkttype-type multicast --log
+$XT_MULTI ebtables -A foo --pkttype-type multicast --limit 100 -j ACCEPT
+
+$XT_MULTI ebtables -A FORWARD -j foo
+
+$XT_MULTI ebtables -N bar
+$XT_MULTI ebtables -P bar RETURN
+
+$XT_MULTI ebtables -t nat -A PREROUTING -j redirect --redirect-target ACCEPT
+#$XT_MULTI ebtables -t nat -A PREROUTING --to-src fe:ed:ba:be:00:01
+
+$XT_MULTI ebtables -t nat -A OUTPUT -j ACCEPT
+$XT_MULTI ebtables -t nat -P OUTPUT DROP
+
+$XT_MULTI ebtables -t nat -A POSTROUTING -j ACCEPT
+#$XT_MULTI ebtables -t nat -A POSTROUTING --to-dst fe:ed:ba:be:00:01 --dnat-target ACCEPT
+
+$XT_MULTI ebtables -t nat -N nat_foo -P DROP
+
+# compare against stored ebtables dump
+
+DUMP='*filter
+:INPUT ACCEPT
+:FORWARD DROP
+:OUTPUT ACCEPT
+:bar RETURN
+:foo ACCEPT
+-A INPUT -p IPv4 -i lo -j ACCEPT
+-A FORWARD -j foo
+-A OUTPUT -s Broadcast -j DROP
+-A foo -p Length --802_3-sap 0x23 -j ACCEPT
+-A foo -p Length --802_3-sap 0xaa --802_3-type 0x1337 -j ACCEPT
+-A foo -p ARP --arp-gratuitous -j ACCEPT
+-A foo -p ARP --arp-op Request -j ACCEPT
+-A foo -p ARP --arp-ip-src 10.0.0.1 -j ACCEPT
+-A foo -p ARP --arp-ip-dst 10.0.0.0/8 -j ACCEPT
+-A foo -p ARP --arp-mac-src fe:ed:ba:be:00:01 -j ACCEPT
+-A foo -p ARP --arp-mac-dst fe:ed:ba:00:00:00/ff:ff:ff:00:00:00 -j ACCEPT
+-A foo -p IPv4 --ip-src 10.0.0.1 -j ACCEPT
+-A foo -p IPv4 --ip-dst 10.0.0.0/8 -j ACCEPT
+-A foo -p IPv4 --ip-tos 0x10 -j ACCEPT
+-A foo -p IPv4 --ip-proto tcp -j ACCEPT
+-A foo -p IPv6 --ip6-src feed:babe::1 -j ACCEPT
+-A foo -p IPv6 --ip6-dst feed:babe::/64 -j ACCEPT
+-A foo -p IPv6 --ip6-proto tcp -j ACCEPT
+-A foo --limit 100/sec --limit-burst 42 -j ACCEPT
+-A foo --log-level notice -j CONTINUE
+-A foo -j mark --mark-set 0x23 --mark-target ACCEPT
+-A foo --nflog-group 1 -j CONTINUE
+-A foo --pkttype-type multicast -j ACCEPT
+-A foo --stp-type config -j ACCEPT
+-A foo -p Length --802_3-sap 0x23 --limit 100/sec --limit-burst 5 -j ACCEPT
+-A foo --pkttype-type multicast --log-level notice -j CONTINUE
+-A foo --pkttype-type multicast --limit 100/sec --limit-burst 5 -j ACCEPT
+*nat
+:PREROUTING ACCEPT
+:OUTPUT DROP
+:POSTROUTING ACCEPT
+:nat_foo DROP
+-A PREROUTING -j redirect 
+-A OUTPUT -j ACCEPT
+-A POSTROUTING -j ACCEPT'
+
+diff -u <(echo -e "$DUMP") <($XT_MULTI ebtables-save | grep -v '^#')
+
+# make sure dump can be restored and check it didn't change
+
+$XT_MULTI ebtables --init-table
+$XT_MULTI ebtables-restore <<<$DUMP
+diff -u <(echo -e "$DUMP") <($XT_MULTI ebtables-save | grep -v '^#')

@@ -43,9 +43,9 @@
 }
 
 #top_client_table tr:hover{
-	background-color:#FFF;
+	background-color:var(--surface-hover, #FFF);
 	opacity:0.4;
-	color:#000;
+	color:var(--wrt-text-color, #000);
 }
 
 #top_client_table tr{
@@ -1781,15 +1781,15 @@ if(dns_dpi_support) {
 													<div id="top5_info_block" style="width:310px;min-height:330px;background-color:#B3645B;border-bottom-right-radius:10px;border-bottom-left-radius:10px;border-top-right-radius:10px;box-shadow: 3px 5px 5px #2E3537;">
 														<table style="width:99%;padding-top:20px">
 															<tr>
-																<th style="font-size:16px;text-align:left;padding-left:10px;width:140px;color:#ADADAD" id="top_client_title"><#MAC_Address#>:</th>
+																<th style="font-size:16px;text-align:left;padding-left:10px;width:140px;color:var(--wrt-text-muted-color,#ADADAD)" id="top_client_title"><#MAC_Address#>:</th>
 																<td style="font-size:14px;" id="top_client_name"></td>
 															</tr>
 															<tr>
-																<th style="font-size:16px;text-align:left;padding-left:10px;width:140px;color:#ADADAD"><#Traffic_Analyzer_usedtraffic#>:</th>
+																<th style="font-size:16px;text-align:left;padding-left:10px;width:140px;color:var(--wrt-text-muted-color,#ADADAD)"><#Traffic_Analyzer_usedtraffic#>:</th>
 																<td style="font-size:14px;" id="top_client_traffic"></td>
 															</tr>
 															<tr>
-																<th style="font-size:16px;text-align:left;padding-left:10px;width:140px;color:#ADADAD"><#Traffic_Analyzer_TopApps#> :</th>
+																<th style="font-size:16px;text-align:left;padding-left:10px;width:140px;color:var(--wrt-text-muted-color,#ADADAD)"><#Traffic_Analyzer_TopApps#> :</th>
 																<td></td>
 															</tr>
 														</table>

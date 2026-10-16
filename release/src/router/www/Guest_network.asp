@@ -135,7 +135,7 @@ function initial(){
 	if("<% get_parameter("af"); %>" == "wl_NOnly_note"){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","wl_NOnly_note");
-		childsel.style.color="#FFCC00";
+		childsel.style.color="var(--wrt-badge-warning-color,#FFCC00)";
 		document.getElementById('gn_desc').parentNode.appendChild(childsel);
 		document.getElementById("wl_NOnly_note").innerHTML="* Please change the guest network authentication to WPA2 Personal AES.";	
 	}
@@ -467,7 +467,7 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 						}
 					}
 					else {
-						htmlcode += '<tfoot><tr rowspan="3"><td align="center"><span style="color:#FFCC00;">Used by ' + captive_portal_used_wl_array["wl" + unit_subunit] + '</span></td></tr></tfoot>';
+						htmlcode += '<tfoot><tr rowspan="3"><td align="center"><span style="color:var(--wrt-badge-warning-color,#FFCC00);">Used by ' + captive_portal_used_wl_array["wl" + unit_subunit] + '</span></td></tr></tfoot>';
 					}
 				}else{
 					htmlcode += '<tfoot><tr rowspan="3"><td align="center"><input type="button" class="button_gen" value="<#WLANConfig11b_WirelessCtrl_button1name#>" onclick="create_guest_unit('+ unit +','+ subunit +');"></td></tr></tfoot>';
@@ -496,24 +496,24 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 					}
 					else {
 						if(captive_portal_used_wl_array["wl" + unit_subunit] != "Facebook WiFi")
-							htmlcode += '<tfoot><tr rowspan="3"><td align="center"><span style="color:#FFCC00;">Used by ' + captive_portal_used_wl_array["wl" + unit_subunit] + '</span></td></tr></tfoot>';
+							htmlcode += '<tfoot><tr rowspan="3"><td align="center"><span style="color:var(--wrt-badge-warning-color,#FFCC00);">Used by ' + captive_portal_used_wl_array["wl" + unit_subunit] + '</span></td></tr></tfoot>';
 					}
 				}
 			}
 			htmlcode += '</table>';
 			if(amazon_wss_if_support){
 				if(amazon_wss_status)
-					htmlcode += '<div style="font-size:12px;font-weight:bolder;color:#FC0;position:absolute;text-align:center;width:100%;">Used by <br>Amazon WiFi Simple Setup</div>';/* untranslated */
+					htmlcode += '<div style="font-size:12px;font-weight:bolder;color:var(--wrt-badge-warning-color,#FFCC00);position:absolute;text-align:center;width:100%;">Used by <br>Amazon WiFi Simple Setup</div>';/* untranslated */
 				else
 					htmlcode += '<div style="position:absolute;margin-top:10px;text-align:center;""><input type="button" class="button_gen" style="word-break:break-word;"value="<#WSS_setup#>" onclick="enable_amazon_wss('+ unit +','+ subunit +');"></div>';
 			}
 			if(lyra_hide_support){
 				if(i == "0")
-					htmlcode += '<div id="smart_home_'+unit+'" style="font-size:12px;font-weight:bolder;color:#FC0;position:absolute;text-align:center;display:none;width:100%;"><#Guest_Network_AlexaIFTTT_setting#></div>';
+					htmlcode += '<div id="smart_home_'+unit+'" style="font-size:12px;font-weight:bolder;color:var(--wrt-badge-warning-color,#FFCC00);position:absolute;text-align:center;display:none;width:100%;"><#Guest_Network_AlexaIFTTT_setting#></div>';
 			}
 			else{
 				if(i == (gn_array_length-1))
-					htmlcode += '<div id="smart_home_'+unit+'" style="font-size:12px;font-weight:bolder;color:#FC0;position:absolute;text-align:center;display:none;width:100%;"><#Guest_Network_AlexaIFTTT_setting#></div>';
+					htmlcode += '<div id="smart_home_'+unit+'" style="font-size:12px;font-weight:bolder;color:var(--wrt-badge-warning-color,#FFCC00);position:absolute;text-align:center;display:none;width:100%;"><#Guest_Network_AlexaIFTTT_setting#></div>';
 			}
 			htmlcode += '</td>';
 			all_gn_status.push({"idx" : unit_subunit, "enable" : (gn_array[i][0] == '1'), "bw_enabled" : (gn_array[i][18] == '1')});
@@ -575,8 +575,8 @@ function gen_gntable(){
 
 	if(gn_array_2g_tmp.length > 0){
 		htmlcode += '<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_2g">';
-		htmlcode += '<tr id="2g_title"><td align="left" style="color:#5AD;font-size:16px; border-bottom:1px dashed #AAA;"><span>2.4 GHz</span>';
-		htmlcode += '<span id="2g_radio_hint" style="font-size: 14px;display:none;color:#FC0;margin-left:17px;">* <#GuestNetwork_Radio_Status#>	<a style="font-family:Lucida Console;color:#FC0;text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(0);"><#btn_go#></a></span></td></tr>';
+		htmlcode += '<tr id="2g_title"><td align="left" style="color:var(--wrt-link-color,#5AD);font-size:16px; border-bottom:1px dashed #AAA;"><span>2.4 GHz</span>';
+		htmlcode += '<span id="2g_radio_hint" style="font-size: 14px;display:none;color:var(--wrt-badge-warning-color,#FFCC00);margin-left:17px;">* <#GuestNetwork_Radio_Status#>	<a style="font-family:Lucida Console;color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(0);"><#btn_go#></a></span></td></tr>';
 		while(gn_array_2g_tmp.length > 4){
 			htmlcode += '<tr><td>';
 			htmlcode += gen_gntable_tr(0, gn_array_2g_tmp.slice(0, 4), band2sb);
@@ -596,7 +596,7 @@ function gen_gntable(){
 	
 	if(gn_array_5g_tmp.length > 0){
 		htmlcode5 += '<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_5g">';
-		htmlcode5 += '<tr id="5g_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;">';
+		htmlcode5 += '<tr id="5g_title"><td align="left" style="color:var(--wrt-link-color,#5AD); font-size:16px; border-bottom:1px dashed #AAA;">';
 		if(wl_info.band5g_2_support || wl_info.band6g_support){
 			if(band6g_support){
 				htmlcode5 += '<span>5 GHz</span>';
@@ -607,7 +607,7 @@ function gen_gntable(){
 		}			
 		else
 			htmlcode5 += '<span>5 GHz</span>';
-		htmlcode5 += '<span id="5g_radio_hint" style="font-size: 14px;display:none;color:#FC0;margin-left:17px;">* <#GuestNetwork_Radio_Status#>	<a style="font-family:Lucida Console;color:#FC0;text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(1);"><#btn_go#></a></span></td></tr>';
+		htmlcode5 += '<span id="5g_radio_hint" style="font-size: 14px;display:none;color:var(--wrt-badge-warning-color,#FFCC00);margin-left:17px;">* <#GuestNetwork_Radio_Status#>	<a style="font-family:Lucida Console;color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(1);"><#btn_go#></a></span></td></tr>';
 
 		while(gn_array_5g_tmp.length > 4){
 			htmlcode5 += '<tr><td >';
@@ -629,13 +629,13 @@ function gen_gntable(){
   	if((wl_info.band5g_2_support || wl_info.band6g_support)&& gn_array_5g_2_tmp.length > 0){
 		htmlcode5_2 += '<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_5g_2">';
 		if(band6g_support){
-			htmlcode5_2 += '<tr id="5g_2_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;"><span>6 GHz</span>';
+			htmlcode5_2 += '<tr id="5g_2_title"><td align="left" style="color:var(--wrt-link-color,#5AD); font-size:16px; border-bottom:1px dashed #AAA;"><span>6 GHz</span>';
 		}
 		else{
-			htmlcode5_2 += '<tr id="5g_2_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;"><span>5 GHz-2</span>';
+			htmlcode5_2 += '<tr id="5g_2_title"><td align="left" style="color:var(--wrt-link-color,#5AD); font-size:16px; border-bottom:1px dashed #AAA;"><span>5 GHz-2</span>';
 		}
 		
-		htmlcode5_2 += '<span id="5g_2_radio_hint" style="font-size: 14px;display:none;color:#FC0;margin-left:17px;">* <#GuestNetwork_Radio_Status#>	<a style="font-family:Lucida Console;color:#FC0;text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(1);"><#btn_go#></a></span></td></tr>';
+		htmlcode5_2 += '<span id="5g_2_radio_hint" style="font-size: 14px;display:none;color:var(--wrt-badge-warning-color,#FFCC00);margin-left:17px;">* <#GuestNetwork_Radio_Status#>	<a style="font-family:Lucida Console;color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(1);"><#btn_go#></a></span></td></tr>';
 		while(gn_array_5g_2_tmp.length > 4){
 			htmlcode5_2 += '<tr><td >';
 			htmlcode5_2 += gen_gntable_tr(2, gn_array_5g_2_tmp.slice(0, 4), band5sb_2);
@@ -656,12 +656,12 @@ function gen_gntable(){
 	if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid === 'GT-BE98_PRO'){	
 		if(gn_array_6g_tmp.length > 0){
 			htmlcode6 += '<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_6g">';
-			htmlcode6 += '<tr id="6g_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;">';
+			htmlcode6 += '<tr id="6g_title"><td align="left" style="color:var(--wrt-link-color,#5AD); font-size:16px; border-bottom:1px dashed #AAA;">';
 		
 
 			htmlcode6 += '<span>6 GHz</span>';
 
-			htmlcode6 += '<span id="6g_radio_hint" style="font-size: 14px;display:none;color:#FC0;margin-left:17px;">* <#GuestNetwork_Radio_Status#>	<a style="font-family:Lucida Console;color:#FC0;text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(3);"><#btn_go#></a></span></td></tr>';
+			htmlcode6 += '<span id="6g_radio_hint" style="font-size: 14px;display:none;color:var(--wrt-badge-warning-color,#FFCC00);margin-left:17px;">* <#GuestNetwork_Radio_Status#>	<a style="font-family:Lucida Console;color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(3);"><#btn_go#></a></span></td></tr>';
 
 			while(gn_array_6g_tmp.length > 4){
 				htmlcode6 += '<tr><td >';
@@ -683,8 +683,8 @@ function gen_gntable(){
 
 	if(wl_info.band60g_support) {
 		htmlcode60 += '<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_60g">';
-		htmlcode60 += '<tr id="60g_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;"><span>60 GHz</span></td></tr>';
-		htmlcode60 += '<tr><td><span style="font-size: 14px;color:#FC0;"><#CTL_nonsupported#></span></td></tr>';
+		htmlcode60 += '<tr id="60g_title"><td align="left" style="color:var(--wrt-link-color,#5AD); font-size:16px; border-bottom:1px dashed #AAA;"><span>60 GHz</span></td></tr>';
+		htmlcode60 += '<tr><td><span style="font-size: 14px;color:var(--wrt-badge-warning-color,#FFCC00);"><#CTL_nonsupported#></span></td></tr>';
 		htmlcode60 += '</table>';
 		document.getElementById("guest_table60").innerHTML = htmlcode60;
 	}
@@ -1243,7 +1243,7 @@ function show_wl_maclist_x(){
 	var clientListEventData = [];
 	code +='<table width="80%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table"  id="wl_maclist_x_table">'; 
 	if(Object.keys(manually_maclist_list_array).length == 0)
-		code +='<tr><td style="color:#FFCC00;"><#IPConnection_VSList_Norule#></td></tr>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		//user icon
 		var userIconBase64 = "NoIcon";
@@ -1389,7 +1389,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	if(flag == 1){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color="#FFCC00";
+		childsel.style.color="var(--wrt-badge-warning-color,#FFCC00)";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#LANHostConfig_ManualDHCPMacaddr_itemdesc#>";		
 		document.getElementById("check_mac").style.display = "";
@@ -1397,7 +1397,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	}else if(flag ==2){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color="#FFCC00";
+		childsel.style.color="var(--wrt-badge-warning-color,#FFCC00)";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#IPConnection_x_illegal_mac#>";
 		document.getElementById("check_mac").style.display = "";
@@ -1731,7 +1731,7 @@ function hide_qr_code(unit) {
 									</td>
 									<td>
 										<div id="gn_desc" class="formfontdesc" style="font-style: italic;font-size: 14px;"><#GuestNetwork_desc#></div>
-										<div id="nat_off_hint" class="formfontdesc" style="color:#FC0;display:none;"><#NAT_Acceleration_disabled#></div>
+										<div id="nat_off_hint" class="formfontdesc" style="color:var(--wrt-badge-warning-color,#FFCC00);display:none;"><#NAT_Acceleration_disabled#></div>
 									</td>
 								</tr>
 							</table>
@@ -1745,7 +1745,7 @@ function hide_qr_code(unit) {
 						<div id="guest_tableFBWiFi" class="gn_info_table_bg">
 							<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_FBWiFi">
 								<tr id="FBWiFi_title">
-									<td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;" colspan="2">
+									<td align="left" style="color:var(--wrt-link-color,#5AD); font-size:16px; border-bottom:1px dashed #AAA;" colspan="2">
 										<span>Facebook WiFi</span>
 									</td>
 								</tr>
@@ -1763,18 +1763,18 @@ function hide_qr_code(unit) {
 						<div id="guest_tableAmazonWSS" class="gn_info_table_bg" style="display:none;">
 							<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table">
 								<tr>
-									<td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;" colspan="2">
+									<td align="left" style="color:var(--wrt-link-color,#5AD); font-size:16px; border-bottom:1px dashed #AAA;" colspan="2">
 										<span><#WSS_setup#></span>
 									</td>
 								</tr>
 								<tr>
 									<td>
 										<span style="line-height:20px;"><#WSS_setup_desc0#></span>&nbsp;
-										<a id="faq_amazon" style="color:#FC0;text-decoration:underline;cursor:pointer;" href="https://www.amazon.com/gp/help/customer/display.html/?nodeId=GMPKVYDBR223TRPY" target="_blank"><#Learn_more#></a>
+										<a id="faq_amazon" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;cursor:pointer;" href="https://www.amazon.com/gp/help/customer/display.html/?nodeId=GMPKVYDBR223TRPY" target="_blank"><#Learn_more#></a>
 										<br>
 										<span><#WSS_setup_desc1#></span>
 										<br>
-										<span id="amazon_wss_hint" style="color:#FC0;line-height:20px;"><#FW_note#>&nbsp;<#WSS_setup_desc2#></span>
+										<span id="amazon_wss_hint" style="color:var(--wrt-badge-warning-color,#FFCC00);line-height:20px;"><#FW_note#>&nbsp;<#WSS_setup_desc2#></span>
 									</td>
 								</tr>
 								<tr>
@@ -1969,7 +1969,7 @@ function hide_qr_code(unit) {
 								<td>
 										<input type="radio" value="1" name="bw_enabled_x" class="content_input_fd" onClick="show_bandwidth(1);"><#checkbox_Yes#>
 										<input type="radio" value="0" name="bw_enabled_x" class="content_input_fd" onClick="show_bandwidth(0);"><#checkbox_No#>
-										<span id="QoS_hint" style="color:#FC0;display:none;"></span>
+										<span id="QoS_hint" style="color:var(--wrt-badge-warning-color,#FFCC00);display:none;"></span>
 								</td>
 							</tr>
 							<tr id="bw_limiter_settings">

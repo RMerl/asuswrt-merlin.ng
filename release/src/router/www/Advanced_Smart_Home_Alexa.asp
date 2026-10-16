@@ -72,11 +72,11 @@
 	-moz-border-radius: 50%;
 	-webkit-border-radius: 50%;
 	border-radius: 50%;
-	background-color: #C0C0C0;
+	background-color: var(--surface-hover, #C0C0C0);
 	text-align: center;
 	font-weight: 700;
 	font-family: sans-serif;
-	color: #4D595D;
+	color: var(--wrt-text-muted-color, #4D595D);
 	font-size: 16px;
 }
 
@@ -85,7 +85,7 @@
 	padding-top:35px;
 	font-size:16px;
 	padding-left:8px;
-	color:#c0c0c0;
+	color:var(--wrt-text-muted-color,#c0c0c0);
 }
 </style>
 <script>

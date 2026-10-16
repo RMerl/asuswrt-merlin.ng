@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+
+# there is no legacy backend to test
+[[ $XT_MULTI == *xtables-nft-multi ]] || { echo "skip $XT_MULTI"; exit 0; }
+
+EXPECT='*filter
+:INPUT ACCEPT
+:FORWARD ACCEPT
+:OUTPUT ACCEPT
+:PVEFW-FORWARD ACCEPT
+:PVEFW-FWBR-OUT ACCEPT
+-A FORWARD -j PVEFW-FORWARD
+-A PVEFW-FORWARD -p IPv4 -j ACCEPT
+-A PVEFW-FORWARD -p IPv6 -j ACCEPT
+-A PVEFW-FORWARD -i fwln+ -j ACCEPT
+-A PVEFW-FORWARD -o fwln+ -j PVEFW-FWBR-OUT'
+
+$XT_MULTI ebtables-restore <<<$EXPECT
+exec diff -u <(echo -e "$EXPECT") <($XT_MULTI ebtables-save | grep -v '^#')

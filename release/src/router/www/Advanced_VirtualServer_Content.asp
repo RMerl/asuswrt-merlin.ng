@@ -33,9 +33,9 @@
 	margin-left: 35%;
 	top: 290px;
 	width: 600px;
-	box-shadow: 1px 5px 10px #000;
+	box-shadow: var(--wrt-card-shadow, 1px 5px 10px #000);
 	font-size: 12px;
-	color: #FFFFFF;
+	color: var(--wrt-text-color,#FFFFFF);
 	padding: 20px;
 }
 </style>
@@ -193,7 +193,7 @@ function initial(){
 		$("#ftpPortConflict").show();
 		var text = httpApi.ftp_port_conflict_check.port_forwarding.hint;
 		text += "<br>";
-		text += "<a id='ftp_port_conflict_faq' href='" + usb_port_conflict_faq + "' target='_blank' style='text-decoration:underline;color:#FC0;'><#FAQ_Find#></a>";
+		text += "<a id='ftp_port_conflict_faq' href='" + usb_port_conflict_faq + "' target='_blank' style='text-decoration:underline;color:var(--wrt-badge-warning-color,#FFCC00);'><#FAQ_Find#></a>";
 		$("#ftpPortConflict").html(text);
 	}
 }
@@ -381,7 +381,7 @@ function validate_single_range(val, min, max) {
 
 function check_multi_range(obj, mini, maxi, allow_range){
 	var _objValue = obj.value.replace(/[-~]/gi,":");	// "~-" to ":"
-	var PortSplit = _objValue.split(/,|:/);
+	var PortSplit = _objValue.split(/,/);
 	for(i=0;i<PortSplit.length;i++){
 		PortSplit[i] = PortSplit[i].replace(/(^\s*)|(\s*$)/g, ""); 		// "\space" to ""
 		PortSplit[i] = PortSplit[i].replace(/(^0*)/g, ""); 		// "^0" to ""	
@@ -459,7 +459,7 @@ function showvts_rulelist(_arrayData, _tableID) {
 	var code = "";
 	code += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" style="word-break:break-word;">';
 	if(_arrayData.length == 0)
-		code += '<tr><td style="color:#FFCC00;" colspan="8"><#IPConnection_VSList_Norule#></td></tr>';
+		code += '<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="8"><#IPConnection_VSList_Norule#></td></tr>';
 	else {
 		for(var i = 0; i < _arrayData.length; i += 1) {
 			var eachValue = _arrayData[i];
@@ -703,12 +703,15 @@ function saveProfile(_mode, _wanIdx, _rowIdx) {
 		return false;
 	if(!Block_chars(document.getElementById("vts_port_x"), ["<" ,">"]))
 		return false;
+
+	document.getElementById("vts_port_x").value = document.getElementById("vts_port_x").value.replace(/[-~]/gi, ":");	// "~-" to ":"	
 	if(document.getElementById("vts_proto_x").value == "OTHER") {
 		document.getElementById("vts_lport_x").value = "";
 		if (!validator.numberRange(document.getElementById("vts_port_x"), 1, 255, false))
 			return false;
 	}
 	else{
+
 		if(!check_multi_range(document.getElementById("vts_port_x"), 1, 65535, true))
 			return false;
 		if((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
@@ -720,6 +723,7 @@ function saveProfile(_mode, _wanIdx, _rowIdx) {
 			}
 		}
 	}
+	document.getElementById("vts_lport_x").value = document.getElementById("vts_lport_x").value.replace(/[-~]/gi, ":");	// "~-" to ":"
 	if(document.getElementById("vts_lport_x").value.length > 0
 			&& !validator.numberRange(document.getElementById("vts_lport_x"), 1, 65535)) {
 		return false;
@@ -791,7 +795,7 @@ function saveProfile(_mode, _wanIdx, _rowIdx) {
 				$("#ftpPortConflict").show();
 				var text = httpApi.ftp_port_conflict_check.port_forwarding.hint;
 				text += "<br>";
-				text += "<a id='ftp_port_conflict_faq' href='" + usb_port_conflict_faq + "' target='_blank' style='text-decoration:underline;color:#FC0;'><#FAQ_Find#></a>";
+				text += "<a id='ftp_port_conflict_faq' href='" + usb_port_conflict_faq + "' target='_blank' style='text-decoration:underline;color:var(--wrt-badge-warning-color,#FFCC00);'><#FAQ_Find#></a>";
 				$("#ftpPortConflict").html(text);
 
 				var hint = httpApi.ftp_port_conflict_check.port_forwarding.hint;
@@ -853,7 +857,7 @@ function cancelProfile() {
 								<div class="formfonttitle"><#menu5_3#> - <#menu5_3_4#></div>
 								<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 								<div>
-									<div id="ftpPortConflict" class="formfontdesc" style="display:none;color:#FFCC00;"></div>
+									<div id="ftpPortConflict" class="formfontdesc" style="display:none;color:var(--wrt-badge-warning-color,#FFCC00);"></div>
 									<div class="formfontdesc">
 										<div><#IPConnection_VServerEnable_sectiondesc#></div>
 										<div><#FirewallConfig_Port80_itemdesc#></div>
@@ -862,7 +866,7 @@ function cancelProfile() {
 									</div>
 								</div>
 
-								<div class="formfontdesc hint-color" id="lb_note" style="color:#FFCC00; display:none;"><#lb_note_portForwarding#></div>
+								<div class="formfontdesc hint-color" id="lb_note" style="color:var(--wrt-badge-warning-color,#FFCC00); display:none;"><#lb_note_portForwarding#></div>
 
 								<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 									<thead>
@@ -991,7 +995,7 @@ function cancelProfile() {
 			</td>
 		</tr>
 	</table>
-	<div style="color:#FC0;margin:10px 0px;">
+	<div style="color:var(--wrt-badge-warning-color,#FFCC00);margin:10px 0px;">
 		* <#IPConnection_VSList_External_Port#>
 		<br>
 		<#IPConnection_VSList_External_Port_desc#>

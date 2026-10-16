@@ -1,0 +1,14 @@
+ebtables-translate -A INPUT --mark 42
+nft 'add rule bridge filter INPUT meta mark 0x2a counter'
+
+ebtables-translate -A INPUT ! --mark 42
+nft 'add rule bridge filter INPUT meta mark != 0x2a counter'
+
+ebtables-translate -A INPUT --mark ! 42
+nft 'add rule bridge filter INPUT meta mark != 0x2a counter'
+
+ebtables-translate -A INPUT ! --mark 0x1/0xff
+nft 'add rule bridge filter INPUT meta mark and 0xff != 0x1 counter'
+
+ebtables-translate -A INPUT --mark /0x02
+nft 'add rule bridge filter INPUT meta mark and 0x2 != 0 counter'

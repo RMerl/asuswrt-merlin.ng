@@ -68,6 +68,13 @@ static ipsec_samba_t pre_samba_prof;
 
 static ipsec_prof_t prof[2][MAX_PROF_NUM];
 static pki_ca_t ca_tab[CA_FILES_MAX_NUM];
+#if defined(RTCONFIG_MT798X) || defined(RTCONFIG_MT799X)
+	#define IPSEC_CHANGE_GRO 1
+#else
+	#define IPSEC_CHANGE_GRO 0
+#endif
+
+
 
 int get_active_wan_unit(void)
 {
@@ -95,12 +102,16 @@ int get_active_wan_unit(void)
 /*param 1: char *p_end , IN : the src of string buf */
 /*param 2: char *p_tmp , OUT: the dest of string buf*/
 /*param 3: int *nsize_shifft , OUT: the size of shifft*/
-void ipsec_profile_str_parse(char *p_end, char *p_tmp, int *nsize_shifft)
+void ipsec_profile_str_parse(char *p_end, char *p_tmp, int *nsize_shifft, size_t max_len)
 {
     int i = 1;
+    size_t written = 0;
     while(*p_end != '\0' && *p_end != '>'){
-        *p_tmp = *p_end;
-        p_tmp++;
+        if(written < max_len - 1){
+            *p_tmp = *p_end;
+            p_tmp++;
+            written++;
+        }
         p_end++;
         i++;
     }
@@ -212,24 +223,65 @@ void ipsec_samba_prof_fill(char *p_data)
 	p_end += i;/*to shifft next '>'*/
     /*DNS1*/
     p_tmp = &(samba_prof.dns1[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(samba_prof.dns1));
 //DBG(("dns1:%s\n", samba_prof.dns1));
     p_end += i;/*to shifft next '>'*/
     /*DNS2*/
     p_tmp = &(samba_prof.dns2[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(samba_prof.dns2));
 //DBG(("dns2:%s\n", samba_prof.dns2));
     p_end += i ;/*to shifft next '>'*/
     /*NBIOS1*/
     p_tmp = &(samba_prof.nbios1[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(samba_prof.nbios1));
 //DBG(("nbios1:%s\n", samba_prof.nbios1));
     p_end += i;/*to shifft next '>'*/
     /*NBIOS2*/
     p_tmp = &(samba_prof.nbios2[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(samba_prof.nbios2));
 //DBG(("nbios2:%s\n", samba_prof.nbios2));
     //p_end += i;
+    return;
+}
+
+static void ipsec_profilename_sanitize(char *name)
+{
+    char *p = name;
+    while(*p != '\0'){
+        if(!((*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') ||
+             (*p >= '0' && *p <= '9') || *p == '-' || *p == '_' || *p == '.')){
+            *p = '\0';
+            break;
+        }
+        p++;
+    }
+    return;
+}
+
+/* strip CR/LF so this can't break out of the "#...:%s" comment line it's echoed into */
+static void ipsec_comment_sanitize(char *s)
+{
+    char *p = s;
+    while(*p != '\0'){
+        if(*p == '\n' || *p == '\r'){
+            *p = '\0';
+            break;
+        }
+        p++;
+    }
+    return;
+}
+
+static void ipsec_subnet_sanitize(char *subnet)
+{
+    char *p = subnet;
+    while(*p != '\0'){
+        if(!((*p >= '0' && *p <= '9') || *p == '.' || *p == '/' || *p == ',')){
+            *p = '\0';
+            break;
+        }
+        p++;
+    }
     return;
 }
 
@@ -243,25 +295,26 @@ void ipsec_prof_fill(int prof_idx, char *p_data, ipsec_prof_type_t prof_type)
     prof[prof_type][prof_idx].vpn_type = (uint8_t)ipsec_profile_int_parse(FLAG_NONE,
                                                                p_end, &i);
     p_end += i; /*to shifft next '>'*/
-    /*profilename*/    
+    /*profilename*/
     p_tmp = &(prof[prof_type][prof_idx].profilename[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].profilename));
+    ipsec_profilename_sanitize(p_tmp);
     p_end += i ;
     /*remote_gateway_method*/
     p_tmp = &(prof[prof_type][prof_idx].remote_gateway_method[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].remote_gateway_method));
     p_end += i ;
     /*remote gateway*/
     p_tmp = &(prof[prof_type][prof_idx].remote_gateway[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].remote_gateway));
     p_end += i ;
     /*local public interface*/
     p_tmp = &(prof[prof_type][prof_idx].local_public_interface[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].local_public_interface));
     p_end += i ;
     /*local public ip*/
     p_tmp = &(prof[prof_type][prof_idx].local_pub_ip[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].local_pub_ip));
     p_end += i ;
     /*auth_method*/
     prof[prof_type][prof_idx].auth_method = (uint8_t)ipsec_profile_int_parse(FLAG_NONE,
@@ -269,16 +322,17 @@ void ipsec_prof_fill(int prof_idx, char *p_data, ipsec_prof_type_t prof_type)
     p_end += i; /*to shifft next '>'*/
     /*auth method value -- psk password or private key of rsa*/
     p_tmp = &(prof[prof_type][prof_idx].auth_method_key[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].auth_method_key));
     p_end += i;
 	/*p_end+1 for skipping '<'*/
     p_end += 1;
     /*to parse local subnet e.g.192.168.2.1/24> [local_port] 0>*/
     p_tmp = &(prof[prof_type][prof_idx].local_subnet[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].local_subnet));
 	 /*to replace '<' to ',' e.g. 192.168.3.1/16,192.168.2.1/24*/
 	while ((ptr=strchr(p_tmp, '<'))!=NULL) *ptr = ',';
-	
+	ipsec_subnet_sanitize(p_tmp);
+
     p_end += i;
     /*local port*/
     prof[prof_type][prof_idx].local_port = (uint16_t)ipsec_profile_int_parse(FLAG_NONE,
@@ -289,7 +343,7 @@ void ipsec_prof_fill(int prof_idx, char *p_data, ipsec_prof_type_t prof_type)
     /*p_end+1 for skipping '<'*/
     p_end += 1;
     p_tmp = &(prof[prof_type][prof_idx].remote_subnet[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].remote_subnet));
     /*to replace '<' to ',' e.g. 192.168.3.1/16,192.168.2.1/24*/
 	while ((ptr=strchr(p_tmp, '<'))!=NULL) *ptr = ',';
     
@@ -300,19 +354,21 @@ void ipsec_prof_fill(int prof_idx, char *p_data, ipsec_prof_type_t prof_type)
     p_end += i; /*to shifft next '>'*/
     /*tunnel type: transport or tunnel*/
     p_tmp = &(prof[prof_type][prof_idx].tun_type[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].tun_type));
     p_end += i;
     /*virtual ip en */
     p_tmp = &(prof[prof_type][prof_idx].virtual_ip_en[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].virtual_ip_en));
     p_end += i;
 	
     /*virtual ip subnet*/
     p_tmp = &(prof[prof_type][prof_idx].virtual_subnet[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].virtual_subnet));
+	ipsec_subnet_sanitize(p_tmp);
 	/* if virtual_subnet=x.x.x, convert to x.x.x.0/24 */
-	if(0 != strcmp(p_tmp, "") && 0 == strstr(p_tmp, "/"))	
-		strcat(prof[prof_type][prof_idx].virtual_subnet, ".0/24");
+	if(0 != strcmp(p_tmp, "") && 0 == strstr(p_tmp, "/"))
+		strlcat(prof[prof_type][prof_idx].virtual_subnet, ".0/24",
+		        sizeof(prof[prof_type][prof_idx].virtual_subnet));
 	
     p_end += i;
     /*accessible_networks*/
@@ -337,11 +393,11 @@ void ipsec_prof_fill(int prof_idx, char *p_data, ipsec_prof_type_t prof_type)
     p_end += i; /*to shifft next '>'*/
     /*local id*/
     p_tmp = &(prof[prof_type][prof_idx].local_id[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].local_id));
     p_end += i;
     /*remote_id*/
     p_tmp = &(prof[prof_type][prof_idx].remote_id[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].remote_id));
     p_end += i;
     /*keylife_p1*/
     prof[prof_type][prof_idx].keylife_p1 = (uint32_t)ipsec_profile_int_parse(FLAG_NONE,
@@ -353,15 +409,15 @@ void ipsec_prof_fill(int prof_idx, char *p_data, ipsec_prof_type_t prof_type)
     p_end += i;
     /*xauth_account*/
     p_tmp = &(prof[prof_type][prof_idx].xauth_account[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].xauth_account));
     p_end += i;
     /*xauth_password*/
     p_tmp = &(prof[prof_type][prof_idx].xauth_password[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].xauth_password));
     p_end += i;
     /*xauth_server_type,USER auth: auth2meth for IKEv2*/
     p_tmp = &(prof[prof_type][prof_idx].rightauth2_method[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].rightauth2_method));
     p_end += i;
     /* leftauth_method = rightauth2_method if leftauth_method is not given */
     snprintf(prof[prof_type][prof_idx].leftauth_method, sizeof(prof[prof_type][prof_idx].leftauth_method), "%s", prof[prof_type][prof_idx].rightauth2_method);
@@ -404,7 +460,7 @@ void ipsec_prof_fill(int prof_idx, char *p_data, ipsec_prof_type_t prof_type)
     p_end += i; /*to shifft next '>'*/
 	/*samba settings*/
 	p_tmp = &(prof[prof_type][prof_idx].samba_settings[0]);
-    ipsec_profile_str_parse(p_end, p_tmp, &i);
+    ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].samba_settings));
 	while ((ptr=strchr(p_tmp, '<'))!=NULL) *ptr = '>';  /*to replace '<' to '>' e.g. >1.1.1.1>2.2.2.2>3.3.3.3>4.4.4.4*/
 
     p_end += i; /*to shifft next '>'*/
@@ -422,23 +478,23 @@ void ipsec_prof_fill(int prof_idx, char *p_data, ipsec_prof_type_t prof_type)
         p_end += i;
 
         p_tmp = &(prof[prof_type][prof_idx].leftauth_method[0]);
-        ipsec_profile_str_parse(p_end, p_tmp, &i);
+        ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].leftauth_method));
         p_end += i;
 
         p_tmp = &(prof[prof_type][prof_idx].leftcert[0]);
-        ipsec_profile_str_parse(p_end, p_tmp, &i);
+        ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].leftcert));
         p_end += i;
-        
+
         p_tmp = &(prof[prof_type][prof_idx].leftsendcert[0]);
-        ipsec_profile_str_parse(p_end, p_tmp, &i);
+        ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].leftsendcert));
         p_end += i;
-        
+
         p_tmp = &(prof[prof_type][prof_idx].leftkey[0]);
-        ipsec_profile_str_parse(p_end, p_tmp, &i);
+        ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].leftkey));
         p_end += i;
-        
+
         p_tmp = &(prof[prof_type][prof_idx].eap_identity[0]);
-        ipsec_profile_str_parse(p_end, p_tmp, &i);
+        ipsec_profile_str_parse(p_end, p_tmp, &i, sizeof(prof[prof_type][prof_idx].eap_identity));
 		/*the last one doesn't need to parse ">".*/
     }
 
@@ -536,7 +592,7 @@ int pre_ipsec_samba_prof_set()
 	for(i = 0; i < MAX_PROF_NUM; i++){
 		if((0 != strcmp(prof[PROF_SVR][i].samba_settings, "null")) && IPSEC_CONN_EN_UP == prof[PROF_SVR][i].ipsec_conn_en
 			&& VPN_TYPE_HOST_NET == prof[PROF_SVR][i].vpn_type){
-				strcpy(p_tmp, prof[PROF_SVR][i].samba_settings);
+				strlcpy(p_tmp, prof[PROF_SVR][i].samba_settings, SZ_BUF);
         //DBG(("pre_ipsec_samba_prof_set#%s\n", p_tmp));
         if('\0' != *p_tmp){
             ipsec_samba_prof_fill(p_tmp);
@@ -679,9 +735,75 @@ void rc_ipsec_pki_gen_exec(uint32_t idx)
     return;
 }
 
+#if IPSEC_CHANGE_GRO
+#define IPSEC_GRO_IFNAME_NVRAM "ipsec_gro_ifname"
+
+static void ipsec_gro_wan_ifname_get(char *buf, size_t len)
+{
+	/* physical WAN ifname -- GRO is a NIC/driver offload, must target the real interface (e.g. eth1), not the PPP virtual one (ppp0) when using PPPoE/PPTP/L2TP. */
+	char *wan_if = get_wanx_ifname(wan_primary_ifunit());
+	if (!is_valid_ifname(wan_if))
+		snprintf(buf, len, "eth1");
+	else
+		snprintf(buf, len, "%s", wan_if);
+}
+
+static void ipsec_gro_disable(FILE *fp)
+{
+	char wan_ifname[IFNAMSIZ] = {0};
+	char prev_ifname[IFNAMSIZ] = {0};
+
+	ipsec_gro_wan_ifname_get(wan_ifname, sizeof(wan_ifname));
+	snprintf(prev_ifname, sizeof(prev_ifname), "%s", nvram_safe_get(IPSEC_GRO_IFNAME_NVRAM));
+
+	if (is_valid_ifname(prev_ifname) && strcmp(prev_ifname, wan_ifname) != 0) {
+		/* WAN interface changed (e.g. dual-WAN failover) since GRO was last disabled -- restore GRO on the previous one. Tracked via nvram (not a static C var) so this survives across process restarts within the same boot, not just within one process lifetime. */
+		fprintf(fp, "ethtool -K %s gro on > /dev/null 2>&1\n", prev_ifname);
+		DBG(("WAN changed, re-enable GRO on %s before disabling it on %s.\n", prev_ifname, wan_ifname));
+		logmessage("ipsec", "WAN changed, re-enable GRO on %s before disabling it on %s.\n", prev_ifname, wan_ifname);
+	}
+
+	fprintf(fp, "ethtool -K %s gro off > /dev/null 2>&1\n", wan_ifname);
+	nvram_set(IPSEC_GRO_IFNAME_NVRAM, wan_ifname);
+
+	DBG(("Disable GRO on %s for strongSwan.\n", wan_ifname));
+	logmessage("ipsec", "Disable GRO on %s for strongSwan.\n", wan_ifname);
+}
+
+static void ipsec_gro_enable(FILE *fp)
+{
+	char wan_ifname[IFNAMSIZ] = {0};
+	char prev_ifname[IFNAMSIZ] = {0};
+	char *target;
+
+	snprintf(prev_ifname, sizeof(prev_ifname), "%s", nvram_safe_get(IPSEC_GRO_IFNAME_NVRAM));
+
+	if (is_valid_ifname(prev_ifname)) {
+		target = prev_ifname;
+	} else {
+		ipsec_gro_wan_ifname_get(wan_ifname, sizeof(wan_ifname));
+		target = wan_ifname;
+	}
+
+	fprintf(fp, "ethtool -K %s gro on > /dev/null 2>&1\n", target);
+	/* Do NOT clear IPSEC_GRO_IFNAME_NVRAM here: this line only writes into a script that
+	 * is executed later, not run synchronously. If the script fails or is interrupted
+	 * before reaching this ethtool line, GRO would remain disabled on target while the
+	 * tracking record was already erased, preventing recovery. Leave it in place -- the
+	 * next ipsec_gro_disable() unconditionally overwrites it, so this is always safe. */
+
+	DBG(("Enable GRO on %s after stopping strongSwan.\n", target));
+	logmessage("ipsec", "Enable GRO on %s after stopping strongSwan.\n", target);
+}
+#endif /* IPSEC_CHANGE_GRO */
+
 void rc_ipsec_start(FILE *fp)
 {
     if(NULL != fp){
+#if IPSEC_CHANGE_GRO
+		/* NOTE: disabling GRO here is mandatory for strongSwan on this platform, not optional. Even if a GRO on/off switch (e.g. nvram) is added later, this line must still run unconditionally -- do not gate it on that switch. */
+		ipsec_gro_disable(fp);
+#endif /* IPSEC_CHANGE_GRO */
         fprintf(fp,"ipsec start > /dev/null 2>&1 \n");
 #if defined(RTCONFIG_QUICKSEC)
 		fprintf(fp, "quicksecpm -f /tmp/quicksecpm.xml -O /tmp/quicksecpm.log -d\n");
@@ -711,12 +833,16 @@ void rc_ipsec_down(FILE *fp, int prof_idx, ipsec_prof_type_t prof_type)
 
 void rc_ipsec_restart(FILE *fp)
 {
-    if(NULL != fp){
-        /*to do this command after ipsec reload command has been exec*/
-        fprintf(fp, "ipsec restart > /dev/null 2>&1\n"
-        		"sleep 3 > /dev/null 2>&1\n");
-    }
-    return;
+	if(NULL != fp){
+#if IPSEC_CHANGE_GRO
+		/* NOTE: disabling GRO here is mandatory for strongSwan on this platform, not optional. Even if a GRO on/off switch (e.g. nvram) is added later, this line must still run unconditionally -- do not gate it on that switch. */
+		ipsec_gro_disable(fp);
+#endif /* IPSEC_CHANGE_GRO */
+		/* Restart strongSwan and give it time to settle before subsequent commands run. */
+		fprintf(fp, "ipsec restart > /dev/null 2>&1\n"
+						"sleep 3 > /dev/null 2>&1\n");
+	}
+	return;
 }
 
 void rc_ipsec_reload(FILE *fp)
@@ -751,6 +877,10 @@ void rc_ipsec_stop(FILE *fp)
 				"killall charon\n"
 				"rm -f /var/run/charon.*\n"
         		"sleep 1 > /dev/null 2>&1\n");
+#if IPSEC_CHANGE_GRO
+		/* NOTE: this restores GRO after ipsec stop. No GRO on/off switch (e.g. nvram) exists yet, so it always re-enables GRO. If such a switch is added later, gate this line on it (unlike the mandatory gro-off in rc_ipsec_start()/rc_ipsec_restart(), which must stay unconditional). */
+		ipsec_gro_enable(fp);
+#endif /* IPSEC_CHANGE_GRO */
 #if defined(RTCONFIG_QUICKSEC)
 		//fprintf(fp, "killall quicksecpm\n");
 #endif
@@ -828,49 +958,59 @@ int rc_ipsec_ca_txt_parse()
     char *p_tmp = NULL, *p_buf = NULL; 
     int file_idx = 0;
     /*ca index star from 0*/
-    sprintf(buf, "%s", nvram_safe_get("ca_manage_profile"));
+    snprintf(buf, sizeof(buf), "%s", nvram_safe_get("ca_manage_profile"));
     p_buf = &buf[0];
-   
+
     file_idx = rc_ipsec_ca_fileidx_available_get();
 
     if(CA_FILES_MAX_NUM == file_idx){
         DBG(("ca files reach the maxmum numbers(%d)", file_idx));
         return file_idx;
     }
- 
+
+    size_t left;
+
+    /* Loop 1: copy into p12_pwd until '>' or NUL, bounded */
     p_tmp = (char *)&(ca_tab[file_idx].p12_pwd[0]);
-    while('>' != *p_buf){
-        *p_tmp = *p_buf;
-        p_tmp++;
+    left = sizeof(ca_tab[file_idx].p12_pwd) - 1;
+    while('>' != *p_buf && '\0' != *p_buf){
+        if(left > 0){ *p_tmp++ = *p_buf; left--; }
         p_buf++;
     }
     *p_tmp = '\0';
-    
+    if('>' == *p_buf) p_buf++;
+
+    /* Loop 2: copy into ca_txt until '>' or NUL, bounded */
     p_tmp = (char *)&(ca_tab[file_idx].ca_txt[0]);
-    while('>' != *(++p_buf)){
-        *p_tmp = *p_buf;
-        p_tmp++;
+    left = sizeof(ca_tab[file_idx].ca_txt) - 1;
+    while('>' != *p_buf && '\0' != *p_buf){
+        if(left > 0){ *p_tmp++ = *p_buf; left--; }
+        p_buf++;
+    }
+    *p_tmp = '\0';
+    if('>' == *p_buf) p_buf++;
+
+    /* Loop 3: copy into san until NUL, bounded */
+    p_tmp = (char *)&(ca_tab[file_idx].san[0]);
+    left = sizeof(ca_tab[file_idx].san) - 1;
+    while('\0' != *p_buf){
+        if(left > 0){ *p_tmp++ = *p_buf; left--; }
+        p_buf++;
     }
     *p_tmp = '\0';
 
-    p_tmp = (char *)&(ca_tab[file_idx].san[0]);
-    while('\0' != *(++p_buf)){
-        *p_tmp = *p_buf;
-        p_tmp++;
-    }
-    *p_tmp = '\0';
     /*to re-parsing root CA cert for server,client cert*/
     p_tmp = (char *)&(ca_tab[file_idx].ca_cert[0]);
     p_buf = (char *)&(ca_tab[file_idx].ca_txt[0]);
-
     memset(p_tmp, 0, SZ_BUF);
+    left = sizeof(ca_tab[file_idx].ca_cert) - 1;
     while('\0' != *p_buf){
         if(('C' == *p_buf) && ('N' == *(p_buf + 1)) && ('=' == *(p_buf + 2))){
             break;
         }
-        *p_tmp++ = *p_buf++;
+        if(left > 0){ *p_tmp++ = *p_buf; left--; }
+        p_buf++;
     }
-
     *p_tmp = '\0';
     return file_idx;
 }
@@ -953,53 +1093,62 @@ void rc_ipsec_cert_import(char *asus_cert, char *ipsec_cli_cert,
                           char *ipsec_cli_key, char *pks12)
 {
     char *p_file = NULL;
-    char cmd[SZ_BUF], tmp[SZ_MIN];
+    char tmp[SZ_MIN];
     if(NULL != asus_cert){
-        memset(cmd, 0, sizeof(char) * SZ_BUF);
-        sprintf(&cmd[0], "cp -r %s /tmp/etc/ipsec.d/cacerts/", asus_cert);
-        system(cmd);
+        safe_do_system("cp -r \"%s\" /tmp/etc/ipsec.d/cacerts/", asus_cert);
     }
     if(NULL != ipsec_cli_cert){
-        memset(cmd, 0, sizeof(char) * SZ_BUF);
-        sprintf(&cmd[0], "cp -r %s /tmp/etc/ipsec.d/certs/", ipsec_cli_cert);
-        system(cmd);
+        safe_do_system("cp -r \"%s\" /tmp/etc/ipsec.d/certs/", ipsec_cli_cert);
     }
     if(NULL != ipsec_cli_key){
-        memset(cmd, 0, sizeof(char) * SZ_BUF);
-        sprintf(&cmd[0], "cp -r %s /tmp/etc/ipsec.d/private/", ipsec_cli_key);
-        system(cmd);
+        safe_do_system("cp -r \"%s\" /tmp/etc/ipsec.d/private/", ipsec_cli_key);
     }
     if(NULL != pks12){
-        if(NULL != nvram_safe_get("ca_manage_profile")){
+        const char *profile = nvram_safe_get("ca_manage_profile");
+        if(NULL != profile){
             DBG(("pks12:%s", pks12));
             p_file = &tmp[0];
             memset(p_file, '\0', sizeof(char) * SZ_MIN);
-            strncpy(p_file, pks12, strlen(pks12) - 4); /*4 : strlen(p12)*/
-            sprintf(cmd, "echo %s > "FILE_PATH_CA_ETC"%s.pwd", 
-                    nvram_safe_get("ca_manage_profile"), p_file);
-            system(cmd);
-            memset(cmd, 0, sizeof(char) * SZ_BUF);
-            sprintf(&cmd[0], "openssl pkcs12 -in %s%s -clcerts -out "
-                             "/tmp/etc/ipsec.d/certs/%s.pem -password pass:%s", 
-                             FILE_PATH_CA_ETC, pks12, p_file, 
-                             nvram_safe_get("ca_manage_profile"));
-            DBG((cmd));
-            system(cmd);
-            memset(cmd, 0, sizeof(char) * SZ_BUF);
-            sprintf(&cmd[0], "openssl pkcs12 -in %s%s -cacerts -out "
-                             "/tmp/etc/ipsec.d/cacerts/%s.pem"
-                             " -password pass:%s",
-                             FILE_PATH_CA_ETC, pks12, p_file,
-                             nvram_safe_get("ca_manage_profile"));
-            DBG((cmd));
-            system(cmd);
-            memset(cmd, 0, sizeof(char) * SZ_BUF);
-            sprintf(&cmd[0], "openssl pkcs12 -in %s%s -out "
-                    "/tmp/etc/ipsec.d/certs/%s.pem -nodes -password pass:%s",
-                     FILE_PATH_CA_ETC, pks12, p_file,
-                     nvram_safe_get("ca_manage_profile"));
-            DBG((cmd));
-            system(cmd);
+            {
+                size_t pks12_len = strlen(pks12);
+                /* guard: underflow (<=4) and overflow into SZ_MIN buffer (>=SZ_MIN+4) */
+                if (pks12_len <= 4 || (pks12_len - 4) >= SZ_MIN) {
+                    DBG(("pks12 invalid length: %s\n", pks12));
+                    return;
+                }
+                /* strip last 4 chars (.p12/.pfx), always NUL-terminated */
+                snprintf(p_file, SZ_MIN, "%.*s", (int)(pks12_len - 4), pks12);
+            }
+            /* write password directly to file, avoiding shell interpretation */
+            {
+                char pwd_path[SZ_MIN + sizeof(FILE_PATH_CA_ETC) + 4];
+                snprintf(pwd_path, sizeof(pwd_path), FILE_PATH_CA_ETC"%s.pwd", p_file);
+                FILE *_f = fopen(pwd_path, "w");
+                if (_f) { fprintf(_f, "%s\n", profile); fclose(_f); }
+            }
+            /* pass password as separate argv element to avoid shell metachar issues */
+            {
+                char in_path[SZ_BUF], out_path[SZ_BUF], pass_arg[SZ_BUF];
+                snprintf(in_path,  sizeof(in_path),  "%s%s",                         FILE_PATH_CA_ETC, pks12);
+                snprintf(out_path, sizeof(out_path), "/tmp/etc/ipsec.d/certs/%s.pem", p_file);
+                snprintf(pass_arg, sizeof(pass_arg), "pass:%s",                       profile);
+                char *argv_clcerts[] = {"openssl", "pkcs12", "-in", in_path, "-clcerts",
+                                        "-out", out_path, "-password", pass_arg, NULL};
+                DBG(("openssl pkcs12 -in %s -clcerts -out %s -password pass:***\n", in_path, out_path));
+                _eval(argv_clcerts, NULL, 0, NULL);
+
+                snprintf(out_path, sizeof(out_path), "/tmp/etc/ipsec.d/cacerts/%s.pem", p_file);
+                char *argv_cacerts[] = {"openssl", "pkcs12", "-in", in_path, "-cacerts",
+                                        "-out", out_path, "-password", pass_arg, NULL};
+                DBG(("openssl pkcs12 -in %s -cacerts -out %s -password pass:***\n", in_path, out_path));
+                _eval(argv_cacerts, NULL, 0, NULL);
+
+                snprintf(out_path, sizeof(out_path), "/tmp/etc/ipsec.d/certs/%s.pem", p_file);
+                char *argv_nodes[] = {"openssl", "pkcs12", "-in", in_path, "-out", out_path,
+                                      "-nodes", "-password", pass_arg, NULL};
+                DBG(("openssl pkcs12 -in %s -out %s -nodes -password pass:***\n", in_path, out_path));
+                _eval(argv_nodes, NULL, 0, NULL);
+            }
         }
     }
     return;
@@ -1056,7 +1205,9 @@ void rc_ipsec_gen_cert(int skip_checking)
 
     if(nvram_match("ddns_enable_x", "1"))
     {
-        snprintf(ddns_name, sizeof(ddns_name), "%s", nvram_safe_get("ddns_hostname_x"));
+        const char *s = nvram_safe_get("ddns_hostname_x");
+        if (is_valid_domainname(s))
+            snprintf(ddns_name, sizeof(ddns_name), "%s", s);
     }
 
     if(strlen(ddns_name) == 0 )
@@ -1195,22 +1346,22 @@ void rc_ipsec_secrets_set()
 					('\0' != prof[prof_count][i].auth_method_key[0]) &&
 					((1 == prof[prof_count][i].auth_method) || (0 == prof[prof_count][i].auth_method))){
 					if(strcmp(prof[prof_count][i].local_public_interface,"wan") == 0){
-						strcpy(prof[prof_count][i].local_pub_ip,nvram_safe_get("wan0_ipaddr"));
+						strlcpy(prof[prof_count][i].local_pub_ip,nvram_safe_get("wan0_ipaddr"),sizeof(prof[prof_count][i].local_pub_ip));
 					}
 					else if(strcmp(prof[prof_count][i].local_public_interface,"wan2") == 0){
-						strcpy(prof[prof_count][i].local_pub_ip,nvram_safe_get("wan1_ipaddr"));
+						strlcpy(prof[prof_count][i].local_pub_ip,nvram_safe_get("wan1_ipaddr"),sizeof(prof[prof_count][i].local_pub_ip));
 					}
 					else if(strcmp(prof[prof_count][i].local_public_interface,"usb") == 0) {
 						for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
 							if (dualwan_unit__usbif(unit)) {
 								wan_prefix(unit, prefix);
-								strcpy(prof[prof_count][i].local_pub_ip,nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)));
+								strlcpy(prof[prof_count][i].local_pub_ip,nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)),sizeof(prof[prof_count][i].local_pub_ip));
 								break;
 							}
 						}
 					}
 					else{
-						strcpy(prof[prof_count][i].local_pub_ip,nvram_safe_get("lan_ipaddr"));
+						strlcpy(prof[prof_count][i].local_pub_ip,nvram_safe_get("lan_ipaddr"),sizeof(prof[prof_count][i].local_pub_ip));
 					}
 					fprintf(fp,"\n %s : %s \"%s\"\n\n"
 						/*fprintf(fp,"\n %s %s : %s %s\n\n"
@@ -1327,16 +1478,16 @@ void ipsec_conf_local_set(FILE *fp, int prof_idx, ipsec_prof_type_t prof_type)
 	left_ipaddr[0]='\0';
 	if(0 == strcmp(prof[prof_type][prof_idx].local_public_interface, "wan")){
 		if(ipv6_enabled())
-			strcpy(left_ipaddr, "");	
+			strlcpy(left_ipaddr, "", sizeof(left_ipaddr));
 		else
-		strcpy(left_ipaddr, nvram_safe_get("wan0_ipaddr"));
+		strlcpy(left_ipaddr, nvram_safe_get("wan0_ipaddr"), sizeof(left_ipaddr));
 	}
 	else if(0 == strcmp(prof[prof_type][prof_idx].local_public_interface, "wan2")){
-		strcpy(left_ipaddr, nvram_safe_get("wan1_ipaddr"));
+		strlcpy(left_ipaddr, nvram_safe_get("wan1_ipaddr"), sizeof(left_ipaddr));
 	}
 	else if(0 == strcmp(prof[prof_type][prof_idx].local_public_interface, "lan")){
 		
-		strcpy(left_ipaddr, nvram_safe_get("lan_ipaddr"));
+		strlcpy(left_ipaddr, nvram_safe_get("lan_ipaddr"), sizeof(left_ipaddr));
 	}
 	else if(0 == strcmp(prof[prof_type][prof_idx].local_public_interface, "usb")){
 		tmp_str[0]='\0';
@@ -1692,7 +1843,8 @@ void rc_ipsec_topology_set()
 				sprintf(&buf[0], "ipsec_profile_client_%d", i+1);
 	        memset(s_tmp, '\0', SZ_BUF);
 	        if(NULL != nvram_safe_get(&buf[0])){
-	            strcpy(s_tmp, nvram_safe_get(&buf[0]));
+	            strlcpy(s_tmp, nvram_safe_get(&buf[0]), SZ_BUF);
+	            ipsec_comment_sanitize(s_tmp);
 	        }
 	        if('\0' == *s_tmp){
 	            memset((ipsec_prof_t *)&prof[prof_count][i], 0, sizeof(ipsec_prof_t));
@@ -1777,18 +1929,57 @@ void rc_ipsec_topology_set()
 					foreach_60(word, ig_guest_client_list, word_next){
 						if((vstrsep(word, ">", &name, &passwd, &desc, &ts, &active, &lan_access)) != 6)
 							continue;
+						/* name is written verbatim into this conn's name and
+						 * rightid= below, then parsed by strongSwan -- don't
+						 * trust it just because it round-tripped through
+						 * nvram. httpd (web.c set_ig_config()) already
+						 * rejects anything outside [A-Za-z0-9] / 32 chars
+						 * before it reaches nvram, but re-check here too in
+						 * case this entry predates that check or nvram was
+						 * modified some other way. */
+						if(!is_valid_ig_client_name(name))
+							continue;
 						if(active != NULL && !strcmp(active, "1")){
-							if(lan_access != NULL && !strcmp(lan_access, "1")){
-								//if lan_access is 1, then do nothing here.
-							}
-							else
-							{
-								//By default, then we block the LAN access by adding following connections.
-								fprintf(fp,"\nconn %s_%s\n", prof[prof_count][i].profilename, name);
-								fprintf(fp, "  also=%s\n", prof[prof_count][i].profilename);
-								fprintf(fp, "  rightid=%s\n", name);
-								fprintf(fp, "  leftsubnet=%s/32[%%any/53]\n\n", nvram_safe_get("lan_ipaddr"));
-							}
+							/* Always generate this override conn for every
+							 * active guest, regardless of this guest's own
+							 * lan_access -- even lan_access=1 guests need
+							 * leftupdown wired up, because the
+							 * ipsec_block_intranet master switch (checked
+							 * at connect-time inside
+							 * _ipsec_ig_guest_lan_blocked()) must be able
+							 * to override their individual lan_access
+							 * setting. If we skip generating this conn
+							 * whenever lan_access=="1" (as before), the
+							 * guest connects through the parent profile
+							 * with no leftupdown at all, and
+							 * _ipsec_updown_host_net() never runs for
+							 * them -- so the master switch silently has
+							 * no effect on them no matter what it checks.
+							 *
+							 * Do NOT restrict leftsubnet here: it is the
+							 * tunnel's traffic selector too, so narrowing
+							 * it also breaks full-tunnel Internet routing
+							 * for this client. LAN access is blocked
+							 * dynamically at connect-time by
+							 * _ipsec_updown_host_net() instead, via the
+							 * leftupdown set below.
+							 *
+							 * leftupdown cannot coexist with leftfirewall
+							 * on the same conn (strongswan starter:
+							 * "cannot have both leftfirewall and
+							 * leftupdown"). The parent profile keeps its
+							 * normal leftfirewall=yes/no and has no
+							 * leftupdown of its own, so we must override
+							 * leftfirewall=no here -- specifically on
+							 * this guest override conn only -- before
+							 * adding leftupdown, otherwise the inherited
+							 * leftfirewall value from also= triggers that
+							 * same parsing error for this conn. */
+							fprintf(fp,"\nconn %s_%s\n", prof[prof_count][i].profilename, name);
+							fprintf(fp, "  also=%s\n", prof[prof_count][i].profilename);
+							fprintf(fp, "  rightid=%s\n", name);
+							fprintf(fp, "  leftfirewall=no\n");
+							fprintf(fp, "  leftupdown=\"%s %d %u\"\n", FILE_PATH_IPSEC_UPDOWN, i + 1, prof[prof_count][i].vpn_type);
 						}
 					}
 				}
@@ -2050,7 +2241,7 @@ void rc_ipsec_topology_set_XML()
 					sprintf(&buf[0], "ipsec_profile_client_%d", i+1);
 		        memset(s_tmp, '\0', SZ_BUF);
 		        if(NULL != nvram_safe_get(&buf[0])){
-		            strcpy(s_tmp, nvram_safe_get(&buf[0]));
+		            strlcpy(s_tmp, nvram_safe_get(&buf[0]), SZ_BUF);
 		        }
 		        if('\0' == *s_tmp){
 		            memset((ipsec_prof_t *)&prof[prof_count][i], 0, sizeof(ipsec_prof_t));
@@ -2080,7 +2271,7 @@ void rc_ipsec_topology_set_XML()
 					if(0 != strcmp(prof[prof_count][i].local_subnet,lan_class))
 						strncpy(prof[prof_count][i].local_subnet, lan_class, 32);
 					fprintf(fp,"      <subnet>%s</subnet>\n", prof[prof_count][i].local_subnet);
-					strcpy(buf, prof[prof_count][i].virtual_subnet);
+					strlcpy(buf, prof[prof_count][i].virtual_subnet, sizeof(buf));
 					virtual_ip = get_virtual_ip_format(buf);
 					//DBG(("virtual_subnet=%s\n",prof[prof_count][i].virtual_subnet));
 					fprintf(fp,"      <address netmask=\"%s\">%s-%s</address>\n", virtual_ip.subnet, virtual_ip.ip_start,virtual_ip.ip_end);					
@@ -2115,7 +2306,7 @@ void rc_ipsec_topology_set_XML()
 						p_str1 = &xauth_tmp[0];
 						memset(xauth_buf, 0, sizeof(char) * SZ_MAX);
 						memset(xauth_tmp, 0, sizeof(char) * SZ_MAX);
-						strcpy(xauth_buf, nvram_safe_get(ipsec_client_list_name));
+						strlcpy(xauth_buf, nvram_safe_get(ipsec_client_list_name), sizeof(xauth_buf));
 						while('\0' != *p_str){
 							if('<' == *p_str){
 								*p_str = '\n';
@@ -2693,7 +2884,7 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
     uint32_t i = 0; //, cur_bitmap_en= 0;
 	int prof_count = 0;
     FILE *fp = NULL, *fp1 = NULL;
-    char interface[4];
+    char interface[IFNAMSIZ];
 	char *argv[3];
 	int unit = 0;
 	char word[80], *next;
@@ -2793,13 +2984,13 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
     	for(i = 0; i < MAX_PROF_NUM; i++){
 			if(0 != strlen(prof[prof_count][i].profilename)) {
 				if(strcmp(prof[prof_count][i].local_public_interface,"wan") == 0){
-					strcpy(interface,nvram_safe_get("wan0_gw_ifname"));
+					strlcpy(interface,nvram_safe_get("wan0_gw_ifname"),sizeof(interface));
 				}
 				else if(strcmp(prof[prof_count][i].local_public_interface,"wan2") == 0){
-					strcpy(interface,nvram_safe_get("wan1_gw_ifname"));
+					strlcpy(interface,nvram_safe_get("wan1_gw_ifname"),sizeof(interface));
 				}
 				else if(strcmp(prof[prof_count][i].local_public_interface,"lan") == 0) 
-				strcpy(interface,"br0");
+					strlcpy(interface,"br0",sizeof(interface));
 				else if(strcmp(prof[prof_count][i].local_public_interface,"usb") == 0){ 
 					foreach(word, nvram_safe_get("wan_ifnames"), next) {
 						if (0 == strcmp(word,"usb")){
@@ -2807,7 +2998,7 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 						}
 						unit ++;
 					}
-					strcpy(interface,get_wan_ifname(unit));
+					strlcpy(interface,get_wan_ifname(unit),sizeof(interface));
 				}
 				if(IPSEC_CONN_EN_UP == prof[prof_count][i].ipsec_conn_en){
 					if(0 != strcmp(interface,"")){
@@ -2816,7 +3007,7 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 							for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
 								sprintf(tmpStr,"wan%d_gw_ifname",unit);
 								if(0 != strlen(nvram_safe_get(tmpStr)))
-									strcpy(interface,nvram_safe_get(tmpStr));
+									strlcpy(interface,nvram_safe_get(tmpStr),sizeof(interface));
 								/* moved to firewall
 								fprintf(fp1, "iptables -D INPUT -i %s --protocol esp -j ACCEPT\n", interface);
 								fprintf(fp1, "iptables -D INPUT -i %s --protocol ah -j ACCEPT\n", interface);
@@ -3305,6 +3496,91 @@ static void _get_my_ip_by_subnet(const char* subnet, char *ip, size_t len, int v
 	}
 }
 
+#ifdef RTCONFIG_INSTANT_GUARD
+/* Returns 1 if peer_id is an active Instant Guard guest client that should
+ * be blocked from LAN access -- either because the "block intranet" master
+ * switch (ipsec_block_intranet) is on, which overrides every guest's own
+ * lan_access setting, or because this guest's own lan_access flag is NOT
+ * "1". Regular (non-guest) clients never reach this function at all: they
+ * connect through the parent profile, which has no leftupdown of its own,
+ * so ipsec_block_intranet never blocks their access to the router's own
+ * GUI -- only ipsec_intranet_access_FORWARD() (firewall.c) applies to them,
+ * and only for other LAN hosts, by design. */
+static int _ipsec_ig_guest_lan_blocked(const char *peer_id)
+{
+	char ig_guest_client_list[4096] = {0};
+	char word[1024] = {0}, *word_next = NULL;
+	char *name = NULL, *passwd = NULL;
+	char *desc = NULL, *ts = NULL, *active = NULL;
+	char *lan_access = NULL;
+
+	if (!peer_id || !*peer_id)
+		return 0;
+
+	if (nvram_get_int("ipsec_ig_enable") != 1)
+		return 0;
+
+	strlcpy(ig_guest_client_list, nvram_safe_get("ig_guest_client_list"), sizeof(ig_guest_client_list));
+	foreach_60(word, ig_guest_client_list, word_next) {
+		if (vstrsep(word, ">", &name, &passwd, &desc, &ts, &active, &lan_access) != 6)
+			continue;
+		if (name && !strcmp(name, peer_id) && active && !strcmp(active, "1")) {
+			if (nvram_match("ipsec_block_intranet", "1"))
+				return 1;
+			return !(lan_access && !strcmp(lan_access, "1"));
+		}
+	}
+
+	return 0;
+}
+
+/* Dynamic, per-session LAN access control for Instant Guard guest clients
+ * connecting to a VPN_TYPE_HOST_NET (Instant Guard VPN Server) profile.
+ * Runs as strongSwan's leftupdown hook on every up/down event, so it always
+ * operates on whatever virtual IP was actually assigned to *this* session
+ * (PLUTO_PEER_SOURCEIP) instead of a hardcoded address, and always cleans
+ * up its own rules on disconnect. Regular (non-guest) clients and guest
+ * clients with lan_access=1 are left untouched -- their leftsubnet is
+ * already 0.0.0.0/0 (full tunnel) via the parent profile. */
+static void _ipsec_updown_host_net(void)
+{
+	char *verb = safe_getenv("PLUTO_VERB");
+	char *peer_id = safe_getenv("PLUTO_PEER_ID");
+	char *peer_sourceip = safe_getenv("PLUTO_PEER_SOURCEIP");
+	char sip[64] = {0};
+	char lan_ip[32] = {0};
+	char lan_subnet[64] = {0};
+	char *p;
+
+	if (!peer_sourceip || !*peer_sourceip)
+		return;
+
+	strlcpy(sip, peer_sourceip, sizeof(sip));
+	if ((p = strpbrk(sip, "/ \t\r\n")) != NULL)
+		*p = '\0';
+
+	strlcpy(lan_ip, nvram_safe_get("lan_ipaddr"), sizeof(lan_ip));
+	snprintf(lan_subnet, sizeof(lan_subnet), "%s/%s", lan_ip, nvram_safe_get("lan_netmask"));
+
+	if (verb && strstr(verb, "up")) {
+		if (!_ipsec_ig_guest_lan_blocked(peer_id))
+			return;
+
+		/* insert order matters: ACCEPT rules must end up above the DROP */
+		eval("iptables", "-I", "INPUT", "1", "-s", sip, "-d", lan_ip, "-j", "DROP");
+		eval("iptables", "-I", "INPUT", "1", "-s", sip, "-d", lan_ip, "-p", "udp", "--dport", "53", "-j", "ACCEPT");
+		eval("iptables", "-I", "INPUT", "1", "-s", sip, "-d", lan_ip, "-p", "tcp", "--dport", "53", "-j", "ACCEPT");
+		eval("iptables", "-I", "FORWARD", "1", "-s", sip, "-d", lan_subnet, "-j", "DROP");
+	}
+	else {
+		eval("iptables", "-D", "INPUT", "-s", sip, "-d", lan_ip, "-p", "tcp", "--dport", "53", "-j", "ACCEPT");
+		eval("iptables", "-D", "INPUT", "-s", sip, "-d", lan_ip, "-p", "udp", "--dport", "53", "-j", "ACCEPT");
+		eval("iptables", "-D", "INPUT", "-s", sip, "-d", lan_ip, "-j", "DROP");
+		eval("iptables", "-D", "FORWARD", "-s", sip, "-d", lan_subnet, "-j", "DROP");
+	}
+}
+#endif /* RTCONFIG_INSTANT_GUARD */
+
 static void _ipsec_updown_net_net()
 {
 	char *verb = safe_getenv("PLUTO_VERB");
@@ -3356,6 +3632,11 @@ int ipsec_updown_main(int argc, char *argv[])
 	if (vpn_type == VPN_TYPE_HOST_NET_CLI) {
 		_ipsec_updown_host_net_cli(unit);
 	}
+#ifdef RTCONFIG_INSTANT_GUARD
+	else if (vpn_type == VPN_TYPE_HOST_NET) {
+		_ipsec_updown_host_net();
+	}
+#endif /* RTCONFIG_INSTANT_GUARD */
 	else {
 		_ipsec_updown_net_net();
 	}
@@ -3434,6 +3715,9 @@ void update_ipsec_server_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sd
 	if (restart_all_sdn) {
 		eval("iptables", "-F", IPSEC_SRV_SDN_F_CHAIN);
 		for (i = 0; i < mtl_sz; i++) {
+			// ignore same subnet
+			if (pmtl[i].sdn_t.sdn_idx > 0 && pmtl[i].nw_t.idx == 0)
+				continue;
 			// Drop to/from LAN ifnames traffic, except those have binded with IPSec server.
 			bind = 0;
 			for (j = 0; j < MTLAN_VPNS_MAXINUM; j++) {
@@ -3473,6 +3757,9 @@ void update_ipsec_server_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sd
 		eval("iptables", "-D", IPSEC_SRV_SDN_F_CHAIN, "-j", "RETURN");
 
 		for (i = 0; i < mtl_sz; i++) {
+			// ignore same subnet
+			if (pmtl[i].sdn_t.sdn_idx > 0 && pmtl[i].nw_t.idx == 0)
+				continue;
 			snprintf(fpath, sizeof(fpath), "%s/ipsec_sdn%d.sh", sdn_dir, pmtl[i].nw_t.idx);
 			if (f_exists(fpath)) {
 				// If there is drop rule file, it was not binded with IPSec server previously.

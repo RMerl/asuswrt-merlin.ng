@@ -1,0 +1,23 @@
+iptables-translate -t mangle -A PREROUTING -j CONNMARK --set-mark 0
+nft 'add rule ip mangle PREROUTING counter ct mark set 0x0'
+
+iptables-translate -t mangle -A PREROUTING -j CONNMARK --set-mark 0x16
+nft 'add rule ip mangle PREROUTING counter ct mark set 0x16'
+
+iptables-translate -t mangle -A PREROUTING -j CONNMARK --set-xmark 0x16/0x12
+nft 'add rule ip mangle PREROUTING counter ct mark set ct mark xor 0x16 and 0xffffffed'
+
+iptables-translate -t mangle -A PREROUTING -j CONNMARK --and-mark 0x16
+nft 'add rule ip mangle PREROUTING counter ct mark set ct mark and 0x16'
+
+iptables-translate -t mangle -A PREROUTING -j CONNMARK --or-mark 0x16
+nft 'add rule ip mangle PREROUTING counter ct mark set ct mark or 0x16'
+
+iptables-translate -t mangle -A PREROUTING -j CONNMARK --save-mark
+nft 'add rule ip mangle PREROUTING counter ct mark set mark'
+
+iptables-translate -t mangle -A PREROUTING -j CONNMARK --restore-mark
+nft 'add rule ip mangle PREROUTING counter meta mark set ct mark'
+
+iptables-translate -t mangle -A PREROUTING  -j CONNMARK --set-mark 0x23/0x42 --right-shift-mark 5
+nft 'add rule ip mangle PREROUTING counter ct mark set ( ct mark xor 0x23 and 0xffffff9c ) >> 5'

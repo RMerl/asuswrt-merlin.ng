@@ -1,5 +1,6 @@
 @charset "UTF-8";
 @import "/css/color-table.css";
+@import "/css/wrt-ui-alias-tokens.css";
 
 body {
     font-family: var(--global-font-style);
@@ -151,7 +152,91 @@ caption {
 }
 
 .form-control:focus {
-    box-shadow: 0px -4px 0px 0px var(--textbox-focus-stroke-color) inset;
+    border-color: var(--wrt-input-focus-border);
+    box-shadow: 0 0 0 3px var(--wrt-input-focus-ring);
+    background: var(--wrt-input-focus-bg);
+}
+
+/* Native inputs (baseline) */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([class*="edit_btn"]) {
+    background-color: var(--wrt-input-bg);
+    color: var(--wrt-input-color);
+    border: 1px solid var(--wrt-input-border);
+    border-radius: var(--global-radius);
+    line-height: 1.5;
+}
+input:focus:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]) {
+    outline: 0;
+    border-color: var(--wrt-input-focus-border);
+    box-shadow: 0 0 0 3px var(--wrt-input-focus-ring);
+}
+input:disabled {
+    background-color: var(--wrt-input-disabled-bg);
+    color: var(--wrt-input-disabled-color);
+    border-color: var(--wrt-input-disabled-border);
+}
+
+input.remove_btn {
+    background-color: var(--wrt-btn-icon-active-color)!important;
+}
+
+/* Placeholder colors for inputs */
+input::placeholder { color: var(--wrt-input-placeholder); opacity: 1; }
+input::-webkit-input-placeholder { color: var(--wrt-input-placeholder); }
+input::-moz-placeholder { color: var(--wrt-input-placeholder); opacity: 1; }
+input:-ms-input-placeholder { color: var(--wrt-input-placeholder); }
+input::-ms-input-placeholder { color: var(--wrt-input-placeholder); }
+input[type="date" i]{
+    color: var(--wrt-btn-icon-active-color);
+}
+/* date input 內建日曆 icon：用 filter 調整顏色（WebKit/Blink），invert 使深色 icon 變淺以配合主題 */
+[data-asuswrt-color="dark"] input[type="date" i]::-webkit-calendar-picker-indicator{
+    opacity: 1;
+    cursor: pointer;
+    filter: invert(1); /* 淺色 icon；若為淺底主題改為 filter: none */
+}
+[data-asuswrt-color="light"] input[type="date" i]::-webkit-calendar-picker-indicator{
+    opacity: 1;
+    cursor: pointer;
+    filter: none; /* 淺色 icon；若為淺底主題改為 filter: none */
+}
+/* Native textarea */
+textarea {
+    background-color: var(--wrt-textarea-bg);
+    color: var(--wrt-textarea-color);
+    border: 1px solid var(--wrt-textarea-border);
+    border-radius: var(--wrt-textarea-radius, var(--global-radius));
+    padding: var(--wrt-textarea-padding-y, .5rem) var(--wrt-textarea-padding-x, .75rem);
+    line-height: 1.5;
+}
+textarea:focus {
+    outline: 0;
+    border-color: var(--wrt-textarea-focus-border);
+    box-shadow: 0 0 0 3px var(--wrt-textarea-focus-ring);
+}
+textarea:disabled {
+    background-color: var(--wrt-textarea-disabled-bg);
+    color: var(--wrt-textarea-disabled-color);
+    border-color: var(--wrt-textarea-disabled-border);
+}
+/* Placeholder colors for textarea */
+textarea::placeholder { color: var(--wrt-textarea-placeholder); opacity: 1; }
+textarea::-webkit-input-placeholder { color: var(--wrt-textarea-placeholder); }
+textarea::-moz-placeholder { color: var(--wrt-textarea-placeholder); opacity: 1; }
+textarea:-ms-input-placeholder { color: var(--wrt-textarea-placeholder); }
+textarea::-ms-input-placeholder { color: var(--wrt-textarea-placeholder); }
+
+/* Log textarea variant */
+.textarea--log {
+    background: var(--wrt-textarea-bg);
+    color: var(--wrt-textarea-color);
+    font-family: 'Courier New', Courier, monospace;
+    width: 97%;
+    font-size: var(--font-size-12, 0.75rem);
+    resize: none;
+    display: block;
+    line-height: 1.4;
+    white-space: pre;
 }
 
 input[type="number"]::-webkit-outer-spin-button,
@@ -285,10 +370,15 @@ input[type="number"] {
 
 .card-header {
     margin-left: 0;
+    padding: 0.75rem 1rem;
+    font-size: 14px;
+    font-weight: bolder;
+    background-color: transparent;
 }
 
 [data-asuswrt-theme="rog"][data-asuswrt-style="tech"] .card-header {
-    margin-left: 10px;
+    padding-left: 30px;
+    border-bottom: unset;
 }
 
 .nav-pills .nav-link {

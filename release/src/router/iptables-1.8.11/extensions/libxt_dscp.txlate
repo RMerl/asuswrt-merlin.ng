@@ -1,0 +1,5 @@
+iptables-translate -t filter -A INPUT -m dscp --dscp 0x32 -j ACCEPT
+nft 'add rule ip filter INPUT ip dscp 0x32 counter accept'
+
+ip6tables-translate -t filter -A INPUT -m dscp ! --dscp 0x32 -j ACCEPT
+nft 'add rule ip6 filter INPUT ip6 dscp != 0x32 counter accept'

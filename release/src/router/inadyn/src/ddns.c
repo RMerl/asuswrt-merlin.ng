@@ -88,9 +88,7 @@ static int shell_transaction(ddns_t *ctx, ddns_info_t *info, const char *cmd)
 	FILE *pipe;
 	int rc = 0;
 
-	snprintf(ctx->request_buf, ctx->request_buflen,
-		"INADYN_PROVIDER=\"%s\" INADYN_USER=\"%s\" %s",
-		info->system->name, info->creds.username, cmd);
+	snprintf(ctx->request_buf, ctx->request_buflen, "%s", cmd);
 
 	logit(LOG_DEBUG, "Starting command to get my public IP#: %s", ctx->request_buf);
 

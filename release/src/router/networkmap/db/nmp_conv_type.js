@@ -1,5 +1,15 @@
 [
   {
+    "keyword": "virtual machine",
+    "type": 0,
+    "os_type": 0
+  },
+  {
+    "keyword": "network equipment",
+    "type": 0,
+    "os_type": 0
+  },
+  {
     "keyword": "win",
     "type": 1,
     "os_type": 2
@@ -50,9 +60,14 @@
     "os_type": 4
   },
   {
-    "keyword": "AiCam",
+    "keyword": "aicam",
     "type": 5,
     "os_type": 0
+  },
+  {
+    "type": 5,
+    "keyword": "camera",
+    "os_type": 4
   },
   {
     "keyword": "blink-mini",
@@ -60,7 +75,7 @@
     "os_type": 0
   },
   {
-    "keyword": "ASUS",
+    "keyword": "asus",
     "type": 5,
     "os_type": 4
   },
@@ -90,7 +105,7 @@
     "os_type": 0
   },
   {
-    "keyword": "PS5",
+    "keyword": "ps5",
     "type": 7,
     "os_type": 0
   },
@@ -170,6 +185,11 @@
     "os_type": 0
   },
   {
+    "type": 20,
+    "keyword": "tablet",
+    "os_type": 1
+  },
+  {
     "keyword": "ipad",
     "type": 21,
     "os_type": 5
@@ -200,7 +220,17 @@
     "os_type": 0
   },
   {
+    "keyword": "macos",
+    "type": 32,
+    "os_type": 5
+  },
+  {
     "keyword": "iqoo-",
+    "type": 33,
+    "os_type": 0
+  },
+  {
+    "keyword": "mobile",
     "type": 33,
     "os_type": 0
   },
@@ -290,6 +320,11 @@
     "os_type": 0
   },
   {
+    "keyword": "wearable",
+    "type": 65,
+    "os_type": 0
+  },
+  {
     "keyword": "chuangmi-plug",
     "type": 70,
     "os_type": 0
@@ -305,17 +340,17 @@
     "os_type": 0
   },
   {
-    "keyword": "Etekcity-Outlet",
+    "keyword": "etekcity-outlet",
     "type": 70,
     "os_type": 0
   },
   {
-    "keyword": "Wall-Outlet",
+    "keyword": "wall-outlet",
     "type": 70,
     "os_type": 0
   },
   {
-    "keyword": "AmazonPlug",
+    "keyword": "amazonplug",
     "type": 70,
     "os_type": 0
   },
@@ -325,12 +360,12 @@
     "os_type": 0
   },
   {
-    "keyword": "SmartPlug",
+    "keyword": "smartplug",
     "type": 70,
     "os_type": 0
   },
   {
-    "keyword": "Smart_Plug",
+    "keyword": "smart_plug",
     "type": 70,
     "os_type": 0
   },
@@ -340,12 +375,12 @@
     "os_type": 0
   },
   {
-    "keyword": "EZPlug",
+    "keyword": "ezplug",
     "type": 70,
     "os_type": 0
   },
   {
-    "keyword": "KONKE_miniK",
+    "keyword": "konke_minik",
     "type": 70,
     "os_type": 0
   },
@@ -360,22 +395,22 @@
     "os_type": 0
   },
   {
-    "keyword": "Google-Nest",
+    "keyword": "google-nest",
     "type": 81,
     "os_type": 0
   },
   {
-    "keyword": "Google-Home",
+    "keyword": "google-home",
     "type": 81,
     "os_type": 0
   },
   {
-    "keyword": "Sonos",
+    "keyword": "sonos",
     "type": 81,
     "os_type": 0
   },
   {
-    "keyword": "RingPro",
+    "keyword": "ringpro",
     "type": 85,
     "os_type": 0
   },

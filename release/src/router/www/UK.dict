@@ -26,9 +26,9 @@ AiMesh_Node_desc2=Перейдіть на сторінку налаштуван�
 AiMesh_Notice1=Зміни бездротових налаштувань вплинуть на вашу AiMesh мережу!
 AiMesh_Add_Another_Node_confirm=Бажаєте додати наступний вузол?
 AiMesh_Add_Another_Node=Додати наступний вузол
-AiMesh_Adding_Node=Adding the AiMesh node...
-AiMesh_Node_joining=The node is joining the network...
-AiMesh_Node_activating=Activating your mesh network...
+AiMesh_Adding_Node=Додавання вузла AiMesh...
+AiMesh_Node_joining=Вузол приєднується до мережі...
+AiMesh_Node_activating=Активація вашої mesh-мережі...
 AiMesh_backhaul_band_5GHz-2_desc1=зараз використовується як виділений канал зв\'язку у режимі AiMesh.
 AiMesh_backhaul_band_5GHz-2_desc11=%@ тепер використовується як спеціальний WiFi-зворотній канал у режимі AiMesh.
 AiMesh_backhaul_band_5GHz-2_desc2=Докладну інформацію про налаштування безпроводової мережі наведено <span class="faq-link" onclick="parent.location.href=\'/Advanced_Wireless_Content.asp\'">тут</span>.
@@ -83,6 +83,8 @@ AiMesh_Topology_Line_Wired_Great=Дротове підключення з чуд
 AiMesh_Topology_Line_Wired_Normal=Дротове підключення з нормальною якістю сигналу
 AiMesh_Topology_FAQ_old=Докладнішу інформацію про новий графічний інтерфейс AiMesh подано в ЧаПи.
 AiMesh_Topology_FAQ=Докладнішу інформацію про новий графічний інтерфейс AiMesh подано в <a id="Intro_AiMesh">ЧаПи</a>.
+AiMesh_Topology_inst_FAQ_old=Щоб отримати інструкції з налаштування системи AiMesh, зверніться до цього FAQ.
+AiMesh_Topology_inst_FAQ=Щоб отримати інструкції з налаштування системи AiMesh, зверніться до цього <a id='connect_line_info_faq'>FAQ</a>.
 AiMesh_OB_hint=Для оптимальної продуктивності рекомендуємо використовувати новішу модель для вашого вузла. Використання застарілих пристроїв може обмежити загальну стабільність і швидкість мережі AiMesh.
 AiMesh_Add_Anyway=Додати все одно
 AiMesh_Proceed_Anyway=Продовжити все одно
@@ -102,7 +104,7 @@ APSurvey_msg_connect_open_wlan=Ви намагаєтеся підключити�
 APSurvey_msg_connected=Ви вже підключені до цієї ТД.
 APSurvey_msg_non_support_Auth=Не підтримується метод автентифікації.
 APSurvey_msg_waiting_to_connect=Будь ласка, почекайте. ZVMODELVZ підключається до
-ASUS_Registration=Зареєструйте Членство ASUS і отримуйте найновішу інформацію про виріб. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Підпишіться зараз!</a>
+ASUS_Registration=Зареєструйте Членство ASUS і отримуйте найновішу інформацію про виріб. <a style='color:var(--wrt-badge-warning-color,#FC0)' target='_blank' href='https://account.asus.com'>Підпишіться зараз!</a>
 ASUS_Notice=ПРИМІТКА ASUS
 ASUS_privacy_desc=Зверніть увагу: користувачам необхідно погодитися на надання інформації перед користуванням DDNS, дистанційне підключення (додаток ASUS Router, додаток Lyra, AiCloud, AiDisk), AiProtection, аналізатор потоків, аналізатор додатків, адаптивна QoS, Game Boost (Ігрове прискорення) та історія перегляду веб-сторінок. Будь-коли користувачі можуть знайти зміст умов на цій сторінці або припинити ділитися інформацією з іншими сторонами, вибравши <a style="font-weight: bolder;">Відкликати</a>.
 ASUS_eula_desc0=Ласкаво просимо до користування DDNS/ Дистанційним підключенням (Програма маршрутизатора ASUS/Програма Lyrа/AiCloud/ AiDisk). Будь ласка, уважно прочитайте наступну інформацію:
@@ -186,8 +188,8 @@ ASUS_EULA_Law_12=Застосовне право та юрисдикція
 ASUS_EULA_Law_12_Desc=Усі пропозиції, підтвердження замовлень, ця Ліцензійна угода й відносини у процесі купівлі-продажу між вами й ASUS регулюються та тлумачаться відповідно до законів про місце знаходження ASUS, без урахування принципів колізійного права. Усі суперечки й розбіжності, які можуть виникнути між сторонами цієї Угоди, поза межами дії цієї Ліцензійної угоди, відносно неї або у зв’язку з нею підлягають вирішенню шляхом консультацій між сторонами. Якщо не вдається вирішити суперечку або розбіжність, обидві сторони погоджуються передати суперечки під юрисдикцію суду за місцезнаходженням компанії ASUS.
 ASUS_EULA_Info=Використовуючи продукти мережі ASUS, ви погоджуєтеся прийняти умови та умови, визначені у Ліцензійна угода кінцевого користувача.
 ASUS_POLICY_Age_Check=Мені більше 16 років.
-ASUS_POLICY_QIS_Desc=Важливо ознайомитися з цими умовами, перш ніж використовувати мережевий продукт. Натискаючи кнопку «Погоджуюся», ви погоджуєтесь дотримуватися цих умов. ​
-ASUS_POLICY_QIS_Desc_v5=Важливо ознайомитися з цими умовами, перш ніж використовувати мережевий продукт. Натискаючи кнопку «%@», ви погоджуєтесь дотримуватися цих умов. ​
+ASUS_POLICY_QIS_Desc=Важливо ознайомитися з цими умовами, перш ніж використовувати мережевий продукт. Натискаючи кнопку «Погоджуюся», ви погоджуєтесь дотримуватися цих умов.
+ASUS_POLICY_QIS_Desc_v5=Важливо ознайомитися з цими умовами, перш ніж використовувати мережевий продукт. Натискаючи кнопку «%@», ви погоджуєтесь дотримуватися цих умов.
 ASUS_POLICY_Update_Notice=Шановні користувачі, дякуємо, що завжди підтримуєте цей продукт. Щоб відповідати правилам конфіденційності в різних країнах і забезпечити додатковий захист ваших даних, ми оновили Повідомлення про конфіденційність ASUS. Оновіть його перед використанням мережевих продуктів ASUS.
 ASUS_POLICY_Read_Again=Прочитати ще раз
 ASUS_POLICY_Know_Risk=Я усвідомлюю ризики
@@ -370,7 +372,7 @@ CTL_UpgradeNight=Нічне оновлення
 CTL_UpgradeNow=Оновити зараз
 default_passwd_checkbox=Використовуйте локальний пароль для входу за замовчуванням
 default_passwd_desc=Зашифрований локальний пароль за замовчуванням гарантує безпечний процес входу під час локального підключення до цього мережевого пристрою ASUS.
-defaultHint=Щоб дізнатися більше, будь ласка, відвідайте <a style="font-weight: bolder;text-decoration: underline;color:#000000;" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
+defaultHint=Щоб дізнатися більше, будь ласка, відвідайте <a style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#000000);" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
 Detect_consume_warning1=* Мінімальний пінговий пакет споживаєблизько 128 байт за інтервал. Таким чином, пінг-визначник споживатиме
 Detect_consume_warning2=Mбайт на місяць
 Disconnected=Відключено
@@ -409,7 +411,7 @@ OpenDNS_Home=OpenDNS Домашній
 OpenDNS_Family=OpenDNS Сім\'я
 Yandex_Safe=Yandex Безпечний
 Yandex_Family=Yandex Сім\'я
-Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:#FFCC00;" href="DNSFilter.asp">DNSFilter</a> увімкнено. Якщо для цього параметра задано будь-яке значення, крім «Без фільтрування» чи «Маршрутизатор», з’єднання відбуватиметься в обхід серверів конфіденційності DNS.
+Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:var(--wrt-badge-warning-color,#FFCC00);" href="DNSFilter.asp">DNSFilter</a> увімкнено. Якщо для цього параметра задано будь-яке значення, крім «Без фільтрування» чи «Маршрутизатор», з’єднання відбуватиметься в обхід серверів конфіденційності DNS.
 Enable_user_target=Активувати ціль, визначену користувачем
 Enable_Login_Captcha=Увімкнути Captcha для входу
 Encrypted_field=Зашифроване поле.
@@ -616,7 +618,7 @@ Offline_desc2=ІР-адресу або номер порта змінено. З�
 Offline_desc3=Щоб увійти до налаштувань ZVMODELVZ, підключіться до бездротової мережі та користуйтеся оновленою ІР-адресою і номером порта.
 OP_AP_desc=У режимі точки доступу (ТД) ZVMODELVZ підключається до бездротового маршрутизатора за допомогою кабелю Ethernet, щоб розширити бездротове покриття для інших клієнтів мережі. У цьому режимі  вимкнено брандмауер, спільне використання ІР і функції NAT.
 AiMesh_AP_desc=Маршрутизатор AiMesh у режимі точки доступу підключається до бездротового маршрутизатора за допомогою кабелю Ethernet, щоб розширити покриття бездротовим сигналом для інших клієнтів мережі. У цьому режимі за замовчанням вимкнено брандмауер, спільне користування ІР і функції NAT.
-OP_AP_hint=Також можна перейти до <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">http://findasus.local</a> щоб знайти та увійти на сторінку налаштування пристрою.
+OP_AP_hint=Також можна перейти до <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">http://findasus.local</a> щоб знайти та увійти на сторінку налаштування пристрою.
 OP_AP_item=Режим точки доступу (ТД)
 AiMesh_AP_item=Режим Access Point (Точка доступу) / Маршрутизатор AiMesh у режимі АР (Точка доступу)
 OP_Choose=Виберіть режим роботи
@@ -635,7 +637,7 @@ OP_MB_desc4=Сконфігуруйте один ZVMODELVZ як маршрути�
 OP_MB_desc5=Перейдіть до режиму Media Bridge (Медіа міст), щоб надати одночасне підключення WiFi до медіа пристроїв.
 OP_MB_desc6=Лише бездротові пристрої підключаються до основної ТД у режимі медіа-моста. Клієнтські пристрої повинні бути підключені до медіа-моста за допомогою мережевого кабелю.
 OP_MB_desc7=ZVMODELVZ у режимі медіа-моста. ІР-адресу змінено.
-OP_MB_desc8=Завантажте <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:#FC0;'>Device Discovery Utility</a> для визначення ІР-адреси медіа-моста.
+OP_MB_desc8=Завантажте <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>Device Discovery Utility</a> для визначення ІР-адреси медіа-моста.
 OP_MB_desc9=Перевірте, чи відключено мережевий кабель від порту WAN (глобальної мережі).
 OP_RE_desc=У режимі ретранслятора ZVMODELVZ підключається через бездротовий зв'язок до основної бездротової мережі,  щоб розширити бездротове покриття. У цьому режимі вимкнено брендмауер, спільне користування ІР і функції NAT.
 OP_RE_desc1=Можливо, IP-адреса LAN (локальної мережі) ZVMODELVZ була змінена.
@@ -685,7 +687,7 @@ QIS_adminpass_confirm0=Новий пароль співпадає з парол�
 QIS_adminpass_confirm1=Якщо не змінити пароль за замовчанням admin, PLC стає вразливим до хакерських атак, а інші можуть легко здогадатися пароль для входу в систему. Бажаєте лишити небезпечний пароль?
 [###MODEL_DEP###][PL-AC56][PL-N12]QIS_adminpass_confirm1=Якщо не змінити пароль за замовчанням admin, PLC стає вразливим до загроз безпеки та сторонні особи можуть легко визначити логін та пароль. Бажаєте лишити небезпечний пароль?
 QIS_apextended_usedefault=Користуйтеся типовими налаштуваннями (тими ж налаштуваннями, як і у мережі, яку бажаєте розширити)
-QIS_AP_connect_hint=Once the new SSID is connected, you can go to %1$@ for more advanced settings.
+QIS_AP_connect_hint=Після підключення нового SSID ви можете перейти до %1$@ для більш розширених налаштувань.
 QIS_auto_ip_conn_Setup=Налаштування автоматичного ІР-підключення
 QIS_autoMAC_desc1=Початок клонування МАС-адреси комп'ютера на маршрутизаторі.
 QIS_autoMAC_desc2=Будь ласка, почекайте...
@@ -817,7 +819,7 @@ qis_simple_wls_recmd=(Рекомендовано)
 QIS_SmartConn_ISPDesc=Ваш провайдер повинен був вам надати картку або документ з ім'ям користувача та паролем *Приклад документа наведено лише в якості ілюстрації.
 QIS_SmartConn_ISPDesc2=Введіть ім'я користувача та пароль, щоб отримати доступ до інформації про ваше інтернет-з'єднання. Ці параметри були надані вашим постачальником послуг Інтернету (ISP).
 QIS_SmartConn_ISPDesc3=Введіть ім'я користувача та пароль PPPoE, надані вашим інтернет-провайдером (ISP), для підключення до Інтернету.
-QIS_SmartConn_ISPDesc_TW=Клієнтський номер користувача HiNet:  <span style="color:#FC0;">xxxxxxxx@hinet.net</span>
+QIS_SmartConn_ISPDesc_TW=Клієнтський номер користувача HiNet:  <span style="color:var(--wrt-badge-warning-color,#FC0);">xxxxxxxx@hinet.net</span>
 QIS_SmartConn_Scen1=Сценарій з'єднання 1
 QIS_SmartConn_Scen2=Сценарій з'єднання 2
 QIS_SmartConn_StaticDesc=Ваш провайдер повинен був вам надати інформацію про IP-адресу, маску підмережі, шлюз та адресу DNS. Якщо такої інформації ви не маєте, будь ласка, зверніться до свого провайдера.
@@ -999,10 +1001,10 @@ QKSet_ISP_desc=Будь ласка, дивіться налаштування І
 QKSet_ISP_desc2=Не встановлено статичного ІР-підключення.
 QKSet_ISP_desc3=Не встановлено автоматичного ІР-підключення. Це можна налаштувати вручну.
 QKSet_ISP_head=Не вдається встановити автоматичне ІР-з'єднання (Automatic IP). Це можна налаштувати вручну.
-QKset_restore_0=Натисніть <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Відновити налаштування</label></a>, щоб завантажити збережені налаштування конфігурації.
-QKset_restore_1=Натисніть <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Відновити налаштування</label></a>, щоб відновити конфігурацію, якщо ви зробили резервну копію параметрів конфігурації перед скиданням маршрутизатора.
-QKset_setup_manual_0=Натисніть <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Налаштування вручну</label></a>, щоб вручну налаштувати бездротову мережу, якщо знаєте тип підключення провайдера.
-QKset_setup_manual_1=Натисніть <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Налаштування вручну</label></a>, щоб встановити високотехнологічні налаштування маршрутизатора або встановити роботу ZVMODELVZ
+QKset_restore_0=Натисніть <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Відновити налаштування</label></a>, щоб завантажити збережені налаштування конфігурації.
+QKset_restore_1=Натисніть <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Відновити налаштування</label></a>, щоб відновити конфігурацію, якщо ви зробили резервну копію параметрів конфігурації перед скиданням маршрутизатора.
+QKset_setup_manual_0=Натисніть <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Налаштування вручну</label></a>, щоб вручну налаштувати бездротову мережу, якщо знаєте тип підключення провайдера.
+QKset_setup_manual_1=Натисніть <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Налаштування вручну</label></a>, щоб встановити високотехнологічні налаштування маршрутизатора або встановити роботу ZVMODELVZ
 QKset_skip_setup=Ви - експерт з бездротових мереж і бажаєте пропустити помічника налаштування Інтернет?
 QKSet_type_desc=Будь ласка, виберіть тип підключення до Інтернет, наданий провайдером.
 QKSet_type_head=Тип WAN-підключення до  Інтернет
@@ -1026,13 +1028,13 @@ Select_ISPfile=Виберіть профіль Інтернет-провайде
 Select_menu_default=Будь ласка, виберіть
 Sign_in_title=Увійдіть до облікового запису маршрутизатора ASUS
 [###MODEL_DEP###][RP-AC87][RP-AC68U][RP-AC66U][RP-AC55][RP-AC53][RP-AC52][RP-AC51][RP-AC92]Sign_in_title=Увійдіть до облікового запису ретранслятора ASUS
-SLM_Ask=Ask Router Assistant...
-SLM_Loading=Loading...
-SLM_Thinking=Thinking...
-SLM_not_installed=Please double check that the router assistant is running in Portainer and that the port (8090) is not overlapping with other services. Also, ensure that slm-asus is running in Portainer. If the problem persists, try restoring AiBoard.
-SLM_no_response=Service is activating. Please try again in about 3 minutes.
-SLM_low_percent=Sorry, unable to answer the question.
-SLM_disclaimer=Router Assistant might not always be accurate. This feature is currently available in English only. Please verify important information yourself.
+SLM_Ask=Запитати Router Assistant...
+SLM_Loading=Завантаження…
+SLM_Thinking=Обробка...
+SLM_not_installed=Будь ласка, перевірте, що Router Assistant працює в Portainer і порт (8090) не конфліктує з іншими службами. Також переконайтеся, що slm-asus працює в Portainer. Якщо проблема не зникає, спробуйте відновити AiBoard.
+SLM_no_response=Служба активується. Будь ласка, спробуйте ще раз приблизно через 3 хвилини.
+SLM_low_percent=Вибачте, неможливо відповісти на запитання.
+SLM_disclaimer=Router Assistant може бути не завжди точним. Ця функція наразі доступна лише англійською мовою. Будь ласка, перевірте важливу інформацію самостійно.
 SLM_not_installed_CN=请确认路由助手在Portainer中运行且端口（8092）未与其他服务重叠，确认slm-asus-cn也在Portainer中运行。若问题仍然存在，请恢复AiBoard。
 SLM_no_response_CN=服务正在激活中，请约3分钟后重试。
 SLM_low_percent_CN=对不起，无法回答该问题.
@@ -1053,6 +1055,7 @@ Status_RAM=Оперативна пам&#39;ять
 Status_Used=Використовується
 Status_Free=Вільно
 Status_Total=Всього
+Status_LoggingIn=Вхід…
 statusTitle_AP=Статус точки доступу
 statusTitle_System=ASUS ZVMODELVZ
 System_act_connections=Активні підключення
@@ -1077,7 +1080,7 @@ TBVLAN_UPort=Порт без тегування
 TBVLAN_TPort=Порт з тегуванням
 TBVLAN_WirelessInf=Бездротовий інтерфейс
 TBVLAN_EditSubnetProfile=Редагувати профіль підмережі
-TBVLAN_Subnet_desc=Виберіть створену вами підмережу або виберіть &quot;New Subnet&quot; (Нова підмережа), щоб створити нову підмережу для VLAN. Якщо вам потрібний наступний DHCP, конфігуруйте<a style='color:#FFF; text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP server</a>.
+TBVLAN_Subnet_desc=Виберіть створену вами підмережу або виберіть &quot;New Subnet&quot; (Нова підмережа), щоб створити нову підмережу для VLAN. Якщо вам потрібний наступний DHCP, конфігуруйте<a style='color:var(--wrt-text-color,#FFF); text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP server</a>.
 TBVLAN_BindingInf=Прив'язування інтерфейсу
 TBVLAN_NoBindingInf=Нема жодного доступного прив'язаного інтерфейсу.
 TBVLAN_BindingInf_Hint=Додайте прив'язаний інтерфейс.
@@ -1108,20 +1111,20 @@ WANPPPAuthText=Ідентифікація РРР
 WAN_type_detected=WAN type detected
 WAN_auto_detected=Автоматичне визначення WAN
 web_redirect_case1_suggestion1=Переконайтеся, що кабель підключено до порту WAN ZVMODELVZ і до модему.
-web_redirect_case1_suggestion2=Перевірте, чи слід змінити <a style='color:#FFF' href='/Advanced_OperationMode_Content.asp'>Режим роботи</a>.
-web_redirect_case2_suggestion1=Неправильний обліковий запис PPPoE або пароль, будь ласка, <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>перевірте</a>.
+web_redirect_case1_suggestion2=Перевірте, чи слід змінити <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_OperationMode_Content.asp'>Режим роботи</a>.
+web_redirect_case2_suggestion1=Неправильний обліковий запис PPPoE або пароль, будь ласка, <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>перевірте</a>.
 web_redirect_case2_title1=Помилка ідентифікації РРРоЕ
 web_redirect_case3_button=Змініть тип WAN
-web_redirect_case3_suggestion1=Перевірте правильність <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>Connection Settings (Налаштування підключення)</a>.
-web_redirect_case5_suggestion1=Активуйте <a style='color:#FFF' href='/'>WAN Connection (Підключення WAN)</a>
+web_redirect_case3_suggestion1=Перевірте правильність <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>Connection Settings (Налаштування підключення)</a>.
+web_redirect_case5_suggestion1=Активуйте <a style='color:var(--wrt-text-color,#FFF)' href='/'>WAN Connection (Підключення WAN)</a>
 web_redirect_case5_suggestion2=Переконайтеся, що увімкнено живлення модему USB.
-web_redirect_case5_suggestion3=Змініть <a style='color:#FFF' href='/Advanced_Modem_Content.asp'>USB Modem Settings (Налаштування модему USB)</a>.
+web_redirect_case5_suggestion3=Змініть <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_Modem_Content.asp'>USB Modem Settings (Налаштування модему USB)</a>.
 web_redirect_case5_title1=Підключення WAN було вимкнено.
 web_redirect_case5_title2=Ваш модем USB не підключений.
 web_redirect_case6_desc1=Натисніть [Далі], щоб використовувати наступну ІР-адресу:
 web_redirect_case6_desc2=Перевірте, чи всі відповідні сервіси користуються вашою новою ІР-адресою (напр., переадресація порту, DMZ тощо)
 web_redirect_case8_suggestion1=Підтвердьте, що Первинна ТД може підключитися до Інтернету.
-web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>Change connection settings (Змінити налаштування підключення)</a>.
+web_redirect_case8_suggestion2=<a style='color:var(--wrt-text-color,#FFF)' href='/QIS_wizard.htm?flag=manual'>Change connection settings (Змінити налаштування підключення)</a>.
 web_redirect_case8_title=Неможливо підключитися до Первинної ТД.
 web_redirect_case9_suggestion1=Переконайтеся, що увімкнено живлення Маршрутизатора AiMesh.
 web_redirect_case9_suggestion2=Перезапустіть Маршрутизатор AiMesh і повторіть спробу.
@@ -1171,6 +1174,11 @@ Web_Title=Бездротовий маршрутизтор ASUS ZVMODELVZ
 [###MODEL_DEP###][YY]Web_Title=Точка доступу ASUS ZVMODELVZ
 Web_Title2=ZVMODELVZ
 Web_DOMAIN_NAME=ZVDOMAIN_NAMEVZ
+WiFi_MLO_connect_confirmTitle=Використовувати з’єднання MLO
+WiFi_MLO_same_model_desc=MLO (Multi-Link Operation) наразі підтримується лише між маршрутизаторами ASUS однакової моделі. Якщо моделі різні, з’єднання може завершитися невдало.
+WiFi_MLO_connect_try=Спробувати підключитися за допомогою MLO.
+WiFi_MLO_connect_veto=Натомість використовувати стандартне однодіапазонне з’єднання.
+WiFi_MLO_connect_confirm=Бажаєте використовувати з’єднання MLO?
 wireless_configured=Сконфігуровано
 Wireless_name=Назва бездротової мережі
 wireless_router=Бездротовий маршрутизатор
@@ -1253,6 +1261,7 @@ ADSL_FW_note=ПРИМІТКА:
 adsl_fw_ver_itemname=Версія драйвера DSL
 adsl_link_sts_itemname=Статус з'єднання DSL
 adv_wl_desc=Нижче встановіть відповідну інформацію бездротового зв'язку.
+AiBoard_rescue_fail=Не вдалося відновити AI Board
 AiCloud_account_status=Статус облікового запису
 AiCloud_account_unlock=Розблокувати
 aicloud_bandwidth1=Знадобиться широкосмугове підключення до Інтернет для отримання якісного зображення та звуку. Див. нижчеподані рекомендації :
@@ -1365,12 +1374,12 @@ AiMesh_FindNode_confirm=Неможливо знайти мій Вузол AiMesh
 AiMesh_FindNode_confirm_WPS=Під час пошуку вузла AiMesh буде активовано WPS.
 AiMesh_FindNode_Desc=Шукайте доступні вузли AiMesh поблизу, щоб долучити їх до вашої системи AiMesh.
 AiMesh_FindNode_Not=Неможливо знайти жоден вузол AiMesh поблизу.
-AiMesh_FindNode_Not_advA=Якщо цьому пристрою призначено <span style='color:#569AC7;'>AiMesh router </span>, перевірте наступне і повторіть спробу.
+AiMesh_FindNode_Not_advA=Якщо цьому пристрою призначено <span style='color:var(--wrt-link-color,#569AC7);'>AiMesh router </span>, перевірте наступне і повторіть спробу.
 AiMesh_FindNode_Not_advA1=Увімкнено живлення вузла AiMesh
 AiMesh_FindNode_Not_advA2=Вузол AiMesh має найновішу версію мікропрограми
 AiMesh_FindNode_Not_advA3=Вузол AiMesh було скинуто на фабричні налаштування
 AiMesh_FindNode_Not_advA4=Перемістіть вузол AiMesh ближче до маршрутизатора AiMesh.
-AiMesh_FindNode_Not_advB=Якщо цьому пристрою призначено <span style='color:#569AC7;'>AiMesh node</span>, перевірте наступне і повторіть спробу.
+AiMesh_FindNode_Not_advB=Якщо цьому пристрою призначено <span style='color:var(--wrt-link-color,#569AC7);'>AiMesh node</span>, перевірте наступне і повторіть спробу.
 AiMesh_FindNode_Not_advB1=Натисніть кнопку скидання на цьому пристрої і почекайте.
 AiMesh_FindNode_Not_advB2=Увійдіть до графічного інтерфейсу маршрутизатора AiMesh і натисніть піктограму AiMesh.
 AiMesh_FindNode_Not_advB3=Оновіть мікропрограму маршрутизатора AiMesh, якщо не можете знайти піктограму AiMesh у графічному інтерфейсі маршрутизатора.
@@ -1447,7 +1456,7 @@ AiMesh_NodeLocation25=Гараж
 AiMesh_NodeLocation26=Перший поверх
 AiMesh_NodeLocation27=Ігрова кімната
 AiMesh_NodeLocation28=Тренажерна зала
-AiMesh_NodeLocation29=Outdoor
+AiMesh_NodeLocation29=Зовні
 AiMesh_OfflineTips=Підказки про роботу офлайн
 AiMesh_OfflineTips1=Перевірте, чи увімкнено живлення Вузла AiMesh.
 AiMesh_OfflineTips2=Перезавантажте Вузол AiMesh і повторіть спробу.
@@ -1661,7 +1670,7 @@ AiProtection_sites_block_desc=Обмеження доступу до шкідл�
 [###MODEL_DEP###][GT-AC5300]AiProtection_sites_block_desc=Функція блокування шкідливих сайтів обмежує доступ до відомих шкідливих веб-сайтів, зменшуючи ризик атак на вашу мережу.
 AiProtection_sites_blocking=Блокування веб-сайтів
 AiProtection_ARK_Malicious_Site_blocking=Блокування шкідливих сайтів і заражених пристроїв
-AiProtection_ARK_Malicious_Site_blocking_desc=Обмежте доступ до відомих шкідливих сайтів, щоб захистити мережу від шкідливого ПЗ, фішингу, спаму, рекламного ПЗ, злому та атак із використанням програм-вимагачів.
+AiProtection_ARK_Malicious_Site_blocking_desc=Обмежте доступ до відомих шкідливих вебсайтів, щоб захистити свою мережу від шкідливого програмного забезпечення, фішингу, спаму, хакерських атак і програм-вимагачів.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]AiProtection_sites_blocking=Блокування сайтів-зловмисників
 AiProtection_sites_trust=Додайте довірене доменне ім’я та розблокуйте його за допомогою AiProtection
 AiProtection_sites_trust_add=Додати доменне ім’я до білого списку
@@ -1670,7 +1679,7 @@ AiProtection_title_BandwidthUtil=Користування діапазоном
 AiProtection_title_BandwidthUtil_desc1=Будь ласка, введіть пропускну здатність завантаження та вивантаження вашого інтернет-з’єднання.
 AiProtection_title_BandwidthUtil_desc2=ROG ZVMODELVZ користуєтьсяінформацією діапазону, щоб найкраще розподілити трафік для ігрових пристроїв.
 AiProtection_title_Dashboard=Ігрова панель керування
-AiProtection_title_Dashboard_add_card=Add card
+AiProtection_title_Dashboard_add_card=Додати карту
 AiProtection_title_Dashboard_desc=Панель керування ROG ZVMODELVZ надає можливість конфігурувати найкращі налаштування і в реальному часі моніторити ігрову мережу.
 AiProtection_title_Dashboard_title=Панель керування
 AiProtection_title_GameWiFi=Виділений ігровий WiFi
@@ -1704,18 +1713,19 @@ AiProtection_TrackerBlocking=Блокування трекерів
 AiProtection_TrackerBlocking_Desc=Блокування трекерів допомагає виявляти та блокувати запити на відстеження з веб-сайтів, рекламодавців або сторонніх аналітичних платформ, захищаючи вашу конфіденційність, зменшуючи витік даних і прискорюючи завантаження сторінок.
 AiProtection_AdvertisementBlocking_Desc=Блокування реклами допомагає блокувати поширені джерела реклами, щоб зменшити перешкоди, покращити перегляд і знизити ризики безпеки. Ви також можете увімкнути AdGuard DNS для додаткового захисту.
 AiProtection_AdvertisementBlocking_Enabled=Блокування реклами увімкнено
-AiProtection_AdvertisementBlocking_edserv=Edge Сервер
-AiProtection_AdvertisementBlocking_edserv_desc=Вбудований edge сервер, що забезпечує детальну аналітику мережі, розширений контроль та покращену конфіденційність.
+AiProtection_AdvertisementBlocking_edserv=Пограничний сервер
+AiProtection_AdvertisementBlocking_edserv_desc=Самостійно розгорнутий пограничний сервер на маршрутизаторі. Забезпечує детальну аналітику мережі, розширене керування та покращену домашню конфіденційність.
 AiProtection_AdvertisementBlocking_cloudserv=Хмарний сервер
 AiProtection_AdvertisementBlocking_cloudserv_desc=Розширює захист на кілька сайтів через хмару.
 AiProtection_AdvertisementBlocking_filter=Трирівневий фільтр вмісту
-AiProtection_AdvertisementBlocking_trigger=Блокування реклами одним кліком.
+AiProtection_AdvertisementBlocking_trigger=Блокує рекламу одним кліком.
 AiProtection_TrackerBlocking_Enabled=Блокування трекерів увімкнено
 AiProtection_select_device=Виберіть пристрій або введіть дійсну MAC- або IP-адресу
 AiProtection_rule_exist=Цей пристрій вже має правило. Видаліть його перед створенням нового.
 ArkMigrationNote=Примітка
 ArkMigrationNote_1=Через конфіденційність та оптимізацію системи %@ тепер використовує локальне виявлення. Існуючі правила профілю потрібно переналаштувати вручну.
 ArkMigrationNote_2=Ці функції не сумісні з попередніми версіями прошивки; для зниження версії потрібне скидання до заводських налаштувань.
+ArkAiProtectionInfo=Деякі сайти можуть бути заблоковані через блокування реклами або трекерів, оскільки вони використовують ці сервіси. Якщо виникають проблеми з доступом, спробуйте вимкнути вищевказані функції та перезавантажити сторінку.
 FamilyContentBlock=Блокування сімейного контенту
 BwLimiter_Switch=Перемикач обмеження пропускної здатності
 BwLimiter_Download=Пропускна здатність завантаження
@@ -1724,6 +1734,7 @@ BwLimiter_NewDevice=Новий пристрій
 BwLimiter_Status=Стан
 BwLimiter_Delete=Видалити
 SearchDevice_By_Name_Mac_Ip=Пошук імені пристрою, MAC або IP
+SearchDevice_By_Name_Mac_Ip_Subnet=Пошук за іменем пристрою, MAC, IP або підмережею
 BwLimiter_Target=Ціль
 BwLimiter_enter_bandwidth=Введіть значення пропускної здатності.
 BwLimiter_max=Правила обмеження пропускної здатності досягли максимуму (32).
@@ -1874,7 +1885,7 @@ Bandwidth_Setting=Налаштування пропускної здатност
 BasicConfig_EnableDHCPFilter_itemname=Увімкнути фільтр DHCP
 BasicConfig_EnableDownloadMachine_itemname=Активувати Майстер Завантаження?
 BasicConfig_EnableDownloadShare_itemname=Активувати спільне користування завантаженням?
-BasicConfig_EnableiTunesServer_itemname=Активувати сервер iTunes?
+BasicConfig_EnableiTunesServer_itemname=Активувати сервер iTunes
 BasicConfig_EnableMediaServer_itemname=Активувати UPnP?
 BlackList=Чорний список
 Block=Блокувати
@@ -1965,7 +1976,9 @@ btn_go=ПЕРЕЙТИ
 btn_goSetting=Перейти до налаштувань
 btn_remove=Видалити
 btn_send=Надіслати
+btn_resend=Надіслати повторно
 btn_to_WAN=Налаштуваня WAN
+btn_verify=Підтвердити
 Capability=Можливість
 Captcha=Captcha
 Captcha_note=Будь ласка, введіть captcha.
@@ -1976,7 +1989,7 @@ ChooseOthers_Hint=Виберіть інші варіанти та повторі
 collect_no_info_SWISS=Не збирає інформацію про користувачів і регулюється швейцарськими законами щодо конфіденційності.
 Client_Name=Ім&#39;я клієнта
 Client_Icon=Іконка
-Client_Icon_change=Change Icon
+Client_Icon_change=Змінити значок
 Client_Icon_overload=Перевищено ліміт вивантаження піктограм клієнта. Вилучить принаймні одну піктограму клієнта й повторіть спробу.
 Clientlist_block_internet=Блокування інтернет-доступу
 Clientlist_block_internet_max=Максимальна кількість клієнтів: 16. Перевірте список клієнтів на графіку часу.
@@ -2111,7 +2124,7 @@ CTL_finished=Закінчено
 CTL_format=Формат
 CTL_Generate=Створити
 CTL_help=Допомога
-CTL_later=Later
+CTL_later=Пізніше
 CTL_link=З’єднати
 CTL_localdevice=Локальний пристрій
 CTL_login=Вхід
@@ -2122,15 +2135,16 @@ CTL_reconnection=Автоматичне повторне підключення
 CTL_refresh=Поновити
 CTL_Reset_OOB=Скинути
 CTL_restore=Відновити
+CTL_restore_again=Відновити знову
 CTL_scan=Сканувати
 CTL_search=Пошук
 CTL_secure=Захистити маршрутизатор
 CTL_upgrade=Оновлення мікропрограми
 CTL_upload=Завантажити
-CTL_upload_img=Upload image
+CTL_upload_img=Завантажити зображення
 CTL_initialize=Ініціалізувати
 Current=Поточний
-Current_peak=Peak
+Current_peak=Пік
 Current_band=Поточна частота
 current_settings=Поточні налаштування
 Custom=Особливий
@@ -2158,6 +2172,9 @@ DDNS_https_cert_alert=Виберіть правильний файл серти�
 DDNS_ipv6_update=Оновлення IPv6
 DDNS_ipv6_update_desc=Якщо в мережі клієнта використовується мережева адреса IPv6 і ви ввімкнете цю функцію, то під час віддаленого доступу домен буде спочатку спрямовано на мережеву адресу IPv6.
 DDNS_ssl_cert=Сертифікат SSL
+DDNS_status=Стан DDNS
+DDNS_reg_result=Результат реєстрації DDNS
+DDNS_root_ca=Кореневий сертифікат/Проміжний сертифікат
 DDNS_termofservice_Title=Попередження про умови використання
 DDNS_transfer=Передача імені ASUS DDNS
 DDNS_verification_enable=Перевірка WAN IP та імені хоста
@@ -2179,10 +2196,10 @@ Device_type_03_AP=Точка доступу
 Device_type_04_NS=NAS
 Device_type_05_IC=ІР-камера
 Device_type_06_OD=Інший пристрій
-deviceDiscorvy2=У Режим ретранслятора змінюється ІР-адреса, призначена DHCP. Встановіть і застосуйте <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> (Утиліта визначення пристрою), щоб отримати нову ІР-адресу бездротового маршрутизатора.
-deviceDiscorvy3=У режимі точки доступу (ТД), змінюється ІР-адреса, призначена DHCP. Інсталюйте і користуйтеся <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a>, щоб визначити ІР-адресу бездротового маршрутизатора.
-AiMesh_deviceDiscorvy3=Коли Маршрутизатори AiMesh у режимі точки доступу, змінюється ІР-адреса, призначена DHCP. Встановіть і застосовуйте <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a>, щоб визначити ІР-адресу бездротового маршрутизатора.
-deviceDiscorvy4=У режимі Медіа-міст змінюється ІР-адреса, призначена DHCP. Встановіть і застосуйте <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> (Утиліта визначення пристрою), щоб отримати нову ІР-адресу бездротового маршрутизатора.
+deviceDiscorvy2=У Режим ретранслятора змінюється ІР-адреса, призначена DHCP. Встановіть і застосуйте <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> (Утиліта визначення пристрою), щоб отримати нову ІР-адресу бездротового маршрутизатора.
+deviceDiscorvy3=У режимі точки доступу (ТД), змінюється ІР-адреса, призначена DHCP. Інсталюйте і користуйтеся <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a>, щоб визначити ІР-адресу бездротового маршрутизатора.
+AiMesh_deviceDiscorvy3=Коли Маршрутизатори AiMesh у режимі точки доступу, змінюється ІР-адреса, призначена DHCP. Встановіть і застосовуйте <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a>, щоб визначити ІР-адресу бездротового маршрутизатора.
+deviceDiscorvy4=У режимі Медіа-міст змінюється ІР-адреса, призначена DHCP. Встановіть і застосуйте <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> (Утиліта визначення пристрою), щоб отримати нову ІР-адресу бездротового маршрутизатора.
 DeviceSecurity11a_display1_sectiondesc=Бездротовий фільтр МАС надає можливість контролювати пакети від пристроїв з вказаними МАС-адресами у бездротовій LAN.
 DHCP_query_freq=Частота запитів DHCP
 DHCPaggressive=Агресивний режим
@@ -2359,13 +2376,16 @@ Enable_ncb_Non_Block=Не блокувати
 Enable_ncb_Limited_Block=Обмежене блокування
 Enable_ncb_All_Block=Блокувати повністю
 Encap_mode_help=ZVMODELVZ надає два режими формування пакетів даних і передачі протоколів LAN і WAN через ATM. Будь ласка, виберіть правильний режим формування пакетів.
+Energy_Saving_conflict_hint1=Фактична поведінка може відрізнятися через взаємодію між основною функцією та налаштуваннями енергозбереження.
+Energy_Saving_conflict_hint2=Щоб забезпечити узгоджену роботу між основною функцією та енергозбереженням, поточні налаштування будуть застосовані як пріоритет.
+Energy_Saving_affected_setting=Змінені налаштування: (%@)
 Ethernet_wan=Ethernet WAN
 Excute=Встановити
 Excute_processing=Інсталяція...
 External=Лише зовнішній
 Extend_TTL_Value=Розширити значення TTL
 EZQoS=Керування шириною смуги EZQoS
-EzQoS_bandwidth_note1=Отримати інформацію про пропускну здатність вашого каналу можна у провайдера або за допомогою тесту <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:#FC0;">http://speedtest.net</a>
+EzQoS_bandwidth_note1=Отримати інформацію про пропускну здатність вашого каналу можна у провайдера або за допомогою тесту <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);">http://speedtest.net</a>
 EzQoS_bandwidth_note2=Значення за замовчуванням - 0, що означає необмежений діапазон.
 EzQoS_desc=Якість обслуговування (QoS) забезпечує пропускну здатність для пріоритетних завдань і програм.
 EzQoS_desc_Adaptive=<span style="font-weight:bolder;font-size:14px;">Адаптивна QoS</span> гарантує вхідну та вихідну пропускну здатність на проводових і бездротових інтерфейсах для пріоритетних програм та сервісів з використанням попередньо визначених профілів: ігри, потокове відтворення, VoIP, себ-серфінг та передача файлів.
@@ -2432,11 +2452,11 @@ feedback_email_alert=Формат адреси електронної пошти
 feedback_email_confirm=Поле адреси електронної пошти порожнє. Продовжити?
 feedback_extra_info=Додаткова інформація для усунення помилок
 feedback_fail0=Ваш відгук не надіслано. Будь ласка, перевірте підключення до Інтернет і повторіть спробу.
-feedback_fail1=<span style="color:#FC0;">Система не підключилася до поштового сервера.</span> Можна надіслати електронного листа напряму на
+feedback_fail1=<span style="color:var(--wrt-badge-warning-color,#FC0);">Система не підключилася до поштового сервера.</span> Можна надіслати електронного листа напряму на
 feedback_fail2=Просто скопіюйте зміст і вставте його у поле електронного листа.
 feedback_fail3=Завантажте наступні файли налагодження і додайте їх як вкладення електронної пошти:
 feedback_fail0_new=Система не змогла підключитися до сервера зворотного зв'язку.
-feedback_fail1_new=<span>Якщо у вас виникли проблеми з використанням або потрібна технічна підтримка, зверніться до Центру обслуговування клієнтів ASUS&nbsp;<a class="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Офіційна підтримка | ASUS Global)</a> спочатку.</span>
+feedback_fail1_new=<span>Якщо у вас виникли проблеми з використанням або потрібна технічна підтримка, зверніться до Центру обслуговування клієнтів ASUS&nbsp;<a class="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Офіційна підтримка | ASUS Global)</a> спочатку.</span>
 feedback_fail2_new=Ви також можете надіслати виявлений файл помилок на router_feedback@asus.com, щоб надати пропозиції щодо вдосконалення команді розробників. Дякуємо.
 feedback_fail_BindGoogle=Або можна <a id="bind_google">поєднати обліковий запис Google</a>, щоб надіслати відгук електронною поштою.
 feedback_format_alert=Не вірний формат.
@@ -2458,7 +2478,7 @@ feedback_note3=Насилаючи відгук, ви погоджуєтеся з
 [###MODEL_DEP###][DSL-AX82U][DSL-AC68U][DSL-N55U][DSL-N55U-B]feedback_note3=Насилаючи відгук, ви погоджуєтеся з тим, що ASUS може використати ваш відгук для вдосконалення модемів-маршрутизаторів xDSL.
 feedback_note4=Якщо виникли нагальні питання, зверніться до місцевої технічної підтримки.
 feedback_note5=Відгук триває. Перезавантаження може призвести до завершення програми, і відгук не може бути завершений. Будь ласка, перезавантажте пізніше.
-feedback_note6=<span>Ця система не надає індивідуальних відповідей. Якщо у вас виникли проблеми з використанням або потрібна технічна підтримка, зверніться до Центру обслуговування клієнтів ASUS</span>&nbsp;<a id="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Офіційна підтримка | ASUS Global)</a>.
+feedback_note6=<span>Ця система не надає індивідуальних відповідей. Якщо у вас виникли проблеми з використанням або потрібна технічна підтримка, зверніться до Центру обслуговування клієнтів ASUS</span>&nbsp;<a id="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Офіційна підтримка | ASUS Global)</a>.
 feedback_note7=Наша професійна команда буде присвячена обслуговуванню вас. Дякуємо.
 feedback_Occasion_interrupt=Випадкові переривання
 feedback_optional=* Додатково
@@ -2619,7 +2639,7 @@ FW_auto_upgrade_desc=Оновлення системи встановлюват�
 FW_auto_upgrade_desc1=Деякі оновлення, які стосуються важливих питань безпеки або відповідають юридичним/регуляторним вимогам, все одно будуть встановлені автоматично, навіть якщо автоматичне оновлення прошивки вимкнено.
 FW_auto_upgrade_note=Після ввімкнення маршрутизатор автоматично встановлює нову прошивку у зручний для вас час.
 FW_beta_check=Я хочу отримати бета-версію прошивки.
-FW_desc0=Отримайте найновішу версію мікропрограми на <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/" target="_blank">сайт підтримки ASUS</a>
+FW_desc0=Отримайте найновішу версію мікропрограми на <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/" target="_blank">сайт підтримки ASUS</a>
 FW_desc1=Будь ласка, відвідайте сайт підтримки ASUS https://www.asus.com/support/ , щоб отримати найновішу мікропрограму.
 fw_downloading=Завантажити мікропрограму
 FW_item1=Ідентифікація виробу
@@ -2628,9 +2648,9 @@ FW_item2_aiboard=Версія прошивки AI Board
 FW_item5=Новий файл мікропрограми
 FW_manual_update=Оновлення мікропрограми вручну
 FW_n0=Найновіша версія програмного забезпечення включає оновлення з попередньої.
-FW_n2=Якщо оновлення не відбулося, ZVMODELVZ автоматично переходить в аварійний режим. Світлодіодні індикатори спереду на ZVMODELVZ позначать таку ситуацію. Відвідайте <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/Download-Center/" target="_blank">Центр Завантажень ASUS</a>, щоб завантажити утиліту ASUS Firmware Restoration.
-FW_n3=Перевірте <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="" target="_blank">FAQ</a> для отримання додаткових інструкцій.
-FW_n4=Перевірте <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: #FFCC00;\" href=\"\" target=\"_blank\">FAQ</a> для отримання додаткових інструкцій.
+FW_n2=Якщо оновлення не відбулося, ZVMODELVZ автоматично переходить в аварійний режим. Світлодіодні індикатори спереду на ZVMODELVZ позначать таку ситуацію. Відвідайте <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/Download-Center/" target="_blank">Центр Завантажень ASUS</a>, щоб завантажити утиліту ASUS Firmware Restoration.
+FW_n3=Перевірте <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="" target="_blank">FAQ</a> для отримання додаткових інструкцій.
+FW_n4=Перевірте <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: var(--wrt-badge-warning-color,#FFCC00);\" href=\"\" target=\"_blank\">FAQ</a> для отримання додаткових інструкцій.
 FW_n5=Щоб дізнатися, які дані збираються для оновлень прошивки чи безпеки, перегляньте ПОВІДОМЛЕННЯ ПРО КОНФІДЕНЦІЙНІСТЬ ASUS (щодо оновлень прошивки чи безпеки). Для цього перейдіть на сторінку Administration (Управління) > Privacy (Конфіденційність).
 FW_note=ПРИМІТКА:
 FW_note_AiMesh=Оновлення мікропрограми вручну оновить лише обрані маршрутизатори/вузли AiMesh, користуючись системою AiMesh. Переконайтеся, що ви завантажили правильну версію мікропрограми AiMesh для кожного застосовного маршрутизатора/вузла.
@@ -2690,6 +2710,7 @@ Gear_Accelerator=Прискорення роботи
 Gear_Accelerator_desc=Установлення пріоритетів для ігрових пристроїв
 Gear_Accelerator_desc1=Пріоритезація ігрових пристроїв для найкращого ігрового досвіду.
 Gear_Accelerator_List=Список ігрових пристроїв
+Gear_Accelerator_confirm=Щоб увімкнути %@, апаратне прискорення буде вимкнено, що може знизити швидкість мережі. Бажаєте продовжити?
 Game_Ark_Devices_identification=Ідентифікація ігрових пристроїв
 Game_Ark_Devices_identification_desc=Ідентифікація ігрових пристроїв інтелектуально пріоритетизує мережевий трафік для підключених пристроїв.
 Game_Ark_First_desc=GameFirst V постачається з материнськими платами, ноутбуками та настільними ПК ROG для оптимізації мережевого трафіку під час онлайн-ігор на ПК.
@@ -2706,11 +2727,11 @@ GB_account_type2=Розширений обліковий запис із мар�
 GB_ended_date=Дата закінчення
 GB_ended_date_desc=WTFast надає всім новим користувачам 14 днів пробного періоду у високотехнологічному режимі, що задіює лише обліковий запис Advanced (Високотехнологічний) з більшою кількістю опцій сервера проксі. Коли закінчується пробний період, ви все одно можете користуватися безстроковою підпискою з основними функціями облікового запису, який є безкоштовним, але має обмеження потоку даних.
 GB_ended_date_type0=Наразі використовується базовий обліковий запис без маршрутизатора.
-GB_management_note1=Використовуючи Gamers Private Network® на базі WTFast®, ви погоджуєтеся з їхніми <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:#008DE5;">Умовами використання</a></span> і <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:#008DE5;">Політика конфіденційності</a></span>.
-GB_management_note2=Як вказано у заяві про обмеження відповідальності на сторінці нашого виробу, WTFast все ще працює над розробкою підтримки ігрової приставки. Список поточно підтримуваних ігор <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:#008DE5;">подано тут</a>. (регулярно поновлюється)
+GB_management_note1=Використовуючи Gamers Private Network® на базі WTFast®, ви погоджуєтеся з їхніми <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Умовами використання</a></span> і <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Політика конфіденційності</a></span>.
+GB_management_note2=Як вказано у заяві про обмеження відповідальності на сторінці нашого виробу, WTFast все ще працює над розробкою підтримки ігрової приставки. Список поточно підтримуваних ігор <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">подано тут</a>. (регулярно поновлюється)
 GB_management_note3=Робочі характеристики GPN залежать від ISP або розташування. Стежте за постійним оновленням мікропрограми.
-GB_management_note4=Як вибрати хороший сервер GPN? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:#008DE5;">Тут</a></span> Як найкраще грати? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:#008DE5;">Тут</a></span>
-GB_management_note5=Як користуватися WTFast на маршрутизаторі ASUS? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:#008DE5;">Тут</a></span>
+GB_management_note4=Як вибрати хороший сервер GPN? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Тут</a></span> Як найкраще грати? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Тут</a></span>
+GB_management_note5=Як користуватися WTFast на маршрутизаторі ASUS? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Тут</a></span>
 GB_mobile=Режим мобільної гри
 GB_mobile_desc=Оптимізація мобільних ігор
 GB_mobile_desc1=Завантажте та встановіть програму ASUS Router. Увімкніть у ній режим мобільних ігор, щоб оптимізувати ігровий процес.
@@ -2832,7 +2853,7 @@ HSDPAConfig_hsdpa_enable_hint2=Якщо ви бажаєте змінити ти�
 HSDPAConfig_hsdpa_enable_itemname=Активувати модем USB?
 HSDPAConfig_hsdpa_mode_itemname=Режим модему USB
 HSDPAConfig_hsdpa_mode_itemdesc=Підключіть USB-адаптер до ZVMODELVZ і зробіть його мобільним маршрутизатором.
-HSDPAConfig_hsdpa_mode_status=USB Modem Status
+HSDPAConfig_hsdpa_mode_status=Стан USB-модема
 HSDPAConfig_isp_itemdesc=Будь ласка, виберіть Інтернет-провайдера.
 HSDPAConfig_ISP_itemname=Інтернет-провайдер
 HSDPAConfig_password_itemdesc=Будь ласка, введіть пароль.
@@ -3014,7 +3035,7 @@ IPv6_xpass=Xpass
 isp_br_gvt_note=Якщо ви є користувачами GVT, будь ласка, введіть ім'я користувача <b>turbonet@turbonet</b> і пароль <b>gvt25</b>. Якщо ні, будь ласка, введіть ім'я користувача і пароль, надані Інтернет-провайдером.
 isp_profile=Виберіть профіль Інтернет-провайдера, щоб сконфігурувати спеціальні налаштування Інтернет-провайдера.
 iTunesServer=Cервер iTunes
-iTunesServer_itemname=Ім'я сервера iTunes
+iTunesServer_itemname=Назва сервера iTunes
 Jitter=Jitter
 JS_access_type=Виберіть принаймні один тип доступу.
 JS_badconnection=Не встановлено підключення до ZVMODELVZ. Натисніть [OK], щоб надіслати запит або [Скасувати], щоб зупинити.
@@ -3113,7 +3134,7 @@ LANHostConfig_x_DDNS_retrieve_IP_note=[Внутрішній доступ] Зар
 LANHostConfig_x_DDNS_update_confirm=IP-адреса, сервер та ім'я хоста не змінилися з останнього оновлення. Якщо бажаєте оновити, клацніть [Так].
 LANHostConfig_x_DDNSEnable_itemname=DDNS
 LANHostConfig_x_DDNSEnable_sectiondesc=DDNS (Система динамічних доменних імен) - це послуга, яка надає мережевим клієнтам можливість підключатися до бездротового маршрутизатора, навіть з динамічною публічною ІР-адресою, через його зареєстроване доменне ім'я.
-LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:#FFFFFF;">Докладні відомості наведено в розділі <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">Запитання й відповіді</a>.
+LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:var(--wrt-text-color,#FFFFFF);">Докладні відомості наведено в розділі <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">Запитання й відповіді</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc3=Ім'я хоста успішно зареєстроване. Можна користуватися "[hostname].asuscomm.com", щоб увійти до сервісів домашньої мережі з WAN. За допомогою "[hostname].asuscomm.com", щоб мати віддалений доступ до вашої мережі.<p>Перейдіть Advanced Settings > WAN (Додаткові налаштування > WAN), щоб конфігурувати пересилання з порту або налаштування DMZ, щоб дозволити іншим клієнтам WAN віддалений доступ до вашої мережі.<p> Якщо ви бажаєте віддалено конфігурувати бездротовий маршрутизатор, перейдіть до <a href="../Advanced_BasicFirewall_Content.asp" target="_blank" style="text-decoration:underline; font-family:Lucida Console;">тут</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc4=Поточний маршрутизатор використовує приватну IP-адресу.
 LANHostConfig_x_DDNSEnable_faq1=Застосування та налаштування DDNS
@@ -3340,7 +3361,7 @@ month=місяць
 MoreConfig=Більше налаштувань
 MPPE_Encryp=Шифрування МРРЕ
 mssid_time_remaining=Часу лишилося
-multiservice_WAN=Multi-Service WAN
+multiservice_WAN=Багатосервісний WAN
 NAT_Acceleration=Прискорення NAT
 NAT_AccelerationDesc=Якщо ввімкнуто прискорення NAT, комутатор може самостійно обробляти мережеві пакети без залучення ЦП. Таким чином збільшується пропускна здатність NAT, однак деякі функції можуть працювати неточно, як-от часовий графік, традиційний QoS і обмежувач пропускної здатності в гостьовій мережі тощо. Якщо встановити автоматичний режим прискорення NAT, він самостійно вимкнеться відразу після активації однієї з цих функцій.
 NAT_Acceleration_ctf_disable=Обмін даними NAT обробляється центральним процесором.
@@ -3355,7 +3376,7 @@ NAT_IPSec_Passthrough=Тунелювання IPSec
 NAT_L2TP_Passthrough=Тунелювання L2TP
 NAT_lacp=Об’єднання / агрегація каналів
 NAT_lacpDesc=Цей елемент мав різні назви: групування портів, об’єднання, сполучення, агрегація каналів, 802.3ad.
-NAT_lacp_disable_note=Зміна налаштування порту IPTV/VOIP на LAN5/LAN6 вимкне функцію Bonding/Link Aggregation. Ви впевнені, що хочете це зробити?
+NAT_lacp_disable_note=Зміна налаштувань порту IPTV/ VOIP на LAN5/ LAN6 вимкне функцію Bonding/ Link aggregation. Ви впевнені, що хочете це зробити?
 NAT_lacp_note=Активуйте підтримку поєднання в пару (802.3ad) для дротового клієнта, а потім підключіть його до портів LAN1 і LAN2 маршрутизатора.
 NAT_passthrough_desc=Активуйте тунелювання NAT, щоб дозволити підключення Virtual Private Network (VPN) через маршрутизатор до мережевих клієнтів.
 NAT_PPTP_Passthrough=Тунелювання PPTP
@@ -3415,8 +3436,8 @@ note_hide_SSID_WPS=Необхідно вимкнути приховування 
 note_up_to_date=Примітка. Новий патч буде регулярно оновлюватись, будь ласка, оновлюйте мікропрограму.
 Notice=Примітка
 Notification_Item=Елемент повідомлення
-Notification_security_update=Security Update Notification
-Notification_security_desc=Monitor this log to stay informed about system security changes that may affect your network.
+Notification_security_update=Сповіщення про оновлення безпеки
+Notification_security_desc=Слідкуйте за цим журналом, щоб бути в курсі змін безпеки системи, які можуть вплинути на вашу мережу.
 Now=Зараз
 number_of_client=Кількість користувачів
 NSlookup_help=Перейдіть до <a href="https://iplookup.asus.com/nslookup.php" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">https://iplookup.asus.com/nslookup.php</a> , щоб шукати статичну адресу для застосування зі службою ASUS DDNS.
@@ -3440,7 +3461,7 @@ ParentalCtrl_default=Стандартне налаштування -  досту
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_default=Стандартне налаштування -  доступ до Інтернет обмежений за часовими інтервалами.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]ParentalCtrl_default=Пристрої, додані до «Батьківського контролю» матимуть обмежений доступ до інтернету за замовчуванням.
 ParentalCtrl_deny=Відмовити
-ParentalCtrl_disable_NAT=Вимкніть <a id="disable_NAT" style="color:#FC0;text-decoration: underline;" href="" target="_blank">Прискорення NAT</a>, щоб точніше керувати графіком.
+ParentalCtrl_disable_NAT=Вимкніть <a id="disable_NAT" style="color:var(--wrt-badge-warning-color,#FC0);text-decoration: underline;" href="" target="_blank">Прискорення NAT</a>, щоб точніше керувати графіком.
 ParentalCtrl_Enable=Активувати Батьківський контроль
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_Enable=Активувати Контроль доступу до пристрою
 ParentalCtrl_Enable_TS=Активуйте розклад
@@ -3749,6 +3770,7 @@ select_service=Виберіть назву послуги.
 select_usb_device=Виберіть пристрій USB
 select_usb_mode=USB Mode
 select_wireless_MAC=Виберіть МАС-адресу бездротового клієнта.
+Sending_str=Надсилання…
 Send_mail=Надіслати ел.пошту
 Serial_Number=Серійний номер
 Servers_Center=Центр серверів
@@ -3773,7 +3795,8 @@ Setting_initialize_desc_ai=Скидання основного маршрути�
 Setting_lock_main_unit=Заблокувати головний пристрій
 Setting_lock_main_unit_desc1=Після ввімкнення цей пристрій обмежується роллю головного пристрою та не може приєднатися до іншої мережі як вузол.
 Setting_lock_main_unit_desc2=Примітка: Зміна цього стану призведе до скидання до заводських налаштувань і вимагатиме повторного налаштування.
-Setting_lock_main_unit_confirm=Зміна стану «Заблокувати головний пристрій» вимагає скидання до заводських налаштувань. Це видалить усі поточні мережеві налаштування.
+Setting_lock_main_unit_desc3=якщо у вас є активна mesh-мережа з вузлами Nodes, підключеними до цього CAP, зверніть увагу, що після скидання CAP до заводських налаштувань ці вузли Nodes також потрібно скинути вручну.
+Setting_lock_main_unit_confirm=Зміна стану «Заблокувати головний пристрій» вимагає скидання до «заводських налаштувань». Це видалить усі поточні мережеві налаштування.
 Setting_save_itemdesc=Натисніть по кнопці [Зберегти], щоб зберегти поточне налаштування ZVMODELVZ у файл. (ПРИМІТКА: Коли ви зберігаєте поточне налаштування у файл, воно буде збережене і у флеш-пам'яті теж.)
 Setting_save_itemdesc_ai=Збереження налаштувань не включає конфігурації або дані системи AI Board.
 Setting_save_itemname=Зберегти налаштування
@@ -3782,7 +3805,7 @@ Setting_upload_hint=Формат файлу або шлях недійсні!
 Setting_upload_itemdesc=Вкажіть шлях і назву файлу налаштувань. Натисніть [Відправити], щоб записати файл у ZVMODELVZ. Будь ласка, почекайте 60 секунд, поки перезавантажиться ZVMODELVZ.
 [###MODEL_DEP###][RT-N65U]Setting_upload_itemdesc=Вкажіть шлях і назву файлу налаштувань. Натисніть [Відправити], щоб записати файл у ZVMODELVZ. Будь ласка, почекайте 90 секунд, поки перезавантажиться ZVMODELVZ.
 Setting_upload_itemname=Відновити налаштування
-Setting_remove_passwd=Установіть цей прапорець, якщо ви хочете поділитися файлом конфігурації для налагодження. Оскільки оригінальний пароль у конфігураційному файлі буде видалено, будь ласка, не імпортуйте файл у свій маршрутизатор.
+Setting_remove_passwd=Поставте прапорець, якщо хочете поділитися файлом конфігурації для налагодження. Оскільки оригінальний пароль буде видалено з файлу, не імпортуйте файл у свій маршрутизатор.
 Setting_ai_board=Налаштування AI Board
 Setting_ai_board_fw_ver=Версія прошивки AI Board
 Setting_ai_dk_Apps=Docker-додатки
@@ -3790,7 +3813,7 @@ Setting_ai_dk_HA=Home Assistant
 Setting_ai_desc_HA=Home Assistant об'єднує всі ваші розумні пристрої на одній простій панелі керування, що спрощує їх керування та автоматизацію в одному місці.
 Setting_ai_desc_frigate=Відеореєстратор з відкритим кодом  на основі ШІ з  виявленням об’єктів  в режимі реального часу. Вся обробка виконується локально на вашому власному обладнанні, а зображення з камер ніколи не залишають ваш дім.
 Setting_ai_note_frigate=Примітка: переконайтеся, що ваша IP-камера підтримує RTSP.
-Setting_ai_faq_frigate=Будь ласка, перегляньте <a data-faq="AI_FAQ_Frigate" class="ai-faq-btn">розділ поширених</а> запитань перед встановленням, щоб дізнатись, як отримати початковий пароль.
+Setting_ai_faq_frigate=Будь ласка, перегляньте <a data-faq="AI_FAQ_Frigate" class="ai-faq-btn">розділ поширених</a> запитань перед встановленням, щоб дізнатись, як отримати початковий пароль.
 Setting_ai_dk_Management=Керування Docker
 Setting_ai_dk_Ctrl_Deploy=Розгортання і контроль
 Setting_ai_desc_Ctrl_Deploy=Запускайте потужні програми за допомогою Docker, провідної у світі контейнерної платформи, якій довіряють мільйони розробників. Завдяки інтуїтивно зрозумілому інтерфейсу Portainer CE ви можете візуально розгортати, контролювати та керувати контейнерами.
@@ -3819,8 +3842,11 @@ Setting_rescue_ai_FWUpload=Завантажити прошивку
 Setting_rescue_ai_FWInstall=Встановити прошивку
 Setting_rescue_ai_appInstall=Встановити APP
 Setting_rescue_ai_complete=Відновлення AI Board завершено.
+Setting_rescue_ai_Interrupted=Відновлення AI Board перервано
+Setting_rescue_ai_Interrupted_desc1=Процес відновлення не вдався через неочікуване переривання або втрату живлення.
+Setting_rescue_ai_Interrupted_desc2=Будь ласка, забезпечте стабільне живлення та спробуйте ще раз.
 Setting_prog_ai_currStep=Поточний крок:
-Setting_prog_ai_Note=Примітка: система працює нормально. Не переривайте операцію.
+Setting_prog_ai_Note=Примітка: Система працює нормально. Не переривайте процес і забезпечте стабільне живлення та підключення до Інтернету.
 Setting_prog_ai_serveralTime=Цей процес може зайняти кілька хвилин.
 Settings=Налаштування
 Setup_note=Натисніть <a id="redirect_to_setup">Тут</a> щоб модифікувати. Детальну інформацію дивіться в цьому <a id="redirect_to_FAQ">FAQ</a>.
@@ -3876,7 +3902,7 @@ smart_connect_STA=Політика вибору STA
 smart_connect_STA_counts=Усього
 smart_connect_STA_dwell=Час затримки
 smart_connect_STA_window=Час вікна
-smart_connect_status=Smart Connect Status
+smart_connect_status=Стан Smart Connect
 smart_connect_Steering=Спрямування умови тригера
 smart_connect_Bandwidth=Використання пропускної здатності
 smart_sync=AiCloud Sync
@@ -3987,10 +4013,33 @@ SDN_Scenarios_desc=Бажаєте додати ще одну бездротов�
 SDN_MainFH_for_clients=MLO Fronthaul для клієнтів
 SDN_MainFH_keep_Hint=At least one main network must be retained.
 SDN_MainFH_Smart_Connect_Hint=Оскільки правило Smart Connect створено, виберіть одну смугу WiFi.
+SDN_mlo_switch_fh_hint1=Дозволено лише один активний MLO fronthaul.
+SDN_mlo_switch_fh_hint2=Бажаєте деактивувати MLO Fronthaul для %1$@ та активувати %2$@?
 SDN_Sync_To_All_Node=Синхронізувати з усіма вузлами AiMesh
 SDN_Sync_To_All_Node_Hint=Якщо ваші вузли AiMesh є старими моделями або WiFi досяг максимальної місткості, синхронізувати всі вузли AiMesh неможливо. Будь ласка, виберіть вузли для синхронізації у меню нижче.
 SDN_Sync_limitation_Hint=Для старіших вузлів AiMesh існують обмеження щодо синхронізації всіх діапазонів.
 SDN_MainFH_WiFi_conflict=%1$@ смуга(и) WiFi використані. Конфліктуючі %2$@ (%3$@) мережі будуть видалені після застосування налаштувань.
+SDN_Auth_WPA3_only_subtext1=Найвищий рівень безпеки лише з WPA3.
+SDN_Auth_WPA3_only_subtext2=(Примітка: старіші пристрої без підтримки WPA3 можуть не підключитися.)
+SDN_Auth_WPA3_dual=Стандартний дворежимний варіант безпеки.
+SDN_Auth_WPA3_dual_desc=Сучасні пристрої використовують WPA3, старіші — WPA2.
+SDN_Auth_WPA3_dual_mode=Режим сумісності
+SDN_Auth_WPA3_dual_mode_subtext1=Покращений дворежимний варіант безпеки для старіших пристроїв із перевизначенням RSN.
+SDN_Auth_WPA3_dual_mode_subtext2=Забезпечує підключення старіших пристроїв, залишаючи сучасні на WPA3.
+SDN_Auth_WPA3_dual_mode_subtext3=(Примітка: деякі пристрої середнього покоління можуть використовувати WPA2.)
+SDN_Auth_WPA3_subtext=Розширена опція безпеки, оптимізована для старіших пристроїв за допомогою RSN overriding. Вона забезпечує максимальний захист сучасних пристроїв, водночас підтримуючи стабільні з’єднання для несучасних клієнтів.
+SDN_WiFi_Mode_Only6G_Hint=Щоб відповідати світовим стандартам WiFi, усі мережі в діапазоні 6 ГГц повинні використовувати однакове покоління WiFi.
+SDN_WiFi_Mode_24G_Hint=Діапазон 2,4 ГГц працює відповідно до налаштувань режиму WiFi.
+SDN_Compatibility_Mode_Off=Режим сумісності вимкнено.
+SDN_Compatibility_Mode_24=Режим сумісності 2,4 ГГц
+SDN_Balance_Mode=Збалансований
+SDN_Balance_Mode_desc=Оптимальний баланс між продуктивністю та сумісністю пристроїв.
+SDN_Balance_Mode_desc1=Діапазон 2,4 ГГц працює в режимі WiFi 6.
+SDN_Ultra_Compatibility_Mode=Максимальна сумісність
+SDN_Ultra_Compatibility_Mode_desc=Забезпечує стабільне підключення для застарілих або старіших IoT-пристроїв.
+SDN_Ultra_Compatibility_Mode_desc1=Діапазон 2,4 ГГц працює в режимі WiFi 4.
+SDN_IPv6_FreeWiFi_Hint=Примітка: Free WiFi не підтримує середовища лише з IPv6. Переконайтеся, що для перенаправлення клієнта ввімкнено IPv4 або Dual-Stack.
+SDN_IPv6_MessageBoard_Hint=Примітка: Message Board не підтримує середовища лише з IPv6. Переконайтеся, що для клієнта ввімкнено IPv4 або Dual-Stack.
 t2BC=Базова конфігурація
 t2LAN=локальна мережа
 t2Misc=Різне
@@ -4066,7 +4115,9 @@ TZ02=Острів Мідвей, Самоа
 TZ03=Гаваї
 TZ04=Аляска
 TZ05=Тихоокеанський час (США, Канада)
+TZ05_1=Ванкувер, Вайтгорс
 TZ06=Гірський час (США, Канада)
+TZ06_1=Едмонтон, Єллоунайф
 TZ07=Арізона
 TZ08=Мацатлан
 TZ10=Саскачевань
@@ -4222,7 +4273,7 @@ usb_tls_conflict=Параметр «Дозвіл на анонімний вхі�
 usb_tls_conflict_WANacc=Параметр «доступ до WAN» конфліктує з налаштуваннями TLS.
 usb_uninstalling=Видалення програми з USB-накопичувача...
 usb_unmount=Вимкнено функцію USB.
-use_DevDiscoveryUtil=Інсталюйте і користуйтеся <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Утиліта визначення пристрою</a> , щоб визначити ІР-адресу бездротового маршрутизатора.
+use_DevDiscoveryUtil=Інсталюйте і користуйтеся <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Утиліта визначення пристрою</a> , щоб визначити ІР-адресу бездротового маршрутизатора.
 Username=Ім'я користувача
 Username_Pwd=Ім'я користувача і пароль
 UserQoS_desc=З випадаючого списку визначених користувачем правил QoS можна встановити п'ять рівнів пріоритетів для мережевих задач або пристроїв. Згідно рівню пріоритету QoS використовує наступні методи надсилання пакетів даних:<ul><li>Змінює порядок вихідних мережевих пакетів, що відповідає порядку, в якому пакети надсилаються до Інтернет.</li><li>Пакети низького пріоритету мають затримку заради того, щоб забезпечити надсилання пакетів з високим пріоритетом. Чим вищий пріоритет, тим швидше надсилатиметься пакет.</li><li>Якщо нема задач високого пріоритету, повна швидкість передачі даних в Інтернет буде доступна для пакетів з низьким пріоритетом.</li></ul>
@@ -4232,6 +4283,7 @@ UserQoS_transferred_hint=У стовпчику [Передано] вкажіть
 UserQoSRule_desc_zero=Активуйте QoS, а потім встановіть визначені користувачем правила.
 UserQoSRule_desc_one=Типове налаштування  пріоритету смуги пропускання завантаження і вивантаження  "Низький". Якщо нема правила пріоритету діапазону, пріоритет для діапазонів як завантаження, так і вивантаження "Низький".
 Utility=Утиліти
+Verifying_str=Підтвердження…
 Video_Find=Знайдіть відеопосібники
 Video_Link1=Натисніть, щоб відкрити відео-посібник.
 View_List=Список переглядів
@@ -4330,7 +4382,7 @@ vpn_openvpn_required_acc_pwd=Ім'я користувача та пароль п
 vpn_openvpnc_importCA=Імпортувати файл СА
 vpn_openvpnc_importovpn=Імпортувати файл .ovpn
 vpn_openvpnc_manual=Імпортувати файл СА або редагувати файл .ovpn вручну.
-vpn_privateIP_hint=Бездротовий маршрутизатор користується приватною ІР-адресою WAN (192.168.x.x, 10.x.x.x або 172.16.x.x). Див. <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:#FC0;'>FAQ</a> і налаштуйте переадресацію портів.
+vpn_privateIP_hint=Бездротовий маршрутизатор користується приватною ІР-адресою WAN (192.168.x.x, 10.x.x.x або 172.16.x.x). Див. <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>FAQ</a> і налаштуйте переадресацію портів.
 vpn_preshared_key=Спільний ключ (секретний)
 vpn_preshared_key_hint=Введіть попередній спільний ключ
 vpn_switch_confirm=ASUSWRT підтрмує лише одне підключення до сервера VPN за раз. Якщо ви активуєте \"OpenVPN server\" (Сервер OpenVPN), автоматично вимикається \"PPTP server\" (Сервер РРТР). Ви впевнені, що бажаєте активувати сервер VPN?
@@ -4401,6 +4453,16 @@ vpn_wireguard_client_faq=Як налаштувати клієнт WireGuard® у
 vpn_wireguard_client_config=Please use the following configuration to set up your WireGuard client.
 vpn_wireguard_qr_desc=Please download WireGuard App from Google Play or Apple Store, then use the APP to scan the QR Code to connect to this server.
 vpn_wireguard_qr_foriOS=For iOS users, you must assign a specific DNS server to WireGuard app before accessing the internet through WireGuard Server.
+vpn_wireguard_ep_mode=Режим Endpoint
+vpn_wireguard_ep_src=Джерело імені хоста
+vpn_wireguard_ep_system_ddns=Системний DDNS
+vpn_wireguard_ep_custom=Спеціальне ім’я хоста
+vpn_wireguard_ep_desc=Режим Auto автоматично визначає Endpoint на основі поточного стану мережі. У режимі DDNS можна вибрати DDNS, налаштований у системних параметрах, або ввести власне ім’я хоста.
+vpn_wireguard_ep_custom_desc=Власне ім’я хоста не залежить від налаштувань DDNS у системних налаштуваннях. Щоб забезпечити успішне підключення, переконайтеся, що власне ім’я хоста правильно розпізнається в IP-адресу маршрутизатора.
+vpn_wireguard_ep_ddns_hint=DDNS не ввімкнено. Перейдіть до розділу «Налаштування > WAN > DDNS», щоб завершити налаштування. Інакше цей Endpoint не працюватиме належним чином.
+vpn_wireguard_ep_ddns_disable_confirm=Після вимкнення DDNS профілі VPN, які використовують цей DDNS, можуть не змогти встановити з’єднання. Бажаєте продовжити?
+vpn_wireguard_ep_custom_blank=Введіть користувацьке ім’я хоста.
+vpn_wireguard_ep_custom_invalid=Неприпустимий формат імені хоста. Введіть дійсний FQDN, наприклад vpn.example.com. Не вказуйте http://, https://, номер порту або шлях URL.
 vpnc_auth=Аутентифікація VPN
 vpnc_auth_for_clients=Автентифікація VPN для клієнтів VPN
 vpnc_Client_Cert=Сертифікат клієнта
@@ -4426,6 +4488,32 @@ vpnc_profile_assignALL=Застосувати до всіх пристроїв
 vpnc_profile_assignDevice=Призначити пристрої цьому профілю
 vpnc_profile_del=Видалити профіль
 vpnc_profile_select_suggest=Виберіть інший профіль VPN, щоб розірвати інтернет-з&#39;єднання за замовчуванням WAN.
+vpnc_ssk_login=Увійдіть до свого облікового запису Surfshark
+vpnc_ssk_login_note=Будь ласка, введіть обліковий запис і пароль.
+vpnc_ssk_invalid_long=Обліковий запис або пароль задовгий (макс. 128 символів).
+vpnc_ssk_invalid_char=Обліковий запис або пароль містить недійсні символи.
+vpnc_ssk_invalid_format=Неприпустимий формат облікового запису або пароля.
+vpnc_ssk_login_AuthCode=Введіть 6-значний код підтвердження, надісланий на вашу електронну пошту або згенерований застосунком Authenticator.
+vpnc_ssk_login_AuthCode_enter=Введіть 6-значний код підтвердження.
+vpnc_ssk_login_AuthCode_confirm=Не отримали код підтвердження? Натисніть «Надіслати повторно» вище, і ми надішлемо новий код підтвердження.
+vpnc_ssk_login_AuthCode_resender=Повторне надсилання буде доступне через %1$@ с
+vpnc_ssk_login_ErrMsg1=Неправильний обліковий запис або пароль.
+vpnc_ssk_login_ErrMsg2=Сервер Surfshark недоступний. Спробуйте пізніше.
+vpnc_ssk_login_ErrMsg4=Помилка конфігурації. Перевірте свої налаштування.
+vpnc_ssk_login_ErrMsg41=Помилка конфігурації.
+vpnc_ssk_login_ErrMsg5=Помилка мережі. Не вдається підключитися до Surfshark.
+vpnc_ssk_login_ErrMsgDef=Не вдалося ввійти. Спробуйте ще раз.
+vpnc_ssk_login_success=Вхід до Surfshark виконано успішно.
+vpnc_ssk_login_success_note=Close this notice and complete your VPN settings.
+vpnc_ssk_logout_confirm=Ви впевнені, що хочете вийти зі свого облікового запису?
+vpnc_ssk_Failed_resend=Не вдалося повторно надіслати код. Спробуйте ще раз.
+vpnc_ssk_Failed_verification=Недійсний код підтвердження. Спробуйте ще раз.
+vpnc_ssk_KeyPair_max=Ваш обліковий запис Surfshark досяг максимальної кількості пар VPN-ключів (50). Щоб створити нове VPN-підключення, видаліть невикористані пари ключів зі свого облікового запису Surfshark, а потім повторіть спробу.
+vpnc_ssk_Missing_credent=Відсутні облікові дані. Закрийте застосунок і ввійдіть знову.
+vpnc_ssk_Timeout_login=Час очікування запиту на вхід минув. Спробуйте ще раз.
+vpnc_ssk_Timeout_resend=Час очікування повторного надсилання минув. Спробуйте ще раз.
+vpnc_ssk_Timeout_verification=Час очікування запиту на підтвердження минув. Спробуйте ще раз.
+vpnc_ssk_Timeout_network=Помилка мережі. Спробуйте ще раз.
 vpnc_step=Для запуску VPN-з’єднання, виконайте наступні кроки:
 vpnc_step1=Додайте профіль
 vpnc_step2=Виберіть тип VPN-з’єднання
@@ -4433,6 +4521,7 @@ vpnc_step3=Введіть інформацію для аутентифікаці
 vpnc_title=Клієнт VPN
 vpnc_peer=Вузол
 vpnc_pppoe_dis_nat_confirm=Якщо ви користуєтеся клієнтом VPN з підключенням PPPoE,  маршрутизатор автоматично перезапуститься, щоб вимкнути прискорення NAT. Ви справді бажаєте продовжити?
+vpnc_kill_switch_desc=If enabled, this feature blocks all internet traffic instantly if the VPN drops to prevent IP and data leaks. Connection will be suspended until the VPN successfully reconnects or the feature is disabled.
 WAN_barrier=Бар’єр
 WAN_Cfg_Ethernet_WAN=Конфігурувати налаштування Ethernet WAN ZVMODELVZ.
 WAN_default_route=Основний Маршрут
@@ -4497,7 +4586,7 @@ WANTCPMSSOptionText=Опція TCP MSS
 WANTCPMSSOptionComm1Text=байтів
 WANVLANIDText=VLAN ID
 WANAggregation=об&#39;єднання WAN
-WANAggregation_desc=Агрегація WAN поєднує два мережеві підключення для збільшення швидкості WAN до 2 Гб/сек. Підключіть порт #WAN маршрутизатора і порт LAN 4 до портів LAN модема (обов'язково користуйтеся двома кабелями з однаковими характеристиками). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">ЧаПи про Агрегацію WAN</a>
+WANAggregation_desc=Агрегація WAN поєднує два мережеві підключення для збільшення швидкості WAN до 2 Гб/сек. Підключіть порт #WAN маршрутизатора і порт LAN 4 до портів LAN модема (обов'язково користуйтеся двома кабелями з однаковими характеристиками). <a id="wanAgg_faq" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">ЧаПи про Агрегацію WAN</a>
 WANAggregation_enable=Активувати агрегацію WAN
 WANAggregation_disable_dualwan=На маршрутизаторі активовано Подвійну WAN. Увімкнувши Агрегацію WAN, ви вимкнете Подвійну WAN. Ви справді бажаєте продовжити?
 WANAggregation_disable_WANAggregation=На маршрутизаторі активовано Агрегацію WAN. Активувавши Подвійну WAN, ви вимкнете Агрегацію WAN. Ви справді бажаєте продовжити?
@@ -4506,13 +4595,13 @@ WANAggregation_PortConflict_hint2=IPTV користується портом LAN
 WANAggregation_disable_IPTVDualWAN=На маршрутизаторі активовано і Подвійну WAN, і IPTV. Увімкнувши Агрегацію WAN, ви вимкнете Подвійну WAN і IPTV, щоб уникнути конфліктів портів. Ви справді бажаєте продовжити?
 WANAggregation_help_WAN=Переконайтеся, що порт #WAN маршрутизатора і порт LAN модема підключено двома кабелями з однаковими характеристиками.
 WANAggregation_help_LAN=Переконайтеся, що порт LAN 4 маршрутизатора і порт LAN модема підключено двома кабелями з однаковими характеристиками.
-WANAggregation_goto_WAN=Щоб активувати Агрегацію WAN, перейдіть на сторінку Підключення до <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-Інтернету</a>.
+WANAggregation_goto_WAN=Щоб активувати Агрегацію WAN, перейдіть на сторінку Підключення до <a href="Advanced_WAN_Content.asp" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">WAN-Інтернету</a>.
 WANAggregation_help_desc=Якщо не вдалося налаштувати WAN, виконуйте наступні кроки для повторної спроби.
 WANAggregation_help_step1=Переконайтеся, що LAN-порти модема з’єднано з портами #WAN і LAN 4 маршрутизатора за допомогою кабелів.
 WANAggregation_help_step2=Переконайтеся, що модем активував 802.3ad
 WANAggregation_help_step3=Переконайтеся, що користуєтеся двома кабелями з однаковими характеристиками (або гігабітним & гігабітним, або 10/100& 10/100 Мб/сек.)
 WANAggregation_help_step4=Перезавантажте маршрутизатор
-WANAggregation_help_final=Якщо всі ці кроки виявилися безрезультатними, сповістіть про проблему на <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>сайті підтримки ASUS</a>.
+WANAggregation_help_final=Якщо всі ці кроки виявилися безрезультатними, сповістіть про проблему на <a href='https://www.asus.com/support/' target='_blank' style='color:var(--wrt-text-color,#000);text-decoration:underline;'>сайті підтримки ASUS</a>.
 WANAggregation_wanType_hint=Агрегація WAN не підтримує типи WAN, як-от PPPoE, PPTP і L2TP. Якщо тип WAN змінюється на PPPoE, PPTP або L2TP, агрегація WAN автоматично вимкнеться. Ви справді бажаєте продовжити?
 WebGUI_issue=Не вдалося відкрити сторінку мікропрограми
 wechat=WeChat
@@ -4627,8 +4716,8 @@ WLANConfig11b_display31_sectiondesc=Виберіть режим [WDS Only] (Ли
 WLANConfig11b_display32_sectiondesc=Переконайтеся, що це саме ті бездротовий маршрутизатора і ТД, до яких ви бажаєте підключитися, для використаня того ж самого каналу.
 WLANConfig11b_display33_sectiondesc=Введіть МАС-адресу віддаленої ТД у список віддалених ТД і відкрийте інтерфейс керування WDS ТД, введіть МАС-адресу маршрутизатора.
 WLANConfig11b_display34_sectiondesc=Щоб отримати найкращі робочі характеристики, будь ласка, перейдіть до Додаткові налаштування > Бездротове з'єднання > Загальні налаштування і призначте таку ж ширину каналу, основний канал і канал розширення кожному маршрутизатору в мережі.
-WLANConfig11b_display41_sectiondesc=Зараз ви користуєтесь Auto (Авто) вибором ширини каналу.  Натисніть <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">тут</a>, щоб змінити.
-WLANConfig11b_display42_sectiondesc=Зараз ви користуєтесь Auto (Авто) вибором каналу. Натисніть <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">тут</a>, щоб змінити.
+WLANConfig11b_display41_sectiondesc=Зараз ви користуєтесь Auto (Авто) вибором ширини каналу.  Натисніть <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">тут</a>, щоб змінити.
+WLANConfig11b_display42_sectiondesc=Зараз ви користуєтесь Auto (Авто) вибором каналу. Натисніть <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">тут</a>, щоб змінити.
 WLANConfig11b_display5_sectiondesc=Розширене налаштування бездротового з'єднання дозволяє встановлювати додаткові параметри. Проте рекомендовано дотримуватися типових значень.
 WLANConfig11b_display6_sectiondesc=WPS (Налаштування захищеного WiFi) забезпечує просту і надійну роботу бездротової мережі. Можна сконфігурувати WPS тут за допомогою PIN-коду або кнопки WPS.
 WLANConfig11b_EChannel_acs_ch13=Автовибір каналу, включаючи канали 12, 13
@@ -4686,6 +4775,7 @@ WLANConfig11b_x_APMode_option2=Гібридний (Hybrid)
 WLANConfig11b_x_APSD_itemdesc=Активувати або вимкнути WMM APSD (Автоматичне енергозбереження для відправлення).
 WLANConfig11b_x_APSD_itemname=Активувати WMM APSD
 WLANConfig11b_x_Airtime_Fairness=Розподіл часу трансляції
+WLANConfig11b_x_ApplyAllBands_hint=Це налаштування буде застосовано до всіх параметрів діапазонів.
 WLANConfig11b_x_Airtime_Fairness_itemdesc=Забезпечує Airtime Fairness  між кількома з'єднаннями
 WLANConfig11b_x_Auto=Wireless Mode (Бездротовий режим) слід встановити на Авто.
 WLANConfig11b_x_Beacon_itemdesc=Інтервал маяка означає період між маяками. Типове значення 100 (у мілісекундах або 1/1000 секунди). Зменшіть інтервал маяка, щоб покращити передачу в нестабільному оточенні або для клієнтів роумінгу. Проте це може збільшити енергоспоживання.
@@ -4782,11 +4872,11 @@ WLANConfig11b_x_WPSMode_itemdesc=Вибираючи PIN, знадобиться 
 WLANConfig11b_x_WPSMode_itemname=Метод WPS:
 WLANConfig11b_x_WPSPIN_itemdesc=Введіть число з восьми цифр для PIN-коду клієнта.<p>
 WLANConfig11b_x_WPSPIN_itemname=PIN-код клієнта
-WLANConfig11n_Auto_note=[авто] не сумісне з методом ідентифікації гостьової мережі (TKIP або WEP), Будь ласка, перейдіть до <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Гостьова мережа</a> і змініть метод аутентифікації.
+WLANConfig11n_Auto_note=[авто] не сумісне з методом ідентифікації гостьової мережі (TKIP або WEP), Будь ласка, перейдіть до <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Гостьова мережа</a> і змініть метод аутентифікації.
 WLANConfig11n_automode_limition_hint=У режимі авто з шифруванням WEP або TKIP ZVMODELVZ підтримує максимальну швидкість передачі 54 Мб/сек..
 WLANConfig11n_automode_limition_hint1=Змініть на WPA2-Personal.
-WLANConfig11n_NAC_note=[N+AC] не сумісне з методом ідентифікації гостьової мережі (TKIP або WEP), Будь ласка, перейдіть до <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Гостьова мережа</a> і змініть метод аутентифікації.
-WLANConfig11n_NOnly_note=[N Only] не сумісне з методом ідентифікації гостьової мережі (TKIP або WEP), Будь ласка, перейдіть до <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Гостьова мережа</a> і змініть метод аутентифікації.
+WLANConfig11n_NAC_note=[N+AC] не сумісне з методом ідентифікації гостьової мережі (TKIP або WEP), Будь ласка, перейдіть до <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Гостьова мережа</a> і змініть метод аутентифікації.
+WLANConfig11n_NOnly_note=[N Only] не сумісне з методом ідентифікації гостьової мережі (TKIP або WEP), Будь ласка, перейдіть до <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Гостьова мережа</a> і змініть метод аутентифікації.
 WLANConfig11ax_AXOnly_note=Якщо ввімкнути режим лише AX (AX only), пристрої, що не підтримують 802.11ax (WiFi 6), не зможуть підключитися до цього діапазону.
 WLANConfig11n_PremblesType_itemdesc=Тип преамбули визначає довжину блоку CRC (контрольна сума) - це техніка визначення помилок передачі даних між бездротовими пристроями. Радимо конфігурувати всі бездротові пристрої на такий само тип преамбули. Для бездротових пристроїв у ділянках з потужним обміном даних застосовуйте коротку преамбулу. Довшу преамбулу використовуйте для старих бездротових пристроїв.
 WLANConfig11n_PremblesType_itemname=802.11b mode
@@ -4904,11 +4994,21 @@ Captive_Portal_Above=вище
 Captive_Portal_Selected_Color=Виберіть колір
 Captive_Portal_Local=Локальний
 Configuration=Конфігурація
-Configuration_dark_mode=Dark
-Configuration_light_mode=Light
-Configuration_theme=Theme
-Configuration_fancy_theme=Fancy
+Configuration_dark_mode=Темний
+Configuration_light_mode=Світлий
+Configuration_theme=Тема
+Configuration_fancy_theme=Стильний
+Configuration_flat_theme=Плоский
 Continuous_Mode=безперервний режим
+View_Details=Переглянути деталі
+NetworkMap_Clients=Клієнти
+NetworkMap_Guest_Clients=Гостьові клієнти
+NetworkMap_Add_AiMesh_Hint=Додайте більше вузлів AiMesh, щоб розширити покриття WiFi.
+Dashboard_Show_more=Показати більше
+Dashboard_Show_less=Показати менше
+Dashboard_Expand=Розгорнути
+Dashboard_Refreshing=Оновлення
+Dashboard_Last_updated=Останнє оновлення
 CTL_Apply_Enable=Застосувати та ввімкнути
 FreeWiFi_AccessPolicy=Політика доступу
 FreeWiFi_AccountSetting_desc1=Налаштування облікового запису - це легкий спосіб конфігурувати гостьовий обліковий запис, що надає можливість підтримувати базу даних гостьових облікових записів задля безпеки гостьової мережі. Асоційованому клієнту слід ввести наступний обліковий запис і пароль для входу в систему і отримати доступ до інтернету.
@@ -4992,7 +5092,7 @@ menu_privacy=Політика
 ASUS_Notice_Privacy=ПРИМІТКА ASUS ( щодо конфіденційності )
 Distributing_IP=Розподіл ІР...
 LED_Brightness=Яскравість світлодіода
-LED_disabled_hint=This change will disable the special LED effect for the %1$@.
+LED_disabled_hint=Ця зміна вимкне спеціальний LED-ефект для %1$@.
 WiFi_Network_List=Список мереж WiFi
 Searching_WiFi_Network=Пошук мережі WiFi поруч...
 BoostKey=Клавіша Підсилення
@@ -5162,7 +5262,7 @@ Notice_Message_3=Я прочитав, більше не показувати.
 CTL_Decline=Відхилити
 Outdoor_desc_title=Warning
 Outdoor_active_desc_1=Увімкнення зовнішнього режиму обмежить AiMesh і може призвести до втрати з’єднання вузла мережі.
-Outdoor_active_desc_2=Відповідно до правил система скануватиме канали близько 1 хвилини, щоб уникнути перешкод від метеорадару. <span style="color:#FC0">Якщо буде виявлено сигнали радара, система перемкнеться на 2.4GHz, що спричинить коротке відключення. Вплив канал буде заблоковано на 30 хвилин.</span>
+Outdoor_active_desc_2=Відповідно до правил система скануватиме канали близько 1 хвилини, щоб уникнути перешкод від метеорадару. <span style="color:var(--wrt-badge-warning-color,#FC0)">Якщо буде виявлено сигнали радара, система перемкнеться на 2.4GHz, що спричинить коротке відключення. Вплив канал буде заблоковано на 30 хвилин.</span>
 Outdoor_active_desc_3=Зовнішній режим підтримує лише режими маршрутизатора та точки доступу (AP).
 Outdoor_active_desc_4=Доступні зовнішні канали залежать від країни/регіону.
 Outdoor_inactive_desc_1=Вимкнення цього режиму тимчасово перезапустить бездротову мережу та від’єднає всі пристрої.
@@ -5193,6 +5293,7 @@ WiFi_DFS_REENTRY=ПОВТОРНИЙ ВХІД DFS
 WiFi_ch_conflict=Конфлікт каналів
 WiFi_Regulatory=Регуляторне
 WiFi_OFF=WiFi Вимкнено
+WiFi8_6G_enable_hint=Діапазон 6 ГГц зараз працює в режимі WiFi 7. Щоб увімкнути WiFi 8, увімкніть параметр «WiFi 8» у налаштуваннях Wireless Professional для 6 ГГц.
 Vendor=Виробник
 Connected_AP=Підключена точка доступу
 Network_SDN=Мережа(SDN)

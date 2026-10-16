@@ -1,0 +1,8 @@
+iptables-translate -t nat -A PREROUTING -p tcp --dport 80 -j NFQUEUE --queue-num 30
+nft 'add rule ip nat PREROUTING tcp dport 80 counter queue num 30'
+
+iptables-translate -A FORWARD -j NFQUEUE --queue-num 0 --queue-bypass -p TCP --sport 80
+nft 'add rule ip filter FORWARD tcp sport 80 counter queue num 0 bypass'
+
+iptables-translate -A FORWARD -j NFQUEUE --queue-bypass -p TCP --sport 80 --queue-balance 0:3 --queue-cpu-fanout
+nft 'add rule ip filter FORWARD tcp sport 80 counter queue num 0-3 bypass,fanout'

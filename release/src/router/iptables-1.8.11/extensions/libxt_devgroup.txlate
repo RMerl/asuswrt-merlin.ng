@@ -1,0 +1,17 @@
+iptables-translate -A FORWARD -m devgroup --src-group 0x2 -j ACCEPT
+nft 'add rule ip filter FORWARD iifgroup 0x2 counter accept'
+
+iptables-translate -A FORWARD -m devgroup --dst-group 0xc/0xc -j ACCEPT
+nft 'add rule ip filter FORWARD oifgroup and 0xc == 0xc counter accept'
+
+iptables-translate -t mangle -A PREROUTING -p tcp --dport 46000 -m devgroup --src-group 23 -j ACCEPT
+nft 'add rule ip mangle PREROUTING tcp dport 46000 iifgroup 0x17 counter accept'
+
+iptables-translate -A FORWARD -m devgroup ! --dst-group 0xc/0xc -j ACCEPT
+nft 'add rule ip filter FORWARD oifgroup and 0xc != 0xc counter accept'
+
+iptables-translate -A FORWARD -m devgroup ! --src-group 0x2 -j ACCEPT
+nft 'add rule ip filter FORWARD iifgroup != 0x2 counter accept'
+
+iptables-translate -A FORWARD -m devgroup ! --src-group 0x2 --dst-group 0xc/0xc -j ACCEPT
+nft 'add rule ip filter FORWARD iifgroup != 0x2 oifgroup and 0xc != 0xc counter accept'

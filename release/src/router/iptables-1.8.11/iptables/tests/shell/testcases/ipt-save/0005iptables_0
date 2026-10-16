@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -e
+
+tmpfile1=$(mktemp)
+tmpfile2=$(mktemp)
+
+clean_tmpfile()
+{
+	rm -f "$tmpfile1" "$tmpfile2"
+}
+
+trap clean_tmpfile EXIT
+
+
+cat > $tmpfile1<<EOF
+-P INPUT ACCEPT
+-P FORWARD ACCEPT
+-P OUTPUT ACCEPT
+-N FOO
+-A FOO -j DROP
+EOF
+
+$XT_MULTI iptables -N FOO
+$XT_MULTI iptables -A FOO -j DROP
+$XT_MULTI iptables -S > $tmpfile2
+
+diff -u $tmpfile1 $tmpfile2
+
+rm -f $tmpfile1 $tmpfile2

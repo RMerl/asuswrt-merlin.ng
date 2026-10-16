@@ -700,11 +700,11 @@ function getCookie(c_name)
 												<th style="height:120px"><div align="center"><img src="/images/position.png"></div></th>
 												<td>
 													<div style="cursor:pointer;" onclick="document.form.selLED.click();"><input type="radio" name="selLED" class="input" <% nvram_match("wl_ap_isolate", "1", "checked"); %>>
-														LED: <span style="color:#FC0">Press to turn on and off the LED.</span>
+														LED: <span style="color:var(--wrt-badge-warning-color,#FFCC00)">Press to turn on and off the LED.</span>
 													</div>
 													<br>
 													<div style="cursor:pointer;" onclick="document.form.selCLK.click();"><input type="radio" name="selCLK" class="input" <% nvram_match("wl_ap_isolate", "0", "checked"); %>>
-														OverClock: <span style="color:#FC0">Press the button to turn on overclock, release the button to turn off.</span>
+														OverClock: <span style="color:var(--wrt-badge-warning-color,#FFCC00)">Press the button to turn on overclock, release the button to turn off.</span>
 													</div>
 												</td>
 											</tr>

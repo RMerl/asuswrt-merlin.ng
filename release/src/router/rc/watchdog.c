@@ -2455,13 +2455,26 @@ wl_sr_config(char *ifname, int *nsrg_pdmin, int *nsrg_pdmax, int *srg_pdmin, int
 
 #define BSC_INTERVAL 	8
 
+static void bsc_sr_reset_param(const char *func, const char *word, const char *param, int val, int cur_val)
+{
+	char str[16] = {0};
+
+	if (!val || val == cur_val)
+		return;
+
+	snprintf(str, sizeof(str), "%d", val);
+	dbg("%s:: [%s]: reset %s as %s\n", func, word, param, str);
+	eval("wl", "-i", word, "sr_config", param, str);
+}
+
 void bsc_sr_check(void)
 {
-        char word[256], *next;
-        char wl_ifnames[32] = { 0 };
+	char word[256], *next;
+	char wl_ifnames[32] = { 0 };
 	char tmp[256], prefix[] = "wlXXXXXXXXXX_";
-	char str[8];
+	char str[16] = {0};
 	int unit;
+	int radio_val;
 	static int chki = 0;
 	int bsc_interval = nvram_get_int("sr_period")?:BSC_INTERVAL;
 	int bss_sr = 0, cur_bss_sr = 0;
@@ -2477,13 +2490,18 @@ void bsc_sr_check(void)
 		if (wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit)))
                                 continue;
 
+		radio_val = 0;
+		wl_ioctl(word, WLC_GET_RADIO, &radio_val, sizeof(radio_val));
+		if (radio_val & (WL_RADIO_SW_DISABLE | WL_RADIO_HW_DISABLE))
+			continue;
+
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 		bss_sr = nvram_get_int(strcat_r(prefix, "bss_sr", tmp));		
 		cur_bss_sr = wl_sr(word);
 
 		//dbg("%s: [%s] bss_sr/cur_bss_sr= %d/%d\n", __func__, word, bss_sr, cur_bss_sr);
 		if (bss_sr != cur_bss_sr) {
-			sprintf(str, "%d", bss_sr);
+			snprintf(str, sizeof(str), "%d", bss_sr);
 			dbg("%s:: [%s]: change SR as %s.\n", __func__, word, str);
 			eval("wl", "-i", word, "sr_config", "options", str);
 		}
@@ -2507,47 +2525,13 @@ void bsc_sr_check(void)
 			int cur_srg_txpwrref0 = 0;
 
 			wl_sr_config(word, &cur_nsrg_pdmin, &cur_nsrg_pdmax, &cur_srg_pdmin, &cur_srg_pdmax, &cur_txpwrref, &cur_nsrg_txpwrref0, &cur_srg_txpwrref0);
-			if (nsrg_pdmin && nsrg_pdmin != cur_nsrg_pdmin) {
-				sprintf(str, "%d", nsrg_pdmin);
-				dbg("%s:: [%s]: reset nsrg_pdmin as %s\n", __func__, word, str);
-				eval("wl", "-i", word, "sr_config", "nsrg_pdmin", str);
-			}
-
-			if (nsrg_pdmax && nsrg_pdmax != cur_nsrg_pdmax) {
-				sprintf(str, "%d", nsrg_pdmax);
-				dbg("%s:: [%s]: reset nsrg_pdmax as %s\n", __func__, word, str);
-				eval("wl", "-i", word, "sr_config", "nsrg_pdmax", str);
-			}
-
-			if (srg_pdmin && srg_pdmin != cur_srg_pdmin) {
-				sprintf(str, "%d", srg_pdmin);
-				dbg("%s:: [%s]: reset srg_pdmin as %s\n", __func__, word, str);
-				eval("wl", "-i", word, "sr_config", "srg_pdmin", str);
-			}
-
-			if (srg_pdmax && srg_pdmax != cur_srg_pdmax) {
-				sprintf(str, "%d", srg_pdmax);
-				dbg("%s:: [%s]: reset srg_pdmax as %s\n", __func__, word, str);
-				eval("wl", "-i", word, "sr_config", "srg_pdmax", str);
-			}
-
-			if (txpwrref && txpwrref != cur_txpwrref) {
-				sprintf(str, "%d", txpwrref);
-				dbg("%s:: [%s]: reset txpwrref as %s\n", __func__, word, str);
-				eval("wl", "-i", word, "sr_config", "txpwrref", str);
-			}
-
-			if (nsrg_txpwrref0 && nsrg_txpwrref0 != cur_nsrg_txpwrref0) {
-				sprintf(str, "%d", nsrg_txpwrref0);
-				dbg("%s:: [%s]: reset nsrg_txpwrref0 as %s\n", __func__, word, str);
-				eval("wl", "-i", word, "sr_config", "nsrg_txpwrref0", str);
-			}
-
-			if (srg_txpwrref0 && srg_txpwrref0 != cur_srg_txpwrref0) {
-				sprintf(str, "%d", srg_txpwrref0);
-				dbg("%s:: [%s]: reset srg_txpwrref0 as %s\n", __func__, word, str);
-				eval("wl", "-i", word, "sr_config", "srg_txpwrref0", str);
-			}
+			bsc_sr_reset_param(__func__, word, "nsrg_pdmin", nsrg_pdmin, cur_nsrg_pdmin);
+			bsc_sr_reset_param(__func__, word, "nsrg_pdmax", nsrg_pdmax, cur_nsrg_pdmax);
+			bsc_sr_reset_param(__func__, word, "srg_pdmin", srg_pdmin, cur_srg_pdmin);
+			bsc_sr_reset_param(__func__, word, "srg_pdmax", srg_pdmax, cur_srg_pdmax);
+			bsc_sr_reset_param(__func__, word, "txpwrref", txpwrref, cur_txpwrref);
+			bsc_sr_reset_param(__func__, word, "nsrg_txpwrref0", nsrg_txpwrref0, cur_nsrg_txpwrref0);
+			bsc_sr_reset_param(__func__, word, "srg_txpwrref0", srg_txpwrref0, cur_srg_txpwrref0);
 		}
 	}
 }
@@ -6534,8 +6518,12 @@ unsigned long get_etwan_count()
 	unsigned long counter=0;
 
 	if ((f = fopen("/proc/net/dev", "r")) == NULL) return -1;
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U) || defined(GT7) || defined(GS7_PRO_MAX)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U) || defined(GT7)
 	if (!nvram_match("wan_ifname", "vlan4094")) return -1;
+#elif defined(GS7_PRO_MAX)
+	if (!nvram_match("wan_ifname", "eth0") &&
+	    !nvram_match("wan_ifname", "vlan4094"))
+		return -1;
 #endif
 
 	fgets(buf, sizeof(buf), f);
@@ -6546,8 +6534,12 @@ unsigned long get_etwan_count()
 		*p = 0;
 		if ((ifname = strrchr(buf, ' ')) == NULL) ifname = buf;
 		else ++ifname;
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U) || defined(GT7) || defined(GS7_PRO_MAX)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U) || defined(GT7)
 		if (strcmp(ifname, "vlan4094")) continue;
+#elif defined(GS7_PRO_MAX)
+		if ((nvram_match("wan_ifname", "eth0") && strcmp(ifname, "eth0")) ||
+		    (nvram_match("wan_ifname", "vlan4094") && strcmp(ifname, "vlan4094")))
+			continue;
 #else
 		if (strcmp(ifname, "eth0")) continue;
 #endif
@@ -6579,7 +6571,7 @@ void fake_etwan_led(void)
 	else
 		wan_phy_led_pinmux(1);
 #endif
-#if defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTBE55) || defined(GT7) || defined(GS7_PRO_MAX)
+#if defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTBE55) || defined(GT7)
 	phystatus = hnd_get_phy_status("eth0");
 #elif defined(RTBE82M)
 	phystatus = mxl_get_phy_status(0);
@@ -6587,6 +6579,14 @@ void fake_etwan_led(void)
 	phystatus = mxl_get_phy_status(3);
 #elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U)
 	phystatus = nvram_match("wan_ifname", "vlan4094") && rtk_get_phy_status(1);
+#elif defined(GS7_PRO_MAX)
+	if (!is_router_mode())
+		return;
+
+	if (nvram_match("wan_ifname", "eth0"))
+		phystatus = hnd_get_phy_status("eth0");
+	else if (nvram_match("wan_ifname", "vlan4094"))
+		phystatus = hnd_get_phy_status("vlan4094");
 #else
 	phystatus = hnd_get_phy_status(0);
 #endif
@@ -11413,26 +11413,45 @@ int is_data_ro() {
 		perror("fopen");
 		return -1;
 	}
-	char line[512];
-	int found = 0;
+	char *line = NULL;
+	size_t line_cap = 0;
+	const size_t check_len = sizeof(CHECK_PATH) - 1;
+	int ret = -1; // -1: not mounted
 
-	while (fgets(line, sizeof(line), fp)) {
-		char dev[128], mnt[128], fstype[64], opts[256];
-		if (sscanf(line, "%127s %127s %63s %255s", dev, mnt, fstype, opts) == 4) {
-			if (strcmp(mnt, CHECK_PATH) == 0) {
-				found = 1;
-				if (strstr(opts, "ro")) {
-					fclose(fp);
-					return 1; // read-only
-				} else {
-					fclose(fp);
-					return 0; // read-write
-				}
-			}
-		}
+	/* Read whole records with getline() and walk the fields by hand (same
+	 * approach as check_mountpoint() in common.c): a width-limited "%s"
+	 * splits an over-long options field, desynchronises the parse and
+	 * makes a mounted /data look "not mounted". */
+	while (getline(&line, &line_cap, fp) != -1) {
+		char *p = line, *field;
+		size_t opt_len;
+
+		p += strspn(p, " \t");		/* leading blanks */
+		p += strcspn(p, " \t\n");	/* device field */
+		p += strspn(p, " \t");
+		field = p;
+		p += strcspn(p, " \t\n");	/* mount point field */
+		if ((size_t)(p - field) != check_len || memcmp(field, CHECK_PATH, check_len) != 0)
+			continue;
+
+		p += strspn(p, " \t");
+		p += strcspn(p, " \t\n");	/* fstype field */
+		p += strspn(p, " \t");
+		field = p;			/* options field */
+		if (*field == '\0' || *field == '\n')
+			continue;
+
+		/* The kernel always emits "ro" or "rw" as the first option; match
+		 * it exactly instead of strstr(), which would also hit "ro" inside
+		 * other options such as "errors=remount-ro". */
+		opt_len = strcspn(field, ", \t\n");
+		ret = (opt_len == 2 && memcmp(field, "ro", 2) == 0) ? 1 : 0;
+		break;
 	}
+
+	free(line);
 	fclose(fp);
-	return found ? 0 : -1; // -1: not mounted
+	return ret; // 1: read-only, 0: read-write
 }
 
 void check_mtd_data()
@@ -11970,11 +11989,6 @@ wdp:
 #endif
 #ifdef HND_ROUTER
 	udhcpc_check();
-#endif
-#if 1   /* Do Function Test Script */
-		if(nvram_match("ci", "1")){
-			system("sh /tmp/mnt/sda1/auto_test.sh");
-		}
 #endif
 #ifdef RTCONFIG_FBWIFI
 	if(nvram_match("fbwifi_enable", "on") && nvram_match("fbwifi_running", "1"))

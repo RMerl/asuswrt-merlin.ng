@@ -26,9 +26,9 @@ AiMesh_Node_desc2=AiMesh ノードを追加するには AiMesh ルーターの�
 AiMesh_Notice1=ワイヤレスの設定変更はメッシュネットワークに影響することを十分にご理解いただいた上で変更を行ってください。
 AiMesh_Add_Another_Node_confirm=ノードを追加しますか？
 AiMesh_Add_Another_Node=他のノードを追加する
-AiMesh_Adding_Node=Adding the AiMesh node...
-AiMesh_Node_joining=The node is joining the network...
-AiMesh_Node_activating=Activating your mesh network...
+AiMesh_Adding_Node=AiMesh ノードを追加しています...
+AiMesh_Node_joining=ノードがネットワークに参加しています...
+AiMesh_Node_activating=メッシュネットワークを有効化しています...
 AiMesh_backhaul_band_5GHz-2_desc1=は AiMesh の WiFi バックホールとして利用されており、ネットワーク名は非表示となってます。
 AiMesh_backhaul_band_5GHz-2_desc11=%@ は現在、AiMesh モードで専用の WiFi バックホールとして使用されています。
 AiMesh_backhaul_band_5GHz-2_desc2=詳細な無線設定は <span class="faq-link" onclick="parent.location.href=\'/Advanced_Wireless_Content.asp\'">ここ</span> を参照してください。
@@ -83,6 +83,8 @@ AiMesh_Topology_Line_Wired_Great=有線接続の非常に良好な状態
 AiMesh_Topology_Line_Wired_Normal=有線接続の良好な状態
 AiMesh_Topology_FAQ_old=ネットワーク接続状況の詳細な情報については下記 FAQ をご参照ください。
 AiMesh_Topology_FAQ=ネットワーク接続状況の詳細な情報については下記 <a id="Intro_AiMesh">FAQ</a> をご参照ください。
+AiMesh_Topology_inst_FAQ_old=AiMesh システムの設定手順については、この FAQ を参照してください。
+AiMesh_Topology_inst_FAQ=AiMesh システムの設定手順については、この <a id='connect_line_info_faq'>FAQ</a> を参照してください。
 AiMesh_OB_hint=最適なパフォーマンスのため、ノードには新しいモデルの使用を推奨します。旧型デバイスを使用すると、AiMeshネットワーク全体の安定性と速度が制限される場合があります。
 AiMesh_Add_Anyway=それでも追加
 AiMesh_Proceed_Anyway=それでも続行
@@ -102,7 +104,7 @@ APSurvey_msg_connect_open_wlan=安全なネットワーク接続ではありま�
 APSurvey_msg_connected=この AP に接続済みです。
 APSurvey_msg_non_support_Auth=要求された認証方法はサポートされていません。
 APSurvey_msg_waiting_to_connect=お待ちください。ZVMODELVZ は接続試行中です：
-ASUS_Registration=ASUS メンバーに登録すれば、最新の製品情報を入手できます。 <a style='color:#FC0' target='_blank' href='https://account.asus.com'>今すぐ申し込む</a>
+ASUS_Registration=ASUS メンバーに登録すれば、最新の製品情報を入手できます。 <a style='color:var(--wrt-badge-warning-color,#FC0)' target='_blank' href='https://account.asus.com'>今すぐ申し込む</a>
 ASUS_Notice=ASUS からのお知らせ
 ASUS_privacy_desc=ユーザーは、次の機能 DDNS /リモート接続（ASUS Router APP/Lyra APP/AiCloud/および AiDisk）、AiProtection、トラフィックアナライザー、アダプティブ QoS、ゲームブースト、ウェブ履歴をご利用いただくにあたって、お客様情報が利用目的の範囲内で収集されることにご同意頂く必要がございます。ユーザーは常に本条項に確認ができることとし、「<a style="font-weight: bolder;">共有しない</a>」をクリックすれば、他の会社への共有を無効にすることができます。
 ASUS_eula_desc0=DDNS /リモート接続（ASUS Router APP/Lyra APP/AiCloud/およびAiDisk）をご利用いただきありがとうございます。下記の利用規約をよくお読みいただき、同意の上、ご利用いただくようお願いします。
@@ -186,8 +188,8 @@ ASUS_EULA_Law_12=準拠法および管轄裁判所
 ASUS_EULA_Law_12_Desc=お客様とASUSとの間のすべての見積書、注文の確認、本EULA、および販売関係は、抵触法の原則に関係なく、ASUSの所在地の法律に準拠し、それに従って解釈されるものとします。本EULAに起因または関連して、本契約の当事者間で発生する可能性のあるすべての紛争、論争、または相違は、当事者間の友好的な協議を通じて解決されるものとします。紛争、論争、または相違を解決できない場合、両当事者はASUSが所在する裁判所の管轄権に従うことに同意するものとします。
 ASUS_EULA_Info=华硕ネットワーク製品を使用することにより、あなたはエンドユーザーライセンス契約に記載された条項と条件に従うことに同意します。
 ASUS_POLICY_Age_Check=私は16歳以上です。
-ASUS_POLICY_QIS_Desc=ネットワーク製品を利用する前に、この規約を必ずお読みください。『同意する』ボタンをクリックすると、この規約に従うことに同意したと見なされます。​
-ASUS_POLICY_QIS_Desc_v5=ネットワーク製品を利用する前に、この規約を必ずお読みください。『%@』ボタンをクリックすると、この規約に従うことに同意したと見なされます。​
+ASUS_POLICY_QIS_Desc=ネットワーク製品を利用する前に、この規約を必ずお読みください。『同意する』ボタンをクリックすると、この規約に従うことに同意したと見なされます。
+ASUS_POLICY_QIS_Desc_v5=ネットワーク製品を利用する前に、この規約を必ずお読みください。『%@』ボタンをクリックすると、この規約に従うことに同意したと見なされます。
 ASUS_POLICY_Update_Notice=ユーザー様、本製品をいつもご利用いただきありがとうございます。各国のプライバシー規制を遵守し、お客様のデータの保護を強化するため、ASUS プライバシー通知を更新しました。ASUSネットワーク製品を使用する前に確認してください。
 ASUS_POLICY_Read_Again=再度読む
 ASUS_POLICY_Know_Risk=私はリスクを理解しました
@@ -370,7 +372,7 @@ CTL_UpgradeNight=夜間にアップデート
 CTL_UpgradeNow=Upgrade Now
 default_passwd_checkbox=デフォルトのローカル ログイン パスワードを使用
 default_passwd_desc=この ASUS のネットワーク デバイスにローカルで接続する場合、デフォルトで暗号化されたローカル ログイン パスワードが安全なログイン プロセスを提供します。
-defaultHint=詳しくは弊社ホームページでご確認ください。 <a style="font-weight: bolder;text-decoration: underline;color:#000000;" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
+defaultHint=詳しくは弊社ホームページでご確認ください。 <a style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#000000);" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
 Detect_consume_warning1=* ping はパケット長 128 byte (固定) を設定された再試行間隔毎に送信します。現在の設定では、毎月
 Detect_consume_warning2=Mbytes のデータ通信が使用されます
 Disconnected=切断
@@ -409,7 +411,7 @@ OpenDNS_Home=OpenDNS Home
 OpenDNS_Family=OpenDNS Family
 Yandex_Safe=Yandex Safe
 Yandex_Family=Yandex Family
-Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:#FFCC00;" href="DNSFilter.asp">DNSFilter</a>が有効 - ここで設定される「フィルタリングなし」と「ルーター」以外のものは、DNSプライバシーサーバーをバイパスします。
+Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:var(--wrt-badge-warning-color,#FFCC00);" href="DNSFilter.asp">DNSFilter</a>が有効 - ここで設定される「フィルタリングなし」と「ルーター」以外のものは、DNSプライバシーサーバーをバイパスします。
 Enable_user_target=ユーザー定義ターゲットの有効化
 Enable_Login_Captcha=ログインキャプチャ有効
 Encrypted_field=暗号化されたフィールド。
@@ -551,7 +553,7 @@ Main_alert_proceeding_desc4=お待ちください
 Main_alert_proceeding_desc5=ファームウェアの更新中は ZVMODELVZ の電源を絶対に切らないでください。
 Main_alert_processing=実行中
 Main_content_Login_Item7=ルータの再起動を実行すると、全てのデバイスのインターネット接続は切断され再接続まで数分かかります。ルータの再起動完了後にデバイスからのインターネット接続は再接続されます。再起動を実行しますか？
-Main_content_ai_reboot=AI ボードの再起動により、すべての実行中のコンテナサービスが最大5分間中断されます。サービスは自動的に完全に復元されます。本当に再起動しますか？
+Main_content_ai_reboot=AI Boardの再起動により、すべての実行中のコンテナサービスが最大5分間中断されます。サービスは自動的に完全に復元されます。本当に再起動しますか？
 Manual_Setting_btn=手動設定
 menu_dsl_log=DSL ログ
 menu_dsl_setting=DSL 設定
@@ -616,7 +618,7 @@ Offline_desc2=ZVMODELVZ から切断されました。IP アドレスまたは�
 Offline_desc3=ZVMODELVZ の管理画面にアクセスするには、無線 LAN ルーターのネットワークに接続し設定された IP アドレスとポート番号を使用してアクセスしてください。
 OP_AP_desc=アクセスポイント（AP）モードでは、モデムまたはルーター親機と本機をイーサネットケーブルを接続することでワイヤレス電波のカバー範囲を広げるができます。このモードでは、ファイアウォール、IP 共有、NAT は無効になります。
 AiMesh_AP_desc=AiMesh アクセスポイントモードではモデムまたはルーター親機と本機をイーサネットケーブルを接続することでワイヤレスの通信範囲を拡張することができます。このモードでは、ファイアウォール、IP 共有、NAT はデフォルトで無効となります。
-OP_AP_hint=You can also go to <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">http://findasus.local</a> to search and enter device configuration page.
+OP_AP_hint=You can also go to <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">http://findasus.local</a> to search and enter device configuration page.
 OP_AP_item=アクセスポイント（AP）モード
 AiMesh_AP_item=アクセスポイントモード / AiMesh アクセスポイントモード
 OP_Choose=動作モードを選択
@@ -635,7 +637,7 @@ OP_MB_desc4=1 台の ZVMODELVZ をルーターとして、もう 1 台の ZVMODE
 OP_MB_desc5=メディアブリッジモードでは無線接続が可能になります。
 OP_MB_desc6=メディアブリッジモードでは有線デバイスのみ接続することができます。イーサネットケーブルで本機に接続してください。
 OP_MB_desc7=ZVMODELVZ はメディアブリッジモードです。IP アドレスが変更されました。
-OP_MB_desc8=メディアブリッジモードに設定されたルーターの IP アドレスを検出するには、<a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:#FC0;'>Device Discovery Utility</a> をダウンロードし実行してください。
+OP_MB_desc8=メディアブリッジモードに設定されたルーターの IP アドレスを検出するには、<a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>Device Discovery Utility</a> をダウンロードし実行してください。
 OP_MB_desc9=ルーターの WAN ポートにイーサネットケーブルが接続されていないことをご確認ください。
 OP_RE_desc=リピーターモードでは、既存のワイヤレスネットワークと無線 LAN アダプターとの電波を中継し、直接電波が届かない場所でも無線によるアクセスを可能にします。このモードでは、ファイアウォール、IP 共有、NAT は無効になります。
 OP_RE_desc1=ZVMODELVZ の LAN IP アドレスが変更された可能性があります。
@@ -685,7 +687,7 @@ QIS_adminpass_confirm0=入力された新しいパスワードは初期設定の
 QIS_adminpass_confirm1=パスワードを変更せずに利用すると、不正アクセスなどの被害に遭う危険性が高くなります。このリスクを避けるために、ルーターの初期設定のログイン名とパスワードを変更することを強くおすすめします。本当にこのパスワードを使用しますか？
 [###MODEL_DEP###][PL-AC56][PL-N12]QIS_adminpass_confirm1=パスワードを変更せずに利用すると、不正アクセスなどの被害に遭う危険性が高くなります。このリスクを避けるために、電力線ネットワークブリッジの初期設定のログイン名とパスワードを変更することを強くおすすめします。本当にこのパスワードを使用しますか？
 QIS_apextended_usedefault=デフォルト設定を使用（拡張するネットワークと同じ設定）
-QIS_AP_connect_hint=Once the new SSID is connected, you can go to %1$@ for more advanced settings.
+QIS_AP_connect_hint=新しいSSIDに接続した後、%1$@ にアクセスしてより高度な設定を行うことができます。
 QIS_auto_ip_conn_Setup=IP アドレスの自動割り当て
 QIS_autoMAC_desc1=コンピューターの MAC アドレスをルーターにこれからクローンします
 QIS_autoMAC_desc2=しばらくお待ちください...
@@ -817,7 +819,7 @@ qis_simple_wls_recmd=（推奨）
 QIS_SmartConn_ISPDesc=ご使用のプロバイダから提供してあるネットワーク登録用のユーザー名とパスワードを登録してください。こちらのファイルを参考してください。
 QIS_SmartConn_ISPDesc2=ご契約のインターネットサービスプロバイダ（ISP）から提供されるユーザー名とパスワードを入力してください。
 QIS_SmartConn_ISPDesc3=インターネット接続のために、インターネットサービスプロバイダー (ISP) から提供された PPPoE ユーザー名とパスワードを入力してください。
-QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:#FC0;">xxxxxxxx@hinet.net</span>
+QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:var(--wrt-badge-warning-color,#FC0);">xxxxxxxx@hinet.net</span>
 QIS_SmartConn_Scen1=接続環境１
 QIS_SmartConn_Scen2=接続環境２
 QIS_SmartConn_StaticDesc=ご使用の IP、サブネットマスク、ゲートウェイ、DNS アドレスについて、ご不明な点がございましたら、プロバイダまでお問い合わせください。
@@ -999,9 +1001,9 @@ QKSet_ISP_desc=ISP 設定を参照し、関連する情報を入力してくだ�
 QKSet_ISP_desc2=Static IP 接続に失敗しました。
 QKSet_ISP_desc3=自動 IP 接続に失敗しました。ここで手動設定することもできます。
 QKSet_ISP_head=ISP 情報の設定
-QKset_restore_0=、手動で設定をご希望の場合は <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">手動設定</label></a> をクリックしてください。 バックアップファイルから設定内容を復元するには、<a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">設定をファイルから復元</label></a> をクリックしてください。
-QKset_restore_1=設定内容のバックアップファイルをお持ちの場合は、<a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">設定をファイルから復元</label></a> から設定内容を復元することができます。
-QKset_setup_manual_0=インターネットサービスプロバイダ（ISP）の接続タイプをご存知の場合、<a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">手動設定</label></a> から設定を行うことができます。
+QKset_restore_0=、手動で設定をご希望の場合は <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">手動設定</label></a> をクリックしてください。 バックアップファイルから設定内容を復元するには、<a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">設定をファイルから復元</label></a> をクリックしてください。
+QKset_restore_1=設定内容のバックアップファイルをお持ちの場合は、<a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">設定をファイルから復元</label></a> から設定内容を復元することができます。
+QKset_setup_manual_0=インターネットサービスプロバイダ（ISP）の接続タイプをご存知の場合、<a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">手動設定</label></a> から設定を行うことができます。
 QKset_setup_manual_1=特殊なネットワーク設定、
 QKset_skip_setup=手動で設定を行いたい場合はセットアップウィザードをスキップすることが可能です。
 QKSet_type_desc=インターネットサービスプロバイダー (ISP) の接続タイプの設定
@@ -1026,13 +1028,13 @@ Select_ISPfile=ISP のプロファイルを選択
 Select_menu_default=選択してください
 Sign_in_title=ルーターの管理画面にアクセスするにはユーザー名とパスワードを入力してください
 [###MODEL_DEP###][RP-AC87][RP-AC68U][RP-AC66U][RP-AC55][RP-AC53][RP-AC52][RP-AC51][RP-AC92]Sign_in_title=リピーターの管理画面にアクセスするにはユーザー名とパスワードを入力してください
-SLM_Ask=ルーターアシスタントに質問する…
+SLM_Ask=Router Assistant に質問...
 SLM_Loading=読み込み中…
-SLM_Thinking=考え中…
-SLM_not_installed=Please double check that the router assistant is running in Portainer and that the port (8090) is not overlapping with other services. Also, ensure that slm-asus is running in Portainer. If the problem persists, try restoring AiBoard.
-SLM_no_response=Service is activating. Please try again in about 3 minutes.
-SLM_low_percent=Sorry, unable to answer the question.
-SLM_disclaimer=Router Assistant might not always be accurate. This feature is currently available in English only. Please verify important information yourself.
+SLM_Thinking=考え中...
+SLM_not_installed=Router AssistantがPortainerで実行されており、ポート（8090）が他のサービスと競合していないことを確認してください。また、slm-asusがPortainerで実行されていることも確認してください。問題が解決しない場合は、AiBoardの復元を試してください。
+SLM_no_response=サービスを有効化中です。約3分後に再試行してください。
+SLM_low_percent=申し訳ありませんが、質問に回答できません。
+SLM_disclaimer=Router Assistantは常に正確とは限りません。この機能は現在英語のみ対応しています。重要な情報はご自身で確認してください。
 SLM_not_installed_CN=请确认路由助手在Portainer中运行且端口（8092）未与其他服务重叠，确认slm-asus-cn也在Portainer中运行。若问题仍然存在，请恢复AiBoard。
 SLM_no_response_CN=服务正在激活中，请约3分钟后重试。
 SLM_low_percent_CN=对不起，无法回答该问题.
@@ -1053,6 +1055,7 @@ Status_RAM=RAM
 Status_Used=使用領域
 Status_Free=空き
 Status_Total=合計
+Status_LoggingIn=ログイン中…
 statusTitle_AP=アクセスポイントの状態
 statusTitle_System=ASUS ZVMODELVZ
 System_act_connections=接続ログ
@@ -1077,7 +1080,7 @@ TBVLAN_UPort=アンタグポート
 TBVLAN_TPort=タグポート
 TBVLAN_WirelessInf=無線インターフェイス
 TBVLAN_EditSubnetProfile=サブネットプロファイルの編集
-TBVLAN_Subnet_desc=VLAN 用のサブネットを新規作成するには、作成したサブネットを選択するか、「新しいサブネット」を選択します。さらに DHCP 設定が必要な場合は、<a style='color:#FFF; text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP server</a>で設定してください。
+TBVLAN_Subnet_desc=VLAN 用のサブネットを新規作成するには、作成したサブネットを選択するか、「新しいサブネット」を選択します。さらに DHCP 設定が必要な場合は、<a style='color:var(--wrt-text-color,#FFF); text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP server</a>で設定してください。
 TBVLAN_BindingInf=バインディングインタフェース
 TBVLAN_NoBindingInf=バインディングインターフェイスは使用できません。
 TBVLAN_BindingInf_Hint=バインディングインターフェイスを追加してください。
@@ -1108,20 +1111,20 @@ WANPPPAuthText=PPP 認証
 WAN_type_detected=WAN タイプを検出
 WAN_auto_detected=WAN自動検出
 web_redirect_case1_suggestion1=ケーブルが ZVMODELVZ WAN ポートとモデムに接続されていることご確認ください。
-web_redirect_case1_suggestion2=<a style='color:#FFF' href='/Advanced_OperationMode_Content.asp'>動作モード</a>を変更する必要があるかをご確認ください。
-web_redirect_case2_suggestion1=PPPoE アカウントまたはパスワードが正しくありません。<a style='color:#FFF' href='/Advanced_WAN_Content.asp'>確認</a>してください。
+web_redirect_case1_suggestion2=<a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_OperationMode_Content.asp'>動作モード</a>を変更する必要があるかをご確認ください。
+web_redirect_case2_suggestion1=PPPoE アカウントまたはパスワードが正しくありません。<a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>確認</a>してください。
 web_redirect_case2_title1=PPPoE 認証の失敗
 web_redirect_case3_button=WAN のタイプを変更する
-web_redirect_case3_suggestion1=<a style='color:#FFF' href='/Advanced_WAN_Content.asp'>接続設定</a>が正しいことを確認してください。
-web_redirect_case5_suggestion1=<a style='color:#FFF' href='/'>WAN 接続</a>を有効にする
+web_redirect_case3_suggestion1=<a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>接続設定</a>が正しいことを確認してください。
+web_redirect_case5_suggestion1=<a style='color:var(--wrt-text-color,#FFF)' href='/'>WAN 接続</a>を有効にする
 web_redirect_case5_suggestion2=USBモデムの電源が入っていることをご確認ください。
-web_redirect_case5_suggestion3=<a style='color:#FFF' href='/Advanced_Modem_Content.asp'>USB モデム設定</a>を変更してください。
+web_redirect_case5_suggestion3=<a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_Modem_Content.asp'>USB モデム設定</a>を変更してください。
 web_redirect_case5_title1=WAN接続が無効になりました。
 web_redirect_case5_title2=USBモデムが接続されていません。
 web_redirect_case6_desc1=次の IP アドレスを使用する場合は、[次へ]をクリックしてください。
 web_redirect_case6_desc2=すべての関連機能で新しいIPアドレスを使用していることをご確認ください（例：ポートフォワーディング、DMZなど）。
 web_redirect_case8_suggestion1=メインのアクセスポイントがインターネットに接続できることをご確認ください。
-web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>接続設定を変更します</a>。
+web_redirect_case8_suggestion2=<a style='color:var(--wrt-text-color,#FFF)' href='/QIS_wizard.htm?flag=manual'>接続設定を変更します</a>。
 web_redirect_case8_title=メインのアクセスポイントに接続できません。
 web_redirect_case9_suggestion1=AiMeshルーターの電源が入っていることをご確認ください。
 web_redirect_case9_suggestion2=AiMeshルーターを再起動してやり直してください。
@@ -1171,6 +1174,11 @@ Web_Title=ASUS ワイヤレスルーター ZVMODELVZ
 [###MODEL_DEP###][YY]Web_Title=ASUS ZVMODELVZ アクセスポイント
 Web_Title2=ZVMODELVZ
 Web_DOMAIN_NAME=ZVDOMAIN_NAMEVZ
+WiFi_MLO_connect_confirmTitle=MLO接続を使用
+WiFi_MLO_same_model_desc=MLO（Multi-Link Operation）は現在、同じモデルのASUSルーター間でのみサポートされています。モデルが異なる場合、接続に失敗する可能性があります。
+WiFi_MLO_connect_try=MLO を使用して接続を試みます。
+WiFi_MLO_connect_veto=代わりに標準のシングルバンド接続を使用します。
+WiFi_MLO_connect_confirm=MLO 接続を使用しますか？
 wireless_configured=WPS の現在のステータス
 Wireless_name=ワイヤレス名
 wireless_router=無線 LAN ルーター
@@ -1253,6 +1261,7 @@ ADSL_FW_note=注意：
 adsl_fw_ver_itemname=DSL ドライバーバージョン
 adsl_link_sts_itemname=DSL 接続状態
 adv_wl_desc=下のワイヤレスに関連する情報をセットアップ。
+AiBoard_rescue_fail=AI Boardの復旧に失敗しました
 AiCloud_account_status=アカウントの状態
 AiCloud_account_unlock=ロック解除
 aicloud_bandwidth1=各コンテンツの視聴には、ブロードバンドインターネット接続が必要です。各種コンテンツへの推奨帯域は以下のとおりです：
@@ -1365,12 +1374,12 @@ AiMesh_FindNode_confirm=AiMesh ノードを見つけることができない場�
 AiMesh_FindNode_confirm_WPS=AiMesh ノードを検索している間は、WPS が有効になります。
 AiMesh_FindNode_Desc=AiMesh システムを構成できる近くのノードを検索しています。
 AiMesh_FindNode_Not=AiMesh ノードが表示されない場合
-AiMesh_FindNode_Not_advA=<span style='color:#569AC7;'>AiMesh のメインルーター</span> として設定さている場合は、下記をご確認ください。
+AiMesh_FindNode_Not_advA=<span style='color:var(--wrt-link-color,#569AC7);'>AiMesh のメインルーター</span> として設定さている場合は、下記をご確認ください。
 AiMesh_FindNode_Not_advA1=AiMesh ノードの電源が入っていることをご確認ください
 AiMesh_FindNode_Not_advA2=AiMesh ノードのファームウェアが最新であることをご確認ください
 AiMesh_FindNode_Not_advA3=AiMesh ノードが工場出荷時の状態であることをご確認ください
 AiMesh_FindNode_Not_advA4=AiMesh ノードを AiMesh ルーターに近づけてください
-AiMesh_FindNode_Not_advB=<span style='color:#569AC7;'>AiMesh ノード</span> として設定さている場合は、下記をご確認ください。
+AiMesh_FindNode_Not_advB=<span style='color:var(--wrt-link-color,#569AC7);'>AiMesh ノード</span> として設定さている場合は、下記をご確認ください。
 AiMesh_FindNode_Not_advB1=AiMesh ノードのリセットボタンを3秒以上押し、工場出荷時の状態にして、起動中であることをご確認ください
 AiMesh_FindNode_Not_advB2=AiMesh ルーターの管理画面にログインし、ネットワークマップ内の AiMesh アイコンをクリックしてください
 AiMesh_FindNode_Not_advB3=AiMesh アイコンが表示されない場合、AiMesh ルーターのファームウェアが最新であることをご確認ください
@@ -1661,7 +1670,7 @@ AiProtection_sites_block_desc=トレンドマイクロ社のデータベース�
 [###MODEL_DEP###][GT-AC5300]AiProtection_sites_block_desc=悪質サイトブロックは、不正なWebページへのアクセスをブロックすることで、マルウェア、フィッシング、アドウェア、ハッキング、ランサムウェアの感染を防ぎます。
 AiProtection_sites_blocking=悪質サイトブロック
 AiProtection_ARK_Malicious_Site_blocking=悪意のあるサイトと感染したデバイスのブロック
-AiProtection_ARK_Malicious_Site_blocking_desc=既知の悪意あるウェブサイトへのアクセスを制限して、マルウェア、フィッシング、スパム、アドウェア、ハッキング、ランサムウェア攻撃からネットワークを保護します。
+AiProtection_ARK_Malicious_Site_blocking_desc=既知の悪意あるウェブサイトへのアクセスを制限し、マルウェア、フィッシング、スパム、ハッキング、ランサムウェア攻撃からネットワークを保護します。
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]AiProtection_sites_blocking=悪質サイトブロック
 AiProtection_sites_trust=AiProtectionで信頼するドメインを追加し、アンロックする
 AiProtection_sites_trust_add=ドメインをホワイトリストに追加する
@@ -1670,7 +1679,7 @@ AiProtection_title_BandwidthUtil=帯域の最適化
 AiProtection_title_BandwidthUtil_desc1=インターネットのアップロードとダウンロードの帯域幅を入力してください。
 AiProtection_title_BandwidthUtil_desc2=ROG ZVMODELVZ では、この帯域設定に基づき、ゲーム機に最適なトラフィックを提供します。
 AiProtection_title_Dashboard=ゲームダッシュボード
-AiProtection_title_Dashboard_add_card=Add card
+AiProtection_title_Dashboard_add_card=カードを追加
 AiProtection_title_Dashboard_desc=ROG ZVMODELVZ ダッシュボードは、ゲームに最適な設定を提供し、ゲームネットワークをリアルタイムで監視します。
 AiProtection_title_Dashboard_title=ダッシュボード
 AiProtection_title_GameWiFi=ゲーミングWiFi
@@ -1704,18 +1713,19 @@ AiProtection_TrackerBlocking=トラッカーブロック
 AiProtection_TrackerBlocking_Desc=トラッカーブロックは、ウェブサイト、広告主、またはサードパーティの分析プラットフォームからの追跡リクエストを検出してブロックし、プライバシーを保護し、データ漏洩を減らし、ウェブページの読み込みを高速化します。
 AiProtection_AdvertisementBlocking_Desc=広告ブロックは、一般的な広告ソースをブロックして干渉を減らし、閲覧を改善し、セキュリティリスクを軽減するのに役立ちます。また、AdGuard DNS を有効にして保護を強化することもできます。
 AiProtection_AdvertisementBlocking_Enabled=広告ブロックが有効
-AiProtection_AdvertisementBlocking_edserv=Edge Server
-AiProtection_AdvertisementBlocking_edserv_desc=A self-hosted edge server on router. Provides detailed network insights, advanced control, and enhanced home privacy.
-AiProtection_AdvertisementBlocking_cloudserv=Cloud Server
-AiProtection_AdvertisementBlocking_cloudserv_desc=Extends protection across multiple sites via the cloud.
-AiProtection_AdvertisementBlocking_filter=Triple level content filter
-AiProtection_AdvertisementBlocking_trigger=Blocks ads with one click.
+AiProtection_AdvertisementBlocking_edserv=エッジサーバー
+AiProtection_AdvertisementBlocking_edserv_desc=ルーター上でホストされるエッジサーバー。詳細なネットワーク分析、高度な制御、強化された家庭のプライバシーを提供します。
+AiProtection_AdvertisementBlocking_cloudserv=クラウドサーバー
+AiProtection_AdvertisementBlocking_cloudserv_desc=クラウドを通じて複数のサイトに保護を拡張します。
+AiProtection_AdvertisementBlocking_filter=3層コンテンツフィルター
+AiProtection_AdvertisementBlocking_trigger=ワンクリックで広告をブロックします。
 AiProtection_TrackerBlocking_Enabled=トラッカーブロックが有効
 AiProtection_select_device=デバイスを選択するか、有効なMACまたはIPを入力してください
 AiProtection_rule_exist=このデバイスにはすでにルールがあります。新しいルールを作成する前に削除してください。
 ArkMigrationNote=お知らせ
 ArkMigrationNote_1=プライバシーおよびシステムの最適化により、%@ はローカル検出を使用するようになりました。既存のプロファイルルールは手動で再設定する必要があります。
 ArkMigrationNote_2=これらの機能は以前のファームウェアとは互換性がありません。ダウングレードには工場出荷時のリセットが必要です。
+ArkAiProtectionInfo=一部のサイトは広告やトラッカーを使用しているため、広告ブロックやトラッカーブロックの影響を受ける可能性があります。アクセスできない場合は、上記機能を無効にして再読み込みしてください。
 FamilyContentBlock=ファミリーコンテンツブロック
 BwLimiter_Switch=帯域幅制限スイッチ
 BwLimiter_Download=ダウンロード帯域
@@ -1724,6 +1734,7 @@ BwLimiter_NewDevice=新しいデバイス
 BwLimiter_Status=ステータス
 BwLimiter_Delete=削除
 SearchDevice_By_Name_Mac_Ip=デバイス名、MAC、またはIPで検索
+SearchDevice_By_Name_Mac_Ip_Subnet=デバイス名、MAC、IP、またはサブネットを検索
 BwLimiter_Target=ターゲット
 BwLimiter_enter_bandwidth=帯域幅の値を入力してください。
 BwLimiter_max=帯域幅制限のルールが最大数（32）に達しました。
@@ -1965,7 +1976,9 @@ btn_go=設定
 btn_goSetting=設定に進む
 btn_remove=取り外し
 btn_send=送信
+btn_resend=再送信
 btn_to_WAN=WAN 設定
+btn_verify=確認
 Capability=能力
 Captcha=キャプチャ認証
 Captcha_note=画像に表示されている文字を入力してください。
@@ -2111,7 +2124,7 @@ CTL_finished=終了
 CTL_format=フォーマット
 CTL_Generate=生成
 CTL_help=ヘルプ
-CTL_later=後で
+CTL_later=あとで
 CTL_link=リンク
 CTL_localdevice=ローカルデバイス
 CTL_login=ログイン
@@ -2122,6 +2135,7 @@ CTL_reconnection=自動再接続
 CTL_refresh=更新
 CTL_Reset_OOB=リセット
 CTL_restore=リストア
+CTL_restore_again=再度復元
 CTL_scan=スキャン
 CTL_search=検索
 CTL_secure=ルーターの保護
@@ -2130,7 +2144,7 @@ CTL_upload=アップロード
 CTL_upload_img=画像をアップロード
 CTL_initialize=初期化
 Current=現在
-Current_peak=Peak
+Current_peak=ピーク
 Current_band=現在の周波数
 current_settings=現在の設定
 Custom=ユーザー定義
@@ -2158,6 +2172,9 @@ DDNS_https_cert_alert=正確な SSL 証明書ファイルを選択してくだ�
 DDNS_ipv6_update=IPv6 アップデート
 DDNS_ipv6_update_desc=クライアントのネットワーク環境が IPv6 ネットワーク アドレスを使用している場合、この機能を有効化すると、リモート デバイスにアクセスする時に、ドメインが IPv6 ネットワーク アドレスに対して最初に解決されます。
 DDNS_ssl_cert=SSL 証明書
+DDNS_status=DDNS ステータス
+DDNS_reg_result=DDNS登録結果
+DDNS_root_ca=ルート証明書/中間証明書
 DDNS_termofservice_Title=ご利用条件
 DDNS_transfer=ASUS DDNS 名も移行する
 DDNS_verification_enable=WAN IP / ホスト名検証を有効にする
@@ -2179,10 +2196,10 @@ Device_type_03_AP=アクセスポイント
 Device_type_04_NS=NAS
 Device_type_05_IC=IP カメラ
 Device_type_06_OD=他のデバイス
-deviceDiscorvy2=リピーターモードでは、DHCP サーバーによって割り当られる IP アドレスが変更になります。新たに割り当てられた IP アドレスを検出するには、<a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a>をご利用ください。
-deviceDiscorvy3=アクセスポイント モードでは、DHCP サーバーによって割り当られる IP アドレスが変更になります。新たに割り当てられた IP アドレスを検出するには、<a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> をご利用ください。
-AiMesh_deviceDiscorvy3=AiMesh アクセスポイントモードでは DHCP によって IP アドレスが配布されます。<a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> を利用することで IP アドレスを探すことができます。
-deviceDiscorvy4=メディアブリッジモードでは、、DHCP サーバーによって割り当てられる IP アドレスが変更されます。新たに IP アドレスを割り当てられたルーターを検出するには、<a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> をご利用ください。
+deviceDiscorvy2=リピーターモードでは、DHCP サーバーによって割り当られる IP アドレスが変更になります。新たに割り当てられた IP アドレスを検出するには、<a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a>をご利用ください。
+deviceDiscorvy3=アクセスポイント モードでは、DHCP サーバーによって割り当られる IP アドレスが変更になります。新たに割り当てられた IP アドレスを検出するには、<a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> をご利用ください。
+AiMesh_deviceDiscorvy3=AiMesh アクセスポイントモードでは DHCP によって IP アドレスが配布されます。<a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> を利用することで IP アドレスを探すことができます。
+deviceDiscorvy4=メディアブリッジモードでは、、DHCP サーバーによって割り当てられる IP アドレスが変更されます。新たに IP アドレスを割り当てられたルーターを検出するには、<a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> をご利用ください。
 DeviceSecurity11a_display1_sectiondesc=ワイヤレス MAC アドレスフィルタリングは、設定された MAC アドレスを持つデバイスからのパケットを制御します。
 DHCP_query_freq=DHCP クエリの頻度
 DHCPaggressive=アグレッシブモード
@@ -2359,13 +2376,16 @@ Enable_ncb_Non_Block=全て許可
 Enable_ncb_Limited_Block=制限付き許可
 Enable_ncb_All_Block=全て拒否
 Encap_mode_help=ZVMODELVZ は ATM 経由の LAN/WLAN プロトコルの転送とカプセル化用に、2つのモードを提供します。適切なカプセル化モードを選択してください。
+Energy_Saving_conflict_hint1=実際の動作は、メイン機能と省電力設定の相互作用により異なる場合があります。
+Energy_Saving_conflict_hint2=メイン機能と省電力の動作の一貫性を確保するため、現在の設定が優先されます。
+Energy_Saving_affected_setting=影響を受ける設定：（%@）
 Ethernet_wan=イーサネット WAN
 Excute=インストール
 Excute_processing=インストールしています...
 External=外部のみ
 Extend_TTL_Value=TTL 値を拡張
 EZQoS=EZQoS 帯域管理
-EzQoS_bandwidth_note1=最適な設定を行うためにプロバイダーの通信プランをご確認頂くか、<a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:#FC0">http://speedtest.net</a>でスピードをご確認ください。
+EzQoS_bandwidth_note1=最適な設定を行うためにプロバイダーの通信プランをご確認頂くか、<a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0)">http://speedtest.net</a>でスピードをご確認ください。
 EzQoS_bandwidth_note2=デフォルトは帯域制限なしの 0 です
 EzQoS_desc=QoS (Quality of Service）とは、データの種類に応じた優先順位に従ってデータを配信したり、ある特定の通信用にネットワーク帯域を予約し、一定の通信速度を保証する技術です。
 EzQoS_desc_Adaptive=<span style="font-weight:bolder;font-size:14px;">アダプティブ QoS</span> は、あらかじめ設定されているプリセットを使用して特定の通信帯域を確保します。
@@ -2432,11 +2452,11 @@ feedback_email_alert=電子メールアドレスの形式が有効ではあり�
 feedback_email_confirm=電子メールアドレスが空欄です。このまま続けてよろしいですか？
 feedback_extra_info=送信するシステム情報
 feedback_fail0=フィードバックの送信に失敗しました。インターネット接続とネットワーク設定を確認し、もう一度お試しください。
-feedback_fail1=<span style="color:#FC0;">サーバーへの接続に失敗しました。</span>次のアドレスに直接フィードバックをお送りください
+feedback_fail1=<span style="color:var(--wrt-badge-warning-color,#FC0);">サーバーへの接続に失敗しました。</span>次のアドレスに直接フィードバックをお送りください
 feedback_fail2=下のフォームの内容をコピーし、メールの本文部分に貼り付けてメールを送信してください。
 feedback_fail3=Debug ファイルをダウンロードしていただき、Eメールに添付して送信してください。
 feedback_fail0_new=システムがフィードバックサーバーに接続できませんでした。
-feedback_fail1_new=<span>使用に関する問題や技術サポートが必要な場合は、まずASUSカスタマーサービスセンターにご連絡ください&nbsp;<a class="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">（公式サポート | ASUS Global）</a>。</span>
+feedback_fail1_new=<span>使用に関する問題や技術サポートが必要な場合は、まずASUSカスタマーサービスセンターにご連絡ください&nbsp;<a class="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">（公式サポート | ASUS Global）</a>。</span>
 feedback_fail2_new=以下の検出されたエラーファイルをrouter_feedback@asus.comに送信して、開発チームに改善提案を提供することもできます。ありがとうございます。
 feedback_fail_BindGoogle=また、<a id="bind_google">Google アカウントとリンクし</a>た上でフィードバックの送信を行ってください。
 feedback_format_alert=The format is not valid.
@@ -2458,7 +2478,7 @@ feedback_note3=お問い合わせフォームに記載された内容を送信�
 [###MODEL_DEP###][DSL-AX82U][DSL-AC68U][DSL-N55U][DSL-N55U-B]feedback_note3=お問い合わせフォームに記載された内容を送信した時点をもって、内容に含まれる情報の利用、及び ASUS の個人情報保護方針に同意したものと致します。
 feedback_note4=ご回答までにお時間をいただく場合がございます。お急ぎの場合は ASUS コールセンターまで直接お問い合わせください。
 feedback_note5=フィードバックが進行中です。再起動するとプログラムが終了し、フィードバックを完了できない可能性があります。後で再起動してください。
-feedback_note6=<span>このシステムは個別の回答を提供しません。使用に関する問題や技術サポートが必要な場合は、ASUSカスタマーサービスセンターにお問い合わせください</span>&nbsp;<a id="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">（公式サポート | ASUS Global）</a>。
+feedback_note6=<span>このシステムは個別の回答を提供しません。使用に関する問題や技術サポートが必要な場合は、ASUSカスタマーサービスセンターにお問い合わせください</span>&nbsp;<a id="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">（公式サポート | ASUS Global）</a>。
 feedback_note7=私たちの専門チームがあなたに奉仕いたします。ありがとうございます。
 feedback_Occasion_interrupt=時折中断
 feedback_optional=* 任意入力項目
@@ -2619,7 +2639,7 @@ FW_auto_upgrade_desc=システム アップデートがダウンロードされ�
 FW_auto_upgrade_desc1=重要なセキュリティ問題に対処する更新や、法的／規制上の要件を満たす更新は、自動ファームウェアアップグレードがオフでも自動的にインストールされます。
 FW_auto_upgrade_note=有効にすると、ルーターは指定した時間に新しいファームウェアを自動的にインストールします。
 FW_beta_check=ベータファームウェアを入手します。
-FW_desc0=<a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/" target="_blank">ASUS サポートサイト</a>より最新のファームウェアバージョンを入手してください。
+FW_desc0=<a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/" target="_blank">ASUS サポートサイト</a>より最新のファームウェアバージョンを入手してください。
 FW_desc1=最新のファームウェアを入手する ASUS のサポートサイト https://www.asus.com/support/ をご覧ください。
 fw_downloading=ファームウェアのダウンロード
 FW_item1=プロダクトID
@@ -2628,9 +2648,9 @@ FW_item2_aiboard=AI Board ファームウェアバージョン
 FW_item5=新しいファームウェアファイル
 FW_manual_update=ファームウェア手動更新
 FW_n0=最新のファームウェアには、それ以前のバージョンの更新内容も含まれています。
-FW_n2=アップグレード中に問題が発生した場合は、ZVMODELVZ は自動的に緊急モードに入ります。ZVMODELVZ の前面にある LED で、デバイスが緊急モードに入ったかを確認することができます。<a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS Download Center</a> より ASUS Firmware Restoration をダウンロードすることができます。
-FW_n3=Check on <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="" target="_blank">FAQ</a> for more instructions.
-FW_n4=Check on <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: #FFCC00;\" href=\"\" target=\"_blank\">FAQ</a> for more instructions.
+FW_n2=アップグレード中に問題が発生した場合は、ZVMODELVZ は自動的に緊急モードに入ります。ZVMODELVZ の前面にある LED で、デバイスが緊急モードに入ったかを確認することができます。<a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS Download Center</a> より ASUS Firmware Restoration をダウンロードすることができます。
+FW_n3=詳細な手順については、<a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="" target="_blank">FAQ</a>をご確認ください。
+FW_n4=詳細な手順については、<a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: var(--wrt-badge-warning-color,#FFCC00);\" href=\"\" target=\"_blank\">FAQ</a>をご確認ください。
 FW_n5=ファームウェア/セキュリティのアップグレードのためのデータ収集に関しては、「管理 -> プライバシー」ページで ASUS プライバシー通知 (ファームウェア/セキュリティのアップグレード用) を参照してください。
 FW_note=注意：
 FW_note_AiMesh=ファームウェアの手動更新では、選択した AiMesh ルーター/ノードのみ更新ができます。更新する際は、適切なファームウェアを選択していることをご確認ください。
@@ -2690,6 +2710,7 @@ Gear_Accelerator=ゲームブースト
 Gear_Accelerator_desc=ゲーム優先モード
 Gear_Accelerator_desc1=プリセットされた QoS によってゲーミングパケットを優先化させることができます。
 Gear_Accelerator_List=ゲームデバイスリスト
+Gear_Accelerator_confirm=%@ を有効にすると、ハードウェアアクセラレーションが無効になり、ネットワーク速度が低下する場合があります。続行しますか？
 Game_Ark_Devices_identification=ゲームデバイスの識別
 Game_Ark_Devices_identification_desc=ゲームデバイスの識別は、接続されているデバイスのネットワークトラフィックをインテリジェントに優先処理します。
 Game_Ark_First_desc=GameFirst V は ROG マザーボード、ノートパソコン、およびデスクトップに同梱され、オンライン PC ゲームのネットワーク トラフィックを最適化します。
@@ -2706,11 +2727,11 @@ GB_account_type2=ルーターアドバンスドアカウント
 GB_ended_date=更新期限
 GB_ended_date_desc=WTFast では、 さらに多くのプロキシサーバーの利用が可能なアドバンストアカウントを 14 日間の無料トライアルで 提供しています。無料トライアル終了後は、無料のベーシックアカウント（トラフィック制限あり）に切り替わります。
 GB_ended_date_type0=ルーターフリー基本アカウントを使用中です。
-GB_management_note1=WTFast を使用した場合は、ユーザーは WTFast の<span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:#008DE5;">利用規約</a> </ span>および<span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:#008DE5;">プライバシーポリシー</a> </ span>に同意したものとします。
-GB_management_note2=製品ページの免責事項に記載されているとおり、WTFastはゲームコンソールのサポートの向上に努めております。現在サポートされているゲームのリストについては、<a href="javascript:open_link('gameList')" style="text-decoration:underline;color:#008DE5;">このリスト</a>をご参照ください（定期更新されます）。
+GB_management_note1=WTFast を使用した場合は、ユーザーは WTFast の<span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">利用規約</a> </ span>および<span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">プライバシーポリシー</a> </ span>に同意したものとします。
+GB_management_note2=製品ページの免責事項に記載されているとおり、WTFastはゲームコンソールのサポートの向上に努めております。現在サポートされているゲームのリストについては、<a href="javascript:open_link('gameList')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">このリスト</a>をご参照ください（定期更新されます）。
 GB_management_note3=GPN のパフォーマンスはプロバイダーや設置場所によって変わります。常に最新版のファームウェアをお使いいただきますようお願いします。
-GB_management_note4=最適な GPN サーバーの<span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:#008DE5;">選び方は</a></span>？最適なゲーム環境を<span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:#008DE5;">構築するには</a></span>？
-GB_management_note5=ASUS ルーターで WTFast を使用するには？<span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:#008DE5;">ここをクリック</a></span>
+GB_management_note4=最適な GPN サーバーの<span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">選び方は</a></span>？最適なゲーム環境を<span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">構築するには</a></span>？
+GB_management_note5=ASUS ルーターで WTFast を使用するには？<span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">ここをクリック</a></span>
 GB_mobile=モバイルゲームモード
 GB_mobile_desc=モバイルゲームをより高速にプレイ
 GB_mobile_desc1=ASUS ルーターアプリからワンクリックでモバイルゲーム通信を優先して転送する設定ができます。VR ゲームを含む全てのモバイルゲームに対して有効です。
@@ -3113,7 +3134,7 @@ LANHostConfig_x_DDNS_retrieve_IP_note=[内部] ルーターの IP/WAN IP を通�
 LANHostConfig_x_DDNS_update_confirm=IP アドレス、サーバー、ホスト名が変更されていません。 内容を更新したい場合は「はい」をクリックしてください。
 LANHostConfig_x_DDNSEnable_itemname=DDNS
 LANHostConfig_x_DDNSEnable_sectiondesc=Dynamic DNS (DDNS) は、動的 IP アドレスでインターネットドメイン名をコンピューターに割り当てます。現在、複数の DDNS サービスが ZVMODELVZ に組み込まれており、「無料お試し」をクリックすれば、無料お試し版のアカウントを使用することができます。
-LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:#FFFFFF;">詳細に関しては、<a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">この FAQ</a>を参照してください。
+LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:var(--wrt-text-color,#FFFFFF);">詳細に関しては、<a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">この FAQ</a>を参照してください。
 LANHostConfig_x_DDNSEnable_sectiondesc3=ホスト名の登録に成功しました。「[ホスト名].asuscomm.com」を使用して WAN からホームネットワーク内のサービスにアクセスすることができます。「[ホスト名].asuscomm.com」を使用してユーザーのネットワークに遠隔アクセスすることができます。<p>「詳細設定」>「WAN」でポートフォワーディングまたは DMZ 設定を行い、他の WAN クライアントがユーザーのネットワークに遠隔アクセスすることもできます。<p>ワイヤレスルーターを遠隔操作する<a href="/Advanced_System_Content.asp?af=misc_http_x" target="_blank" style="text-decoration: underline; font-family:Lucida Console;">ここ</a>で設定を行います。
 LANHostConfig_x_DDNSEnable_sectiondesc4=現在のルーターはプライベート IP を使用しています。
 LANHostConfig_x_DDNSEnable_faq1=DDNS の導入とセットアップ
@@ -3340,7 +3361,7 @@ month=月
 MoreConfig=詳細情報
 MPPE_Encryp=MPPE の暗号化
 mssid_time_remaining=残り時間
-multiservice_WAN=Multi-Service WAN
+multiservice_WAN=マルチサービス WAN
 NAT_Acceleration=NAT アクセラレーター
 NAT_AccelerationDesc=NAT アクセラレーションが有効な場合、スイッチはそれ自身でネットワークパケットを扱い、CPU をバイパスします。これは NAT スループットを上げますが、タイムスケジューリング、従来型 QoS、ゲストネットワーク上の帯域リミッターなどいくつかの機能が正確に動作しない可能性があります。NAT アクセラレーションを自動に設定した場合、これらの機能が有効になると自動的に無効化されます。
 NAT_Acceleration_ctf_disable=NAT トラフィックは CPU 処理されています
@@ -3355,7 +3376,7 @@ NAT_IPSec_Passthrough=IPSec パススルー
 NAT_L2TP_Passthrough=L2TP パススルー
 NAT_lacp=ボンディング/リンクアグリゲーション
 NAT_lacpDesc=様々な名称がありますが同様の技術となります：ポートトランキング、ボンディング、チーミング、リンクアグリゲーション、802.3ad
-NAT_lacp_disable_note=LAN5/LAN6 に IPTV/VoIP ポート設定を行うと、リンクアグリゲーション機能が無効になります。続けてよろしいですか？
+NAT_lacp_disable_note=IPTV/ VOIP ポート設定を LAN5/ LAN6 に変更すると、Bonding/ Link aggregation 機能が無効になります。実行してもよろしいですか？
 NAT_lacp_note=有線クライアントのリンクアグリゲーション（802.3ad）を有効にして、ルーターの LAN1 と LAN2 ポートに接続してください。
 NAT_passthrough_desc=NAT パススルーを有効にすることで、VPN クライアントのパケットをインターネット側に通過させることができます。
 NAT_PPTP_Passthrough=PPTP パススルー
@@ -3415,8 +3436,8 @@ note_hide_SSID_WPS=WPS を有効にしたい場合は、非表示の SSID をま
 note_up_to_date=備考：定期的に修正アップデートが更新されます。常にファームウェアを最新の状態に保つようお願いします。
 Notice=注意
 Notification_Item=アラート設定
-Notification_security_update=Security Update Notification
-Notification_security_desc=Monitor this log to stay informed about system security changes that may affect your network.
+Notification_security_update=セキュリティ更新通知
+Notification_security_desc=このログを監視して、ネットワークに影響を与える可能性のあるシステムセキュリティの変更を把握してください。
 Now=今
 number_of_client=クライアントの数
 NSlookup_help=ASUS DDNS サービスを利用できない場合は、こちら <a href="https://iplookup.asus.com/nslookup.php" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">https://iplookup.asus.com/nslookup.php</a> へアクセスし、ドメイン名（ホスト名）が使用可能か確認してください。
@@ -3440,7 +3461,7 @@ ParentalCtrl_default=インターネットアクセスは 1 時間間隔で制�
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_default=インターネットアクセスは 1 時間間隔で制限することができます。
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]ParentalCtrl_default=アクセス制御に追加されたデバイスはインターネット制限が適用されます
 ParentalCtrl_deny=許可しない
-ParentalCtrl_disable_NAT=より正確なスケジューリング管理のためには <a id="disable_NAT" style="color:#FC0;text-decoration: underline;" href="" target="_blank">NAT アクセラレーター</a> を無効にしてください。
+ParentalCtrl_disable_NAT=より正確なスケジューリング管理のためには <a id="disable_NAT" style="color:var(--wrt-badge-warning-color,#FC0);text-decoration: underline;" href="" target="_blank">NAT アクセラレーター</a> を無効にしてください。
 ParentalCtrl_Enable=ペアレンタルコントロールを有効にする
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_Enable=デバイスアクセス制御を有効にする
 ParentalCtrl_Enable_TS=タイムスケジュール
@@ -3749,6 +3770,7 @@ select_service=サービスを選択します。
 select_usb_device=デバイスの選択
 select_usb_mode=USB 規格
 select_wireless_MAC=ワイヤレスクライアントの MAC アドレスを選択します。
+Sending_str=送信中…
 Send_mail=送信
 Serial_Number=シリアルナンバー
 Servers_Center=サーバーセンター
@@ -3769,21 +3791,22 @@ Setting_factorydefault_itemname=工場出荷時の状態にリセット
 Setting_factorydefault_value=デフォルト
 Setting_initialize_hint1=各機能の設定、データは全て削除され、ルーターは工場出荷時の状態になります。\n
 Setting_initialize_desc=すべてのコンテンツとデータログを消去しながら工場出荷時の設定にリセットします。
-Setting_initialize_desc_ai=ルーターのメインシステムを工場出荷時設定にリセットしても、AIボードの設定やデータは削除されません。ルーターの譲渡または修理前に、AIボードシステムを個別にリセットしてください。詳細は <a class="AIrestore_FAQ" data-faq="AI_FAQ_Factory_Settings">FAQ</a> を参照ください。
+Setting_initialize_desc_ai=ルーターのメインシステムを工場出荷時設定にリセットしても、AI Boardの設定やデータは削除されません。ルーターの譲渡または修理前に、AI Boardシステムを個別にリセットしてください。詳細は <a class="AIrestore_FAQ" data-faq="AI_FAQ_Factory_Settings">FAQ</a> を参照ください。
 Setting_lock_main_unit=メインユニットをロック
 Setting_lock_main_unit_desc1=有効にすると、このデバイスはメインユニットの役割に制限され、ノードとして他のネットワークに参加できません。
 Setting_lock_main_unit_desc2=注意：この状態を変更すると、工場出荷時設定へのリセットが実行され、再設定が必要になります。
-Setting_lock_main_unit_confirm=「メインユニットをロック」の状態を変更するには、工場出荷時設定へのリセットが必要です。これにより、現在のすべてのネットワーク設定が消去されます。
+Setting_lock_main_unit_desc3=この CAP に接続された Nodes を含むアクティブなメッシュネットワークがある場合、CAP を工場出荷時設定にリセットした後、それらの Nodes も手動でリセットする必要があります。
+Setting_lock_main_unit_confirm=「メインユニットをロック」の状態を変更するには、「工場出荷時設定」へのリセットが必要です。これにより、現在のすべてのネットワーク設定が消去されます。
 Setting_save_itemdesc=「保存」ボタンを押し、ZVMODELVZ の現在の設定をファイルに保存します。（注意：現在の設定をファイルに保存すると、フラッシュにも保存されます）
-Setting_save_itemdesc_ai=設定の保存にはAIボードシステムの構成やデータは含まれません。
+Setting_save_itemdesc_ai=設定の保存にはAI Boardシステムの構成やデータは含まれません。
 Setting_save_itemname=設定をファイルに保存
 Setting_save_upload_desc=ZVMODELVZ の現在の設定内容をファイルとして保存することができます。また、ファイルから設定を読み込むこともできます。
 Setting_upload_hint=ファイルフォーマットまたはパスに誤りがあります。!
 Setting_upload_itemdesc=設定ファイルの名前とパスを指定します。続いて「アップロード」をクリックし、ZVMODELVZ にファイルを書き込みます。ZVMODELVZ が再起動するまで60秒間ほどお待ちください。
 [###MODEL_DEP###][RT-N65U]Setting_upload_itemdesc=設定ファイルの名前とパスを指定します。続いて「アップロード」をクリックし、ZVMODELVZ にファイルを書き込みます。ZVMODELVZ が再起動するまで90秒間ほどお待ちください。
 Setting_upload_itemname=設定をファイルから復元
-Setting_remove_passwd=デバックの用途で利用する場合にチェックを入れることで、設定ファイルのパスワードが解除されます。ご利用の無線ルーターにはチェックを入れた設定ファイルをインポートしないようにしてください。
-Setting_ai_board=AIボード設定
+Setting_remove_passwd=デバッグのために設定ファイルを共有する場合は、このチェックボックスをクリックしてください。設定ファイル内の元のパスワードは削除されるため、ファイルをルーターにインポートしないでください。
+Setting_ai_board=AI Board設定
 Setting_ai_board_fw_ver=AI Board ファームウェアバージョン
 Setting_ai_dk_Apps=Docker アプリ
 Setting_ai_dk_HA=Home Assistant
@@ -3794,7 +3817,7 @@ Setting_ai_faq_frigate=インストール前に <a data-faq="AI_FAQ_Frigate" cla
 Setting_ai_dk_Management=Docker 管理
 Setting_ai_dk_Ctrl_Deploy=制御とデプロイ
 Setting_ai_desc_Ctrl_Deploy=Docker を使用して強力なアプリケーションを実行します。Docker は世界中の何百万人もの開発者に信頼されている主要なコンテナプラットフォームです。Portainer CE の直感的な UI により、コンテナを視覚的にデプロイ、監視、管理できます。
-Setting_ai_rescue_note=ルーターを譲渡する前に、すべてのAIボードデータを完全に消去します。詳細は <i id="AIrestore_FAQ" data-faq="AI_FAQ_Factory_Settings" class="ai-faq-btn">FAQ</i> をご参照ください。
+Setting_ai_rescue_note=ルーターを譲渡する前に、すべてのAI Boardデータを完全に消去します。詳細は <i id="AIrestore_FAQ" data-faq="AI_FAQ_Factory_Settings" class="ai-faq-btn">FAQ</i> をご参照ください。
 Setting_ai_router_assist=ルーターアシスタント
 Setting_ai_router_assist_desc=Edge AIは直接質問を行うことができます。クエリはプライバシー保護のためローカルで処理されます。一般的な問題の解決や迅速な操作の実行にも役立ちます。
 Setting_ai_dpanel_desc=DPanel is a lightweight visual panel for managing Docker and Podman containers. It features a native Chinese interface, making it more suitable for Chinese environments, and also supports multiple languages such as English and Japanese. The installation is simple, and resource consumption is extremely low, making it ideal for various NAS devices, boxes, and small servers. The panel runs as a container, does not require privileged mode, and has no dependencies or intrusion on the host, ensuring security and reliability.
@@ -3803,7 +3826,7 @@ Setting_live_ai_fwchk_failed=ファームウェアの更新を確認するため
 Setting_live_ai_failed=インストールが正しく行われませんでした。再インストールしてください。
 Setting_live_ai_install=インストール中
 Setting_live_ai_complete=ライブ更新が完了しました。
-Setting_live_ai_done=完了 & AI ボードを再起動
+Setting_live_ai_done=完了 & AI Boardを再起動
 Setting_rescue_ai_Note0=リマインダー：リセット操作
 Setting_rescue_ai_Note1=デバイスの完全なリセットを実行しようとしています。この操作により、以下が実行されます：
 Setting_rescue_ai_Note1_1=既存のすべてのデータと設定を削除
@@ -3818,9 +3841,12 @@ Setting_rescue_ai_prepare=救出の準備
 Setting_rescue_ai_FWUpload=ファームウェアをアップロード
 Setting_rescue_ai_FWInstall=ファームウェアをインストール
 Setting_rescue_ai_appInstall=APP をインストール
-Setting_rescue_ai_complete=AIボードのレスキューが完了しました。
+Setting_rescue_ai_complete=AI Board のレスキューが完了しました。
+Setting_rescue_ai_Interrupted=AI Board の復元が中断されました
+Setting_rescue_ai_Interrupted_desc1=予期しない中断または停電により、復元プロセスに失敗しました。
+Setting_rescue_ai_Interrupted_desc2=安定した電源接続を確保して、もう一度お試しください。
 Setting_prog_ai_currStep=現在のステップ：
-Setting_prog_ai_Note=注意：システムは正常に動作しています。操作を中断しないでください。
+Setting_prog_ai_Note=注意: システムは正常に動作しています。中断せず、安定した電源とインターネット接続を確保してください。
 Setting_prog_ai_serveralTime=このプロセスには数分かかる場合があります。
 Settings=設定
 Setup_note=変更する場合は、<a id="redirect_to_setup">こちら</a> をクリックしてください。詳細については <a id="redirect_to_FAQ">FAQ</a> をご参照ください。
@@ -3987,10 +4013,33 @@ SDN_Scenarios_desc=特別な使用のために追加のワイヤレス ネット
 SDN_MainFH_for_clients=クライアント向け MLO フロントホール
 SDN_MainFH_keep_Hint=最低でも一つのメインネットワークの設定が必要です。
 SDN_MainFH_Smart_Connect_Hint=Smart Connectルールが作成されたため、単一のWiFiバンドを選択してください。
+SDN_mlo_switch_fh_hint1=有効にできる MLO フロントホールは1つだけです。
+SDN_mlo_switch_fh_hint2=%1$@の MLO Fronthaul を無効にして、 %2$@ を有効にしますか？
 SDN_Sync_To_All_Node=すべての AiMesh ノードに同期
 SDN_Sync_To_All_Node_Hint=AiMesh ノードが古いモデルの場合、または WiFi が最大容量に達している場合、すべての AiMesh ノードを同期することはできません。以下のメニューから同期するノードを選択してください。
 SDN_Sync_limitation_Hint=古い AiMesh ノードには、すべてのバンドを同期する際の制限があります。
 SDN_MainFH_WiFi_conflict=%1$@ WiFi バンドが使用されています。競合する%2$@ (%3$@)ネットワークは、設定適用後に削除されます。
+SDN_Auth_WPA3_only_subtext1=WPA3のみを使用する最高レベルのセキュリティオプションです。
+SDN_Auth_WPA3_only_subtext2=（注：WPA3に対応していない古いデバイスは接続できない場合があります。）
+SDN_Auth_WPA3_dual=標準のデュアルモードセキュリティオプションです。
+SDN_Auth_WPA3_dual_desc=新しいデバイスはWPA3、古いデバイスはWPA2で接続します。
+SDN_Auth_WPA3_dual_mode=互換モード
+SDN_Auth_WPA3_dual_mode_subtext1=RSNオーバーライドを使用する旧世代デバイス向けに最適化された強化デュアルモードセキュリティオプションです。
+SDN_Auth_WPA3_dual_mode_subtext2=古いデバイスの接続を維持しながら、新しいデバイスではWPA3を使用します。
+SDN_Auth_WPA3_dual_mode_subtext3=（注：一部の中間世代のデバイスはWPA2を使用する場合があります。）
+SDN_Auth_WPA3_subtext=RSN overriding を使用して古いデバイス向けに最適化された、強化されたセキュリティオプションです。最新のデバイスには最大限のセキュリティを提供しながら、最新ではないクライアントでも安定した接続を維持します。
+SDN_WiFi_Mode_Only6G_Hint=グローバルな WiFi 標準に準拠するため、6GHz 帯域のすべてのネットワークは同じ WiFi 世代で動作する必要があります。
+SDN_WiFi_Mode_24G_Hint=2.4GHz は WiFi モード設定に従って動作します。
+SDN_Compatibility_Mode_Off=互換モードはオフです。
+SDN_Compatibility_Mode_24=2.4GHz互換モード
+SDN_Balance_Mode=バランス
+SDN_Balance_Mode_desc=パフォーマンスとデバイス互換性の最適なバランス。
+SDN_Balance_Mode_desc1=2.4GHzはWiFi 6モードで動作します。
+SDN_Ultra_Compatibility_Mode=高互換性
+SDN_Ultra_Compatibility_Mode_desc=従来型または古いIoTデバイスとの安定した接続を確保します。
+SDN_Ultra_Compatibility_Mode_desc1=2.4GHzはWiFi 4モードで動作します。
+SDN_IPv6_FreeWiFi_Hint=注: Free WiFi は IPv6 のみの環境をサポートしていません。クライアントのリダイレクトには、IPv4 またはデュアルスタックが有効になっていることを確認してください。
+SDN_IPv6_MessageBoard_Hint=注: Message Board は IPv6 のみの環境をサポートしていません。クライアントで IPv4 またはデュアルスタックが有効になっていることを確認してください。
 t2BC=基本設定
 t2LAN=LAN
 t2Misc=その他
@@ -4066,7 +4115,9 @@ TZ02=ミッドウェー島、サモア
 TZ03=ハワイ
 TZ04=アラスカ
 TZ05=太平洋標準時 (米国およびカナダ)
+TZ05_1=バンクーバー、ホワイトホース
 TZ06=山地標準時 （米国およびカナダ）
+TZ06_1=エドモントン、イエローナイフ
 TZ07=アリゾナ
 TZ08=マサトラン
 TZ10=サスカチュワン
@@ -4222,7 +4273,7 @@ usb_tls_conflict=匿名ログインの許可は、TLS 設定と共存しませ�
 usb_tls_conflict_WANacc=WAN アクセスの許可は、TLS 設定と競合します。
 usb_uninstalling=USB ストレージデバイスからアプリケーションをアンインストールしています...
 usb_unmount=USB 機能は無効になっています。
-use_DevDiscoveryUtil=メディアブリッジモードでは、DHCP サーバーによって割り当られる IP アドレスが変更になります。新たに割り当てられた IP アドレスを検出するには、<a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> をご利用ください。
+use_DevDiscoveryUtil=メディアブリッジモードでは、DHCP サーバーによって割り当られる IP アドレスが変更になります。新たに割り当てられた IP アドレスを検出するには、<a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> をご利用ください。
 Username=ユーザー名
 Username_Pwd=ユーザ名とパスワード
 UserQoS_desc=User-defined QoS ルールのドッロプダウンリストからネットワークアプリケーションまたはデバイスに5つの段階で優先度を設定することができます。優先度に応じ、QoS は次の方式でパケットを送信します。<ul><li>アップストリームネットワークパケットの序列を変更します。パケットはこの序列に基づきインターネットに送信されます。</li><li>優先度の高いパケットの送信は優先度の低いパケットより優先されます。優先度の高いアップストリームパケットは、優先度の高いダウンストリームパケットの原因となります</li><li>優先度の高いアプリケーションからのパケット送信が存在しない場合は、使用中のインターネット接続の最大転送速度が優先度の低いパケットに適用されます。</li></ul>
@@ -4232,6 +4283,7 @@ UserQoS_transferred_hint=「転送量」の欄では、特定のサービスに�
 UserQoSRule_desc_zero=QoS を有効にした後、ユーザー定義の QoS ルールを設定してください。
 UserQoSRule_desc_one=デフォルト設定では、アップロード/ダウンロード帯域の優先度は、「低」に設定されています。帯域優先度のルールが存在しない場合、アップロード/ダウンロード帯域の優先度は「低」になります。
 Utility=ユーティリティ
+Verifying_str=確認中…
 Video_Find=操作方法の動画にアクセス
 Video_Link1=クリックするとチュートリアルムービーが再生されます。
 View_List=リストを見る
@@ -4330,7 +4382,7 @@ vpn_openvpn_required_acc_pwd=現在の .ovpn ファイルにはユーザー名�
 vpn_openvpnc_importCA=CA ファイルのインポート
 vpn_openvpnc_importovpn=.ovpn ファイルのインポート
 vpn_openvpnc_manual=CA ファイルをインポートするか、.ovpn ファイルを編集する
-vpn_privateIP_hint=無線ルーターは現在プライベート WAN IP アドレス(192.168.x.x, 10.x.x.x or 172.16.x.x)を使用しています。<a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:#FC0;'>FAQ</a> を参照しポートフォワーディングを設定してください。
+vpn_privateIP_hint=無線ルーターは現在プライベート WAN IP アドレス(192.168.x.x, 10.x.x.x or 172.16.x.x)を使用しています。<a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>FAQ</a> を参照しポートフォワーディングを設定してください。
 vpn_preshared_key=Pre-shared Key (Secret)
 vpn_preshared_key_hint=Enter Pre-shared Key
 vpn_switch_confirm=一度に 1 つの仮想プライベート ネットワーク (VPN) 接続のみを受け付けることができます。\"OpenVPN サーバー\"を有効にすると、\"PPTP サーバー\" は自動的に無効になります。VPN サーバーを有効にしますか？
@@ -4401,6 +4453,16 @@ vpn_wireguard_client_faq=VPNフュージョンでWireGuard® クライアント�
 vpn_wireguard_client_config=WireGuard クライアントのセットアップには、以下の情報が必要になります。
 vpn_wireguard_qr_desc=QR コードでの VPN 接続設定をご利用するには WireGuard アプリが必要です。最初に Google Play か Apple Store より WireGuard アプリをダウンロードの上ご利用ください。
 vpn_wireguard_qr_foriOS=iOS をご利用の場合は、WireGuard サーバーを通してインターネットに接続するにあたって、特定の DNS サーバーの割り当てが必要になります。
+vpn_wireguard_ep_mode=Endpoint モード
+vpn_wireguard_ep_src=ホスト名のソース
+vpn_wireguard_ep_system_ddns=システム DDNS
+vpn_wireguard_ep_custom=カスタムホスト名
+vpn_wireguard_ep_desc=Autoモードでは、現在のネットワーク状態に基づいて Endpoint が自動的に決定されます。DDNSモードでは、システム設定で構成されたDDNSを選択するか、カスタムホスト名を入力できます。
+vpn_wireguard_ep_custom_desc=カスタムホスト名は、システム設定内の DDNS 設定とは独立しています。正常に接続するには、カスタムホスト名がルーターの IP アドレスに正しく名前解決されることを確認してください。
+vpn_wireguard_ep_ddns_hint=DDNSが有効になっていません。セットアップを完了するには、「設定 > WAN > DDNS」に移動してください。そうしないと、このEndpointは正常に機能しません。
+vpn_wireguard_ep_ddns_disable_confirm=DDNSを無効にすると、このDDNSを使用しているVPNプロファイルは接続を確立できなくなる場合があります。続行しますか？
+vpn_wireguard_ep_custom_blank=カスタムホスト名を入力してください。
+vpn_wireguard_ep_custom_invalid=無効なホスト名形式です。有効なFQDNを入力してください（例: vpn.example.com）。http://、https://、ポート番号、URLパスは含めないでください。
 vpnc_auth=VPN認証
 vpnc_auth_for_clients=VPN クライアント用の VPN 認証
 vpnc_Client_Cert=クライアント証明書
@@ -4426,6 +4488,32 @@ vpnc_profile_assignALL=すべてのデバイスに適用
 vpnc_profile_assignDevice=このプロファイルにデバイスを割り当てる
 vpnc_profile_del=プロファイルを削除
 vpnc_profile_select_suggest=デフォルトのインターネットWANを解除するために他のVPNプロファイルを選択してください。
+vpnc_ssk_login=Surfsharkアカウントにログイン
+vpnc_ssk_login_note=アカウントとパスワードを入力してください。
+vpnc_ssk_invalid_long=アカウントまたはパスワードが長すぎます（最大128文字）。
+vpnc_ssk_invalid_char=アカウントまたはパスワードに無効な文字が含まれています。
+vpnc_ssk_invalid_format=アカウントまたはパスワードの形式が無効です。
+vpnc_ssk_login_AuthCode=メールに送信された、またはAuthenticatorアプリで生成された6桁の確認コードを入力してください。
+vpnc_ssk_login_AuthCode_enter=6桁の確認コードを入力してください。
+vpnc_ssk_login_AuthCode_confirm=確認コードが届きませんでしたか？上の「再送信」をクリックすると、新しい確認コードを送信します。
+vpnc_ssk_login_AuthCode_resender=%1$@秒後に再送信できます
+vpnc_ssk_login_ErrMsg1=アカウントまたはパスワードが正しくありません。
+vpnc_ssk_login_ErrMsg2=Surfsharkサーバーを利用できません。しばらくしてからもう一度お試しください。
+vpnc_ssk_login_ErrMsg4=設定エラーです。設定を確認してください。
+vpnc_ssk_login_ErrMsg41=設定エラーです。
+vpnc_ssk_login_ErrMsg5=ネットワークエラーです。Surfsharkに接続できません。
+vpnc_ssk_login_ErrMsgDef=ログインに失敗しました。もう一度お試しください。
+vpnc_ssk_login_success=Surfsharkへのログインに成功しました。
+vpnc_ssk_login_success_note=Close this notice and complete your VPN settings.
+vpnc_ssk_logout_confirm=アカウントからログアウトしてもよろしいですか？
+vpnc_ssk_Failed_resend=コードの再送信に失敗しました。もう一度お試しください。
+vpnc_ssk_Failed_verification=確認コードが無効です。もう一度お試しください。
+vpnc_ssk_KeyPair_max=お使いのSurfsharkアカウントはVPNキーペアの最大数（50）に達しています。新しいVPN接続を作成するには、Surfsharkアカウントから未使用のキーペアを削除してから、もう一度お試しください。
+vpnc_ssk_Missing_credent=認証情報がありません。アプリを閉じて再度ログインしてください。
+vpnc_ssk_Timeout_login=ログイン要求がタイムアウトしました。もう一度お試しください。
+vpnc_ssk_Timeout_resend=再送信がタイムアウトしました。もう一度お試しください。
+vpnc_ssk_Timeout_verification=確認要求がタイムアウトしました。もう一度お試しください。
+vpnc_ssk_Timeout_network=ネットワークエラーです。もう一度お試しください。
 vpnc_step=下記手順に従い VPN 接続を有効にしてください。
 vpnc_step1=プロファイルを追加
 vpnc_step2=VPN 接続の種類を選択
@@ -4433,6 +4521,7 @@ vpnc_step3=接続あなたの VPN プロバイダが提供する VPN 認証情�
 vpnc_title=VPN クライアント
 vpnc_peer=ピア
 vpnc_pppoe_dis_nat_confirm=PPPoE 接続で VPN クライアントを使用している場合、NAT アクセラレーションを無効にするため、ルーターは自動的に再起動を行います。続行しますか？
+vpnc_kill_switch_desc=If enabled, this feature blocks all internet traffic instantly if the VPN drops to prevent IP and data leaks. Connection will be suspended until the VPN successfully reconnects or the feature is disabled.
 WAN_barrier=バリアー
 WAN_Cfg_Ethernet_WAN=ZVMODELVZ の WAN 設定
 WAN_default_route=規定のルート
@@ -4497,7 +4586,7 @@ WANTCPMSSOptionText=TCP MSS オプション
 WANTCPMSSOptionComm1Text=バイト
 WANVLANIDText=VLAN ID
 WANAggregation=WAN アグリゲーション
-WANAggregation_desc=WAN アグリゲーションは、2つのネットワークを組み合わせて、最大 2Gbps に高速通信を可能にします。ルーターの #WAN ポートと LAN 4 ポートをモデムの LAN ポートに接続します（必ず同じ仕様の2本のケーブルをご使用ください）。 <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN アグリゲーションに関する FAQ</a>
+WANAggregation_desc=WAN アグリゲーションは、2つのネットワークを組み合わせて、最大 2Gbps に高速通信を可能にします。ルーターの #WAN ポートと LAN 4 ポートをモデムの LAN ポートに接続します（必ず同じ仕様の2本のケーブルをご使用ください）。 <a id="wanAgg_faq" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">WAN アグリゲーションに関する FAQ</a>
 WANAggregation_enable=WAN アグリゲーションを有効にする
 WANAggregation_disable_dualwan=デュアル WAN が有効になっています。 WAN アグリゲーションを有効にすると、デュアル WAN は無効になります。続行しますか？
 WANAggregation_disable_WANAggregation=WAN アグリゲーションが有効になっています。 デュアル WAN を有効にすると、WAN アグリゲーションは無効になります。続行しますか？
@@ -4506,13 +4595,13 @@ WANAggregation_PortConflict_hint2=LAN 4 ポートで IPTV で使用していま�
 WANAggregation_disable_IPTVDualWAN=デュアル WAN とIPTVの両方が有効になっています。 WAN アグリゲーションを有効にすると、ポートの競合を回避するためデュアル WAN と IPTV は無効になります。続行しますか？
 WANAggregation_help_WAN=#WAN ポートとモデムの LAN ポートが、同じ仕様の 2 本のケーブルで接続されていることを確認してください。
 WANAggregation_help_LAN=LAN 4ポートとモデムのLANポートが、同じ仕様の2本のケーブルで接続されていることを確認してください。
-WANAggregation_goto_WAN=WAN アグリゲーションを有効にするには、<a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN - インターネット</a>接続のページに移動します。
+WANAggregation_goto_WAN=WAN アグリゲーションを有効にするには、<a href="Advanced_WAN_Content.asp" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">WAN - インターネット</a>接続のページに移動します。
 WANAggregation_help_desc=WAN アグリゲーションの設定ができない場合は、次の解決策をお試しください。
 WANAggregation_help_step1=お使いのモデムのLANポートとルータの#WANおよびLAN 4がケーブルで接続されていることを確認
 WANAggregation_help_step2=モデムで 802.3ad が有効になっていることを確認します。
 WANAggregation_help_step3=同じ仕様のケーブルを２本使用していることを確認します。（ギガビット＆ギガビットまたは10/100＆10 / 100Mbps）
 WANAggregation_help_step4=ルーターを再起動します。
-WANAggregation_help_final=以上の解決策を試しても問題が解決しない場合は、お手数ですが、<a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>弊社サポートサイト</a>にて問題をご報告ください。
+WANAggregation_help_final=以上の解決策を試しても問題が解決しない場合は、お手数ですが、<a href='https://www.asus.com/support/' target='_blank' style='color:var(--wrt-text-color,#000);text-decoration:underline;'>弊社サポートサイト</a>にて問題をご報告ください。
 WANAggregation_wanType_hint=WANアグリゲーションは、PPPoE、PPTP、L2TPなどのWANタイプに対応していません。 WANタイプをPPPoE、PPTP、L2TPに変更すると、WANアグリゲーションは自動的に無効になります。続行しますか？
 WebGUI_issue=ファームウェアページにアクセスできません
 wechat=WeChat
@@ -4627,8 +4716,8 @@ WLANConfig11b_display31_sectiondesc=「WDS Only」または「Hybrid」モード
 WLANConfig11b_display32_sectiondesc=接続を構築するには、複数の AP 間で同じチャンネルとセキュリティ方式を設定します。
 WLANConfig11b_display33_sectiondesc=リモート AP リストにリモート AP MAC を設定し、リモート AP の WDS 管理インターフェイスを開き、このルータの MAC アドレスを設定する。
 WLANConfig11b_display34_sectiondesc=最適なパフォーマンスを得るには、「詳細設定」→「ワイヤレス」→「全般」の順に進み、ネットワーク内のすべてのルーターに対し、同じチャンネル帯域幅、コントロールチャンネル、拡張チャンネルを割り当ててください。
-WLANConfig11b_display41_sectiondesc=現在、チャンネル帯域は「Auto(自動)」に設定されています。設定を変更するには、<a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">ここ</a>をクリックしてください。
-WLANConfig11b_display42_sectiondesc=現在、無線チャンネルは「Auto(自動)」に設定されています。設定を変更するには、<a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">ここ</a>をクリックしてください。
+WLANConfig11b_display41_sectiondesc=現在、チャンネル帯域は「Auto(自動)」に設定されています。設定を変更するには、<a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">ここ</a>をクリックしてください。
+WLANConfig11b_display42_sectiondesc=現在、無線チャンネルは「Auto(自動)」に設定されています。設定を変更するには、<a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">ここ</a>をクリックしてください。
 WLANConfig11b_display5_sectiondesc=詳細設定では、ユーザーの利用環境に応じた設定ができます。パフォーマンスに影響を与えるため、デフォルト値での使用をお勧めします。
 WLANConfig11b_display6_sectiondesc=WPS (WiFi Protected Setup) は無線 LAN の接続設定やセキュリティー設定を簡単に行うために作られた規格です。ここでは PIN コード方式、WPS 方式を通じて設定を行うことができます。
 WLANConfig11b_EChannel_acs_ch13=自動選択チャンネルに 12、13 チャンネルを含める
@@ -4686,6 +4775,7 @@ WLANConfig11b_x_APMode_option2=Hybrid
 WLANConfig11b_x_APSD_itemdesc=WMM APSD (Automatic Power Save Delivery) の有効/無効を設定
 WLANConfig11b_x_APSD_itemname=WMM APSD を有効にする
 WLANConfig11b_x_Airtime_Fairness=エアタイムフェアネス
+WLANConfig11b_x_ApplyAllBands_hint=この変更はすべてのバンド設定に適用されます。
 WLANConfig11b_x_Airtime_Fairness_itemdesc=受信するパケットの数、各クライアントデバイスの論理データ速度にかかわらず各デバイスに同等の通信時間が与えることができます。
 WLANConfig11b_x_Auto=本機能を使用するには、ワイヤレスモードを[自動]に設定する必要があります。
 WLANConfig11b_x_Beacon_itemdesc=ビーコン間隔は、ビーコンを打つ間隔を指します。デフォルト値は100 で、単位はミリ秒（1/1000秒）です。ローミングクライアント用に、または安全性を下げても転送パフォーマンスを上げる場合は、この値を下げます。なお、電力効率は下がります。
@@ -4782,11 +4872,11 @@ WLANConfig11b_x_WPSMode_itemdesc=ワイヤレス接続の構築に必要な PIN 
 WLANConfig11b_x_WPSMode_itemname=WPS 方式：
 WLANConfig11b_x_WPSPIN_itemdesc=8 桁のクライアント PIN コードを入力します。<p>
 WLANConfig11b_x_WPSPIN_itemname=クライアント PIN コード
-WLANConfig11n_Auto_note=[自動] は現在のゲストネットワークの認証方式( TKIP / WEP )  と互換性がありません。<a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">ゲストネットワーク</a> 画面に移動して認証方式>を変更してください。
+WLANConfig11n_Auto_note=[自動] は現在のゲストネットワークの認証方式( TKIP / WEP )  と互換性がありません。<a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">ゲストネットワーク</a> 画面に移動して認証方式>を変更してください。
 WLANConfig11n_automode_limition_hint=WEP/TKIP 暗号化を使用する自動モードでは、ZVMODELVZ は最大転送速度 54Mbps をサポートします。
 WLANConfig11n_automode_limition_hint1=認証方法を WPA2-Personal に変更してください。
-WLANConfig11n_NAC_note=[N+AC] は現在のゲストネットワークの認証方式( TKIP / WEP )  と互換性がありません。<a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">ゲストネットワーク</a> 画面に移動して認証方式を変更してください。
-WLANConfig11n_NOnly_note=[N Only] は現在のゲストネットワークの認証方式( TKIP / WEP )  と互換性がありません。<a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">ゲストネットワーク</a> 画面に移動して認証方式を変更してください。
+WLANConfig11n_NAC_note=[N+AC] は現在のゲストネットワークの認証方式( TKIP / WEP )  と互換性がありません。<a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">ゲストネットワーク</a> 画面に移動して認証方式を変更してください。
+WLANConfig11n_NOnly_note=[N Only] は現在のゲストネットワークの認証方式( TKIP / WEP )  と互換性がありません。<a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">ゲストネットワーク</a> 画面に移動して認証方式を変更してください。
 WLANConfig11ax_AXOnly_note=By enabling AX only mode, if devices do not support 802.11ax(WiFi 6), will not able to connect to this band.
 WLANConfig11n_PremblesType_itemdesc=プリアンブルタイプは、CRC (Cyclic Redundancy Check) ブロックの長さを定義し、ワイヤレスデバイス間のデータ転送エラーを検出する技術です。全てのワイヤレスデバイスに同じプリアンブルタイプを設定することをお勧めします。高速ネットワークトラフィックエリアには短いプリアンブルを、旧型のワイヤレスデバイスには長いプリアンブルを設定します。
 WLANConfig11n_PremblesType_itemname=802.11b mode
@@ -4904,11 +4994,21 @@ Captive_Portal_Above=以上
 Captive_Portal_Selected_Color=選択した色
 Captive_Portal_Local=ローカル
 Configuration=設定
-Configuration_dark_mode=Dark
-Configuration_light_mode=Light
-Configuration_theme=Theme
-Configuration_fancy_theme=Fancy
+Configuration_dark_mode=ダーク
+Configuration_light_mode=ライト
+Configuration_theme=テーマ
+Configuration_fancy_theme=スタイリッシュ
+Configuration_flat_theme=フラット
 Continuous_Mode=連続モード
+View_Details=詳細を表示
+NetworkMap_Clients=クライアント
+NetworkMap_Guest_Clients=ゲストクライアント
+NetworkMap_Add_AiMesh_Hint=WiFiの通信範囲を拡張するには、AiMeshノードをさらに追加してください。
+Dashboard_Show_more=もっと見る
+Dashboard_Show_less=表示を減らす
+Dashboard_Expand=展開
+Dashboard_Refreshing=更新中
+Dashboard_Last_updated=最終更新
 CTL_Apply_Enable=適用
 FreeWiFi_AccessPolicy=アクセスポリシー
 FreeWiFi_AccountSetting_desc1=アカウント設定は簡易なゲストアカウント設定です。ゲストネットワークのセキュリティを維持するためにゲストアカウントデータベースを維持・管理します。インターネットにアクセスする前に、接続クライアントは次のアカウントとパスワードを入力してログインする必要があります。
@@ -4992,7 +5092,7 @@ menu_privacy=ポリシー
 ASUS_Notice_Privacy=ASUS 通知条項（個人情報保護方針）
 Distributing_IP=IPを割り当てています...
 LED_Brightness=LEDの明るさ
-LED_disabled_hint=This change will disable the special LED effect for the %1$@.
+LED_disabled_hint=この変更により、%1$@ の特別なLED効果が無効になります。
 WiFi_Network_List=WiFi ネットワークリスト
 Searching_WiFi_Network=近くのWiFi ネットワークを検索中...
 BoostKey=ブーストボタン設定
@@ -5162,7 +5262,7 @@ Notice_Message_3=読みました、再表示しない。
 CTL_Decline=いいえ
 Outdoor_desc_title=注意
 Outdoor_active_desc_1=屋外モードを有効にすると、AiMesh が制限され、メッシュノードが切断される可能性があります。
-Outdoor_active_desc_2=規制に準拠するために、システムは約1分間チャンネルをスキャンして気象レーダーの干渉を回避します。<span style="color:#FC0">レーダー信号が検出された場合、2.4GHzに切り替わり、一時的に接続が切断されます。影響を受けたチャンネルは30分間ブロックされます。</span>
+Outdoor_active_desc_2=規制に準拠するために、システムは約1分間チャンネルをスキャンして気象レーダーの干渉を回避します。<span style="color:var(--wrt-badge-warning-color,#FC0)">レーダー信号が検出された場合、2.4GHzに切り替わり、一時的に接続が切断されます。影響を受けたチャンネルは30分間ブロックされます。</span>
 Outdoor_active_desc_3=屋外モードはルーターおよび AP モードのみをサポートします。
 Outdoor_active_desc_4=使用可能な屋外チャンネルは国/地域によって異なります。
 Outdoor_inactive_desc_1=このモードを無効にすると、無線が一時的に再起動され、すべてのデバイスの接続が切断されます。
@@ -5193,6 +5293,7 @@ WiFi_DFS_REENTRY=DFS再接続
 WiFi_ch_conflict=チャンネル競合
 WiFi_Regulatory=規制
 WiFi_OFF=WiFiオフ
+WiFi8_6G_enable_hint=6GHzは現在WiFi 7モードで動作しています。WiFi 8を有効にするには、6GHzのWireless Professional設定で「WiFi 8」をオンにしてください。
 Vendor=ベンダー
 Connected_AP=接続されたAP
 Network_SDN=ネットワーク(SDN)

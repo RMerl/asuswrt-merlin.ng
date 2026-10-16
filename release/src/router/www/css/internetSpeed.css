@@ -2,6 +2,10 @@ body{
 	margin: 0;
 }
 
+:root{
+	--internet-speed-ic-stopwatch: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBzdHJva2U9IiMwMDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIxLjIiIGQ9Ik0xMi4wMDEgMjEuMjVhOC4yMiA4LjIyIDAgMSAxIDAtMTYuNDQgOC4yMiA4LjIyIDAgMCAxIDAgMTYuNDRaIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiLz48cGF0aCBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9Ii41IiBkPSJNMTUuOTYgMTYuNzZBNS42IDUuNiAwIDEgMSAxMiA3LjJ2NS42bDMuOTYgMy45NloiLz48cGF0aCBzdHJva2U9IiMwMDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIxLjIiIGQ9Ik0xMiAyLjQzMnYyLjA2bTcuMjcgMS4yNjgtMS4xIDEuMSIvPjxnIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuMiI+PHBhdGggZD0iTTEyIDE0LjA2QTEuMDMgMS4wMyAwIDEgMSAxMiAxMmExLjAzIDEuMDMgMCAwIDEgMCAyLjA2WiIgY2xpcC1ydWxlPSJldmVub2RkIi8+PHBhdGggZD0iTTEyIDEzLjAzIDE1LjUgMTciLz48L2c+PHBhdGggc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS4yIiBkPSJNMTAuOTcgMi4xMTJoMi4wNiIvPjwvc3ZnPg==");
+}
+
 .bg_internetSpeed{
 	background-color: transparent;
 	color: #FFFFFF;
@@ -190,6 +194,84 @@ body{
 	display: none;
 }
 
+.quota_notice_inner{
+	width: 100%;
+	max-width: 760px;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 24px 28px;
+}
+
+.quota_notice_content{
+	min-width: 0;
+	flex: 1 1 auto;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	text-align: left;
+}
+
+.quota_notice_text{
+	font-size: 14px;
+	font-weight: bold;
+	line-height: 20px;
+	color: var(--primary-50, #248DFF);;
+}
+
+.quota_notice_desc{
+	margin-top: 4px;
+	font-size: 13px;
+	line-height: 18px;
+	color: var(--text-primary);
+}
+
+.quota_notice_button{
+	min-width: 0;
+	height: 36px;
+	padding: 0 20px;
+	box-sizing: border-box;
+	border-radius: 18px;
+	border: 1px solid var(--brand-primary, #006ce1);
+	background: var(--brand-primary, #006ce1);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--white-alpha-100, #ffffff);
+	font-size: 14px;
+	font-weight: bold;
+	cursor: pointer;
+	margin-top: 15px;
+	align-self: flex-start;
+}
+
+.quota_notice_button:hover{
+	filter: brightness(1.08);
+}
+
+.quota_notice_icon{
+	display: inline-block;
+	flex-shrink: 0;
+	width: 96px;
+	height: 96px;
+	mask-image: var(--internet-speed-ic-stopwatch);
+	-webkit-mask-image: var(--internet-speed-ic-stopwatch);
+	mask-repeat: no-repeat;
+	-webkit-mask-repeat: no-repeat;
+	mask-position: center;
+	-webkit-mask-position: center;
+	mask-size: 100%;
+	-webkit-mask-size: 100%;
+	background-color: var(--icon-static-color, #99CAFF);
+}
+
+.quota_notice_icon_eos{
+	width: 96px;
+	height: 96px;
+	mask-image: url(../images/speedtest/notification.svg);
+	-webkit-mask-image: url(../images/speedtest/notification.svg);
+}
 
 .ookla_info{
 	font-size: 12px;
@@ -206,6 +288,27 @@ body{
 	border-radius: 5px;
 	width: 98%;
 	margin-left: 5px;
+	position: relative;
+}
+
+.speedTest_div_content{
+	position: relative;
+	z-index: 1;
+}
+
+.speedTest_quota_overlay{
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	box-sizing: border-box;
+}
+
+.speedTest_quota_exceeded .speedTest_div_content{
+	visibility: hidden;
 }
 
 .level_ping_div{
@@ -995,15 +1098,15 @@ body{
 	margin: auto;
 	top: 0;
 	left: 0;
-	width:100%;
+	width: 100%;
 	height: 100%;
-	z-index:999;
+	z-index: 999;
 	background: rgba(19,24,32,0.80);
-	filter:alpha(opacity=94);  /*IE5、IE5.5、IE6、IE7*/
-	opacity: .94;  /*Opera9.0+、Firefox1.5+、Safari、Chrome*/
+	filter: alpha(opacity=94);   /*IE5, IE5.5, IE6, IE7*/
+	opacity: .94;  /*Opera9.0+, Firefox1.5+, Safari, Chrome*/
 	background-repeat: repeat;
-	display:none;
-	overflow:hidden;
+	display: none;
+	overflow: hidden;
 }
 
 .alert_notification{
@@ -1065,7 +1168,7 @@ body{
 }
 
 .alert_notification_text{
-	color:#FC0;
+	color:var(--wrt-badge-warning-color,#FC0);
 	text-decoration: underline;
 }
 
@@ -1375,6 +1478,26 @@ body{
 		width: 96%;
 	}
 
+	.speedTest_quota_overlay{
+		padding: 20px 14px;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.quota_notice_inner{
+		max-width: 340px;
+		padding: 8px 0 0 0;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		justify-content: center;
+		margin: 0 auto;
+	}
+
+	.quota_notice_content{
+		width: 100%;
+		text-align: left;
+	}
+
 	.desc_div{
 		width: 100%;
 		margin-top: 10px;
@@ -1415,6 +1538,21 @@ body{
 
 	.speedTest_btn_container{
 		width: 100%;
+	}
+
+	.quota_notice_text{
+		font-size: 13px;
+		line-height: 18px;
+	}
+
+	.quota_notice_desc{
+		font-size: 12px;
+		line-height: 17px;
+	}
+
+	.quota_notice_button{
+		width: 100%;
+		min-width: 0;
 	}
 
 	.download_upload_container{
@@ -1611,7 +1749,7 @@ body{
 	}
 
 	.alert_header{
-		color: #FC0;
+		color: var(--wrt-badge-warning-color,#FC0);
 		margin-left: 0px;
 	}
 

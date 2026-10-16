@@ -1,0 +1,5 @@
+iptables-translate -A OUTPUT -m quota --quota 111
+nft 'add rule ip filter OUTPUT quota 111 bytes counter'
+
+iptables-translate -A OUTPUT -m quota ! --quota 111
+nft 'add rule ip filter OUTPUT quota over 111 bytes counter'

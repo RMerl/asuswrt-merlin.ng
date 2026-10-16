@@ -1327,7 +1327,7 @@ input:hover{
     background-color: #f5f5f5cc !important;
 }
 #sig_check{
-	margin-left: -200px !important;
+	/* margin-left: -200px !important; */
     margin-top: 38px !important;
 	height: 40px !important;
 }
@@ -1738,6 +1738,12 @@ div.wrapper> table>td{
 }
 .checkFWCurrent, .checkFWResult{
 	font-family: monospace;
+
+}
+.sig_ver_info{
+	height:30px;
+	margin-left:215px;
+	margin-top:-27px;
 }
 #clientListOption {
 	width: 300px !important;
@@ -1770,6 +1776,9 @@ div.wrapper> table>td{
 }
 #update_states {
 	color: #FF0000 !important;
+}
+#sig_status {
+	color: var(--status-msg-negative-strong);
 }
 .hintstyle:link {
 	color: #262626 !important;

@@ -1,0 +1,8 @@
+iptables-translate -I INPUT -j LOG
+nft 'insert rule ip filter INPUT counter log'
+
+ip6tables-translate -A FORWARD -p tcp -j LOG --log-level debug
+nft 'add rule ip6 filter FORWARD meta l4proto tcp counter log level debug'
+
+ip6tables-translate -A FORWARD -p tcp -j LOG --log-prefix "Checking log"
+nft 'add rule ip6 filter FORWARD meta l4proto tcp counter log prefix "Checking log"'

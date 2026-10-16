@@ -1,0 +1,13 @@
+:INPUT,FORWARD,OUTPUT
+-m tos --tos Minimize-Delay;-m tos --tos 0x10/0x3f;OK
+-m tos --tos Maximize-Throughput;-m tos --tos 0x08/0x3f;OK
+-m tos --tos Maximize-Reliability;-m tos --tos 0x04/0x3f;OK
+-m tos --tos Minimize-Cost;-m tos --tos 0x02/0x3f;OK
+-m tos --tos Normal-Service;-m tos --tos 0x00/0x3f;OK
+-m tos --tos 0xff;-m tos --tos 0xff/0xff;OK
+-m tos ! --tos 0xff;-m tos ! --tos 0xff/0xff;OK
+-m tos --tos 0x00;-m tos --tos 0x00/0xff;OK
+-m tos --tos 0x0f;-m tos --tos 0x0f/0xff;OK
+-m tos --tos 0x0f/0x0f;=;OK
+-m tos --tos wrong;;FAIL
+-m tos;;FAIL

@@ -41,15 +41,15 @@
 };
 
 &legacy_leds {
-    wl0-led = <&led0>;
-    wl1-led = <&led1>;
+    wl0-led = <&led1>;
+    wl1-led = <&led0>;
 };
 
 &led_ctrl {
     led0: sw_parallel_led_0 {
         active_low;
         brightness = <0>;
-        pinctrl-0 = <&a_per_led_00_pin_0>;
+        pinctrl-0 = <&a_per_led_01_pin_1>;
         status = "okay";
         label = "WiFi_24";
     };
@@ -57,7 +57,7 @@
     led1: sw_parallel_led_1 {
         active_low;
         brightness = <0>;
-        pinctrl-0 = <&a_per_led_01_pin_1>;
+        pinctrl-0 = <&a_per_led_00_pin_0>;
         status = "okay";
         label = "WiFi_5";
     };

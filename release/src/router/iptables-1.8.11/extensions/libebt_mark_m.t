@@ -1,0 +1,6 @@
+:INPUT,FORWARD,OUTPUT
+--mark 42;--mark 0x2a;OK
+! --mark 42;! --mark 0x2a;OK
+--mark 42/0xff;--mark 0x2a/0xff;OK
+! --mark 0x1/0xff;=;OK
+--mark /0x2;=;OK

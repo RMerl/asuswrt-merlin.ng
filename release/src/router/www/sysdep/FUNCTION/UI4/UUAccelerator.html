@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="-1">
+<link rel="shortcut icon" href="images/favicon.png">
+<link rel="icon" href="images/favicon.png">
+<title><#Web_Title#> - <#UU_Accelerator#></title>
+<!-- Design tokens (theme-aware; keyed on <html data-asuswrt-theme/-color>). -->
+<link rel="stylesheet" type="text/css" href="/css/color-table.css">
+<link rel="stylesheet" type="text/css" href="/css/wrt-ui-alias-tokens.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
+<script>
+	// Runs before the body renders (avoids a theme flash). The settings shell
+	// keeps the theme on <html> of the top document and posts changes to this
+	// iframe; mirror them here so color-table.css resolves the right palette
+	// (same behaviour state.js gives legacy pages).
+	(function(){
+		if(window.self === window.top) return;
+		try{
+			var topRoot = window.top.document.documentElement;
+			var selfRoot = document.documentElement;
+			var c = topRoot.getAttribute("data-asuswrt-color");
+			if(c) selfRoot.setAttribute("data-asuswrt-color", c);
+			var t = topRoot.getAttribute("data-asuswrt-theme");
+			if(t) selfRoot.setAttribute("data-asuswrt-theme", t);
+		}catch(e){}
+		window.addEventListener("message", function(e){
+			if(!e || !e.data) return;
+			if(typeof e.data.color !== "undefined") document.documentElement.setAttribute("data-asuswrt-color", e.data.color);
+			if(typeof e.data.theme !== "undefined") document.documentElement.setAttribute("data-asuswrt-theme", e.data.theme);
+		});
+	})();
+</script>
+<style>
+	*, *::before, *::after { box-sizing: border-box; }
+	html, body {
+		margin: 0;
+		background: transparent;
+		color: var(--text-primary, #272A31);
+		/* Match the exact font token business-white.css applies to <body>, so the
+		   first paint already uses the final font. color-table.css (linked above,
+		   render-blocking) defines --global-font-style before paint; otherwise the
+		   async-injected business-white.css swaps the font in later and text jumps. */
+		font-family: var(--global-font-style, Arial, "Microsoft JhengHei", "PingFang TC", sans-serif);
+		font-size: 14px;
+		-webkit-font-smoothing: antialiased;
+		/* The shell injects business-white.css (body{visibility:hidden}), which
+		   legacy pages undo via setupBusinessUI(). This page doesn't call that,
+		   so keep the body visible ourselves. */
+		visibility: visible !important;
+	}
+
+	.uu-wrap { padding: 16px; }
+
+	.uu-card {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		padding: 20px;
+		border: 1px solid var(--wrt-card-border, var(--border-subtle, #DCDCDC));
+		border-radius: var(--wrt-card-radius, 12px);
+		background: var(--surface-card, var(--wrt-card-bg, #FFFFFF));
+		box-shadow: var(--wrt-card-shadow-soft, 0 1px 3px rgba(0, 0, 0, 0.08));
+	}
+
+	.uu-card-logo {
+		flex: 0 0 auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0 8px;
+	}
+	.uu-card-logo img { max-width: 180px; width: 100%; height: auto; display: block; }
+
+	.uu-card-divider {
+		flex: 0 0 auto;
+		align-self: stretch;
+		width: 1px;
+		min-height: 96px;
+		background: var(--border-subtle, var(--wrt-card-border, #DCDCDC));
+	}
+
+	.uu-card-content { flex: 1 1 240px; min-width: 0; }
+
+	.uu-card-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 12px;
+		margin-bottom: 8px;
+	}
+	.uu-card-title { margin: 0; font-size: 16px; font-weight: 600; color: var(--text-primary, #272A31); }
+	.uu-card-faq {
+		white-space: nowrap;
+		color: var(--link-color, var(--brand-primary, #006CE1));
+		text-decoration: none;
+	}
+	.uu-card-faq:hover { text-decoration: underline; }
+	.uu-card-desc {
+		margin: 0;
+		font-size: 13px;
+		line-height: 1.5;
+		color: var(--text-secondary, #666666);
+		overflow-wrap: break-word;
+	}
+
+	.uu-card-action {
+		flex: 0 0 auto;
+		width: 140px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 14px;
+	}
+
+	/* Host for the ToggleButton web component (component.module.js). */
+	.uu-switch-holder { display: flex; align-items: center; justify-content: center; min-height: 24px; }
+
+	.uu-btn {
+		width: 100%;
+		min-height: 40px; /* comfortable touch target */
+		padding: 9px 16px;
+		border: 0;
+		border-radius: var(--wrt-btn-radius, var(--wrt-card-radius, 8px));
+		background: var(--brand-primary, #006CE1);
+		color: var(--primary-btn-text-color, #FFFFFF);
+		font-size: 14px;
+		font-weight: 600;
+		cursor: pointer;
+		touch-action: manipulation;
+		transition: filter .15s ease, opacity .15s ease;
+	}
+	.uu-btn:hover:not(:disabled) { filter: brightness(1.06); }
+	.uu-btn:disabled { opacity: .45; cursor: default; }
+
+	/* ── RWD ─────────────────────────────────────────────────────────────
+	   Breakpoints track THIS document's viewport = the iframe width the
+	   settings shell actually gives us (device 768 ≈ iframe 657, device
+	   375 ≈ iframe 344). Three tiers:
+	   wide ≥650px   logo │ text │ controls (3 columns)
+	   460–649px     logo │ text on top, controls row below
+	   ≤459px        single centered column
+	   (459 cutoff: the top row needs ≥220px for text next to the 140px
+	   logo, which holds down to exactly 460px — below that the wrap point
+	   would split mid-row.) */
+
+	@media (max-width: 649px) {
+		.uu-card { flex-wrap: wrap; }
+		.uu-card-logo img { max-width: 140px; }
+		.uu-card-divider { min-height: 72px; }
+		.uu-card-content { flex: 1 1 220px; }
+		/* The divider after the text turns horizontal, separating the rows. */
+		.uu-card-content ~ .uu-card-divider {
+			flex-basis: 100%;
+			width: auto;
+			height: 1px;
+			min-height: 0;
+		}
+		/* Controls become a full-width row: toggle left, button right. */
+		.uu-card-action {
+			width: 100%;
+			flex-direction: row;
+			justify-content: space-between;
+		}
+		.uu-card-action .uu-btn { width: auto; flex: 0 1 240px; }
+	}
+
+	@media (max-width: 459px) {
+		.uu-wrap { padding: 12px; }
+		.uu-card { padding: 16px; text-align: center; }
+		.uu-card-logo { width: 100%; }
+		.uu-card-logo img { max-width: 150px; }
+		/* Both dividers horizontal in the single-column stack. */
+		.uu-card-logo + .uu-card-divider {
+			flex-basis: 100%;
+			width: auto;
+			height: 1px;
+			min-height: 0;
+		}
+		.uu-card-header { justify-content: center; flex-wrap: wrap; }
+		.uu-card-action { flex-direction: column; }
+		.uu-card-action .uu-btn { width: 100%; flex: 0 0 auto; }
+	}
+</style>
+</head>
+<body>
+	<div class="uu-wrap">
+		<section class="uu-card">
+			<div class="uu-card-logo">
+				<img src="/images/UU_Logo_RGB.svg" alt="UU">
+			</div>
+			<div class="uu-card-divider"></div>
+			<div class="uu-card-content">
+				<div class="uu-card-header">
+					<h2 class="uu-card-title"><#UU_Accelerator#></h2>
+					<a class="uu-card-faq" href="https://uu.163.com/router/" target="_blank" rel="noopener">FAQ</a>
+				</div>
+				<p class="uu-card-desc"><#UU_Accelerator_desc#></p>
+			</div>
+			<div class="uu-card-divider"></div>
+			<div class="uu-card-action">
+				<div id="uu_switch" class="uu-switch-holder"></div>
+				<button type="button" id="uu_go_btn" class="uu-btn"><#btn_go#></button>
+			</div>
+		</section>
+	</div>
+
+	<script type="module">
+		import { ToggleButton } from "/js/component.module.js";
+
+		const nvram_get_param = httpApi.nvramGet([
+			"uuplugin_enable", "label_mac"
+		], true);
+
+		const label_mac = nvram_get_param.label_mac.toLowerCase();
+		let uuState = nvram_get_param.uuplugin_enable || "0";
+
+		var goBtn = document.getElementById("uu_go_btn");
+		function setGoEnabled(on){ goBtn.disabled = !on; }
+
+		// Design-system toggle (Shadow DOM; its --wrt-switch-* styles inherit the
+		// tokens from this document, so it follows the theme).
+		var toggle = new ToggleButton(uuState === "1", false, { label: "<#UU_Accelerator#>" });
+		document.getElementById("uu_switch").appendChild(toggle.render());
+		setGoEnabled(toggle.getValue());
+
+		// Toggle -> write uuplugin_enable + restart the plugin, same as UUAccelerator.asp
+		// and game_acceleration.html. Must go through httpApi.nvramSet() (not a plain
+		// fetch) so it clears top.cachedData -- otherwise those other pages keep
+		// reading the stale cached value on their next nvramGet().
+		toggle.setOnChange(function(on){
+			setGoEnabled(on);
+			toggle.setDisabled(true);
+
+			var settled = false;
+			// httpApi.nvramSet() gives no failure signal -- its AJAX error handler is a
+			// no-op, and the App-bridge path (postMessageToApp) never calls the handler
+			// at all -- so a watchdog is the only way to guarantee the switch doesn't
+			// stay stuck disabled. On timeout, re-read the real nvram value instead of
+			// assuming the write landed.
+			var watchdog = setTimeout(function(){ finish(false); }, 10000);
+
+			function finish(success){
+				if(settled) return;
+				settled = true;
+				clearTimeout(watchdog);
+				uuState = success ? (on ? "1" : "0")
+					: (httpApi.nvramGet(["uuplugin_enable"], true).uuplugin_enable || "0");
+				var isOn = uuState === "1";
+				if(isOn) toggle.enable(); else toggle.disable();
+				setGoEnabled(isOn);
+				toggle.setDisabled(false);
+			}
+
+			httpApi.nvramSet({
+				action_mode: "apply",
+				rc_service: "restart_uuplugin",
+				uuplugin_enable: on ? "1" : "0"
+			}, function(){
+				finish(true);
+			});
+		});
+
+		// Go -> open the UU registration/console page for this router.
+		goBtn.addEventListener("click", function(){
+			if(goBtn.disabled) return;
+			var mac = String(label_mac || "").toLowerCase();
+			window.open("https://router.uu.163.com/asus/pc.html#/acce?gwSn=" + mac + "&type=asuswrt", "_blank");
+		});
+	</script>
+</body>
+</html>

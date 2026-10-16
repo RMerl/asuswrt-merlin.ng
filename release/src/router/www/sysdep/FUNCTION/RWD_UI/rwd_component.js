@@ -1130,7 +1130,7 @@ function set_value_Custom_Select(_obj, _id, _value){
 }
 function resize_iframe_height(_preheight){
 	if($(parent.document).find(".rwd_iframe").length == "1"){
-		var menu_height = $(parent.document).find("#mainMenu").height();
+		var menu_height = $(parent.document).find("#mainMenu").height() || 0;
 		var container_height = $(".container").height();
 
 		if(_preheight != undefined && (typeof _preheight == "number"))

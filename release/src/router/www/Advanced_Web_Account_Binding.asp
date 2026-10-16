@@ -111,22 +111,22 @@
 	display: table-row;
 }
 .divTableHeading {
-	background-color: #EEE;
+	background-color: var(--surface-hover, #EEE);
 	display: table-header-group;
 }
 .divTableCell, .divTableHead {
-	border: 1px solid #999999;
+	border: 1px solid var(--border-default, #999999);
 	display: table-cell;
 	padding: 3px 10px;
 	text-align: left;
 }
 .divTableHeading {
-	background-color: #EEE;
+	background-color: var(--surface-hover, #EEE);
 	display: table-header-group;
 	font-weight: bold;
 }
 .divTableFoot {
-	background-color: #EEE;
+	background-color: var(--surface-hover, #EEE);
 	display: table-footer-group;
 	font-weight: bold;
 }
@@ -380,7 +380,7 @@ function initial(){
 </div>
 
 <div id="oauth_info" style="margin: 0px 0px 0px 450px; text-align: center;">
-	<div class="divTable" style="width: 80%; border: 2px solid #000;">
+	<div class="divTable" style="width: 80%; border: 2px solid var(--border-default, #000);">
 		<div class="divTableBody">
 			<div class="divTableRow">
 				<div class="divTableCell" style="width: 30%;">&nbsp;oauth_user_id</div>

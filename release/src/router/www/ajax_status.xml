@@ -74,4 +74,5 @@
   <wanbonding>wan_bonding_p1_status=<% wan_bonding_p1_status(); %></wanbonding>
   <wanbonding>wan_bonding_p2_status=<% wan_bonding_p2_status(); %></wanbonding>
   <wanbonding>lacp_wan=<% lacp_wan(); %></wanbonding>
+  <wan>ip_route_get=<% ip_route_get(); %></wan>
 </devicemap>

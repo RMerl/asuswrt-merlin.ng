@@ -1,0 +1,41 @@
+#!/bin/bash
+
+RET=0
+tmpfile=""
+
+set -x
+
+clean_tempfile()
+{
+	if [ -n "${tmpfile}" ]; then
+		rm -f "${tmpfile}"
+	fi
+}
+
+trap clean_tempfile EXIT
+
+tmpfile=$(mktemp) || exit 1
+
+do_simple()
+{
+	iptables="${1}"
+	table="${2}"
+	dumpfile="$(dirname "${0}")/dumps/${iptables}.dump"
+
+	"$XT_MULTI" "${iptables}-restore" --table="${table}" "${dumpfile}"; rv=$?
+
+	if [ "${rv}" -ne 0 ]; then
+		RET=1
+	fi
+}
+
+do_simple "iptables" "filter"
+do_simple "iptables" "mangle"
+do_simple "iptables" "raw"
+do_simple "iptables" "nat"
+do_simple "ip6tables" "filter"
+do_simple "ip6tables" "mangle"
+do_simple "ip6tables" "raw"
+do_simple "ip6tables" "nat"
+
+exit "${RET}"

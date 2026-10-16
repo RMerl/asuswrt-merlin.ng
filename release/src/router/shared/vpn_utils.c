@@ -448,7 +448,8 @@ int is_wgc_connected(int unit)
 #endif
 
 
-#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+#if (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916)) \
+ && !defined(WIFI7_SDK_20250506) && !defined(RTCONFIG_WIFI8)
 int _wg_check_same_port(wg_type_t type, int unit, int port)
 {
 	int i;

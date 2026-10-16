@@ -1957,6 +1957,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_AUTODICT/d" $(1); \
 		echo "RTCONFIG_AUTODICT=y" >>$(1); \
 	fi;
+	if [ "$(FORCE_AUTODICT)" = "y" ]; then \
+		sed -i "/RTCONFIG_FORCE_AUTODICT/d" $(1); \
+		echo "RTCONFIG_FORCE_AUTODICT=y" >>$(1); \
+	fi;
 	if [ "$(ZIPLIVEUPDATE)" = "y" ]; then \
 		sed -i "/RTCONFIG_AUTOLIVEUPDATE_ZIP/d" $(1); \
 		echo "RTCONFIG_AUTOLIVEUPDATE_ZIP=y" >>$(1); \
@@ -4780,6 +4784,16 @@ define RouterOptions
 		sed -i "/RTCONFIG_MULTILAN_CFG/d" $(1); \
 		echo "RTCONFIG_MULTILAN_CFG=y" >>$(1); \
 	fi;
+	if [ "$(WIFI8)" = "y" ]; then \
+		sed -i "/RTCONFIG_WIFI7/d" $(1); \
+		echo "RTCONFIG_WIFI7=y" >>$(1); \
+		sed -i "/RTCONFIG_WIFI8/d" $(1); \
+		echo "RTCONFIG_WIFI8=y" >>$(1); \
+		sed -i "/RTCONFIG_WIFI_MODE/d" $(1); \
+		echo "RTCONFIG_WIFI_MODE=y" >>$(1); \
+		sed -i "/RTCONFIG_HINET_MESH_BRIDGE/d" $(1); \
+		echo "RTCONFIG_HINET_MESH_BRIDGE=y" >>$(1); \
+	fi;
 	if [ "$(SAVE_WL_NVRAM_BOTH)" = "y" ]; then \
 		sed -i "/RTCONFIG_SAVE_WL_NVRAM_BOTH/d" $(1); \
 		echo "RTCONFIG_SAVE_WL_NVRAM_BOTH=y" >>$(1); \
@@ -5145,6 +5159,30 @@ define RouterOptions
 	if [ "$(ASUSWRT_BRCM_SDK_VERSION)" = "WIFI7_SDK_20231126" ] || [ "$(ASUSWRT_BRCM_SDK_VERSION)" = "WIFI7_SDK_20241007" ]; then \
 		sed -i "/RTCONFIG_VLANCTL\>/d" $(1); \
 		echo "RTCONFIG_VLANCTL=y" >>$(1); \
+	fi;
+	sed -i "/RTCONFIG_NETDEV_PER_PORT/d" $(1); \
+	echo "# RTCONFIG_NETDEV_PER_PORT is not set" >> $(1); \
+	sed -i "/RTCONFIG_EXT_SWITCH_LAN/d" $(1); \
+	echo "# RTCONFIG_EXT_SWITCH_LAN is not set" >> $(1); \
+	sed -i "/RTCONFIG_EXT_SWITCH_ALL/d" $(1); \
+	echo "# RTCONFIG_EXT_SWITCH_ALL is not set" >> $(1); \
+	if [ "$(IPTV_IPVLAN)" != "" ]; then \
+		if [ "$(IPTV_IPVLAN)" = "1" ]; then \
+			sed -i "/RTCONFIG_NETDEV_PER_PORT/d" $(1); \
+			echo "RTCONFIG_NETDEV_PER_PORT=y" >> $(1); \
+		elif [ "$(IPTV_IPVLAN)" = "2" ]; then \
+			sed -i "/RTCONFIG_EXT_SWITCH_LAN/d" $(1); \
+			echo "RTCONFIG_EXT_SWITCH_LAN=y" >> $(1); \
+		elif [ "$(IPTV_IPVLAN)" = "3" ]; then \
+			sed -i "/RTCONFIG_EXT_SWITCH_ALL/d" $(1); \
+			echo "RTCONFIG_EXT_SWITCH_ALL=y" >> $(1); \
+		fi; \
+		sed -i "/RTCONFIG_HINET_MESH_BRIDGE/d" $(1); \
+		echo "RTCONFIG_HINET_MESH_BRIDGE=y" >>$(1); \
+	fi;
+	if [ "$(ZASSOC_B4ACS)" = "y" ]; then \
+		sed -i "/RTCONFIG_ZASSOC_B4ACS/d" $(1); \
+		echo "RTCONFIG_ZASSOC_B4ACS=y" >>$(1); \
 	fi;
 	$(call platformRouterOptions, $(1))
 endef
@@ -6434,11 +6472,17 @@ fi;
 		sed -i "/CONFIG_BCM_EXT_SWITCH_TYPE/d" $(1); \
 		echo "CONFIG_BCM_EXT_SWITCH_TYPE=53134" >>$(1); \
 	fi; \
-	sed -i "/CONFIG_BCM_EXT_SWITCH_RTK/d" $(1); \
+	sed -i "/CONFIG_BCM_EXT_SWITCH_RTK\>/d" $(1); \
 	if [ "$(BCM_EXT_SWITCH_RTK)" = "y" ]; then \
 		echo "CONFIG_BCM_EXT_SWITCH_RTK=y" >>$(1); \
 	else \
 		echo "# CONFIG_BCM_EXT_SWITCH_RTK is not set" >>$(1); \
+	fi; \
+	sed -i "/CONFIG_BCM_EXT_SWITCH_MXL\>/d" $(1); \
+	if [ "$(BCM_EXT_SWITCH_MXL)" = "y" ]; then \
+		echo "CONFIG_BCM_EXT_SWITCH_MXL=y" >>$(1); \
+	else \
+		echo "# CONFIG_BCM_EXT_SWITCH_MXL is not set" >>$(1); \
 	fi; \
 	sed -i "/CONFIG_LINUX_MTD/d" $(1); \
 	if [ "$(LINUX_MTD)" = "" ]; then \
@@ -7005,6 +7049,10 @@ fi;
 			sed -i "/CONFIG_BCM6766_2G/d" $(1); \
 			echo "# CONFIG_BCM6766_2G is not set" >>$(1); \
 		fi; \
+	fi;
+	if [ "$(MSWAN_GENERIC)" = "y" ] || [ "$(IPTV_IPVLAN)" != "" ]; then \
+		sed -i "/CONFIG_VETH/d" $(1); \
+		echo "CONFIG_VETH=y" >>$(1); \
 	fi;
 	if [ "$(BUILD_NAME)" = "RT-BE82M" ] || [ "$(BUILD_NAME)" = "GS-BE18000" ] || [ "$(BUILD_NAME)" = "GS-BE12000" ] || [ "$(BUILD_NAME)" = "GS7_PRO" ] || [ "$(BUILD_NAME)" = "GT7" ] || [ "$(BUILD_NAME)" = "GS7_PRO_MAX" ]; then \
 		sed -i "/CONFIG_BCM_EXT_SWITCH_RTK\>/d" $(1); \

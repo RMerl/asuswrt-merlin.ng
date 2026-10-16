@@ -32,6 +32,28 @@
 	background: #DB0730;
 }
 
+.quota_notice_text{
+	color: #C9D1D7;
+}
+
+.quota_notice_desc{
+	color: #8492B4;
+}
+
+.quota_notice_icon{
+	background-color: #808FFD;
+}
+
+.quota_notice_button{
+	border-color: #808FFD;
+	background: rgba(128,143,253,0.15);
+	color: #FFFFFF;
+}
+
+.speedTest_quota_overlay{
+	background: rgba(26, 26, 32, 0.97);
+}
+
 .ookla_info{
 	color: #79031A;
 }

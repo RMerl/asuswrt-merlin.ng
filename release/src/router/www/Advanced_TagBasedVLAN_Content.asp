@@ -444,7 +444,7 @@ function show_binding_list(){
 	code +='<table width="97%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="binding_inf_table">';
 	
 	if(bind_interface_array.length == 0)
-		code +="<tr><td style='color:#FFCC00;' colspan='3'><#TBVLAN_NoBindingInf#></td>";
+		code +="<tr><td style='color:var(--wrt-badge-warning-color,#FFCC00);' colspan='3'><#TBVLAN_NoBindingInf#></td>";
 	else{
 		Object.keys(bind_interface_array).forEach(function(key){
 			code +='<tr id="row'+key+'">';
@@ -603,7 +603,7 @@ function show_vlan_rulelist(){
 	code +='<table width="98%" align="center" cellpadding="4" cellspacing="0"  class="list_table" id="vlan_rulelist_table">';
 	
 	if(vlan_rulelist == "")
-		code +='<tr><td style="color:#FFCC00;" colspan="8">No vlan rules</td>'; /*untranslated*/
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="8">No vlan rules</td>'; /*untranslated*/
 	else{
 		for(var i = 0; i < vlan_rulelist_row.length; i++){
 			if(vlan_rulelist_row[i].length == 0)
@@ -1706,7 +1706,7 @@ function show_LanToLanRoute_list(){
 	code +='<table width="97%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="LanToLanRoute_list">';
 
 	if(cur_LanToLanRoute.length == 0)
-		code +="<tr><td style='color:#FFCC00;' colspan='3'><#TBVLAN_no_route#></td>";
+		code +="<tr><td style='color:var(--wrt-badge-warning-color,#FFCC00);' colspan='3'><#TBVLAN_no_route#></td>";
 	else{
 		Object.keys(cur_LanToLanRoute).forEach(function(key){
 			code +='<tr id="row'+key+'">';

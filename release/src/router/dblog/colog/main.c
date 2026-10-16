@@ -7,6 +7,7 @@
 #include <syslog.h>
 #include <regex.h>
 #include <ctype.h>	//isspace()
+#include <shared.h>	/* refresh_tz_env(), provided by -lshared */
 
 #define SYSLOG_TYPE     1
 #define FILE_TYPE       2
@@ -177,6 +178,7 @@ int main(int argc, char **argv){
 		}
 
 		if( (g_stream_type & SYSLOG_TYPE) == SYSLOG_TYPE ) {
+			refresh_tz_env();	/* pick up runtime timezone change before syslog() */
 			syslog(priority, "%s", line);
                 }
 	

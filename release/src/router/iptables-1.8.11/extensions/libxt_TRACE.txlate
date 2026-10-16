@@ -1,0 +1,2 @@
+iptables-translate -t raw -A PREROUTING -j TRACE
+nft 'add rule ip raw PREROUTING counter nftrace set 1'

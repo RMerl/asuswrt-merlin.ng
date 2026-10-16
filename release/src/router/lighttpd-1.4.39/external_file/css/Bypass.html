@@ -93,7 +93,14 @@ $("document").ready(function() {
 		if (userurl != null && userurl != undefined && userurl != '') {
 			var urlPattern = /^(https?:\/\/[^\s/$.?#].[^\s]*)$/i; // Only support http or https protocols
 			if (urlPattern.test(userurl)) {
-				window.location = decodeURIComponent(userurl);
+				//- userurl is attacker-controllable (CWE-601: this page can be opened
+				//- directly with any res/userurl query values, not only via a genuine
+				//- captive-portal redirect). Never auto-navigate to it - show the real
+				//- destination and require an explicit click so a forged link can't
+				//- silently bounce the visitor to a phishing site.
+				document.getElementById('redirect_link').href = userurl;
+				document.getElementById('redirect_url_text').textContent = userurl;
+				document.getElementById('redirect_section').style.display = "block";
 			}
 			else {
 				alert("Invalid URL format. Please check the URL.");
@@ -179,6 +186,13 @@ function formSubmit(auth)
 
 <div id="success_section" style="display: none;">
 <center><a href="" id="logoff_a">Logout</a></center>
+</div>
+
+<div id="redirect_section" style="display: none;">
+<center>
+<p>You have logged in. Continue to: <span id="redirect_url_text"></span></p>
+<a href="" id="redirect_link">Continue</a>
+</center>
 </div>
 
 <div id="logoff_section" style="display: none;">

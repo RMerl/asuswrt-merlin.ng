@@ -1,0 +1,11 @@
+iptables-translate -A PREROUTING -m realm --realm 4
+nft 'add rule ip filter PREROUTING rtclassid 0x4 counter'
+
+iptables-translate -A PREROUTING -m realm --realm 5/5
+nft 'add rule ip filter PREROUTING rtclassid and 0x5 == 0x5 counter'
+
+iptables-translate -A PREROUTING -m realm ! --realm 50
+nft 'add rule ip filter PREROUTING rtclassid != 0x32 counter'
+
+iptables-translate -A INPUT -m realm --realm 1/0xf
+nft 'add rule ip filter INPUT rtclassid and 0xf == 0x1 counter'

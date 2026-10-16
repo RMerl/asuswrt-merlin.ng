@@ -21,8 +21,16 @@ $(document).ready(function(){
 	initial();
 });
 
-function load_page(){
-	document.getElementById("internetSpeed_iframe").style.height = document.getElementById("FormTitle").style.height;
+function load_page(retryCount){
+	retryCount = retryCount || 0;
+	var formTitle = document.getElementById("FormTitle");
+
+	if(formTitle.style.height == "" && retryCount < 50){
+		setTimeout(function(){ load_page(retryCount + 1); }, 100);
+		return;
+	}
+
+	document.getElementById("internetSpeed_iframe").style.height = formTitle.style.height;
 	var curTheme = (top.webWrapper) ? "?current_theme=white" : "";
 	document.getElementById("internetSpeed_iframe").src = "internet_speed.html" + curTheme;
 }
@@ -67,7 +75,7 @@ function initial(){
 				<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
 					<tr>
 						<td valign="top">
-							<div style="background-color: #4D595D; border-radius: 0 0 3px 3px;" id="FormTitle"><iframe id="internetSpeed_iframe" style="width: 100%; border: none;"></iframe></div>
+							<div style="background-color: var(--surface-panel, #4D595D); border-radius: 0 0 3px 3px;" id="FormTitle"><iframe id="internetSpeed_iframe" style="width: 100%; border: none;"></iframe></div>
 						</td>
 					</tr>
 				</table>

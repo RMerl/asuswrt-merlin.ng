@@ -72,39 +72,6 @@ static int check_mount_point_icase(const disk_info_t *d_info, const partition_in
 	return v;
 }
 
-/* For NETBIOS name,
- * 1. NetBIOS names are a sequence of alphanumeric characters.
- * 2. The hyphen ("-") and full-stop (".") characters may also be used
- *     in the NetBIOS name, but not as the first or last character.
- * 3. The NetBIOS name is 16 ASCII characters, however Microsoft limits
- *     the host name to 15 characters and reserves the 16th character
- *     as a NetBIOS Suffix
- */
-int
-is_valid_netbios_name(const char *name)
-{
-	int i, valid = 1;
-	size_t len;
-
-	if(!name)
-		return 0;
-
-	len = strlen(name);
-	if(!len || len > 15)
-		return 0;
-
-	for(i = 0; valid && i < len; ++i){
-		if(isalnum(name[i]))
-			continue;
-		else if((name[i] == '-' || name[i] == '.') && (i > 0 && i < (len - 1)))
-			continue;
-
-		valid = 0;
-	}
-
-	return valid;
-}
-
 int check_existed_share(const char *string)
 {
 	FILE *tp;
@@ -330,8 +297,12 @@ int main(int argc, char *argv[])
 	strlcpy(p_computer_name, nvram_safe_get("st_samba_workgroup"), sizeof(p_computer_name));
 	if (*p_computer_name == '\0' || !is_valid_netbios_name(p_computer_name)) {
 		strlcpy(p_computer_name, nvram_safe_get("lan_domain"), sizeof(p_computer_name));
-		*strchrnul(p_computer_name, '.') = '\0';
-		toUpperCase(p_computer_name);
+		if (is_valid_domainname(p_computer_name)) {
+			*strchrnul(p_computer_name, '.') = '\0';
+			toUpperCase(p_computer_name);
+		} else {
+			p_computer_name[0] = '\0';
+		}
 	}
 	if (*p_computer_name)
 #if defined(RTCONFIG_TUXERA_SMBD)
@@ -479,8 +450,8 @@ int main(int argc, char *argv[])
 	fprintf(fp, "wide links = no\n"); 		// ASUS add
 	fprintf(fp, "bind interfaces only = yes\n");	// ASUS add
 
-	snprintf(br0_ll, "%s", getifaddr(nvram_safe_get("lan_ifname"), AF_INET6, GIF_LINKLOCAL) ? : "");
-	snprintf(br0_unicast, "%s", getifaddr(nvram_safe_get("lan_ifname"), AF_INET6, 0) ? : "");
+	snprintf(br0_ll, sizeof(br0_ll), "%s", getifaddr(nvram_safe_get("lan_ifname"), AF_INET6, GIF_LINKLOCAL) ? : "");
+	snprintf(br0_unicast, sizeof(br0_unicast), "%s", getifaddr(nvram_safe_get("lan_ifname"), AF_INET6, 0) ? : "");
 
 	if (strlen(br0_ll))
 		snprintf(br0_ll_str, sizeof(br0_ll_str), "%s%%%s/%d", br0_ll, nvram_safe_get("lan_ifname"), ipv6_prefix_len(nvram_safe_get("lan_ifname")));
@@ -528,7 +499,7 @@ int main(int argc, char *argv[])
 	else
 		br0_ll_allow[0] = '\0';
 
-	snprintf(br0_unicast_prefix, "%s", getifaddr(nvram_safe_get("lan_ifname"), AF_INET6, GIF_PREFIX) ? : "");
+	snprintf(br0_unicast_prefix, sizeof(br0_unicast_prefix), "%s", getifaddr(nvram_safe_get("lan_ifname"), AF_INET6, GIF_PREFIX) ? : "");
 	if (strlen(br0_unicast_prefix))
 		sprintf(br0_unicast_allow, "%s/%d", br0_unicast_prefix, ipv6_prefix_len(nvram_safe_get("lan_ifname")));
 	else

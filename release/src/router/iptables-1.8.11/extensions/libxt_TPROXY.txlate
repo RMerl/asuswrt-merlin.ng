@@ -1,0 +1,20 @@
+iptables-translate -t mangle -A PREROUTING -p tcp -j TPROXY --on-port 12345 --on-ip 10.0.0.1 --tproxy-mark 0x23/0xff
+nft 'add rule ip mangle PREROUTING ip protocol tcp counter tproxy to 10.0.0.1:12345 meta mark set meta mark & 0xffffff00 xor 0x23 accept'
+
+iptables-translate -t mangle -A PREROUTING -p udp -j TPROXY --on-port 12345 --on-ip 10.0.0.1 --tproxy-mark 0x23
+nft 'add rule ip mangle PREROUTING ip protocol udp counter tproxy to 10.0.0.1:12345 meta mark set 0x23 accept'
+
+iptables-translate -t mangle -A PREROUTING -p udp -j TPROXY --on-port 12345 --on-ip 10.0.0.1
+nft 'add rule ip mangle PREROUTING ip protocol udp counter tproxy to 10.0.0.1:12345 accept'
+
+iptables-translate -t mangle -A PREROUTING -p udp -j TPROXY --on-ip 10.0.0.1 --on-port 0
+nft 'add rule ip mangle PREROUTING ip protocol udp counter tproxy to 10.0.0.1 accept'
+
+iptables-translate -t mangle -A PREROUTING -p tcp -j TPROXY --on-port 12345
+nft 'add rule ip mangle PREROUTING ip protocol tcp counter tproxy to :12345 accept'
+
+iptables-translate -t mangle -A PREROUTING -p tcp -j TPROXY --on-port 0
+nft 'add rule ip mangle PREROUTING ip protocol tcp counter tproxy to :0 accept'
+
+ip6tables-translate -t mangle -A PREROUTING -p tcp -j TPROXY --on-port 12345 --on-ip dead::beef --tproxy-mark 0x23/0xffff
+nft 'add rule ip6 mangle PREROUTING meta l4proto tcp counter tproxy to [dead::beef]:12345 meta mark set meta mark & 0xffff0000 xor 0x23 accept'

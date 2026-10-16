@@ -2617,6 +2617,28 @@ char *nvram_get_r(const char *name, char *buf, size_t buflen)
 	return v;
 }
 
+/*
+ * nvram_safe_get() wrapper for values written directly into a generated
+ * config file whose format is line-based (some formats support
+ * directives that execute external commands, e.g. dnsmasq's
+ * dhcp-script=, pppd's pty/connect, strongSwan's leftupdown=). A value
+ * containing \n or \r could inject an extra line. Use this instead of
+ * nvram_safe_get() at call sites where the value is written raw into
+ * such a file and is not expected to legitimately span multiple lines.
+ * @param	name	name of variable to get
+ * @return	value of variable or "" if undefined or if the value
+ *		contains \n or \r
+ */
+char *nvram_conf_safe_get(const char *name)
+{
+	char *val = nvram_safe_get(name);
+	if (strchr(val, '\n') || strchr(val, '\r')) {
+		dbg("nvram_conf_safe_get: blocked newline in nvram key %s (config injection guard)\n", name);
+		return "";
+	}
+	return val;
+}
+
 /**
  * Combine prefix and name before nvram_get().
  * @prefix:
@@ -3290,19 +3312,19 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long long *rx
 		if(strcmp(word, ifname) == 0) {
 			if(strncmp(ifname, "wl", 2) == 0){
 				char unit_buf[8], *p1, *p2;
-				int len, idx;
+				int len, idx = i;
 
 				p1 = strchr(word, '.');
 				p2 = strchr(word, 'l');
-				len = p1 - p2;
-				if(len > 0){
-					snprintf(unit_buf, len, "%s", p2+1);
+				len = (p1 && p2) ? (p1 - p2) : -1;
+				if(len > 0 && len < (int)sizeof(unit_buf)){
+					snprintf(unit_buf, sizeof(unit_buf), "%.*s", len, p2+1);
 					idx = atoi(unit_buf);
 				}
-				sprintf(ifname_desc, "WIRELESS%d", idx);
+				snprintf(ifname_desc, 12, "WIRELESS%d", idx);
 			}
 			else{
-				sprintf(ifname_desc, "WIRELESS%d", i);
+				snprintf(ifname_desc, 12, "WIRELESS%d", i);
 			}
 
 			return 1;
@@ -3560,6 +3582,36 @@ _dprintf("%s: Finish.\n", __FUNCTION__);
 	return 0;
 }
 
+#ifndef RTCONFIG_AVOID_TZ_ENV
+/* Refresh the calling process's timezone from nvram before syslog().
+ * syslogd keeps the timestamp embedded by the sender's libc syslog(), and
+ * glibc caches TZ on first use, so a long-running daemon keeps logging
+ * with the timezone inherited at fork time.  That goes stale when the
+ * timezone is (re)configured at run time (QIS apply / restart_time only
+ * restarts syslogd/klogd), making its timestamps differ from kernel log
+ * timestamps by the UTC offset.  Same idiom as rfctime() in this file,
+ * but with a cached compare to keep the hot path cheap.
+ * Exported so daemons that call syslog(3) directly (not via logmessage)
+ * can refresh their timezone at their own logging points.
+ */
+void refresh_tz_env(void)
+{
+	static char cached_tz[64] = {0};
+	char *tz = nvram_safe_get("time_zone_x");
+
+	if (strcmp(cached_tz, tz) != 0) {
+		snprintf(cached_tz, sizeof(cached_tz), "%s", tz);
+		if (setenv("TZ", tz, 1) == 0)
+			tzset();
+	}
+}
+#else
+void refresh_tz_env(void)
+{
+	/* libc reads timezone from /etc/TZ on this profile; nothing to do */
+}
+#endif
+
 void logmessage_normal(char *logheader, char *fmt, ...){
   va_list args;
   char buf[512];
@@ -3573,6 +3625,7 @@ void logmessage_normal(char *logheader, char *fmt, ...){
   level = nvram_get_int("message_loglevel");
   if (level > 7) level = 7;
 
+  refresh_tz_env();
   strlcpy(logheader2, logheader, sizeof (logheader2));
   replace_char(logheader2, ' ', '_');
   openlog(logheader2, 0, 0);
@@ -3757,6 +3810,29 @@ int dpsr_main(char *nif)
 }
 #endif
 
+#if (defined(RTCONFIG_WIFI8) || defined(WIFI7_SDK_20250506)) && defined(RTCONFIG_MLO)
+/* Return 1 if `unit` participates in the current wl_mlo_config (per-unit value != -1).
+ * Used by WiFi7/WiFi8 MLO media bridge so every MLO member radio (not only wlc_band)
+ * is treated as an uplink proxy-STA.
+ * Covers both SDK 6.4.0 (RTCONFIG_WIFI8) and SDK 6.2.0 (WIFI7_SDK_20250506) builds. */
+int wl_mlo_config_is_member(int unit)
+{
+	char word[16], *next, config[64];
+	int idx = 0;
+
+	if (unit < 0)
+		return 0;
+
+	strlcpy(config, nvram_safe_get("wl_mlo_config"), sizeof(config));
+	foreach (word, config, next) {
+		if (idx == unit)
+			return (safe_atoi(word) != -1);
+		idx++;
+	}
+	return 0;
+}
+#endif
+
 int is_psta(int unit)
 {
 #if defined(RTCONFIG_AMAS) && defined(CONFIG_BCMWL5)
@@ -3787,6 +3863,15 @@ int is_psta(int unit)
 		(nvram_get_int("wlc_psta") == 1) &&
 		(nvram_get_int("wlc_band") == unit))
 		return 1;
+
+#if (defined(RTCONFIG_WIFI8) || defined(WIFI7_SDK_20250506)) && defined(RTCONFIG_MLO)
+	/* WiFi7/WiFi8 standalone MLO media bridge: every MLO member radio acts as an
+	 * uplink proxy-STA (wet), not just wlc_band, so multiple links come up.
+	 * Supported on both SDK 6.4.0 (RTCONFIG_WIFI8) and SDK 6.2.0
+	 * (WIFI7_SDK_20250506) builds. */
+	if (is_mlo_media_bridge() && wl_mlo_config_is_member(unit))
+		return 1;
+#endif
 
 #ifdef RPAX56
 	if(nvram_match("use_dpsta", "1") && rp_mode())	// shall not use it
@@ -6195,6 +6280,40 @@ void ipt_account(FILE *fp, char *interface) {
 #endif
 
 /*
+ * Validate an Instant Guard client identifier (the key used in nvram
+ * ig_client_list / ig_guest_client_list, e.g. rightid in ipsec.conf).
+ * Must be non-empty, at most 32 characters, and every character must be
+ * one of [A-Za-z0-9] -- the same character set as PASSWD_CHARS in
+ * httpd/web_hook.c. This value is written verbatim into a strongSwan
+ * "conn <profile>_<name>" stanza name and "rightid=<name>" in
+ * /etc/ipsec.conf (rc/rc_ipsec.c), so anything outside this character
+ * set (spaces, quotes, '#', newlines, etc.) could corrupt or inject
+ * additional directives into that config file.
+ * @name:	pointer to a string.
+ * 	1:	Legal input
+ * 	0:	illegal input
+ */
+int is_valid_ig_client_name(const char *name)
+{
+	size_t i, len;
+
+	if (!name)
+		return 0;
+
+	len = strnlen(name, 33);
+	if (len == 0 || len > 32)
+		return 0;
+
+	for (i = 0; i < len; i++) {
+		if (!((name[i] >= 'a' && name[i] <= 'z')
+		   || (name[i] >= 'A' && name[i] <= 'Z')
+		   || (name[i] >= '0' && name[i] <= '9')))
+			return 0;
+	}
+
+	return 1;
+}
+/*
  * Validate a string is valid domain name
  * @name:	pointer to  a string.
  */
@@ -6214,6 +6333,72 @@ int is_valid_domainname(const char *name)
 	}
 
 	return p - name;
+}
+
+/* For NETBIOS name,
+ * 1. NetBIOS names are a sequence of alphanumeric characters.
+ * 2. The hyphen ("-") and full-stop (".") characters may also be used
+ *     in the NetBIOS name, but not as the first or last character.
+ * 3. The NetBIOS name is 16 ASCII characters, however Microsoft limits
+ *     the host name to 15 characters and reserves the 16th character
+ *     as a NetBIOS Suffix
+ */
+int
+is_valid_netbios_name(const char *name)
+{
+	int i, valid = 1;
+	size_t len;
+
+	if(!name)
+		return 0;
+
+	len = strlen(name);
+	if(!len || len > 15)
+		return 0;
+
+	for(i = 0; valid && i < len; ++i){
+		if(isalnum((unsigned char)name[i]))
+			continue;
+		else if((name[i] == '-' || name[i] == '.') && (i > 0 && i < (len - 1)))
+			continue;
+
+		valid = 0;
+	}
+
+	return valid;
+}
+
+/*
+ * Validate a string is a safe Linux network interface name.
+ *
+ * Combines the kernel's structural rules (dev_valid_name() in
+ * net/core/dev.c) with a strict character whitelist:
+ *   - not empty
+ *   - length < IFNAMSIZ (kernel copies into a fixed IFNAMSIZ buffer)
+ *   - not "." or ".." (reserved by sysfs/procfs path handling)
+ *   - characters restricted to [A-Za-z0-9._-] via is_valid_domainname()
+ *
+ * The kernel itself only rejects '/', ':' and whitespace, which still
+ * permits shell metacharacters (';', '`', '$', '|', ...). Reusing the
+ * is_valid_domainname() whitelist closes that gap so the result is safe
+ * to pass to a shell command, while still accepting every legitimate
+ * interface name (e.g. "wl0.1", "eth6.501", "br-lan").
+ *
+ * @name:	pointer to a string.
+ * Returns non-zero (the name length) when valid, 0 otherwise.
+ */
+int is_valid_ifname(const char *name)
+{
+	if (!name || *name == '\0')
+		return 0;
+
+	if (strnlen(name, IFNAMSIZ) >= IFNAMSIZ)
+		return 0;
+
+	if (!strcmp(name, ".") || !strcmp(name, ".."))
+		return 0;
+
+	return is_valid_domainname(name);
 }
 
 int get_discovery_ssid(char *ssid_g, int size)
@@ -7476,8 +7661,10 @@ int asus_openssl_crypt(char *key, char *salt, char *out, int out_len)
 {
 	dbg("asus_openssl_crypt: check toolchain crypt() support\n");
 	int scheme_id = 0, ret = 0;
-	FILE *p_fp = NULL;
-	char cmd_line[256] = {0}, crypt_buf[256] = {0};
+	char scheme_arg[4] = {0}, crypt_buf[256] = {0};
+	char *argv[7];
+	int fd;
+	pid_t pid;
 
 	if(salt && strlen(salt) > 4){
 		if(!strncmp(salt, "$1$", 3))
@@ -7489,14 +7676,27 @@ int asus_openssl_crypt(char *key, char *salt, char *out, int out_len)
 	}else
 		return ret;
 
-	snprintf(cmd_line, sizeof(cmd_line), "openssl passwd -%d -salt %s %s", scheme_id, salt+3, key);
+	snprintf(scheme_arg, sizeof(scheme_arg), "-%d", scheme_id);
+	argv[0] = "openssl";
+	argv[1] = "passwd";
+	argv[2] = scheme_arg;
+	argv[3] = "-salt";
+	argv[4] = salt+3;
+	argv[5] = key;
+	argv[6] = NULL;
 
-	if((p_fp = popen(cmd_line, "r")) != NULL){
-		if(fgets(crypt_buf, sizeof(crypt_buf), p_fp)){
-			if (strlen(crypt_buf) > 0)
-				crypt_buf[strlen(crypt_buf)-1] = '\0';
-		}
-		pclose(p_fp);
+	fd = safe_popen_argv("openssl", argv, &pid);
+	if(fd >= 0){
+		FILE *p_fp = fdopen(fd, "r");
+		if(p_fp){
+			if(fgets(crypt_buf, sizeof(crypt_buf), p_fp)){
+				if (strlen(crypt_buf) > 0)
+					crypt_buf[strlen(crypt_buf)-1] = '\0';
+			}
+			fclose(p_fp);
+		}else
+			close(fd);
+		safe_pclose(pid, NULL);
 	}
 
 	if(crypt_buf[0] != '\0'){

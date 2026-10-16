@@ -1,0 +1,117 @@
+#!/bin/bash
+
+have_nft=false
+nft -v > /dev/null && have_nft=true
+
+dumpfile=""
+tmpfile=""
+
+set -e
+
+clean()
+{
+	$XT_MULTI iptables -t filter -F
+	$XT_MULTI iptables -t filter -X
+	$have_nft && nft flush ruleset
+}
+
+clean_tempfile()
+{
+	[ -n "${tmpfile}" ] && rm -f "${tmpfile}"
+	[ -n "${dumpfile}" ] && rm -f "${dumpfile}"
+	clean
+}
+
+trap clean_tempfile EXIT
+
+ENTRY_NUM=$((RANDOM%10))
+UCHAIN_NUM=$((RANDOM%10))
+
+get_target()
+{
+	if [ $UCHAIN_NUM -eq 0 ]; then
+		echo -n "ACCEPT"
+		return
+	fi
+
+
+	x=$((RANDOM%2))
+	if [ $x -eq 0 ];then
+		echo -n "ACCEPT"
+	else
+		printf -- "UC-%x" $((RANDOM%UCHAIN_NUM))
+	fi
+}
+
+make_dummy_rules()
+{
+	echo "*${1:-filter}"
+	echo ":INPUT ACCEPT [0:0]"
+	echo ":FORWARD ACCEPT [0:0]"
+	echo ":OUTPUT ACCEPT [0:0]"
+
+	if [ $UCHAIN_NUM -gt 0 ]; then
+		for i in $(seq 0 $UCHAIN_NUM); do
+			printf -- ":UC-%x - [0:0]\n" $i
+		done
+	fi
+
+	for proto in tcp udp sctp; do
+		for i in $(seq 0 $ENTRY_NUM); do
+			t=$(get_target)
+			printf -- "-A INPUT -i lo -p $proto --dport %d -j %s\n" $((61000-i)) $t
+			t=$(get_target)
+			printf -- "-A FORWARD -i lo -o lo -p $proto --dport %d -j %s\n" $((61000-i)) $t
+			t=$(get_target)
+			printf -- "-A OUTPUT -o lo -p $proto --dport %d -j %s\n" $((61000-i)) $t
+			[ $UCHAIN_NUM -gt 0 ] && printf -- "-A UC-%x -j ACCEPT\n" $((RANDOM%UCHAIN_NUM))
+		done
+	done
+	echo COMMIT
+}
+
+tmpfile=$(mktemp) || exit 1
+dumpfile=$(mktemp) || exit 1
+
+(make_dummy_rules; make_dummy_rules security) > $dumpfile
+$XT_MULTI iptables-restore -w < $dumpfile
+LINES1=$(wc -l < $dumpfile)
+$XT_MULTI iptables-save | grep -v '^#' > $dumpfile
+LINES2=$(wc -l < $dumpfile)
+
+if [ $LINES1 -ne $LINES2 ]; then
+	echo "Original dump has $LINES1, not $LINES2" 1>&2
+	exit 111
+fi
+
+case "$XT_MULTI" in
+*xtables-nft-multi)
+	attempts=$((RANDOM%10))
+	attempts=$((attempts+1))
+	;;
+*)
+	attempts=1
+	;;
+esac
+
+while [ $attempts -gt 0 ]; do
+	attempts=$((attempts-1))
+
+	clean
+
+	for i in $(seq 1 10); do
+		$XT_MULTI iptables-restore -w 15 < $dumpfile &
+	done
+
+	for i in $(seq 1 10); do
+		# causes exit in case ipt-restore failed (runs with set -e)
+		wait %$i
+	done
+
+	$XT_MULTI iptables-save | grep -v '^#' > $tmpfile
+
+	clean
+	cmp $tmpfile $dumpfile
+done
+
+exit 0

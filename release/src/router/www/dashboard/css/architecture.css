@@ -1,7 +1,5 @@
 @charset "UTF-8";
-@import "color-table.css";
 @import "svg-icon.css";
-@import "bootstrap-customize.css";
 @import "frame.css";
 @import "effect.css";
 
@@ -29,8 +27,8 @@
     --bg-chart-color-2: rgba(var(--color-chart-2), 0.3);
     --bg-shadow-color: rgba(var(--color-bg-card-shadow), 0.1);
     /* TEXT */
-    --text-regular-color: rgb(var(--color-text-regular));
-    --text-feature-title-color: rgb(var(--color-text-feature-title));
+    --text-regular-color: rgb(var(--text-primary-rgb));
+    --text-feature-title-color: rgb(var(--text-secondary-rgb));
     /* --text-highlight-color: rgb(var(--color-text-highlight)); */
     --text-menu-title-color: rgb(var(--color-text-menu-title));
     --text-title-color: rgb(var(--color-text-title));
@@ -70,23 +68,28 @@
     /* CARD */
     --card-border-line-color: rgba(var(--color-bg-divide-line), 1);
 
-    --loader-color: rgb(var(--color-loader-active-1));
-    --chart-color-1: rgb(var(--color-chart-1));
-    --chart-color-2: rgb(var(--color-chart-2));
+    --loader-color: rgb(var(--gradient-color-primary));
 
-    --circle-chart-color-1: rgb(var(--color-circle-chart-1));
-    --circle-chart-color-2: rgb(var(--color-circle-chart-2));
-    --circle-chart-color-3: rgb(var(--color-circle-chart-3));
-    --circle-chart-color-4: rgb(var(--color-circle-chart-4));
-    --circle-chart-color-5: rgb(var(--color-circle-chart-5));
-
-    --chart-color-good: rgb(var(--color-chart-good));
-    --chart-color-warning: rgb(var(--color-chart-warning));
-    --chart-color-unplug: rgb(var(--color-chart-unplug));
+    --chart-color-1: rgb(var(--chart-seq-1-rgb));
+    --chart-bg-1: rgba(var(--chart-seq-1-rgb),.12);
+    --chart-color-2: rgb(var(--chart-seq-2-rgb));
+    --chart-bg-2: rgba(var(--chart-seq-2-rgb),.12);
+    --chart-circle-1: rgba(var(--chart-seq-1-rgb),1);
+    --chart-circle-2: rgba(var(--chart-seq-5-rgb),1);
+    --chart-circle-3: rgba(var(--chart-seq-7-rgb),1);
+    --chart-circle-4: rgba(var(--chart-seq-9-rgb),1);
+    --chart-circle-5: rgba(var(--chart-seq-10-rgb),1);
+    --chart-color-good: rgb(var(--chart-seq-2-rgb));
+    --chart-bg-good: rgba(var(--chart-seq-2-rgb),.12);
+    --chart-color-warning: rgb(var(--chart-seq-4-rgb));
+    --chart-bg-warning: rgba(var(--chart-seq-4-rgb),.12);
+    --chart-color-unplug: rgb(var(--chart-seq-8-rgb));
+    --chart-bg-unplug: rgba(var(--chart-seq-8-rgb),.12);
+    --app-topbar-height: 56px;
 }
 
 body {
-    font-size: 1rem;
+    font-size: 0.725rem;
     background-image: var(--global-bg-image, none);
     margin: 0;
     align-items: center;
@@ -103,29 +106,42 @@ body {
     color: var(--page-title-color);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--wrt-gutter-sm);
+    padding: 0;
 }
 
 .page-title::before {
     content: "";
     display: inline-block;
-    background: var(--icon-logo-color);
+    background: var(--brand-color);
     height: 24px;
     width: 4px;
 }
 
 .dashboard-layout {
-    height: 100dvh;
+    height: calc(100% - var(--app-topbar-height));
     display: flex;
+    /* 目前側欄寬度（用於主內容動態配置剩餘寬度） */
+    --wrt-sidenav-width-current: var(--wrt-sidenav-width-expanded, 300px);
 }
 
-.chartCard {
-    zoom: 1.11111;
+.app-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1200;
+    height: var(--app-topbar-height);
+    min-height: var(--app-topbar-height);
+    box-shadow: none;
+    transition: box-shadow .2s ease;
 }
+.app-topbar.has-shadow {
+    box-shadow: 0 2px 8px rgba(var(--shadow-ambient-20-rgb, 0,0,0), .35);
+}
+
 
 /* HEADER */
 header {
-    background: var(--body-bg-color);
+    background: var(--surface-body);
     background-repeat: no-repeat;
     background-size: 100%;
     box-shadow: unset;
@@ -134,7 +150,7 @@ header {
 }
 
 .icon-menu {
-    background-color: var(--nav-icon-color);
+    background-color: var(--wrt-sidenav-icon-color);
 }
 
 .icon-logo {
@@ -208,33 +224,60 @@ header {
 
 aside.sidebar {
     flex: 0 0 auto;
-    width: initial;
+    width: 300px;
     box-sizing: border-box;
-    border-right: 1px solid var(--nav-border-color);
-    background: var(--nav-bg-color);
+    border-right: 1px solid var(--wrt-sidenav-border);
+    background: var(--wrt-sidenav-bg);
+    position: fixed; /* 固定在視窗左側 */
+    top: var(--app-topbar-height);       /* 讓出頂部工具列高度 */
+    left: 0;
+    bottom: 0;
+    height: auto;    /* 由 top/bottom 撐出高度 */
+    z-index: 1030;   /* 確保不被主內容覆蓋 */
+}
+
+aside.sidebar.sidebar-collapse-80 {
+    width: 80px;
 }
 
 article.main-content {
     -webkit-box-flex: 1;
     flex-grow: 1;
-    overflow: auto;
+    width: 100%;
+    padding-left: 300px; /* 與固定側欄同寬，避免覆蓋 */
+    margin-left: 0;
+    height: calc(100dvh - var(--app-topbar-height));
+    overflow: auto; /* 只有主內容捲動 */
+    overflow-x: hidden; /* 防止橫向溢出 */
+    box-sizing: border-box;
+    transition: padding-left .35s cubic-bezier(.22, .61, .36, 1);
+}
+
+aside.sidebar.sidebar-collapse-80 ~ article.main-content {
+    padding-left: 80px;
 }
 
 /* MENU */
 aside.sidebar nav {
-    max-width: 60px;
     box-sizing: border-box;
     backdrop-filter: blur(50px);
-    z-index: 1065;
+    z-index: 1030;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
-    transition: max-width 0.5s ease;
+    transition-duration: 0.35s;
+    transition-property: max-width;
+    transition-timing-function: cubic-bezier(.22, .61, .36, 1);
+    height: 100%;
+}
+
+aside.sidebar.sidebar-collapse-80 nav {
+    max-width: 80px;
 }
 
 aside.sidebar.sidebar-show {
     display: block;
-    border: none;
 }
 
 aside.sidebar.sidebar-show .tooltip {
@@ -249,7 +292,8 @@ aside.sidebar nav .menu-name {
 
 aside.sidebar.sidebar-show nav .menu-name {
     display: block;
-    color: var(--body-text-color);
+    color: var(--wrt-sidenav-link-color);
+    font-size: 0.745rem;
 }
 
 aside.sidebar nav [role~="menu-close"] {
@@ -269,6 +313,7 @@ aside.sidebar nav button {
     align-items: center;
     width: 100%;
     height: 48px;
+    font-size: 0.745rem;
 }
 
 aside.sidebar.sidebar-show nav button {
@@ -276,8 +321,8 @@ aside.sidebar.sidebar-show nav button {
     justify-content: start;
     align-items: center;
     width: 100%;
-    gap: 8px;
-    padding-left: 17px;
+    gap: 24px;
+    padding: 0 32px 0 24px;
 }
 
 aside.sidebar.sidebar-show nav button [role~=icon] {
@@ -296,25 +341,216 @@ aside.sidebar.sidebar-show .menu-header {
 }
 
 aside.sidebar.sidebar-show nav {
-    width: 300px;
-    max-width: 500px;
+    max-width: 300px;
     height: 100%;
-    position: absolute;
-    z-index: 11;
-    opacity: 1;
-    -webkit-backdrop-filter: blur(50px);
-    backdrop-filter: blur(50px);
-    box-shadow: 0px 0px 4px 0px var(--elevation-20);
+}
+
+/* Responsive defaults: Sidenav behavior across breakpoints */
+/* 1400px - 1919.98px: fixed 240px nav width */
+@media (min-width: 1400px) and (max-width: 1919.98px) {
+    aside.sidebar nav { max-width: 240px; }
+}
+/* ≥1920px: expanded 300px nav width */
+@media (min-width: 1920px) {
+    aside.sidebar nav { max-width: 300px; }
+}
+/* ≥1200px and <1400px: reduced width by default */
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+    /* default reduced */
+    aside.sidebar nav { max-width: 240px; }
+    /* no expand to 300 in this range */
+    aside.sidebar.sidebar-show nav { max-width: 240px; }
+}
+/* ≥992px and <1200px: reduced (240px) by default; user can collapse to 80px */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    /* default reduced for this range is 180 */
+    aside.sidebar nav { max-width: 180px; }
+    /* collapsed */
+    aside.sidebar.sidebar-collapse-80 nav { max-width: 80px; }
+}
+/* ≤767px: overlay 展開（覆蓋 main-content） */
+@media (max-width: 767px) {
+    .dashboard-layout {
+        flex-direction: column;
+    }
+    /* 手機：預設隱藏，展開時以 overlay 覆蓋 */
+    aside.sidebar { display: none; }
+    aside.sidebar.sidebar-show {
+        display: block !important;
+        width: 100% !important;
+        position: fixed; /* 以 overlay 方式覆蓋內容 */
+        top: var(--app-topbar-height);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: auto;
+        z-index: 2000;
+    }
+    /* 強制展開/收合狀態皆為全寬，避免 80px 設定殘留 */
+    aside.sidebar.sidebar-show { width: 100% !important; }
+    aside.sidebar.sidebar-collapse-80 { width: 100% !important; }
+    aside.sidebar nav {
+        max-width: 100%;
+        transition-property: max-height;
+        transition-duration: 0.3s;
+        transition-timing-function: cubic-bezier(.22, .61, .36, 1);
+        overflow-x: hidden;
+        overflow-y: auto;
+        max-height: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1030;
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+    }
+    aside.sidebar.sidebar-show nav {
+        max-height: var(--wrt-sidenav-max-height-open, 100%);
+        max-width: 100% !important;
+    }
+    aside.sidebar.sidebar-collapse-80 nav {
+        max-height: 0;
+        max-width: 100% !important;
+    }
+}
+
+/* 768px - 991.98px: 固定 80px（僅圖示） */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    aside.sidebar { width: 80px; }
+    aside.sidebar nav { max-width: 80px; }
+    aside.sidebar ~ article.main-content { padding-left: 80px; }
+    /* 文字隱藏，僅顯示 icon */
+    aside.sidebar nav .menu-name { display: none; }
+    /* 展開時以 overlay 方式覆蓋 main-content（維持文字隱藏） */
+    aside.sidebar.sidebar-show {
+        position: fixed;
+        top: var(--app-topbar-height);
+        left: 0;
+        bottom: 0;
+        width: 240px;
+        z-index: 2000;
+    }
+    aside.sidebar.sidebar-show nav { max-width: 240px; }
+    aside.sidebar.sidebar-show nav .menu-name { display: block; font-size: 0.675rem; }
+    aside.sidebar.sidebar-show nav button {
+        justify-content: start;
+        align-items: center;
+        gap: 16px;
+        padding: 0 16px;
+    }
+}
+
+/* 小於 768px，側欄隱藏時主內容回到全寬 */
+@media (max-width: 767px) {
+    article.main-content {
+        width: 100%;
+        padding-left: 0;
+    }
+    /* 折疊為 80px 時，同步讓位 */
+    aside.sidebar.sidebar-collapse-80 ~ article.main-content {
+    padding-left: 0;
+    }
+}
+
+/* 992px - 1199.98px: 寬 180（縮字級與間距），可收合為 80 */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    aside.sidebar { width: 180px; }
+    aside.sidebar.sidebar-collapse-80 { width: 80px; }
+    aside.sidebar ~ article.main-content { padding-left: 180px; }
+    aside.sidebar.sidebar-collapse-80 ~ article.main-content { padding-left: 80px; }
+    /* 導覽寬度同步 180/80 */
+    aside.sidebar nav { max-width: 180px; }
+    aside.sidebar.sidebar-collapse-80 nav { max-width: 80px; }
+    /* 防止 .sidebar-show 將寬度擴到 300（中尺寸固定 180） */
+    aside.sidebar.sidebar-show { width: 180px; }
+    aside.sidebar.sidebar-show nav { max-width: 180px; }
+    /* 展開（180）顯示功能名稱，縮字級與間距（sidebar-show 與預設相同字級，避免第一次點擊放大） */
+    aside.sidebar nav .menu-name { display: block; color: var(--wrt-sidenav-link-color); font-size: 0.625rem; }
+    aside.sidebar.sidebar-show nav .menu-name { font-size: 0.625rem; }
+    aside.sidebar nav .menu-name a { color: var(--wrt-sidenav-link-color); text-decoration: none; }
+    aside.sidebar.sidebar-collapse-80 nav .menu-name { display: none; }
+    aside.sidebar:not(.sidebar-collapse-80) nav button {
+        justify-content: start;
+        align-items: center;
+        gap: 16px;
+        padding: 0 16px 0 16px;
+    }
+    /* 覆寫全域 .sidebar-show 的排列與間距，維持中尺寸緊湊 */
+    aside.sidebar.sidebar-show nav button {
+        justify-content: start;
+        align-items: center;
+        gap: 16px;
+        padding: 0 16px;
+    }
+    /* 圖示尺寸從 24 降到 16（容器與尺寸） */
+    aside.sidebar nav button [role~=icon],
+    aside.sidebar.sidebar-show nav button [role~=icon] {
+        min-width: 16px;
+        width: 16px;
+        height: 16px;
+    }
+    /* 當收合為 80 時，icon 回復為 24px */
+    aside.sidebar.sidebar-collapse-80 nav button [role~=icon] {
+        min-width: 24px;
+        width: 24px;
+        height: 24px;
+    }
+    aside.sidebar:not(.sidebar-collapse-80) .menu-header { display: none; }
+}
+
+/* 1200px - 1919.98px: 固定 240（不再 300） */
+@media (min-width: 1200px) and (max-width: 1919.98px) {
+    aside.sidebar { width: 240px; }
+    aside.sidebar ~ article.main-content { padding-left: 240px; }
+    aside.sidebar.sidebar-collapse-80 ~ article.main-content { padding-left: 80px; }
+    /* 預設 240 時顯示功能名稱；非收合狀態使用展開排列樣式 */
+    aside.sidebar nav .menu-name { display: block; color: var(--wrt-sidenav-link-color); }
+    aside.sidebar nav .menu-name a { color: var(--wrt-sidenav-link-color); text-decoration: none; }
+    aside.sidebar.sidebar-collapse-80 nav .menu-name { display: none; }
+    aside.sidebar:not(.sidebar-collapse-80) nav button {
+        justify-content: start;
+        align-items: center;
+        gap: 24px;
+        padding: 0 32px 0 24px;
+    }
+    aside.sidebar:not(.sidebar-collapse-80) .menu-header { display: none; }
+}
+
+/* ≥1920px: expanded 300px */
+@media (min-width: 1920px) {
+    aside.sidebar { width: 300px; }
+    aside.sidebar ~ article.main-content { padding-left: 300px; }
+    aside.sidebar.sidebar-collapse-80 ~ article.main-content { padding-left: 80px; }
 }
 
 ::-webkit-scrollbar {
     width: 0px;
 }
 
+/* 主內容捲動區的捲軸要可見（全域 ::-webkit-scrollbar 把寬度歸零，這裡覆寫回來） */
+article.main-content::-webkit-scrollbar {
+    width: var(--wrt-scrollbar-width, 8px);
+    height: var(--wrt-scrollbar-height, 8px);
+}
+
+article.main-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+article.main-content::-webkit-scrollbar-thumb {
+    background: var(--wrt-scrollbar-thumb-color, rgba(0, 0, 0, 0.28));
+    border-radius: var(--wrt-scrollbar-radius, 4px);
+}
+
+article.main-content::-webkit-scrollbar-thumb:hover {
+    background: var(--wrt-scrollbar-thumb-hover-color, rgba(0, 0, 0, 0.45));
+}
+
 article {
     -webkit-box-flex: 1;
     flex-grow: 1;
-    overflow: auto;
+    overflow: visible;
 }
 
 section {
@@ -323,13 +559,13 @@ section {
 
 .menu-clicked {
     border-radius: 0 8px 8px 0;
-    background-color: var(--nav-bg-active-color);
+    background-color: var(--wrt-sidenav-active-bg);
 }
 
 .menu-clicked::before {
     content: "";
     background-image: unset;
-    background-color: var(--nav-active-pin-color);
+    background-color: var(--wrt-sidenav-active-indicator-bg);
     position: absolute;
     height: 100%;
     width: 4px;
@@ -339,8 +575,14 @@ section {
 }
 
 .menu-clicked > [role~="icon"] {
-    background-color: var(--nav-icon-active-color);
+    background-image: var(--wrt-sidenav-icon-active-color);
 }
+
+/* Menu text colors: default and selected(highlight) */
+aside.sidebar nav .menu-name { color: var(--wrt-sidenav-link-color); }
+aside.sidebar nav .menu-name a { color: var(--wrt-sidenav-link-color); text-decoration: none; }
+.menu-clicked .menu-name,
+.menu-clicked .menu-name a { color: var(--wrt-sidenav-link-active-color); }
 
 .menu-block {
     display: flex;
@@ -357,7 +599,7 @@ button {
 }
 
 [role~="menu"]:hover {
-    background-color: var(--nav-bg-active-color);
+    background-color: var(--wrt-sidenav-hover-bg);
 }
 
 [role~="menu"]:hover [role~="icon"],
@@ -365,7 +607,7 @@ button {
 [role~="btn-notication"]:hover [role~="icon"],
 [role~="btn-logout"]:hover [role~="icon"],
 [role~="icon"]:hover {
-    background-color: var(--nav-icon-active-color);
+    background-color: var(--wrt-sidenav-icon-hover-color);
 }
 
 [role~="btn-notication"]:hover [role~="info-text"],
@@ -391,9 +633,19 @@ button {
 }
 
 [role~="time-banner"] {
-    background-color: var(--header-bg-color);
-    border: 1px solid var(--divide-stroke-color-default);
+    background-color: var(--surface-banner);
+    border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
+    align-items: center;   /* vertically centre icon + label + time + weekday */
+}
+
+/* Tight line-boxes so the glyphs sit dead-centre on the row (no leading skew),
+   and keep everything on one line so the row never wraps and breaks centring. */
+[role~="time-banner"] .banner-title,
+[role~="time-banner"] .banner-time,
+[role~="time-banner"] .banner-time-meridiem {
+    line-height: 1;
+    white-space: nowrap;
 }
 
 .banner-active {
@@ -401,19 +653,19 @@ button {
 }
 
 .banner-title {
-    color: var(--body-text-color);
+    color: var(--text-primary);
     font-size: 10px;
     letter-spacing: 0.4px;
 }
 
 .banner-text {
-    color: var(--text-brand-color);
+    color: var(--brand-primary);
     font-size: 12px;
     letter-spacing: 0.25px;
 }
 
 .banner-time {
-    color: var(--page-title-color);
+    color: var(--text-primary);
     font-size: 14px;
 }
 
@@ -423,11 +675,18 @@ button {
 }
 
 .banner-time-meridiem {
-    color: var(--text-brand-color);
+    color: var(--brand-primary);
     font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.11px;
     line-height: 0.825rem;
+}
+
+/* Clock icon in the time banner — accent-coloured to pair with the weekday,
+   follows the active theme. */
+.banner-time-icon {
+    background-color: var(--brand-primary);
+    flex: 0 0 auto;
 }
 
 .border-left-title {
@@ -451,7 +710,7 @@ button {
 
 /* SVG icon color*/
 .icon-color-menu {
-    background-color: var(--nav-icon-color);
+    background-color: var(--wrt-sidenav-icon-color);
 }
 
 .color-logo {
@@ -465,7 +724,7 @@ main {
 
 /* POP UP CARD */
 .shadow-bg {
-    background-color: var(--elevation-20);
+    background-color: var(--wrt-modal-backdrop-bg);
     position: fixed;
     width: 100%;
     height: 100%;
@@ -473,8 +732,21 @@ main {
     right: 0;
     left: 0;
     bottom: 0;
-    z-index: 80;
-    display: block;
+    z-index: 1300;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 24px;
+    padding-bottom: 24px;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.shadow-bg > .pop_up_card {
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }
 
 .card-header {
@@ -489,15 +761,15 @@ main {
     min-height: 150px;
     padding: 16px;
     margin: 0 12px;
-    box-shadow: 3px 3px 10px 2px #00000069;
-    border: 1px solid rgba(0, 0, 0, .2);
+    box-shadow: var(--shadow-ambient-20);
+    border: 1px solid var(--wrt-card-border-color);
 }
 
 .card-header-float {
     font-size: 24px;
     font-weight: 600;
     padding: 8px 12px;
-    border-bottom: 1px solid var(--bg-divide-line-color);
+    border-bottom: 1px solid var(--wrt-divider-color);
 }
 
 .card-body-float {
@@ -513,12 +785,12 @@ main {
 
 .card-footer {
     background-color: transparent !important;
-    border-top: 1px solid var(--divide-stroke-color-El20);
+    border-top: 1px solid var(--wrt-divider-color);
 }
 
 .card-footer-float {
     padding: 12px 12px 0 12px;
-    border-top: 1px solid var(--divide-stroke-color-El20);
+    border-top: 1px solid var(--wrt-divider-color);
 }
 
 .card-content-float {
@@ -535,26 +807,34 @@ main {
 }
 
 .btn-regular {
-    background-color: var(--primary-20);
+    background-color: var(--wrt-btn-default-bg);
+    color: var(--wrt-btn-default-color);
+    border: 1px solid var(--wrt-btn-default-border);
+    transition: all 0.2s ease;
+    &:hover {
+        background-color: var(--wrt-btn-default-hover-bg);
+        color: var(--wrt-btn-default-hover-color);
+        border: 1px solid var(--wrt-btn-default-hover-border);
+    }
 }
 
 .btn-confirm {
-    background-color: var(--primary-60);
+    background-color: var(--wrt-btn-primary-bg);
+    color: var(--wrt-btn-primary-color);
+    border: 1px solid var(--wrt-btn-primary-border);
+    transition: all 0.2s ease;
+    &:hover {
+        background-color: var(--wrt-btn-primary-hover-bg);
+        color: var(--wrt-btn-primary-hover-color);
+        border: 1px solid var(--wrt-btn-primary-hover-border);
+    }
 }
 
-.btn-regular:hover,
-.btn-confirm:hover {
-    color: var(--text-highlight-color);
-}
 
 .btn-check:checked + .btn-color, .btn-confirm {
-    color: var(--text-invert-color);
+    color: var(--wrt-btn-primary-color);
 }
 
-.btn-confirm:hover {
-    background-color: var(--primary-70);
-    color: var(--text-invert-color);
-}
 
 .hint-text {
     color: var(--text-hint-color);
@@ -567,18 +847,330 @@ main {
 }
 
 .card-data-title {
-    color: var(--text-subtitle-color);
+    color: var(--text-primary);
     /* font-size: 16px; */
     text-transform: uppercase;
 }
 
 .card-data-value {
-    color: var(--text-statistic-value-color);
-    font-size: 14px;
+    color: var(--text-primary);
+    font-size: 0.675rem;
 }
 
 .card-data-value a {
     color: var(--text-hyperlink-default-color);
+}
+
+/* ===== WAN card redesign (主要 WAN) ===== */
+.wan-card-header {
+    padding-top: 16px;
+    padding-bottom: 16px;
+    text-transform: none;
+}
+.wan-header-icon {
+    background-color: var(--text-secondary-color, #9aa0a6);
+    flex: 0 0 32px;
+}
+.wan-header-title {
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: bolder;
+    line-height: 1.2;
+    text-transform: none;
+}
+.wan-header-subtitle {
+    color: var(--text-secondary-color, #9aa0a6);
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: none;
+    margin-top: 2px;
+}
+
+.wan-connected-box {
+    padding: 14px 16px;
+    border-radius: var(--wrt-card-radius);
+    background-color: var(--badge-info-container-bg, rgba(74, 144, 226, 0.12));
+}
+.wan-connected-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: var(--surface-card, #fff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 44px;
+}
+.wan-connected-avatar-icon {
+    background-color: var(--status-msg-important, #4a90e2);
+}
+.wan-connected-dot {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--surface-card, #fff);
+}
+.wan-connected-name {
+    color: var(--text-primary);
+    font-size: 15px;
+    font-weight: bolder;
+    line-height: 1.2;
+}
+.wan-connected-status {
+    color: var(--status-msg-success, #1ea65a);
+    font-size: 13px;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+}
+.wan-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: currentColor;
+    display: inline-block;
+    margin-right: 6px;
+}
+.wan-connected-interface {
+    background-color: var(--status-msg-important, #4a90e2);
+    flex: 0 0 32px;
+}
+
+.wan-info-row {
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--wrt-divider-color);
+}
+.wan-info-row:last-child {
+    border-bottom: none;
+}
+.wan-info-icon {
+    background-color: var(--text-secondary-color, #9aa0a6);
+    flex: 0 0 20px;
+}
+.wan-info-label {
+    color: var(--text-title-color, var(--text-primary));
+    font-size: 14px;
+    text-transform: none;
+}
+.wan-info-value {
+    color: var(--text-value-color, var(--text-primary));
+    font-size: 14px;
+    font-weight: bolder;
+    text-align: right;
+}
+.wan-info-value-success {
+    color: var(--status-msg-success, #1ea65a);
+}
+
+/* ===== Ethernet Ports card redesign (乙太網路連接埠) ===== */
+.eth-ports-header {
+    text-transform: none;
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
+.eth-ports-header-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background-color: var(--badge-success-container-bg, rgba(30, 166, 90, 0.16));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 32px;
+}
+.eth-ports-header-icon {
+    background-color: var(--status-msg-positive-strong, #1ea65a);
+}
+.eth-ports-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+.eth-port-tile {
+    background-color: var(--wrt-card-content-emphasis-bg);
+    border-radius: 10px;
+    padding: 14px 6px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-height: 92px;
+}
+.eth-port-tile-icon-wrap {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.eth-port-tile[data-state="conn"] .eth-port-tile-icon-wrap {
+    background-color: var(--badge-success-container-bg, rgba(30, 166, 90, 0.16));
+}
+.eth-port-tile[data-state="conn"] [role="icon"] {
+    background-color: var(--status-msg-positive-strong, #1ea65a);
+}
+.eth-port-tile[data-state="warn"] .eth-port-tile-icon-wrap {
+    background-color: var(--badge-warning-container-bg, rgba(247, 144, 9, 0.18));
+}
+.eth-port-tile[data-state="warn"] [role="icon"] {
+    background-color: var(--status-msg-negative, #f79009);
+}
+.eth-port-tile[data-state="unplug"] .eth-port-tile-icon-wrap {
+    background-color: transparent;
+}
+.eth-port-tile[data-state="unplug"] [role="icon"] {
+    background-color: var(--text-secondary-color, #9aa0a6);
+}
+.eth-port-tile-dot {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background-color: var(--status-msg-important, #4a90e2);
+    border: 2px solid var(--surface-card, #fff);
+}
+.eth-port-tile-poe-dot {
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    border: 2px solid var(--surface-card, #fff);
+}
+.eth-port-tile-poe-dot.poe_en { background-color: #6DD400; }
+.eth-port-tile-poe-dot.poe_dis { background-color: #999999; }
+.eth-port-tile-wan-globe {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--status-msg-important, #4a90e2);
+    border: 2px solid var(--surface-card, #fff);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.eth-port-tile-wan-globe-icon {
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+    background-color: #fff;
+    -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.6.08-1.18.21-1.74L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.6.08-1.18.21-1.74L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/%3E%3C/svg%3E");
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+/* When PoE is also present on the same port, shift the globe up so the two badges don't collide. */
+.eth-port-tile-poe-dot ~ .eth-port-tile-wan-globe {
+    bottom: 14px;
+}
+.eth-port-tile-label {
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: bolder;
+    color: var(--text-title-color);
+    line-height: 1.2;
+    word-break: break-word;
+}
+.eth-port-tile[data-state="unplug"] .eth-port-tile-label {
+    color: var(--text-secondary-color, #9aa0a6);
+    font-weight: 400;
+}
+
+.eth-ports-legend {
+    column-gap: 18px;
+    row-gap: 6px;
+    font-size: 13px;
+    color: var(--text-secondary-color, var(--text-title-color));
+}
+.eth-ports-legend-item {
+    text-transform: none;
+}
+.eth-ports-legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    margin-right: 6px;
+    display: inline-block;
+    flex: 0 0 12px;
+}
+.eth-ports-legend-dot-conn { background-color: var(--status-msg-positive-strong, #1ea65a); }
+.eth-ports-legend-dot-warn { background-color: var(--status-msg-negative, #f79009); }
+.eth-ports-legend-dot-unplug { background-color: var(--text-secondary-color, #9aa0a6); }
+
+/* ===== USB card redesign ===== */
+.usb-info-row {
+    padding: 12px 4px;
+    border-bottom: 1px solid var(--wrt-divider-color);
+}
+.usb-info-icon {
+    background-color: var(--text-secondary-color, #9aa0a6);
+    flex: 0 0 20px;
+}
+.usb-info-label {
+    color: var(--text-title-color, var(--text-primary));
+    font-size: 14px;
+    text-transform: none;
+}
+.usb-info-value {
+    color: var(--text-value-color, var(--text-primary));
+    font-size: 14px;
+    font-weight: bolder;
+    text-align: right;
+    word-break: break-word;
+}
+.usb-progress {
+    margin-top: 16px;
+    height: 8px;
+    border-radius: 999px;
+    background-color: var(--wrt-card-content-emphasis-bg);
+    overflow: hidden;
+}
+.usb-progress-bar {
+    height: 100%;
+    border-radius: 999px;
+    background-color: var(--status-msg-important, #4a90e2);
+    transition: width 0.3s ease;
+}
+.usb-progress-meta {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-secondary-color, var(--text-title-color));
+}
+.usb-progress-meta span:last-child {
+    color: var(--text-secondary-color, var(--text-title-color));
+    opacity: 0.7;
+}
+.usb-footer {
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+.usb-footer-icon {
+    background-color: var(--text-secondary-color, #9aa0a6);
+    cursor: pointer;
+}
+.usb-footer-icon:hover {
+    background-color: var(--text-title-color, var(--text-primary));
+}
+
+/* Eject (safely-remove) icon — not in svg-icon.css, embed inline. */
+.icon-eject {
+    -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M5 17h14v2H5v-2zm7-12L5.33 15h13.34L12 5z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M5 17h14v2H5v-2zm7-12L5.33 15h13.34L12 5z'/%3E%3C/svg%3E");
 }
 
 /* .content-text {
@@ -587,7 +1179,7 @@ main {
     font-weight: 500;
 } */
 .traffic-up-value-color {
-    color: var(--icon-traffic-up-color);
+    color: var(--wrt-text-primary);
 }
 
 .traffic-up-color,
@@ -596,7 +1188,7 @@ main {
 }
 
 .traffic-down-value-color {
-    color: var(--icon-traffic-down-color);
+    color: var(--wrt-text-primary);
 }
 
 .traffic-down-color,
@@ -605,10 +1197,6 @@ main {
 }
 
 @media (min-width: 0px) {
-    aside.sidebar {
-        display: none;
-    }
-
     .tooltip-menu {
         display: none;
     }
@@ -626,9 +1214,8 @@ main {
 @media (max-width: 576px) {
     /* [role~="info-text"], */
     [role~="info-banner"],
-    [role~="btn-notication"],
-    [role~="btn-logout"],
-    [role~="btn-reboot"] {
+    [role~="btn-notication"]
+    {
         display: none !important;
     }
 
@@ -669,10 +1256,9 @@ main {
 }
 
 /* width > 768px */
-@media (min-width: 768px) {
+@media (min-width: 769px) {
     aside.sidebar {
         display: block;
-        width: 60px;
     }
 
     .tooltip-menu {
@@ -711,9 +1297,7 @@ main {
         display: none !important;
     }
 
-    [role~="info-banner"],
-    [role~="btn-logout"],
-    [role~="btn-reboot"] {
+    [role~="info-banner"] {
         display: none !important;
     }
 }
@@ -746,10 +1330,6 @@ main {
         display: none !important;
     }
 
-    #mobile_menu {
-        margin-left: unset !important;
-    }
-
     [role~="btn-notification"] {
         visibility: hidden !important;
         display: none !important;
@@ -780,7 +1360,7 @@ main {
 .system-good-tab {
     width: 12px;
     height: 12px;
-    background-color: var(--chart-color-good);
+    background-color: #10b880;
     border-radius: 2px;
 }
 
@@ -849,7 +1429,7 @@ main {
 .bg-success {
     width: 10px !important;
     height: 10px !important;
-    color: var(--hint-on-status-fill) !important;
+    background-color: var(--hint-on-status-fill) !important;
 }
 
 .modal .modal-content {
@@ -873,10 +1453,10 @@ main {
     font-width: 600;
 }
 
-.modal-backdrop {
+.loading-backdrop {
     backdrop-filter: blur(5px) !important;
     -webkit-backdrop-filter: blur(5px) !important;
-    background: unset !important;
+    background-color: rgba(0, 0, 0, 0.5);
     opacity: 1 !important;
 }
 
@@ -985,17 +1565,17 @@ main {
 .app-name {
     font-weight: bold;
     font-size: 16px;
-    color: #333;
+    color: var(--wrt-text-primary);
 }
 
 .notification-text {
     font-size: 13px;
-    color: #999;
+    color: var(--wrt-text-secondary);
 }
 #right-panel {
     position: fixed;
     bottom: 0;
-    z-index: 1050;
+    z-index: 1001;
     top: 56px;
     height: calc(100% - 56px);
     max-height: 100vh;
@@ -1031,7 +1611,6 @@ main {
     align-items: center;
     justify-content: space-between;
     border: 1.5px solid var(--switch-btn-off-normal-ellipse-stroke-color);
-    background-color: var(--switch-bg-color);
     cursor: pointer;
     transition: all 0.6s;
     position: relative;
@@ -1105,6 +1684,118 @@ main {
 
 .router-assistant-container {
 	max-width: 550px;
-	margin-left: auto !important;
 	margin-right: auto !important;
 }
+
+/* Ensure no left gap on mobile when toggling sidebar (avoid 80px padding-left) */
+@media (max-width: 767px) {
+    aside.sidebar ~ article.main-content,
+    aside.sidebar.sidebar-show ~ article.main-content,
+    aside.sidebar.sidebar-collapse-80 ~ article.main-content {
+        padding-left: 0 !important;
+    }
+}
+
+/* ==================== Utilities: Divider ==================== */
+.wrt-divider {
+    display: block;
+    width: 100%;
+    height: var(--wrt-divider-thickness, 1px);
+    background-color: var(--wrt-divider-color, var(--border-subtle));
+    opacity: var(--wrt-divider-opacity, 1);
+    margin: var(--wrt-divider-gap-y, 16px) 0;
+}
+.wrt-divider.strong {
+    height: var(--wrt-divider-strong-thickness, 2px);
+    background-color: var(--wrt-divider-strong-color, var(--border-subtle));
+}
+.wrt-divider.inset-start {
+    margin-left: var(--wrt-divider-inset, 1rem);
+}
+.wrt-divider.inset-end {
+    margin-right: var(--wrt-divider-inset, 1rem);
+}
+.wrt-divider-vertical {
+    display: inline-block;
+    width: var(--wrt-divider-thickness, 1px);
+    height: 100%;
+    background-color: var(--wrt-divider-color, var(--border-subtle));
+    margin: 0 var(--wrt-divider-gap-x, 16px);
+    align-self: stretch;
+}
+.wrt-divider.dashed {
+    background: repeating-linear-gradient(to right,
+        var(--wrt-divider-color, var(--border-subtle)),
+        var(--wrt-divider-color, var(--border-subtle)) 4px,
+        transparent 4px,
+        transparent 8px);
+}
+
+/* config toggle button group */
+.config-title {
+    line-height: 1.5;
+    margin: 16px 0px 8px;
+    font-weight: 600;
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1rem;
+}
+
+.config-toggle-button-group-root {
+    display: inline-flex;
+    border-radius: var(--global-radius);
+    width: 100%;
+    background-color: var(--wrt-segmented-control-bg);
+}
+
+.config-toggle-button {
+    align-items: center;
+    position: relative;
+    background-color: transparent;
+    cursor: pointer;
+    text-transform: none;
+    font-weight: 500;
+    color: var(--body-text-color);
+    display: flex;
+    -webkit-box-pack: center;
+    justify-content: center;
+    width: 100%;
+    transition: 100ms ease-in;
+    border-radius: var(--global-radius);
+    padding: 11px;
+    border: 1px solid;
+    border-color: var(--wrt-segment-fill-border);
+}
+
+.config-toggle-button:hover {
+    text-decoration: none;
+    background-color: var(--wrt-segment-fill-hover-bg);
+}
+
+.config-toggle-button.selected {
+    background-color: var(--wrt-segment-fill-selected-bg);
+    color: var(--wrt-segment-fill-selected-color);
+    border-color: var(--wrt-segment-fill-selected-border);
+}
+
+.config-toggle-button i[role="icon"]{
+    margin-right: 8px;
+}
+
+.config-toggle-button.selected i[role="icon"]{
+    background-color: var(--wrt-segment-fill-selected-color);
+}
+
+.config-toggle-button.selected:hover {
+    background-color: var(--wrt-segment-fill-selected-hover-bg);
+}
+
+.config-toggle-button-group-first {
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+.config-toggle-button-group-last {
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+}
+

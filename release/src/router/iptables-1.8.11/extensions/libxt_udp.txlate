@@ -1,0 +1,17 @@
+iptables-translate -A INPUT -p udp -i eth0 --sport 53 -j ACCEPT
+nft 'add rule ip filter INPUT iifname "eth0" udp sport 53 counter accept'
+
+iptables-translate -A OUTPUT -p udp -o eth0 --dport 53:66 -j DROP
+nft 'add rule ip filter OUTPUT oifname "eth0" udp dport 53-66 counter drop'
+
+iptables-translate -I OUTPUT -p udp -d 8.8.8.8 -j ACCEPT
+nft 'insert rule ip filter OUTPUT ip protocol udp ip daddr 8.8.8.8 counter accept'
+
+iptables-translate -I OUTPUT -p udp --dport 1020:1023 --sport 53 -j ACCEPT
+nft 'insert rule ip filter OUTPUT udp sport 53 udp dport 1020-1023 counter accept'
+
+iptables-translate -I OUTPUT -p udp --sport 0:65535 -j ACCEPT
+nft 'insert rule ip filter OUTPUT meta l4proto udp counter accept'
+
+iptables-translate -I OUTPUT -p udp ! --sport 0:65535 -j ACCEPT
+nft 'insert rule ip filter OUTPUT udp sport != 0-65535 counter accept'

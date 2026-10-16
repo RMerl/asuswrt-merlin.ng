@@ -1,0 +1,5 @@
+#!/bin/bash
+
+dump=$(dirname $0)/dumps/fedora27-iptables
+diff -u -Z <(cat ${dump}.xml) <($XT_MULTI iptables-xml <$dump)
+diff -u -Z <(cat ${dump}.xml) <($XT_MULTI iptables-xml -c <$dump)

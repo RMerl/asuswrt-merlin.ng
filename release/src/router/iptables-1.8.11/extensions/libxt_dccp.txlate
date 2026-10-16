@@ -1,0 +1,20 @@
+iptables-translate -A INPUT -p dccp -m dccp --sport 100
+nft 'add rule ip filter INPUT dccp sport 100 counter'
+
+iptables-translate -A INPUT -p dccp -m dccp --dport 100:200
+nft 'add rule ip filter INPUT dccp dport 100-200 counter'
+
+iptables-translate -A INPUT -p dccp -m dccp ! --dport 100
+nft 'add rule ip filter INPUT dccp dport != 100 counter'
+
+iptables-translate -A INPUT -p dccp -m dccp --dccp-types CLOSE
+nft 'add rule ip filter INPUT dccp type close counter'
+
+iptables-translate -A INPUT -p dccp -m dccp --dccp-types INVALID
+nft 'add rule ip filter INPUT dccp type 10-15 counter'
+
+iptables-translate -A INPUT -p dccp -m dccp --dport 100 --dccp-types REQUEST,RESPONSE,DATA,ACK,DATAACK,CLOSEREQ,CLOSE,SYNC,SYNCACK,INVALID
+nft 'add rule ip filter INPUT dccp dport 100 dccp type { request, response, data, ack, dataack, closereq, close, sync, syncack, 10-15 } counter'
+
+iptables-translate -A INPUT -p dccp -m dccp --sport 200 --dport 100
+nft 'add rule ip filter INPUT dccp sport 200 dccp dport 100 counter'

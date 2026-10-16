@@ -1,0 +1,66 @@
+#!/bin/bash
+
+set -e
+#set -x
+
+# ensure verbose output is identical between legacy and nft tools
+
+RULE1='-i eth2 -o eth3 -s feed:babe::1 -d feed:babe::2 -j ACCEPT'
+VOUT1='ACCEPT  all opt -- in eth2 out eth3  feed:babe::1  -> feed:babe::2'
+RULE2='-i eth2 -o eth3 -s feed:babe::4 -d feed:babe::5 -j ACCEPT'
+VOUT2='ACCEPT  all opt -- in eth2 out eth3  feed:babe::4  -> feed:babe::5'
+RULE3='-p icmpv6 -m icmp6 --icmpv6-type no-route'
+VOUT3='  ipv6-icmp opt -- in * out *  ::/0  -> ::/0   ipv6-icmptype 1 code 0'
+RULE4='-m dst --dst-len 42 -m rt --rt-type 23'
+VOUT4='  all opt -- in * out *  ::/0  -> ::/0   dst length:42 rt type:23'
+RULE5='-m frag --fragid 1337 -j LOG'
+VOUT5='LOG  all opt -- in * out *  ::/0  -> ::/0   frag id:1337 LOG flags 0 level 4'
+
+diff -u -Z <(echo -e "$VOUT1") <($XT_MULTI ip6tables -v -A FORWARD $RULE1)
+diff -u -Z <(echo -e "$VOUT2") <($XT_MULTI ip6tables -v -I FORWARD 2 $RULE2)
+diff -u -Z <(echo -e "$VOUT3") <($XT_MULTI ip6tables -v -A FORWARD $RULE3)
+diff -u -Z <(echo -e "$VOUT4") <($XT_MULTI ip6tables -v -A FORWARD $RULE4)
+diff -u -Z <(echo -e "$VOUT5") <($XT_MULTI ip6tables -v -A FORWARD $RULE5)
+
+diff -u -Z <(echo -e "$VOUT1") <($XT_MULTI ip6tables -v -C FORWARD $RULE1)
+diff -u -Z <(echo -e "$VOUT2") <($XT_MULTI ip6tables -v -C FORWARD $RULE2)
+diff -u -Z <(echo -e "$VOUT3") <($XT_MULTI ip6tables -v -C FORWARD $RULE3)
+diff -u -Z <(echo -e "$VOUT4") <($XT_MULTI ip6tables -v -C FORWARD $RULE4)
+diff -u -Z <(echo -e "$VOUT5") <($XT_MULTI ip6tables -v -C FORWARD $RULE5)
+
+EXPECT='Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 ACCEPT     all  --  eth2   eth3    feed:babe::1         feed:babe::2
+    0     0 ACCEPT     all  --  eth2   eth3    feed:babe::4         feed:babe::5
+    0     0            ipv6-icmp --  *      *       ::/0                 ::/0                 ipv6-icmptype 1 code 0
+    0     0            all  --  *      *       ::/0                 ::/0                 dst length:42 rt type:23
+    0     0 LOG        all  --  *      *       ::/0                 ::/0                 frag id:1337 LOG flags 0 level 4
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination'
+
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI ip6tables -v -n -L)
+
+diff -u -Z <(echo -e "$VOUT1") <($XT_MULTI ip6tables -v -D FORWARD $RULE1)
+diff -u -Z <(echo -e "$VOUT2") <($XT_MULTI ip6tables -v -D FORWARD $RULE2)
+
+EXPECT="Flushing chain \`INPUT'
+Flushing chain \`FORWARD'
+Flushing chain \`OUTPUT'"
+
+diff -u <(echo -e "$EXPECT") <($XT_MULTI ip6tables -v -F)
+
+EXPECT="Zeroing chain \`INPUT'
+Zeroing chain \`FORWARD'
+Zeroing chain \`OUTPUT'"
+
+diff -u <(echo -e "$EXPECT") <($XT_MULTI ip6tables -v -Z)
+
+diff -u <(echo "Flushing chain \`OUTPUT'") <($XT_MULTI ip6tables -v -F OUTPUT)
+diff -u <(echo "Zeroing chain \`OUTPUT'") <($XT_MULTI ip6tables -v -Z OUTPUT)
+
+$XT_MULTI ip6tables -N foo
+diff -u <(echo "Deleting chain \`foo'") <($XT_MULTI ip6tables -v -X foo)

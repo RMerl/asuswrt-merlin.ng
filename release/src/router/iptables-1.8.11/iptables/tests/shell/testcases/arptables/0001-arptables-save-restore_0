@@ -1,0 +1,61 @@
+#!/bin/bash
+
+set -e
+#set -x
+
+# there is no legacy backend to test
+[[ $XT_MULTI == *xtables-nft-multi ]] || { echo "skip $XT_MULTI"; exit 0; }
+
+# fill arptables manually
+
+$XT_MULTI arptables -F
+$XT_MULTI arptables -A INPUT -s 10.0.0.0/8 -j ACCEPT
+$XT_MULTI arptables -A INPUT -d 192.168.123.1 -j ACCEPT
+$XT_MULTI arptables -A INPUT --source-mac fe:ed:ba:be:00:01 -j ACCEPT
+$XT_MULTI arptables -A INPUT --destination-mac fe:ed:ba:be:00:01 -j ACCEPT
+$XT_MULTI arptables -N foo
+$XT_MULTI arptables -A foo -i lo -j ACCEPT
+$XT_MULTI arptables -A foo -l 6 -j ACCEPT
+$XT_MULTI arptables -A foo -j MARK --set-mark 12345
+$XT_MULTI arptables -A foo --opcode Request -j ACCEPT
+$XT_MULTI arptables -A foo --h-type 1 --proto-type 0x800 -j ACCEPT
+$XT_MULTI arptables -A foo -l 6 --h-type 1 --proto-type 0x800 -i lo --opcode Request -j ACCEPT
+$XT_MULTI arptables -A INPUT -j foo
+$XT_MULTI arptables -A INPUT
+
+$XT_MULTI arptables -A OUTPUT -o lo -j ACCEPT
+$XT_MULTI arptables -A OUTPUT -o eth134 -j mangle --mangle-ip-s 10.0.0.1
+$XT_MULTI arptables -A OUTPUT -o eth432 -j CLASSIFY --set-class feed:babe
+$XT_MULTI arptables -A OUTPUT -o eth432 --opcode Request -j CLASSIFY --set-class feed:babe
+$XT_MULTI arptables -P OUTPUT DROP
+
+# compare against stored arptables dump
+
+DUMP='*filter
+:INPUT ACCEPT
+:OUTPUT DROP
+:foo -
+-A INPUT -j ACCEPT -s 10.0.0.0/8
+-A INPUT -j ACCEPT -d 192.168.123.1
+-A INPUT -j ACCEPT --src-mac fe:ed:ba:be:00:01
+-A INPUT -j ACCEPT --dst-mac fe:ed:ba:be:00:01
+-A INPUT -j foo
+-A INPUT 
+-A OUTPUT -j ACCEPT -o lo
+-A OUTPUT -j mangle -o eth134 --mangle-ip-s 10.0.0.1
+-A OUTPUT -j CLASSIFY -o eth432 --set-class feed:babe
+-A OUTPUT -j CLASSIFY -o eth432 --opcode 1 --set-class feed:babe
+-A foo -j ACCEPT -i lo
+-A foo -j ACCEPT
+-A foo -j MARK --set-mark 12345
+-A foo -j ACCEPT --opcode 1
+-A foo -j ACCEPT --proto-type 0x800
+-A foo -j ACCEPT -i lo --opcode 1 --proto-type 0x800'
+
+diff -u <(echo -e "$DUMP") <($XT_MULTI arptables-save | grep -v "^#")
+
+# make sure dump can be restored and check it didn't change
+
+$XT_MULTI arptables -F
+$XT_MULTI arptables-restore <<<$DUMP
+diff -u <(echo -e "$DUMP") <($XT_MULTI arptables-save | grep -v "^#")

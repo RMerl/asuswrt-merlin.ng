@@ -705,7 +705,7 @@
 	background-position: 50%;
 }
 .btn_item .status_text{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	margin-top: 6px;
 }
 .input_container{
@@ -731,6 +731,9 @@
 	flex: 0 0 95%;
 	min-width: 350px;
 	max-width: initial;
+}
+.textInput, .textareaInput, .custom_select_container{
+	box-sizing: border-box;
 }
 .textInput, .custom_select_container, .textareaInput{
 	width: 100%;
@@ -1270,7 +1273,7 @@
 	letter-spacing: 0.1px;
 }
 .vpn_type_maxi_hint, .item_hint{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 }
 .item_hint > div{
 	width: 100%;
@@ -1292,7 +1295,7 @@
 }
 .client_list_content_container .client_container.no_data{
 	height: 40px;
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 }
 .client_list_content_container .client_container:before{
 	position: absolute;
@@ -1680,4 +1683,144 @@
 	.profile_setting_item.promote_img{
 		height: 150px !important;
 	}
+}
+
+/* Surfshark account buttons (Create + Login side-by-side) */
+.ssk_account_btns_row{
+	display: flex;
+	gap: 12px;
+	margin: 10px 4%;
+	box-sizing: border-box;
+}
+.ssk_account_btns_row > .btn_item{
+	flex: 1 1 0;
+	min-width: 0;
+	height: auto;
+}
+.ssk_account_btns_row > .btn_item > div{
+	margin: 0;
+	width: 100%;
+}
+.ssk_account_btns_row .btn_container{
+	width: 100% !important;
+	box-sizing: border-box;
+	justify-content: center;
+	padding: 0 8px;
+}
+.ssk_account_btns_row .btn_container .text.ssk_create_btn,
+.ssk_account_btns_row .btn_container .text.ssk_login_btn{
+	width: auto;
+	flex: 0 1 auto;
+	box-sizing: border-box;
+}
+.ssk_account_btns_row .btn_container .text.ssk_create_btn{
+	padding-left: 30px;
+}
+.ssk_account_btns_row .btn_container .text.ssk_create_btn:before{
+	position: absolute;
+	content: "";
+	background-image: url(/images/New_ui/vpn_icon_all_collect.svg);
+	background-repeat: no-repeat;
+	background-position: -54px -163px;
+	width: 24px;
+	height: 24px;
+	left: 0;
+}
+
+/* Surfshark Login modal */
+.popup_container.popup_element_second .ssk_login_image{
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	margin: 16px auto;
+	cursor: pointer;
+}
+.popup_container.popup_element_second .ssk_otp_desc{
+	height: auto;
+	display: block;
+	margin: 20px 16px 16px;
+	padding: 12px 16px;
+	text-align: center;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 1.6;
+	letter-spacing: 0.2px;
+	color: rgba(255, 255, 255, 0.92);
+	background: rgba(0, 133, 255, 0.08);
+	border-left: 3px solid rgba(0, 133, 255, 0.7);
+	border-radius: 4px;
+}
+.popup_container.popup_element_second .ssk_otp_container{
+	display: flex;
+	gap: 8px;
+	justify-content: center;
+	margin: 12px 0 20px;
+}
+.popup_container.popup_element_second .ssk_otp_input{
+	width: 40px;
+	height: 48px;
+	padding: 0;
+	text-align: center;
+	font-size: 20px;
+	font-weight: 600;
+}
+.popup_container.popup_element_second .ssk_login_popup .profile_setting_item input[disabled]{
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+.popup_container.popup_element_second .ssk_login_error{
+	margin: 8px 0 0;
+	padding: 8px 12px;
+	color: #fc0;
+	font-size: 13px;
+	line-height: 1.5;
+	border-left: 3px solid #fc0;
+	background: rgba(255, 204, 0, 0.08);
+}
+.popup_container.popup_element_second .btn_container.apply.loading{
+	opacity: 0.7;
+	pointer-events: none;
+	cursor: wait;
+}
+.popup_container.popup_element_second .ssk_resend_row{
+	text-align: center;
+	margin: 8px 0 12px;
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.6);
+	min-height: 18px;
+}
+.popup_container.popup_element_second .ssk_resend_row.active{
+	color: inherit;
+}
+.popup_container.popup_element_second .ssk_resend_link{
+	color: #fc0;
+	cursor: pointer;
+	text-decoration: underline;
+}
+.popup_container.popup_element_second .ssk_resend_link:hover{
+	opacity: 0.85;
+}
+.popup_container.popup_element_second .ssk_resend_hint{
+	text-align: center;
+	margin: 4px 0 12px;
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.55);
+	line-height: 1.5;
+	padding: 0 8px;
+}
+@media (max-width: 400px) {
+	.popup_container.popup_element_second .ssk_otp_input{
+		width: 36px;
+		height: 44px;
+		font-size: 18px;
+	}
+	.popup_container.popup_element_second .ssk_otp_container{
+		gap: 6px;
+	}
+}
+
+[data-asuswrt-color="light"] .popup_container.popup_element_second .ssk_login_error{
+	color: #b45309;
+	border-left-color: #b45309;
+	background: rgba(180, 83, 9, 0.08);
 }

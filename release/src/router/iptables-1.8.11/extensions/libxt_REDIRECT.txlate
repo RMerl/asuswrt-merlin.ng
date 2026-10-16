@@ -1,0 +1,29 @@
+iptables-translate -t nat -A prerouting -p tcp --dport 80 -j REDIRECT
+nft 'add rule ip nat prerouting tcp dport 80 counter redirect'
+
+iptables-translate -t nat -A prerouting -p tcp --dport 80 -j REDIRECT --to-ports 0
+nft 'add rule ip nat prerouting tcp dport 80 counter redirect to :0'
+
+iptables-translate -t nat -A prerouting -p tcp --dport 80 -j REDIRECT --to-ports 8080
+nft 'add rule ip nat prerouting tcp dport 80 counter redirect to :8080'
+
+iptables-translate -t nat -A prerouting -p tcp --dport 80 -j REDIRECT --to-ports 0-65535
+nft 'add rule ip nat prerouting tcp dport 80 counter redirect to :0-65535'
+
+iptables-translate -t nat -A prerouting -p tcp --dport 80 -j REDIRECT --to-ports 10-22
+nft 'add rule ip nat prerouting tcp dport 80 counter redirect to :10-22'
+
+iptables-translate -t nat -A prerouting -p tcp --dport 80 -j REDIRECT --to-ports 8080 --random
+nft 'add rule ip nat prerouting tcp dport 80 counter redirect to :8080 random'
+
+iptables-translate -t nat -A prerouting -j REDIRECT --random
+nft 'add rule ip nat prerouting counter redirect random'
+
+ip6tables-translate -t nat -A prerouting -p tcp --dport 80 -j REDIRECT
+nft 'add rule ip6 nat prerouting tcp dport 80 counter redirect'
+
+ip6tables-translate -t nat -A prerouting -p tcp --dport 80 -j REDIRECT --to-ports 8080
+nft 'add rule ip6 nat prerouting tcp dport 80 counter redirect to :8080'
+
+ip6tables-translate -t nat -A prerouting -p tcp --dport 80 -j REDIRECT --to-ports 8080 --random
+nft 'add rule ip6 nat prerouting tcp dport 80 counter redirect to :8080 random'

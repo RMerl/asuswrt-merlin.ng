@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+# segfault with --test reported in nfbz#1391
+
+printf '%s\nCOMMIT\n' '*nat' '*raw' '*filter' | $XT_MULTI iptables-restore --test

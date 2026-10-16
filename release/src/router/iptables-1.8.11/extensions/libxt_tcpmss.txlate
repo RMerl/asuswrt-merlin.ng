@@ -1,0 +1,11 @@
+iptables-translate -A INPUT -m tcpmss --mss 42
+nft 'add rule ip filter INPUT tcp option maxseg size 42 counter'
+
+iptables-translate -A INPUT -m tcpmss ! --mss 42
+nft 'add rule ip filter INPUT tcp option maxseg size != 42 counter'
+
+iptables-translate -A INPUT -m tcpmss --mss 42:1024
+nft 'add rule ip filter INPUT tcp option maxseg size 42-1024 counter'
+
+iptables-translate -A INPUT -m tcpmss ! --mss 1461:65535
+nft 'add rule ip filter INPUT tcp option maxseg size != 1461-65535 counter'

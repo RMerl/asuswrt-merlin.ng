@@ -1,0 +1,8 @@
+ip6tables-translate -t filter -A INPUT -m icmp6 --icmpv6-type 1 -j LOG
+nft 'add rule ip6 filter INPUT icmpv6 type destination-unreachable counter log'
+
+ip6tables-translate -t filter -A INPUT -m icmp6 --icmpv6-type neighbour-advertisement -j LOG
+nft 'add rule ip6 filter INPUT icmpv6 type nd-neighbor-advert counter log'
+
+ip6tables-translate -t filter -A INPUT -m icmp6 ! --icmpv6-type packet-too-big -j LOG
+nft 'add rule ip6 filter INPUT icmpv6 type != packet-too-big counter log'

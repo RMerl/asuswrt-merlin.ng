@@ -1,0 +1,8 @@
+iptables-translate -A OUTPUT -m statistic --mode nth --every 10 --packet 1
+nft 'add rule ip filter OUTPUT numgen inc mod 10 1 counter'
+
+iptables-translate -A OUTPUT -m statistic --mode nth ! --every 10 --packet 5
+nft 'add rule ip filter OUTPUT numgen inc mod 10 != 5 counter'
+
+iptables-translate -A OUTPUT -m statistic --mode random --probability 0.1
+nft 'add rule ip filter OUTPUT meta random & 2147483647 < 214748365 counter'

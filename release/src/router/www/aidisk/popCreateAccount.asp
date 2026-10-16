@@ -112,7 +112,7 @@ function validForm(){
   <table width="90%" class="popTable" border="0" align="center" cellpadding="0" cellspacing="0">
    <thead>
     <tr>
-      <td colspan="2"><span style="color:#FFF"><#AddAccountTitle#></span><img src="../images/button-close.gif" onClick="parent.hidePop('OverlayMask');"></td>
+      <td colspan="2"><span style="color:var(--wrt-text-color,#FFFFFF)"><#AddAccountTitle#></span><img src="../images/button-close.gif" onClick="parent.hidePop('OverlayMask');"></td>
       </tr>
 	</thead>
 	<tbody>
@@ -132,7 +132,7 @@ function validForm(){
     <tr>
       <th><#Confirmpassword#>: </th>
       <td><input type="password" class="input_15_table" name="confirm_password" id="confirm_password" onKeyPress="return validator.isString(this, event);" maxlength="33" autocorrect="off" autocapitalize="off">
-      		<br/><span id="alert_msg2" style="color:#FC0;margin-left:8px;"></span>	
+      		<br/><span id="alert_msg2" style="color:var(--wrt-badge-warning-color,#FFCC00);margin-left:8px;"></span>	
       </td>
     </tr>
 	</tbody>	

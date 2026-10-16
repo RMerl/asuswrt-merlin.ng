@@ -1,0 +1,17 @@
+# old socket match, no options.  Matches if sk can be found and it is not bound to 0.0.0.0/::
+iptables-translate -A INPUT -m socket
+nft 'add rule ip filter INPUT socket wildcard 0 counter'
+
+iptables-translate -A INPUT -m socket --transparent
+nft 'add rule ip filter INPUT socket wildcard 0 socket transparent 1 counter'
+
+# Matches if sk can be found.  Doesn't matter as to what addess it is bound to.
+# therefore, emulate "exists".
+iptables-translate -A INPUT -m socket --nowildcard
+nft 'add rule ip filter INPUT socket wildcard le 1 counter'
+
+iptables-translate -A INPUT -m socket --restore-skmark
+nft 'add rule ip filter INPUT socket wildcard 0 meta mark set socket mark counter'
+
+iptables-translate -A INPUT -m socket --transparent --nowildcard --restore-skmark
+nft 'add rule ip filter INPUT socket transparent 1 meta mark set socket mark counter'

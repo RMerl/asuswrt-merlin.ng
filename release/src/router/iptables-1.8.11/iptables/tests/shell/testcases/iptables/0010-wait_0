@@ -1,0 +1,55 @@
+#!/bin/bash
+
+case "$XT_MULTI" in
+*xtables-legacy-multi)
+	;;
+*)
+	echo skip $XT_MULTI
+	exit 0
+	;;
+esac
+
+coproc RESTORE { $XT_MULTI iptables-restore; }
+echo "*filter" >&${RESTORE[1]}
+sleep 0.5
+
+$XT_MULTI iptables -A FORWARD -j ACCEPT &
+ipt_pid=$!
+
+waitpid -t 1 $ipt_pid
+[[ $? -eq 3 ]] && {
+	echo "process waits when it should not"
+	exit 1
+}
+wait $ipt_pid
+[[ $? -eq 0 ]] && {
+	echo "process exited 0 despite busy lock"
+	exit 1
+}
+
+t0=$(date +%s)
+$XT_MULTI iptables -w 3 -A FORWARD -j ACCEPT
+t1=$(date +%s)
+[[ $((t1 - t0)) -ge 3 ]] || {
+	echo "wait time not expired"
+	exit 1
+}
+
+$XT_MULTI iptables -w -A FORWARD -j ACCEPT &
+ipt_pid=$!
+
+waitpid -t 3 $ipt_pid
+[[ $? -eq 3 ]] || {
+	echo "no indefinite wait"
+	exit 1
+}
+kill $ipt_pid
+waitpid -t 3 $ipt_pid
+[[ $? -eq 3 ]] && {
+	echo "killed waiting iptables call did not exit in time"
+	exit 1
+}
+
+kill $RESTORE_PID
+wait
+exit 0

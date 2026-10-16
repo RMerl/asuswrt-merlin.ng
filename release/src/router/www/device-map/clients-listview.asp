@@ -20,7 +20,7 @@
 			.block_filter_name{
 				text-align:center;
 				padding-top:5px;
-				color:#CCCCCC;
+				color:var(--wrt-text-muted-color,#CCCCCC);
 				font-size:14px
 			} 
 			.block_filter_pressed{
@@ -30,7 +30,7 @@
 				border-style:inset;
 			}
 			.block_filter_pressed:hover{
-				color:#FFFFFF !important;
+				color:var(--wrt-text-color,#FFFFFF) !important;
 			} 
 			.clientlist_viewlist{
 				left: 0 !important;
@@ -40,7 +40,7 @@
 				display: none;
 			}
 			#tr_all_title, #clientlist_all_list_Block{
-				background-color: #FFF;
+				background-color: var(--wrt-card-bg, #FFF);
 			}
 		</style>
 	</head>

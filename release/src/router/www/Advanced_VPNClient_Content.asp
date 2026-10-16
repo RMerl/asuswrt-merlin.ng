@@ -700,7 +700,7 @@ function show_vpnc_rulelist(){
 	var code = "";
 	code +='<table style="margin-bottom:30px;" width="98%" border="1" align="center" cellpadding="4" cellspacing="0" class="list_table" id="vpnc_clientlist_table">';
 	if(vpnc_clientlist_array.length == 0 && ipsec_arrayLength == 0)
-		code +='<tr><td style="color:#FC0;" colspan="6"><#IPConnection_VSList_Norule#></td></tr>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="6"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		for(var i = 0; i < vpnc_clientlist_array.length; i += 1) {
 			if(vpnc_clientlist_array[i] != "") {
@@ -2716,7 +2716,7 @@ function changePFS() {
 					<br>
 					<#vpnc_net_client_peer_desc2#>
 					<br>
-					<a id="ipsec_vpn_type_faq" href="" target="_blank" style="text-decoration:underline;color:#FC0;"></a>
+					<a id="ipsec_vpn_type_faq" href="" target="_blank" style="text-decoration:underline;color:var(--wrt-badge-warning-color,#FFCC00);"></a>
 				</div>
 				<!-- VPN Type table start-->
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
@@ -2780,14 +2780,14 @@ function changePFS() {
 						<th><#vpn_ipsec_Local_ID#></th>
 						<td>
 							<input type="text" class="input_25_table" name="ipsec_local_id" placeholder="<#IPConnection_ExternalIPAddress_itemname#>、FQDN、<#AiProtection_WebProtector_EMail#> or DN" autocomplete="off" autocorrect="off" autocapitalize="off">
-							<span style="color:#FC0">(Optional)<!--untranslated--></span>
+							<span style="color:var(--wrt-badge-warning-color,#FFCC00)">(Optional)<!--untranslated--></span>
 						</td>
 					</tr>
 					<tr id="tr_adv_remote_id">
 						<th><#vpn_ipsec_Remote_ID#></th>
 						<td>
 							<input type="text" class="input_25_table" name="ipsec_remote_id" placeholder="<#IPConnection_ExternalIPAddress_itemname#>、FQDN、<#AiProtection_WebProtector_EMail#> or DN" autocomplete="off" autocorrect="off" autocapitalize="off">
-							<span id="ipsec_remote_id_hint" style="color:#FC0">(Optional)<!--untranslated--></span>
+							<span id="ipsec_remote_id_hint" style="color:var(--wrt-badge-warning-color,#FFCC00)">(Optional)<!--untranslated--></span>
 						</td>
 					</tr>
 				</table>
@@ -2807,7 +2807,7 @@ function changePFS() {
 						<th><#vpn_ipsec_Local_Port#></th>
 						<td>
 							<input type="text" class="input_6_table" name="ipsec_local_port" maxlength="5" value="0" onKeyPress="return validator.isNumber(this,event)" autocomplete="off" autocorrect="off" autocapitalize="off">
-							<span style="color:#FC0">(0-65535)</span>
+							<span style="color:var(--wrt-badge-warning-color,#FFCC00)">(0-65535)</span>
 						</td>
 					</tr>
 					<tr id="tr_net_remote_private_subnet">
@@ -2818,7 +2818,7 @@ function changePFS() {
 						<th><#vpn_ipsec_Remote_Port#></th>
 						<td>
 							<input type="text" class="input_6_table" name="ipsec_remote_port" maxlength="5" value="0" onKeyPress="return validator.isNumber(this,event)" autocomplete="off" autocorrect="off" autocapitalize="off">
-							<span style="color:#FC0">(0-65535)</span>
+							<span style="color:var(--wrt-badge-warning-color,#FFCC00)">(0-65535)</span>
 						</td>
 					</tr>
 					<tr id="tr_net_transport">
@@ -2892,14 +2892,14 @@ function changePFS() {
 							<td>
 								<input type="radio" name="ipsec_exchange" class="input" value="1" onchange="changeExchangeMode();"><#DHCPaggressive#>
 								<input type="radio" name="ipsec_exchange" class="input" value="0" onchange="changeExchangeMode();" checked><#vpn_ipsec_Main_Mode#>
-								<div id="exchange_mode_hint" style="color:#FC0;margin:5px 0px;"><#vpn_ipsec_Exchange_Mode_Hint#></div>
+								<div id="exchange_mode_hint" style="color:var(--wrt-badge-warning-color,#FFCC00);margin:5px 0px;"><#vpn_ipsec_Exchange_Mode_Hint#></div>
 							</td>
 						</tr>
 						<tr id="tr_adv_keylife_time_p1">
 							<th><#vpn_ipsec_IKE_Key_Lifetime#></th>
 							<td>
 								<input type="text" class="input_6_table" name="ipsec_keylife_p1" maxlength="6" value="86400" onKeyPress="return validator.isNumber(this,event)" autocomplete="off" autocorrect="off" autocapitalize="off">
-								<span style="color:#FC0">(120~172800) <#Second#></span>
+								<span style="color:var(--wrt-badge-warning-color,#FFCC00)">(120~172800) <#Second#></span>
 							</td>
 						</tr>
 						<tr id="tr_adv_ike_isakmp" style="display:none;">
@@ -2931,7 +2931,7 @@ function changePFS() {
 							<th><#vpn_ipsec_DPD_Checking_Interval#></th>
 							<td>
 								<input type="text" class="input_3_table" name="ipsec_dpd" maxlength="3" value="10" onKeyPress="return validator.isNumber(this,event)" autocomplete="off" autocorrect="off" autocapitalize="off">
-								<span style="color:#FC0">(10~900) <#Second#></span>
+								<span style="color:var(--wrt-badge-warning-color,#FFCC00)">(10~900) <#Second#></span>
 							</td>
 						</tr>
 					</table>
@@ -2985,7 +2985,7 @@ function changePFS() {
 							<th><#vpn_ipsec_Key_Lifetime#></th>
 							<td>
 								<input type="text" class="input_6_table" name="ipsec_keylife_p2" maxlength="6" value="3600" onKeyPress="return validator.isNumber(this,event)" autocomplete="off" autocorrect="off" autocapitalize="off">
-								<span style="color:#FC0">(120~172800) <#Second#></span>
+								<span style="color:var(--wrt-badge-warning-color,#FFCC00)">(120~172800) <#Second#></span>
 							</td>
 						</tr>
 						<tr id="tr_adv_keyingtries_p2">
@@ -2995,7 +2995,7 @@ function changePFS() {
 							</td>
 						</tr>
 					</table>
-					<div style="color:#FC0;margin:10px 0px;"><#vpn_ipsec_Default_DH_Hint#></div>
+					<div style="color:var(--wrt-badge-warning-color,#FFCC00);margin:10px 0px;"><#vpn_ipsec_Default_DH_Hint#></div>
 				</div>
 				<!-- Advanced Settings table end-->
 
@@ -3066,7 +3066,7 @@ function changePFS() {
 						<tr>
 							<th><#vpn_openvpnc_importovpn#></th>
 							<td>
-								<input type="file" name="file" class="input" style="color:#FC0;*color:#000;"><br>
+								<input type="file" name="file" class="input" style="color:var(--wrt-badge-warning-color,#FFCC00);*color:#000;"><br>
 								<input class="button_gen" onclick="ImportOvpn(document.vpnclientForm.vpnc_openvpn_unit_edit.value);" type="button" value="<#CTL_upload#>" />
 								<img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif">
 								<span id="importOvpnFile" style="display:none;"><#Main_alert_proceeding_desc3#></span>
@@ -3075,7 +3075,7 @@ function changePFS() {
 					</table> 	
 </form>	 			
 			 		<br>
-					<div style="color:#FC0;margin-bottom: 10px;">
+					<div style="color:var(--wrt-badge-warning-color,#FFCC00);margin-bottom: 10px;">
 						<input type="checkbox" id="cbManualImport" class="input" onclick="manualImport(this.checked)"><#vpn_openvpnc_manual#>
 					</div>
 					
@@ -3095,7 +3095,7 @@ function changePFS() {
 					<tr>
 						<th><#vpn_openvpnc_importCA#></th>
 						<td>								
-							<input type="file" name="file" class="input" style="color:#FC0;*color:#000;"><br>
+							<input type="file" name="file" class="input" style="color:var(--wrt-badge-warning-color,#FFCC00);*color:#000;"><br>
 							<input id="importCA" class="button_gen" onclick="startImportCA(document.vpnclientForm.vpnc_openvpn_unit_edit.value);" type="button" value="<#CTL_upload#>" />
 							<img id="loadingiconCA" style="margin-left:5px;display:none;" src="/images/InternetScan.gif">	
 						</td>
@@ -3118,7 +3118,7 @@ function changePFS() {
 						<tr>
 							<th>Import Cert file</th>
 							<td>
-								<input type="file" name="file" class="input" style="color:#FC0;*color:#000;"><br>
+								<input type="file" name="file" class="input" style="color:var(--wrt-badge-warning-color,#FFCC00);*color:#000;"><br>
 								<input class="button_gen" onclick="setTimeout('ovpnFileChecker();',2000);document.openvpnCertForm.submit();" type="button" value="<#CTL_upload#>" />					  		
 							</td>
 						</tr> 					
@@ -3140,7 +3140,7 @@ function changePFS() {
 						<tr>
 							<th>Import Key file</th>
 							<td>
-								<input type="file" name="file" class="input" style="color:#FC0;*color:#000;"><br>
+								<input type="file" name="file" class="input" style="color:var(--wrt-badge-warning-color,#FFCC00);*color:#000;"><br>
 								<input class="button_gen" onclick="setTimeout('ovpnFileChecker();',2000);document.openvpnKeyForm.submit();" type="button" value="<#CTL_upload#>" />
 							</td>
 						</tr> 					
@@ -3162,7 +3162,7 @@ function changePFS() {
 						<tr>
 							<th>Import Static file</th>
 							<td>
-								<input type="file" name="file" class="input" style="color:#FC0;*color:#000;"><br>
+								<input type="file" name="file" class="input" style="color:var(--wrt-badge-warning-color,#FFCC00);*color:#000;"><br>
 								<input class="button_gen" onclick="setTimeout('ovpnFileChecker();',2000);document.openvpnStaticForm.submit();" type="button" value="<#CTL_upload#>" />					  		
 							</td>
 						</tr> 
@@ -3226,7 +3226,7 @@ function changePFS() {
 									<tr>
 										<td>
 											<div style="margin-left:30px; margin-top:10px;">
-												<p><#vpn_openvpn_KC_Edit1#> <span style="color:#FC0;">----- BEGIN xxx ----- </span>/<span style="color:#FC0;"> ----- END xxx -----</span> <#vpn_openvpn_KC_Edit2#>
+												<p><#vpn_openvpn_KC_Edit1#> <span style="color:var(--wrt-badge-warning-color,#FFCC00);">----- BEGIN xxx ----- </span>/<span style="color:var(--wrt-badge-warning-color,#FFCC00);"> ----- END xxx -----</span> <#vpn_openvpn_KC_Edit2#>
 												<p><#vpn_openvpn_KC_Limit#>
 											</div>													
 											<div style="margin:5px;*margin-left:-5px;width: 700px;" class="splitLine"></div>

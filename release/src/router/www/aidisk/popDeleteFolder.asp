@@ -119,14 +119,14 @@ function check_folder_length(folder_name){   //Jieming added at 2013/04/16, to d
 			<thead>
 			<tr>
 				<td>
-					<span style="color:#FFF"><#DelFolderTitle#></span><img src="../images/button-close.gif" onClick="parent.hidePop('OverlayMask');">
+					<span style="color:var(--wrt-text-color,#FFFFFF)"><#DelFolderTitle#></span><img src="../images/button-close.gif" onClick="parent.hidePop('OverlayMask');">
 				</td>
 			</tr>
 			</thead>
 			<tbody>
 			<tr>
 				<td height="70" valign="middle"><#DelFolderAlert#>
-					<span id="selected_Folder" style="color:#333333;"></span>
+					<span id="selected_Folder" style="color:var(--wrt-text-color,#333333);"></span>
 				</td>
 			</tr>
 			<tr>

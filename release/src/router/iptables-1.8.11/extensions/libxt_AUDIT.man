@@ -1,0 +1,16 @@
+This target creates audit records for packets hitting the target.
+It can be used to record accepted, dropped, and rejected packets. See
+auditd(8) for additional details.
+.TP
+\fB\-\-type\fP {\fBaccept\fP|\fBdrop\fP|\fBreject\fP}
+Set type of audit record. Starting with linux-4.12, this option has no effect
+on generated audit messages anymore. It is still accepted by iptables for
+compatibility reasons, but ignored.
+.PP
+Example:
+.IP
+iptables \-N AUDIT_DROP
+.IP
+iptables \-A AUDIT_DROP \-j AUDIT
+.IP
+iptables \-A AUDIT_DROP \-j DROP

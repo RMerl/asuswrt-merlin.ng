@@ -1174,6 +1174,13 @@ int check_wan_if(int unit)
 
 void start_dhcpfilter(const char *ifname)
 {
+#ifdef IPVLAN3
+	if (!nvram_match("switch_wantag", "none")
+	 && !nvram_match("switch_wantag", "hinet_mesh")) {
+		syslog(LOG_NOTICE, "skip %s: %s\n", __func__, ifname);
+		return;
+	}
+#endif
 	char iface[IFNAMSIZ];
 
 	if (!ifname || !*ifname)
@@ -1223,7 +1230,9 @@ void restore_wan_ebtables_rules()
 {
 #ifdef RTCONFIG_MULTICAST_IPTV
 	if (nvram_match("switch_wantag", "hinet_mesh")) {
+#ifndef RTCONFIG_HINET_MESH_SNOOPER
 		start_dhcpfilter(get_wan_ifname(WAN_UNIT_IPTV));
+#endif
 	}
 #endif
 #ifdef RTCONFIG_MULTISERVICE_WAN
@@ -1240,6 +1249,9 @@ void restore_wan_ebtables_rules()
 		if (nvram_pf_get_int(wan_prefix, "dhcpfilter_enable"))
 			start_dhcpfilter(nvram_pf_safe_get(wan_prefix, "ifname"));
 	}
+#endif
+#if defined(RTCONFIG_MSWAN_GENERIC) || defined(RTCONFIG_HINET_MESH_BRIDGE)
+	config_mswan_br_rule();
 #endif
 }
 
@@ -2452,8 +2464,12 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 				if (switch_stb_x == 0 || switch_stb_x > 6) {
 					strlcpy(br_ifname, nvram_safe_get("lan_ifname"), sizeof(br_ifname));
 					if (nvram_match("switch_wantag", "hinet_mesh")) {
+#ifndef RTCONFIG_HINET_MESH_SNOOPER
 						start_dhcpfilter(wan_ifname);
 						eval("dhcpfwd", "-i", nvram_safe_get("lan_ifname"), "-o", wan_ifname, "-V", "CHT");
+#else
+						eval("mod_snooper");
+#endif
 					}
 					else if (nvram_get_int(strcat_r(prefix, "dhcpfilter_enable", tmp))) {
 						start_dhcpfilter(wan_ifname);
@@ -2494,8 +2510,12 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 #else
 			eval("brctl", "addif", nvram_get_int("switch_stb_x") ? STB_BR_IF : nvram_safe_get("lan_ifname"), wan_ifname);
 			if (nvram_match("switch_wantag", "hinet_mesh")) {
+#ifndef RTCONFIG_HINET_MESH_SNOOPER
 				start_dhcpfilter(wan_ifname);
 				eval("dhcpfwd", "-i", nvram_safe_get("lan_ifname"), "-o", wan_ifname, "-V", "CHT");
+#else
+				eval("mod_snooper");
+#endif
 			}
 			else if (nvram_get_int(strcat_r(prefix, "dhcpfilter_enable", tmp))) {
 				start_dhcpfilter(wan_ifname);
@@ -2815,7 +2835,11 @@ stop_wan_if(int unit)
 #ifdef RTCONFIG_MULTILAN_CFG
 		if (is_bridged(nvram_safe_get("lan_ifname"), wan_ifname)) {
 			if (nvram_match("switch_wantag", "hinet_mesh")) {
+#ifndef RTCONFIG_HINET_MESH_SNOOPER
 				killall_tk("dhcpfwd");
+#else
+				killall_tk("mod_snooper");
+#endif
 			}
 		}
 		stop_dhcpfilter(wan_ifname);
@@ -2842,7 +2866,11 @@ stop_wan_if(int unit)
 		stop_dhcpfilter(wan_ifname);
 		eval("brctl", "delif", nvram_safe_get("lan_ifname"), wan_ifname);
 		if (nvram_match("switch_wantag", "hinet_mesh")) {
+#ifndef RTCONFIG_HINET_MESH_SNOOPER
 			killall_tk("dhcpfwd");
+#else
+			killall_tk("mod_snooper");
+#endif
 		}
 #endif
 #endif
@@ -4207,6 +4235,15 @@ NOIP:
 		stop_quagga();
 		start_quagga();
 	}
+#if defined(IPVLAN3)
+	/* movistar/IPVLAN3: VLAN 2/3 are RIP routing interfaces; their DHCP may
+	 * never complete (no DHCP server on those VLANs in all environments), so
+	 * also trigger quagga when the primary WAN (unit 0) comes up. */
+	else if (wan_unit == 0 && nvram_match("switch_wantag", "movistar")) {
+		stop_quagga();
+		start_quagga();
+	}
+#endif
 #endif
 #endif
 
@@ -4354,6 +4391,14 @@ NOIP:
 #endif
 			)
 	{
+#ifdef RTCONFIG_VPNC
+#if defined(RTCONFIG_VPN_FUSION) && !defined(RTCONFIG_VPN_FUSION_MERLIN)
+		start_vpnc();
+#else
+		if((nvram_match("vpnc_proto", "pptp") || nvram_match("vpnc_proto", "l2tp")) && nvram_match("vpnc_auto_conn", "1"))
+			start_vpnc();
+#endif
+#endif
 
 		/* ntp is set, but it didn't just get set, so ntp_synced didn't already did these */
 		if (nvram_get_int("ntp_ready") && !first_ntp_sync) {
@@ -4368,7 +4413,12 @@ NOIP:
 			start_ddns(NULL, 0);
 		}
 #ifdef RTCONFIG_WIREGUARD
-		reload_wgs_ip_rule();
+#if defined(RTCONFIG_VPN_FUSION_MERLIN) || !defined(RTCONFIG_VPN_FUSION)
+		stop_wgcall();
+		start_wgcall();
+#endif
+		stop_wgsall();
+		start_wgsall();
 #endif
 #ifdef RTCONFIG_TR069
                if(wan_unit == 0 ){
@@ -5691,7 +5741,6 @@ void init_wan46(void) {
 			else
 				snprintf(prefix, sizeof(prefix), "wan46det%d_", unit);
 			nvram_unset(strcat_r(prefix, "state", tmp));
-			nvram_unset(ipv6_nvname_by_unit("ipv6_s46_perfer", unit));
 			nvram_unset(ipv6_nvname_by_unit("ipv6_ra_addr", unit));
 			nvram_unset(ipv6_nvname_by_unit("ipv6_ra_length", unit));
 			nvram_unset(ipv6_nvname_by_unit("ipv6_prefix", unit));

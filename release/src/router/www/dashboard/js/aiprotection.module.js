@@ -1,10 +1,10 @@
 export class AiProtectionFeature {
-    constructor(props) {
+    constructor(props, nvram = {}) {
         this.type = props.type;
         this.urlBase = props.urlBase;
         this.title = props.title;
         this.data = [];
-        this.support = isSupport(props.support);
+        this.support = isSupport(props.support) && !(nvram.productid === "PRT-BE59" && props.type === "ark_ids");
         this.featureSwitch = null;
         this.topClientWidget = null;
         this.detailTableWidget = null;
@@ -122,7 +122,7 @@ export class TopClientWidget {
             .join("");
 
         return `
-                <h5 class="card-header"><#AiProtection_event#></h5>
+                <h5 class="card-header border-0"><#AiProtection_event#></h5>
                 <div class="card-body">
                     <div class="row h-100">
                         <div class="dns-content-default">
@@ -260,7 +260,17 @@ export class ChartWidget {
                     yAxisID: "y",
                     borderWidth: 1
                 }]
-            }
+            },
+            ark_ids: {
+                title: '<#AiProtection_activity#>',
+                canvasId: `${type}_chart`,
+                datasets: [{
+                    label: "",
+                    fill: true,
+                    yAxisID: "y",
+                    borderWidth: 1
+                }]
+            },
         };
     }
 
@@ -317,7 +327,7 @@ export class ChartWidget {
         const config = this.getTypeConfig();
 
         let code = `
-                <h5 class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="card-header border-0 d-flex align-items-center justify-content-between">
                     ${config.title}
                 </h5>
                 <div class="card-body">
@@ -434,11 +444,13 @@ export class ChartWidget {
 }
 
 export class DetailTableWidget {
-    constructor(type, targetElement) {
+    constructor(type, targetElement, nvram = {}) {
         this.type = type;
         this.targetElement = targetElement;
         this.element = null;
         this.data = [];
+        this.whitelist = {};
+        this.nvram = nvram;
 
         const cat_id_index = {
             39: "Proxy Avoidance",
@@ -502,8 +514,7 @@ export class DetailTableWidget {
                         }
                     }
                 ],
-                hasWhitelistButton: true,
-                hasManageWhitelist: true,
+                hasWhitelist: true,
                 fileName: 'MaliciousSitesBlocking.csv',
                 exportId: 'mals_db_export',
             },
@@ -539,10 +550,8 @@ export class DetailTableWidget {
                     {title: '<#AiProtection_event_Destination#>', data: 'dst_ip'},
                     {title: '<#AiProtection_event_Threat#>', data: 'msg'}
                 ],
-                hasWhitelistButton: false,
-                hasManageWhitelist: false,
+                hasWhitelist: false,
                 fileName: 'IntrusionPreventionSystem.csv',
-                dbType: 'vp_db',
                 exportId: 'vp_db_export',
             },
             dpi_cc: {
@@ -556,10 +565,8 @@ export class DetailTableWidget {
                     {title: '<#AiProtection_event_Source#>', data: 'mac', render: clinetDiv},
                     {title: '<#AiProtection_event_Destination#>', data: 'dst_ip'}
                 ],
-                hasWhitelistButton: false,
-                hasManageWhitelist: false,
+                hasWhitelist: false,
                 fileName: 'InfectedDevicePreventBlock.csv',
-                dbType: 'cc_db',
                 exportId: 'cc_db_export',
             },
             ark_mals: {
@@ -580,10 +587,8 @@ export class DetailTableWidget {
                         data: 'domain',
                     }
                 ],
-                hasWhitelistButton: false,
-                hasManageWhitelist: false,
+                hasWhitelist: this.nvram.productid !== "PRT-BE59",
                 fileName: 'MaliciousSitesBlocking.csv',
-                dbType: 'mals_db',
                 exportId: 'mals_db_export',
             },
             ark_adblock: {
@@ -598,10 +603,8 @@ export class DetailTableWidget {
                         {title: '<#AiProtection_event_Source#>', data: 'mac', render: clinetDiv},
                         {title: '<#AiProtection_event_Destination#>', data: 'domain'}
                     ],
-                hasWhitelistButton: false,
-                hasManageWhitelist: false,
+                hasWhitelist: false,
                 fileName: 'AdblockBlocking.csv',
-                dbType: 'adblock_db',
                 exportId: 'adblock_db_export',
             }
             ,
@@ -617,12 +620,26 @@ export class DetailTableWidget {
                         {title: '<#AiProtection_event_Source#>', data: 'mac', render: clinetDiv},
                         {title: '<#AiProtection_event_Destination#>', data: 'domain'}
                     ],
-                hasWhitelistButton: false,
-                hasManageWhitelist: false,
+                hasWhitelist: false,
                 fileName: 'TrackerBlocking.csv',
-                dbType: 'tracker_db',
                 exportId: 'tracker_db_export',
 
+            },
+            ark_ids: {
+                containerId: 'ids_detail',
+                columns: [
+                    {
+                        title: '<#diskUtility_time#>',
+                        data: 'format_timestamp',
+                        className: 'dt-head-left dt-body-left',
+                    },
+                    {title: '<#AiProtection_event_Source#>', data: 'mac', render: clinetDiv},
+                    {title: 'IP', data: 'ip'},
+                    {title: '<#AiProtection_event_Destination#>', data: 'domain'},
+                ],
+                hasWhitelist: false,
+                fileName: 'IntrusionPreventionSystem.csv',
+                exportId: 'ids_db_export',
             }
         }
         ;
@@ -645,9 +662,8 @@ export class DetailTableWidget {
 
     generateHTML() {
         const config = this.getTypeConfig();
-
         let code = `
-                <h5 class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="card-header border-0 d-flex align-items-center justify-content-between">
                     <#AiProtection_eventdetails#>
                 </h5>
                 <div class="card-body">
@@ -658,7 +674,7 @@ export class DetailTableWidget {
                 </div>
                 <div class="card-footer d-flex justify-content-end align-items-center">
                     <div role="icon" class="icon-size-24 icon-delete me-3" title="<#CTL_del#>" data-bind="empty_db" data-type="${this.type}"></div>
-                    ${config.hasManageWhitelist ? '<div role="icon" class="icon-size-24 icon-edit-document me-3" title="Manage Whitelist" id="manage_whiteList"></div>' : ''}
+                    ${config.hasWhitelist ? '<div role="icon" class="icon-size-24 icon-edit-document me-3" title="Manage Whitelist" data-bind="manage_whitelist" data-type="${this.type}"></div>' : ''}
                     <div role="icon" class="csv-export-btn icon-size-24 icon-export-file me-3" title="<#CTL_onlysave#>" id="${config.exportId}"></div>
                 </div>`;
 
@@ -668,20 +684,17 @@ export class DetailTableWidget {
     bindEvents() {
         const config = this.getTypeConfig();
 
-        if (config.hasWhitelistButton) {
+        if (config.hasWhitelist) {
+            const self = this;
             for (let target of document.querySelectorAll("[data-bind='add_white_list']")) {
                 target.addEventListener("click", function () {
                     let url = this.getAttribute("data-key");
-                    if (whitelist[url]) {
+                    if (self.whitelist[url]) {
                         return false;
                     }
 
-                    $.ajax({
-                        url: "/wrs_wbl.cgi?action=add&type=0&url_type=url&url=" + url,
-                        type: "POST",
-                        success: function (response) {
-                            whitelist[url] = true;
-                        },
+                    self._wblAdd(url).then(() => {
+                        self.whitelist[url] = true;
                     });
                 });
             }
@@ -695,9 +708,9 @@ export class DetailTableWidget {
             });
         }
 
-        if (config.hasManageWhitelist) {
-            document.getElementById("manage_whiteList").addEventListener("click", function () {
-                manageWhiteList();
+        if (config.hasWhitelist) {
+            this.element.querySelector("[data-bind='manage_whitelist']").addEventListener("click", () => {
+                this.manageWhiteList();
             });
         }
 
@@ -867,7 +880,7 @@ export class DetailTableWidget {
                 }, 10);
 
                 // 重新綁定白名單按鈕事件
-                if (config.hasWhitelistButton) {
+                if (config.hasWhitelist) {
                     this.bindWhitelistEvents();
                 }
             },
@@ -913,18 +926,14 @@ export class DetailTableWidget {
                 const rowData = table.row(row).data();
 
                 let url = rowData.dst_ip || rowData.domain;
-                if (whitelist[url]) {
+                if (self.whitelist[url]) {
                     alert(`${url} is already in the whitelist.`)
                     return false;
                 }
 
-                $.ajax({
-                    url: "/wrs_wbl.cgi?action=add&type=0&url_type=url&url=" + url,
-                    type: "POST",
-                    success: function (response) {
-                        whitelist[url] = true;
-                        alert(`Successfully added ${url} to the whitelist.`)
-                    },
+                self._wblAdd(url).then(() => {
+                    self.whitelist[url] = true;
+                    alert(`Successfully added ${url} to the whitelist.`);
                 });
             });
         });
@@ -952,8 +961,267 @@ export class DetailTableWidget {
         }, 100);
     }
 
+    _isArk() {
+        return this.type.startsWith('ark_');
+    }
+
+    _validateArkWblResponse(res) {
+        if (!res || typeof res.status !== "number") {
+            return Promise.reject({ status: -1, message: "Invalid whitelist response" });
+        }
+        if (res.status < 0) {
+            return Promise.reject(res);
+        }
+        return res;
+    }
+
+    _fetchLegacyWhitelist(url) {
+        return fetch(url, { method: "POST" }).then(response => {
+            if (!response.ok) {
+                return Promise.reject({ status: response.status, message: "Whitelist request failed" });
+            }
+            return response.text();
+        }).then(text => {
+            const res = JSON.parse(text);
+            if (!res || typeof res.success === "undefined") {
+                return Promise.reject({ status: -1, message: "Invalid whitelist response" });
+            }
+            if (String(res.success) !== "1") {
+                return Promise.reject(res);
+            }
+            return res;
+        });
+    }
+
+    _logWhitelistError(action, error) {
+        console.error(`Whitelist ${action} failed`, error);
+    }
+
+    _wblGet() {
+        if (this._isArk()) {
+            return $.ajax({
+                url: "/ark_wbl.cgi",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ action: "get" }),
+            }).then(response => {
+                const res = typeof response === 'string' ? JSON.parse(response) : response;
+                return this._validateArkWblResponse(res);
+            }).then(res => {
+                if (!res.data || !Array.isArray(res.data.domains)) {
+                    return Promise.reject({ status: -1, message: "Invalid whitelist data" });
+                }
+                return res.data.domains;
+            });
+        }
+        return this._fetchLegacyWhitelist("/wrs_wbl.cgi?action=get&type=0").then(res => {
+            if (!Array.isArray(res.data)) {
+                return Promise.reject({ status: -1, message: "Invalid whitelist data" });
+            }
+            return res.data;
+        });
+    }
+
+    _wblAdd(url) {
+        if (this._isArk()) {
+            return fetch("/ark_wbl.cgi", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "add", domain: url }),
+            }).then(r => {
+                if (!r.ok) {
+                    return Promise.reject({ status: r.status, message: "Whitelist request failed" });
+                }
+                return r.json();
+            }).then(res => this._validateArkWblResponse(res)).then(res => {
+                httpApi.nvramSet({ action_mode: "apply", rc_service: "restart_ark_iam" });
+                return res;
+            });
+        }
+        return this._fetchLegacyWhitelist("/wrs_wbl.cgi?action=add&type=0&url_type=url&url=" + encodeURIComponent(url));
+    }
+
+    _wblDel(url) {
+        if (this._isArk()) {
+            return fetch("/ark_wbl.cgi", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "del", domain: url }),
+            }).then(r => {
+                if (!r.ok) {
+                    return Promise.reject({ status: r.status, message: "Whitelist request failed" });
+                }
+                return r.json();
+            }).then(res => this._validateArkWblResponse(res)).then(res => {
+                httpApi.nvramSet({ action_mode: "apply", rc_service: "restart_ark_iam" });
+                return res;
+            });
+        }
+        return this._fetchLegacyWhitelist("/wrs_wbl.cgi?action=del&type=0&url_type=url&url=" + encodeURIComponent(url));
+    }
+
+    fetchWhitelist() {
+        this._wblGet().then(domains => {
+            for (let item of domains) {
+                this.whitelist[item] = true;
+            }
+        }).catch(error => {
+            this._logWhitelistError("get", error);
+        });
+    }
+
+    manageWhiteList() {
+        const WHITELIST_MAX_LENGTH = 64;
+        let whitelist_length = Object.keys(this.whitelist).length;
+        let template = `
+        <div class="d-flex justify-content-center mt-5">
+            <div class="card-float">
+                <div class="card-header-float"><#Web_Title2#></div>
+                <div class="card-body-float">
+                    <div><#AiProtection_sites_trust#></div>
+                    <div class="d-flex align-items-center py-2">
+                        <div class="me-auto"><#Domain_Name#></div>
+                        <div class="card-content-float">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="whitelist_domain_name" value="" />
+                                <button class="btn btn-input-icon" type="button">
+                                    <div role="icon" class="icon-size-24 icon-add-circle" id="addWhitelist"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <div><#WhiteList#>: <span id="whitelist_length">${whitelist_length}</span>/${WHITELIST_MAX_LENGTH} (<#List_limit#> ${WHITELIST_MAX_LENGTH})</div>
+                        <div class="table-responsive detail-table-height">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th><#Domain_Name#></th>
+                                        <th><#btn_remove#></th>
+                                    </tr>
+                                </thead>
+                                <tbody data-table="whitelist_tbody">
+        `;
+
+        for (let item of Object.keys(this.whitelist)) {
+            template += `
+            <tr>
+                <td>${item}</td>
+                <td><div role="icon" class="icon-size-24 icon-delete-circle me-3" data-bind="delete_white_list" data-key="${item}"></div></td>
+            </tr>
+        `;
+        }
+
+        template += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="d-flex justify-content-end card-footer-float">
+                    <div class="text-center btn-regular" id="whitelist_close">
+                        <div><#CTL_close#></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+        let element = document.createElement("div");
+        element.className = "shadow-bg";
+        element.innerHTML = template;
+        document.body.appendChild(element);
+
+        const domainNameFormat = /^((?:(?:(?:\w[\.\-\+]?)*)\w)+)((?:(?:(?:\w[\.\-\+]?){0,62})\w)+)\.(\w{2,6})$/;
+        const ipformat = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+
+        document.getElementById("addWhitelist").addEventListener("click", () => {
+            let url = document.getElementById("whitelist_domain_name").value;
+            whitelist_length = Object.keys(this.whitelist).length;
+            let hintElement = document.getElementById("whitelist_domain_name").parentNode.nextElementSibling;
+            if (hintElement && hintElement.classList.contains("hint-text")) {
+                hintElement.remove();
+            }
+
+            if (
+                this.whitelist[url] ||
+                whitelist_length >= WHITELIST_MAX_LENGTH ||
+                url === "" ||
+                (!domainNameFormat.test(url) && !ipformat.test(url))
+            ) {
+                let text = "";
+                if (this.whitelist[url]) {
+                    text = "<#AiProtection_ErrMsg_duplicate#>";
+                } else if (whitelist_length >= WHITELIST_MAX_LENGTH) {
+                    text = "<#AiProtection_ErrMsg_full#>";
+                } else if (url === "") {
+                    text = "<#AiProtection_ErrMsg_blank#>";
+                } else {
+                    text = "<#AiProtection_ErrMsg_wrong_format#>";
+                }
+
+                let hint = document.createElement("div");
+                hint.className = "mt-2 hint-text";
+                hint.innerHTML = text;
+                document.getElementById("whitelist_domain_name").parentNode.insertAdjacentElement("afterend", hint);
+                return false;
+            }
+
+            let target = document.querySelector('[data-table="whitelist_tbody"]');
+            this._wblAdd(url).then(() => {
+                this.whitelist[url] = true;
+                let trElement = document.createElement("tr");
+                trElement.innerHTML = `
+                    <td>${url}</td>
+                    <td><div role="icon" class="icon-size-24 icon-delete-circle me-3" data-bind="delete_white_list" data-key="${url}"></div></td>
+                `;
+                target.appendChild(trElement);
+                whitelist_length = Object.keys(this.whitelist).length;
+                document.getElementById("whitelist_length").innerHTML = whitelist_length;
+                document.getElementById("whitelist_domain_name").value = "";
+
+                trElement.querySelector("[data-key='" + url + "']").addEventListener("click", () => {
+                    this._deleteWhitelistItem(url, trElement);
+                });
+            }).catch(error => {
+                this._logWhitelistError("add", error);
+            });
+        });
+
+        document.getElementById("whitelist_close").addEventListener("click", () => {
+            document.body.removeChild(element);
+        });
+
+        for (let target of document.querySelectorAll("[data-bind='delete_white_list']")) {
+            let trElement = target.parentNode.parentNode;
+            target.addEventListener("click", () => {
+                let url = target.getAttribute("data-key");
+                this._deleteWhitelistItem(url, trElement);
+            });
+        }
+    }
+
+    _deleteWhitelistItem(url, trElement) {
+        if (this.whitelist[url] === undefined) {
+            return false;
+        }
+        this._wblDel(url).then(() => {
+            delete this.whitelist[url];
+            trElement.remove();
+            document.getElementById("whitelist_length").innerHTML = Object.keys(this.whitelist).length;
+        }).catch(error => {
+            this._logWhitelistError("delete", error);
+        });
+    }
+
     init() {
         this.render();
+        const config = this.getTypeConfig();
+        if (config.hasWhitelist) {
+            this.fetchWhitelist();
+        }
     }
 }
 
@@ -996,12 +1264,21 @@ export class FeatureSwitch {
                 desc: `<#AiProtection_AdvertisementBlocking_Desc#>`,
                 id: 'ark_adblock_switch',
                 icon: 'icon-adblock',
+                // Info icon beside the title, opens the modal owned by aiprotection.html
+                infoTarget: '#aiprotectionInfoModal',
             },
             ark_tracker: {
                 title: `<#AiProtection_TrackerBlocking#>`,
                 desc: `<#AiProtection_TrackerBlocking_Desc#>`,
                 id: 'ark_tracker_switch',
                 icon: 'icon-tracker',
+                infoTarget: '#aiprotectionInfoModal',
+            },
+            ark_ids: {
+                title: `<#AiProtection_two-way_IPS#>`,
+                desc: `<#AiProtection_two-way_IPS_desc#>`,
+                id: 'ark_ids_switch',
+                icon: 'icon-twowayips',
             }
         }
     }
@@ -1028,13 +1305,19 @@ export class FeatureSwitch {
             : (this.isDpiFeatureEnabled(featureName) && this.nvram.TM_EULA !== "0");
         const title = feature.title || feature.titleKey;
         const desc = feature.desc || feature.descKey;
+        const infoButton = feature.infoTarget
+            ? `<button type="button" class="btn p-0 border-0 lh-1 feature-info-btn" aria-label="${title}"
+                       data-bs-toggle="modal" data-bs-target="${feature.infoTarget}">
+                   <i role="icon" class="icon-info icon-size-18"></i>
+               </button>`
+            : "";
 
         return `
             <div class="d-flex flex-row ${isSupport("UI4") ? `align-items-start` : `align-items-center`} justify-content-around">
                 <div class="d-flex flex-row align-items-start gap-2">
                     <div class="icon ${feature.icon} text-primary icon-size-28"></div>
                     <span class="d-flex flex-column align-items-start">
-                        <div class="feature-title">${title}</div>
+                        <div class="feature-title d-flex align-items-center gap-2">${title}${infoButton}</div>
                         <div class="feature-desc">${desc}</div>
                     </span>
                 </div>

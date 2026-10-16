@@ -37,7 +37,7 @@ enum {
 };
 #endif
 
-#ifdef RTCONFIG_MULTISERVICE_WAN
+#if defined(RTCONFIG_MULTISERVICE_WAN) || defined(RTCONFIG_HINET_MESH_BRIDGE)
 ///design for WAN_UNIT_MAX < 10
 ///extend additional 9 services for original wan unit
 #define WAN_MULTISRV_MAX             8
@@ -603,10 +603,13 @@ int get_mtppp_idx_by_wan_unit(int wan_unit);
 #ifdef RTCONFIG_MULTISERVICE_WAN
 int is_ms_base_unit(int wan_unit);
 int is_ms_wan_unit(int wan_unit);
-int get_ms_base_unit(int wan_unit);
 int get_ms_wan_unit(int base_wan_unit, int idx);
 int get_ms_idx_by_wan_unit(int wan_unit);
 int get_ms_num(int wan_unit);
+#endif
+#if defined(RTCONFIG_MULTISERVICE_WAN) || defined(RTCONFIG_HINET_MESH_BRIDGE)
+int get_ms_base_unit(int wan_unit);
+char* get_mswan_base_ifname(int wan_unit, char* buf, size_t len);
 #endif
 
 #endif	/* !__RTSTATE_H__ */

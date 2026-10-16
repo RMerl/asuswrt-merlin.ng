@@ -1896,7 +1896,7 @@ function check_gn_if_status(_subunit, _gn_array) {
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="cp_page_intro_icon"></div>
 									<div style='float:left;width:80%;'>
-									<div class="cp_page_intro_txt" style="color:#FC0;"><#FreeWiFi_desc1#></div>
+									<div class="cp_page_intro_txt" style="color:var(--wrt-badge-warning-color,#FFCC00);"><#FreeWiFi_desc1#></div>
 									<div class="cp_page_intro_txt"><#FreeWiFi_desc2#></div>
 									<div class="cp_page_intro_txt brt_series">
 										<#FAQ_Find#> : <a id="faq" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;" href="" target="_blank">GO</a>

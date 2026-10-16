@@ -43,13 +43,16 @@
 
 		.tab-navigation {
 			box-sizing: border-box;
-			border-bottom: 1px solid var(--divider-strong);
+			/* match the QoE nav: sit on the page like .page-title — transparent
+			   background, no baseline divider (active red underline is the cue) */
+			border-bottom: none;
 			display: flex;
 			align-items: center;
-			background: var(--tab-navigation-bg-color);
-			font-size: 1.2rem;
+			background: transparent;
+			/* match the QoE nav container metrics (drives em-based letter-spacing) */
+			font-size: var(--wrt-nav-tabs-link-font-size);
 			font-family: inherit;
-			font-weight: 500;
+			font-weight: var(--wrt-nav-tabs-link-font-weight);
 			letter-spacing: 0.01em;
 			position: relative;
 			overflow-x: auto !important;
@@ -72,29 +75,38 @@
 
 		.tab-navigation__item {
 			min-width: 180px;
-			padding-left: 32px;
-			padding-right: 32px;
-			line-height: 40px;
+			/* match the QoE nav item box model (height/padding) */
+			padding: var(--wrt-nav-tabs-link-padding-top) var(--wrt-nav-tabs-link-padding-x) var(--wrt-nav-tabs-link-padding-bottom);
+			line-height: 1.5;
 			display: flex;
 			align-items: center;
 			justify-content: center;
 			background: none;
 			border: none;
-			font-size: inherit;
-			font-family: inherit;
-			color: var(--tab-navigation-text-color);
+			/* match the QoE nav: .page-title typeface + size, white label */
+			font-size: 18px;
+			font-family: var(--page-title-font-style);
+			color: var(--page-title-color, #fff);
 			cursor: pointer;
-			border-bottom: 4px solid transparent;
-			transition: color 0.2s, border-color 0.2s;
-			font-weight: 400;
+			border-bottom: var(--wrt-nav-tabs-link-border-bottom-width) solid transparent;
+			transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+			font-weight: var(--wrt-nav-tabs-link-font-weight);
 			flex: 0 0 auto;
 			white-space: nowrap;
 			outline: none;
 		}
+		.tab-navigation__item:hover {
+			/* match the QoE nav hover state */
+			background: var(--wrt-nav-tabs-link-hover-bg);
+			border-color: var(--wrt-nav-tabs-link-hover-border-color);
+			color: var(--wrt-nav-tabs-link-active-color);
+		}
 		.tab-navigation__item.active {
-			color: var(--tab-navigation-active-text);
-			font-weight: 700;
-			border-bottom: 4px solid var(--tab-navigation-active-primary);
+			/* match the QoE nav active state: white label + 2px red underline */
+			color: var(--page-title-color, #fff);
+			font-weight: var(--wrt-nav-tabs-link-font-weight);
+			background: var(--wrt-nav-tabs-link-active-bg);
+			border-bottom: var(--wrt-nav-tabs-link-border-bottom-width) solid var(--wrt-nav-tabs-link-active-border-color);
 			border-radius: var(--radius-none) !important;
 		}
 

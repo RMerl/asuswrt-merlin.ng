@@ -336,6 +336,8 @@ var systemVariable = {
 	"forceLevel": "",
 	"papList": [],
 	"papListAiMesh": [],
+	"mloMultilinkList": [],
+	"useMloConnection": true,
 	"selectedAP": {},
 	"opMode": "",
 	"originOpMode": "",

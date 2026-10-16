@@ -831,6 +831,7 @@ int upload_cloud_file(const char* access_token, const char *file_name) {
 							   gul.x_amz_date,
 							   gul.policy,
 							   gul.x_amz_signature,
+							   gul.x_amz_security_token,
 							   NULL,
 							   upload_file);
 	
@@ -944,8 +945,9 @@ int proc_router_get_upload_file_url_json(void* data_struct, struct json_object* 
 			GET_JSON_STRING_FIELD_TO_ARRARY(fields_obj, "x-amz-date", this_data->x_amz_date);
 			GET_JSON_STRING_FIELD_TO_ARRARY(fields_obj, "policy", this_data->policy);
 			GET_JSON_STRING_FIELD_TO_ARRARY(fields_obj, "x-amz-signature", this_data->x_amz_signature);
-  		}
-  	}
+			GET_JSON_STRING_FIELD_TO_ARRARY(fields_obj, "x-amz-security-token", this_data->x_amz_security_token);
+		}
+	}
 
   	return 0;
 }
@@ -1311,6 +1313,11 @@ int send_req(const char* request_type,
 	if(!url || !append_data) 
 		goto SEND_REQ_EXIT;
 
+	// Cdbg(API_DBG, "url=%s", url);
+	// Cdbg(API_DBG, "append_data=%s", append_data);
+	// Cdbg(API_DBG, "wb_custom_hdr=%s", wb_custom_hdr);
+	// Cdbg(API_DBG, "cookie=%s", cookie);
+
 	// wb_custom header is defined in wb_util.h for "Set-Cookie:ONE_VER=1_0; path=/; sid=appid"
 	const char* custom_head[] = {wb_custom_hdr, NULL};
 
@@ -1344,22 +1351,33 @@ SEND_REQ_EXIT:
 }
 ////////////////////////////////////////////////////////////////////////////////
 
-int upload_file_to_s3(const char* url,
-						 const char* content_type,
-						 const char* meta_uuid,
-						 const char* key,
-						 const char* algorithm,
-						 const char* credential,
-						 const char* date,
-						 const char* policy,
-						 const char* signature,
-						 const char* server_side_encryption,
-						 const char* upload_file) {
+int upload_file_to_s3(const char *url,
+					  const char *content_type,
+					  const char *meta_uuid,
+					  const char *key,
+					  const char *algorithm,
+					  const char *credential,
+					  const char *date,
+					  const char *policy,
+					  const char *signature,
+					  const char *security_token,
+					  const char *server_side_encryption,
+					  const char *upload_file)
+{
 
 	CURL *curl;
   	CURLcode res;
 
-  	FILE * fd_src;
+	// Cdbg(API_DBG, "key=%s", key);
+	// Cdbg(API_DBG, "algorithm=%s", algorithm);
+	// Cdbg(API_DBG, "credential=%s", credential);
+	// Cdbg(API_DBG, "date=%s", date);
+	// Cdbg(API_DBG, "policy=%s", policy);
+	// Cdbg(API_DBG, "signature=%s", signature);
+	// Cdbg(API_DBG, "security_token=%s", security_token);
+	// Cdbg(API_DBG, "server_side_encryption=%s", server_side_encryption);
+
+	FILE *fd_src;
 
   	struct stat file_info;
 
@@ -1551,7 +1569,23 @@ int upload_file_to_s3(const char* url,
 			curl_mime_name(part, "x-amz-signature");
 			curl_mime_data(part, signature, CURL_ZERO_TERMINATED);
 		}
-			
+
+		if (security_token != NULL)
+		{
+			part = curl_mime_addpart(mime);
+			if (!part)
+			{
+				Cdbg(API_DBG, "curl_mime_addpart() failed!");
+				curl_mime_free(mime);
+				curl_easy_cleanup(curl);
+				curl_global_cleanup();
+				return -1;
+			}
+
+			curl_mime_name(part, "x-amz-security-token");
+			curl_mime_data(part, security_token, CURL_ZERO_TERMINATED);
+		}
+
 		//- Upload db file for debugging use
 		if (server_side_encryption!=NULL) {
 			part = curl_mime_addpart(mime);
@@ -1710,15 +1744,13 @@ void backup_db_process(char *db_path) {
 				
 				DECLARE_CLEAR_MEM(char, backup_db_path, MAX_FILEPATH_LEN);
 				DECLARE_CLEAR_MEM(char, upload_backup_path, MAX_FILEPATH_LEN);
-				DECLARE_CLEAR_MEM(char, cmd, MAX_CMD_LEN);
-
+				
 				snprintf(upload_backup_path, sizeof(upload_backup_path), "%s%s_%s", db_path, g_formated_router_mac, ent->d_name);
 				snprintf(backup_db_path, sizeof(backup_db_path), "%s%s", db_path, ent->d_name);
 
 				// Cdbg(API_DBG, "backup_db_path = [%s]", backup_db_path);
 
-				snprintf(cmd, sizeof(cmd), "cp %s %s", backup_db_path, upload_backup_path);
-				system(cmd);
+				safe_do_system("cp %s %s", backup_db_path, upload_backup_path);
 
 				if (access(upload_backup_path, F_OK) != -1) {
 
@@ -1740,6 +1772,7 @@ void backup_db_process(char *db_path) {
 												   rt.x_amz_date,
 												   rt.policy,
 												   rt.x_amz_signature,
+												   "",
 												   "AES256",
 												   upload_backup_path);
 						

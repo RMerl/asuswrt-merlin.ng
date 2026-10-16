@@ -1,0 +1,28 @@
+.TH iptables-extensions 8 "" "@PACKAGE_STRING@" "@PACKAGE_STRING@"
+.SH NAME
+iptables-extensions \(em list of extensions in the standard iptables distribution
+.SH SYNOPSIS
+\fBip6tables\fP [\fB\-m\fP \fIname\fP [\fImodule-options\fP...]]
+[\fB\-j\fP \fItarget-name\fP [\fItarget-options\fP...]
+.PP
+\fBiptables\fP [\fB\-m\fP \fIname\fP [\fImodule-options\fP...]]
+[\fB\-j\fP \fItarget-name\fP [\fItarget-options\fP...]
+.SH MATCH EXTENSIONS
+iptables can use extended packet matching modules
+with the \fB\-m\fP or \fB\-\-match\fP
+options, followed by the matching module name; after these, various
+extra command line options become available, depending on the specific
+module.  You can specify multiple extended match modules in one line,
+and you can use the \fB\-h\fP or \fB\-\-help\fP
+options after the module has been specified to receive help specific
+to that module.  The extended match modules are evaluated in the order
+they are specified in the rule.
+.PP
+If the \fB\-p\fP or \fB\-\-protocol\fP was specified and if and only if an
+unknown option is encountered, iptables will try load a match module of the
+same name as the protocol, to try making the option available.
+.\" @MATCH@
+.SH TARGET EXTENSIONS
+iptables can use extended target modules: the following are included
+in the standard distribution.
+.\" @TARGET@

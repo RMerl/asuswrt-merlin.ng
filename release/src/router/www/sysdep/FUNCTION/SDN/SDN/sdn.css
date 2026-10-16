@@ -820,7 +820,7 @@
 	width: 90%;
 	margin: auto;
 	padding-bottom: 8px;
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	height: auto;
 	word-wrap: break-word;
 	line-height: 140%;
@@ -1450,7 +1450,7 @@
 .clientlist_container .no_client_hint,
 .macfilter_list_container .no_rule_hint,
 .manual_dhcp_list_container .no_rule_hint{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	font-size: 16px;
 	height: 40px;
 	display: flex;
@@ -2070,7 +2070,7 @@
 	margin-bottom: 20px;
 }
 .gaming_led_help_container .hint{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 }
 .gaming_led_help_container .schematic{
 	margin: 20px 0;

@@ -105,7 +105,7 @@ function show_tor_redir_list(){
 	code +='<table style="margin-top:0px;" width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="tor_redir_list_table">';
 
 	if(tor_redir_array.length == 1){
-		code +='<tr><td style="color:#FFCC00;"><#IPConnection_VSList_Norule#></td>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);"><#IPConnection_VSList_Norule#></td>';
 	}		
 	else{
 		//user icon

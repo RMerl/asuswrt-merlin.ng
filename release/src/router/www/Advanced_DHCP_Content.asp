@@ -31,7 +31,7 @@
 	position: absolute;
 	width: 100%;
 	left: 0;
-	border-top: 1px solid #FC0;
+	border-top: 1px solid var(--wrt-badge-warning-color,#FC0);
 	top: 0;
 }
 .sort_border.decrease:before{
@@ -307,7 +307,7 @@ function showdhcp_staticlist(){
 	const dhcp_manual_profile = dhcp_manual_and_vpnc_policy.filter(item => item.mac !== "" && item.ip !== "");
 	code += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="dhcp_staticlist_table">';
 	if(dhcp_manual_profile.length == 0)
-		code += '<tr><td style="color:#FFCC00;"><#IPConnection_VSList_Norule#></td></tr>';
+		code += '<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);"><#IPConnection_VSList_Norule#></td></tr>';
 	else {
 		//user icon
 		var userIconBase64 = "NoIcon";
@@ -628,7 +628,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	if(flag == 1){		
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color = (top.webWrapper) ? "#ED4444" : "#FFCC00";
+		childsel.style.color = (top.webWrapper) ? "#ED4444" : "var(--wrt-badge-warning-color,#FFCC00)";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#LANHostConfig_ManualDHCPMacaddr_itemdesc#>";		
 		document.getElementById("check_mac").style.display = "";
@@ -638,7 +638,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	}else if(flag == 2){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color = (top.webWrapper) ? "#ED4444" : "#FFCC00";
+		childsel.style.color = (top.webWrapper) ? "#ED4444" : "var(--wrt-badge-warning-color,#FFCC00)";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#IPConnection_x_illegal_mac#>";
 		document.getElementById("check_mac").style.display = "";

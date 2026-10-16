@@ -121,7 +121,7 @@
 
 #NoAccountHint{
 	font-size:12px;
-	color:#FFCC00;
+	color:var(--wrt-badge-warning-color,#FFCC00);
 	height:25px;
 	line-height:25px;
 	vertical-align:middle;
@@ -138,7 +138,7 @@
 	font-family:Verdana, Arial, Helvetica, sans-serif;
 	font-size:12px;
 	font-weight:bolder;
-	color:#FFCC00;
+	color:var(--wrt-badge-warning-color,#FFCC00);
 	width:100%;
 	text-align:center;
 }

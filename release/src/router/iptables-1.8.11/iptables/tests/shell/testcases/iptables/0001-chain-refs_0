@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# make sure rules are not counted in references of iptables output
+
+set -e
+
+$XT_MULTI iptables -N foo
+$XT_MULTI iptables -L | grep 'Chain foo (0 references)'
+
+$XT_MULTI iptables -A foo -j ACCEPT
+$XT_MULTI iptables -L | grep 'Chain foo (0 references)'
+
+$XT_MULTI iptables -A FORWARD -j foo
+$XT_MULTI iptables -L | grep 'Chain foo (1 references)'

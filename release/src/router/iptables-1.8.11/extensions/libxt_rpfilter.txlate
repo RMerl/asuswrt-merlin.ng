@@ -1,0 +1,8 @@
+iptables-translate -t mangle -A PREROUTING -m rpfilter
+nft 'add rule ip mangle PREROUTING fib saddr . iif oif != 0 counter'
+
+iptables-translate -t mangle -A PREROUTING -m rpfilter --validmark --loose
+nft 'add rule ip mangle PREROUTING fib saddr . mark oif != 0 counter'
+
+ip6tables-translate -t mangle -A PREROUTING -m rpfilter --validmark --invert
+nft 'add rule ip6 mangle PREROUTING fib saddr . mark . iif oif 0 counter'

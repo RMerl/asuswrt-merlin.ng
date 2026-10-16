@@ -1,0 +1,37 @@
+#!/bin/bash
+
+case $XT_MULTI in
+*xtables-nft-multi)
+	;;
+*)
+	echo skip $XT_MULTI
+	exit 0
+	;;
+esac
+
+set -e
+
+nft -f - <<EOF
+table ip filter {
+	chain a {
+		type filter hook input priority filter
+	}
+
+        chain INPUT {
+                type filter hook input priority filter
+                counter packets 218 bytes 91375 accept
+        }
+
+        chain x {
+                type filter hook input priority filter
+        }
+}
+EOF
+
+EXPECT="# Table \`filter' contains incompatible base-chains, use 'nft' tool to list them.
+-P INPUT ACCEPT
+-P FORWARD ACCEPT
+-P OUTPUT ACCEPT
+-A INPUT -j ACCEPT"
+
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI iptables -S)

@@ -1,0 +1,126 @@
+arptables-translate -A OUTPUT --proto-type ipv4 -s 1.2.3.4 -j ACCEPT
+nft 'add rule arp filter OUTPUT arp htype 1 arp hlen 6 arp plen 4 arp ptype 0x800 arp saddr ip 1.2.3.4 counter accept'
+
+arptables-translate -I OUTPUT -o oifname
+nft 'insert rule arp filter OUTPUT oifname "oifname" arp htype 1 arp hlen 6 arp plen 4 counter'
+
+iptables-translate -I OUTPUT -p udp -d 8.8.8.8 -j ACCEPT
+nft 'insert rule ip filter OUTPUT ip protocol udp ip daddr 8.8.8.8 counter accept'
+
+iptables-translate -F -t nat
+nft flush table ip nat
+
+iptables-translate -I INPUT -i iifname -s 10.0.0.0/8
+nft 'insert rule ip filter INPUT iifname "iifname" ip saddr 10.0.0.0/8 counter'
+
+iptables-translate -A INPUT -i iif+ ! -d 10.0.0.0/8
+nft 'add rule ip filter INPUT iifname "iif*" ip daddr != 10.0.0.0/8 counter'
+
+iptables-translate -I INPUT -s 10.11.12.13/255.255.0.0
+nft 'insert rule ip filter INPUT ip saddr 10.11.0.0/16 counter'
+
+iptables-translate -I INPUT -s 10.11.12.13/255.0.255.0
+nft 'insert rule ip filter INPUT ip saddr & 255.0.255.0 == 10.0.12.0 counter'
+
+iptables-translate -I INPUT -s 10.11.12.13/0.255.0.255
+nft 'insert rule ip filter INPUT ip saddr & 0.255.0.255 == 0.11.0.13 counter'
+
+iptables-translate -I INPUT ! -s 10.11.12.13/0.255.0.255
+nft 'insert rule ip filter INPUT ip saddr & 0.255.0.255 != 0.11.0.13 counter'
+
+iptables-translate -I INPUT -s 0.0.0.0/16
+nft 'insert rule ip filter INPUT ip saddr 0.0.0.0/16 counter'
+
+iptables-translate -I INPUT -s 0.0.0.0/0
+nft 'insert rule ip filter INPUT counter'
+
+iptables-translate -I INPUT ! -s 0.0.0.0/0
+nft 'insert rule ip filter INPUT ip saddr != 0.0.0.0/0 counter'
+
+ip6tables-translate -I INPUT -i iifname -s feed::/16
+nft 'insert rule ip6 filter INPUT iifname "iifname" ip6 saddr feed::/16 counter'
+
+ip6tables-translate -A INPUT -i iif+ ! -d feed::/16
+nft 'add rule ip6 filter INPUT iifname "iif*" ip6 daddr != feed::/16 counter'
+
+ip6tables-translate -I INPUT -s feed:babe::1/ffff:ff00::
+nft 'insert rule ip6 filter INPUT ip6 saddr feed:ba00::/24 counter'
+
+ip6tables-translate -I INPUT -s feed:babe:c0ff:ee00:c0be:1234:5678:90ab/ffff:0:ffff:0:ffff:0:ffff:0
+nft 'insert rule ip6 filter INPUT ip6 saddr & ffff:0:ffff:0:ffff:0:ffff:0 == feed:0:c0ff:0:c0be:0:5678:0 counter'
+
+ip6tables-translate -I INPUT -s feed:babe:c0ff:ee00:c0be:1234:5678:90ab/0:ffff:0:ffff:0:ffff:0:ffff
+nft 'insert rule ip6 filter INPUT ip6 saddr & 0:ffff:0:ffff:0:ffff:0:ffff == 0:babe:0:ee00:0:1234:0:90ab counter'
+
+ip6tables-translate -I INPUT ! -s feed:babe:c0ff:ee00:c0be:1234:5678:90ab/0:ffff:0:ffff:0:ffff:0:ffff
+nft 'insert rule ip6 filter INPUT ip6 saddr & 0:ffff:0:ffff:0:ffff:0:ffff != 0:babe:0:ee00:0:1234:0:90ab counter'
+
+ip6tables-translate -I INPUT -s ::/16
+nft 'insert rule ip6 filter INPUT ip6 saddr ::/16 counter'
+
+ip6tables-translate -I INPUT -s ::/0
+nft 'insert rule ip6 filter INPUT counter'
+
+ip6tables-translate -I INPUT ! -s ::/0
+nft 'insert rule ip6 filter INPUT ip6 saddr != ::/0 counter'
+
+iptables-translate -A FORWARD -p 132
+nft 'add rule ip filter FORWARD ip protocol sctp counter'
+
+ip6tables-translate -A FORWARD -p 132
+nft 'add rule ip6 filter FORWARD meta l4proto sctp counter'
+
+iptables-translate -A FORWARD ! -p 132
+nft 'add rule ip filter FORWARD ip protocol != sctp counter'
+
+ip6tables-translate -A FORWARD ! -p 132
+nft 'add rule ip6 filter FORWARD meta l4proto != sctp counter'
+
+iptables-translate -A FORWARD -p 141
+nft 'add rule ip filter FORWARD ip protocol 141 counter'
+
+ip6tables-translate -A FORWARD -p 141
+nft 'add rule ip6 filter FORWARD meta l4proto 141 counter'
+
+iptables-translate -A FORWARD ! -p 141
+nft 'add rule ip filter FORWARD ip protocol != 141 counter'
+
+ip6tables-translate -A FORWARD ! -p 141
+nft 'add rule ip6 filter FORWARD meta l4proto != 141 counter'
+
+iptables-translate -A FORWARD -m tcp --dport 22 -p tcp
+nft 'add rule ip filter FORWARD tcp dport 22 counter'
+
+ip6tables-translate -A FORWARD -m tcp --dport 22 -p tcp
+nft 'add rule ip6 filter FORWARD tcp dport 22 counter'
+
+ebtables-translate -I INPUT -i iname --logical-in ilogname -s 0:0:0:0:0:0
+nft 'insert rule bridge filter INPUT iifname "iname" meta ibrname "ilogname" ether saddr 00:00:00:00:00:00 counter'
+
+ebtables-translate -A FORWARD ! -i iname --logical-in ilogname -o out+ --logical-out lout+ -d 1:2:3:4:de:af
+nft 'add rule bridge filter FORWARD iifname != "iname" meta ibrname "ilogname" oifname "out*" meta obrname "lout*" ether daddr 01:02:03:04:de:af counter'
+
+ebtables-translate -I INPUT -p ip -d 1:2:3:4:5:6/ff:ff:ff:ff:00:00
+nft 'insert rule bridge filter INPUT ether type 0x800 ether daddr and ff:ff:ff:ff:00:00 == 01:02:03:04:00:00 counter'
+
+ebtables-translate -I INPUT -p Length
+nft 'insert rule bridge filter INPUT ether type < 0x0600 counter'
+
+ebtables-translate -I INPUT -p ! Length
+nft 'insert rule bridge filter INPUT ether type >= 0x0600 counter'
+
+# asterisk is not special in iptables and it is even a valid interface name
+iptables-translate -A FORWARD -i * -o eth*foo
+nft 'add rule ip filter FORWARD iifname "\*" oifname "eth*foo" counter'
+
+# escape only suffix asterisk and translate only the last plus character
+iptables-translate -A FORWARD -i eth*foo*+ -o eth++
+nft 'add rule ip filter FORWARD iifname "eth*foo**" oifname "eth+*" counter'
+
+# skip for always matching interface names
+iptables-translate -A FORWARD -i +
+nft 'add rule ip filter FORWARD counter'
+
+# match against invalid interface name to simulate never matching rule
+iptables-translate -A FORWARD ! -i +
+nft 'add rule ip filter FORWARD iifname "INVAL/D" counter'

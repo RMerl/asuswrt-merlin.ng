@@ -220,7 +220,8 @@ int change_default_wan()
 	stop_aae_sip_conn(1);
 #endif
 
-#if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916))
+#if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916)) \
+ && !defined(WIFI7_SDK_20250506) && !defined(RTCONFIG_WIFI8)
 	int i;
 	for (i = 0; i < vpnc_profile_num; ++i)
 	{
@@ -470,7 +471,8 @@ int vpnc_up(const int unit, const char *vpnc_ifname)
 
 	// set up default wan
 	change_default_wan_as_vpnc_updown(unit, 1);
-#if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916))
+#if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916)) \
+ && !defined(WIFI7_SDK_20250506) && !defined(RTCONFIG_WIFI8)
 	if (!strncmp(vpnc_ifname, WG_CLIENT_IF_PREFIX, strlen(WG_CLIENT_IF_PREFIX))
 	 && unit == nvram_get_int("vpnc_default_wan")
 	){
@@ -561,7 +563,8 @@ void vpnc_down(const int vpnc_idx, char *vpnc_ifname)
 
 	// set up default wan
 	change_default_wan_as_vpnc_updown(vpnc_idx, 0);
-#if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916))
+#if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916)) \
+ && !defined(WIFI7_SDK_20250506) && !defined(RTCONFIG_WIFI8)
 	if (!strncmp(vpnc_ifname, WG_CLIENT_IF_PREFIX, strlen(WG_CLIENT_IF_PREFIX))
 	 && vpnc_idx == nvram_get_int("vpnc_default_wan")
 	){
@@ -1278,7 +1281,8 @@ int vpnc_set_policy_by_ifname(const char *vpnc_ifname, const int action)
 				// Can not support destination ip
 				_set_routing_rule(VPNC_ROUTE_ADD, policy);
 			}
-#if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916))
+#if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916)) \
+ && !defined(WIFI7_SDK_20250506) && !defined(RTCONFIG_WIFI8)
 			if (!strncmp(vpnc_ifname, WG_CLIENT_IF_PREFIX, strlen(WG_CLIENT_IF_PREFIX)))
 			{
 				hnd_skip_wg_network(action, policy->src_ip);
@@ -1325,7 +1329,8 @@ int vpnc_handle_policy_rule(const int action, const VPNC_DEV_POLICY *policy)
 		}
 	}
 
-#if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916))
+#if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916)) \
+ && !defined(WIFI7_SDK_20250506) && !defined(RTCONFIG_WIFI8)
 	int i;
 	for (i = 0; i < vpnc_profile_num; ++i)
 	{
@@ -1643,25 +1648,26 @@ int start_vpnc_by_unit(const int unit)
 		char vpnc_ifname[IFNAMSIZ] = {0};
 		_dprintf("[%s]Start to connect WireGuard(%d).\n", __FUNCTION__, prof->config.wg.wg_idx);
 		start_wgc(prof->config.wg.wg_idx);
+#if defined(RTCONFIG_MULTILAN_CFG)
+		update_vpnc_state(prof->vpnc_idx, WAN_STATE_CONNECTING, 0);
+		// vpnc_up handled by check_wgc_ep for kill switch
+#else
 		snprintf(vpnc_ifname, sizeof(vpnc_ifname), "%s%d", WG_CLIENT_IF_PREFIX, prof->config.wg.wg_idx);
 		vpnc_up(prof->vpnc_idx, vpnc_ifname);
+#endif
 		return 0;
 	}
 	else if (VPNC_PROTO_NORDVPN == prof->protocol)
 	{
-		char cmd[256] = {0};
 		_dprintf("[%s]Start to connect NordVPN(%d).\n", __FUNCTION__, prof->config.tpvpn.tpvpn_idx);
-		snprintf(cmd, sizeof(cmd), "nordvpn setconf '%s' %d %d &", prof->config.tpvpn.region, prof->config.tpvpn.tpvpn_idx, unit);
-		system(cmd);
+		safe_fork_do_system("nordvpn setconf '%s' %d %d", prof->config.tpvpn.region, prof->config.tpvpn.tpvpn_idx, unit);
 		return 0;
 	}
 #endif
 	else if (VPNC_PROTO_HMA == prof->protocol)
 	{
-		char cmd[256] = {0};
 		_dprintf("[%s]Start to connect HMA(%d).\n", __FUNCTION__, prof->config.tpvpn.tpvpn_idx);
-		snprintf(cmd, sizeof(cmd), "hmavpn setconf '%s' '%s' %d %d &", prof->config.tpvpn.region, prof->config.tpvpn.conntype, prof->config.tpvpn.tpvpn_idx, unit);
-		system(cmd);
+		safe_fork_do_system("hmavpn setconf '%s' '%s' %d %d", prof->config.tpvpn.region, prof->config.tpvpn.conntype, prof->config.tpvpn.tpvpn_idx, unit);
 		return 0;
 	}
 	else
@@ -2715,6 +2721,10 @@ void vpnc_set_iptables_rule_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all
 				}
 				for (i = 0; i < mtl_sz; i++)
 				{
+					// ignore same subnet
+					if (pmtl[i].sdn_t.sdn_idx > 0 && pmtl[i].nw_t.idx == 0)
+						continue;
+
 					// delete old rules for specific sdn
 					snprintf(fpath, sizeof(fpath), "%s/vpnc_%s_sdn%d.sh", sdn_dir, vpnc_ifname, pmtl[i].sdn_t.sdn_idx);
 					if (f_exists(fpath) && vpnc_idx != pmtl[i].sdn_t.vpnc_idx)

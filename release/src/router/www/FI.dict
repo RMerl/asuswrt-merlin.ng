@@ -26,9 +26,9 @@ AiMesh_Node_desc2=Siirry olemassa olevan reitittimesi AiMesh-asetukset-sivulle l
 AiMesh_Notice1=Langattomiin asetuksiisi tehtiin muutoksia, jotka vaikuttavat Mesh-verkkoosi!
 AiMesh_Add_Another_Node_confirm=Haluatko lisätä toisen solmun?
 AiMesh_Add_Another_Node=Lisää toinen solmu
-AiMesh_Adding_Node=Adding the AiMesh node...
-AiMesh_Node_joining=The node is joining the network...
-AiMesh_Node_activating=Activating your mesh network...
+AiMesh_Adding_Node=Lisätään AiMesh-solmua...
+AiMesh_Node_joining=Solmu liittyy verkkoon...
+AiMesh_Node_activating=Aktivoidaan mesh-verkkoasi...
 AiMesh_backhaul_band_5GHz-2_desc1=is now used as dedicated WiFi backhaul under AiMesh mode.
 AiMesh_backhaul_band_5GHz-2_desc11=%@ on nyt käytössä erillisenä WiFi-taustayhteytenä AiMesh-tilassa.
 AiMesh_backhaul_band_5GHz-2_desc2=<span class="faq-link" onclick="parent.location.href=\'/Advanced_Wireless_Content.asp\'">Täällä</span> esitetään yksityiskohtaiset langattoman verkon asetukset.
@@ -83,6 +83,8 @@ AiMesh_Topology_Line_Wired_Great=Langallinen yhteys, jolla erinomainen yhteyden 
 AiMesh_Topology_Line_Wired_Normal=Langallinen yhteys, jolla normaali yhteyden laatu
 AiMesh_Topology_FAQ_old=Katso yksityiskohtaisemmat tiedot uudesta AiMesh-graafisesta käyttöliittymästä tästä Usein kysyttyä -osasta.
 AiMesh_Topology_FAQ=Katso yksityiskohtaisemmat tiedot uudesta AiMesh-graafisesta käyttöliittymästä tästä <a id="Intro_AiMesh">Usein kysyttyä -osasta</a>.
+AiMesh_Topology_inst_FAQ_old=Katso AiMesh-järjestelmän asennusohjeet tästä FAQ-osiosta.
+AiMesh_Topology_inst_FAQ=Katso AiMesh-järjestelmän asennusohjeet tästä <a id='connect_line_info_faq'>FAQ</a>-osiosta.
 AiMesh_OB_hint=Parhaan suorituskyvyn saavuttamiseksi suosittelemme käyttämään uudempaa mallia solmullesi. Vanhojen laitteiden käyttö voi rajoittaa AiMesh-verkkosi vakautta ja nopeutta.
 AiMesh_Add_Anyway=Lisää silti
 AiMesh_Proceed_Anyway=Jatka silti
@@ -102,7 +104,7 @@ APSurvey_msg_connect_open_wlan=Yrität muodostaa yhteyden suojaamattomaan verkko
 APSurvey_msg_connected=Olet jo muodostanut yhteyden tähän tukiasemaan.
 APSurvey_msg_non_support_Auth=Todennusmenetelmä ei ole tuettu.
 APSurvey_msg_waiting_to_connect=Odota, ZVMODELVZ muodostaa yhteyttä
-ASUS_Registration=Tule ASUS-jäseneksi ja vastaanota uusimmat tuotetiedot. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Rekisteröidy nyt!</a>
+ASUS_Registration=Tule ASUS-jäseneksi ja vastaanota uusimmat tuotetiedot. <a style='color:var(--wrt-badge-warning-color,#FC0)' target='_blank' href='https://account.asus.com'>Rekisteröidy nyt!</a>
 ASUS_Notice=ASUS-ILMOITUS
 ASUS_privacy_desc=Huomaa, että käyttäjiä vaaditaan hyväksymään heidän tietojensa jakaminen ennen DDNS-, Etäyhteys (ASUS-reititinsovellus, Lyra-sovellus, AiCloud, AiDisk) -, AiProtection, Liikenteen analysoija -, Sovellusten analysoija -, Mukautuva QoS -, Pelin tehostus - ja Verkkohistoria-sovellusten käyttöä. Käyttäjät voivat milloin tahansa etsiä ehtojen sisältöjä tältä sivulta tai pysäyttää tietojensa jakaminen muiden osapuolten kanssa valitsemalla <a style="font-weight: bolder;">Withdraw (Poista käytöstä)</a>.
 ASUS_eula_desc0=Tervetuloa käyttämään sovelluksia DDNS/Etäyhteydet (ASUS-reititinsovellus/Lyra-sovellus/AiCloud/AiDisk). Lue seuraavat tiedot huolellisesti:
@@ -186,8 +188,8 @@ ASUS_EULA_Law_12=Sovellettava laki ja lainkäyttöalue
 ASUS_EULA_Law_12_Desc=Kaikkia tarjouksia, vahvistuksia ja tilauksia, tätä loppukäyttäjän käyttöoikeussopimusta ja sinun sekä ASUSin välistä myyntisuhdetta hallitaan ASUSin toimipaikan mukaisilla laeilla lakien ristiriitaperiaatteesta riippumatta. Kaikki osapuolten väliset tähän loppukäyttäjän käyttöoikeussopimukseen liittyvät mahdolliset kiistat, ristiriidat tai erimielisyydet tulee selvittää osapuolten välisillä neuvotteluilla. Jos kiistaa, ristiriitaa tai erimielisyyttä ei voida ratkaista, molempien osapuolten tulee hyväksyä sen lainkäyttöalueen tuomioistuimen päätös, jossa ASUS sijaitsee.
 ASUS_EULA_Info=Käyttämällä ASUS-verkkotuotteita, sitoudut noudattamaan Loppukäyttäjän käyttöoikeussopimus esittämiä ehtoja ja sopimusehtoja.
 ASUS_POLICY_Age_Check=Olen yli 16-vuotias.
-ASUS_POLICY_QIS_Desc=On tärkeää, että luet tämän ehdon ennen verkkotuotteen käyttöä. Hyväksyt ehdot napsauttamalla ”Hyväksyn”-painiketta. ​
-ASUS_POLICY_QIS_Desc_v5=On tärkeää, että luet tämän ehdon ennen verkkotuotteen käyttöä. Hyväksyt ehdot napsauttamalla ”%@”-painiketta. ​
+ASUS_POLICY_QIS_Desc=On tärkeää, että luet tämän ehdon ennen verkkotuotteen käyttöä. Hyväksyt ehdot napsauttamalla ”Hyväksyn”-painiketta.
+ASUS_POLICY_QIS_Desc_v5=On tärkeää, että luet tämän ehdon ennen verkkotuotteen käyttöä. Hyväksyt ehdot napsauttamalla ”%@”-painiketta.
 ASUS_POLICY_Update_Notice=Hyvät käyttäjät, kiitos tämän tuotteen tukemisesta. Jotta voimme noudattaa eri maiden tietosuojamääräyksiä ja suojata tietojasi lisää, olemme päivittäneet ASUSin tietosuojailmoituksen. Päivitä se ennen ASUS-verkkotuotteiden käyttämistä.
 ASUS_POLICY_Read_Again=Lue uudelleen
 ASUS_POLICY_Know_Risk=Ymmärrän riskin
@@ -370,7 +372,7 @@ CTL_UpgradeNight=Päivitä yöllä
 CTL_UpgradeNow=Upgrade Now
 default_passwd_checkbox=Käytä oletusarvoista paikallisen kirjautumistunnuksen salasanaa
 default_passwd_desc=Oletusarvoinen salattu paikallisen kirjautumistunnuksen salasana mahdollistaa suojatun kirjautumisprosessin, kun muodostat yhteyden tähän ASUS-verkkolaitteeseen paikallisesti.
-defaultHint=Katso lisätietoja osoitteesta <a style="font-weight: bolder;text-decoration: underline;color:#000000;" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
+defaultHint=Katso lisätietoja osoitteesta <a style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#000000);" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
 Detect_consume_warning1=* Minimi ping-paketti kuluttaa noin 128 tavua jaksoa kohti. Sen mukaisesti ping-tunnistin kuluttaa
 Detect_consume_warning2=Mtavua kuukaudessa
 Disconnected=Yhteys katkaistu
@@ -409,7 +411,7 @@ OpenDNS_Home=OpenDNS Home
 OpenDNS_Family=OpenDNS Family
 Yandex_Safe=Yandex Safe
 Yandex_Family=Yandex Family
-Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:#FFCC00;" href="DNSFilter.asp">DNSFilter</a> on käytössä – jos sen määrityksenä on jokin muu kuin Ei suodatusta tai Reititin, DNS:n tietosuojapalvelimet ohitetaan.
+Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:var(--wrt-badge-warning-color,#FFCC00);" href="DNSFilter.asp">DNSFilter</a> on käytössä – jos sen määrityksenä on jokin muu kuin Ei suodatusta tai Reititin, DNS:n tietosuojapalvelimet ohitetaan.
 Enable_user_target=Ota käyttöön käyttäjän määrittämä kohde
 Enable_Login_Captcha=Ota käyttöön kirjautumisen Captcha
 Encrypted_field=Salattu kenttä.
@@ -616,7 +618,7 @@ Offline_desc2=IP-osoitteeseen tai porttinumeroon on tehty muutoksia. ZVMODELVZ-y
 Offline_desc3=Voidaksesi käyttää ZVMODELVZ-asetuksia, muodosta uudelleen yhteys langattomaan verkkoon ja käytä päivitettyä IP-osoitetta ja porttinumeroa.
 OP_AP_desc=Tukiasema (AP) -tila, ZVMODELVZ muodostaa yhteyden langattomaan reitittimeen Ethernet-kaapelilla langattoman signaalipeiton laajentamiseksi muille verkkoasiakkaille. Tässä tilassa palomuuri, IP-jakaminen ja NAT-toiminto ovat pois päältä oletuksena.
 AiMesh_AP_desc=AiMesh Reitittimet AP-tilassa ollessaan muodostavat yhteyden langattomaan reitittimeen Ethernet-kaapelilla laajentaakseen langattoman signaalin muihin verkkoasiakkaisiin. Tässä tilassa palomuuri, IP-jakaminen ja NAT-toiminnot ovat pois päältä oletuksena.
-OP_AP_hint=Voit siirtyä myös osoitteeseen <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">http://findasus.local</a> etsiäksesi ja siirtyäksesi laitteen määrityssivulle.
+OP_AP_hint=Voit siirtyä myös osoitteeseen <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">http://findasus.local</a> etsiäksesi ja siirtyäksesi laitteen määrityssivulle.
 OP_AP_item=Tukiasema (AP) -tila
 AiMesh_AP_item=Tukiasema (AP) -tila / AiMesh-reititin AP-tilassa
 OP_Choose=Choose operation mode
@@ -635,7 +637,7 @@ OP_MB_desc4=Määritä yksi ZVMODELVZ reitittimeksi ja toinen ZVMODELVZ Media Br
 OP_MB_desc5=Vaihda Media Bridge (Mediasilta) -tilaan tarjotaksesi samanaikaisen WiFi -yhteyden medialaitteillesi.
 OP_MB_desc6=Mediasiltatilassa vain langattomat laitteet voivat muodostaa P-AP-yhteyden. Asiakaslaitteet on yhdistettävä mediasiltaa verkkokaapelilla.
 OP_MB_desc7=ZVMODELVZ mediasilta-tilassa. IP-osoite on muutettu.
-OP_MB_desc8=Lataa <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:#FC0;'>Device Discovery Utility</a> yksilöidäksesi mediasillan IP-osoitteen.
+OP_MB_desc8=Lataa <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>Device Discovery Utility</a> yksilöidäksesi mediasillan IP-osoitteen.
 OP_MB_desc9=Tarkista, oletko irrottanut verkkokaapelin WAN-portista.
 OP_RE_desc=Toistintilassa ZVMODELVZ muodostaa langattomanyhteyden olemassa olevaan langattomaan verkkoon langattoman verkkopeiton laajentamiseksi. Tässä tilassa palomuuri, IP-jakaminen ja NAT-toiminto ovat pois päältä.
 OP_RE_desc1=ZVMODELVZ:in LAN IP -osoitetta on voitu muuttaa.
@@ -685,7 +687,7 @@ QIS_adminpass_confirm0=Uusi salasana on sama kuin järjestelmän oletussalasana.
 QIS_adminpass_confirm1=Jollet muuta oletussalasanaa (admin ), reitittimesi on haavoittuvainen turvallisuusuhkille ja muut voivat arvata helposti kirjautumissalasanasi. Haluatko varmasti pitää tämän epäturvallisen salasanan?
 [###MODEL_DEP###][PL-AC56][PL-N12]QIS_adminpass_confirm1=Jollet muuta oletussalasanaa (admin ), PLC on haavoittuvainen turvallisuusuhkille ja muut voivat arvata helposti kirjautumissalasanasi. Haluatko varmasti pitää tämän epäturvallisen salasanan?
 QIS_apextended_usedefault=Käytä oletusasetusta (sama asetus kuin verkolla, jota haluat laajentaa)
-QIS_AP_connect_hint=Once the new SSID is connected, you can go to %1$@ for more advanced settings.
+QIS_AP_connect_hint=Kun uusi SSID on yhdistetty, voit siirtyä osoitteeseen %1$@ saadaksesi lisäasetuksia.
 QIS_auto_ip_conn_Setup=Automaattinen IP-yhteyden asettaminen
 QIS_autoMAC_desc1=Aloitetaan tietokoneen MAC-osoitteen kloonaaminen reitittimeen
 QIS_autoMAC_desc2=Odota…
@@ -817,7 +819,7 @@ qis_simple_wls_recmd=(suositus)
 QIS_SmartConn_ISPDesc=Internet-palveluntarjoajasi pitäisi antaa sinulle kortti tai dokumentti, mistä pystyt tarkistamaan käyttäjänimen ja salasanan. *Kuvan dokumentti on ainoastaan esimerkkinä.
 QIS_SmartConn_ISPDesc2=Syötä internet-yhteytesi käyttäjänimesi ja salasanasi. Internet-palveluntarjoajasi pitäisi pystyä antamaan sinulle nämä tiedot.
 QIS_SmartConn_ISPDesc3=Syötä Internet-palveluntarjoajasi (ISP) antama PPPoE-käyttäjätunnus ja salasana internet-yhteyttäsi varten.
-QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:#FC0;">xxxxxxxx@hinet.net</span>
+QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:var(--wrt-badge-warning-color,#FC0);">xxxxxxxx@hinet.net</span>
 QIS_SmartConn_Scen1=Yhdistämisesimerkki 1
 QIS_SmartConn_Scen2=Yhdistämisesimerkki 2
 QIS_SmartConn_StaticDesc=Internet-palveluntarjoajasi pitäisi pystyä antamaan sinulle tiedot IP-osoitteesta, aliverkon peitteestä, portista sekä DNS-osoitteesta. Ongelmatilanteissa ota yhteyttä internet-palveluntarjoajaasi.
@@ -999,10 +1001,10 @@ QKSet_ISP_desc=Katso ISP-asetuksesi ja anna asiaankuuluvat tiedot.
 QKSet_ISP_desc2=Staattinen IP-yhteys epäonnistui.
 QKSet_ISP_desc3=Automaattinen IP-yhteys epäonnistui. Voit tehdä tässä määrityksen manuaalisesti.
 QKSet_ISP_head=ISP-tietojen asetus
-QKset_restore_0=Napsauta <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Palauta asetus</label></a> ladataksesi tallennetut määritysasetukset.
-QKset_restore_1=Napsauta <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Palauta asetus</label></a> palauttaaksesi määrityksen, jos olet varmuuskopioinut määritysasetukset ennen reitittimen nollausta.
-QKset_setup_manual_0=Napsauta <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Manuaal. asetus</label></a> asettaaksesi manuaalisesti langattoman verkon, jos tiedät ISP-yhteystyyppisi.
-QKset_setup_manual_1=Napsauta <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Manuaal. asetus</label></a> asettaaksesi manuaalisesti reitittimen lisäasetukset tai asettaaksesi ZVMODELVZ:in toimimaan
+QKset_restore_0=Napsauta <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Palauta asetus</label></a> ladataksesi tallennetut määritysasetukset.
+QKset_restore_1=Napsauta <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Palauta asetus</label></a> palauttaaksesi määrityksen, jos olet varmuuskopioinut määritysasetukset ennen reitittimen nollausta.
+QKset_setup_manual_0=Napsauta <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Manuaal. asetus</label></a> asettaaksesi manuaalisesti langattoman verkon, jos tiedät ISP-yhteystyyppisi.
+QKset_setup_manual_1=Napsauta <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Manuaal. asetus</label></a> asettaaksesi manuaalisesti reitittimen lisäasetukset tai asettaaksesi ZVMODELVZ:in toimimaan
 QKset_skip_setup=Olet langattomien verkkojen asiantuntija ja haluat ohittaa ohjatun internet-asetuksen?
 QKSet_type_desc=Valitse internet-palveluntarjoajasi toimittama internet-yhteystyyppi.
 QKSet_type_head=Internet-WAN-yhteystyyppi
@@ -1026,13 +1028,13 @@ Select_ISPfile=Valitse ISP-profiili (internet-palveluntarjoaja)
 Select_menu_default=Valitse
 Sign_in_title=Kirjaudu sisään ASUS-reititin tililläsi.
 [###MODEL_DEP###][RP-AC87][RP-AC68U][RP-AC66U][RP-AC55][RP-AC53][RP-AC52][RP-AC51][RP-AC92]Sign_in_title=Kirjaudu sisään ASUS-toistintila tililläsi.
-SLM_Ask=Ask Router Assistant...
-SLM_Loading=Loading...
-SLM_Thinking=Thinking...
-SLM_not_installed=Please double check that the router assistant is running in Portainer and that the port (8090) is not overlapping with other services. Also, ensure that slm-asus is running in Portainer. If the problem persists, try restoring AiBoard.
-SLM_no_response=Service is activating. Please try again in about 3 minutes.
-SLM_low_percent=Sorry, unable to answer the question.
-SLM_disclaimer=Router Assistant might not always be accurate. This feature is currently available in English only. Please verify important information yourself.
+SLM_Ask=Kysy Router Assistantilta...
+SLM_Loading=Ladataan…
+SLM_Thinking=Ajattelee...
+SLM_not_installed=Varmista, että Router Assistant on käynnissä Portainerissa ja että portti (8090) ei ole ristiriidassa muiden palveluiden kanssa. Varmista myös, että slm-asus on käynnissä Portainerissa. Jos ongelma jatkuu, yritä palauttaa AiBoard.
+SLM_no_response=Palvelu aktivoituu. Yritä uudelleen noin 3 minuutin kuluttua.
+SLM_low_percent=Pahoittelemme, kysymykseen ei voida vastata.
+SLM_disclaimer=Router Assistant ei välttämättä ole aina tarkka. Tämä ominaisuus on tällä hetkellä saatavilla vain englanniksi. Tarkista tärkeät tiedot itse.
 SLM_not_installed_CN=请确认路由助手在Portainer中运行且端口（8092）未与其他服务重叠，确认slm-asus-cn也在Portainer中运行。若问题仍然存在，请恢复AiBoard。
 SLM_no_response_CN=服务正在激活中，请约3分钟后重试。
 SLM_low_percent_CN=对不起，无法回答该问题.
@@ -1053,6 +1055,7 @@ Status_RAM=RAM
 Status_Used=Käytetty
 Status_Free=Vapaa
 Status_Total=Yhteensä
+Status_LoggingIn=Kirjaudutaan…
 statusTitle_AP=Tukiaseman käyttötila
 statusTitle_System=ASUS ZVMODELVZ
 System_act_connections=Aktiiviset yhteydet
@@ -1077,7 +1080,7 @@ TBVLAN_UPort=Portti ilman tunnistetta
 TBVLAN_TPort=Tunnisteellinen portti
 TBVLAN_WirelessInf=Langaton liittymä
 TBVLAN_EditSubnetProfile=Muokkaa aliverkkoprofiilia
-TBVLAN_Subnet_desc=Valitse luomasi aliverkko tai valitse &quot;New Subnet&quot; (Uusi aliverkko) luodaksesi uuden aliverkon VLAN-verkolle. Jos tarvitset lisää DHCP-määrityksiä, määritä ne kohdassa<a style='color:#FFF; text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP server (DHCP-palvelin)</a>.
+TBVLAN_Subnet_desc=Valitse luomasi aliverkko tai valitse &quot;New Subnet&quot; (Uusi aliverkko) luodaksesi uuden aliverkon VLAN-verkolle. Jos tarvitset lisää DHCP-määrityksiä, määritä ne kohdassa<a style='color:var(--wrt-text-color,#FFF); text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP server (DHCP-palvelin)</a>.
 TBVLAN_BindingInf=Sidontaliittymä
 TBVLAN_NoBindingInf=Sidontaliittymää ei käytettävissä.
 TBVLAN_BindingInf_Hint=Lisää sidontaliittymä.
@@ -1108,20 +1111,20 @@ WANPPPAuthText=PPP-todennus
 WAN_type_detected=WAN type detected
 WAN_auto_detected=WAN-automaattinen tunnistus
 web_redirect_case1_suggestion1=Varmista, että kaapelisi on yhdistetty ZVMODELVZ WAN -porttiisi ja modeemiisi.
-web_redirect_case1_suggestion2=Tarkista, täytyykö <a style='color:#FFF' href='/Advanced_OperationMode_Content.asp'>Käyttötapaa</a> muuttaa.
-web_redirect_case2_suggestion1=Virheellinen PPPoE-käyttäjätunnus tai -salasana, ole hyvä ja <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>tarkista</a>.
+web_redirect_case1_suggestion2=Tarkista, täytyykö <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_OperationMode_Content.asp'>Käyttötapaa</a> muuttaa.
+web_redirect_case2_suggestion1=Virheellinen PPPoE-käyttäjätunnus tai -salasana, ole hyvä ja <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>tarkista</a>.
 web_redirect_case2_title1=Epäonnistunut PPPoE-todennus
 web_redirect_case3_button=Vaihda WAN-tyyppiä
-web_redirect_case3_suggestion1=Varmista, että asettamasi <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>Yhteysasetukset</a>ovat oikein.
-web_redirect_case5_suggestion1=Salli <a style='color:#FFF' href='/'>WAN-verkkoyhteys</a>
+web_redirect_case3_suggestion1=Varmista, että asettamasi <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>Yhteysasetukset</a>ovat oikein.
+web_redirect_case5_suggestion1=Salli <a style='color:var(--wrt-text-color,#FFF)' href='/'>WAN-verkkoyhteys</a>
 web_redirect_case5_suggestion2=Varmista, että USB-modeemisi on päällä.
-web_redirect_case5_suggestion3=Muuta <a style='color:#FFF' href='/Advanced_Modem_Content.asp'>USB-modeemin asetuksia</a>.
+web_redirect_case5_suggestion3=Muuta <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_Modem_Content.asp'>USB-modeemin asetuksia</a>.
 web_redirect_case5_title1=WAN-verkkoyhteytesi on estetty.
 web_redirect_case5_title2=USB-modeemiasi ei ole yhdistetty.
 web_redirect_case6_desc1=Paina [Seuraava] käyttääksesi seuraavaa IP-osoitetta:
 web_redirect_case6_desc2=Varmista, että kaikki olennaiset palvelut käyttävät uutta IP-osoitettasi (esim. portinohjaus, DMZ, yms.)
 web_redirect_case8_suggestion1=Varmista, että ensisijainen tukiasemasi voi muodostaa verkkoyhteyden.
-web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>Muuta Yhteysasetuksia</a>.
+web_redirect_case8_suggestion2=<a style='color:var(--wrt-text-color,#FFF)' href='/QIS_wizard.htm?flag=manual'>Muuta Yhteysasetuksia</a>.
 web_redirect_case8_title=Yhdistäminen ensisijaiseen tukiasemaan ei onnistu.
 web_redirect_case9_suggestion1=Varmista, että AiMesh-reitittimesi on päällä.
 web_redirect_case9_suggestion2=Käynnistä uudelleen AiMesh-reitittimesi ja yritä uudelleen.
@@ -1171,6 +1174,11 @@ Web_Title=ASUS langaton reititin ZVMODELVZ
 [###MODEL_DEP###][YY]Web_Title=ASUS ZVMODELVZ-yhteyspiste
 Web_Title2=ZVMODELVZ
 Web_DOMAIN_NAME=ZVDOMAIN_NAMEVZ
+WiFi_MLO_connect_confirmTitle=Käytä MLO-yhteyttä
+WiFi_MLO_same_model_desc=MLO (Multi-Link Operation) -toimintoa tuetaan tällä hetkellä vain saman ASUS-reititinmallin välillä. Jos mallit ovat erilaiset, yhteyden muodostaminen voi epäonnistua.
+WiFi_MLO_connect_try=Yritä muodostaa yhteys MLO:n avulla.
+WiFi_MLO_connect_veto=Käytä sen sijaan tavallista yhden taajuusalueen yhteyttä.
+WiFi_MLO_connect_confirm=Haluatko käyttää MLO-yhteyttä?
 wireless_configured=Määritetty
 Wireless_name=Langattoman nimi
 wireless_router=Langaton reititin
@@ -1253,6 +1261,7 @@ ADSL_FW_note=Huomaa:
 adsl_fw_ver_itemname=DSL-ohjaimen versio
 adsl_link_sts_itemname=DSL-linkin tila
 adv_wl_desc=Aseta langattomaan yhteyteen liittyvät tiedot alla.
+AiBoard_rescue_fail=AI Board -palautus epäonnistui
 AiCloud_account_status=Tilin tila
 AiCloud_account_unlock=Poista lukitus
 aicloud_bandwidth1=Tarvitset laajakaista-internet-yhteyden parhaiden katsomis- ja kuuntelukokemusten varmistamiseksi. Katso alla olevat suositukset :
@@ -1365,12 +1374,12 @@ AiMesh_FindNode_confirm=Miksi en löydä AiMesh-noodia?
 AiMesh_FindNode_confirm_WPS=WPS otetaan käyttöön, kun etsitään AiMesh-solmua.
 AiMesh_FindNode_Desc=Etsi lähellä käytettävissä olevat AiMesh-noodit AiMesh-järjestelmään liitettäviksi.
 AiMesh_FindNode_Not=AiMesh-noodeja ei löydy läheltä.
-AiMesh_FindNode_Not_advA=Jos tämä laite on määritetty <span style='color:#569AC7;'>AiMesh-reitittimeksi</span>, tarkista seuraava ja yritä uudelleen.
+AiMesh_FindNode_Not_advA=Jos tämä laite on määritetty <span style='color:var(--wrt-link-color,#569AC7);'>AiMesh-reitittimeksi</span>, tarkista seuraava ja yritä uudelleen.
 AiMesh_FindNode_Not_advA1=AiMesh-noodin virta on kytketty päälle
 AiMesh_FindNode_Not_advA2=AiMesh-noodilla on uusin laiteohjelmisto
 AiMesh_FindNode_Not_advA3=AiMesh-noodi on nollattu oletukseen
 AiMesh_FindNode_Not_advA4=Siirrä AiMesh-noodisi lähemmäs AiMesh-reititintä
-AiMesh_FindNode_Not_advB=Jos tämä laite on määritetty <span style='color:#569AC7;'>AiMesh-noodiksi</span>, tarkista seuraava ja yritä uudelleen.
+AiMesh_FindNode_Not_advB=Jos tämä laite on määritetty <span style='color:var(--wrt-link-color,#569AC7);'>AiMesh-noodiksi</span>, tarkista seuraava ja yritä uudelleen.
 AiMesh_FindNode_Not_advB1=Paina tämän laitteen nollauspainiketta ja odota.
 AiMesh_FindNode_Not_advB2=Kirjaudu sisään AiMesh-reitittimen graafiseen käyttöliittymään ja napsauta AiMesh-kuvaketta.
 AiMesh_FindNode_Not_advB3=Päivitä AiMesh-reitittimen laiteohjelmisto, jollei AiMesh-kuvaketta näy reitittimen graafisessa käyttöliittymässä.
@@ -1447,7 +1456,7 @@ AiMesh_NodeLocation25=Autotalli
 AiMesh_NodeLocation26=Ensimmäinen kerros
 AiMesh_NodeLocation27=Pelihuone
 AiMesh_NodeLocation28=Kuntosali
-AiMesh_NodeLocation29=Outdoor
+AiMesh_NodeLocation29=Ulkona
 AiMesh_OfflineTips=Offline-vinkkejä
 AiMesh_OfflineTips1=Varmista, että AiMesh-noodin virta on kytketty päälle.
 AiMesh_OfflineTips2=Käynnistä AiMesh-noodi ja yritä uudelleen.
@@ -1661,7 +1670,7 @@ AiProtection_sites_block_desc=Rajoittaa Trend Micron tietokannan tunnettujen pah
 [###MODEL_DEP###][GT-AC5300]AiProtection_sites_block_desc=Pahantahtoisten sivustojen esto rajoittaa pääsyn tunnetuille pahantahtoisille websivustoille, jotta estetään haittaohjelmia, tietojen kalastelua, roskapostia, mainosohjelmia, tietomurtoa tai kiristysohjelmaa hyökkäämästä verkkolaitteeseesi.
 AiProtection_sites_blocking=Pahantahtoisten sivustojen estäminen
 AiProtection_ARK_Malicious_Site_blocking=Haitallisten sivustojen ja tartunnan saaneiden laitteiden esto
-AiProtection_ARK_Malicious_Site_blocking_desc=Rajoita pääsyä tunnetuille haitallisille verkkosivustoille suojataksesi verkkoasi haittaohjelmilta, tietojenkalastelulta, roskapostilta, mainosohjelmilta, hakkereilta ja kiristysohjelmilta.
+AiProtection_ARK_Malicious_Site_blocking_desc=Rajoita pääsyä tunnettuihin haitallisiin verkkosivustoihin suojataksesi verkkoasi haittaohjelmilta, tietojenkalastelulta, roskapostilta, hakkeroinnilta ja kiristyshaittaohjelmahyökkäyksiltä.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]AiProtection_sites_blocking=Estä pahantahtoiset sivustot
 AiProtection_sites_trust=Lisää verkkoalue, johon luotat, ja poista sen lukitus AiProtection-toiminnolla
 AiProtection_sites_trust_add=Lisää verkkoalue sallittujen luetteloon
@@ -1670,7 +1679,7 @@ AiProtection_title_BandwidthUtil=Kaistanleveyden käyttö
 AiProtection_title_BandwidthUtil_desc1=Syötä internetin siirto- ja lataamiskaistanleveys.
 AiProtection_title_BandwidthUtil_desc2=ROG ZVMODELVZ käyttää kaistanleveystietoja parhaan liikenteen järjestämiseen pelilaitteillesi.
 AiProtection_title_Dashboard=Pelikoontinäyttö
-AiProtection_title_Dashboard_add_card=Add card
+AiProtection_title_Dashboard_add_card=Lisää kortti
 AiProtection_title_Dashboard_desc=ROG ZVMODELVZ -koontinäyttö antaa sinun määrittää parhaat asetukset ja valvoa reaaliaikaisesti peliverkkoasi.
 AiProtection_title_Dashboard_title=Koontinäyttö
 AiProtection_title_GameWiFi=Erityinen peli-WiFi
@@ -1704,18 +1713,19 @@ AiProtection_TrackerBlocking=Seurannan esto
 AiProtection_TrackerBlocking_Desc=Seurannan esto auttaa tunnistamaan ja estämään seurantapyynnöt verkkosivuilta, mainostajilta tai kolmannen osapuolen analytiikkapalveluilta, suojaten yksityisyyttäsi, vähentäen tietovuotoja ja nopeuttaen sivun lataamista.
 AiProtection_AdvertisementBlocking_Desc=Mainosten esto auttaa estämään yleisiä mainoslähteitä häiriöiden vähentämiseksi, selaamisen parantamiseksi ja tietoturvariskien pienentämiseksi. Voit myös ottaa käyttöön AdGuard DNS:n lisäsuojan saamiseksi.
 AiProtection_AdvertisementBlocking_Enabled=Mainosten esto käytössä
-AiProtection_AdvertisementBlocking_edserv=Edge Server
-AiProtection_AdvertisementBlocking_edserv_desc=A self-hosted edge server on router. Provides detailed network insights, advanced control, and enhanced home privacy.
-AiProtection_AdvertisementBlocking_cloudserv=Cloud Server
-AiProtection_AdvertisementBlocking_cloudserv_desc=Extends protection across multiple sites via the cloud.
-AiProtection_AdvertisementBlocking_filter=Triple level content filter
-AiProtection_AdvertisementBlocking_trigger=Blocks ads with one click.
+AiProtection_AdvertisementBlocking_edserv=Edge-palvelin
+AiProtection_AdvertisementBlocking_edserv_desc=Itse ylläpidetty edge-palvelin reitittimessä. Tarjoaa yksityiskohtaisia verkkonäkemyksiä, kehittynyttä hallintaa ja parempaa kotiyksityisyyttä.
+AiProtection_AdvertisementBlocking_cloudserv=Pilvipalvelin
+AiProtection_AdvertisementBlocking_cloudserv_desc=Laajentaa suojauksen useisiin sijainteihin pilven kautta.
+AiProtection_AdvertisementBlocking_filter=Kolmitasoinen sisällönsuodatin
+AiProtection_AdvertisementBlocking_trigger=Estää mainokset yhdellä napsautuksella.
 AiProtection_TrackerBlocking_Enabled=Seurannan esto käytössä
 AiProtection_select_device=Valitse laite tai syötä kelvollinen MAC- tai IP-osoite
 AiProtection_rule_exist=Tälle laitteelle on jo olemassa sääntö. Poista se ennen uuden luomista.
 ArkMigrationNote=Huomautus
 ArkMigrationNote_1=Yksityisyyden ja järjestelmäoptimointien vuoksi %@ käyttää nyt paikallista tunnistusta. Olemassa olevat profiilisäännöt on määritettävä uudelleen manuaalisesti.
 ArkMigrationNote_2=Nämä ominaisuudet eivät ole taaksepäin yhteensopivia aiempien laiteohjelmistojen kanssa; alennus edellyttää tehdasasetusten palauttamista.
+ArkAiProtectionInfo=Jotkut verkkosivustot voivat kärsiä mainosten tai seurantapalvelujen estosta. Jos kohtaat ongelmia sivuston käytössä, poista yllä olevat toiminnot käytöstä ja lataa sivu uudelleen.
 FamilyContentBlock=Perheensisällön esto
 BwLimiter_Switch=Kaistanleveyden rajoittimen kytkin
 BwLimiter_Download=Latauksen kaistanleveys
@@ -1724,6 +1734,7 @@ BwLimiter_NewDevice=Uusi laite
 BwLimiter_Status=Tila
 BwLimiter_Delete=Poista
 SearchDevice_By_Name_Mac_Ip=Etsi laitteen nimi, MAC tai IP
+SearchDevice_By_Name_Mac_Ip_Subnet=Etsi laitteen nimi, MAC, IP tai aliverkko
 BwLimiter_Target=Kohde
 BwLimiter_enter_bandwidth=Syötä kaistanleveysarvo.
 BwLimiter_max=Kaistanleveysrajoitukset ovat saavuttaneet maksimimäärän (32).
@@ -1874,7 +1885,7 @@ Bandwidth_Setting=Bandwidth Setting
 BasicConfig_EnableDHCPFilter_itemname=Ota DHCP-suodatin käyttöön
 BasicConfig_EnableDownloadMachine_itemname=Otetaanko Latausisäntä käyttöön?
 BasicConfig_EnableDownloadShare_itemname=Otetaanko Latauksen jakaminen käyttöön?
-BasicConfig_EnableiTunesServer_itemname=Enable iTunes Server?
+BasicConfig_EnableiTunesServer_itemname=Otetaanko iTunes-palvelin käyttöön
 BasicConfig_EnableMediaServer_itemname=Otetaanko UPnP käyttöön
 BlackList=Kielletyt-luettelo
 Block=Estä
@@ -1965,7 +1976,9 @@ btn_go=SIIRRY
 btn_goSetting=Siirry asetuksiin
 btn_remove=Poista
 btn_send=Lähetä
+btn_resend=Lähetä uudelleen
 btn_to_WAN=WAN-asetuksiin
+btn_verify=Vahvista
 Capability=Ominaisuus
 Captcha=Kuvavarmennus
 Captcha_note=Syötä kuvavarmennus.
@@ -1976,7 +1989,7 @@ ChooseOthers_Hint=Valitse muut asetukset ja yritä uudelleen.
 collect_no_info_SWISS=Ei kerää mitään tietoja käyttäjistä, ja sen käyttöön sovelletaan Sveitsin yksityisyydensuojalakia.
 Client_Name=Asiakkaan nimi
 Client_Icon=Kuvaketta
-Client_Icon_change=Change Icon
+Client_Icon_change=Vaihda kuvake
 Client_Icon_overload=Asiakaskuvake ylittää latausrajan, poista vähintään yksi asiakaskuvake ja yritä sitten ladata uudelleen.
 Clientlist_block_internet=Estä internetin käyttö
 Clientlist_block_internet_max=Enimmäisraja on 16 asiakasta. Tarkista asiakasluettelosi ajoitusasetukset.
@@ -2111,7 +2124,7 @@ CTL_finished=Valmis
 CTL_format=Alusta
 CTL_Generate=Luo
 CTL_help=Ohje
-CTL_later=Later
+CTL_later=Myöhemmin
 CTL_link=Linkki
 CTL_localdevice=Paikallinen laite
 CTL_login=Kirjaudu sisään
@@ -2122,15 +2135,16 @@ CTL_reconnection=Automaattinen uudelleenyhdistäminen
 CTL_refresh=Päivitä
 CTL_Reset_OOB=Nollaa
 CTL_restore=Palauta
+CTL_restore_again=Palauta uudelleen
 CTL_scan=Skannaa
 CTL_search=Haku
 CTL_secure=Suojaa reitittimesi
 CTL_upgrade=Laitteistopäivitys
 CTL_upload=Lähetä
-CTL_upload_img=Upload image
+CTL_upload_img=Lataa kuva
 CTL_initialize=Initialize
 Current=Nykyinen
-Current_peak=Peak
+Current_peak=Huippu
 Current_band=Nykyinen taajuus
 current_settings=Nykyiset asetukset
 Custom=Mukauta
@@ -2158,6 +2172,9 @@ DDNS_https_cert_alert=Valitse oikein SSL-varmenteen tiedosto.
 DDNS_ipv6_update=IPv6-päivitys
 DDNS_ipv6_update_desc=Asiakkaan verkko käyttää IPv6-verkko-osoitetta, ja tätä ominaisuutta käyttämällä verkko selvitetään ensin IPv6-verkko-osoitteella ennen etälaitteen käyttöä.
 DDNS_ssl_cert=SSL-varmenne
+DDNS_status=DDNS-tila
+DDNS_reg_result=DDNS-rekisteröinnin tulos
+DDNS_root_ca=Juurivarmente/ Välimuistivarmente
 DDNS_termofservice_Title=palvelun ehdot
 DDNS_transfer=Transfer ASUS DDNS name
 DDNS_verification_enable=WAN IP:n ja isäntänimen tarkistaminen
@@ -2179,10 +2196,10 @@ Device_type_03_AP=Tukiasema
 Device_type_04_NS=NAS
 Device_type_05_IC=IP-kamera
 Device_type_06_OD=Muu laite
-deviceDiscorvy2=Toistintila -tilassa, DHCP:n määrittämä IP-osoitte muuttuu. Asenna ja käytä <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> langattoman reitittimen uuden IP-osoitteen hakemiseen.
-deviceDiscorvy3=Access Point (AP) (Tukiasema) -tilassa DHCP:n määrittämä IP-osoite muuttuu. Asenna ja käytä <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery-apuohjelmaa</a> langattoman reitittimen IP-osoitteen tunnistamiseen.
-AiMesh_deviceDiscorvy3=Kun AiMesh-reitittimet ovat AP-tilassa, DHCP-määritetty IP-osoite muuttuu. Asenna ja käytä <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> langattoman reitittimen IP-osoitteen tunnistamiseen.
-deviceDiscorvy4=Mediasilta -tilassa, DHCP:n määrittämä IP-osoite muuttuu. Asenna ja käytä <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> langattoman reitittimen uuden IP-osoitteen hakemiseen.
+deviceDiscorvy2=Toistintila -tilassa, DHCP:n määrittämä IP-osoitte muuttuu. Asenna ja käytä <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> langattoman reitittimen uuden IP-osoitteen hakemiseen.
+deviceDiscorvy3=Access Point (AP) (Tukiasema) -tilassa DHCP:n määrittämä IP-osoite muuttuu. Asenna ja käytä <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery-apuohjelmaa</a> langattoman reitittimen IP-osoitteen tunnistamiseen.
+AiMesh_deviceDiscorvy3=Kun AiMesh-reitittimet ovat AP-tilassa, DHCP-määritetty IP-osoite muuttuu. Asenna ja käytä <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> langattoman reitittimen IP-osoitteen tunnistamiseen.
+deviceDiscorvy4=Mediasilta -tilassa, DHCP:n määrittämä IP-osoite muuttuu. Asenna ja käytä <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> langattoman reitittimen uuden IP-osoitteen hakemiseen.
 DeviceSecurity11a_display1_sectiondesc=Langaton MAC-suodatin mahdollistaa pakettien hallinnan laitteista, joilla on määritetty MAC-osoite langattomassa LAN-verkossasi.
 DHCP_query_freq=DHCP-kyselytaajuus
 DHCPaggressive=Aggressiivinen tila
@@ -2359,13 +2376,16 @@ Enable_ncb_Non_Block=Älä estä
 Enable_ncb_Limited_Block=Estä rajoitetusti
 Enable_ncb_All_Block=Estä kokonaan
 Encap_mode_help=ZVMODELVZ tarjoaa kaksi LAN- ja WAN-ptotokollien kapselointi- tai kuljetustapaa ATM:n kautta. Valitse sopiva kapselointitapa.
+Energy_Saving_conflict_hint1=Todellinen toiminta voi vaihdella päätoiminnon ja virransäästöasetusten välisten vuorovaikutusten vuoksi.
+Energy_Saving_conflict_hint2=Jotta päätoiminnon ja virransäästön välinen toiminta pysyy johdonmukaisena, nykyiset asetukset asetetaan etusijalle.
+Energy_Saving_affected_setting=Vaikuttavat asetukset: (%@)
 Ethernet_wan=Ethernet-WAN
 Excute=Asentaa
 Excute_processing=Asennetaan...
 External=Vain ulkoinen
 Extend_TTL_Value=Laajenna TTL-arvoa
 EZQoS=EZQoS-kaistanleveyden hallinta
-EzQoS_bandwidth_note1=Hae kaistanleveystiedot internet-palveluntarjoajalta tai siirry osoitteeseen <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:#FC0;">http://speedtest.net</a> tarkistaaksesi kaistanleveyden.
+EzQoS_bandwidth_note1=Hae kaistanleveystiedot internet-palveluntarjoajalta tai siirry osoitteeseen <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);">http://speedtest.net</a> tarkistaaksesi kaistanleveyden.
 EzQoS_bandwidth_note2=Oletus on 0, mikä tarkoittaa rajoittamatonta kaistanleveyttä.
 EzQoS_desc=Quality of Service (QoS) varmistaa kaistanleveyden ensisijaisille tehtäville ja applications.
 EzQoS_desc_Adaptive=<span style="font-weight:bolder;font-size:14px;">Adaptiivinen QoS</span> varmistaa tulevan ja lähtevän kaistanleveyden sekä langallisille että langattomille yhteyksille ensisijaisille sovelluksille ja tehtäville esimääritetyillä, vedä ja pudota -esiasetuksilla: pelaaminen, median suoratoisto, VoIP, web-surffailu ja tiedostonsiirto.
@@ -2432,11 +2452,11 @@ feedback_email_alert=Sähköpostiosoitemuoto ei kelpaa.
 feedback_email_confirm=Sähköpostiosoitekenttä on tyhjä. Haluatko varmasti jatkaa?
 feedback_extra_info=Ylimääräisiä tietoja virheenkorjausta varten
 feedback_fail0=Palautteesi lähettäminen epäonnistui. Tarkista internet-yhteytesi ja yritä uudelleen.
-feedback_fail1=<span style="color:#FC0;">Järjestelmä epäonnistui yhteyden muodostamisessa postipalvelimeen.</span> Voit lähettää sähköpostin suoraan osoitteeseen
+feedback_fail1=<span style="color:var(--wrt-badge-warning-color,#FC0);">Järjestelmä epäonnistui yhteyden muodostamisessa postipalvelimeen.</span> Voit lähettää sähköpostin suoraan osoitteeseen
 feedback_fail2=Kopioi vain alla oleva sisältö ja liitä se sähköpostisi sisältöön.
 feedback_fail3=Lataa seuraavat virheenkorjaustiedostot ja lisää ne liitteinä sähköpostiin:
 feedback_fail0_new=Järjestelmä ei onnistunut yhdistämään palautepalvelimeen.
-feedback_fail1_new=<span>Jos sinulla on käyttöongelmia tai tarvitset teknistä tukea, ota ensin yhteyttä ASUSin asiakaspalvelukeskukseen&nbsp;<a class="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Virallinen tuki | ASUS Global)</a>.</span>
+feedback_fail1_new=<span>Jos sinulla on käyttöongelmia tai tarvitset teknistä tukea, ota ensin yhteyttä ASUSin asiakaspalvelukeskukseen&nbsp;<a class="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Virallinen tuki | ASUS Global)</a>.</span>
 feedback_fail2_new=Voit myös lähettää seuraavan havaittun virhetiedoston osoitteeseen router_feedback@asus.com parannusehdotusten antamiseksi kehitystiimille. Kiitos.
 feedback_fail_BindGoogle=Jos haluat lähettää palautetta sähköpostitse, voit myös <a id="bind_google">yhdistää Google-tilisi</a>.
 feedback_format_alert=The format is not valid.
@@ -2458,7 +2478,7 @@ feedback_note3=Lähettämällä palautteesi hyväksyt, että ASUS voi käyttää
 [###MODEL_DEP###][DSL-AX82U][DSL-AC68U][DSL-N55U][DSL-N55U-B]feedback_note3=Lähettämällä palautteesi hyväksyt, että ASUS voi käyttää palautettasi xDSL-modeemireitin-tuotteittensa parantamiseen.
 feedback_note4=Jos sinulla on kiireinen asia, pyydä paikallista teknistä tukea.
 feedback_note5=Palaute on meneillään. Uudelleenkäynnistys voi aiheuttaa ohjelman päättymisen ja palaute ei voi valmistua. Käynnistä uudelleen myöhemmin.
-feedback_note6=<span>Tämä järjestelmä ei tarjoa yksittäisiä vastauksia. Jos sinulla on käyttöongelmia tai tarvitset teknistä tukea, ota yhteyttä ASUSin asiakaspalvelukeskukseen</span>&nbsp;<a id="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Virallinen tuki | ASUS Global)</a>.
+feedback_note6=<span>Tämä järjestelmä ei tarjoa yksittäisiä vastauksia. Jos sinulla on käyttöongelmia tai tarvitset teknistä tukea, ota yhteyttä ASUSin asiakaspalvelukeskukseen</span>&nbsp;<a id="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Virallinen tuki | ASUS Global)</a>.
 feedback_note7=Ammattitaitoinen tiimimme on omistautunut palvelemaan sinua. Kiitos.
 feedback_Occasion_interrupt=Ajoittaiset keskeytykset
 feedback_optional=* Valinnainen
@@ -2619,7 +2639,7 @@ FW_auto_upgrade_desc=Asenna järjestelmän päivitykset automaattisesti yöllä 
 FW_auto_upgrade_desc1=Jotkin päivitykset, jotka koskevat tärkeitä tietoturvaongelmia tai täyttävät lakisääteiset vaatimukset, asennetaan automaattisesti, vaikka automaattinen laiteohjelmiston päivitys olisi pois päältä.
 FW_auto_upgrade_note=Kun ominaisuus on käytössä, reititin asentaa uuden laiteohjelmiston automaattisesti haluamaasi aikaan.
 FW_beta_check=Haluan noutaa laiteohjelmiston beetaversion.
-FW_desc0=Hanki uusin laiteohjelmistoversio <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/" target="_blank">ASUS-tukisivustosta osoitteesta</a>
+FW_desc0=Hanki uusin laiteohjelmistoversio <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/" target="_blank">ASUS-tukisivustosta osoitteesta</a>
 FW_desc1=Siirry ASUS-tukisivustolle osoitteeseen https://www.asus.com/support/ saadaksesi uusimmat laiteohjelmistot.
 fw_downloading=Lataa laiteohjelmisto
 FW_item1=Tuotteen tunnus
@@ -2628,9 +2648,9 @@ FW_item2_aiboard=AI Boardin laiteohjelmiston versio
 FW_item5=Uusi laiteohjelmistotiedosto
 FW_manual_update=Manuaalinen laiteohjelmiston päivitys
 FW_n0=Uusin laiteohjelmistoversio sisältää edellisen version päivitykset.
-FW_n2=Jos päivitys epäonnistuu, ZVMODELVZ siirtyy hätätilaan automaattisesti. ZVMODELVZ:n etuosan ledivalot ilmaisevat tämän. Käy <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS-lataus keskuksessa</a> ladata ASUS Firmware Restoration -apuohjelma manuaalista päivitystä varten.
-FW_n3=Check on <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="" target="_blank">FAQ</a> for more instructions.
-FW_n4=Check on <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: #FFCC00;\" href=\"\" target=\"_blank\">FAQ</a> for more instructions.
+FW_n2=Jos päivitys epäonnistuu, ZVMODELVZ siirtyy hätätilaan automaattisesti. ZVMODELVZ:n etuosan ledivalot ilmaisevat tämän. Käy <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS-lataus keskuksessa</a> ladata ASUS Firmware Restoration -apuohjelma manuaalista päivitystä varten.
+FW_n3=Katso lisäohjeita <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="" target="_blank">FAQ</a>-osiosta.
+FW_n4=Katso lisäohjeita <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: var(--wrt-badge-warning-color,#FFCC00);\" href=\"\" target=\"_blank\">FAQ</a>-osiosta.
 FW_n5=Katso laiteohjelmisto-/tietoturvapäivitysten tietojen keräämistä koskevat tiedot ASUSin TIETOSUOJAILMOITUKSESTA (laiteohjelmisto-/tietoturvapäivityksille) sivulta Hallinta -> Tietosuoja.
 FW_note=Huomaa:
 FW_note_AiMesh=Manuaalinen laiteohjelmiston päivitys päivittää vain valitut Aines-reitittimet/solmut Aines-järjestelmää käytettäessä. Varmista, että lataat oikean AiMesh-laiteohjelmistoversion kullekin käytettävälle reitittimelle/solmulle.
@@ -2690,6 +2710,7 @@ Gear_Accelerator=Pelien tehostus
 Gear_Accelerator_desc=Pelilaitteen priorisointi
 Gear_Accelerator_desc1=Aseta pelilaitteesi etusijalle, jotta voit nauttia parhaasta mahdollisesta pelikokemuksesta.
 Gear_Accelerator_List=Pelilaiteluettelo
+Gear_Accelerator_confirm=Kun %@ otetaan käyttöön, laitteistokiihdytys poistetaan käytöstä, mikä voi hidastaa verkkoyhteyttä. Haluatko jatkaa?
 Game_Ark_Devices_identification=Pelaavien laitteiden tunnistus
 Game_Ark_Devices_identification_desc=Pelaavien laitteiden tunnistus priorisoi älykkäästi verkon liikenteen liitetyille laitteillesi.
 Game_Ark_First_desc=GameFirst V toimitetaan ROG-emolevyjen, kannettavien ja pöytäkoneiden mukana, ja se optimoi verkkoliikenteen online-PC-pelaamista varten.
@@ -2706,12 +2727,12 @@ GB_account_type2=Reitittimen edistynyt tili
 GB_ended_date=Päättymispäivä
 GB_ended_date_desc=WTFast tarjoaa kaikille uusille käyttäjille 14 päivän edistyneen kokeilujakson, joka koskee vain Edistynyt-tiliä, jolla on enemmän välityspalvelinvalintoja. Kun kokeilujakso päättyy, voit edelleen nauttia elinikäisestä tilauksesta, jossa on perustiliominaisuudet, joka on ilmainen, ja jolla on liikennerajoituksia.
 GB_ended_date_type0=Käytät nyt reitittimetöntä perustiliä.
-GB_management_note1=Kun käytät WTFast-käyttöistä Game Boost -sovellusta, sinä hyväksyt WTFast <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:#008DE5;">käyttöehdot</a></span> ja <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:#008DE5;">tietosuojakäytännön</a></span>.
-GB_management_note2=Kuten tuotesivullamme olevassa vastuuvapauslausekkeessa on todettu, WTFast kehittää edelleen tukea pelikonsolille. <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:#008DE5;">Katso tästä luettelosta lista</a> tällä hetkellä tuetuista peleistä. (päivitetään säännöllisesti)
+GB_management_note1=Kun käytät WTFast-käyttöistä Game Boost -sovellusta, sinä hyväksyt WTFast <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">käyttöehdot</a></span> ja <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">tietosuojakäytännön</a></span>.
+GB_management_note2=Kuten tuotesivullamme olevassa vastuuvapauslausekkeessa on todettu, WTFast kehittää edelleen tukea pelikonsolille. <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Katso tästä luettelosta lista</a> tällä hetkellä tuetuista peleistä. (päivitetään säännöllisesti)
 GB_management_note3=GPN-suorituskyky vaihtelee internet-palveluntarjoajasi tai sijaintisi mukaan. Varmista, että laiteohjelmisto on aina päivitetty.
-GB_management_note4=Kuinka valitsen hyvän GPN-palvelimen? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:#008DE5;">Tässä</a></span> Kuinka saan parhaan pelaamiskokemuksen? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:#008DE5;">Tässä</a></span>
-GB_management_note5=Kuinka käytän WTFastia ASUS-reitittimessä? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:#008DE5;">Tässä</a></span>
-GB_mobile=Mobile Game Mode
+GB_management_note4=Kuinka valitsen hyvän GPN-palvelimen? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Tässä</a></span> Kuinka saan parhaan pelaamiskokemuksen? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Tässä</a></span>
+GB_management_note5=Kuinka käytän WTFastia ASUS-reitittimessä? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Tässä</a></span>
+GB_mobile=Mobiilipelitila
 GB_mobile_desc=Tehosta mobiilipelien pelaamista
 GB_mobile_desc1=Lataa ja asenna ASUS Router -sovellus. Ota mobiilipelitila käyttöön sovelluksessa, jotta voit varmasti nauttia parhaasta mahdollisesti mobiilipelaamiskokemuksesta.
 GB_mobile_desc_short=Lataa ja asenna ASUS Router -sovellus.
@@ -2832,7 +2853,7 @@ HSDPAConfig_hsdpa_enable_hint2=Jos haluat muuttaa yhteystyyppiä, siirry kohtaan
 HSDPAConfig_hsdpa_enable_itemname=Otetaanko USB Modem käyttöön
 HSDPAConfig_hsdpa_mode_itemname=USB Modem-tila
 HSDPAConfig_hsdpa_mode_itemdesc=USB-sovittimen liittäminen ZVMODELVZ-malliin ja sen muuntaminen mobiilireitittimeksi.
-HSDPAConfig_hsdpa_mode_status=USB Modem Status
+HSDPAConfig_hsdpa_mode_status=USB-modeemin tila
 HSDPAConfig_isp_itemdesc=Valitse internet-palveluntarjoajasi (ISP).
 HSDPAConfig_ISP_itemname=ISP
 HSDPAConfig_password_itemdesc=Anna salasanasi.
@@ -3013,8 +3034,8 @@ IPv6_WAN_Selection=WAN-valinta
 IPv6_xpass=Xpass
 isp_br_gvt_note=Jos olet GVT-käyttäjä, näppäile käyttäjänimi <b>turbonet@turbonet</b> ja salasana <b>gvt25</b>. Muuten näppäile internet-palveluntarjoalta saamasi käyttäjänimi ja salasana.
 isp_profile=Valitse ISP-profiili määrittääksesi erikois-ISP-asetukset.
-iTunesServer=iTunes Server
-iTunesServer_itemname=iTunes Server Name
+iTunesServer=iTunes-palvelimen
+iTunesServer_itemname=iTunes-palvelimen nimi
 Jitter=Jitter
 JS_access_type=Please select at least one Access Type.
 JS_badconnection=Yhteyden muodostaminen ZVMODELVZ-reitittimeen epäonnistui. Lähetä pyyntö napsauttamalla OK tai pysäytä napsauttamalla Cancel (Peruuta).
@@ -3113,7 +3134,7 @@ LANHostConfig_x_DDNS_retrieve_IP_note=[Sisäinen] Rekisteröi verkkotunnus reiti
 LANHostConfig_x_DDNS_update_confirm=IP-osoite, palvelin ja isäntänimi ja eivät ole muuttuneet viimeisen päivityksen jälkeen. Jos haluat päivittää, napsauta [Kyllä].
 LANHostConfig_x_DDNSEnable_itemname=DDNS
 LANHostConfig_x_DDNSEnable_sectiondesc=DDNS (Dynamic Domain Name System) on palvelin, joka sallii verkkoasiakkaiden muodostaa yhteyden langattomaan reitittimeen, jopa dynaamisella julkisella IP-osoitteella, rekisteröidyn toimialuenimensä kautta.
-LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:#FFFFFF;">Lisätietoja on <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">tässä UKK-asiakirjassa</a>.
+LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:var(--wrt-text-color,#FFFFFF);">Lisätietoja on <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">tässä UKK-asiakirjassa</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc3=Isäntänimen rekisteröinti onnistui. Voit käyttää isäntänimeä "[hostname].asuscomm.com" käyttääksesi kotiverkon palvelua WAN-verkosta. Käytä isäntänimeä "[hostname].asuscomm.com" käyttääksesi verkkoasi etänä.<p>Siirry kohtaan Advanced Setting (Lisäasetukset) > WAN määrittääksesi portinsiirron tai DMZ-asetukset salliaksesi toisten WAN-asiakkaiden käyttää verkkoasi etänä.<p>Jos haluat määrittää langattoman reitittimen etänä, siirry kohtaan <a href="/Advanced_System_Content.asp?af=misc_http_x" target="_blank" style="text-decoration: underline; font-family:Lucida Console;">täällä</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc4=Nykyinen reititin käyttää yksityistä IP-osoitetta.
 LANHostConfig_x_DDNSEnable_faq1=DDNS:n esittely ja asetukset
@@ -3340,7 +3361,7 @@ month=kuukausi
 MoreConfig=Lisää määrityksiä
 MPPE_Encryp=MPPE-salaus
 mssid_time_remaining=Aikaa jäljellä
-multiservice_WAN=Multi-Service WAN
+multiservice_WAN=Monipalvelu-WAN
 NAT_Acceleration=NAT-kiihdytys
 NAT_AccelerationDesc=Kun NAT-kiihdytys on käytössä, kytkin voi käsitellä itse verkkopaketit ja ohittaa keskusyksikön. Se voi lisätä NAT-tehoa, mutta osa ominaisuuksista ei välttämättä toimi tarkasti, kuten ajoitus, perinteinen palvelunlaatu ja kaistanleveysrajoitin vierailijaverkoissa jne. Jos määrität NAT-kiihdytysasetukseksi Automaattinen, se poistetaan automaattisesti käytöstä, kun nämä ominaisuudet otetaan käyttöön.
 NAT_Acceleration_ctf_disable=Suoritin käsittelee NAT-liikennettä.
@@ -3355,7 +3376,7 @@ NAT_IPSec_Passthrough=IPSec ohitus
 NAT_L2TP_Passthrough=L2TP ohitus
 NAT_lacp=Linkkien yhdistäminen
 NAT_lacpDesc=Tällä kohteella on erilaisia nimiä: Porttien niputus/ryhmitys / linkkien yhdistäminen / 802.3ad
-NAT_lacp_disable_note=Change IPTV/ VOIP port settings to LAN5/ LAN6 will disable Bonding/ Link aggregation function. Are you sure to do it?
+NAT_lacp_disable_note=IPTV/ VOIP -porttiasetusten muuttaminen LAN5/ LAN6:een poistaa käytöstä Bonding-/Link aggregation -toiminnon. Haluatko varmasti tehdä tämän?
 NAT_lacp_note=Ota käyttöön sidonta (802.3ad) -tuki langalliselle asiakaslaitteelle ja liitä se reitittimen LAN1- ja LAN2-porttiin.
 NAT_passthrough_desc=Ota käyttöön NAT-ohitus sallimaan Virtual Private Network (VPN) -liitännän kulkemaan reitittimen läpi verkkoasiakkaille.
 NAT_PPTP_Passthrough=PPTP ohitus
@@ -3415,8 +3436,8 @@ note_hide_SSID_WPS=Jos haluat ottaa WPS:n käyttöön, sinun on ensin poistettav
 note_up_to_date=Note: New patch will be updated regularly, please keep your firmware stay up to date.
 Notice=Ilmoitus
 Notification_Item=Ilmoituskohde
-Notification_security_update=Security Update Notification
-Notification_security_desc=Monitor this log to stay informed about system security changes that may affect your network.
+Notification_security_update=Tietoturvapäivitysilmoitus
+Notification_security_desc=Seuraa tätä lokia pysyäksesi ajan tasalla järjestelmän tietoturvamuutoksista, jotka voivat vaikuttaa verkkoosi.
 Now=Nyt
 number_of_client=Asiakaslaitteiden määrä
 NSlookup_help=Siirry osoitteeseen <a href="https://iplookup.asus.com/nslookup.php" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">https://iplookup.asus.com/nslookup.php</a> etsiäksesi staattisen osoitteen ASUS DDNS -palvelun käyttämiseksi.
@@ -3440,7 +3461,7 @@ ParentalCtrl_default=Internet-käyttö on oletuksena rajoitettu aikaväleinä.
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_default=Internet-käyttö on oletuksena rajoitettu aikaväleinä.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]ParentalCtrl_default=Laitteiden, jotka on lisätty Parental Controls (Lapsilukko) -välilehdelle, internet-käyttö on oletuksena rajoitettu.
 ParentalCtrl_deny=Kiellä
-ParentalCtrl_disable_NAT=Poista <a id="disable_NAT" style="color:#FC0;text-decoration: underline;" href="" target="_blank">NAT-kiihdytys</a> käytöstä ajoituksen hallinnan tarkentamiseksi.
+ParentalCtrl_disable_NAT=Poista <a id="disable_NAT" style="color:var(--wrt-badge-warning-color,#FC0);text-decoration: underline;" href="" target="_blank">NAT-kiihdytys</a> käytöstä ajoituksen hallinnan tarkentamiseksi.
 ParentalCtrl_Enable=Ota lapsilukko käyttöön
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_Enable=Ota laitepääsyn hallinta käyttöön
 ParentalCtrl_Enable_TS=Ota Aikataulun määritys käyttöön
@@ -3749,6 +3770,7 @@ select_service=Valitse palvelun nimi.
 select_usb_device=Valitse USB-laite
 select_usb_mode=USB Mode
 select_wireless_MAC=Valitse langattoman asiakkaan MAC-osoite.
+Sending_str=Lähetetään…
 Send_mail=Lähetä sähköposti
 Serial_Number=Sarjanumero
 Servers_Center=Palvelinkeskus
@@ -3773,7 +3795,8 @@ Setting_initialize_desc_ai=Reitittimen pääjärjestelmän palautus tehdasasetuk
 Setting_lock_main_unit=Lukitse pääyksikkö
 Setting_lock_main_unit_desc1=Kun tämä on käytössä, laite on rajoitettu pääyksikön rooliin eikä voi liittyä toiseen verkkoon solmuna.
 Setting_lock_main_unit_desc2=Huomautus: Tämän tilan muuttaminen käynnistää tehdasasetusten palautuksen ja vaatii uudelleenasetuksen.
-Setting_lock_main_unit_confirm=Tilin 'Lukitse pääyksikkö' muuttaminen vaatii tehdasasetusten palautuksen. Tämä poistaa kaikki nykyiset verkkoasetukset.
+Setting_lock_main_unit_desc3=Jos sinulla on aktiivinen mesh-verkko, jossa tähän CAP-laitteeseen on liitetty Nodes-solmuja, myös nämä Nodes-solmut on palautettava manuaalisesti CAP-laitteen tehdasasetusten palautuksen jälkeen.
+Setting_lock_main_unit_confirm=Tilin 'Lukitse pääyksikkö' muuttaminen vaatii 'tehdasasetusten palautuksen'. Tämä poistaa kaikki nykyiset verkkoasetukset.
 Setting_save_itemdesc=Napsauta [Save] (Tallenna) -painiketta tallentaaksesi ZVMODELVZ-reitittimen nykyisen asetuksen tiedostoon. (Huomautus: Kun tallennat nykyiset asetukset tiedostoon, se tallennetaan myös flash-muistiin.)
 Setting_save_itemdesc_ai=Asetusten tallennus ei sisällä AI Board -järjestelmän määrityksiä tai tietoja.
 Setting_save_itemname=Tallenna asetus
@@ -3782,7 +3805,7 @@ Setting_upload_hint=Tiedostomuoto tai polku ei kelpaa!
 Setting_upload_itemdesc=Määritä asetustiedoston polku ja nimi. Napsauta sitten [Upload] (Lähetä) -painiketta kirjoittaaksesi tiedoston ZVMODELVZ-reitittimeen. Odota 60 sekuntia, kunnes ZVMODELVZ käynnistyy uudelleen.
 [###MODEL_DEP###][RT-N65U]Setting_upload_itemdesc=Määritä asetustiedoston polku ja nimi. Napsauta sitten [Upload] (Lähetä) -painiketta kirjoittaaksesi tiedoston ZVMODELVZ-reitittimeen. Odota 90 sekuntia, kunnes ZVMODELVZ käynnistyy uudelleen.
 Setting_upload_itemname=Palauta asetus
-Setting_remove_passwd=Click on this checkbox if you want to share the config file for debugging. Since the original password in the config file will be removed, please do not import the file into your router.
+Setting_remove_passwd=Valitse tämä valintaruutu, jos haluat jakaa määritystiedoston virheenkorjausta varten. Koska alkuperäinen salasana poistetaan tiedostosta, älä tuo tiedostoa reitittimeesi.
 Setting_ai_board=AI Board -asetukset
 Setting_ai_board_fw_ver=AI Boardin laiteohjelmiston versio
 Setting_ai_dk_Apps=Docker-sovellukset
@@ -3819,8 +3842,11 @@ Setting_rescue_ai_FWUpload=Lataa laiteohjelmisto
 Setting_rescue_ai_FWInstall=Asenna laiteohjelmisto
 Setting_rescue_ai_appInstall=Asenna APP
 Setting_rescue_ai_complete=AI Boardin pelastus valmis.
+Setting_rescue_ai_Interrupted=AI Boardin palautus keskeytyi
+Setting_rescue_ai_Interrupted_desc1=Palautusprosessi epäonnistui odottamattoman keskeytyksen tai sähkökatkoksen vuoksi.
+Setting_rescue_ai_Interrupted_desc2=Varmista vakaa virransyöttö ja yritä uudelleen.
 Setting_prog_ai_currStep=Nykyinen vaihe:
-Setting_prog_ai_Note=Huomautus: Järjestelmä toimii normaalisti. Älä keskeytä toimintaa.
+Setting_prog_ai_Note=Huomautus: Järjestelmä toimii normaalisti. Älä keskeytä toimintoa ja varmista vakaa virransyöttö sekä internetyhteys.
 Setting_prog_ai_serveralTime=Tämä prosessi voi kestää useita minuutteja.
 Settings=Asetukset
 Setup_note=Napsauta <a id="redirect_to_setup">tässä</a> mukauttaaksesi. Katso lisätietoja tästä <a id="redirect_to_FAQ">Usein kysyttyä -osasta</a>.
@@ -3876,7 +3902,7 @@ smart_connect_STA=STA-valintakäytäntö
 smart_connect_STA_counts=Lukemat
 smart_connect_STA_dwell=Viipymisaika
 smart_connect_STA_window=Ikkuna-aika
-smart_connect_status=Smart Connect Status
+smart_connect_status=Smart Connect -tila
 smart_connect_Steering=Ohjausliipaisinehto
 smart_connect_Bandwidth=Kaistanleveyden hyödyntäminen
 smart_sync=AiCloud Sync
@@ -3987,10 +4013,33 @@ SDN_Scenarios_desc=Haluatko lisätä ylimääräisen langattoman verkon erikoisk
 SDN_MainFH_for_clients=MLO Fronthaul asiakkaille
 SDN_MainFH_keep_Hint=At least one main network must be retained.
 SDN_MainFH_Smart_Connect_Hint=Koska Smart Connect -sääntö on luotu, valitse yksi WiFi-kaista.
+SDN_mlo_switch_fh_hint1=Vain yksi aktiivinen MLO-fronthaul on sallittu.
+SDN_mlo_switch_fh_hint2=Haluatko poistaa kohteen %1$@ MLO Fronthaul -yhteyden käytöstä ja aktivoida kohteen %2$@?
 SDN_Sync_To_All_Node=Synkronoi kaikkiin AiMesh-solmuihin
 SDN_Sync_To_All_Node_Hint=Jos AiMesh-solmusi ovat vanhoja malleja tai WiFi on saavuttanut maksimikapasiteettinsa, kaikkia AiMesh-solmuja ei voida synkronoida. Valitse alla olevasta valikosta solmut, jotka haluat synkronoida.
 SDN_Sync_limitation_Hint=Vanhemmille AiMesh-solmuille on rajoituksia kaikkien kaistojen synkronoinnissa.
 SDN_MainFH_WiFi_conflict=%1$@ WiFi-taajuuskaistaa on käytössä. Ristiriitaiset %2$@ (%3$@) verkot poistetaan asetusten käyttöönoton jälkeen.
+SDN_Auth_WPA3_only_subtext1=Korkein suojaustaso, vain WPA3-yhteydet.
+SDN_Auth_WPA3_only_subtext2=(Huomautus: Vanhemmat laitteet ilman WPA3-tukea eivät ehkä voi muodostaa yhteyttä.)
+SDN_Auth_WPA3_dual=Tavallinen kaksitilainen suojausvaihtoehto.
+SDN_Auth_WPA3_dual_desc=Nykyaikaiset laitteet käyttävät WPA3:a, vanhemmat WPA2:ta.
+SDN_Auth_WPA3_dual_mode=Yhteensopivuustila
+SDN_Auth_WPA3_dual_mode_subtext1=Parannettu kaksitilainen suojausvaihtoehto vanhemmille laitteille RSN-ohituksella.
+SDN_Auth_WPA3_dual_mode_subtext2=Pitää vanhemmat laitteet yhteydessä ja uudemmat WPA3:ssa.
+SDN_Auth_WPA3_dual_mode_subtext3=(Huomautus: Jotkin keskitason laitteet voivat käyttää WPA2:ta.)
+SDN_Auth_WPA3_subtext=Parannettu suojausvaihtoehto, joka on optimoitu vanhemmille laitteille RSN overriding -toiminnon avulla. Se tarjoaa nykyaikaisille laitteille parhaan mahdollisen suojauksen ja säilyttää samalla vakaat yhteydet ei-nykyaikaisille asiakaslaitteille.
+SDN_WiFi_Mode_Only6G_Hint=Maailmanlaajuisten WiFi-standardien noudattamiseksi kaikkien 6 GHz:n taajuusalueen verkkojen on käytettävä samaa WiFi-sukupolvea.
+SDN_WiFi_Mode_24G_Hint=2,4 GHz toimii WiFi-tila-asetustesi mukaisesti.
+SDN_Compatibility_Mode_Off=Yhteensopivuustila ei ole käytössä.
+SDN_Compatibility_Mode_24=2,4 GHz:n yhteensopivuustila
+SDN_Balance_Mode=Tasapainoinen
+SDN_Balance_Mode_desc=Optimaalinen tasapaino suorituskyvyn ja laiteyhteensopivuuden välillä.
+SDN_Balance_Mode_desc1=2,4 GHz toimii WiFi 6 -tilassa.
+SDN_Ultra_Compatibility_Mode=Maksimaalinen yhteensopivuus
+SDN_Ultra_Compatibility_Mode_desc=Varmistaa vakaan yhteyden vanhoille tai aiemman sukupolven IoT-laitteille.
+SDN_Ultra_Compatibility_Mode_desc1=2,4 GHz toimii WiFi 4 -tilassa.
+SDN_IPv6_FreeWiFi_Hint=Huomautus: Free WiFi ei tue vain IPv6:ta käyttäviä ympäristöjä. Varmista, että IPv4 tai Dual-Stack on käytössä asiakaslaitteen uudelleenohjausta varten.
+SDN_IPv6_MessageBoard_Hint=Huomautus: Message Board ei tue vain IPv6:ta käyttäviä ympäristöjä. Varmista, että IPv4 tai Dual-Stack on käytössä asiakaslaitetta varten.
 t2BC=Perusmääritys
 t2LAN=LAN
 t2Misc=Muut
@@ -4066,7 +4115,9 @@ TZ02=Midway-saari, Samoa
 TZ03=Havaiji
 TZ04=Alaska
 TZ05=Tyynenmeren aika (Yhdysvallat, Kanada)
+TZ05_1=Vancouver, Whitehorse
 TZ06=Vuoriston aika (Yhdysvallat, Kanada)
+TZ06_1=Edmonton, Yellowknife
 TZ07=Arizona
 TZ08=Mazatlan
 TZ10=Saskatchewan
@@ -4222,7 +4273,7 @@ usb_tls_conflict=Salli anonyymi kirjautuminen on ristiriidassa TLS-asetusten kan
 usb_tls_conflict_WANacc=WAN-yhteyden käyttö on ristiriidassa TLS-asetusten kanssa.
 usb_uninstalling=Poistetaan sovelluksen asennusta USB-tallennusvälineeltä
 usb_unmount=USB-toiminto on otettu pois käytöstä
-use_DevDiscoveryUtil=Asenna ja käytä <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery-apuohjelmaa</a> langattoman reitittimen IP-osoitteen tunnistamiseen.
+use_DevDiscoveryUtil=Asenna ja käytä <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery-apuohjelmaa</a> langattoman reitittimen IP-osoitteen tunnistamiseen.
 Username=Käyttäjänimi
 Username_Pwd=Käyttäjänimi ja salasana
 UserQoS_desc=Avattavasta Käyttäjän määrittämät QoS-säännöt -luettelossa voi tehdä ensisijaiseksi verkkosovelluksia tai -laitteita viidelle tasolle. QoS käyttää seuraavia ensisijaisuustasoon perustuvia tapoja datapakettien lähettämisessä:<ul><li>Muuta yläverkko-verkkkopakettien järjestystä. Tämä viittaa järjestykseen, jossa paketit lähetetään internetiin.</li><li>Alhaisen ensisijaisuuden paketit jätetään huomioimatta korkean ensisijaisuuden pakettien lähetyksen varmistamiseksi. Korkeamman ensisijaisuuden ylävirtapaketit aiheuttavat korkeamman ensisijaisuuden alavirtapaketeille.</li><li>Jos korkean ensisijaisuuden sovelluksissa ei ole lähetettäviä paketteja, internet-yhteyden täysi siirtonopeus on käytettävissä matalan ensisijaisuuden paketeille.</li></ul>
@@ -4232,6 +4283,7 @@ UserQoS_transferred_hint=Aseta Siirretyt -sarakkeessa verkkoliikenneraja (Kt) ti
 UserQoSRule_desc_zero=Ota QoS käyttöön ja aseta sitten käyttäjän määrittämät säännöt.
 UserQoSRule_desc_one=Siirron ja latauksen kaistanleveyksien oletusensisijaisuus on ”matala”. Jos kaistanleveyden ensisijaisuussääntöä ei ole, sekä siirron että latauksen ensisijaisuus on ”matala”.
 Utility=Apuohjelma
+Verifying_str=Vahvistetaan…
 Video_Find=Etsi opetusohjelmavideoita
 Video_Link1=Napauta avataksesi opastusvideon.
 View_List=Näytä luettelo
@@ -4330,7 +4382,7 @@ vpn_openvpn_required_acc_pwd=Nykyinen .ovpn-tiedosto vaatii käyttäjänimen ja 
 vpn_openvpnc_importCA=Tuo CA-tiedosto
 vpn_openvpnc_importovpn=Tuo .ovpn-tiedosto
 vpn_openvpnc_manual=Tuo CA-tiedosto tai muokkaa .ovpn-tiedostoa manuaalisesti.
-vpn_privateIP_hint=Langaton reititin käyttää tällä hetkellä yksityistä WAN IP -osoitetta (192.168.x.x, 10.x.x.x tai 172.16.x.x). Katso lisätietoja <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:#FC0;'>Usein kysyttyä</a>-kohdasta ja aseta portinsiirto.
+vpn_privateIP_hint=Langaton reititin käyttää tällä hetkellä yksityistä WAN IP -osoitetta (192.168.x.x, 10.x.x.x tai 172.16.x.x). Katso lisätietoja <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>Usein kysyttyä</a>-kohdasta ja aseta portinsiirto.
 vpn_preshared_key=Pre-shared Key (Secret)
 vpn_preshared_key_hint=Enter Pre-shared Key
 vpn_switch_confirm=ASUSWRT tukee vain yhtä VPN-palvelinyhteyttä kerrallaan. Jos otat käyttöön \"OpenVPN-palvelimen\", \"PPTP-palvelin\" poistetaan käytöstä automaattisesti. Haluatko varmasti ottaa käyttöön VPN-palvelimen?
@@ -4401,6 +4453,16 @@ vpn_wireguard_client_faq=How to set up WireGuard® client in VPN Fusion?
 vpn_wireguard_client_config=Please use the following configuration to set up your WireGuard client.
 vpn_wireguard_qr_desc=Please download WireGuard App from Google Play or Apple Store, then use the APP to scan the QR Code to connect to this server.
 vpn_wireguard_qr_foriOS=For iOS users, you must assign a specific DNS server to WireGuard app before accessing the internet through WireGuard Server.
+vpn_wireguard_ep_mode=Endpoint-tila
+vpn_wireguard_ep_src=Isäntänimen lähde
+vpn_wireguard_ep_system_ddns=Järjestelmän DDNS
+vpn_wireguard_ep_custom=Mukautettu isäntänimi
+vpn_wireguard_ep_desc=Auto-tila määrittää Endpointin automaattisesti nykyisen verkon tilan perusteella. DDNS-tilassa voit valita järjestelmäasetuksissa määritetyn DDNS:n tai antaa mukautetun isäntänimen.
+vpn_wireguard_ep_custom_desc=Mukautettu isäntänimi on erillinen järjestelmäasetusten DDNS-asetuksista. Varmista yhteyden onnistuminen varmistamalla, että mukautettu isäntänimi voidaan selvittää oikein reitittimen IP-osoitteeseen.
+vpn_wireguard_ep_ddns_hint=DDNS ei ole käytössä. Siirry kohtaan "Asetukset > WAN > DDNS" viimeistelläksesi määrityksen. Muussa tapauksessa tämä Endpoint ei toimi oikein.
+vpn_wireguard_ep_ddns_disable_confirm=Kun DDNS poistetaan käytöstä, tätä DDNS:ää käyttävät VPN-profiilit eivät välttämättä voi muodostaa yhteyttä. Haluatko jatkaa?
+vpn_wireguard_ep_custom_blank=Anna mukautettu isäntänimi.
+vpn_wireguard_ep_custom_invalid=Virheellinen isäntänimen muoto. Anna kelvollinen FQDN, kuten vpn.example.com. Älä sisällytä http://, https://, porttinumeroa tai URL-polkua.
 vpnc_auth=VPN-todennus
 vpnc_auth_for_clients=VPN-asiakkaiden VPN-todennus
 vpnc_Client_Cert=Asiakasvarmenne
@@ -4426,6 +4488,32 @@ vpnc_profile_assignALL=Käytä kaikissa laitteissa
 vpnc_profile_assignDevice=Yhdistä laitteita tähän profiiliin
 vpnc_profile_del=Poista profiili
 vpnc_profile_select_suggest=Valitse toinen VPN-profiili oletusarvoisen internetin WANin peruuttamiseksi.
+vpnc_ssk_login=Kirjaudu Surfshark-tilillesi
+vpnc_ssk_login_note=Anna sekä tili että salasana.
+vpnc_ssk_invalid_long=Tili tai salasana on liian pitkä (enintään 128 merkkiä).
+vpnc_ssk_invalid_char=Tilissä tai salasanassa on virheellisiä merkkejä.
+vpnc_ssk_invalid_format=Virheellinen tilin tai salasanan muoto.
+vpnc_ssk_login_AuthCode=Anna sähköpostiisi lähetetty tai Authenticator-sovelluksen luoma 6-numeroinen vahvistuskoodi.
+vpnc_ssk_login_AuthCode_enter=Anna 6-numeroinen vahvistuskoodi.
+vpnc_ssk_login_AuthCode_confirm=Etkö saanut vahvistuskoodia? Napsauta yllä olevaa "Lähetä uudelleen" -painiketta, niin lähetämme uuden vahvistuskoodin.
+vpnc_ssk_login_AuthCode_resender=Uudelleenlähetys käytettävissä %1$@s kuluttua
+vpnc_ssk_login_ErrMsg1=Virheellinen tili tai salasana.
+vpnc_ssk_login_ErrMsg2=Surfshark-palvelin ei ole käytettävissä. Yritä myöhemmin uudelleen.
+vpnc_ssk_login_ErrMsg4=Asetusvirhe. Tarkista asetuksesi.
+vpnc_ssk_login_ErrMsg41=Asetusvirhe.
+vpnc_ssk_login_ErrMsg5=Verkkovirhe. Surfsharkiin ei saada yhteyttä.
+vpnc_ssk_login_ErrMsgDef=Kirjautuminen epäonnistui. Yritä uudelleen.
+vpnc_ssk_login_success=Surfsharkiin kirjautuminen onnistui.
+vpnc_ssk_login_success_note=Close this notice and complete your VPN settings.
+vpnc_ssk_logout_confirm=Haluatko varmasti kirjautua ulos tililtäsi?
+vpnc_ssk_Failed_resend=Koodin uudelleenlähetys epäonnistui. Yritä uudelleen.
+vpnc_ssk_Failed_verification=Virheellinen vahvistuskoodi. Yritä uudelleen.
+vpnc_ssk_KeyPair_max=Surfshark-tilisi on saavuttanut VPN-avainparien enimmäismäärän (50). Luo uusi VPN-yhteys poistamalla käyttämättömät avainparit Surfshark-tililtäsi ja yrittämällä sitten uudelleen.
+vpnc_ssk_Missing_credent=Kirjautumistiedot puuttuvat. Sulje sovellus ja kirjaudu uudelleen.
+vpnc_ssk_Timeout_login=Kirjautumispyyntö aikakatkaistiin. Yritä uudelleen.
+vpnc_ssk_Timeout_resend=Uudelleenlähetys aikakatkaistiin. Yritä uudelleen.
+vpnc_ssk_Timeout_verification=Vahvistuspyyntö aikakatkaistiin. Yritä uudelleen.
+vpnc_ssk_Timeout_network=Verkkovirhe. Yritä uudelleen.
 vpnc_step=Käynnistä VPN-yhteys seuraavien vaiheiden mukaisesti:
 vpnc_step1=Lisää profiili
 vpnc_step2=Valitse VPN-yhteystyyppi
@@ -4433,6 +4521,7 @@ vpnc_step3=Syötä VPN-toimittajalta saamasi VPN-varmennustiedot ja muodosta sit
 vpnc_title=VPN-asiakas
 vpnc_peer=Vertaiskäyttäjä
 vpnc_pppoe_dis_nat_confirm=Jos käytät VPN-asiakasta ja PPPoE-yhteyttä, reitittimesi käynnistetään uudelleen, jotta NAT-kiihdytys poistetaan käytöstä. Haluatko varmasti jatkaa?
+vpnc_kill_switch_desc=If enabled, this feature blocks all internet traffic instantly if the VPN drops to prevent IP and data leaks. Connection will be suspended until the VPN successfully reconnects or the feature is disabled.
 WAN_barrier=Este
 WAN_Cfg_Ethernet_WAN=Määritä ZVMODELVZ:n Ethernet WAN -asetukset.
 WAN_default_route=Oletusreitti
@@ -4497,7 +4586,7 @@ WANTCPMSSOptionText=TCP MSS -valinta
 WANTCPMSSOptionComm1Text=tavua
 WANVLANIDText=VLAN-tunnus
 WANAggregation=WAN-yhteyksien yhdistäminen
-WANAggregation_desc=WAN-aggregaatio yhdistää kaksi verkkoyhteyttä, jolloin WANin nopeus nousee jopa 2 Gbps:ään. Yhdistä reitittimen #WAN-portti ja LAN 4-portti modeemin LAN-portteihin (varmista, että käytät kahta kaapelia, joiden tekniset ominaisuudet ovat samat). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN-aggregaatio Usein kysytyt kysymykset</a>
+WANAggregation_desc=WAN-aggregaatio yhdistää kaksi verkkoyhteyttä, jolloin WANin nopeus nousee jopa 2 Gbps:ään. Yhdistä reitittimen #WAN-portti ja LAN 4-portti modeemin LAN-portteihin (varmista, että käytät kahta kaapelia, joiden tekniset ominaisuudet ovat samat). <a id="wanAgg_faq" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">WAN-aggregaatio Usein kysytyt kysymykset</a>
 WANAggregation_enable=Ota WAN-aggregaatio käyttöön
 WANAggregation_disable_dualwan=Kaksois-WAN on aktivoituna reitittimessä. WAN-aggregaation aktivointi poistaa kaksois-WANin käytöstä. Haluatko varmasti jatkaa?
 WANAggregation_disable_WANAggregation=WAN-aggregaatio on aktivoituna reitittimessä. Kaksois-WANin aktivointi poistaa WAN-aggregaation käytöstä. Haluatko varmasti jatkaa?
@@ -4506,13 +4595,13 @@ WANAggregation_PortConflict_hint2=IPTV käyttää reitittimen LAN 4 -porttia. WA
 WANAggregation_disable_IPTVDualWAN=Sekä kaksois-WAN että IPTV ovat aktivoituina reitittimessä. WAN-aggregaation aktivointi poistaa kaksois-WANin ja IPTV:n käytöstä porttien ristiriitojen välttämiseksi. Haluatko varmasti jatkaa?
 WANAggregation_help_WAN=Varmista, että reitittimen #WAN-portti ja modeemin LAN-portti on yhdistetty kahdella kaapelilla, joiden spesifikaatio on sama.
 WANAggregation_help_LAN=Varmista, että reitittimen LAN 4 -portti ja modeemin LAN-portti on yhdistetty kahdella kaapelilla, joiden tekniset ominaisuudet ovat samat.
-WANAggregation_goto_WAN=Kun haluat ottaa WAN-aggregaation käyttöön, mene sivulle <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-Internet Connection (WAN-Internet-yhteys)</a>.
+WANAggregation_goto_WAN=Kun haluat ottaa WAN-aggregaation käyttöön, mene sivulle <a href="Advanced_WAN_Content.asp" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">WAN-Internet Connection (WAN-Internet-yhteys)</a>.
 WANAggregation_help_desc=Jos WAN-aggregaation käyttöönotto ei onnistu, yritä uudelleen seuraavien vaiheiden avulla.
 WANAggregation_help_step1=Varmista, että modeemin LAN-portit on jo yhdistetty reitittimen #WAN- ja LAN 4 -portteihin kaapeleilla.
 WANAggregation_help_step2=Varmista, että 802.3ad on aktivoitu modeemistasi
 WANAggregation_help_step3=Varmista, että kaapelit ovat teknisiltä ominaisuuksiltaan samanlaiset (molemmat joko gigabit- tai 10/100 Mbps -tyyppiä)
 WANAggregation_help_step4=Käynnistä reititin uudelleen
-WANAggregation_help_final=Jos yllä olevat vaiheet eivät auta ongelmaan, ilmoita siitä <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>ASUSin tukisivulla</a>.
+WANAggregation_help_final=Jos yllä olevat vaiheet eivät auta ongelmaan, ilmoita siitä <a href='https://www.asus.com/support/' target='_blank' style='color:var(--wrt-text-color,#000);text-decoration:underline;'>ASUSin tukisivulla</a>.
 WANAggregation_wanType_hint=WAN-aggregaatio ei tue WAN-tyyppejä (esimerkiksi PPPoE, PPTP ja L2TP). Jos WAN-tyypiksi vaihtuu PPPoE, PPTP tai L2TP, WAN-aggregaatio poistetaan käytöstä automaattisesti. Haluatko varmasti jatkaa?
 WebGUI_issue=Laiteohjelmistosivulle ei ole pääsyä
 wechat=WeChat
@@ -4627,8 +4716,8 @@ WLANConfig11b_display31_sectiondesc=Valitse [WDS Only] (Vain WDS) - tai [Hybrid]
 WLANConfig11b_display32_sectiondesc=Varmista, että tämä langaton reititin ja liitettävä tukiasema käyttävät samaa kanavaa.
 WLANConfig11b_display33_sectiondesc=Näppäile tukiaseman WDS-hallintakäyttöliittymässä tukiaseman MAC-osoite tukiasemaluettelosta ja langattoman reitittimen MAC-osoite.
 WLANConfig11b_display34_sectiondesc=Varmistaaksesi parhaan suorituskyvyn, siirry kohtaan Lisäasetukset > Langaton > Yleistä ja määritä sama kanavan kaistanleveys, ohjauskanava ja laajennuskanava kaikille verkon reitittimille.
-WLANConfig11b_display41_sectiondesc=Käytät parhaillaan automaattista kanavan kaistanleveys. Napsauta <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">täällä</a> mukauttaaksesi.
-WLANConfig11b_display42_sectiondesc=Käytät parhaillaan automaattista kanavaa. Napsauta <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">täällä</a> mukauttaaksesi.
+WLANConfig11b_display41_sectiondesc=Käytät parhaillaan automaattista kanavan kaistanleveys. Napsauta <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">täällä</a> mukauttaaksesi.
+WLANConfig11b_display42_sectiondesc=Käytät parhaillaan automaattista kanavaa. Napsauta <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">täällä</a> mukauttaaksesi.
 WLANConfig11b_display5_sectiondesc=Wireless Professional Setting (Langaton Professional-asetus) mahdollistaa lisäparametrien asettamisen langattomaan verkkoon. Oletusarvot ovat kuitenkin suositeltavia.
 WLANConfig11b_display6_sectiondesc=WPS (WiFi Protected Setup) tarjoaa helpon ja turvallisen tavan langattoman verkon muodostamiseen. Voit määrittää WPS:n tässä PIN-koodilla tai WPS-painikkeella.
 WLANConfig11b_EChannel_acs_ch13=Auto select channel including channel 12, 13
@@ -4686,6 +4775,7 @@ WLANConfig11b_x_APMode_option2=Hybrid
 WLANConfig11b_x_APSD_itemdesc=Ota käyttöön tai pois käytöstä WMM APSD (Automatic Power Save Delivery) (Atuomaattinen virransäästökäyttö).
 WLANConfig11b_x_APSD_itemname=Otetaanko WMM APSD käyttöön
 WLANConfig11b_x_Airtime_Fairness=Airtime Fairness
+WLANConfig11b_x_ApplyAllBands_hint=Tätä muutosta käytetään kaikkiin taajuusalueasetuksiin.
 WLANConfig11b_x_Airtime_Fairness_itemdesc=Provide Airtime Fairness between multiple links
 WLANConfig11b_x_Auto=Langaton tila on oltava asetettuna Automaattinen-tilaan.
 WLANConfig11b_x_Beacon_itemdesc=Beacon Interval (Hälytysaikaväli) tarkoittaa aikaväliä hälytysten välistä aikaa. Oletusarvo on 100 (yksikkö on millisekunti eli 1/1000 sekuntia). Laske hälytysaikaväliä parantaaksesi tiedonsiirron suorituskykyä epävakaassa ympäristössä tai verkkovierailussa olevilla asiakkailla. Toiminto lisää kuitenkin virrankulutusta.
@@ -4782,11 +4872,11 @@ WLANConfig11b_x_WPSMode_itemdesc=Valitse PIN (Personal Information Number) -kood
 WLANConfig11b_x_WPSMode_itemname=WPS-menetelmä:
 WLANConfig11b_x_WPSPIN_itemdesc=Näppäile kahdeksannumeroinen luku asiakaan PIN-koodiksi.<p>
 WLANConfig11b_x_WPSPIN_itemname=Asiakkaan PIN-koodi
-WLANConfig11n_Auto_note=[autom] ei ole yhteensopiva nykyisen vierasverkko autentikointitavan (TKIP tai WEP), siirry <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Vierasverkko</a> -kohtaan ja muuta autentikointitapa.
+WLANConfig11n_Auto_note=[autom] ei ole yhteensopiva nykyisen vierasverkko autentikointitavan (TKIP tai WEP), siirry <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Vierasverkko</a> -kohtaan ja muuta autentikointitapa.
 WLANConfig11n_automode_limition_hint=autom-tilassa WEP- tai TKIP-salauksen kanssa ZVMODELVZ tukee maksimisiirtonopeutta 54 Mbps.
 WLANConfig11n_automode_limition_hint1=Vaihda WPA2-Personal-suojaukseen.
-WLANConfig11n_NAC_note=[N+AC] ei ole yhteensopiva nykyisen vierasverkko autentikointitavan (TKIP tai WEP), siirry <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Vierasverkko</a> -kohtaan ja muuta autentikointitapa.
-WLANConfig11n_NOnly_note=[N Only] ei ole yhteensopiva nykyisen vierasverkko autentikointitavan (TKIP tai WEP), siirry <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Vierasverkko</a> -kohtaan ja muuta autentikointitapa.
+WLANConfig11n_NAC_note=[N+AC] ei ole yhteensopiva nykyisen vierasverkko autentikointitavan (TKIP tai WEP), siirry <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Vierasverkko</a> -kohtaan ja muuta autentikointitapa.
+WLANConfig11n_NOnly_note=[N Only] ei ole yhteensopiva nykyisen vierasverkko autentikointitavan (TKIP tai WEP), siirry <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Vierasverkko</a> -kohtaan ja muuta autentikointitapa.
 WLANConfig11ax_AXOnly_note=By enabling AX only mode, if devices do not support 802.11ax(WiFi 6), will not able to connect to this band.
 WLANConfig11n_PremblesType_itemdesc=Esitietotyyppi määrittää CRC (Cyclic Redundancy Check) -lohkon pituuden. Kyse on tekniikasta, jolla havaitaan langattomien laitteiden tiedonsiirtovirheet. On suositeltavaa asettaa kaikille langattomille laitteille sama esitietotyyppi. Käytä lyhyttä esitietoa langattomissa laitteissa alueilla, joilla on runsas verkon liikenne. Käytä pitkää esitietoa vanhemmissa langattomisssa laitteissa.
 WLANConfig11n_PremblesType_itemname=802.11b mode
@@ -4904,11 +4994,21 @@ Captive_Portal_Above=yllä
 Captive_Portal_Selected_Color=Valittu väri
 Captive_Portal_Local=Paikallinen
 Configuration=Määritys
-Configuration_dark_mode=Dark
-Configuration_light_mode=Light
-Configuration_theme=Theme
-Configuration_fancy_theme=Fancy
+Configuration_dark_mode=Tumma
+Configuration_light_mode=Vaalea
+Configuration_theme=Teema
+Configuration_fancy_theme=Tyylikäs
+Configuration_flat_theme=Litteä
 Continuous_Mode=jatkuva tila
+View_Details=Näytä tiedot
+NetworkMap_Clients=Asiakkaat
+NetworkMap_Guest_Clients=Vieraslaitteet
+NetworkMap_Add_AiMesh_Hint=Lisää AiMesh-solmuja laajentaaksesi WiFi-verkkosi kattavuutta.
+Dashboard_Show_more=Näytä lisää
+Dashboard_Show_less=Näytä vähemmän
+Dashboard_Expand=Laajenna
+Dashboard_Refreshing=Päivitetään
+Dashboard_Last_updated=Viimeksi päivitetty
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Käyttökäytäntö
 FreeWiFi_AccountSetting_desc1=Tiliasetus on helppo vierastilimääritys, joka antaa ylläpitää vierastilitietokantaa vierasverkon suojausta varten. Yhdistetyn asiakkaan on syötettävä seuraava tili ja salasana voidakseen kirjautua sisään ennen internet-käyttöä.
@@ -4992,7 +5092,7 @@ menu_privacy=Käytäntö
 ASUS_Notice_Privacy=ASUS-ILMOITUS (tietosuojaa koskeva)
 Distributing_IP=Jaellaan IP:tä...
 LED_Brightness=LED-kirkkaus
-LED_disabled_hint=This change will disable the special LED effect for the %1$@.
+LED_disabled_hint=Tämä muutos poistaa käytöstä %1$@:n erityisen LED-tehosteen.
 WiFi_Network_List=WiFi-verkkoluettelo
 Searching_WiFi_Network=Etsitään lähistöllä olevaa WiFi-verkkoa...
 BoostKey=Boost Key
@@ -5162,7 +5262,7 @@ Notice_Message_3=Olen lukenut sen, älä näytä uudelleen.
 CTL_Decline=Hylkään
 Outdoor_desc_title=Warning
 Outdoor_active_desc_1=Ulkotilan ottaminen käyttöön rajoittaa AiMesh-toimintaa ja saattaa aiheuttaa solmun katkeamisen.
-Outdoor_active_desc_2=Sääntöjen noudattamiseksi järjestelmä tarkistaa kanavat noin minuutin ajan estääkseen sää tutkan häiriöt. <span style="color:#FC0">Jos tutkasignaaleja havaitaan, se siirtyy 2,4 GHz:iin, mikä aiheuttaa lyhyen katkoksen. Vaikutettu kanava estetään 30 minuutiksi.</span>
+Outdoor_active_desc_2=Sääntöjen noudattamiseksi järjestelmä tarkistaa kanavat noin minuutin ajan estääkseen sää tutkan häiriöt. <span style="color:var(--wrt-badge-warning-color,#FC0)">Jos tutkasignaaleja havaitaan, se siirtyy 2,4 GHz:iin, mikä aiheuttaa lyhyen katkoksen. Vaikutettu kanava estetään 30 minuutiksi.</span>
 Outdoor_active_desc_3=Ulkotila tukee vain reititin- ja AP-tiloja.
 Outdoor_active_desc_4=Saatavilla olevat ulkokanavat vaihtelevat maittain/alueittain.
 Outdoor_inactive_desc_1=Tämän tilan poistaminen käytöstä käynnistää langattoman yhteyden hetkellisesti uudelleen ja katkaisee kaikkien laitteiden yhteyden.
@@ -5193,6 +5293,7 @@ WiFi_DFS_REENTRY=DFS-UUSIYRITYS
 WiFi_ch_conflict=Kanavakonflikti
 WiFi_Regulatory=Sääntely
 WiFi_OFF=WiFi Pois päältä
+WiFi8_6G_enable_hint=6 GHz toimii tällä hetkellä WiFi 7 -tilassa. Ota WiFi 8 käyttöön ottamalla "WiFi 8" käyttöön 6 GHz:n Wireless Professional -asetuksissa.
 Vendor=Valmistaja
 Connected_AP=Yhdistetty AP
 Network_SDN=Verkko(SDN)

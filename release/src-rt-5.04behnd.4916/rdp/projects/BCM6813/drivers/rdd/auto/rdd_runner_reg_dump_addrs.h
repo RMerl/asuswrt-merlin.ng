@@ -47,7 +47,7 @@
 #define CORE_7_INDEX	 9
 #if defined BCM6813
 #define NUMBER_OF_SEGMENTS	 10
-#define NUMBER_OF_TABLES	 945
+#define NUMBER_OF_TABLES	 948
 #define NUMBER_OF_STACK_TABLES	 97
 #endif
 

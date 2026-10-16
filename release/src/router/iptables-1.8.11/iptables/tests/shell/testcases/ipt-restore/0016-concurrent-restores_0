@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# test for iptables-restore --noflush skipping an explicitly requested chain
+# flush because the chain did not exist when cache was fetched. In order to
+# expect for that chain to appear when refreshing the transaction (due to a
+# concurrent ruleset change), the chain flush job has to be present in batch
+# job list (although disabled at first).
+# The input line requesting chain flush is ':FOO - [0:0]'. RS1 and RS2 contents
+# are crafted to cause EBUSY when deleting the BAR* chains if FOO is not
+# flushed in the same transaction.
+
+set -e
+
+RS="*filter
+:INPUT ACCEPT [12024:3123388]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [12840:2144421]
+:FOO - [0:0]
+:BAR0 - [0:0]
+:BAR1 - [0:0]
+:BAR2 - [0:0]
+:BAR3 - [0:0]
+:BAR4 - [0:0]
+:BAR5 - [0:0]
+:BAR6 - [0:0]
+:BAR7 - [0:0]
+:BAR8 - [0:0]
+:BAR9 - [0:0]
+"
+
+RS1="$RS
+-X BAR3
+-X BAR6
+-X BAR9
+-A FOO -s 9.9.0.1/32 -j BAR1
+-A FOO -s 9.9.0.2/32 -j BAR2
+-A FOO -s 9.9.0.4/32 -j BAR4
+-A FOO -s 9.9.0.5/32 -j BAR5
+-A FOO -s 9.9.0.7/32 -j BAR7
+-A FOO -s 9.9.0.8/32 -j BAR8
+COMMIT
+"
+
+RS2="$RS
+-X BAR2
+-X BAR5
+-X BAR7
+-A FOO -s 9.9.0.1/32 -j BAR1
+-A FOO -s 9.9.0.3/32 -j BAR3
+-A FOO -s 9.9.0.4/32 -j BAR4
+-A FOO -s 9.9.0.6/32 -j BAR6
+-A FOO -s 9.9.0.8/32 -j BAR8
+-A FOO -s 9.9.0.9/32 -j BAR9
+COMMIT
+"
+
+NORS="*filter
+COMMIT
+"
+
+for n in $(seq 1 10); do
+	$XT_MULTI iptables-restore <<< "$NORS"
+	$XT_MULTI iptables-restore --noflush -w <<< "$RS1" &
+	$XT_MULTI iptables-restore --noflush -w <<< "$RS2" &
+	wait -n
+	wait -n
+done

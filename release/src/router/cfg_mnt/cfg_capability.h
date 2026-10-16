@@ -114,6 +114,7 @@ enum capabilityType {
 #if defined(RTCONFIG_VIF_ONBOARDING) && defined(RTCONFIG_AMAS_5G_ONBOARDING)
 	VIF_OB_BAND_INDEX = 44,
 #endif
+	WIFI_GEN = 46,
 	CAPABILITY_MAX
 };
 

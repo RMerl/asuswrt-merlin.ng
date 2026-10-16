@@ -185,11 +185,11 @@ function tag_control() {
 		};
 	}
 
-	document.getElementById("ifttt_signin").style="font-weight:bolder;text-decoration:underline;color:#FFCC00;";
+	document.getElementById("ifttt_signin").style="font-weight:bolder;text-decoration:underline;color:var(--wrt-badge-warning-color,#FFCC00);";
 	document.getElementById("ifttt_signin").href="https://ifttt.com/login";
 	document.getElementById("ifttt_signin").target="_blank";
 
-	document.getElementById("ifttt_asus_channel").style="font-weight:bolder;text-decoration:underline;color:#FFCC00;";
+	document.getElementById("ifttt_asus_channel").style="font-weight:bolder;text-decoration:underline;color:var(--wrt-badge-warning-color,#FFCC00);";
 	document.getElementById("ifttt_asus_channel").href="https://ifttt.com/asusrouter";
 	document.getElementById("ifttt_asus_channel").target="_blank";
 }

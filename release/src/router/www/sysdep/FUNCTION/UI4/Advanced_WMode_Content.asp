@@ -13,7 +13,7 @@
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <style>
 #WDSAPList{
-	border:1px solid #ffffff;
+	border:1px solid var(--border-default, #ffffff);
 	background-color:rgba(245, 245, 245, 1);
 	position:absolute;
 	margin-top:33px;
@@ -39,16 +39,16 @@
 	padding-left:2px;
 }
 #WDSAPList a{
-	background-color:#FFFFFF;
-	color:#262626;
+	background-color:var(--wrt-card-bg, #FFFFFF);
+	color:var(--wrt-text-color, #262626);
 	font-size:13px;
 	font-family:Arial, Helvetica, sans-serif;
 	text-decoration:none;	
 }
 #WDSAPList div:hover {
-	background-color:#ffffff;
-	color:#248dff;
-	border:solid 1px #248dff;
+	background-color:var(--wrt-card-bg, #ffffff);
+	color:var(--primary-50, #248dff);
+	border:solid 1px var(--primary-50, #248dff);
 	border-radius: 4px;
 	cursor:default;
 }

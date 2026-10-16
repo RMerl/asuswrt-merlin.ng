@@ -63,6 +63,28 @@ export class WiFiInterferenceChart {
         return this.domCache.get(selector);
     }
 
+    // Resolve the interference-detection state from nvram.
+    // The active data source follows the device capability (airiq takes
+    // precedence over ciscan_monitor, same as reGenChart/rectanglePlugin),
+    // so only the flag of that source may gate the feature. ANDing both
+    // flags kept the toggle OFF on ciscan-only devices whose airiq_enable
+    // is 0 (and vice versa).
+    resolveInterferenceEnabled(nvramValues) {
+        if (this.airiq_support) return !!nvramValues.airiq_enable;
+        if (this.ciscan_monitor_support) return !!nvramValues.ciscan_enable;
+        return false;
+    }
+
+    // Single place that mirrors this.interferenceEnabled into the DOM, so the
+    // load path and the click handler can never drift apart.
+    applyInterferenceToggleState() {
+        const toggle = this.getCachedElement("#interference_toggle");
+        if (toggle) toggle.classList.toggle("active", this.interferenceEnabled);
+
+        const statusText = this.getCachedElement("#interferenceStatusText");
+        if (statusText) statusText.classList.toggle("d-md-inline", this.interferenceEnabled);
+    }
+
     // Helper method for event handler tracking
     addEventHandler(element, event, handler) {
         const key = `${element.constructor.name}_${event}_${Date.now()}`;
@@ -122,31 +144,64 @@ export class WiFiInterferenceChart {
         const origSupportedBand = order.filter(key => wlBandSeqData.hasOwnProperty(key));
         const supportedBand = [];
         for (const band of origSupportedBand) {
+            // wlUnit keeps the radio index behind this entry, which orders the
+            // radios of one frequency class when resolving per-radio diagnostic
+            // data — see getWifiStatusBandKey().
+            const wlUnit = wlBandSeqData[band].wlUnit;
             if (band.startsWith('5g') && origSupportedBand.filter(b => b.startsWith('5g')).length === 1) {
-                supportedBand.push({band: '5G', bandName: '5G1', channel: wlBandSeqData[band].channel});
+                supportedBand.push({band: '5G', bandName: '5G1', channel: wlBandSeqData[band].channel, wlUnit});
             } else if (band.startsWith('5g') && origSupportedBand.filter(b => b.startsWith('5g')).length === 2) {
                 supportedBand.push({
                     band: band.toUpperCase(),
                     bandName: band.toUpperCase(),
-                    channel: wlBandSeqData[band].channel
+                    channel: wlBandSeqData[band].channel,
+                    wlUnit
                 });
             } else if (band.startsWith('6g') && origSupportedBand.filter(b => b.startsWith('6g')).length === 1) {
-                supportedBand.push({band: '6G', bandName: '6G1', channel: wlBandSeqData[band].channel});
+                supportedBand.push({band: '6G', bandName: '6G1', channel: wlBandSeqData[band].channel, wlUnit});
             } else if (band.startsWith('6g') && origSupportedBand.filter(b => b.startsWith('6g')).length === 2) {
                 supportedBand.push({
                     band: band.toUpperCase(),
                     bandName: band.toUpperCase(),
-                    channel: wlBandSeqData[band].channel
+                    channel: wlBandSeqData[band].channel,
+                    wlUnit
                 });
             } else if (band.startsWith('2g')) {
-                supportedBand.push({band: '2G', bandName: '2G', channel: wlBandSeqData[band].channel});
+                supportedBand.push({band: '2G', bandName: '2G', channel: wlBandSeqData[band].channel, wlUnit});
             } else {
-                supportedBand.push({band: band, bandName: band, channel: wlBandSeqData[band].channel});
+                supportedBand.push({band: band, bandName: band, channel: wlBandSeqData[band].channel, wlUnit});
             }
         }
         this.showBand = supportedBand[0].band.toUpperCase();
         this.controlChannelList = supportedBand[0].channel;
         this.supportedBand = supportedBand;
+    }
+
+    // Frequency class of a band value ('5G1' / '5G2' -> '5G'). Use it wherever
+    // data is keyed by frequency instead of by radio — interference blocks keep
+    // their channels under '2G' / '5G' / '6G' only, so a raw showBand such as
+    // '5G2' finds nothing there.
+    getBandClass(band) {
+        const value = String(band || '').toUpperCase();
+        if (value.startsWith('2G')) return '2G';
+        if (value.startsWith('5G')) return '5G';
+        if (value.startsWith('6G')) return '6G';
+        return value;
+    }
+
+    // Map a showBand value ('2G' / '5G1' / '5G2' / '6G1' ...) to the band key the
+    // wifi_detect db uses. The db names the first radio of a frequency class by
+    // the bare class and appends an ordinal for every extra radio of the same
+    // class: a dual-5G model reports "5G" for wl1 and "5G1" for wl2. Collapsing
+    // showBand to the bare class made 5G-1/5G-2 (and 6G-1/6G-2) read one bucket.
+    getWifiStatusBandKey(band) {
+        const target = String(band || '').toUpperCase();
+        const bandClass = this.getBandClass(target);
+        const sameClass = (this.supportedBand || [])
+            .filter(item => this.getBandClass(item.band) === bandClass)
+            .sort((a, b) => (a.wlUnit ?? 0) - (b.wlUnit ?? 0));
+        const index = sameClass.findIndex(item => String(item.band).toUpperCase() === target);
+        return index > 0 ? `${bandClass}${index}` : bandClass;
     }
 
     // Extract band text helper
@@ -820,7 +875,7 @@ export class WiFiInterferenceChart {
                     cursor: pointer;
                 }
             </style>
-            <div class="card pt-2 h-100">
+            <div class="card h-100">
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <div class="wifi-insight-card-title">WiFi Insight<i data-faq="AI_FAQ_WiFiInsight" role="icon"
                                                            class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
@@ -1023,17 +1078,14 @@ export class WiFiInterferenceChart {
             });
         }
 
-        // Auto refresh toggle handler
+        // Interference detection toggle handler
         const interferenceToggle = this.getCachedElement("#interference_toggle");
         if (interferenceToggle) {
-            this.addEventHandler(interferenceToggle, 'click', (e) => {
-                e.target.classList.toggle("active");
-                this.interferenceEnabled = e.target.classList.contains("active");
-                if (this.interferenceEnabled) {
-                    this.getCachedElement("#interferenceStatusText").classList.add('d-md-inline');
-                } else {
-                    this.getCachedElement("#interferenceStatusText").classList.remove('d-md-inline');
-                }
+            this.addEventHandler(interferenceToggle, 'click', () => {
+                this.interferenceEnabled = !this.interferenceEnabled;
+                this.applyInterferenceToggleState();
+                // Both flags are written so the stored state stays consistent
+                // regardless of which one resolveInterferenceEnabled() reads.
                 httpApi.nvramSet({
                     "airiq_enable": this.interferenceEnabled ? "1" : "0",
                     "action_mode": "apply",
@@ -1825,14 +1877,16 @@ export class WiFiInterferenceChart {
                         if (self.chartStartTime < d.timeStart) {
                             const xStart = xScale.getPixelForValue(d.timeStart);
                             const xEnd = xScale.getPixelForValue(d.timeEnd);
-                            let band = showBand.toUpperCase();
-                            if (band === '2G1') {
-                                band = '2G';
-                            } else if (band === '5G1') {
-                                band = '5G';
-                            }
+                            // Interference channels are keyed by frequency class,
+                            // so normalise; the exact-match list this used to
+                            // carry ('2G1'/'5G1') left '5G2', '6G1' and '6G2'
+                            // unmapped, so d.channels[...] was undefined and the
+                            // whole hover tooltip went dead on those bands.
+                            const band = self.getBandClass(showBand);
                             const channelData = d.channels[band];
-                            const max_ch = self.getBandMaxChannel(band);
+                            // Channel lists live per radio, so this one keeps the
+                            // raw showBand value.
+                            const max_ch = self.getBandMaxChannel(showBand.toUpperCase());
                             if (channelData) {
                                 for (const c of channelData) {
                                     const yCenter = yScale.getPixelForValue(yOffsets[c.channel]?.center);
@@ -2325,22 +2379,23 @@ export class WiFiInterferenceChart {
                     //Interference
                     const min = self.signalRange.min.value;
                     const max = self.signalRange.max.value;
-                    interferenceData.forEach((d, index) => {
+                    interferenceData.forEach((d) => {
                         if (self.chartStartTime - 1 * 60 * 1000 < d.timeStart) {
                             const xStart = xScale.getPixelForValue(d.timeStart);
-                            let xEnd = xScale.getPixelForValue(d.timeEnd);
-                            if (index === interferenceData.length - 1) {
-                                xEnd = xScale.getPixelForValue(nowTime);
-                            }
-                            let band = showBand.toUpperCase();
-                            if (band.startsWith('2G')) {
-                                band = '2G';
-                            } else if (band.startsWith('5G')) {
-                                band = '5G';
-                            }
+                            // Draw the block over its own sampling window only,
+                            // trimmed at "now" so it never runs past the Now
+                            // marker. The last block used to be stretched to
+                            // nowTime unconditionally, which painted invented
+                            // interference across the whole gap after the last
+                            // sample (and disagreed with the tooltip, which has
+                            // always hit-tested against d.timeEnd).
+                            const xEnd = xScale.getPixelForValue(nowTime < d.timeEnd ? nowTime : d.timeEnd);
+                            const band = self.getBandClass(showBand);
                             if (d.channels?.[band] != null) {
                                 const channelData = d.channels[band];
-                                const max_ch = self.getBandMaxChannel(band);
+                                // Channel lists are per radio ('5G2'), unlike the
+                                // interference channels above which are per class.
+                                const max_ch = self.getBandMaxChannel(showBand.toUpperCase());
                                 channelData.forEach(c => {
 
                                     const yCenter = yScale.getPixelForValue(yOffsets[c.channel]?.center);
@@ -3057,14 +3112,10 @@ export class WiFiInterferenceChart {
             return;
         }
 
-        let wifiStatusBand = '2G';
-        if (this.showBand.toUpperCase().startsWith('2G')) {
-            wifiStatusBand = '2G';
-        } else if (this.showBand.toUpperCase().startsWith('5G')) {
-            wifiStatusBand = '5G';
-        } else if (this.showBand.toUpperCase().startsWith('6G')) {
-            wifiStatusBand = '6G';
-        }
+        // Resolve the db key per radio, not per frequency class: collapsing
+        // '5G1'/'5G2' to '5G' made both radios read the same bucket, so their
+        // TXOP charts were identical.
+        const wifiStatusBand = this.getWifiStatusBandKey(this.showBand);
         const rawTxopData = this.wifiStatus[wifiStatusBand]?.txop_changes || [];
 
         const txopData = (() => {
@@ -3611,6 +3662,10 @@ export class WiFiInterferenceChart {
                 })
 
                 // 按頻段分組
+                // db band keys are per radio: the first radio of a frequency
+                // class uses the bare class ("5G") and each extra radio gets an
+                // ordinal suffix ("5G1" = second 5G radio). getWifiStatusBandKey()
+                // is what turns a showBand value into the matching key.
                 for (const entry of filteredData) {
                     if (!groupedByBand[entry.band]) {
                         groupedByBand[entry.band] = [];
@@ -3896,11 +3951,8 @@ export class WiFiInterferenceChart {
             this.dfsData = dfsData;
             this.sysData = sysData;
 
-            this.interferenceEnabled = _nvram.airiq_enable === "1";
-            if (this.interferenceEnabled) {
-                this.getCachedElement("#interference_toggle").classList.add("active");
-                this.getCachedElement("#interferenceStatusText").classList.add("d-md-inline")
-            }
+            this.interferenceEnabled = this.resolveInterferenceEnabled(_nvram);
+            this.applyInterferenceToggleState();
 
             this.wifiStatus = wifiStatus;
 
@@ -4009,5 +4061,183 @@ export class WiFiInterferenceChart {
 
         // Reset initialization flag
         this.isInitialized = false;
+    }
+}
+
+/**
+ * Ethernet ports status view — replaces the legacy iframe to router_status.asp.
+ * Re-renders the same DOM structure that was rendered inside #phy_ports there,
+ * so existing networkMap.css styles (.port_status_bg / .port_icon / ...) apply
+ * unchanged. Polls httpApi.get_port_status_array every `pollInterval` ms.
+ *
+ * Usage:
+ *   const view = new EthernetPortsView('#phy_ports', { onHint: showFn });
+ *   view.start();
+ *   // later: view.stop();
+ */
+export class EthernetPortsView {
+    constructor(target, options = {}) {
+        this.target = (typeof target === 'string') ? document.querySelector(target) : target;
+        this.onHint = options.onHint || null;
+        this.pollInterval = options.pollInterval || 3000;
+        this.timer = null;
+        this._stopped = false;
+    }
+
+    start() {
+        this._stopped = false;
+        this._tick();
+    }
+
+    stop() {
+        this._stopped = true;
+        if (this.timer) {
+            clearTimeout(this.timer);
+            this.timer = null;
+        }
+    }
+
+    _tick() {
+        if (this._stopped || !this.target) return;
+        const api = window.httpApi;
+        if (!api || typeof api.get_port_status_array !== 'function') {
+            this._scheduleNext();
+            return;
+        }
+        if (typeof window.isSupport === 'function' && !window.isSupport('NEW_PHYMAP')) {
+            this.target.style.display = 'none';
+            return;
+        }
+        const capMac = api.hookGet && api.hookGet('get_lan_hwaddr') ? api.hookGet('get_lan_hwaddr') : '';
+        api.get_port_status_array(capMac, (port_info) => {
+            console.log('Fetched port info:', port_info);
+            if (this._stopped) return;
+            this._render(port_info || {});
+            this._scheduleNext();
+        });
+    }
+
+    _scheduleNext() {
+        if (this._stopped) return;
+        this.timer = setTimeout(() => this._tick(), this.pollInterval);
+    }
+
+    _render(port_info) {
+        const target = this.target;
+        if (!target) return;
+        if (!port_info || Object.keys(port_info).length === 0) {
+            target.style.display = 'none';
+            return;
+        }
+        target.style.display = '';
+        target.innerHTML = '';
+
+        const errorPortList = [];
+        let showPoeStatusDesc = false;
+
+        // Flatten WAN + LAN preserving original order so the tiles read
+        // left-to-right top-to-bottom in firmware port order.
+        const allPorts = [];
+        ['WAN', 'LAN'].forEach((label) => {
+            const arr = port_info[label];
+            if (!Array.isArray(arr)) return;
+            arr.forEach((p) => allPorts.push({ label, port: p }));
+        });
+
+        console.log(allPorts)
+
+        allPorts.forEach(({ label, port }) => {
+            const cap = port.cap_support || {};
+            if (cap.INTRAMODULE) return;
+            let allCapFalse = true;
+            for (const k in cap) { if (cap[k]) { allCapFalse = false; break; } }
+            if (allCapFalse) return;
+
+            // Determine port state.
+            let state = 'unplug';
+            if (port.is_on == '1') {
+                state = port.link_rate_status == '1' ? 'conn' : 'warn';
+            } else if (port.is_on == '0' && cap.USB && port.devices) {
+                state = 'conn';
+            }
+
+            // Label text: prefer ui_display, otherwise compose from speed + port name.
+            const speedTag = (port.special_port_name && port.special_port_name !== '') ? port.special_port_name : '';
+            const portName = port.label_port_name || '';
+            let labelText = '';
+            if (port.ui_display && port.ui_display !== '') {
+                labelText = port.ui_display;
+            } else if (cap.USB) {
+                // For USB: prefer max_rate_text like "USB3.0"
+                labelText = port.max_rate_text || speedTag || portName;
+            } else {
+                labelText = (speedTag && portName) ? `${speedTag} ${portName}` : (speedTag || portName);
+            }
+
+            // Tile DOM
+            const tile = document.createElement('div');
+            tile.className = 'eth-port-tile';
+            tile.dataset.state = state;
+            tile.dataset.cap = cap.USB ? 'usb' : 'eth';
+            if (port.link_rate_text) tile.title = port.link_rate_text;
+
+            const iconWrap = document.createElement('div');
+            iconWrap.className = 'eth-port-tile-icon-wrap';
+
+            const icon = document.createElement('div');
+            icon.setAttribute('role', 'icon');
+            icon.className = 'icon-size-24 ' + (cap.USB ? 'icon-usb-port' : 'icon-ethernet-port');
+            iconWrap.appendChild(icon);
+
+            // Link-active dot (top-right) — only when fully connected.
+            if (state === 'conn') {
+                const dot = document.createElement('span');
+                dot.className = 'eth-port-tile-dot';
+                iconWrap.appendChild(dot);
+            }
+
+            // PoE bottom-right marker
+            if (cap.POE) {
+                showPoeStatusDesc = true;
+                const poeDot = document.createElement('span');
+                const poeLink = port.poe_info && port.poe_info.poe_link;
+                poeDot.className = 'eth-port-tile-poe-dot ' + (poeLink == '1' ? 'poe_en' : 'poe_dis');
+                iconWrap.appendChild(poeDot);
+            }
+
+            // WAN globe overlay (bottom-right) — for any port capable of WAN duty.
+            if (cap.WAN || cap.WANAUTO) {
+                const globeWrap = document.createElement('span');
+                globeWrap.className = 'eth-port-tile-wan-globe';
+                const globe = document.createElement('span');
+                globe.className = 'eth-port-tile-wan-globe-icon';
+                globeWrap.appendChild(globe);
+                iconWrap.appendChild(globeWrap);
+            }
+
+            tile.appendChild(iconWrap);
+
+            const labelEl = document.createElement('div');
+            labelEl.className = 'eth-port-tile-label';
+            labelEl.textContent = labelText;
+            tile.appendChild(labelEl);
+
+            target.appendChild(tile);
+
+            if (port.link_rate_status != '1' && port.is_on == '1') {
+                errorPortList.push(port);
+            }
+        });
+
+        // Toggle PoE legend rows.
+        document.querySelectorAll('.poe_status_desc_cntr').forEach((el) => {
+            if (showPoeStatusDesc) el.removeAttribute('hidden');
+            else el.setAttribute('hidden', '');
+        });
+
+        // Trigger external hint handler when any port is in error state.
+        if (errorPortList.length > 0 && typeof this.onHint === 'function') {
+            this.onHint(errorPortList);
+        }
     }
 }

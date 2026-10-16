@@ -3326,6 +3326,10 @@ goTo.mbMode = function(){
 		qisPostData.wlc_dpsta = 0;
 	}
 	systemVariable.opMode = "MB";
+	if(isSupport("mlo_media_bridge") && typeof confirm_asus !== "function"){
+		$('link').last().after('<link rel="stylesheet" type="text/css" href="./css/confirm_block.css">');
+		$('<script />', { type : 'text/javascript', src : "./js/confirm_block.js"}).appendTo($('head'));
+	}
 	handle_mld_enable(systemVariable.opMode);
 	if(isSupport("amas")){
 		postDataModel.insert(aimeshObj);
@@ -4045,6 +4049,15 @@ goTo.siteSurvey = function(){
 				siteSurveyResult = {
 					"isFinish": false,
 					"aplist": []
+				}
+			}
+
+			if(isSupport("mlo_media_bridge")){
+				try{
+					systemVariable.mloMultilinkList = httpApi.hookGet("get_ap_mlo_multilink", true);
+				}
+				catch(e){
+					systemVariable.mloMultilinkList = [];
 				}
 			}
 
@@ -5190,7 +5203,7 @@ goTo.NoWan_AP = function(){
 };
 
 goTo.ResetModem = function(){
-	if(!isSku("US") && !isSku("CA") && !isSku("U2")){
+	if(!isSku("US") && !isSku("CA") && !isSku("U2") && !isSku("U3")){
 		apply.manual();
 		return false;
 	}
@@ -5231,7 +5244,7 @@ goTo.ResetModem = function(){
 };
 
 goTo.ResetModem_AP = function(){
-	if(!isSku("US") && !isSku("CA") && !isSku("U2")){
+	if(!isSku("US") && !isSku("CA") && !isSku("U2") && !isSku("U3")){
 		goTo.apMode();
 		return false;
 	}
@@ -5280,7 +5293,7 @@ goTo.Waiting = function(){
 				goTo.Modem();
 			}
 			else{
-				if(isSku("US") || isSku("CA") || isSku("U2")){
+				if(isSku("US") || isSku("CA") || isSku("U2") || isSku("U3")){
 					httpApi.log("goTo.Waiting", "goTo.ResetModem()", systemVariable.qisSession);
 					goTo.ResetModem();
 				}
@@ -5339,7 +5352,7 @@ goTo.Waiting_AP = function(){
 		if(systemVariable.manualWanSetup) return false;
 		if(check_linkInternet_count > MAX_LinkInternet_Detection){
 			httpApi.log("goTo.Waiting_AP", "check_linkInternet_count > MAX_LinkInternet_Detection", systemVariable.qisSession);
-			if(isSku("US") || isSku("CA") || isSku("U2")){
+			if(isSku("US") || isSku("CA") || isSku("U2") || isSku("U3")){
 				httpApi.log("goTo.Waiting_AP", "goTo.ResetModem_AP()", systemVariable.qisSession);
 				goTo.ResetModem_AP();
 			}
@@ -5932,8 +5945,8 @@ goTo.amasOnboarding = function(){
 			if(auth_flag){
 				$("#amasonboarding_page").find("#wpa3_hint").attr("style","font-size:1.6em !important;").show();
 				var auth_change_str = "* <#ADSL_FW_note#> <#AiMesh_confirm_msg11#>".replace("WPA3-personal", current_auth).replace("WPA2/WPA3-personal", changeTo_auth);
-				$("#amasonboarding_page").find("#wpa3_hint #auth_change_str").html(auth_change_str).attr("style","color:#FC0 !important;");
-				$("#amasonboarding_page").find("#wpa3_hint #wpa3FaqLink").attr("target", "_blank").attr("style","color:#FC0 !important;");
+				$("#amasonboarding_page").find("#wpa3_hint #auth_change_str").html(auth_change_str).attr("style","color:var(--wrt-badge-warning-color,#FC0) !important;");
+				$("#amasonboarding_page").find("#wpa3_hint #wpa3FaqLink").attr("target", "_blank").attr("style","color:var(--wrt-badge-warning-color,#FC0) !important;");
 				$("#amasonboarding_page").find("#wpa3_hint #wpa3FaqLink").attr("href", faq_href);
 			}
 			if(wps_flag){

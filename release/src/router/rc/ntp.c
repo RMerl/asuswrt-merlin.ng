@@ -256,7 +256,7 @@ int ntp_main(int argc, char *argv[])
 #endif
 			if(strcmp(server, DEFAULT_NTP_SERVER)) //customer setting
 			{
-				ret = doSystem("nslookup %s &> /dev/null", server);
+				ret = safe_do_system("nslookup %s", server);
 				if (ret == 0)
 				_eval(args, NULL, 0, &pid);
 				strlcpy(server, DEFAULT_NTP_SERVER, sizeof(server));
@@ -276,7 +276,7 @@ int ntp_main(int argc, char *argv[])
 				strlcpy(server, nvram_safe_get("ntp_server0"), sizeof(server));
 			}
 		} else {
-			ret = doSystem("nslookup %s &> /dev/null", server);
+			ret = safe_do_system("nslookup %s", server);
 			if (ret == 0)
 			_eval(args, NULL, 0, &pid);
 

@@ -15,21 +15,21 @@ body{
 	font-family: Arial, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
 }
 .wrapper{
-	background:url(images/New_ui/login_bg.png) #f5f5f5 no-repeat;
+	background:url(images/New_ui/login_bg.png) var(--surface-panel, #f5f5f5) no-repeat;
 	background-size: cover;
 	background-position: center 0%;
 	margin: 0px; 
 }
 .title_name {
 	font-size: 32pt;
-	color:#181818;
+	color:var(--wrt-text-color, #181818);
 }
 .title_text{
 	width:520px;
 }
 .prod_madelName{
 	font-size: 24pt;
-	color:#181818;
+	color:var(--wrt-text-color, #181818);
 	margin-top: 10px;
 }
 .login_img{
@@ -40,7 +40,7 @@ body{
 }
 .p1{
 	font-size: 16pt;
-	color: #4d4d4d;
+	color: var(--wrt-text-muted-color, #4d4d4d);
 	width: 480px;
 	line-height: 48pt;
 }
@@ -50,7 +50,7 @@ body{
 	transition: visibility 0s linear 0.218s,opacity 0.218s,background-color 0.218s;
 	width: 100%;
 	font-size: 20pt;
-	color:#fff;
+	color:var(--wrt-text-color,#FFFFFF);
 	text-align: center;
 	line-height:60px;
 	cursor:pointer;
@@ -62,7 +62,7 @@ body{
 	width: 480px;
 	border: 0;
 	height:25px;
-	color:#fff;
+	color:var(--wrt-text-color,#FFFFFF);
 	color:#000\9; /* IE6 IE7 IE8 */
 	font-size:28px
 }
@@ -72,7 +72,7 @@ body{
 	line-height:36px;
 	border-radius: 8px;
 	width: auto;
-	border: 1px solid #ccc;
+	border: 1px solid var(--border-default, #ccc);
 	color:#262626;
 	color:#FFF\9; /* IE6 IE7 IE8 */
 	font-size: 16pt;
@@ -134,7 +134,7 @@ li{
 	margin: 0 20px;
 }
 a{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FFCC00);
 }
 /*for mobile device*/
 @media screen and (max-width: 768px){

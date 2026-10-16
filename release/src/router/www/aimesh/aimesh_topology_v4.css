@@ -1,0 +1,1324 @@
+﻿@import "../css/wrt-ui-alias-tokens.css";
+@import "../css/svg-icon.css";
+:root,[data-asuswrt-color="light"]{
+	--img-topology_connect_quality: url(/images/New_ui/amesh/white_theme/topology_connect_quality.svg);
+	--img-topology_connect_quality_moca: url(/images/New_ui/amesh/white_theme/topology_connect_quality_moca.svg);
+	--img-topology_connect_quality_mlo: url(/images/New_ui/amesh/white_theme/topology_connect_quality_mlo.svg);
+	--img-topology_connect_quality_mlo_1: url(/images/New_ui/amesh/white_theme/topology_connect_quality_mlo_1.svg);
+}
+[data-asuswrt-color="dark"]{
+	--img-topology_connect_quality: url(/images/New_ui/amesh/white_theme/topology_connect_quality_dark.svg);
+	--img-topology_connect_quality_moca: url(/images/New_ui/amesh/white_theme/topology_connect_quality_moca_dark.svg);
+	--img-topology_connect_quality_mlo: url(/images/New_ui/amesh/white_theme/topology_connect_quality_mlo_dark.svg);
+	--img-topology_connect_quality_mlo_1: url(/images/New_ui/amesh/white_theme/topology_connect_quality_mlo_1_dark.svg);
+}
+
+#jstree::-webkit-scrollbar-track{
+	background-color: var(--scrollbar-track-bg);
+}
+#jstree::-webkit-scrollbar-thumb{
+	background-color: var(--wrt-scrollbar-thumb-color);
+}
+.jstree-default {
+	background: var(--wrt-card-bg);
+}
+.ui-state-default,
+.ui-widget-content .ui-state-default,
+.ui-widget-header .ui-state-default {
+	background: var(--brand-primary);
+	color: var(--brand-primary);
+}
+#port_status_content{
+	background: var(--wrt-card-surface-1-bg);
+	padding: 1rem 0;
+}
+.fronthaul_info{
+	padding: 0.675rem 0;
+}
+.info_right{
+	background-color: var(--wrt-card-bg);
+	color: var(--wrt-card-text-color);
+}
+.card_block_bg{
+	background: var(--wrt-card-surface-1-bg);
+	border: 1px solid var(--wrt-card-divider-color);
+	box-shadow: var(--wrt-card-shadow);
+	border-radius: var(--wrt-card-radius);
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+.icon_bg{
+	height: 200px;
+}
+.translucent_bg{
+	height: 200px;
+	border-radius: var(--wrt-card-radius) var(--wrt-card-radius) 0 0;
+}
+.topology_icon .product_icon_container{
+	border: 1px solid var(--wrt-border-primary);
+}
+.jstree-clicked .product_icon_container{
+	background: var(--wrt-badge-neutral-bg);
+	border: 1px solid transparent !important;
+	border-radius: var(--wrt-aura-border-radius);
+	box-shadow: 0 1px 4px var(--wrt-aura-shadow-color), 0 0 8px var(--wrt-aura-shadow-strong);
+}
+.jstree-clicked .product_icon_container::before{
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	padding: var(--wrt-aura-border-width);
+	background: conic-gradient(
+		from var(--wrt-aura-angle-rot, 135deg),
+		var(--gradient-accent-start) 0turn,
+		var(--gradient-accent-end) .5turn,
+		var(--gradient-accent-start) 1turn
+	);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	        mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	        mask-composite: exclude;
+	background-clip: padding-box;
+	pointer-events: none;
+	z-index: 0;
+	animation: wrtAuraBorderAngleRot var(--wrt-aura-anim-duration, 6s) linear infinite;
+}
+.product_icon_container.optimize{
+	background: linear-gradient(315deg, rgba(3, 200, 253, 0.00) -2.81%, #03C8FD 42.25%, #133ED4 67.78%, rgba(19, 62, 212, 0.00) 101.56%);
+	background-size: 200% 200%;
+	border: initial !important;
+}
+.custom_select input{
+	color: var(--wrt-dropdown-item-color);
+	background-color: transparent !important;
+	border: none !important;
+	padding: 0 !important;
+}
+.location_info_bg span.location_hint{
+	color: var(--wrt-badge-info-color);
+}
+.custom_pure_text{
+	border: 1px solid var(--wrt-dropdown-divider-color) !important;
+	border-radius: 4px !important;
+}
+.custom_select_selected, .custom_pure_text{
+	background-color: var(--wrt-dropdown-divider-color);
+}
+.custom_select_selected:after{
+	border-top: 2px solid var(--wrt-icon-active-color);
+	border-right: 2px solid var(--wrt-icon-active-color);
+}
+.custom_select_same_as_selected:after{
+	border-color: var(--wrt-icon-active-color);
+}
+.custom_select_items div, .custom_select_selected, .custom_pure_text{
+	color: var(--wrt-dropdown-item-color);
+	border: 1px solid var(--wrt-dropdown-divider-color);
+	border-color: transparent transparent var(--wrt-dropdown-divider-color) transparent;
+}
+.custom_select_selected{
+	border: 1px solid var(--wrt-dropdown-divider-color);
+}
+.custom_select_same_as_selected{
+	background-color: var(--wrt-dropdown-item-hover-bg);
+	color: var(--wrt-dropdown-item-selected-color) !important;
+}
+
+.custom_select_items {
+	background-color: var(--wrt-dropdown-bg);
+	box-shadow: 0px 3px 4px 0px rgb(0 0 0 / 14%), 0px 3px 3px -2px rgb(0 0 0 / 12%), 0px 1px 8px 0px rgb(0 0 0 / 20%);
+}
+.custom_select_items div:hover{
+	background-color: var(--wrt-dropdown-item-hover-bg);
+}
+.custom_select_items::-webkit-scrollbar-track,
+.poe_settings_item .dropdown_select::-webkit-scrollbar-track{
+	border: 4px solid var(--wrt-scrollbar-track-bg);
+	background-color: var(--wrt-scrollbar-thumb-color);
+}
+.custom_select_items::-webkit-scrollbar-thumb,
+.poe_settings_item .dropdown_select::-webkit-scrollbar-thumb{
+	background-color: var(--wrt-scrollbar-thumb-color);
+	border: 2px solid var(--wrt-card-bg);
+}
+.item_bg{
+	background-color: initial;
+	border-radius: var(--global-radius);
+}
+.item_space{
+	background-color: initial;
+}
+.item_bg.category{
+	background-color: var(--tab-nav-normal-card-bg-fill-color);
+}
+.rssi_title{
+	color: var(--wrt-text-primary);
+}
+.rssi_container .rssi_component{
+	background-color: var(--wrt-input-bg);
+	color: var(--tab-nav-text-active-color);
+}
+.rssi_container .rssi_component > span{
+	color: var(--wrt-brand-primary);
+}
+.bubble_icon{
+	background: initial !important;
+	background-color: var(--wrt-btn-icon-color) !important;
+	-webkit-mask-image: url(/images/New_ui/amesh/white_theme/cards_usage.svg) !important;
+	mask-image: url(/images/New_ui/amesh/white_theme/cards_usage.svg) !important;
+	-webkit-mask-repeat: no-repeat !important;
+	mask-repeat: no-repeat !important;
+}
+.bubble_icon.info {
+	-webkit-mask-position: -144px -112px !important;
+	mask-position: -144px -112px !important;
+	-webkit-mask-size: 700% !important;
+	mask-size: 700% !important;
+}
+/* mask-size defaults to auto (native 306x246) so these reuse the base sprite
+   coordinates from aimesh_topology.css directly. Without them the icon falls
+   back to mask-position 0 0 and shows a clipped corner of the sprite. */
+.bubble_icon.warn_red {
+	background-color: var(--status-msg-negative-strong, #f05e16) !important;
+	-webkit-mask-position: 5px -176px !important;
+	mask-position: 5px -176px !important;
+}
+.bubble_icon.warn_grey {
+	-webkit-mask-position: -41px -176px !important;
+	mask-position: -41px -176px !important;
+}
+.bubble_icon.more {
+	-webkit-mask-position: -87px -176px !important;
+	mask-position: -87px -176px !important;
+}
+.signal_hint_text{
+	color: var(--wrt-text-primary);
+}
+/* The location name field (#input_location, z-index:20) is absolutely
+   positioned on top of .custom_select_selected and covers the center of the
+   bar. For preset locations it is disabled, and a disabled input still hit-tests
+   as topmost while swallowing the click (no event dispatched, no bubbling), so
+   clicking the label text does nothing and only the arrow/icon edges toggle the
+   dropdown. Let clicks fall through to the toggle div while disabled; the field
+   only needs pointer events when it becomes editable ("Custom" location). */
+.custom_select input:disabled,
+.custom_select input[disabled]{
+	pointer-events: none;
+}
+.fw_version_title_bg{
+	color: var(--wrt-text-primary);
+}
+.fw_version_text{
+	color: var(--wrt-text-hyperlink-default-color);
+}
+.category_bg{
+	color: var(--wrt-tab-nav-text-normal-color);
+	background-image: none;
+	background-color: var(--tab-nav-normal-card-bg-fill-color);
+	border: 1px solid var(--wrt-tab-nav-border-color);
+	border-right-style: none;
+}
+.category_bg.clicked{
+	color: var(--wrt-tab-nav-text-active-color);
+	background-image: none;
+	outline: initial;
+}
+.category_bg.clicked:before{
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 4px;
+	/*background-color: var(--tab-nav-active-pin-fill-color);*/
+	border-bottom: 4px solid var(--wrt-brand-primary);
+	border-radius: 0 0 var(--wrt-card-radius) var(--wrt-card-radius);
+}
+
+.category_bg > div.client:before {
+	background-color: var(--icon-default);
+	background-position: center;
+	mask-image: url("/images/New_ui/amesh/white_theme/cards_usage.svg");
+	-webkit-mask-image: url("/images/New_ui/amesh/white_theme/cards_usage.svg");
+	mask-position: 5px -125.8px;
+}
+
+.category_bg > div.network:before {
+	background-color: var(--icon-default);
+	background-position: center;
+	mask-image: url("/images/New_ui/amesh/white_theme/cards_usage.svg");
+	-webkit-mask-image: url("/images/New_ui/amesh/white_theme/cards_usage.svg");
+	mask-position: -42px -78px;
+}
+
+.category_bg > div.manage:before {
+	background-color: var(--icon-default);
+	background-position: center;
+	mask-image: url("/images/New_ui/amesh/white_theme/cards_usage.svg");
+	-webkit-mask-image: url("/images/New_ui/amesh/white_theme/cards_usage.svg");
+	mask-position: -90px -78px;
+}
+
+.category_bg.clicked > div.client:before {
+	background-color: var(--icon-active);
+}
+
+.category_bg.clicked > div.network:before {
+	background-color: var(--icon-active);
+}
+
+.category_bg.clicked > div.manage:before {
+	background-color: var(--icon-active);
+}
+
+.category_bg > div:first-child:before{
+	background-image: none;
+	mask-repeat: no-repeat;
+	-webkit-mask-repeat: no-repeat;
+}
+.category_bg > div.iperf:before{
+	background: initial !important;
+	background-color: var(--icon-default) !important;
+	-webkit-mask-image: url(/images/New_ui/amesh/iperf_speed.svg) !important;
+	mask-image: url(/images/New_ui/amesh/iperf_speed.svg) !important;
+	-webkit-mask-size: 75% !important;
+	mask-size: 75% !important;
+	-webkit-mask-position: center !important;
+	mask-position: center !important;
+}
+.category_bg.clicked > div.iperf:before{
+	background-color: var(--icon-active) !important;
+	-webkit-mask-position: center !important;
+	mask-position: center !important;
+	-webkit-mask-size: 75% !important;
+	mask-size: 75% !important;
+}
+.connect_type_status_bg .as_backhaul_info > div{
+	color: var(--wrt-badge-error-color);
+}
+.connect_type_status_bg .as_backhaul_info .faq-link{
+	color: var(--wrt-brand-primary);
+}
+.connect_type_status_bg .uplink_type_title.great, .signal_text_bg.signal.great{
+	color: var(--status-quality-good);
+}
+.connect_type_status_bg .uplink_type_title.ok, .signal_text_bg.signal.ok{
+	color: var(--status-msg-positive-strong);
+}
+.connect_type_status_bg .uplink_type_title.disconnected, .signal_text_bg.signal.disconnected{
+	color: var(--tab-nav-text-active-color);
+}
+.connect_type_status_bg .uplink_type_ip, .connect_type_status_bg .uplink_type_mode_title{
+	color: var(--wrt-text-primary);
+}
+.connect_type_status_bg .uplink_type_mode_title{
+	color: var(--wrt-brand-primary);
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.moca{
+	background: url(/images/New_ui/amesh/signal_quality_moca.svg) no-repeat;
+}
+.wan_status_bg div.connect_icon_bg > div{
+	background: none;
+	background-color: var(--icon-default);
+	background-position: center;
+	mask-image: url("/images/New_ui/amesh/white_theme/cards_usage.svg");
+	-webkit-mask-image: url("/images/New_ui/amesh/white_theme/cards_usage.svg");
+	mask-repeat: no-repeat;
+	-webkit-mask-repeat: no-repeat;
+}
+.wan_status_bg div.connect_icon_bg > .router{
+	mask-position: -162px 6px;
+	right: 12px;
+	top: 6px;
+	background-color: var(--icon-default);
+}
+.wan_status_bg div.connect_icon_bg > .connect_line{
+	mask-position: -251px -6px;
+	right: 28px;
+	top: 62px;
+	background-color: var(--icon-default);
+}
+.wan_status_bg div.connect_icon_bg > .internet{
+	mask-position: 8px 0px;
+	background-color: var(--icon-default);
+}
+.wan_status_bg div.connect_icon_bg > .internet{
+	right: 88px;
+	top: 62px;
+}
+.wan_status_bg div.connect_icon_bg > .connect_status{
+	mask-position: -48px -224px;
+	right: 52px;
+	top: 86px;
+	width: 24px;
+	height: 24px;
+	background-color: var(--status-on);
+}
+.wan_status_bg div.connect_icon_bg.disconnected > .router,
+.wan_status_bg div.connect_icon_bg.standby > .router{
+	mask-position: -78px 6px;
+}
+.wan_status_bg div.connect_icon_bg.disconnected > .connect_status{
+	mask-position: 2px -224px;
+}
+.wan_status_bg div.connect_icon_bg.standby > .connect_status{
+	background: initial;
+	mask-image: none;
+	-webkit-mask-image: none;
+}
+.card_block_bg span.connect_title, span.connect_status{
+	color: var(--wrt-text-primary);
+}
+.card_block_bg span.connect_title:before{
+	content: "";
+    position: absolute;
+    left: -22px;
+    top: -12px;
+    width: 4px;
+    height: 45px;
+}
+.card_block_bg span.connect_title.horizontal_line:before{
+	border-left: 6px solid var(--brand-primary);
+	border-top: none;
+}
+
+.card_block_bg span.connect_title.vertical.traffic:before{
+	border-left: 3px solid var(--brand-primary);
+}
+.wan_status_bg span.connect_status.connected{
+	color: var(--status-on);
+}
+.wan_connect_info > div:first-child:before, .common_separate_bg > div:nth-child(2):before{/*vertical_line*/
+	border-left: 1px solid var(--wrt-divider-color);
+}
+.wan_connect_info .connect_info_title{
+	color: var(--wrt-card-meta-color);
+}
+.wan_connect_info .connect_info_text{
+	color: var(--wrt-text-color);
+}
+.separation_line p{
+	color: var(--wrt-text-color);
+	background: var(--body-bg-color);
+}
+.fronthaul_info .separation_line p:before{
+	background: initial;
+	width: 12px;
+	height: 12px;
+	top: 24px;
+	-moz-transform:rotate(-45deg);
+	-webkit-transform:rotate(-45deg);
+	-o-transform:rotate(-45deg);
+	transform:rotate(-45deg);
+	border-top: 2px solid var(--wrt-icon-active-color);
+	border-right: 2px solid var(--wrt-icon-active-color);
+}
+.fronthaul_info .separation_line p.hide:before{
+	-moz-transform: rotate(135deg);
+	-webkit-transform: rotate(135deg);
+	-o-transform: rotate(135deg);
+	transform: rotate(135deg);
+}
+.common_title{
+	color: var(--text-primary);
+}
+.common_title.white{
+	color: var(--text-primary);
+}
+.common_content_bg{
+	background: var(--wrt-input-bg);
+}
+.common_content_text{
+	color: var(--wrt-input-text-color);
+}
+.common_title_content_bg{
+	color: var(--text-primary);
+}
+.common_title_content_bg > div.content_bg{
+	background: var(--wrt-input-bg);
+	color: var(--wrt-input-text-color);
+}
+.common_separate_bg span{
+	color: var(--text-secondary);
+}
+.common_separate_bg span.transmit_value{
+	color: var(--text-highlight-color);
+}
+.common_separate_bg span.transmit_value.green{
+	color: var(--text-highlight-color);
+}
+.common_separate_bg.horizontal_line:before,
+.item_bg.signal:before,.item_bg.location:before,
+.manage_settings_bg > div.horizontal_line:before{
+	border-bottom: 1px solid var(--wrt-card-divider-color);
+}
+.backhaul_info .backhaul_bg{
+	background: var(--wrt-card-bg);
+}
+.backhaul_info .common_content_bg, .backhaul_info .common_title_content_bg .content_bg{
+	background: var(--wrt-card-surface-1-bg);
+}
+.manage_switch_led .switch,
+.manage_switch_wifi .switch,
+.manage_switch_led_night_mode .switch,
+.poe_settings_item .switch{
+	box-shadow: inset 0 1px 0 0 rgba(0, 0, 0, 0.1);
+	width: 45px;
+	height: var(--wrt-switch-height);
+	position: relative;
+	display: inline-block;
+	-webkit-transition: all var(--wrt-switch-transition-duration) var(--wrt-switch-transition-timing-function);
+	transition: all var(--wrt-switch-transition-duration) var(--wrt-switch-transition-timing-function);
+	cursor: pointer;
+	border-radius: var(--wrt-switch-radius);
+}
+.manage_switch_led .switch.off,
+.manage_switch_wifi .switch.off,
+.manage_switch_led_night_mode .switch.off,
+.poe_settings_item .switch.off{
+	background: var(--wrt-switch-track-bg-off);
+	border: 1px solid var(--wrt-switch-track-border-off);
+	border-radius: var(--wrt-switch-radius);
+}
+.manage_switch_led .switch.on,
+.manage_switch_wifi .switch.on,
+.manage_switch_led_night_mode .switch.on,
+.poe_settings_item .switch.on{
+	background: var(--switch-btn-on-normal-fill-color);
+	border: 1.5px solid var(--switch-btn-on-normal-ellipse-stroke-color) ;
+}
+.manage_switch_led .switch.on::after,
+.manage_switch_wifi .switch.on::after,
+.manage_switch_led_night_mode .switch.on::after,
+.poe_settings_item .switch.on::after,
+.manage_switch_led .switch.off::after,
+.manage_switch_wifi .switch.off::after,
+.manage_switch_led_night_mode .switch.off::after,
+.poe_settings_item .switch.off::after {
+	font-family: "Roboto";
+	font-size: 11px;
+	font-weight: bold;
+	color: var(--switch-btn-on-normal-text-color);
+	transition: all 0.6s;
+	position: absolute;
+	opacity: 1;
+	height: 100%;
+	line-height: 100%;
+	display: flex;
+	align-items: center;
+}
+.manage_switch_led .switch.on::after,
+.manage_switch_wifi .switch.on::after,
+.manage_switch_led_night_mode .switch.on::after,
+.poe_settings_item .switch.on::after {
+	left: 4px;
+	content: "ON";
+}
+.manage_switch_led .switch.off::after,
+.manage_switch_wifi .switch.off::after,
+.manage_switch_led_night_mode .switch.off::after,
+.poe_settings_item .switch.off::after {
+	content: "OFF";
+	right: 4px;
+}
+.manage_switch_led .switch.on.hide-text::after,
+.manage_switch_wifi .switch.on.hide-text::after,
+.manage_switch_led_night_mode .switch.on.hide-text::after,
+.poe_settings_item .switch.on.hide-text::after,
+.manage_switch_led .switch.off.hide-text::after,
+.manage_switch_wifi .switch.off.hide-text::after,
+.manage_switch_led_night_mode .switch.off.hide-text::after,
+.poe_settings_item .switch.off.hide-text::after {
+	opacity: 0;
+	transition: opacity 0s;
+}
+.manage_switch_led .switch:before,
+.manage_switch_wifi .switch:before,
+.manage_switch_led_night_mode .switch:before,
+.poe_settings_item .switch:before{
+	border-radius: var(--wrt-switch-thumb-radius);
+	display: block;
+	position: absolute;
+	content: "";
+	height: var(--wrt-switch-thumb-size);
+	width: var(--wrt-switch-thumb-size);
+	left: var(--wrt-switch-padding);
+	top: var(--wrt-switch-padding);
+	-webkit-transition: var(--wrt-switch-transition-duration) var(--wrt-switch-transition-timing-function);
+	transition: all var(--wrt-switch-transition-duration) var(--wrt-switch-transition-timing-function);
+	-webkit-transition-delay: 0.01s;
+	transition-delay: 0.01s;
+	background: var(--wrt-switch-thumb-bg-off);
+}
+.manage_switch_led .switch.on:before,
+.manage_switch_wifi .switch.on:before,
+.manage_switch_led_night_mode .switch.on:before,
+.poe_settings_item .switch.on:before{
+	background: var(--switch-btn-on-normal-ellipse-fill-color);
+	border-radius: var(--radius-lg);
+	-webkit-transform: translateX(24px);
+	-ms-transform: translateX(24px);
+	transform: translateX(24px);
+}
+.manage_switch_led .switch.off:before,
+.manage_switch_wifi .switch.off:before,
+.manage_switch_led_night_mode .switch.off:before,
+.poe_settings_item .switch.off:before{
+	background: var(--wrt-switch-thumb-bg-off);
+	-webkit-transform: translateX(0);
+	-ms-transform: translateX(0);
+	transform: translateX(0);
+}
+.manage_common_title{
+	color: var(--text-primary);
+}
+.manage_channel_plan .manage_common_title{
+	color: var(--text-primary) !important;
+}
+.manage_channel_plan .manage_common_title.wl_band_title{
+	color: var(--brand-primary) !important;
+	background-color: initial;
+}
+.manage_channel_plan .manage_common_title > span{
+	color: var(--brand-primary);
+}
+.manage_channel_plan .manage_sub_item_bg > div:before,
+.poe_settings_item:before{
+	border-top: 1px solid var(--wrt-divider-color);
+}
+.manage_settings_bg .dropdown_item_bg .dropdown_select,
+.poe_settings_item .dropdown_select{
+	background: var(--wrt-card-bg);
+	color: var(--wrt-dropdown-item-color);
+}
+.manage_ra_rssi .textInput{
+	background: var(--wrt-input-bg);
+	color: var(--wrt-input-text-color);
+}
+.manage_settings_bg .sub_item_bg .manage_sub_item_bg > div .manage_common_title,
+.manage_ra_rssi .manage_sub_item_bg > div{
+	color: var(--text-caption-color);
+}
+.manage_settings_bg .sub_item_bg .manage_sub_item_bg > div:before{
+	border-top: 1px solid var(--wrt-divider-color);
+}
+.manage_ra_rssi .manage_sub_item_bg > div:before{
+	border-bottom: 1px solid var(--wrt-divider-color);
+}
+.manage_ra_rssi .manage_sub_item_bg > div.desc_cntr:before{
+	border-top: 1px solid var(--wrt-divider-color) !important;
+}
+.manage_disconnected{
+	color: var(--wrt-badge-error-color);
+}
+.manage_disconnected:before{
+	border-bottom: 1px solid var(--wrt-divider-color);
+}
+.managment_icon{
+	background: initial !important;
+	background-color: var(--wrt-btn-icon-color) !important;
+	-webkit-mask-image: url(/images/New_ui/amesh/white_theme/managment_icon.svg) !important;
+	mask-image: url(/images/New_ui/amesh/white_theme/managment_icon.svg) !important;
+	-webkit-mask-repeat: no-repeat !important;
+	mask-repeat: no-repeat !important;
+	-webkit-mask-size: 500% !important;
+	mask-size: 500% !important;
+}
+.managment_icon.reconnect_icon{
+	-webkit-mask-position: 2px -42px !important;
+	mask-position: 2px -42px !important;
+}
+.managment_icon.reboot_icon{
+	-webkit-mask-position: 2px -96px !important;
+	mask-position: 2px -96px !important;
+}
+.managment_icon.trash_icon{
+	-webkit-mask-position: 3px -151px !important;
+	mask-position: 3px -151px !important;
+}
+.managment_icon.preferable_backhaul_icon{
+	-webkit-mask-position: 2px -206px !important;
+	mask-position: 2px -206px !important;
+}
+.preferable_backhaul_text{
+	color: var(--primary-60);
+}
+.arrow_icon{
+	border-top: 3px solid var(--wrt-tab-nav-text-active-color);
+	border-right: 3px solid var(--wrt-tab-nav-text-active-color);
+}
+.client_num_bg,
+.newOB_container .newOB_title_bg{
+	color: var(--wrt-text-primary);
+}
+.client_num_bg div.right span{
+	color: var(--wrt-text-highlight-color);
+}
+.client_num_bg div.left span:before,
+.newOB_title_bg span:before{
+	border-top: 3px solid var(--wrt-brand-primary);
+}
+.client_tab_bg{
+	background: var(--wrt-segment-fill-bg);
+	border: 1px solid var(--wrt-segment-fill-border);
+	border-radius: var(--wrt-segment-radius);
+	padding: var(--wrt-segment-padding-y) var(--wrt-segment-padding-x);
+	display: inline-flex;
+	gap: var(--wrt-segment-gap-y) var(--wrt-segment-gap-x);
+	justify-content: center;
+	margin: 0 auto;
+}
+.client_tab_bg div{
+	color: var(--wrt-segment-fill-color);
+	background: var(--wrt-segment-fill-bg);
+	border-radius: var(--wrt-segment-item-radius);
+	padding: 0 var(--wrt-segment-item-padding-x);
+	font-size: var(--wrt-segment-item-font-size);
+	border-right: 1px solid var(--wrt-segment-fill-border);
+}
+.client_tab_bg div:last-child{
+	border-radius: var(--wrt-segment-item-radius);
+	border-right: 1px solid transparent;
+}
+.client_tab_bg div.clicked{
+	color: var(--wrt-segment-fill-selected-color) !important;
+	background-image: initial;
+	background-color: var(--wrt-segment-fill-selected-bg);
+	outline: none;
+	border-color: var(--wrt-segment-fill-selected-border);
+	box-shadow: 0px 0px 2px 0px rgba(var(--brand-primary-rgb), 0.6), 0px 0px 4px 4px var(--wrt-shadow-primary), 0px 0px 8px 0px rgba(0,0,0,0.2);
+	border-radius: var(--wrt-segment-item-radius);
+}
+.client_list_bg .each_client_bg:before{
+	border-bottom: 1px solid var(--wrt-card-divider-color);
+}
+.client_list_bg .client_icon_bg.default_icon, .client_list_bg .client_icon_bg.user_icon{
+	background-color: var(--wrt-badge-neutral-bg);
+	border: 1px solid var(--wrt-badge-neutral-border);
+}
+.client_list_bg .client_action_bg > span{
+	background-color: transparent;
+	border: 1px solid var(--wrt-btn-default-border);
+	background-image: none;
+	position: relative;
+}
+.client_list_bg .client_action_bg > span{
+	cursor: pointer;
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	margin-left: 6px;
+	border-radius: 50%;
+}
+.client_list_bg .client_action_bg > span::after{
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 24px;
+	height: 24px;
+	background-color: var(--wrt-btn-icon-color);
+	mask-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
+	-webkit-mask-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
+	mask-repeat: no-repeat;
+	-webkit-mask-repeat: no-repeat;
+	mask-position: 0 0;
+	-webkit-mask-position: 0 0;
+}
+.client_list_bg .client_action_bg > span.unbind::after{
+	mask-position: -369.5px 1px;
+	-webkit-mask-position: -369.5px 1px;
+}
+.client_list_bg .client_action_bg > span.reconn::after{
+	mask-position: -332.5px 1px;
+	-webkit-mask-position: -332.5px 1px;
+}
+.client_list_bg .client_action_bg > span.bind::after{
+	mask-position: -295.5px 1px;
+	-webkit-mask-position: -295.5px 1px;
+}
+.client_list_bg .client_action_bg > span:hover{
+	background-color: var(--wrt-btn-default-hover-bg);
+	border: 1px solid var(--wrt-btn-default-hover-border);
+	box-shadow: 0px 3px 4px 0px rgb(0 0 0 / 14%), 0px 3px 3px -2px rgb(0 0 0 / 12%), 0px 1px 8px 0px rgb(0 0 0 / 20%);
+}
+.client_list_bg .client_action_bg > span.unbind{
+	border: 1px solid var(--wrt-btn-default-hover-border);
+	box-shadow: 0px 3px 4px 0px rgb(0 0 0 / 14%), 0px 3px 3px -2px rgb(0 0 0 / 12%), 0px 1px 8px 0px rgb(0 0 0 / 20%);
+}
+.client_list_bg .client_content_bg > .client_content_name{
+	color: var(--wrt-text-primary);
+}
+.client_list_bg .client_content_bg > .client_content_name.offline, .client_list_bg .client_content_bg > .client_content_mac_ip.offline{
+	color: var(--wrt-text-secondary);
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon{
+	background-image: none;
+	mask-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
+	-webkit-mask-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
+	mask-repeat: no-repeat;
+	-webkit-mask-repeat: no-repeat;
+	mask-size: contain;
+	-webkit-mask-size: contain;
+	background-color: var(--brand-color);
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.mlo{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_mlo.svg);
+	background-size: 110%;
+	background-position: -1px -2px;
+}
+.client_list_bg .client_content_bg > .client_content_mac_ip{
+	color: var(--wrt-text-secondary);
+}
+.client_list_bg .client_content_bg > .client_content_mac_ip > div:not(:first-child):before{
+	border-left: 1px solid var(--wrt-divider-color);
+}
+.client_list_bg .no_client_hint,
+.newOB_list_bg .no_client_hint{
+	color: var(--wrt-text-secondary);
+}
+/* icon with wifi-band*/
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wired{
+	width: 20px;
+	height: 20px;
+	mask-image: var(--icon-lan);
+	-webkit-mask-image: var(--icon-lan);
+	mask-repeat: no-repeat;
+	-webkit-mask-repeat: no-repeat;
+	mask-size: contain;
+	-webkit-mask-size: contain;
+	background-color: var(--brand-color);
+	mask-position: center center;
+	-webkit-mask-position: center center;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_2g{
+	width: 20px;
+	height: 20px;
+	display: inline-block;
+	/* 以兩層背景作為顏色來源（Text on top → WiFi below） */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 15px 9px, 100% 100%;
+	background-position: 3.4px 12.4px, center center;
+	background-repeat: no-repeat, no-repeat;
+	/* 兩層 mask 對應兩層背景（文字在上、WiFi 在下） */
+	-webkit-mask-image: var(--icon-band-text-2G), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-2G), var(--icon-wifi);
+	-webkit-mask-size: 15px 9px, 100% 100%;
+	        mask-size: 15px 9px, 100% 100%;
+	-webkit-mask-position: 3.4px 12.4px, center center;
+	        mask-position: 3.4px 12.4px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g{
+	width: 20px;
+	height: 20px;
+	display: inline-block;
+	/* Text on top → WiFi below */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 13px 9px, 100% 100%;
+	background-position: 3.4px 8px, center center;
+	background-repeat: no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-band-text-5G), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-5G), var(--icon-wifi);
+	-webkit-mask-size: 13px 9px, 100% 100%;
+	        mask-size: 13px 9px, 100% 100%;
+	-webkit-mask-position: 3.4px 10px, center center;
+	        mask-position: 3.4px 10px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g_2{
+	background-position-x: -164px;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g{
+	width: 20px;
+	height: 20px;
+	display: inline-block;
+	/* Text on top → WiFi below */
+	background-image:
+		linear-gradient(var(--text-primary), var(--text-primary)),
+		linear-gradient(var(--brand-color), var(--brand-color));
+	background-size: 13px 9px, 100% 100%;
+	background-position: 3.4px 8px, center center;
+	background-repeat: no-repeat, no-repeat;
+	-webkit-mask-image: var(--icon-band-text-6G), var(--icon-wifi);
+	        mask-image: var(--icon-band-text-6G), var(--icon-wifi);
+	-webkit-mask-size: 13px 9px, 100% 100%;
+	        mask-size: 13px 9px, 100% 100%;
+	-webkit-mask-position: 3.4px 10px, center center;
+	        mask-position: 3.4px 10px, center center;
+	-webkit-mask-repeat: no-repeat, no-repeat;
+	        mask-repeat: no-repeat, no-repeat;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g_1{
+	background-position: 1.5px -33px;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g_2{
+	background-position: -32px -33px;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.plc{
+	background-position-x: -230px;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.mlo{
+	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_mlo.svg);
+	background-size: 110%;
+	background-position: -1px -2px;
+	mask-image: none;
+	-webkit-mask-image: none;
+}
+
+.popup_hint_bg{
+	background: var(--wrt-popover-bg);
+	border: 1px solid var(--wrt-popover-border);
+	color: var(--wrt-popover-color);
+}
+.popup_hint_bg .notice_text.hint{
+	color: var(--hint-text-el10-warning);
+}
+.popup_hint_bg .notice_text_blue{
+	color: var(--primary-60);
+}
+.popup_hint_bg .horizontal_line:before{
+	border-bottom: 1px solid var(--wrt-card-divider-color);
+}
+.popup_hint_bg .notice_text_location{
+	color: var(--hint-text-el10-warning);
+}
+.popup_hint_bg .action_more_bg:before{
+	border-top: 1px solid var(--wrt-card-divider-color);
+}
+.popup_hint_bg .action_more_bg > span{
+	color: var(--primary-60);
+}
+.hover_pop_hint_bg{
+	background: var(--wrt-popover-bg);
+	border: 1px solid var(--wrt-popover-border);
+	color: var(--wrt-popover-color);
+}
+.hover_pop_hint_bg.conn_priority_icon > span.conn_priority_title:before{
+	background-color: var(--tab-nav-text-active-color);
+}
+.hover_pop_hint_bg.conn_priority_icon > span.conn_priority_content, .hover_pop_hint_bg.prefer_ap_icon > span.prefer_ap_content{
+	color: var(--wrt-text-color);
+}
+.hover_pop_hint_bg.conn_priority_icon > span.conn_priority_content.text_yellow{
+	color: var(--wrt-badge-warning-color);
+}
+.hover_pop_hint_bg.node_feature_notice .list_item, .hover_pop_hint_bg.prefer_ap_icon .list_item{
+	color: var(--primary-60);
+}
+.hover_pop_hint_bg.prefer_ap_icon .list_item{
+	color: var(--primary-60);
+}
+.hover_pop_hint:hover::before,
+.hover_pop_hint:hover::after{
+	content: '';
+	position: absolute;
+	width: 0;
+	height: 0;
+	border: 13px solid transparent;
+	border-bottom-color: var(--wrt-popover-border);
+	z-index: 510;
+	border-top: 0;
+	top: 23px;
+	left: 0px;
+}
+.hover_pop_hint:hover::after{
+	border-bottom-color: var(--wrt-popover-bg);
+	top: 25px;
+}
+.hover_pop_hint.node_feature_notice:hover::before,
+.hover_pop_hint.node_feature_notice:hover::after{
+	right: -3px;
+	left: 0px;
+	top: 19px;
+}
+.hover_pop_hint.node_feature_notice:hover::after{
+	top: 20px;
+}
+.hover_pop_hint.conn_priority_icon:hover::before, .hover_pop_hint.conn_priority_icon:hover::after,
+.hover_pop_hint.prefer_ap_icon:hover::before, .hover_pop_hint.prefer_ap_icon:hover::after,
+.hover_pop_hint.channel_plan_icon:hover::before, .hover_pop_hint.channel_plan_icon:hover::after{
+	top: 5px;
+	left: -15px;
+	-o-transform: rotate(90deg);
+	-ms-transform: rotate(90deg);
+	-moz-transform: rotate(90deg);
+	-webkit-transform: rotate(90deg);
+	transform: rotate(90deg);
+}
+.hover_pop_hint.conn_priority_icon:hover::after,
+.hover_pop_hint.prefer_ap_icon:hover::after,
+.hover_pop_hint.channel_plan_icon:hover::after{
+	left: -18px;
+}
+.hover_pop_hint.icon_obresult:hover::before{
+	top: 30px;
+	right: 3px;
+}
+.hover_pop_hint.icon_obresult:hover::after{
+	top: 31px;
+	right: 3px;
+	left: initial;
+}
+.hover_pop_hint_bg .amesh_device_info{
+	color: var(--primary-60);
+}
+.jstree-anchor:before {
+	background-image: var(--img-topology_connect_quality);
+}
+.jstree-anchor.moca:before {
+	background-image: var(--img-topology_connect_quality_moca);
+}
+.jstree-anchor.mlo:before {
+	background-image: var(--img-topology_connect_quality_mlo);
+}
+.jstree-default .jstree-hovered {
+	background: initial;
+	box-shadow: initial;
+}
+.jstree-default .jstree-clicked {
+	background: initial;
+}
+/*
+.jstree-default .jstree-wholerow-hovered {
+	background: initial;
+	box-shadow: initial;
+}
+.jstree-default .jstree-wholerow-clicked {
+	background: initial;
+	box-shadow: -3px 0 0 0 var(--primary-50), 0 2px 0 0 rgba(0,0,0,0);
+}
+*/
+.jstree-default .jstree-wholerow-clicked:before{
+	background: var(--primary-50);
+}
+.jstree-default .jstree-node:before{
+	background: var(--img-topology_connect_quality);
+}
+.jstree-default .jstree-node.moca:before{
+	background: var(--img-topology_connect_quality_moca);
+}
+.jstree-default .jstree-node.mlo:before{
+	background: var(--img-topology_connect_quality_mlo_1);
+}
+.topology_node_info > div{
+	color: var(--wrt-text-color);
+}
+.topology_node_info > div:nth-child(2){
+	color: var(--wrt-text-primary);
+}
+.topology_node_info > div:nth-child(3){
+	color: var(--wrt-text-secondary);
+}
+.topology_node_info > div:nth-child(3) > span:nth-child(2){
+	color: var(--wrt-brand-primary);
+}
+.node_btn_control:before{
+	border-top: 1px solid var(--wrt-card-divider-color);
+}
+.node_btn_control > div{
+	background-image: initial;
+	background: var(--wrt-btn-default-bg);
+	border: 1px solid var(--wrt-btn-default-border);
+	box-shadow: initial;
+	color: var(--wrt-btn-default-color);
+}
+.node_btn_control > div:hover{
+	background: var(--wrt-btn-default-hover-bg);
+	color: var(--wrt-btn-default-hover-color);
+	border-color: var(--wrt-btn-default-hover-border);
+}
+.node_btn_control > div:active{
+	background: var(--wrt-btn-default-active-bg);
+	color: var(--wrt-btn-default-active-color);
+	border-color: var(--wrt-btn-default-active-border);
+}
+.node_btn_control > div[disabled],
+.node_btn_control > div.disabled{
+	background: var(--wrt-btn-default-disabled-bg);
+	color: var(--wrt-btn-default-disabled-color);
+	border-color: var(--wrt-btn-default-disabled-border);
+	pointer-events: none;
+	opacity: .7;
+}
+.node_btn_control > div > span.refresh_icon:before{
+	background: url(/images/New_ui/amesh/white_theme/client_control.svg) no-repeat;
+}
+[data-asuswrt-color="dark"] .node_btn_control > div > span.refresh_icon:before{
+	filter: invert(1);
+}
+
+.connect_info_bg:before{
+	border-top: 1px solid var(--wrt-card-divider-color);
+}
+.connect_line_info_icon{
+	background: var(--wrt-card-bg);
+	background-image: url(/images/New_ui/amesh/white_theme/cards_usage.svg);
+}
+.connect_line_info_bg .connect_line{
+	background: var(--wrt-card-surface-1-bg);
+}
+.connect_line_info_bg .connect_line:before{
+	background-image: var(--img-topology_connect_quality);
+}
+.connect_line_info_bg .connect_line.moca:before{
+	background-image: var(--img-topology_connect_quality_moca);
+}
+.connect_line_info_bg .connect_line.mlo:before{
+	background-image: var(--img-topology_connect_quality_mlo);
+}
+.aimesh_tab{
+	color: var(--wrt-text-color);
+}
+.aimesh_tab > span.clicked:before{
+	border-bottom: 2px solid var(--primary-50);
+}
+.splitLine{
+	background: var(--wrt-divider-color);
+}
+.port_status_bg:before{
+	border-bottom: 1px solid var(--wrt-divider-color);
+}
+.port_status_bg .label_W_bg:before{
+	border-bottom: 1px solid var(--wrt-divider-color);
+}
+.port_status_bg .port_icon,
+.port_status_bg .port_icon .wan_icon,
+.port_status_bg .label_W_bg .port_icon:before,
+.poe_settings_item .port_icon{
+	background-image: url(/images/New_ui/amesh/white_theme/port_status.svg);
+}
+.port_status_icon_desc > div.poe_en:after,
+.port_status_icon_desc > div.poe_dis:after{
+	border: 2px solid #FFFFFF;
+}
+.port_status_bg .port_icon.poe_port:after,
+.poe_settings_item .port_icon:after{
+	border: 3px solid #FFFFFF;
+}
+.port_status_icon_desc > div.conn:before{
+	background-color: #10B981;
+}
+.port_status_icon_desc > div.warn:before, .port_status_notice_item.warn:before{
+	background-color: #F05E16;
+}
+.port_status_icon_desc > div.unplug:before{
+	background-color: #999999;
+}
+.iperf_title{
+    color: var(--wrt-tab-nav-text-active-color);
+}
+.iperf_GO{
+	border: 1px solid var(--wrt-brand-primary);
+	color: var(--wrt-brand-primary);
+}
+.iperf_GO:hover{
+	background-color: var(--wrt-brand-primary);
+}
+.iperf_content_field{
+	border-bottom: 1px solid var(--wrt-card-divider-color);
+}
+.iperf_testing{
+	border: 1px solid var(--wrt-brand-primary);
+	background-color: var(--wrt-brand-primary);
+}
+.iperf_dmac{
+	color: #777;
+}
+.text_link{
+	color: var(--wrt-btn-link-color) !important;
+}
+.text_emphasize{
+	color: #EF4444 !important;
+}
+.MoCA_node_container:not(:last-child):before{
+	border-bottom: 1px solid var(--wrt-divider-color);
+}
+.MoCA_node_sub_info > div:not(:first-child):before{
+	border-left: 1px solid var(--wrt-divider-color);
+}
+.MoCA_node_sub_info > div{
+	color: var(--switch-menu-option-selected-text-color);
+	text-shadow: initial;
+}
+.MoCA_node_container .MoCA_PHY_rate.great{
+	color: #10B981;
+}
+.MoCA_node_container .MoCA_PHY_rate.weak{
+	color: #F05E16;
+}
+.poe_port_info_container .poe_port_info:not(:first-child):before{
+	border-left: 2px solid var(--wrt-divider-color);
+}
+.poe_port_info_container,
+.poe_settings_container{
+	color: var(--tab-nav-text-active-color);
+}
+.tx_power_container{
+	color: var(--primary-60);
+}
+.tx_power_container > div:not(:first-child):before{
+	border-right: 1px solid #FFFFFF;
+}
+.device_icon_container .device_icon{
+	background-color: #B3B3B3;
+	box-shadow: initial;
+}
+.device_info_container .main_info{
+	color: var(--wrt-tab-nav-text-active-color);
+}
+.device_info_container .sub_info{
+	color: var(--wrt-dropdown-item-color);
+}
+.device_info_container .device_connect_icon{
+	background-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
+}
+.icon_checkbox{
+	border: 1px solid #818181;
+}
+.icon_checkbox.closed{
+	background: #DCDCDC;
+}
+.icon_checkbox.closed:before,
+.icon_checkbox.closed:after{
+	background-color: #818181;
+}
+.icon_checkbox.clicked.disabled{
+	border: 1px solid #818181;
+	background: #DCDCDC;
+}
+.icon_checkbox.clicked.disabled:before{
+	border-top: 2px solid #818181;
+	border-right: 2px solid #818181;
+}
+.loadingAnimation{
+	border-color: transparent var(--tab-nav-text-active-color) transparent var(--tab-nav-text-active-color);
+}
+.processText{
+	color: var(--tab-nav-text-active-color);
+}
+.separation_line i{
+	background: var(--divide-stroke-color-default);
+}
+[data-asuswrt-color="light"] .mac_info{
+	color: var(--text-invert);
+}
+[data-asuswrt-color="dark"] .mac_info{
+	color: var(--text-primary);
+}
+.mac_info :first-child{
+	border-right: 1px solid var(--border-default);
+}
+.button_gen{
+	color: var();
+}
+.location_dropdown_icon:before {
+	mask-image: url(/images/New_ui/amesh/location_dropdown_active.svg);
+    mask-size: 850%;
+	background-image: none!important;
+	background-position: unset!important;
+	background-repeat: no-repeat;
+	background-size: unset;
+    background-color: var(--wrt-dropdown-item-icon-normal-color);
+}
+.location_dropdown_icon.selected:before{
+	background-color: var(--wrt-dropdown-item-icon-active-color);
+}
+.location_dropdown_icon.Home:before, .location_dropdown_icon.selected.Home:before, .topology_icon.Home:before{
+	mask-position: 0% 0%;
+}
+.location_dropdown_icon.Living_Room:before, .location_dropdown_icon.selected.Living_Room:before, .topology_icon.Living_Room:before{
+	mask-position: 0% 20%;
+}
+.location_dropdown_icon.Dining_Room:before, .location_dropdown_icon.selected.Dining_Room:before, .topology_icon.Dining_Room:before{
+	mask-position: 0% 40%;
+}
+.location_dropdown_icon.Kitchen:before, .location_dropdown_icon.selected.Kitchen:before, .topology_icon.Kitchen:before{
+	mask-position: 0% 60%;
+}
+.location_dropdown_icon.Bedroom:before, .location_dropdown_icon.selected.Bedroom:before, .topology_icon.Bedroom:before{
+	mask-position: 16.5% 0%;
+}
+.location_dropdown_icon.Master_Bedroom:before, .location_dropdown_icon.selected.Master_Bedroom:before, .topology_icon.Master_Bedroom:before{
+	mask-position: 16.5% 20%;
+}
+.location_dropdown_icon.Kids_Room:before, .location_dropdown_icon.selected.Kids_Room:before, .topology_icon.Kids_Room:before{
+	mask-position: 16.5% 40%;
+}
+.location_dropdown_icon.Guest_Room:before, .location_dropdown_icon.selected.Guest_Room:before, .topology_icon.Guest_Room:before{
+	mask-position: 16.5% 59%;
+}
+.location_dropdown_icon.Study_Room:before, .location_dropdown_icon.selected.Study_Room:before, .topology_icon.Study_Room:before{
+	mask-position: 16.5% 80%;
+}
+.location_dropdown_icon.Walk-in_Closet:before, .location_dropdown_icon.selected.Walk-in_Closet:before, .topology_icon.Walk-in_Closet:before{
+	mask-position: 16.5% 100%;
+}
+.location_dropdown_icon.Bathroom:before, .location_dropdown_icon.selected.Bathroom:before, .topology_icon.Bathroom:before{
+	mask-position: 33.5% 0%;
+}
+.location_dropdown_icon.Office:before, .location_dropdown_icon.selected.Office:before, .topology_icon.Office:before{
+	mask-position: 33.5% 20%;
+}
+.location_dropdown_icon.Meeting_Room:before, .location_dropdown_icon.selected.Meeting_Room:before, .topology_icon.Meeting_Room:before{
+	mask-position: 33.5% 40%;
+}
+.location_dropdown_icon.Hallway:before, .location_dropdown_icon.selected.Hallway:before, .topology_icon.Hallway:before{
+	mask-position: 50% 0%;
+}
+.location_dropdown_icon.Hall:before, .location_dropdown_icon.selected.Hall:before, .topology_icon.Hall:before{
+	mask-position: 50% 20%;
+}
+.location_dropdown_icon.Stairwell:before, .location_dropdown_icon.selected.Stairwell:before, .topology_icon.Stairwell:before{
+	mask-position: 50% 40%;
+}
+.location_dropdown_icon.Third_Floor:before, .location_dropdown_icon.selected.Third_Floor:before, .topology_icon.Third_Floor:before{
+	mask-position: 66.5% 0%;
+}
+.location_dropdown_icon.Second_Floor:before, .location_dropdown_icon.selected.Second_Floor:before, .topology_icon.Second_Floor:before{
+	mask-position: 66.5% 20%;
+}
+.location_dropdown_icon.First_Floor:before, .location_dropdown_icon.selected.First_Floor:before, .topology_icon.First_Floor:before{
+	mask-position: 66.5% 79%;
+}
+.location_dropdown_icon.Attic:before, .location_dropdown_icon.selected.Attic:before, .topology_icon.Attic:before{
+	mask-position: 66.5% 40%;
+}
+.location_dropdown_icon.Basement:before, .location_dropdown_icon.selected.Basement:before, .topology_icon.Basement:before{
+	mask-position: 66.5% 59%;
+}
+.location_dropdown_icon.Storage:before, .location_dropdown_icon.selected.Storage:before, .topology_icon.Storage:before{
+	mask-position: 83.5% 0%;
+}
+.location_dropdown_icon.Balcony:before, .location_dropdown_icon.selected.Balcony:before, .topology_icon.Balcony:before{
+	mask-position: 83.5% 20%;
+}
+.location_dropdown_icon.Yard:before, .location_dropdown_icon.selected.Yard:before, .topology_icon.Yard:before{
+	mask-position: 83.5% 40%;
+}
+.location_dropdown_icon.Garage:before, .location_dropdown_icon.selected.Garage:before, .topology_icon.Garage:before{
+	mask-position: 83.5% 59%;
+}
+.location_dropdown_icon.Gym:before, .location_dropdown_icon.selected.Gym:before, .topology_icon.Gym:before{
+	mask-position: 100% 21%;
+}
+.location_dropdown_icon.Gaming_Room:before, .location_dropdown_icon.selected.Gaming_Room:before, .topology_icon.Gaming_Room:before{
+	mask-position: 100% 40%;
+}
+.location_dropdown_icon.Custom:before, .location_dropdown_icon.selected.Custom:before, .topology_icon.Custom:before{
+	mask-position: 100% 0%;
+}
+.location_dropdown_icon.Swimming_Pool:before, .location_dropdown_icon.selected.Swimming_Pool:before, .topology_icon.Swimming_Pool:before{
+	mask-position: 100% 60%;
+}
+.location_dropdown_icon.Outdoor:before, .location_dropdown_icon.selected.Outdoor:before, .topology_icon.Outdoor:before{
+	mask-position: 100% 80%;
+}

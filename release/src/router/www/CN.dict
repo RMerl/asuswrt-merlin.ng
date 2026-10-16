@@ -26,9 +26,9 @@ AiMesh_Node_desc2=请至现有路由器的 AiMesh 设置页面添加 AiMesh 节�
 AiMesh_Notice1=请注意，更改无线设置将会影响您的 Mesh 网络！
 AiMesh_Add_Another_Node_confirm=您想要添加其它节点吗？
 AiMesh_Add_Another_Node=添加其它节点
-AiMesh_Adding_Node=Adding the AiMesh node...
-AiMesh_Node_joining=The node is joining the network...
-AiMesh_Node_activating=Activating your mesh network...
+AiMesh_Adding_Node=正在添加 AiMesh 节点...
+AiMesh_Node_joining=节点正在加入网络...
+AiMesh_Node_activating=正在激活您的网状网络...
 AiMesh_backhaul_band_5GHz-2_desc1=在 AiMesh 随心组网模式下正作为专用无线回传使用。
 AiMesh_backhaul_band_5GHz-2_desc11=%@ 现在在 AiMesh 模式下作为专用 WiFi 回程使用。
 AiMesh_backhaul_band_5GHz-2_desc2=有关详细的无线设置，请转到<span class="faq-link" onclick="parent.location.href=\'/Advanced_Wireless_Content.asp\'">此处</span>。
@@ -83,6 +83,8 @@ AiMesh_Topology_Line_Wired_Great=有线连接信号强
 AiMesh_Topology_Line_Wired_Normal=有线连接信号正常
 AiMesh_Topology_FAQ_old=关于新 AiMesh 随心组网 GUI 的更多信息，请参考此【常见问题解答】。
 AiMesh_Topology_FAQ=关于新 AiMesh 随心组网 GUI 的更多信息，请参考此<a id="Intro_AiMesh">【常见问题解答】</a>。
+AiMesh_Topology_inst_FAQ_old=有关设置 AiMesh 系统的说明，请参阅此【常见问题解答】。
+AiMesh_Topology_inst_FAQ=有关设置 AiMesh 系统的说明，请参阅此 <a id='connect_line_info_faq'>【常见问题解答】</a>。
 AiMesh_OB_hint=为获得最佳性能，建议您的节点使用较新的型号。使用旧设备可能会限制整体 AiMesh 网络的稳定性和速度。
 AiMesh_Add_Anyway=仍然添加
 AiMesh_Proceed_Anyway=仍然继续
@@ -102,7 +104,7 @@ APSurvey_msg_connect_open_wlan=您正在连接不安全的网络。在这个网�
 APSurvey_msg_connected=您已经连上此基地台。
 APSurvey_msg_non_support_Auth=不支持的验证方法。
 APSurvey_msg_waiting_to_connect=请稍候，ZVMODELVZ 正在联机到
-ASUS_Registration=成为华硕会员并接收最新产品信息。 <a style='color:#FC0' target='_blank' href='https://account.asus.com'>立即注册！</a>
+ASUS_Registration=成为华硕会员并接收最新产品信息。 <a style='color:var(--wrt-badge-warning-color,#FC0)' target='_blank' href='https://account.asus.com'>立即注册！</a>
 ASUS_Notice=华硕提醒您
 ASUS_privacy_desc=当使用 Alexa™、 IFTTT™、 DDNS、远程连接功能(ASUS Router APP、Lyra APP、AiCloud、AiDisk) 、智能安全防护 AiProtection、流量分析、应用程序分析、带宽管理 Adaptive QoS/Game boost 以及网页浏览历史功能前，需先签属同意资料传送之协定。您可以随时在此页面查询您所同意过的条款内容，与<a style="font-weight: bolder;">关闭信息传送</a>。
 ASUS_eula_desc0=欢迎使用 DDNS/远程连接功能（ASUS Router APP/Lyra APP/AiCloud/AiDisk）。敬请您详细阅读以下条款:
@@ -186,8 +188,8 @@ ASUS_EULA_Law_12=适用法律和管辖权
 ASUS_EULA_Law_12_Desc=您与 ASUS 之间的所有报价、订单确认、本 EULA 及销售关系，均应受 ASUS 所在地法律的管辖并依其解释，而不考虑其法律冲突原则。本协议双方因本 EULA、与本 EULA 有关或相关的一切争议、争执或分歧，应由双方友好协商解决。若无法解决争议、纠纷或分歧，双方同意接受 ASUS 所在地法院的管辖。
 ASUS_EULA_Info=通过使用华硕网络产品，您同意受到最终用户许可协议中所载明的条款和条件的约束。
 ASUS_POLICY_Age_Check=我已满 16 岁。
-ASUS_POLICY_QIS_Desc=在使用网络产品之前，请务必阅读本条款。点击“同意”按钮即表示您同意接受本条款的约束。​
-ASUS_POLICY_QIS_Desc_v5=在使用网络产品之前，请务必阅读本条款。点击“%@”按钮即表示您同意接受本条款的约束。​
+ASUS_POLICY_QIS_Desc=在使用网络产品之前，请务必阅读本条款。点击“同意”按钮即表示您同意接受本条款的约束。
+ASUS_POLICY_QIS_Desc_v5=在使用网络产品之前，请务必阅读本条款。点击“%@”按钮即表示您同意接受本条款的约束。
 ASUS_POLICY_Update_Notice=尊敬的用户，感谢您一直以来对本产品的支持。为了遵守各国的隐私法规并进一步保护您的数据，我们更新了 ASUS 隐私声明。请在使用 ASUS 网络产品前了解并同意最新声明。
 ASUS_POLICY_Read_Again=再次阅读
 ASUS_POLICY_Know_Risk=我理解此风险
@@ -370,7 +372,7 @@ CTL_UpgradeNight=夜间升级
 CTL_UpgradeNow=立即更新
 default_passwd_checkbox=使用默认本地登录密码
 default_passwd_desc=在本地连接该华硕网络设备时，使用默认的加密本地登录密码可以实现安全登录。
-defaultHint=要了解更多信息，请访问 <a style="font-weight: bolder;text-decoration: underline;color:#000000;" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
+defaultHint=要了解更多信息，请访问 <a style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#000000);" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
 Detect_consume_warning1=* 一个最小的 PING 帧每个间隔会消耗大概 128 字节的数据流量。 因此， PING 监测将消耗
 Detect_consume_warning2=MB /每月
 Disconnected=联机中断
@@ -409,7 +411,7 @@ OpenDNS_Home=OpenDNS Home
 OpenDNS_Family=OpenDNS Family
 Yandex_Safe=Yandex Safe
 Yandex_Family=Yandex Family
-Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:#FFCC00;" href="DNSFilter.asp">DNSFilter</a> 已启用 - 在那里配置的任何非「无过滤」或「路由器」项都将绕开 DNS 隐私服务。
+Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:var(--wrt-badge-warning-color,#FFCC00);" href="DNSFilter.asp">DNSFilter</a> 已启用 - 在那里配置的任何非「无过滤」或「路由器」项都将绕开 DNS 隐私服务。
 Enable_user_target=开启用户自定义目标
 Enable_Login_Captcha=启用登录验证码
 Encrypted_field=加密字段。
@@ -542,7 +544,7 @@ lyra_pairing_desc2=配对过程中，您的 Lyra 设备将会变为绿色闪烁�
 [###MODEL_DEP###][MAP-AC1750]lyra_pairing_desc2=配对过程中，您的 Lyra 设备将会变为蓝色闪烁，这说明您的设备彼此间正在进行通信。
 lyra_pairing_desc3=系统准备就绪时，Lyra 设备上的 LED 指示灯将会变为蓝色常亮。
 lyra_pairing_desc4=您可以重复以上步骤以添加其它 Lyra 设备。请注意，仅第一台 Lyra 支持配对功能。
-Maybe_Later=可能稍后连接
+Maybe_Later=可能稍后
 MAC_Address=MAC 地址
 Main_alert_proceeding_desc1=处理中
 Main_alert_proceeding_desc2=你的互联网连线可能会中断。
@@ -580,7 +582,7 @@ menu5_4=USB 相关应用程序
 menu5_4_1=网络共享（Samba）
 menu5_4_2=以 FTP 共享硬盘
 menu5_4_3=其它设置
-menu5_4_4=USB Modem
+menu5_4_4=USB 调制解调器
 menu5_5=防火墙
 menu5_5_2=网址过滤
 menu5_5_3=MAC 访问控制
@@ -616,7 +618,7 @@ Offline_desc2=IP 地址或端口已更改。您将断开与 ZVMODELVZ 的连接�
 Offline_desc3=要设置 ZVMODELVZ，重新连接至无线网络并使用新的 IP 地址和端口。
 OP_AP_desc=在无线访问点 (Access Point) 模式中，ZVMODELVZ 透过以太网口连接制无线路由器，以拓展无线信号覆盖范围。在此模式中，防火墙、IP 分享与 NAT 功能是禁用的。
 AiMesh_AP_desc=AP 模式下的 AiMesh 路由器将通过网线连接至另一台无线路由器，以将无线信号扩展至其他网络客户端。此模式下，防火墙、IP 共享和 NAT 功能默认关闭。
-OP_AP_hint=您也可以访问 <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">http://findasus.local</a> 搜索和进入设备配置页面。
+OP_AP_hint=您也可以访问 <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">http://findasus.local</a> 搜索和进入设备配置页面。
 OP_AP_item=无线访问点 (Access Point)
 AiMesh_AP_item=无线接入点（AP）模式 / AiMesh 路由器（AP 模式）
 OP_Choose=选择操作模式
@@ -635,7 +637,7 @@ OP_MB_desc4=将一台 ZVMODELVZ 设置为路由器模式，另一台 ZVMODELVZ �
 OP_MB_desc5=变更到无线桥接 (Media Bridge) 模式为您的媒体设备提供一个并行的 WiFi 连接。
 OP_MB_desc6=在无线桥接 (Media Bridge) 模式中，只有无线设备连接至 Parent-AP。客户端设备需使用网线连接至无线桥接。
 OP_MB_desc7=ZVMODELVZ 正处于无线桥接 (Media Bridge) 模式。IP 地址已更改。
-OP_MB_desc8=请下载 <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:#FC0;'>Device Discovery Utility</a> 来识别无线桥接 (Media Bridge) 的 IP 地址。
+OP_MB_desc8=请下载 <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>Device Discovery Utility</a> 来识别无线桥接 (Media Bridge) 的 IP 地址。
 OP_MB_desc9=请检查是否已经从 WAN 口移除网线。
 OP_RE_desc=在中继模式下，ZVMODELVZ 采用无线连接至一个已经存在的无线网络，以扩展无线覆盖范围。在这个模式下，防火墙、IP 分享以及 NAT 功能是禁用的。
 OP_RE_desc1=ZVMODELVZ 的 LAN  IP 地址可能已更改。
@@ -685,7 +687,7 @@ QIS_adminpass_confirm0=新密码与系统默认密码相同，强烈建议您设
 QIS_adminpass_confirm1=若不更改默认密码（admin），非授权用户很容易猜出登录密码，您的路由器将受到安全威胁。您确定继续使用此默认密码吗？
 [###MODEL_DEP###][PL-AC56][PL-N12]QIS_adminpass_confirm1=若不更改默认密码（admin），非授权用户很容易猜出登录密码，您的电力网络桥接器将受到安全威胁。您确定继续使用此默认密码吗？
 QIS_apextended_usedefault=使用初始设置（使用与目前基地台相同的密码）
-QIS_AP_connect_hint=Once the new SSID is connected, you can go to %1$@ for more advanced settings.
+QIS_AP_connect_hint=连接新的 SSID 后，您可以前往 %1$@ 进行更多高级设置。
 QIS_auto_ip_conn_Setup=动态 IP 地址连接设置
 QIS_autoMAC_desc1=开始克隆电脑的 MAC 地址到路由器
 QIS_autoMAC_desc2=请稍候
@@ -817,7 +819,7 @@ qis_simple_wls_recmd=(建议设置)
 QIS_SmartConn_ISPDesc=您的 ISP 应该给你一个带有用户名和密码的卡或文件。 *此示例仅用于说明目的的示例。
 QIS_SmartConn_ISPDesc2=输入用户名称和密码，相关信息可洽询您的网络服务运营商 (ISP)。
 QIS_SmartConn_ISPDesc3=请输入您的网络服务供应商 (ISP) 提供的 PPPoE 用户名和密码，以连接互联网。
-QIS_SmartConn_ISPDesc_TW=HiNet 用户的客户号码为 <span style="color:#FC0;">xxxxxxxx@hinet.net</span>
+QIS_SmartConn_ISPDesc_TW=HiNet 用户的客户号码为 <span style="color:var(--wrt-badge-warning-color,#FC0);">xxxxxxxx@hinet.net</span>
 QIS_SmartConn_Scen1=连接情景 1
 QIS_SmartConn_Scen2=连接情景 2
 QIS_SmartConn_StaticDesc=您的 ISP 已经提供给您 IP 地址，子网掩码，网关和 DNS 地址的信息。如果没有，请联系您的 ISP。
@@ -999,10 +1001,10 @@ QKSet_ISP_desc=请参考您的 ISP 设置，输入以下信息。
 QKSet_ISP_desc2=尝试以静态 IP 联机失败
 QKSet_ISP_desc3=自动取得 IP 连线失败，您可由此设定以建立连线。
 QKSet_ISP_head=ISP 数据设置
-QKset_restore_0=点击 <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">恢复设置</label></a> 以载入已保存的设置。
-QKset_restore_1=若您已备份了路由器的设置内容，点击 <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">恢复设置</label></a> 可恢复至已保存的设置。
-QKset_setup_manual_0=若您了解 ISP 的连接类型，可点击 <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">手动设置</label></a> 以手动设置您的无线网络。
-QKset_setup_manual_1=点击 <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">手动设置</label></a> 以手动设置路由器高级设置或将 ZVMODELVZ 设置为
+QKset_restore_0=点击 <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">恢复设置</label></a> 以载入已保存的设置。
+QKset_restore_1=若您已备份了路由器的设置内容，点击 <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">恢复设置</label></a> 可恢复至已保存的设置。
+QKset_setup_manual_0=若您了解 ISP 的连接类型，可点击 <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">手动设置</label></a> 以手动设置您的无线网络。
+QKset_setup_manual_1=点击 <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">手动设置</label></a> 以手动设置路由器高级设置或将 ZVMODELVZ 设置为
 QKset_skip_setup=您具备无线网络方面的专业知识，想要跳过网络设置向导？
 QKSet_type_desc=请选择您 ISP 提供的网络连接类型。
 QKSet_type_head=互联网联机类型
@@ -1029,10 +1031,10 @@ Sign_in_title=用华硕路由器帐号登录
 SLM_Ask=询问路由器助手…
 SLM_Loading=加载中…
 SLM_Thinking=正在思考…
-SLM_not_installed=Please double check that the router assistant is running in Portainer and that the port (8090) is not overlapping with other services. Also, ensure that slm-asus is running in Portainer. If the problem persists, try restoring AiBoard.
-SLM_no_response=Service is activating. Please try again in about 3 minutes.
-SLM_low_percent=Sorry, unable to answer the question.
-SLM_disclaimer=Router Assistant might not always be accurate. This feature is currently available in English only. Please verify important information yourself.
+SLM_not_installed=请再次确认路由器助手正在 Portainer 中运行，并且端口 (8090) 未与其他服务冲突。同时请确认 slm-asus 也在 Portainer 中运行。如果问题仍然存在，请尝试恢复 AiBoard。
+SLM_no_response=服务正在启动。请在约 3 分钟后重试。
+SLM_low_percent=抱歉，无法回答该问题。
+SLM_disclaimer=路由器助手可能无法始终保持准确。此功能目前仅支持英文。请自行验证重要信息。
 SLM_not_installed_CN=请确认路由助手在Portainer中运行且端口（8092）未与其他服务重叠，确认slm-asus-cn也在Portainer中运行。若问题仍然存在，请恢复AiBoard。
 SLM_no_response_CN=服务正在激活中，请约3分钟后重试。
 SLM_low_percent_CN=对不起，无法回答该问题.
@@ -1053,6 +1055,7 @@ Status_RAM=RAM
 Status_Used=已使用
 Status_Free=剩余
 Status_Total=共
+Status_LoggingIn=正在登录…
 statusTitle_AP=远程基地台状态
 statusTitle_System=ASUS ZVMODELVZ
 System_act_connections=活动连接
@@ -1077,7 +1080,7 @@ TBVLAN_UPort=未标记的接口
 TBVLAN_TPort=已标记的接口
 TBVLAN_WirelessInf=无线接口
 TBVLAN_EditSubnetProfile=编辑子网设置档
-TBVLAN_Subnet_desc=选择您想要创建的子网或选择 &quot;新的子网&quot; 来为 VLAN 创建新的子网。若您需要进一步设置 DHCP，请至 <a style='color:#FFF; text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP 服务器</a> 进行设置。
+TBVLAN_Subnet_desc=选择您想要创建的子网或选择 &quot;新的子网&quot; 来为 VLAN 创建新的子网。若您需要进一步设置 DHCP，请至 <a style='color:var(--wrt-text-color,#FFF); text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP 服务器</a> 进行设置。
 TBVLAN_BindingInf=绑定接口
 TBVLAN_NoBindingInf=无任何绑定接口。
 TBVLAN_BindingInf_Hint=请添加绑定接口。
@@ -1108,20 +1111,20 @@ WANPPPAuthText=PPP 验证方式
 WAN_type_detected=WAN type detected
 WAN_auto_detected=WAN 自动检测
 web_redirect_case1_suggestion1=请确认您已使用网线将调制解调器连接至 ZVMODELVZ 的 WAN 接口。
-web_redirect_case1_suggestion2=检查您的<a style='color:#FFF' href='/Advanced_OperationMode_Content.asp'>操作模式</a>是否需要更改。
-web_redirect_case2_suggestion1=错误的 PPPoE 帐号或密码，请<a style='color:#FFF' href='/Advanced_WAN_Content.asp'>检查</a>。
+web_redirect_case1_suggestion2=检查您的<a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_OperationMode_Content.asp'>操作模式</a>是否需要更改。
+web_redirect_case2_suggestion1=错误的 PPPoE 帐号或密码，请<a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>检查</a>。
 web_redirect_case2_title1=PPPoE 验证失败
 web_redirect_case3_button=更改您的 WAN 类型
-web_redirect_case3_suggestion1=请确认您的<a style='color:#FFF' href='/Advanced_WAN_Content.asp'>连接设置</a>没有问题。
-web_redirect_case5_suggestion1=启用您的<a style='color:#FFF' href='/'>WAN 连接</a>。
+web_redirect_case3_suggestion1=请确认您的<a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>连接设置</a>没有问题。
+web_redirect_case5_suggestion1=启用您的<a style='color:var(--wrt-text-color,#FFF)' href='/'>WAN 连接</a>。
 web_redirect_case5_suggestion2=请确认您的 USB 调制解调器已开机。
-web_redirect_case5_suggestion3=更改您的<a style='color:#FFF' href='/Advanced_Modem_Content.asp'>USB 调制解调器设置</a>。
+web_redirect_case5_suggestion3=更改您的<a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_Modem_Content.asp'>USB 调制解调器设置</a>。
 web_redirect_case5_title1=您的 WAN 连接已关闭。
 web_redirect_case5_title2=未连接至您的 USB 调制解调器。
 web_redirect_case6_desc1=点击 [下一步] 以使用下列 IP 地址：
 web_redirect_case6_desc2=请确认所有相关服务正在使用您的新 IP 地址（如，端口转发、DMZ 等）。
 web_redirect_case8_suggestion1=请确认 Parent AP 能够连接至互联网。
-web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>更改连接设置</a>。
+web_redirect_case8_suggestion2=<a style='color:var(--wrt-text-color,#FFF)' href='/QIS_wizard.htm?flag=manual'>更改连接设置</a>。
 web_redirect_case8_title=无法连接至 Parent AP。
 web_redirect_case9_suggestion1=请确认您的 AiMesh 路由器已开机。
 web_redirect_case9_suggestion2=重启您的 AiMesh 路由器并重试。
@@ -1171,6 +1174,11 @@ Web_Title=华硕无线路由器 ZVMODELVZ
 [###MODEL_DEP###][YY]Web_Title=华硕 PoE 无线 AP ZVMODELVZ
 Web_Title2=ZVMODELVZ
 Web_DOMAIN_NAME=ZVDOMAIN_NAMEVZ
+WiFi_MLO_connect_confirmTitle=使用 MLO 连接
+WiFi_MLO_same_model_desc=MLO（多链路操作）目前仅支持相同华硕路由器型号之间的连接。如果型号不同，连接可能会失败。
+WiFi_MLO_connect_try=尝试使用 MLO 连接。
+WiFi_MLO_connect_veto=改用标准单频连接。
+WiFi_MLO_connect_confirm=是否要使用 MLO 连接？
 wireless_configured=配置
 Wireless_name=无线网络名称
 wireless_router=无线路由器
@@ -1207,7 +1215,7 @@ Access_Type=访问类型
 Account_Binding=账号绑定
 account_overflow=仅允许建立六个帐号
 account_type=帐号类型
-Activate_usb=进入双线路设置并启用 USB modem。
+Activate_usb=进入双线路设置并启用 USB 调制解调器。
 Adaptive=智慧调整
 Adaptive_Category1=该类别包括 Diablo、 WOW、 Steam game、 XBOX 等。将该类别移动至更高级别以获取更好的游戏体验。
 Adaptive_Category2=该类别包括 Youtube、 Vimeo、 iTunes、 Hulu、 Netflix 和 Spotify 等。将该类别移动至更高级别以获取更好的网络体验。
@@ -1253,6 +1261,7 @@ ADSL_FW_note=注意：
 adsl_fw_ver_itemname=DSL 驱动程序版本
 adsl_link_sts_itemname=DSL 连接状态
 adv_wl_desc=设置以下无线相关信息。
+AiBoard_rescue_fail=AI Board 救援失败
 AiCloud_account_status=帐户状态
 AiCloud_account_unlock=解锁
 aicloud_bandwidth1=您需要宽带网络连接来享受最佳的观赏与聆听体验。请参阅以下建议设定：
@@ -1365,12 +1374,12 @@ AiMesh_FindNode_confirm=无法搜索到我的 AiMesh 节点？
 AiMesh_FindNode_confirm_WPS=搜索 AiMesh 节点时，WPS 功能将被启用。
 AiMesh_FindNode_Desc=搜索附近可用的 AiMesh 节点并添加至您的 AiMesh 随心组网系统。
 AiMesh_FindNode_Not=无法搜索到附近任何 AiMesh 节点。
-AiMesh_FindNode_Not_advA=若此设备已被指定为 <span style='color:#569AC7;'>AiMesh 路由器</span>，请检查以下几个方面并重试。
+AiMesh_FindNode_Not_advA=若此设备已被指定为 <span style='color:var(--wrt-link-color,#569AC7);'>AiMesh 路由器</span>，请检查以下几个方面并重试。
 AiMesh_FindNode_Not_advA1=AiMesh 节点已开机
 AiMesh_FindNode_Not_advA2=AiMesh 节点已是最新版本固件
 AiMesh_FindNode_Not_advA3=AiMesh 节点已重置为默认设置
 AiMesh_FindNode_Not_advA4=请将您的 AiMesh 节点放置于靠近 AiMesh 路由器的位置
-AiMesh_FindNode_Not_advB=若此设备已被指定为 <span style='color:#569AC7;'>AiMesh 节点</span>，请检查以下几个方面并重试。
+AiMesh_FindNode_Not_advB=若此设备已被指定为 <span style='color:var(--wrt-link-color,#569AC7);'>AiMesh 节点</span>，请检查以下几个方面并重试。
 AiMesh_FindNode_Not_advB1=按下设备的复位按钮并等待。
 AiMesh_FindNode_Not_advB2=登录您的 AiMesh 路由器网页图形界面并点击 AiMesh 图标。
 AiMesh_FindNode_Not_advB3=若您无法在网页图形界面中找到 AiMesh 图标，请升级您的 AiMesh 路由器的固件。
@@ -1661,7 +1670,7 @@ AiProtection_sites_block_desc=禁止访问 Trend Micro 数据库中已知的恶�
 [###MODEL_DEP###][GT-AC5300]AiProtection_sites_block_desc=恶意网站拦截可限制访问某些已知恶意网站，以阻止恶意软件、钓鱼软件、垃圾邮件、广告软件，黑客或勒索软件攻击您网络中的设备。
 AiProtection_sites_blocking=恶意网站拦截
 AiProtection_ARK_Malicious_Site_blocking=恶意网站和受感染设备拦截
-AiProtection_ARK_Malicious_Site_blocking_desc=限制访问已知的恶意网站，以防范恶意软件、网络钓鱼、垃圾邮件、广告软件、黑客攻击和勒索软件。
+AiProtection_ARK_Malicious_Site_blocking_desc=限制访问已知的恶意网站，以保护您的网络免受恶意程序、网络钓鱼、垃圾邮件、黑客和勒索软件攻击。
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]AiProtection_sites_blocking=封锁恶意网站
 AiProtection_sites_trust=添加您信任的域并使用 AiProtection 对其进行解锁
 AiProtection_sites_trust_add=将域添加到白名单
@@ -1670,7 +1679,7 @@ AiProtection_title_BandwidthUtil=带宽使用
 AiProtection_title_BandwidthUtil_desc1=请输入互联网的上传及下载带宽。
 AiProtection_title_BandwidthUtil_desc2=ROG ZVMODELVZ 会利用此带宽信息为您的游戏设备安排最佳网络流量。
 AiProtection_title_Dashboard=游戏仪表板
-AiProtection_title_Dashboard_add_card=Add card
+AiProtection_title_Dashboard_add_card=新增卡片
 AiProtection_title_Dashboard_desc=ROG ZVMODELVZ 仪表板可为您的游戏网络进行较佳设置及实时监控。
 AiProtection_title_Dashboard_title=仪表板
 AiProtection_title_GameWiFi=游戏专用 WiFi
@@ -1704,18 +1713,19 @@ AiProtection_TrackerBlocking=追踪器拦截
 AiProtection_TrackerBlocking_Desc=追踪器拦截有助于检测并阻止来自网站、广告商或第三方分析平台的追踪请求，保护您的隐私、减少数据泄露，并加快网页加载速度。
 AiProtection_AdvertisementBlocking_Desc=广告拦截有助于拦截常见的广告来源，以减少干扰、提升浏览体验并降低安全风险。您还可以启用 AdGuard DNS 以进一步增强保护。
 AiProtection_AdvertisementBlocking_Enabled=广告拦截已启用
-AiProtection_AdvertisementBlocking_edserv=Edge Server
-AiProtection_AdvertisementBlocking_edserv_desc=A self-hosted edge server on router. Provides detailed network insights, advanced control, and enhanced home privacy.
-AiProtection_AdvertisementBlocking_cloudserv=Cloud Server
-AiProtection_AdvertisementBlocking_cloudserv_desc=Extends protection across multiple sites via the cloud.
-AiProtection_AdvertisementBlocking_filter=Triple level content filter
-AiProtection_AdvertisementBlocking_trigger=Blocks ads with one click.
+AiProtection_AdvertisementBlocking_edserv=边缘服务器
+AiProtection_AdvertisementBlocking_edserv_desc=路由器上的自托管边缘服务器。提供详细网络洞察、高级控制以及增强的家庭隐私保护。
+AiProtection_AdvertisementBlocking_cloudserv=云服务器
+AiProtection_AdvertisementBlocking_cloudserv_desc=通过云将保护扩展到多个站点。
+AiProtection_AdvertisementBlocking_filter=三层内容过滤
+AiProtection_AdvertisementBlocking_trigger=一键拦截广告。
 AiProtection_TrackerBlocking_Enabled=追踪器拦截已启用
 AiProtection_select_device=选择一个设备或输入有效的 MAC 或 IP
 AiProtection_rule_exist=该设备已有规则，请先删除现有规则再创建新规则。
 ArkMigrationNote=注意
 ArkMigrationNote_1=由于隐私和系统优化，%@ 现在使用本地检测。现有的配置规则需手动重新设置。
 ArkMigrationNote_2=这些功能与旧版固件不兼容；降版将需要恢复出厂设置。
+ArkAiProtectionInfo=由于某些网站使用广告或追踪服务，可能会受到广告拦截或追踪拦截影响。如遇无法访问网站的情况，请尝试关闭上述功能并重新加载页面。
 FamilyContentBlock=家庭内容拦截
 BwLimiter_Switch=带宽限制开关
 BwLimiter_Download=下载带宽
@@ -1724,6 +1734,7 @@ BwLimiter_NewDevice=新设备
 BwLimiter_Status=状态
 BwLimiter_Delete=删除
 SearchDevice_By_Name_Mac_Ip=搜索设备名称、MAC 或 IP
+SearchDevice_By_Name_Mac_Ip_Subnet=搜索设备名称、MAC、IP 或子网
 BwLimiter_Target=目标
 BwLimiter_enter_bandwidth=请输入带宽值。
 BwLimiter_max=带宽限制规则已达上限（32）。
@@ -1874,7 +1885,7 @@ Bandwidth_Setting=带宽设置
 BasicConfig_EnableDHCPFilter_itemname=启用 DHCP 过滤
 BasicConfig_EnableDownloadMachine_itemname=启动下载大师
 BasicConfig_EnableDownloadShare_itemname=启动 Download Share
-BasicConfig_EnableiTunesServer_itemname=启动 iTunes Server
+BasicConfig_EnableiTunesServer_itemname=启动 iTunes 服务器
 BasicConfig_EnableMediaServer_itemname=启动 UPnP
 BlackList=黑名单
 Block=封锁
@@ -1965,7 +1976,9 @@ btn_go=前往设置
 btn_goSetting=前往设置
 btn_remove=移除
 btn_send=发送
+btn_resend=重新发送
 btn_to_WAN=外部网络设置
+btn_verify=验证
 Capability=功能
 Captcha=验证码
 Captcha_note=请输入验证码
@@ -2122,6 +2135,7 @@ CTL_reconnection=自动重新连接
 CTL_refresh=刷新
 CTL_Reset_OOB=重新设置
 CTL_restore=恢复
+CTL_restore_again=再次还原
 CTL_scan=扫描
 CTL_search=搜索
 CTL_secure=保护您的路由器
@@ -2130,7 +2144,7 @@ CTL_upload=上传
 CTL_upload_img=上传图标
 CTL_initialize=初始化
 Current=即时流量值
-Current_peak=Peak
+Current_peak=峰值
 Current_band=当前频率
 current_settings=当前带宽设置范围
 Custom=自定义
@@ -2158,6 +2172,9 @@ DDNS_https_cert_alert=请选择正确的 SSL 证书文件。
 DDNS_ipv6_update=IPv6 更新
 DDNS_ipv6_update_desc=如果客户端的网络环境使用的是 IPv6 网络地址，启用此功能后，在远程设备访问时，将首先把域名解析为 IPv6 网络地址。
 DDNS_ssl_cert=SSL 证书
+DDNS_status=DDNS 状态
+DDNS_reg_result=DDNS 注册结果
+DDNS_root_ca=根证书/中间证书
 DDNS_termofservice_Title=使用条款
 DDNS_transfer=转移华硕 DDNS 域名
 DDNS_verification_enable=启用 WAN IP 及主机名称检查
@@ -2179,10 +2196,10 @@ Device_type_03_AP=无线访问点
 Device_type_04_NS=网络存储服务器
 Device_type_05_IC=网络摄像头
 Device_type_06_OD=无法辨识的设备
-deviceDiscorvy2=在中继模式中，若由 DHCP 所分配的 IP 地址变动。请安装与使用 <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> 以利获取无线路由器新的 IP 地址。
-deviceDiscorvy3=在无线访问点 (AP) 模式中，若由 DHCP 所分配的 IP 地址变动，请安装与使用 <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery 程序</a> 以利获取无线路由器新的 IP 地址。
-AiMesh_deviceDiscorvy3=当 AiMesh 路由器处于 AP 模式时，DHCP 指定的 IP 地址将会改变。请安装 <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> 应用程序以检测无线路由器的 IP 地址。
-deviceDiscorvy4=在无线桥接 (Media Bridge) 模式中，DHCP 分配的 IP 地址将更改。安装并使用 <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> 来获得无线路由器新的 IP 地址。
+deviceDiscorvy2=在中继模式中，若由 DHCP 所分配的 IP 地址变动。请安装与使用 <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> 以利获取无线路由器新的 IP 地址。
+deviceDiscorvy3=在无线访问点 (AP) 模式中，若由 DHCP 所分配的 IP 地址变动，请安装与使用 <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery 程序</a> 以利获取无线路由器新的 IP 地址。
+AiMesh_deviceDiscorvy3=当 AiMesh 路由器处于 AP 模式时，DHCP 指定的 IP 地址将会改变。请安装 <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> 应用程序以检测无线路由器的 IP 地址。
+deviceDiscorvy4=在无线桥接 (Media Bridge) 模式中，DHCP 分配的 IP 地址将更改。安装并使用 <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> 来获得无线路由器新的 IP 地址。
 DeviceSecurity11a_display1_sectiondesc=此功能能够控制 ZVMODELVZ 无线内部网络中，特定网卡物理地址（MAC Address）的访问。
 DHCP_query_freq=DHCP 查询频率
 DHCPaggressive=积极模式
@@ -2359,13 +2376,16 @@ Enable_ncb_Non_Block=不封锁
 Enable_ncb_Limited_Block=部分封锁
 Enable_ncb_All_Block=全部封锁
 Encap_mode_help=ZVMODELVZ provides two modes for encapsulating or transporting LAN and WAN protocols via ATM. Please select the appropriate Encapsulation Mode.
+Energy_Saving_conflict_hint1=由于主要功能与节能设置之间的交互，实际行为可能有所不同。
+Energy_Saving_conflict_hint2=为确保主要功能与节能之间的行为一致，将以当前设置为优先。
+Energy_Saving_affected_setting=受影响的设置：（%@）
 Ethernet_wan=以太网 WAN
 Excute=安装
 Excute_processing=正在安装
 External=仅外部
 Extend_TTL_Value=扩大 TTL 值
 EZQoS=EZQoS 带宽管理
-EzQoS_bandwidth_note1=从你的宽带运营商(ISP) 获取带宽的信息，或转至 <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:#FC0;">http://speedtest.net</a> 进行测速获取带宽。
+EzQoS_bandwidth_note1=从你的宽带运营商(ISP) 获取带宽的信息，或转至 <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);">http://speedtest.net</a> 进行测速获取带宽。
 EzQoS_bandwidth_note2=默认值为 0，即无带宽限制。
 EzQoS_desc=带宽管理能够保证高优先级任务及应用的带宽。
 EzQoS_desc_Adaptive=<span style="font-weight:bolder;font-size:14px;">Adaptive QoS 智能场景加速</span>能够通过预先定义、拖放设置，在有线及无线连接时，保证高优先级应用及程序传入和传出的带宽：如游戏、流媒体、网络电话、网上浏览与文件传输。
@@ -2432,11 +2452,11 @@ feedback_email_alert=电子邮件地址的格式不正确。
 feedback_email_confirm=电子邮件地址域为空。您确定要继续吗？
 feedback_extra_info=更多的调试建议信息
 feedback_fail0=提交反馈失败。 请检查您的网络设置并重试。
-feedback_fail1=<span style="color:#FC0;">系统无法连接至邮箱服务器</span>， 您可以直接发送电子邮件到
+feedback_fail1=<span style="color:var(--wrt-badge-warning-color,#FC0);">系统无法连接至邮箱服务器</span>， 您可以直接发送电子邮件到
 feedback_fail2=只需复制下面的内容，并将其粘贴于您的电子邮件正文中。
 feedback_fail3=下载下方侦错文件并新增至 E-mail 附件：
 feedback_fail0_new=系统未能连接到反馈服务器。
-feedback_fail1_new=<span>如果您遇到任何使用问题或需要技术支持，请先联系华硕客户服务中心&nbsp;<a class="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(官方支持 | 华硕全球站点)</a>。</span>
+feedback_fail1_new=<span>如果您遇到任何使用问题或需要技术支持，请先联系华硕客户服务中心&nbsp;<a class="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(官方支持 | 华硕全球站点)</a>。</span>
 feedback_fail2_new=您也可以将下列检测到的错误文件发送至 router_feedback@asus.com，向开发团队提供改进建议。谢谢您。
 feedback_fail_BindGoogle=或者您可以 <a id="bind_google">绑定您的 Google 帐号</a> 以通过 E-mail 发送您的反馈。
 feedback_format_alert=格式不正确。
@@ -2458,7 +2478,7 @@ feedback_note3=通过提交您的反馈，您已同意华硕采纳您的意见�
 [###MODEL_DEP###][DSL-AX82U][DSL-AC68U][DSL-N55U][DSL-N55U-B]feedback_note3=通过提交您的反馈，您已同意华硕采纳您的意见以完善其 xDSL 调制解调器路由器产品。
 feedback_note4=若您有紧急问题，请联络华硕技术服务咨询。
 feedback_note5=反馈正在进行中。重新启动可能会导致程序终止，无法完成反馈。请稍后重新启动。
-feedback_note6=<span>本系统不提供个人回复。如有任何使用问题或需要技术支持，请联系华硕客户服务中心</span>&nbsp;<a id="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(官方支持 | 华硕全球站点)</a>。
+feedback_note6=<span>本系统不提供个人回复。如有任何使用问题或需要技术支持，请联系华硕客户服务中心</span>&nbsp;<a id="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(官方支持 | 华硕全球站点)</a>。
 feedback_note7=我们的专业团队将全力为您服务。谢谢您。
 feedback_Occasion_interrupt=偶尔中断
 feedback_optional=* 选填
@@ -2619,7 +2639,7 @@ FW_auto_upgrade_desc=系统下载完更新后自动在夜间安装系统更新�
 FW_auto_upgrade_desc1=部分升级涉及重要的安全问题或符合法律/法规要求，即使关闭自动固件升级功能，也会自动安装。
 FW_auto_upgrade_note=启用后，路由器将在您偏好的时间自动安装新固件。
 FW_beta_check=我想使用测试版固件。
-FW_desc0=从<a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/" target="_blank">华硕支持网站</a>获取最新固件版本
+FW_desc0=从<a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/" target="_blank">华硕支持网站</a>获取最新固件版本
 FW_desc1=请造访华硕技术支持网站 https://www.asus.com/support/ 获取最新韧体。
 fw_downloading=固件下载中
 FW_item1=产品型号
@@ -2628,9 +2648,9 @@ FW_item2_aiboard=AI Board 固件版本
 FW_item5=新固件文件
 FW_manual_update=手动固件更新
 FW_n0=最新版本固件已包含上一版本的更新。
-FW_n2=若升级失败，ZVMODELVZ 将自动进入紧急模式。ZVMODELVZ 前侧的 LED 指示灯将提醒您这一状态。请至<a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/Download-Center/" target="_blank">华硕下载中心</a>下载 ASUS Firmware Restoration 实用程序。
-FW_n3=Check on <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="" target="_blank">FAQ</a> for more instructions.
-FW_n4=Check on <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: #FFCC00;\" href=\"\" target=\"_blank\">FAQ</a> for more instructions.
+FW_n2=若升级失败，ZVMODELVZ 将自动进入紧急模式。ZVMODELVZ 前侧的 LED 指示灯将提醒您这一状态。请至<a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/Download-Center/" target="_blank">华硕下载中心</a>下载 ASUS Firmware Restoration 实用程序。
+FW_n3=请查看 <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="" target="_blank">FAQ</a> 以获取更多说明。
+FW_n4=请查看 <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: var(--wrt-badge-warning-color,#FFCC00);\" href=\"\" target=\"_blank\">FAQ</a> 以获取更多说明。
 FW_n5=关于固件/安全升级的数据收集，请参考“管理->隐私”页面的“ASUS 隐私声明”（针对固件/安全升级）。
 FW_note=注：
 FW_note_AiMesh=手动固件更新仅会更新您所选择的 AiMesh 路由器/节点，若您正在使用 AiMesh 系统，请确认您上传正确的 AiMesh 固件版本至合适的路由器/节点。
@@ -2690,6 +2710,7 @@ Gear_Accelerator=设备加速器
 Gear_Accelerator_desc=游戏设备优先
 Gear_Accelerator_desc1=优先考虑游戏设备以获得最佳游戏体验。
 Gear_Accelerator_List=游戏设备清单
+Gear_Accelerator_confirm=要启用 %@，将禁用硬件加速，这可能会降低网络速度。是否继续？
 Game_Ark_Devices_identification=游戏设备识别
 Game_Ark_Devices_identification_desc=游戏设备识别可智能地为您连接的设备优先处理网络流量。
 Game_Ark_First_desc=GameFirst V 搭配 ROG 主板、笔记本电脑和台式电脑可优化在线 PC 游戏网络流量传输。
@@ -2706,12 +2727,12 @@ GB_account_type2=路由器高级帐户
 GB_ended_date=结束日期
 GB_ended_date_desc=由于仅限高级帐号才能够拥有更多代理服务器选项功能，WTFast为每位新用户提供14天的高级试用期。试用期过后，您仍可使用基本帐号功能享受终生授权使用，免费但具有流量限制。
 GB_ended_date_type0=您现在正在使用路由器免费基本帐户。
-GB_management_note1=使用 WTFast 的游戏加速(Game Boost)，表示您已同意 WTFast 的<span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:#008DE5;">使用条款</a></span>及<span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:#008DE5;">隐私条款</a></span>。
-GB_management_note2=如产品页免责声明所述，WTFast 仍在致力于游戏机的支持开发。关于目前所支持的游戏列表，请参照<a href="javascript:open_link('gameList')" style="text-decoration:underline;color:#008DE5;">此表</a>（定期更新）。
+GB_management_note1=使用 WTFast 的游戏加速(Game Boost)，表示您已同意 WTFast 的<span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">使用条款</a></span>及<span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">隐私条款</a></span>。
+GB_management_note2=如产品页免责声明所述，WTFast 仍在致力于游戏机的支持开发。关于目前所支持的游戏列表，请参照<a href="javascript:open_link('gameList')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">此表</a>（定期更新）。
 GB_management_note3=GPN 性能可能会因 ISP 或地点不同而不同，请确认您的固件始终为最新版本。
-GB_management_note4=如何选择 GPN 服务器? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:#008DE5;">点击这里</a></span> 如何获得最佳游戏体验? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:#008DE5;">点击这里</a></span>
-GB_management_note5=如何在华硕路由器上使用 WTFast？<span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:#008DE5;">点击这里</a></span>
-GB_mobile=Mobile Game Mode
+GB_management_note4=如何选择 GPN 服务器? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">点击这里</a></span> 如何获得最佳游戏体验? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">点击这里</a></span>
+GB_management_note5=如何在华硕路由器上使用 WTFast？<span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">点击这里</a></span>
+GB_mobile=手游模式
 GB_mobile_desc=手机游戏加速
 GB_mobile_desc1=下载并安装 ASUS Router 应用。在应用中启用手机游戏模式，以确保最佳的手机游戏体验。
 GB_mobile_desc_short=下载并安装 ASUS Router 应用。
@@ -2730,7 +2751,7 @@ General_x_SystemUpTime_itemname=已开机时间
 GeneralLog_title=此页显示具体系统活动。
 get_beta=获取测试版固件
 go_GuestNetwork=前往访客网络
-GO_HSDPA_SETTING=到 USB Modem 设置
+GO_HSDPA_SETTING=到 USB 调制解调器 设置
 GO_SETTING=前往设置
 Group_settings=组设置
 Group_WAN=WAN 分组
@@ -2828,11 +2849,11 @@ HSDPAConfig_dialnum_itemdesc=请输入连线号码。
 HSDPAConfig_DialNum_itemname=连线号码
 HSDPAConfig_DNSServers_itemname=DNS 服务器
 HSDPAConfig_hsdpa_enable_hint1=切换到 USB 模式以使用 3G/4G USB 无线网络卡、iPhone 或 Android 手机作为 USB 调制解调器。
-HSDPAConfig_hsdpa_enable_hint2=若要更改联机类型，请先至<a href="/Advanced_Modem_others.asp">USB Modem 设定</a>停用 3G/4G USB 无线网络卡
-HSDPAConfig_hsdpa_enable_itemname=启用 USB Modem
-HSDPAConfig_hsdpa_mode_itemname=USB Modem 模式
+HSDPAConfig_hsdpa_enable_hint2=若要更改联机类型，请先至<a href="/Advanced_Modem_others.asp">USB 调制解调器 设定</a>停用 3G/4G USB 无线网络卡
+HSDPAConfig_hsdpa_enable_itemname=启用 USB 调制解调器
+HSDPAConfig_hsdpa_mode_itemname=USB 调制解调器 模式
 HSDPAConfig_hsdpa_mode_itemdesc=接上 3G/4G USB 无线网络卡，让你的 ZVMODELVZ 变身为行动网络基地台。
-HSDPAConfig_hsdpa_mode_status=USB Modem 状态
+HSDPAConfig_hsdpa_mode_status=USB 调制解调器状态
 HSDPAConfig_isp_itemdesc=请选择网络服务提供商(ISP)。
 HSDPAConfig_ISP_itemname=ISP
 HSDPAConfig_password_itemdesc=请输入您的密码。
@@ -3113,7 +3134,7 @@ LANHostConfig_x_DDNS_retrieve_IP_note=[内部]通过您的路由器的 IP/WAN IP
 LANHostConfig_x_DDNS_update_confirm=IP 地址， 服务器和主机名称自上次更新后尚未更改。 如需更新，请点击 [是]。
 LANHostConfig_x_DDNSEnable_itemname=DDNS
 LANHostConfig_x_DDNSEnable_sectiondesc=动态 DNS （DDNS）让您即使在没有静态 IP 地址的情况下，仍可将服务器连同特有名称一并汇出至因特网上。
-LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:#FFFFFF;">更多细节，请参考<a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">此常见问题</a>。
+LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:var(--wrt-text-color,#FFFFFF);">更多细节，请参考<a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">此常见问题</a>。
 LANHostConfig_x_DDNSEnable_sectiondesc3=主机名已登记成功。您可以使用 "[hostname].asuscomm.com" 从 WAN 中获取主机网络服务。使用"[hostname].asuscomm.com" 远程获取您的网络。<p>选择 进阶设定 > 外部网络 设定端口转发或 DMZ，允许其他 WAN 客户端远程获取您的网络。<p>若您想要远程设置无线路由器，选择 <a href="/Advanced_System_Content.asp?af=misc_http_x" target="_blank" style="text-decoration: underline; font-family:Lucida Console;">这里</a>。
 LANHostConfig_x_DDNSEnable_sectiondesc4=目前的路由器使用专用 IP。
 LANHostConfig_x_DDNSEnable_faq1=DDNS 简介和设置
@@ -3340,7 +3361,7 @@ month=月
 MoreConfig=更多设置
 MPPE_Encryp=MPPE 加密
 mssid_time_remaining=剩余时间
-multiservice_WAN=Multi-Service WAN
+multiservice_WAN=多服务 WAN
 NAT_Acceleration=NAT 加速
 NAT_AccelerationDesc=启用 NAT 加速后，交换机可以自行处理网络数据包并绕过 CPU。它可以提高 NAT 吞吐量，但某些功能可能无法准确运行，例如时间安排，访客网络上的传统 QoS 和带宽限制器等。如果将 NAT 加速设置为自动，则这些功能在启用后会被自动禁用。
 NAT_Acceleration_ctf_disable=NAT 加速由 CPU 处理。
@@ -3355,7 +3376,7 @@ NAT_IPSec_Passthrough=IPSec Passthrough
 NAT_L2TP_Passthrough=L2TP Passthrough
 NAT_lacp=绑定/链路聚合
 NAT_lacpDesc=此项目有多个名称：端口聚合/绑定/成组/链路聚合/ 802.3ad
-NAT_lacp_disable_note=Change IPTV/ VOIP port settings to LAN5/ LAN6 will disable Bonding/ Link aggregation function. Are you sure to do it?
+NAT_lacp_disable_note=将 IPTV/ VOIP 端口设置更改为 LAN5/ LAN6 将禁用 Bonding/ Link aggregation 功能。您确定要执行吗？
 NAT_lacp_note=启用链路聚合（802.3ad）支持您的有线客户端，并将其连接至路由器的 LAN1 和 LAN2 接口。
 NAT_passthrough_desc=启用 NAT 穿透功能，让虚拟专用网 Virtual Private Network (VPN) 服务所需要用到的协定允许通过。
 NAT_PPTP_Passthrough=PPTP 穿透
@@ -3415,8 +3436,8 @@ note_hide_SSID_WPS=如果要启用 WPS，则需首先禁用隐藏 SSID。
 note_up_to_date=Note: New patch will be updated regularly, please keep your firmware stay up to date.
 Notice=提示
 Notification_Item=提示种类
-Notification_security_update=Security Update Notification
-Notification_security_desc=Monitor this log to stay informed about system security changes that may affect your network.
+Notification_security_update=安全更新通知
+Notification_security_desc=监控此日志以了解可能影响您网络的系统安全变更。
 Now=现在
 number_of_client=客户端数量
 NSlookup_help=如果您遇到华硕 DDNS 服务无法使用的问题，请前往 <a href="https://iplookup.asus.com/nslookup.php" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">https://iplookup.asus.com/nslookup.php</a> 网站取得您的实体 IP 地址以进行使用
@@ -3440,7 +3461,7 @@ ParentalCtrl_default=默认情况下，全时段不允许互联网连接。
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_default=默认情况下，全时段不允许互联网连接。
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]ParentalCtrl_default=已添加至「家长控制功能」的设备将被默认为限制访问互联网的权限。
 ParentalCtrl_deny=禁止访问网络
-ParentalCtrl_disable_NAT=请禁用 <a id="disable_NAT" style="color:#FC0;text-decoration: underline;" href="" target="_blank">NAT 加速</a> 以进行更精确的计划控制。
+ParentalCtrl_disable_NAT=请禁用 <a id="disable_NAT" style="color:var(--wrt-badge-warning-color,#FC0);text-decoration: underline;" href="" target="_blank">NAT 加速</a> 以进行更精确的计划控制。
 ParentalCtrl_Enable=开启家长管理
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_Enable=开启设备访问控制功能
 ParentalCtrl_Enable_TS=开启时间计划
@@ -3749,6 +3770,7 @@ select_service=选择服务名称。
 select_usb_device=选择 USB 设备
 select_usb_mode=USB Mode
 select_wireless_MAC=选择无线客户端的 MAC 地址。
+Sending_str=正在发送…
 Send_mail=发送邮件
 Serial_Number=序列号
 Servers_Center=服务器中心
@@ -3773,7 +3795,8 @@ Setting_initialize_desc_ai=将主路由器系统恢复出厂设置不会删除 A
 Setting_lock_main_unit=锁定主设备
 Setting_lock_main_unit_desc1=启用后，该设备将被限制为主设备角色，且无法作为节点加入其他网络。
 Setting_lock_main_unit_desc2=注意：更改此状态将触发恢复出厂设置并需要重新配置。
-Setting_lock_main_unit_confirm=更改“锁定主设备”状态需要恢复出厂设置。这将清除所有当前的网络设置。
+Setting_lock_main_unit_desc3=如果您有活动的 Mesh 网络且有 Nodes 连接到此 CAP，请注意在将 CAP 恢复出厂设置后，这些 Nodes 也必须手动重置。
+Setting_lock_main_unit_confirm=更改“锁定主设备”状态需要“恢复出厂设置”。这将清除所有当前的网络设置。
 Setting_save_itemdesc=点选「保存」，将目前 ZVMODELVZ 的设置值另存成文件。（注：在您将目前的设置值存成文件时，亦同样会存入闪存内。）
 Setting_save_itemdesc_ai=保存设置不包含 AI Board 系统的配置与数据。
 Setting_save_itemname=导出设置
@@ -3782,7 +3805,7 @@ Setting_upload_hint=文件格式或路径不正确！
 Setting_upload_itemdesc=请将设置文件的路径及名称指定到此字段，然后点选「上传」将文件写入到 ZVMODELVZ 上。请等候约60秒的时间直到系统重新启动完毕。
 [###MODEL_DEP###][RT-N65U]Setting_upload_itemdesc=请将设置文件的路径及名称指定到此字段，然后点选「上传」将文件写入到 ZVMODELVZ 上。请等候约90秒的时间直到系统重新启动完毕。
 Setting_upload_itemname=恢复设置
-Setting_remove_passwd=如果您想分享设定档以供故障排除，请在方框中打勾。由于设定档中的密码会被移除，请避免再将此档案汇入您的路由器。
+Setting_remove_passwd=如果您想分享配置文件用于调试，请勾选此复选框。由于配置文件中的原始密码会被移除，请不要将该文件导入您的路由器。
 Setting_ai_board=AI Board 设置
 Setting_ai_board_fw_ver=AI Board 固件版本
 Setting_ai_dk_Apps=Docker 应用程序
@@ -3819,8 +3842,11 @@ Setting_rescue_ai_FWUpload=上传固件
 Setting_rescue_ai_FWInstall=安装固件
 Setting_rescue_ai_appInstall=安装 APP
 Setting_rescue_ai_complete=AI Board 救援已完成。
+Setting_rescue_ai_Interrupted=AI Board 救援中断
+Setting_rescue_ai_Interrupted_desc1=救援过程因意外中断或断电而失败。
+Setting_rescue_ai_Interrupted_desc2=请确保电源连接稳定后重试。
 Setting_prog_ai_currStep=当前步骤：
-Setting_prog_ai_Note=注意：系统正常运行，请勿中断操作。
+Setting_prog_ai_Note=注意：系统运行正常。请勿中断，并确保稳定的电源和互联网连接。
 Setting_prog_ai_serveralTime=此过程可能需要几分钟。
 Settings=设置
 Setup_note=点选<a id="redirect_to_setup">此处</a>进行设定；更多信息，请参考 <a id="redirect_to_FAQ">「常见问题解答」</a>。
@@ -3987,10 +4013,33 @@ SDN_Scenarios_desc=你想新增一个特殊用途的无线网络吗？
 SDN_MainFH_for_clients=MLO前传（用于客户端）
 SDN_MainFH_keep_Hint=At least one main network must be retained.
 SDN_MainFH_Smart_Connect_Hint=由于已创建智能连接规则，请选择单一的 WiFi 频段。
+SDN_mlo_switch_fh_hint1=只能启用一个 MLO 前传。
+SDN_mlo_switch_fh_hint2=是否要停用 %1$@ 的 MLO 前传并启用 %2$@？
 SDN_Sync_To_All_Node=同步到所有 AiMesh 节点
 SDN_Sync_To_All_Node_Hint=如果您的 AiMesh 节点为旧型号，或者 WiFi 已达到最大容量，将无法同步到所有 AiMesh 节点。请从以下菜单中选择要同步的节点。
 SDN_Sync_limitation_Hint=对于较旧的 AiMesh 节点，无法同步所有频段。
 SDN_MainFH_WiFi_conflict=%1$@ WiFi 频段已使用。冲突的 %2$@ (%3$@) 网络将在应用设置后被删除。
+SDN_Auth_WPA3_only_subtext1=最高安全选项，仅允许 WPA3 连接。
+SDN_Auth_WPA3_only_subtext2=（注意：不支持 WPA3 的旧型设备可能无法连接。）
+SDN_Auth_WPA3_dual=标准双模式安全选项。
+SDN_Auth_WPA3_dual_desc=新型设备会通过 WPA3 连接，旧型设备则通过 WPA2 连接。
+SDN_Auth_WPA3_dual_mode=兼容模式
+SDN_Auth_WPA3_dual_mode_subtext1=增强型双模式安全选项，已针对使用 RSN 覆写的旧型设备进行优化。
+SDN_Auth_WPA3_dual_mode_subtext2=可确保旧型设备保持连接，同时让新型设备使用 WPA3。
+SDN_Auth_WPA3_dual_mode_subtext3=（注意：部分过渡代设备可能会使用 WPA2。）
+SDN_Auth_WPA3_subtext=采用 RSN overriding，针对较旧设备优化的增强型安全选项。它可为现代设备提供最高级别的安全性，同时为非现代客户端保持稳定连接。
+SDN_WiFi_Mode_Only6G_Hint=为符合全球 WiFi 标准，6GHz 频段上的所有网络都必须使用相同的 WiFi 代际。
+SDN_WiFi_Mode_24G_Hint=2.4GHz 会根据您的 WiFi 模式设置运行。
+SDN_Compatibility_Mode_Off=兼容模式已关闭。
+SDN_Compatibility_Mode_24=2.4GHz 兼容模式
+SDN_Balance_Mode=均衡
+SDN_Balance_Mode_desc=在性能与设备兼容性之间取得最佳平衡。
+SDN_Balance_Mode_desc1=2.4GHz 以 WiFi 6 模式运行。
+SDN_Ultra_Compatibility_Mode=超高兼容性
+SDN_Ultra_Compatibility_Mode_desc=确保旧版或较旧的 IoT 设备稳定连接。
+SDN_Ultra_Compatibility_Mode_desc1=2.4GHz 以 WiFi 4 模式运行。
+SDN_IPv6_FreeWiFi_Hint=注意：Free WiFi 不支持仅 IPv6 环境。请确保已启用 IPv4 或双栈，以便重定向客户端。
+SDN_IPv6_MessageBoard_Hint=注意：Message Board 不支持仅 IPv6 环境。请确保已启用 IPv4 或双栈，以供客户端使用。
 t2BC=基本设置
 t2LAN=内部网络
 t2Misc=其它
@@ -4066,7 +4115,9 @@ TZ02=中途岛，萨摩亚群岛
 TZ03=夏威夷
 TZ04=阿拉斯加
 TZ05=太平洋时间 (美国和加拿大)
+TZ05_1=温哥华，怀特霍斯
 TZ06=山区时间 (美国和加拿大)
+TZ06_1=埃德蒙顿，耶洛奈夫
 TZ07=亚历桑那
 TZ08=马札特兰
 TZ10=萨克其万(加拿大)
@@ -4190,7 +4241,7 @@ USB_Application_Preparing=正在准备应用程序
 USB_Application_Stopping=正在停止运行中的应用程序
 USB_Application_Stopwapping=正在停止虚拟内存
 USB_Application_Swap_creating=正在创建虚拟内存
-USB_disabled=USB modem 已关闭。
+USB_disabled=USB 调制解调器 已关闭。
 usb_failed_connect_internet=连接到互联网失败。
 usb_failed_create_swap=创建虚拟内存发生错误。
 usb_failed_install=安装应用程序失败。
@@ -4222,7 +4273,7 @@ usb_tls_conflict=允许匿名登录与 TLS 设置冲突。
 usb_tls_conflict_WANacc=WAN 访问与 TLS 设置冲突。
 usb_uninstalling=正在从 USB 存储设备移除应用程序
 usb_unmount=USB 功能未开启
-use_DevDiscoveryUtil=安装并使用 <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery 程序</a> 来侦测无线路由器的 IP 地址。
+use_DevDiscoveryUtil=安装并使用 <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery 程序</a> 来侦测无线路由器的 IP 地址。
 Username=用户名
 Username_Pwd=用户名称与密码
 UserQoS_desc=在使用者定义带宽管理规定下拉列表中，您可以将网络应用程序或装置优先至五个等级。依据优先级，带宽管理使用以下方法传输数据包：<ul><li>更换上行网络数据包的顺序，可参照数据包传输至网络的顺序。</li><li>优先级低的数据包会被忽视以确保高优先级的传输。优先级较高的上行数据包将会产生优先级较高的下行数据包。</li><li>若优先级高的应用程序中无数据包传输，则低优先级的数据包将获得全部的网络传输率。</li></ul>
@@ -4232,6 +4283,7 @@ UserQoS_transferred_hint=在「传送量」栏目中，向一个特定的服务�
 UserQoSRule_desc_zero=请先开启的带宽管理后再设定规则。
 UserQoSRule_desc_one=默认情况下，上传与下载带宽的优先级为「低」。若没有带宽优先级规则，上传与下载的带宽优先级都为「低」。
 Utility=应用程序
+Verifying_str=正在验证…
 Video_Find=查找视频教程
 Video_Link1=点击开启教学视频。
 View_List=阅览名单
@@ -4330,7 +4382,7 @@ vpn_openvpn_required_acc_pwd=当前 .ovpn 文件需要用户名和密码。
 vpn_openvpnc_importCA=导入 CA 文件
 vpn_openvpnc_importovpn=导入 .ovpn 文件
 vpn_openvpnc_manual=导入 CA 文件或手动编辑 .ovpn 文件。
-vpn_privateIP_hint=无线路由器当前使用的是私人 WAN IP 地址（192.168.x.x, 10.x.x.x 或 172.16.x.x）。请参考<a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:#FC0;'>常见问题解答</a>并设置端口转发。
+vpn_privateIP_hint=无线路由器当前使用的是私人 WAN IP 地址（192.168.x.x, 10.x.x.x 或 172.16.x.x）。请参考<a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>常见问题解答</a>并设置端口转发。
 vpn_preshared_key=预共享私钥 (密钥)
 vpn_preshared_key_hint=输入预共享私钥
 vpn_switch_confirm=ASUSWRT 一次仅支持一个 VPN 服务器连接。若您启用了 \"OpenVPN 服务器\"，则 \"PPTP 服务器\" 将被自动禁用。您确定要启用 VPN 服务器吗？
@@ -4401,6 +4453,16 @@ vpn_wireguard_client_faq=如何在 VPN Fusion (多 VPN 联机) 设置 WireGuard�
 vpn_wireguard_client_config=Please use the following configuration to set up your WireGuard client.
 vpn_wireguard_qr_desc=Please download WireGuard App from Google Play or Apple Store, then use the APP to scan the QR Code to connect to this server.
 vpn_wireguard_qr_foriOS=For iOS users, you must assign a specific DNS server to WireGuard app before accessing the internet through WireGuard Server.
+vpn_wireguard_ep_mode=Endpoint 模式
+vpn_wireguard_ep_src=主机名来源
+vpn_wireguard_ep_system_ddns=系统 DDNS
+vpn_wireguard_ep_custom=自定义主机名
+vpn_wireguard_ep_desc=自动模式会根据当前网络状态自动确定 Endpoint。在 DDNS 模式下，您可以选择系统设置中已配置的 DDNS，或输入自定义主机名。
+vpn_wireguard_ep_custom_desc=自定义主机名独立于系统设置中的 DDNS 设置。为确保连接成功，请确认自定义主机名可正确解析到路由器的 IP 地址。
+vpn_wireguard_ep_ddns_hint=DDNS 未启用。请前往“设置 > WAN > DDNS”完成设置。否则，此 Endpoint 将无法正常运行。
+vpn_wireguard_ep_ddns_disable_confirm=禁用 DDNS 后，使用此 DDNS 的 VPN 配置文件可能无法建立连接。您要继续吗？
+vpn_wireguard_ep_custom_blank=请输入自定义主机名。
+vpn_wireguard_ep_custom_invalid=主机名格式无效。请输入有效的 FQDN，例如 vpn.example.com。请勿包含 http://、https://、端口号或 URL 路径。
 vpnc_auth=VPN 身份验证
 vpnc_auth_for_clients=VPN 客户端认证
 vpnc_Client_Cert=客户端证书
@@ -4426,6 +4488,32 @@ vpnc_profile_assignALL=适用于所有设备
 vpnc_profile_assignDevice=将设备分配到此配置文件
 vpnc_profile_del=删除配置文件
 vpnc_profile_select_suggest=请选择另一 VPN 配置文件以取消互联网默认 WAN。
+vpnc_ssk_login=登录您的 Surfshark 账号
+vpnc_ssk_login_note=请输入账号和密码。
+vpnc_ssk_invalid_long=账号或密码过长（最多 128 个字符）。
+vpnc_ssk_invalid_char=账号或密码包含无效字符。
+vpnc_ssk_invalid_format=账号或密码格式无效。
+vpnc_ssk_login_AuthCode=请输入发送到您电子邮件的 6 位验证码，或由 Authenticator 应用生成的验证码。
+vpnc_ssk_login_AuthCode_enter=请输入 6 位验证码。
+vpnc_ssk_login_AuthCode_confirm=没有收到验证码？点击上方的“重新发送”，我们将发送新的验证码。
+vpnc_ssk_login_AuthCode_resender=%1$@ 秒后可重新发送
+vpnc_ssk_login_ErrMsg1=账号或密码不正确。
+vpnc_ssk_login_ErrMsg2=Surfshark 服务器不可用。请稍后重试。
+vpnc_ssk_login_ErrMsg4=配置错误。请检查您的设置。
+vpnc_ssk_login_ErrMsg41=配置错误。
+vpnc_ssk_login_ErrMsg5=网络错误。无法连接到 Surfshark。
+vpnc_ssk_login_ErrMsgDef=登录失败。请重试。
+vpnc_ssk_login_success=Surfshark 登录成功。
+vpnc_ssk_login_success_note=Close this notice and complete your VPN settings.
+vpnc_ssk_logout_confirm=您确定要退出您的账号吗？
+vpnc_ssk_Failed_resend=重新发送验证码失败。请重试。
+vpnc_ssk_Failed_verification=验证码无效。请重试。
+vpnc_ssk_KeyPair_max=您的 Surfshark 账号已达到 VPN 密钥对数量上限（50）。若要创建新的 VPN 连接，请从您的 Surfshark 账号中移除未使用的密钥对，然后重试。
+vpnc_ssk_Missing_credent=缺少登录凭据。请关闭并重新登录。
+vpnc_ssk_Timeout_login=登录请求超时。请重试。
+vpnc_ssk_Timeout_resend=重新发送超时。请重试。
+vpnc_ssk_Timeout_verification=验证请求超时。请重试。
+vpnc_ssk_Timeout_network=网络错误。请重试。
 vpnc_step=要开启虚拟专用网 (VPN) 连接，请按照以下步骤操作：
 vpnc_step1=添加设置文件
 vpnc_step2=选择虚拟专用网 (VPN) 连接类型
@@ -4433,6 +4521,7 @@ vpnc_step3=输入由虚拟专用网 (VPN) 提供商提供的 VPN 验证信息，
 vpnc_title=VPN 客户端
 vpnc_peer=对等体
 vpnc_pppoe_dis_nat_confirm=当您的 VPN 客户端使用 PPPoE 连接时，路由器将会自动重启，以关闭 NAT 加速。确定继续？
+vpnc_kill_switch_desc=If enabled, this feature blocks all internet traffic instantly if the VPN drops to prevent IP and data leaks. Connection will be suspended until the VPN successfully reconnects or the feature is disabled.
 WAN_barrier=障碍
 WAN_Cfg_Ethernet_WAN=配置 ZVMODELVZ 的以太网设置。
 WAN_default_route=默认路由器
@@ -4497,7 +4586,7 @@ WANTCPMSSOptionText=TCP MSS 选项
 WANTCPMSSOptionComm1Text=字节
 WANVLANIDText=VLAN ID
 WANAggregation=WAN 聚合
-WANAggregation_desc=WAN Aggregation 融合了两条网络连接，将您的 WAN 传送速度提高至 2Gbps。请使用同一规格的两条网线将路由器的 #WAN 接口和 LAN 4 接口分别连接至调制解调器的 LAN 接口。 <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN Aggregation FAQ</a>
+WANAggregation_desc=WAN Aggregation 融合了两条网络连接，将您的 WAN 传送速度提高至 2Gbps。请使用同一规格的两条网线将路由器的 #WAN 接口和 LAN 4 接口分别连接至调制解调器的 LAN 接口。 <a id="wanAgg_faq" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">WAN Aggregation FAQ</a>
 WANAggregation_enable=启用 WAN 聚合
 WANAggregation_disable_dualwan=已启用路由器的双 WAN 功能，启用 WAN Aggregation 将会关闭双 WAN 功能。确认继续吗？
 WANAggregation_disable_WANAggregation=已启用路由器的 WAN Aggregation 功能，启用双 WAN 将会关闭 WAN Aggregation。确认继续吗？
@@ -4506,13 +4595,13 @@ WANAggregation_PortConflict_hint2=IPTV 正在使用路由器的 LAN 4 接口，�
 WANAggregation_disable_IPTVDualWAN=您的路由器已启用双 WAN 和 IPTV，启用 WAN Aggregation 将会关闭 WAN 和 IPTV 以避免端口冲突。确认继续吗？
 WANAggregation_help_WAN=请确认已使用同一规格的两条网线连接路由器的 #WAN 接口和调制解调器的 LAN 接口。
 WANAggregation_help_LAN=请确认已使用同一规格的两条网线连接路由器的 LAN 4 接口和调制解调器的 LAN 接口。
-WANAggregation_goto_WAN=欲启用 WAN Aggregation，请至 <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-互联网连接</a> 页面。
+WANAggregation_goto_WAN=欲启用 WAN Aggregation，请至 <a href="Advanced_WAN_Content.asp" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">WAN-互联网连接</a> 页面。
 WANAggregation_help_desc=若 WAN Aggregation 设置失败，请遵循下列步骤重新进行设置：
 WANAggregation_help_step1=确保调制解调器的 LAN 端口已通过电缆连接到路由器的 #WAN 和 LAN 4。
 WANAggregation_help_step2=请确认调制解调器已启用 802.3ad。
 WANAggregation_help_step3=请确认您使用的两根网线为同一规格（两根皆为千兆，或10/100 与10/100Mbps）
 WANAggregation_help_step4=重启路由器。
-WANAggregation_help_final=若以上步骤皆失败，请将此问题反馈至<a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>华硕支持网站</a>
+WANAggregation_help_final=若以上步骤皆失败，请将此问题反馈至<a href='https://www.asus.com/support/' target='_blank' style='color:var(--wrt-text-color,#000);text-decoration:underline;'>华硕支持网站</a>
 WANAggregation_wanType_hint=WAN 聚合不支持诸如 PPPoE、PPTP 和 L2TP 之类的 WAN 类型。若您的 WAN 类型更改为 PPPoE、PPTP 或 L2TP，WAN 聚合将会自动关闭。确定继续？
 WebGUI_issue=无法访问固件页面
 wechat=微信
@@ -4627,8 +4716,8 @@ WLANConfig11b_display31_sectiondesc=选择 [WDS Only] 或 [Hybrid] 模式并在�
 WLANConfig11b_display32_sectiondesc=确认此无线路由器与您想要连接的基地台使用相同的频道。
 WLANConfig11b_display33_sectiondesc=在想连线的基地台 WDS 管理介面中，输入本无线路由器 MAC 位址位址。
 WLANConfig11b_display34_sectiondesc=要获得最佳性能，请进入「高级设置」>「无线网络」>「一般设置」为网络中的每台路由器设置相同的通道带宽、通道与延伸通道。
-WLANConfig11b_display41_sectiondesc=当前您正在使用自动频道带宽。点击 <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">这里</a> 进行修改。
-WLANConfig11b_display42_sectiondesc=当前您正在使用自动频道。点击 <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">这里</a> 进行修改。
+WLANConfig11b_display41_sectiondesc=当前您正在使用自动频道带宽。点击 <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">这里</a> 进行修改。
+WLANConfig11b_display42_sectiondesc=当前您正在使用自动频道。点击 <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">这里</a> 进行修改。
 WLANConfig11b_display5_sectiondesc=无线专业设置提供您无线网络传输与效率方面的设置。若您没有选择适合的设置，建议采用我们校调好的默认值。
 WLANConfig11b_display6_sectiondesc=WPS (WiFi Protected Setup) 可让您轻松地设置一个安全的无线网络。
 WLANConfig11b_EChannel_acs_ch13=频道自动选择包括 12、13 频道
@@ -4686,6 +4775,7 @@ WLANConfig11b_x_APMode_option2=Hybrid
 WLANConfig11b_x_APSD_itemdesc=此选项可让您开启或关闭 WMM APSD（Automatic Power Save Delivery）。
 WLANConfig11b_x_APSD_itemname=开启 WMM APSD
 WLANConfig11b_x_Airtime_Fairness=无线传输公平性
+WLANConfig11b_x_ApplyAllBands_hint=此调整将应用于所有频段设置。
 WLANConfig11b_x_Airtime_Fairness_itemdesc=在多个连接中提供无线传输公平性
 WLANConfig11b_x_Auto=无线模式需设置为自动
 WLANConfig11b_x_Beacon_itemdesc=访问点每次广播无线信号的时间间隔，单位为微秒(1/1000秒)，默认值为100微秒。在环境变动大，客户端需要漫游时，调低可让用户较快连上；反之则调高，也较节省电源。
@@ -4782,11 +4872,11 @@ WLANConfig11b_x_WPSMode_itemdesc=选择 PIN（Personal Information Number），�
 WLANConfig11b_x_WPSMode_itemname=WPS 联机模式：
 WLANConfig11b_x_WPSPIN_itemdesc=为客户端 PIN 码输入一个八字符的数字。
 WLANConfig11b_x_WPSPIN_itemname=客户端 PIN 码
-WLANConfig11n_Auto_note=[自动] 与当前访客网络验证方式（TKIP 或 WEP）不兼容。请进入 <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">访客网络</a>，并更改验证方式。
+WLANConfig11n_Auto_note=[自动] 与当前访客网络验证方式（TKIP 或 WEP）不兼容。请进入 <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">访客网络</a>，并更改验证方式。
 WLANConfig11n_automode_limition_hint=自动模式下使用 WEP 或 TKIP 加密时，无线网络最多支持 54 Mbps 的传输速率。
 WLANConfig11n_automode_limition_hint1=请将加密类型更改为WPA2-Personal。
-WLANConfig11n_NAC_note=[N+AC] 与当前访客网络验证方式（TKIP 或 WEP）不兼容。请进入 <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">访客网络</a>，并更改验证方式。
-WLANConfig11n_NOnly_note=[N Only] 与当前访客网络验证方式（TKIP 或 WEP）不兼容。请进入 <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">访客网络</a>，并更改验证方式。
+WLANConfig11n_NAC_note=[N+AC] 与当前访客网络验证方式（TKIP 或 WEP）不兼容。请进入 <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">访客网络</a>，并更改验证方式。
+WLANConfig11n_NOnly_note=[N Only] 与当前访客网络验证方式（TKIP 或 WEP）不兼容。请进入 <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">访客网络</a>，并更改验证方式。
 WLANConfig11ax_AXOnly_note=By enabling AX only mode, if devices do not support 802.11ax(WiFi 6), will not able to connect to this band.
 WLANConfig11n_PremblesType_itemdesc=报头类型定义了 CRC (Cyclic Redundancy Check，一种检查数据传输错误的技术)区块的长度。我们建议您网络中所有无线装置都设为同一种报头类型。设定为 short 可以改善传输速率，但必须确定您内部网络内的无线网卡皆支持此设定。</p>
 WLANConfig11n_PremblesType_itemname=802.11b mode
@@ -4904,11 +4994,21 @@ Captive_Portal_Above=以上
 Captive_Portal_Selected_Color=所选颜色
 Captive_Portal_Local=本地
 Configuration=设置
-Configuration_dark_mode=Dark
-Configuration_light_mode=Light
-Configuration_theme=Theme
-Configuration_fancy_theme=Fancy
+Configuration_dark_mode=深色
+Configuration_light_mode=浅色
+Configuration_theme=主题
+Configuration_fancy_theme=花式
+Configuration_flat_theme=扁平
 Continuous_Mode=连续模式
+View_Details=查看详情
+NetworkMap_Clients=客户端
+NetworkMap_Guest_Clients=访客客户端
+NetworkMap_Add_AiMesh_Hint=添加更多 AiMesh 节点以扩展您的 WiFi 覆盖范围。
+Dashboard_Show_more=显示更多
+Dashboard_Show_less=显示较少
+Dashboard_Expand=展开
+Dashboard_Refreshing=正在刷新
+Dashboard_Last_updated=上次更新
 CTL_Apply_Enable=应用并开启
 FreeWiFi_AccessPolicy=访问策略
 FreeWiFi_AccountSetting_desc1=帐号设置可让您轻松进行访客帐号设置。为保护您的访客网络，您可以对访客帐号数据进行维护。相关客户端访问互联网前需要输入下列帐号和密码。
@@ -4992,7 +5092,7 @@ menu_privacy=政策
 ASUS_Notice_Privacy=华硕提醒您（关于隐私权）
 Distributing_IP=正在分配 IP 地址……
 LED_Brightness=LED 指示灯亮度
-LED_disabled_hint=This change will disable the special LED effect for the %1$@.
+LED_disabled_hint=此更改将禁用 %1$@ 的特殊 LED 效果。
 WiFi_Network_List=WiFi 网络列表
 Searching_WiFi_Network=正在搜索附近的 WiFi 网络……
 BoostKey=Boost Key
@@ -5162,7 +5262,7 @@ Notice_Message_3=我已阅读，不再显示。
 CTL_Decline=拒绝
 Outdoor_desc_title=Warning
 Outdoor_active_desc_1=启用户外模式后，AiMesh 将受限，并可能导致节点断开连接。
-Outdoor_active_desc_2=为遵守规定，系统将扫描频道约 1 分钟以避免气象雷达干扰。<span style="color:#FC0">若检测到雷达信号，将切换至 2.4GHz，导致短暂断线。受影响的频道将被封锁 30 分钟。</span>
+Outdoor_active_desc_2=为遵守规定，系统将扫描频道约 1 分钟以避免气象雷达干扰。<span style="color:var(--wrt-badge-warning-color,#FC0)">若检测到雷达信号，将切换至 2.4GHz，导致短暂断线。受影响的频道将被封锁 30 分钟。</span>
 Outdoor_active_desc_3=户外模式仅支持路由器与 AP 模式。
 Outdoor_active_desc_4=可用的户外频道因国家/地区而异。
 Outdoor_inactive_desc_1=停用此模式将短暂重启无线并断开所有设备的连接。
@@ -5193,6 +5293,7 @@ WiFi_DFS_REENTRY=DFS-重新进入
 WiFi_ch_conflict=信道冲突
 WiFi_Regulatory=法规
 WiFi_OFF=WiFi 关闭
+WiFi8_6G_enable_hint=6GHz 当前以 WiFi 7 模式运行。要启用 WiFi 8，请在 6GHz 无线专业设置中开启“WiFi 8”。
 Vendor=厂商
 Connected_AP=已连接的 AP
 Network_SDN=网络(SDN)

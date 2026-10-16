@@ -173,13 +173,33 @@ static int llmnr_send_response(struct endpoint *ep, _saddr_t *sa,
 	in_name = strdup("");
 	in_name_len = 0;
 	in_name_p = &in[12];
-	while (*in_name_p > 0) {
+	while (in_name_p < in + inlen && *in_name_p > 0) {
 		/*
 		 * not supporting message compression
 		 * see section 4.1.4 of RFC 1035
 		 */
 		if (*in_name_p >= 0xC0) {
 			DEBUG(1, L, "llmnr: message compression not supported");
+			free(in_name);
+			return -1;
+		}
+
+		/*
+		 * A DNS label is capped at 63 octets (RFC 1035 sec 3.1).
+		 */
+		if (*in_name_p > 63) {
+			DEBUG(1, L, "llmnr: label length %u exceeds 63",
+				  *in_name_p);
+			free(in_name);
+			return -1;
+		}
+
+		/*
+		 * Ensure the label (length byte + data) stays within the
+		 * received packet before reading it (OOB read guard).
+		 */
+		if (in_name_p + 1 + *in_name_p > in + inlen) {
+			DEBUG(1, L, "llmnr: label extends past packet end");
 			free(in_name);
 			return -1;
 		}
@@ -209,6 +229,17 @@ static int llmnr_send_response(struct endpoint *ep, _saddr_t *sa,
 	char abuf[_ADDRSTRLEN];
 	DEBUG(2, L, "llmnr: name in query %s (length: %zu) from %s", in_name, in_name_len,
 		inet_ntop(sa->ss.ss_family, _SIN_ADDR(sa), abuf, sizeof(abuf)));
+
+	/*
+	 * qtype/qclass follow the terminating zero label as 4 octets
+	 * (in_name_p[1..4]); make sure they are within the packet
+	 * before reading (OOB read guard).
+	 */
+	if (in_name_p + 4 >= in + inlen) {
+		DEBUG(1, L, "llmnr: question section truncated");
+		free(in_name);
+		return -1;
+	}
 
 	/*
 	 * this implementation only supports questions of type A

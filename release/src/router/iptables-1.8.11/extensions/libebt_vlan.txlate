@@ -1,0 +1,11 @@
+ebtables-translate -A INPUT -p 802_1Q --vlan-id 42
+nft 'add rule bridge filter INPUT vlan id 42 counter'
+
+ebtables-translate -A INPUT -p 802_1Q ! --vlan-prio 1
+nft 'add rule bridge filter INPUT vlan pcp != 1 counter'
+
+ebtables-translate -A INPUT -p 802_1Q --vlan-encap ip
+nft 'add rule bridge filter INPUT vlan type 0x0800 counter'
+
+ebtables-translate -A INPUT -p 802_1Q --vlan-encap ipv6 ! --vlan-id 1
+nft 'add rule bridge filter INPUT vlan id != 1 vlan type 0x86dd counter'

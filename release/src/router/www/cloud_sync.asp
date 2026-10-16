@@ -260,7 +260,7 @@ function showInvitation(){
 		
 		if(decode_array[3] != ""){
 			htmlCode += "<tr id='verification' height='40px'><td width='30%'>Verification</td><td><input id='veriCode' type='text' onkeypress='return validator.isNumber(this,event)' class='input_6_table' style='margin-left:0px;' maxlength='4' value=''>";
-			htmlCode += "<span style='color:#FC0;display:none;margin-left:5px;' id='codeHint'><#JS_Invalid_Vcode#></span></td></tr>";
+			htmlCode += "<span style='color:var(--wrt-badge-warning-color,#FFCC00);display:none;margin-left:5px;' id='codeHint'><#JS_Invalid_Vcode#></span></td></tr>";
 		}
 
 		htmlCode += "</table>";
@@ -467,11 +467,11 @@ function showcloud_synclist(){
 	var cloud_synclist_data = [];
 	code +='<table width="99%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="cloud_synclist_table">';
 	if(enable_cloudsync == '0' && cloud_synclist_array != "")
-		code +='<tr height="55px"><td style="color:#FFCC00;" colspan="6"><#nosmart_sync#></td>';
+		code +='<tr height="55px"><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="6"><#nosmart_sync#></td>';
 	else if(document.getElementById("usb_status").className == "usbstatusoff")
-		code +='<tr height="55px"><td style="color:#FFCC00;" colspan="6"><#no_usb_found#></td>';
+		code +='<tr height="55px"><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="6"><#no_usb_found#></td>';
 	else if(cloud_synclist_array == "")
-		code +='<tr height="55px"><td style="color:#FFCC00;" colspan="6"><#IPConnection_VSList_Norule#></td>';
+		code +='<tr height="55px"><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="6"><#IPConnection_VSList_Norule#></td>';
 	else{
 		for(var i = 0; i < cloud_synclist_row.length; i++){
 			rulenum++;
@@ -1856,7 +1856,7 @@ function onDropBoxLogin(_parm){
 							<td>
 							  <input type="text"  class="input_32_table" style="height: 23px;" id="usbclient_sharefolder" name="usbclient_sharefolder" value="" autocorrect="off" autocapitalize="off">
 							  <input name="button" type="button" class="button_gen" onclick="get_disk_tree(0);" value="<#Cloudsync_browser_folder#>"/>
-								<div id="noUSB0" style="color:#FC0;display:none;margin-left: 3px;"><#no_usb_found#></div>
+								<div id="noUSB0" style="color:var(--wrt-badge-warning-color,#FFCC00);display:none;margin-left: 3px;"><#no_usb_found#></div>
 							</td>
 						</tr>	
 
@@ -1914,7 +1914,7 @@ function onDropBoxLogin(_parm){
 								<td>
 									<input type="text" id="PATH" class="input_32_table" style="height: 23px;" name="cloud_dir" value="" onclick="" autocomplete="off" autocorrect="off" autocapitalize="off"/>
 		  						<input name="button" type="button" class="button_gen" onclick="get_disk_tree(1);" value="<#Cloudsync_browser_folder#>"/>
-									<div id="noUSB" style="color:#FC0;display:none;margin-left: 3px;"><#no_usb_found#></div>
+									<div id="noUSB" style="color:var(--wrt-badge-warning-color,#FFCC00);display:none;margin-left: 3px;"><#no_usb_found#></div>
 								</td>
 						  </tr>
 
@@ -1935,7 +1935,7 @@ function onDropBoxLogin(_parm){
 	  					<input name="button" type="button" class="button_gen" onclick="showAddTable();" value="<#CTL_Cancel#>"/>
 						<input id="applyBtn" name="button" type="button" class="button_gen" onclick="applyRule()" value="<#CTL_apply#>"/>
 						<input id="authBtn" name="button" type="button" class="button_gen" value="Authenticate"/>
-						<span id="authHint" style="color:#FC0;display:none"><#Authenticated#></span>
+						<span id="authHint" style="color:var(--wrt-badge-warning-color,#FFCC00);display:none"><#Authenticated#></span>
 	  				</div>
 </div>
 <table border="0" align="center" cellpadding="0" cellspacing="0" class="content">
@@ -2016,7 +2016,7 @@ function onDropBoxLogin(_parm){
 							<table width="99%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="cloud_synclist_table">
 								<tbody>
 									<tr height="55px">
-										<td style="color:#FFCC00;" colspan="6"><#QKSet_detect_sanglass#>...</td>	<!-- Detecting -->
+										<td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="6"><#QKSet_detect_sanglass#>...</td>	<!-- Detecting -->
 									</tr>
 								</tbody>
 							</table>

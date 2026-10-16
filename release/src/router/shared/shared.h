@@ -78,6 +78,10 @@
 #include "vpn_utils.h"
 #endif
 
+#if defined(RTCONFIG_OOKLA) || defined(RTCONFIG_OOKLA_LITE)
+#include "ookla_common.h"
+#endif
+
 #if defined(RTCONFIG_PTHSAFE_POPEN)
 #if defined(RTCONFIG_QCA)
 #define	popen	PS_popen
@@ -1112,6 +1116,7 @@ extern void set_radio(int on, int unit, int subunit);
 
 extern char *nvram_get_r(const char *name, char *buf, size_t buflen);
 #define nvram_safe_get_r(name, buf, bufsize) (nvram_get_r(name, buf, bufsize) ? : "")
+extern char *nvram_conf_safe_get(const char *name);
 extern char *nvram_pf_get(const char *prefix, const char *name);
 #define nvram_pf_safe_get(prefix, name) (nvram_pf_get(prefix, name) ? : "")
 extern int nvram_pf_set(const char *prefix, const char *name, const char *value);
@@ -2281,6 +2286,21 @@ static inline int client_mode(void)
 	return 0;
 }
 
+/* WiFi7/WiFi8 standalone MLO media bridge (plan B): built on the traditional
+ * wlc_psta==1 wet path; mld_enable==1 signals the MLO uplink is enabled. Kept
+ * separate from the A-path mlo_mb flag (bound to wlc_psta==2) to avoid polluting
+ * is_psta_mlo etc.
+ * Gated on RTCONFIG_WIFI8 (SDK 6.4.0 WIFI8_SDK_* builds) or WIFI7_SDK_20250506
+ * (SDK 6.2.0), since MLO media bridge is validated on both SDK generations. */
+#if (defined(RTCONFIG_WIFI8) || defined(WIFI7_SDK_20250506)) && defined(RTCONFIG_MLO)
+static inline int is_mlo_media_bridge(void)
+{
+	return (sw_mode() == SW_MODE_AP && nvram_get_int("wlc_psta") == 1 && nvram_get_int("mld_enable") == 1);
+}
+#else
+static inline int is_mlo_media_bridge(void) { return 0; }
+#endif
+
 #ifdef RTCONFIG_DPSTA
 static inline int dpsta_mode()
 {
@@ -2946,6 +2966,9 @@ extern unsigned int get_uplinkports_linkrate(char *ifname, MOCA_NODE_INFO *node)
 #else
 extern unsigned int get_uplinkports_linkrate(char *ifname);
 #endif
+#ifdef HND_ROUTER
+extern int get_wan0_ifname_phymap(char *out_ifname, size_t out_len);
+#endif
 extern void trigger_opt();
 extern int gen_uplinkport_describe(char *port_def, char *type, char *subtype, int index);
 extern float cal_plc_cost(float pap_cost, int rate);
@@ -3040,6 +3063,7 @@ extern int checkMloWiFi();
 #ifdef RTCONFIG_MULTILAN_MWL
 extern int is_mainFH_network(char *ifname);
 #endif
+unsigned int get_wifi_gen(void);
 
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 extern int get_psta_status(int unit);
@@ -3314,6 +3338,19 @@ extern int get_fa_rev(void);
 extern int get_fa_dump(void);
 #endif
 #if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
+#include <sys/ioctl.h>
+#if defined(WIFI7_SDK_20241007) && (defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55))
+#define RTKSWITCH_IOCTL(n)	n
+#else
+#define RTKSWITCH_IOC_MAGIC	'R'
+/* The NR field of _IO() is only 8 bits; n > 255 overflows into the TYPE field
+ * so the kernel rejects the command. Encode the low 8 bits into NR and the high
+ * bits into the otherwise-unused 14-bit SIZE field to support n > 255.
+ * For n <= 255 SIZE is 0, so the command is bit-identical to the old _IO()
+ * (backward compatible). The kernel rebuilds it as (_IOC_NR | (_IOC_SIZE << 8)). */
+#define RTKSWITCH_IOCTL(n)	_IOC(_IOC_NONE, RTKSWITCH_IOC_MAGIC, (n) & 0xff, ((n) >> 8) & 0x3fff)
+#endif
+
 /* port statistic counter structure */
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 unsigned int rtkswitch_serdes_status(void);
@@ -3705,6 +3742,7 @@ extern void ipt_account(FILE *fp, char *interface);
 #endif
 extern char *get_productid(void);
 extern char *get_lan_hostname(void);
+extern void refresh_tz_env(void);
 extern void logmessage_normal(char *logheader, char *fmt, ...);
 extern char *get_logfile_path(void);
 extern char *get_syslog_fname(unsigned int idx);
@@ -3803,6 +3841,7 @@ extern int is_dpsta(int unit);
 extern int is_dpsr(int unit);
 extern int is_psta(int unit);
 extern int is_psta_mlo(int unit);
+extern int wl_mlo_config_is_member(int unit);
 extern int is_psr(int unit);
 extern int psta_exist(void);
 extern int psta_exist_except(int unit);
@@ -3984,7 +4023,10 @@ extern int isValidMacAddr_and_isNotMulticast(const char* mac);
 extern int isValidEnableOption(const char* option, int range);
 extern int isValid_digit_string(const char *string);
 extern int is_valid_hostname(const char *name);
+extern int is_valid_ig_client_name(const char *name);
 extern int is_valid_domainname(const char *name);
+extern int is_valid_netbios_name(const char *name);
+extern int is_valid_ifname(const char *name);
 extern char *get_ddns_hostname(void);
 extern int get_ispctrl();
 extern unsigned short get_extend_cap();
@@ -4921,7 +4963,7 @@ extern int hnd_boardid_cmp(const char *boardid);
 #define AFC_MTLS_CACERT            "/jffs/.sys/afc/afc_mtls_cacert.pem"
 #define IS_AFC_ENABLED()           (nvram_get_int("afcd_mode"))
 #define IS_AFC_PP()                get_ASUS_privacy_policy_state(ASUS_PP_AFC)
-#define IS_ICP_DEVICE_READY()      (f_exists("/dev/iio:device0") && d_exists("/sys/bus/iio/devices/iio:device0"))
+#define IS_ICP_DEVICE_READY()      (d_exists("/sys/bus/iio/devices/iio:device0"))
 #define AFC_INFO_RAW               "/tmp/afc_info_raw"
 #define AFC_INFO_JSON              "/tmp/afc_info_raw.json"
 #define AFC_INFO_TIMEOUT           10
@@ -4955,6 +4997,14 @@ extern int check_wifi_afc_nvram();          // sysdeps
 extern int check_afc_cold_condition();      // sysdeps
 extern void gen_afc_request();              // sysdeps
 extern void afcd_harness_config(int mode);  // sysdeps
+
+#if defined(RTCONFIG_PRESSURE_SENSOR) || defined(RTCONFIG_PRESSURE_SENSOR_CMP201)
+extern char *afc_pressure_sensor_cmd(void);
+extern int afc_sample_pressure(int timeout_sec);
+extern int afc_pressure_data_ready(void);
+extern int afc_get_pressure_kpa(double *out);
+extern double afc_get_temperature_c(void);
+#endif
 #endif
 
 /* add nt_center 2nd stage event */
@@ -5418,6 +5468,12 @@ typedef struct __amaslib_notification__t_
 #if defined(RTCONFIG_NOWL)
 #define MAX_NR_WL_BAND			8
 #endif
+
+/* the definition for wifi generation */
+#define WIFI5	(1 << 0)
+#define WIFI6	(1 << 1)
+#define WIFI7	(1 << 2)
+#define WIFI8	(1 << 3)
 
 #endif /* defined(RTCONFIG_AMAS) */
 
@@ -5906,4 +5962,6 @@ extern int safe_fork_do_system(const char *fmt, ...);
 extern int safe_do_system_to_file(const char *outfile, int append, const char *fmt, ...);
 
 extern int is_safe_app_name(const char *app_name);
+extern int check_allow_nvram_caller(const char *name);
+
 #endif	/* !__SHARED_H__ */

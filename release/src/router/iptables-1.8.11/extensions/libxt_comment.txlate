@@ -1,0 +1,8 @@
+iptables-translate -A INPUT -s 192.168.0.0 -m comment --comment "A privatized IP block"
+nft 'add rule ip filter INPUT ip saddr 192.168.0.0 counter comment "A privatized IP block"'
+
+iptables-translate -A INPUT -p tcp -m tcp --sport http -s  192.168.0.0/16 -d 192.168.0.0/16 -j LONGNACCEPT -m comment --comment "foobar"
+nft 'add rule ip filter INPUT ip saddr 192.168.0.0/16 ip daddr 192.168.0.0/16 tcp sport 80 counter jump LONGNACCEPT comment "foobar"'
+
+iptables-translate -A FORWARD -p tcp -m tcp --sport http -s 192.168.0.0/16 -d 192.168.0.0/16 -j DROP -m comment --comment singlecomment
+nft 'add rule ip filter FORWARD ip saddr 192.168.0.0/16 ip daddr 192.168.0.0/16 tcp sport 80 counter drop comment "singlecomment"'

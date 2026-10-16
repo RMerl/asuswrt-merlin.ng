@@ -176,6 +176,26 @@
             text-decoration: underline;
         }
 
+        .feature-uu-settings {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            min-width: 122px;
+        }
+
+        .uu-toggle-slot {
+            min-height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feature-uu-settings > .btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
 
         /* Responsive */
         @media (max-width: 576px) {
@@ -393,7 +413,8 @@
                             <div class="divider"></div>
                             <p class="feature-description"><#UU_Accelerator_desc#></p>
                         </div>
-                        <div class="feature-settings">
+                        <div class="feature-settings feature-uu-settings">
+                            <div id="uu-toggle-slot" class="uu-toggle-slot"></div>
                             <button class="btn btn-outline-primary">Go to Settings</button>
                         </div>
                     </div>
@@ -403,6 +424,8 @@
     </div>
 </div>
 <script type="module">
+    import {ToggleButton} from "/js/component.module.js";
+
     async function isSupport(_ptn) {
         try {
             let ui_support = await httpApi.hookGet("get_ui_support");
@@ -411,6 +434,40 @@
             console.error('Failed to get UI support:', error);
             return 0;
         }
+    }
+
+    function updateUuSettingsState(enabled) {
+        const uuSettingsLink = document.querySelector("#feature-uu .feature-settings>button");
+
+        if (!uuSettingsLink) return;
+
+        uuSettingsLink.disabled = !enabled;
+    }
+
+    function applyUuPluginState(enabled, uuToggle) {
+        updateUuSettingsState(enabled);
+
+        if (uuToggle) {
+            uuToggle.setDisabled(true);
+        }
+
+        if (typeof showLoading === 'function') {
+            showLoading();
+        }
+
+        httpApi.nvramSet({
+            action_mode: "apply",
+            rc_service: "restart_uuplugin",
+            uuplugin_enable: enabled ? "1" : "0"
+        }, function () {
+            if (typeof hideLoading === 'function') {
+                hideLoading();
+            }
+
+            if (uuToggle) {
+                uuToggle.setDisabled(false);
+            }
+        });
     }
 
     (async function () {
@@ -441,13 +498,27 @@
         if (uu_support) {
             const uuElement = document.querySelector("#feature-uu");
             const uuImg = document.querySelector("#feature-uu img");
+            const uuToggleSlot = document.getElementById("uu-toggle-slot");
             const uuSettingsLink = document.querySelector("#feature-uu .feature-settings>button");
             const gtnetElement = document.querySelector("#feature-gtnet");
+            const uuPluginEnabled = httpApi.nvramGet(["uuplugin_enable"]).uuplugin_enable === "1";
 
             if (uuElement) uuElement.classList.remove("d-none");
             if (uuImg) {
                 uuImg.src = "../images/UU_Logo_RGB.svg";
                 uuImg.setAttribute("onerror", "this.style.display='none'");
+            }
+            if (uuToggleSlot) {
+                const uuToggle = new ToggleButton(uuPluginEnabled, true, {
+                    label: `<#UU_Accelerator#>`
+                });
+
+                uuToggle.setOnChange(function(active) {
+                    applyUuPluginState(active, uuToggle);
+                });
+
+                uuToggleSlot.appendChild(uuToggle.render());
+                updateUuSettingsState(uuToggle.getValue());
             }
             if (uuSettingsLink) {
                 uuSettingsLink.addEventListener('click', (e) => {

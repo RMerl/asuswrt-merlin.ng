@@ -44,27 +44,28 @@
 
 #define MAX_RESET_TIME_BACKUP_NUM 2
 
-#define MAX_TIMESTAMP_LEN       12
-#define MAX_MAC_LEN             18
-#define MAX_TYPE_LEN            16
-#define MAX_URL_LEN 		    64
-#define MAX_STATUS_LEN		    32
-#define MAX_DESC_LEN		    512
-#define MAX_FILENAME_LEN	    64
-#define MAX_FILEPATH_LEN	    128
-#define MAX_CA_DATA_LEN		    2048
-#define MAX_FILE_EXT_LEN	    16
-#define MAX_HEADER_LEN	        32
-#define MAX_COOKIE_LEN	        32
-#define MAX_MESSAGE_LEN	        64
-#define MAX_CMD_LEN	            128
+#define MAX_TIMESTAMP_LEN 12
+#define MAX_MAC_LEN 18
+#define MAX_TYPE_LEN 16
+#define MAX_URL_LEN 64
+#define MAX_STATUS_LEN 32
+#define MAX_DESC_LEN 512
+#define MAX_FILENAME_LEN 64
+#define MAX_FILEPATH_LEN 128
+#define MAX_CA_DATA_LEN 2048
+#define MAX_FILE_EXT_LEN 16
+#define MAX_HEADER_LEN 32
+#define MAX_COOKIE_LEN 32
+#define MAX_MESSAGE_LEN 64
+#define MAX_CMD_LEN 128
 
-#define MAX_KEY_LEN		        128
-#define MAX_ALGORITHM_LEN		20
-#define MAX_CREDENTIAL_LEN		64
-#define MAX_DATE_LEN		    18
-#define MAX_POLICY_LEN		    576
-#define MAX_SIGNATURE_LEN		128
+#define MAX_KEY_LEN 128
+#define MAX_ALGORITHM_LEN 20
+#define MAX_CREDENTIAL_LEN 64
+#define MAX_DATE_LEN 18
+#define MAX_POLICY_LEN 3072
+#define MAX_SIGNATURE_LEN 128
+#define MAX_SECURITY_TOKEN_LEN 1500
 ////////////////////////////////////////////////////////////////////////////////
 
 #define SETTING_BACKUP_TYPE	  "setting"
@@ -95,11 +96,12 @@ enum {
 };
 ////////////////////////////////////////////////////////////////////////////////
 
-#define REQ_ROUTER_CHECK_TOKEN			"/router_check_token"
-#define REQ_ROUTER_LIST_FILE			"/router_list_file"
-#define REQ_ROUTER_DEL_FILE			    "/router_del_file"
-#define REQ_ROUTER_GET_UPLOAD_FILE_URL	"/router_get_upload_file_url"
-#define REQ_ROUTER_UPLOAD_FILE	        "/router_upload_file"
+#define REQ_ROUTER_CHECK_TOKEN "/router_check_token"
+#define REQ_ROUTER_LIST_FILE "/router_list_file"
+#define REQ_ROUTER_DEL_FILE "/router_del_file"
+// #define REQ_ROUTER_GET_UPLOAD_FILE_URL "/router_get_upload_file_url"
+#define REQ_ROUTER_GET_UPLOAD_FILE_URL "/router_get_upload_file_url_role"
+#define REQ_ROUTER_UPLOAD_FILE "/router_upload_file"
 
 typedef int (*PROC_JSON_DATA)(void* data_struct, struct json_object * json_obj);
 
@@ -158,15 +160,17 @@ typedef struct _RouterUploadFile {
 	char 	status[MAX_STATUS_LEN];
 } RouterUploadFile, *pRouterUploadFile;
 
-typedef struct _RouterGetUploadFileUrl {
-	char 	status[MAX_STATUS_LEN];
-	char 	url[MAX_URL_LEN];
-	char 	key[MAX_KEY_LEN];
-	char 	x_amz_algorithm[MAX_ALGORITHM_LEN];
-	char 	x_amz_credential[MAX_CREDENTIAL_LEN];
-	char 	x_amz_date[MAX_DATE_LEN];
-	char 	policy[MAX_POLICY_LEN];
-	char 	x_amz_signature[MAX_SIGNATURE_LEN];
+typedef struct _RouterGetUploadFileUrl
+{
+	char status[MAX_STATUS_LEN];
+	char url[MAX_URL_LEN];
+	char key[MAX_KEY_LEN];
+	char x_amz_algorithm[MAX_ALGORITHM_LEN];
+	char x_amz_credential[MAX_CREDENTIAL_LEN];
+	char x_amz_date[MAX_DATE_LEN];
+	char policy[MAX_POLICY_LEN];
+	char x_amz_signature[MAX_SIGNATURE_LEN];
+	char x_amz_security_token[MAX_SECURITY_TOKEN_LEN];
 } RouterGetUploadFileUrl, *pRouterGetUploadFileUrl;
 
 typedef struct _RouterGetDebugToken {
@@ -260,17 +264,18 @@ backup_files *delete_backup_file(backup_files *files, backup_files *delete_file)
 
 size_t read_callback(void *ptr, size_t size, size_t nmemb, void *stream);
 
-int upload_file_to_s3(const char* url, 
-	                  const char* content_type,
-	                  const char* meta_uuid,
-					  const char* key,
-					  const char* algorithm,
-					  const char* credential,
-					  const char* date,
-					  const char* policy,
-					  const char* signature,
-					  const char* server_side_encryption,
-					  const char* upload_file);
+int upload_file_to_s3(const char *url,
+					  const char *content_type,
+					  const char *meta_uuid,
+					  const char *key,
+					  const char *algorithm,
+					  const char *credential,
+					  const char *date,
+					  const char *policy,
+					  const char *signature,
+					  const char *security_token,
+					  const char *server_side_encryption,
+					  const char *upload_file);
 
 void handle_error(int code);
 

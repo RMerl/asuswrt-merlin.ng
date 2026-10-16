@@ -1,0 +1,59 @@
+#!/bin/bash
+
+RET=0
+tmpfile=""
+
+clean_tmpfile()
+{
+        if [ ! -z "$tmpfile" ];then
+                rm -f "$tmpfile"
+        fi
+}
+
+trap clean_tmpfile EXIT
+
+do_diff()
+{
+	A="$1"
+	B="$2"
+
+	AT=$(mktemp)
+	grep -v "^#" "$A" > "$AT"
+
+	diff -u "$AT" "$B"
+	x=$?
+	rm -f "$AT"
+
+	return $x
+}
+
+tmpfile=$(mktemp) || exit 1
+do_simple()
+{
+	iptables="$1"
+	dumpfile="$2"
+	opt="$3"
+
+	$XT_MULTI ${iptables}-restore $opt < "$dumpfile"
+	if [ $? -ne 0 ]; then
+		echo "$XT_MULTI ${iptables}-restore $opt $dumpfile failed" 1>&2
+		exit 1
+	fi
+
+	:> "$tmpfile"
+
+	for table in mangle raw filter; do
+		$XT_MULTI ${iptables}-save -t $table $opt | grep -v "^#" >> "$tmpfile"
+	done
+
+	do_diff $dumpfile "$tmpfile"
+
+	if [ $? -ne 0 ]; then
+		RET=1
+	fi
+}
+# fedora27-iptables dump contains chain counters to test counter restore/save
+do_simple "iptables" $(dirname "$0")/dumps/fedora27-iptables "-c"
+do_simple "ip6tables" $(dirname "$0")/dumps/fedora27-ip6tables
+
+exit $RET

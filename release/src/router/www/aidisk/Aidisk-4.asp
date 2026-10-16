@@ -181,7 +181,7 @@ function clickevent(){
           Internet FTP address: <a target="_blank" style="text-decoration: underline; font-family:Lucida Console;">ftp://<% nvram_get("ddns_hostname_x"); %></a>
        </li> 
        </span> 
-       <span id="priv_wan_ip" style="color:#FFCC00;">
+       <span id="priv_wan_ip" style="color:var(--wrt-badge-warning-color,#FFCC00);">
        <li><#LANHostConfig_x_DDNSEnable_sectiondesc2#></li>
        </span>
 

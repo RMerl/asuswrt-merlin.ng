@@ -836,7 +836,7 @@ function manualSetup(){
 	<td>
 		<div id="divSwitchMenu" style="margin-top:4px;margin-right:4px;float:right;display:none;">
 			<div style="width:80px;height:30px;border-top-left-radius:8px;border-bottom-left-radius:8px;" class="block_filter_pressed">
-				<div style="text-align:center;padding-top:5px;color:#93A9B1;font-size:14px">WAN</div>
+				<div style="text-align:center;padding-top:5px;color:var(--wrt-text-muted-color,#93A9B1);font-size:14px">WAN</div>
 			</div>
 			<div style="width:80px;height:30px;margin:-32px 0px 0px 80px;border-top-right-radius:8px;border-bottom-right-radius:8px;" class="block_filter">
 				<a href="/device-map/DSL_dashboard.asp"><div class="block_filter_name">DSL</div></a>

@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# Test the fix in commit 78850e7dba64a ("ip6tables: Fix checking existence of
+# rule"). Happens with legacy ip6tables only, but testing ip6tables-nft doesn't
+# hurt.
+#
+# Code taken from https://bugzilla.netfilter.org/show_bug.cgi?id=1667
+# Thanks to Jonathan Caicedo <jonathan@jcaicedo.com> for providing it.
+
+RULE='-p tcp --dport 81 -j DNAT --to-destination [::1]:81'
+
+$XT_MULTI ip6tables -t nat -N testchain || exit 1
+$XT_MULTI ip6tables -t nat -A testchain $RULE || exit 1
+$XT_MULTI ip6tables -t nat -C testchain $RULE || exit 1
+
+$XT_MULTI ip6tables -t nat -C testchain ${RULE//81/82} 2>/dev/null && exit 1
+exit 0

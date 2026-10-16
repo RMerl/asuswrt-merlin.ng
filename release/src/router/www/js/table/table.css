@@ -75,7 +75,7 @@
 	height: 43px;
 }
 .data_tr_hover {
-	background-color:#FC0;
+	background-color:var(--wrt-badge-warning-color,#FC0);
 }
 
 .createNewRule {
@@ -184,7 +184,7 @@
 	float: right;
 }
 .hint {
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	margin: 5px 0;
 }
 

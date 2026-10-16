@@ -375,7 +375,7 @@ function showipsec_clientlist() {
 
 	code +='<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="ipsec_client_list_table">';
 	if(Object.keys(ipsec_client_list_json).length == 0)
-		code +='<tr><td style="color:#FFCC00;" colspan="5"><#IPConnection_VSList_Norule#></td></tr>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="5"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		for(var username in ipsec_client_list_json) {
 			if(ipsec_client_list_json.hasOwnProperty(username)) {
@@ -926,7 +926,7 @@ function export_cert(_mode) {
 									<div class="formfonttitle"><#BOP_isp_heart_item#> - IPSec VPN<!--untranslated--></div>
 									<div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-									<div id="privateIP_notes" class="formfontdesc" style="display:none;color:#FFCC00;"></div>
+									<div id="privateIP_notes" class="formfontdesc" style="display:none;color:var(--wrt-badge-warning-color,#FFCC00);"></div>
 									<div class="formfontdesc">
 										<span class="hint-color"><#vpn_ipsec_note#></span>
 									</div>

@@ -1,0 +1,67 @@
+#!/bin/bash
+
+set -e
+#set -x
+
+# ensure verbose output is identical between legacy and nft tools
+
+RULE1='-i eth2 -o eth3 -s 10.0.0.1 -d 10.0.0.2 -j ACCEPT'
+VOUT1='ACCEPT  all opt -- in eth2 out eth3  10.0.0.1  -> 10.0.0.2'
+RULE2='-i eth2 -o eth3 -s 10.0.0.4 -d 10.0.0.5 -j ACCEPT'
+VOUT2='ACCEPT  all opt -- in eth2 out eth3  10.0.0.4  -> 10.0.0.5'
+
+diff -u -Z <(echo -e "$VOUT1") <($XT_MULTI iptables -v -A FORWARD $RULE1)
+diff -u -Z <(echo -e "$VOUT2") <($XT_MULTI iptables -v -I FORWARD 2 $RULE2)
+
+diff -u -Z <(echo -e "$VOUT1") <($XT_MULTI iptables -v -C FORWARD $RULE1)
+diff -u -Z <(echo -e "$VOUT2") <($XT_MULTI iptables -v -C FORWARD $RULE2)
+
+EXPECT='Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 ACCEPT     all  --  eth2   eth3    10.0.0.1             10.0.0.2
+    0     0 ACCEPT     all  --  eth2   eth3    10.0.0.4             10.0.0.5
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination'
+
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI iptables -v -n -L)
+
+[[ -z $($XT_MULTI iptables -v -N foobar) ]] || exit 1
+
+diff -u -Z <(echo -e "$VOUT1") <($XT_MULTI iptables -v -D FORWARD $RULE1)
+diff -u -Z <(echo -e "$VOUT2") <($XT_MULTI iptables -v -D FORWARD $RULE2)
+
+EXPECT="Flushing chain \`INPUT'
+Flushing chain \`FORWARD'
+Flushing chain \`OUTPUT'
+Flushing chain \`foobar'"
+
+diff -u <(echo -e "$EXPECT") <($XT_MULTI iptables -v -F)
+
+EXPECT="Zeroing chain \`INPUT'
+Zeroing chain \`FORWARD'
+Zeroing chain \`OUTPUT'
+Zeroing chain \`foobar'"
+
+diff -u <(echo -e "$EXPECT") <($XT_MULTI iptables -v -Z)
+
+diff -u <(echo "Flushing chain \`OUTPUT'") <($XT_MULTI iptables -v -F OUTPUT)
+diff -u <(echo "Zeroing chain \`OUTPUT'") <($XT_MULTI iptables -v -Z OUTPUT)
+diff -u <(echo "Flushing chain \`foobar'") <($XT_MULTI iptables -v -F foobar)
+diff -u <(echo "Zeroing chain \`foobar'") <($XT_MULTI iptables -v -Z foobar)
+
+diff -u <(echo "Deleting chain \`foobar'") <($XT_MULTI iptables -v -X foobar)
+
+# make sure non-verbose mode is silent
+diff -u <(echo -n "") <(
+	$XT_MULTI iptables -N foobar
+	$XT_MULTI iptables -A foobar $RULE1
+	$XT_MULTI iptables -A foobar $RULE2
+	$XT_MULTI iptables -C foobar $RULE1
+	$XT_MULTI iptables -D foobar $RULE2
+	$XT_MULTI iptables -F foobar
+	$XT_MULTI iptables -X foobar
+)

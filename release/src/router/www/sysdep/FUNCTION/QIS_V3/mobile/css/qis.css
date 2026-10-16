@@ -356,7 +356,7 @@ a{
 .pageDesc_passwd_KR{
 	font-family: Helvetica, Arial;
 	font-size: 1.4em;
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	margin: 20px 0 30px 25px;
 	text-align: left;
 	font-weight: bolder;
@@ -523,13 +523,13 @@ a{
 	font-style: italic;
 }
 .hint_yellow{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	margin-top: -25px;
 	font-size: 1.4em;
 	font-style: italic;
 }
 .text_yellow_italic{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	font-style: italic;
 }
 .selectorHint{
@@ -716,6 +716,13 @@ a{
 	padding-left: 20px;
 	color: #DBDBDB;
 	cursor: pointer;
+}
+/* Keep leading/trailing spaces of a scanned SSID visible: the default
+   white-space:normal drops them, so "  foo" and "foo" look the same.
+   break-spaces also lets a long space run wrap, so the row cannot grow
+   past the page and get clipped by .ui-page-active's overflow-x:hidden. */
+#apList .ap_ssid{
+	white-space: break-spaces;
 }
 .ap_ssid_hover{
 	color: #007AFF !important;

@@ -1,0 +1,139 @@
+#!/bin/bash
+
+[[ $XT_MULTI == *xtables-nft-multi ]] || { echo "skip $XT_MULTI"; exit 0; }
+
+log=$(mktemp)
+trap "rm -f $log" EXIT
+echo "logging into file $log"
+rc=0
+
+# Filter monitor output:
+# - NEWGEN event is moot:
+#   - GENID/PID are arbitrary,
+#   - NAME always "xtables-nft-mul"
+# - handle is arbitrary as well
+logfilter() { # (logfile)
+	grep -v '^NEWGEN:' "$1" | sed -e 's/handle [0-9]\+/handle 0/'
+}
+
+# Compare monitor output for given command against content of the global $EXP
+monitorcheck() { # (cmd ...)
+	$XT_MULTI xtables-monitor -e >"$log"&
+	monpid=$!
+	sleep 0.5
+
+	$XT_MULTI "$@" || {
+		echo "Error: command failed: $@"
+		let "rc++"
+		kill $monpid
+		wait
+		return
+	}
+	sleep 0.5
+	kill $monpid
+	wait
+	diffout=$(diff -u <(echo "$EXP") <(logfilter "$log")) || {
+		echo "Fail: unexpected result for command: '$@':"
+		grep -v '^\(---\|+++\|@@\)' <<< "$diffout"
+		let "rc++"
+	}
+}
+
+EXP="\
+ EVENT: nft: NEW table: table filter ip flags 0 use 1 handle 0
+ EVENT: nft: NEW chain: ip filter FORWARD use 1 type filter hook forward prio 0 policy accept packets 0 bytes 0 flags 1
+ EVENT: iptables -t filter -A FORWARD -j ACCEPT"
+monitorcheck iptables -A FORWARD -j ACCEPT
+
+EXP="\
+ EVENT: nft: NEW table: table filter ip6 flags 0 use 1 handle 0
+ EVENT: nft: NEW chain: ip6 filter FORWARD use 1 type filter hook forward prio 0 policy accept packets 0 bytes 0 flags 1
+ EVENT: ip6tables -t filter -A FORWARD -j ACCEPT"
+monitorcheck ip6tables -A FORWARD -j ACCEPT
+
+EXP="\
+ EVENT: nft: NEW table: table filter bridge flags 0 use 1 handle 0
+ EVENT: nft: NEW chain: bridge filter FORWARD use 1 type filter hook forward prio -200 policy accept packets 0 bytes 0 flags 1
+ EVENT: ebtables -t filter -A FORWARD -j ACCEPT"
+monitorcheck ebtables -A FORWARD -j ACCEPT
+
+EXP="\
+ EVENT: nft: NEW table: table filter arp flags 0 use 1 handle 0
+ EVENT: nft: NEW chain: arp filter INPUT use 1 type filter hook input prio 0 policy accept packets 0 bytes 0 flags 1
+ EVENT: arptables -t filter -A INPUT -j ACCEPT"
+monitorcheck arptables -A INPUT -j ACCEPT
+
+EXP=" EVENT: iptables -t filter -N foo"
+monitorcheck iptables -N foo
+
+EXP=" EVENT: ip6tables -t filter -N foo"
+monitorcheck ip6tables -N foo
+
+EXP=" EVENT: ebtables -t filter -N foo"
+monitorcheck ebtables -N foo
+
+EXP=" EVENT: arptables -t filter -N foo"
+monitorcheck arptables -N foo
+
+# meta l4proto matches require proper nft_handle:family value
+EXP=" EVENT: iptables -t filter -A FORWARD -i eth1 -o eth2 -p tcp -m tcp --dport 22 -j ACCEPT"
+monitorcheck iptables -A FORWARD -i eth1 -o eth2 -p tcp --dport 22 -j ACCEPT
+
+EXP=" EVENT: ip6tables -t filter -A FORWARD -i eth1 -o eth2 -p udp -m udp --sport 1337 -j ACCEPT"
+monitorcheck ip6tables -A FORWARD -i eth1 -o eth2 -p udp --sport 1337 -j ACCEPT
+
+EXP=" EVENT: ebtables -t filter -A FORWARD -p IPv4 -i eth1 -o eth2 --ip-proto udp --ip-sport 1337 -j ACCEPT"
+monitorcheck ebtables -A FORWARD -i eth1 -o eth2 -p ip --ip-protocol udp --ip-source-port 1337 -j ACCEPT
+
+EXP=" EVENT: arptables -t filter -A INPUT -j ACCEPT -i eth1 -s 1.2.3.4 --src-mac 01:02:03:04:05:06"
+monitorcheck arptables -A INPUT -i eth1 -s 1.2.3.4 --src-mac 01:02:03:04:05:06 -j ACCEPT
+
+EXP=" EVENT: iptables -t filter -D FORWARD -i eth1 -o eth2 -p tcp -m tcp --dport 22 -j ACCEPT"
+monitorcheck iptables -D FORWARD -i eth1 -o eth2 -p tcp --dport 22 -j ACCEPT
+
+EXP=" EVENT: ip6tables -t filter -D FORWARD -i eth1 -o eth2 -p udp -m udp --sport 1337 -j ACCEPT"
+monitorcheck ip6tables -D FORWARD -i eth1 -o eth2 -p udp --sport 1337 -j ACCEPT
+
+EXP=" EVENT: ebtables -t filter -D FORWARD -p IPv4 -i eth1 -o eth2 --ip-proto udp --ip-sport 1337 -j ACCEPT"
+monitorcheck ebtables -D FORWARD -i eth1 -o eth2 -p ip --ip-protocol udp --ip-source-port 1337 -j ACCEPT
+
+EXP=" EVENT: arptables -t filter -D INPUT -j ACCEPT -i eth1 -s 1.2.3.4 --src-mac 01:02:03:04:05:06"
+monitorcheck arptables -D INPUT -i eth1 -s 1.2.3.4 --src-mac 01:02:03:04:05:06 -j ACCEPT
+
+EXP=" EVENT: iptables -t filter -X foo"
+monitorcheck iptables -X foo
+
+EXP=" EVENT: ip6tables -t filter -X foo"
+monitorcheck ip6tables -X foo
+
+EXP=" EVENT: ebtables -t filter -X foo"
+monitorcheck ebtables -X foo
+
+EXP=" EVENT: arptables -t filter -X foo"
+monitorcheck arptables -X foo
+
+EXP=" EVENT: iptables -t filter -D FORWARD -j ACCEPT"
+monitorcheck iptables -F FORWARD
+
+EXP=" EVENT: ip6tables -t filter -D FORWARD -j ACCEPT"
+monitorcheck ip6tables -F FORWARD
+
+EXP=" EVENT: ebtables -t filter -D FORWARD -j ACCEPT"
+monitorcheck ebtables -F FORWARD
+
+EXP=" EVENT: arptables -t filter -D INPUT -j ACCEPT"
+monitorcheck arptables -F INPUT
+
+EXP=" EVENT: nft: DEL chain: ip filter FORWARD use 0 type filter hook forward prio 0 policy accept packets 0 bytes 0 flags 1"
+monitorcheck iptables -X FORWARD
+
+EXP=" EVENT: nft: DEL chain: ip6 filter FORWARD use 0 type filter hook forward prio 0 policy accept packets 0 bytes 0 flags 1"
+monitorcheck ip6tables -X FORWARD
+
+EXP=" EVENT: nft: DEL chain: bridge filter FORWARD use 0 type filter hook forward prio -200 policy accept packets 0 bytes 0 flags 1"
+monitorcheck ebtables -X FORWARD
+
+EXP=" EVENT: nft: DEL chain: arp filter INPUT use 0 type filter hook input prio 0 policy accept packets 0 bytes 0 flags 1"
+monitorcheck arptables -X INPUT
+
+exit $rc

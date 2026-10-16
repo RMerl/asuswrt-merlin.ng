@@ -218,7 +218,7 @@ function load_body(){
 	}
 	else{
 		var HTMLCode = '<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table" id="client_list_table">';
-		HTMLCode += '<tr><td style="color:#FFCC00;font-size:12px; border-collapse: collapse;border:1;" colspan="4"><span style="line-height:25px;"><#Device_Searching#></span>&nbsp;<img style="margin-top:10px;" src="/images/InternetScan.gif"></td></tr>';
+		HTMLCode += '<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);font-size:12px; border-collapse: collapse;border:1;" colspan="4"><span style="line-height:25px;"><#Device_Searching#></span>&nbsp;<img style="margin-top:10px;" src="/images/InternetScan.gif"></td></tr>';
 		HTMLCode += '</table>';
 		document.getElementById("client_list_Block").innerHTML = HTMLCode;
 	}
@@ -355,7 +355,7 @@ function showclient_list(list){
 		location.href = '/';
 
 	if(document.getElementById('client_list_table').innerHTML == "<tbody></tbody>"){
-		code ='<tr><td style="color:#FFCC00;" colspan="4"><#IPConnection_VSList_Norule#></td></tr>'
+		code ='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="4"><#IPConnection_VSList_Norule#></td></tr>'
 		document.getElementById("client_list_Block").innerHTML = code;
 	}
 }

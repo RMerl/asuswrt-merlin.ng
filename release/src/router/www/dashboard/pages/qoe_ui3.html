@@ -877,6 +877,7 @@
 <script type="module">
     import {AsuswrtWidgetLoading, ClientSelector} from "/js/component.module.js";
     import {ClientList} from '/js/clientlist.module.js';
+    import {confirmArkFeatureNatNotice} from "/js/utils.module.js";
 
     function onTabShown(tab) {
         // Logic to execute when switching tabs, e.g., DataTables adjustments
@@ -1088,9 +1089,25 @@
         Chart.register({
             id: 'centerLinesPlugin',
             afterDatasetsDraw(chart) {
-                const {ctx, chartArea, scales} = chart;
+                const {ctx, scales} = chart;
                 const r = scales.r;
                 const numberOfPoints = 5;
+
+                // This plugin may run while the page is being replaced or resized.
+                // Skip drawing if the radial scale is not fully initialized yet.
+                if (
+                    !ctx ||
+                    !r ||
+                    typeof r.xCenter !== "number" ||
+                    typeof r.yCenter !== "number" ||
+                    typeof r.drawingArea !== "number" ||
+                    !isFinite(r.xCenter) ||
+                    !isFinite(r.yCenter) ||
+                    !isFinite(r.drawingArea) ||
+                    r.drawingArea <= 0
+                ) {
+                    return;
+                }
 
                 ctx.save();
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)'; // dashed line color
@@ -1117,8 +1134,28 @@
 
         // get CSS variable values
         const style = getComputedStyle(document.documentElement);
-        const colorStart = style.getPropertyValue('--color-start').trim();
-        const colorEnd = style.getPropertyValue('--color-end').trim();
+        const colorStart = style.getPropertyValue('--color-start').trim() || '#005eff';
+        const colorEnd = style.getPropertyValue('--color-end').trim() || '#08faff';
+        // QoE radar dataset 1 variables with fallback
+        const radarBorderColor = (style.getPropertyValue('--qoe-radar-border-color').trim()) || '#ffffff';
+        const radarBackgroundColor = (style.getPropertyValue('--qoe-radar-background-color').trim()) || 'rgba(255, 255, 255, 0.1)';
+        const radarBorderWidth = parseInt((style.getPropertyValue('--qoe-radar-border-width').trim()) || '2', 10);
+        const radarPointBackgroundColor = (style.getPropertyValue('--qoe-radar-point-background-color').trim()) || '#fff';
+        const radarPointBorderColor = (style.getPropertyValue('--qoe-radar-point-border-color').trim()) || '#fff';
+        // dataset 2 variables with fallback
+        const radarLayer2BorderColor = (style.getPropertyValue('--qoe-radar-layer2-border-color').trim()) || '#ffffff';
+        const radarLayer2BackgroundColor = (style.getPropertyValue('--qoe-radar-layer2-background-color').trim()) || 'rgba(255, 255, 255, 0.15)';
+        const radarLayer2BorderWidth = parseInt((style.getPropertyValue('--qoe-radar-layer2-border-width').trim()) || '2', 10);
+        const radarLayer2PointBackgroundColor = (style.getPropertyValue('--qoe-radar-layer2-point-background-color').trim()) || '#fff';
+        const radarLayer2PointBorderColor = (style.getPropertyValue('--qoe-radar-layer2-point-border-color').trim()) || '#fff';
+        // dataset 3 variables with fallback
+        const radarLayer3BorderColor = (style.getPropertyValue('--qoe-radar-layer3-border-color').trim()) || '#ffffff';
+        const radarLayer3BorderWidth = parseInt((style.getPropertyValue('--qoe-radar-layer3-border-width').trim()) || '2', 10);
+        const radarLayer3PointBackgroundColor = (style.getPropertyValue('--qoe-radar-layer3-point-background-color').trim()) || '#fff';
+        const radarLayer3PointBorderColor = (style.getPropertyValue('--qoe-radar-layer3-point-border-color').trim()) || '#f5f5f5';
+        const radarLayer3PointBorderWidth = parseInt((style.getPropertyValue('--qoe-radar-layer3-point-border-width').trim()) || '1', 10);
+        const radarLayer3PointRadius = parseInt((style.getPropertyValue('--qoe-radar-layer3-point-radius').trim()) || '3', 10);
+        const radarLayer3PointHoverRadius = parseInt((style.getPropertyValue('--qoe-radar-layer3-point-hover-radius').trim()) || '5', 10);
 
         // create center radial gradient
         const gradient = ctx.createLinearGradient(
@@ -1126,7 +1163,6 @@
             240, 240
         );
         gradient.addColorStop(0, colorStart); // center color
-        gradient.addColorStop(0.5, '#c3fff5'); // center color
         gradient.addColorStop(1, colorEnd);   // outer color
 
         let radarChart = new Chart(ctx, {
@@ -1139,11 +1175,11 @@
                         data: thisMode.nodeFormula(thisMode.value).map(data => {
                             return data * 0.6;
                         }),
-                        borderColor: '#ffffff',
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#fff',
+                        borderColor: radarBorderColor,
+                        backgroundColor: radarBackgroundColor,
+                        borderWidth: radarBorderWidth,
+                        pointBackgroundColor: radarPointBackgroundColor,
+                        pointBorderColor: radarPointBorderColor,
                         pointBorderWidth: 0,
                         pointRadius: 0,
                         pointHoverRadius: 0,
@@ -1155,11 +1191,11 @@
                         data: thisMode.nodeFormula(thisMode.value).map(data => {
                             return data * 0.8;
                         }),
-                        borderColor: '#ffffff',
-                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#fff',
+                        borderColor: radarLayer2BorderColor,
+                        backgroundColor: radarLayer2BackgroundColor,
+                        borderWidth: radarLayer2BorderWidth,
+                        pointBackgroundColor: radarLayer2PointBackgroundColor,
+                        pointBorderColor: radarLayer2PointBorderColor,
                         pointBorderWidth: 0,
                         pointRadius: 0,
                         pointHoverRadius: 0,
@@ -1169,14 +1205,14 @@
                     {
                         label: '',
                         data: thisMode.nodeFormula(thisMode.value),
-                        borderColor: '#ffffff',
+                        borderColor: radarLayer3BorderColor,
                         backgroundColor: gradient,
-                        borderWidth: 2,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#f5f5f5',
-                        pointBorderWidth: 1,
-                        pointRadius: 3,
-                        pointHoverRadius: 5
+                        borderWidth: radarLayer3BorderWidth,
+                        pointBackgroundColor: radarLayer3PointBackgroundColor,
+                        pointBorderColor: radarLayer3PointBorderColor,
+                        pointBorderWidth: radarLayer3PointBorderWidth,
+                        pointRadius: radarLayer3PointRadius,
+                        pointHoverRadius: radarLayer3PointHoverRadius
                     },]
             },
             options: {
@@ -1274,6 +1310,7 @@
         // apply_btn click event
         const applyBtn = document.getElementById("applyBtn");
         applyBtn.addEventListener("click", function () {
+            if (!confirmArkFeatureNatNotice("ark_qoe")) return;
             applyQoE()
         });
 

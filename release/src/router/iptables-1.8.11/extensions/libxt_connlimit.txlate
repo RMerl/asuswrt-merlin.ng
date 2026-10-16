@@ -1,0 +1,15 @@
+iptables-translate -A INPUT -m connlimit --connlimit-above 2
+nft 'add set ip filter connlimit0 { type ipv4_addr; flags dynamic; }'
+nft 'add rule ip filter INPUT add @connlimit0 { ip saddr ct count over 2 } counter'
+
+iptables-translate -A INPUT -m connlimit --connlimit-upto 2
+nft 'add set ip filter connlimit0 { type ipv4_addr; flags dynamic; }'
+nft 'add rule ip filter INPUT add @connlimit0 { ip saddr ct count 2 } counter'
+
+iptables-translate -A INPUT -m connlimit --connlimit-upto 2 --connlimit-mask 24
+nft 'add set ip filter connlimit0 { type ipv4_addr; flags dynamic; }'
+nft 'add rule ip filter INPUT add @connlimit0 { ip saddr and 255.255.255.0 ct count 2 } counter'
+
+iptables-translate -A INPUT -m connlimit --connlimit-upto 2 --connlimit-daddr
+nft 'add set ip filter connlimit0 { type ipv4_addr; flags dynamic; }'
+nft 'add rule ip filter INPUT add @connlimit0 { ip daddr ct count 2 } counter'

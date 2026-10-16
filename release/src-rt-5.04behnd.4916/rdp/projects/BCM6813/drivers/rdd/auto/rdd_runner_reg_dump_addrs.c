@@ -287,11 +287,11 @@ static DUMP_RUNNERREG_STRUCT DHD_RX_COMPLETE_FLOW_RING_BUFFER =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT AQM_ENABLE_TABLE =
+static DUMP_RUNNERREG_STRUCT SQ_TM_RATE_LIMITER_FORCE_WAKEUP =
 {
-	4,
+	1,
 	{
-		{ dump_RDD_BYTES_4, 0x21e0 },
+		{ dump_RDD_BYTE_1, 0x21e0 },
 		{ 0, 0 },
 	}
 };
@@ -347,7 +347,7 @@ static DUMP_RUNNERREG_STRUCT DHD_RX_POST_FLOW_RING_BUFFER =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT RUNNER_GLOBAL_REGISTERS_INIT =
+static DUMP_RUNNERREG_STRUCT AQM_ENABLE_TABLE =
 {
 	4,
 	{
@@ -447,11 +447,11 @@ static DUMP_RUNNERREG_STRUCT BUFMNG_HOST_CNT_DISABLE_TABLE =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT FPM_POOL_NUMBER_MAPPING_TABLE =
+static DUMP_RUNNERREG_STRUCT RUNNER_GLOBAL_REGISTERS_INIT =
 {
-	1,
+	4,
 	{
-		{ dump_RDD_FPM_POOL_NUMBER, 0x25e0 },
+		{ dump_RDD_BYTES_4, 0x25e0 },
 		{ 0, 0 },
 	}
 };
@@ -717,11 +717,11 @@ static DUMP_RUNNERREG_STRUCT SQ_TM_TX_QUEUE_DROP_TABLE =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT BUFMNG_DESCRIPTOR_TABLE =
+static DUMP_RUNNERREG_STRUCT FPM_POOL_NUMBER_MAPPING_TABLE =
 {
-	2,
+	1,
 	{
-		{ dump_RDD_BUFMNG_DESCRIPTOR_ENTRY, 0x32a0 },
+		{ dump_RDD_FPM_POOL_NUMBER, 0x32a0 },
 		{ 0, 0 },
 	}
 };
@@ -1097,17 +1097,17 @@ static DUMP_RUNNERREG_STRUCT SQ_TM_UPDATE_FIFO_TABLE =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT BUFMNG_STATUS_TABLE =
+static DUMP_RUNNERREG_STRUCT BUFMNG_DESCRIPTOR_TABLE =
 {
-	32,
+	2,
 	{
-		{ dump_RDD_BUFMNG_STATUS_ENTRY, 0x3660 },
+		{ dump_RDD_BUFMNG_DESCRIPTOR_ENTRY, 0x3660 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT SQ_TM_BUFMNG_STATUS_TABLE =
+static DUMP_RUNNERREG_STRUCT BUFMNG_STATUS_TABLE =
 {
 	32,
 	{
@@ -1117,21 +1117,11 @@ static DUMP_RUNNERREG_STRUCT SQ_TM_BUFMNG_STATUS_TABLE =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT SQ_TM_SCHEDULER_TABLE =
+static DUMP_RUNNERREG_STRUCT SQ_TM_BUFMNG_STATUS_TABLE =
 {
-	24,
+	32,
 	{
-		{ dump_RDD_SCHEDULER_DESCRIPTOR, 0x36a0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT NAT_CACHE_CFG =
-{
-	7,
-	{
-		{ dump_RDD_NAT_CACHE_CFG, 0x36b8 },
+		{ dump_RDD_BUFMNG_STATUS_ENTRY, 0x36a0 },
 		{ 0, 0 },
 	}
 };
@@ -1147,21 +1137,21 @@ static DUMP_RUNNERREG_STRUCT VPORT_TO_RL_OVERHEAD_TABLE =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT DHD_HW_CFG =
+static DUMP_RUNNERREG_STRUCT SQ_TM_SCHEDULER_TABLE =
 {
-	20,
+	24,
 	{
-		{ dump_RDD_DHD_HW_CONFIGURATION, 0x36e0 },
+		{ dump_RDD_SCHEDULER_DESCRIPTOR, 0x36e0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT NAT_CACHE_KEY0_MASK =
+static DUMP_RUNNERREG_STRUCT NAT_CACHE_CFG =
 {
-	4,
+	7,
 	{
-		{ dump_RDD_BYTES_4, 0x36f8 },
+		{ dump_RDD_NAT_CACHE_CFG, 0x36f8 },
 		{ 0, 0 },
 	}
 };
@@ -1187,21 +1177,31 @@ static DUMP_RUNNERREG_STRUCT DEBUG_SCRATCHPAD =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT SQ_TM_AQM_QUEUE_TIMER_TABLE =
+static DUMP_RUNNERREG_STRUCT SPDSVC_WLAN_GEN_PARAMS_TABLE =
 {
-	1,
+	10,
 	{
-		{ dump_RDD_AQM_QUEUE_TIMER_DESCRIPTOR, 0x3750 },
+		{ dump_RDD_SPDSVC_WLAN_GEN_PARAMS, 0x3750 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT SPDSVC_WLAN_GEN_PARAMS_TABLE =
+static DUMP_RUNNERREG_STRUCT DHD_HW_CFG =
 {
-	10,
+	20,
 	{
-		{ dump_RDD_SPDSVC_WLAN_GEN_PARAMS, 0x3770 },
+		{ dump_RDD_DHD_HW_CONFIGURATION, 0x3760 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT NAT_CACHE_KEY0_MASK =
+{
+	4,
+	{
+		{ dump_RDD_BYTES_4, 0x3778 },
 		{ 0, 0 },
 	}
 };
@@ -1217,21 +1217,21 @@ static DUMP_RUNNERREG_STRUCT DHD_FPM_REPLY =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT NATC_L2_VLAN_KEY_MASK =
+static DUMP_RUNNERREG_STRUCT SQ_TM_AQM_QUEUE_TIMER_TABLE =
 {
-	2,
+	1,
 	{
-		{ dump_RDD_BYTES_2, 0x3798 },
+		{ dump_RDD_AQM_QUEUE_TIMER_DESCRIPTOR, 0x3798 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT FPM_GLOBAL_CFG =
+static DUMP_RUNNERREG_STRUCT NATC_L2_VLAN_KEY_MASK =
 {
-	28,
+	2,
 	{
-		{ dump_RDD_FPM_GLOBAL_CFG, 0x37a0 },
+		{ dump_RDD_BYTES_2, 0x37b8 },
 		{ 0, 0 },
 	}
 };
@@ -1257,11 +1257,21 @@ static DUMP_RUNNERREG_STRUCT DEBUG_PRINT_TABLE =
 };
 #endif
 #if defined BCM6813
+static DUMP_RUNNERREG_STRUCT FPM_GLOBAL_CFG =
+{
+	28,
+	{
+		{ dump_RDD_FPM_GLOBAL_CFG, 0x37e0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
 static DUMP_RUNNERREG_STRUCT GDX_PARAMS_TABLE =
 {
 	12,
 	{
-		{ dump_RDD_GDX_PARAMS, 0x37e0 },
+		{ dump_RDD_GDX_PARAMS, 0x3800 },
 		{ 0, 0 },
 	}
 };
@@ -1271,7 +1281,7 @@ static DUMP_RUNNERREG_STRUCT INGRESS_FILTER_CFG =
 {
 	2,
 	{
-		{ dump_RDD_INGRESS_FILTER_CFG, 0x37f0 },
+		{ dump_RDD_INGRESS_FILTER_CFG, 0x3810 },
 		{ 0, 0 },
 	}
 };
@@ -1281,7 +1291,7 @@ static DUMP_RUNNERREG_STRUCT NATC_L2_TOS_MASK =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x37f8 },
+		{ dump_RDD_BYTE_1, 0x3818 },
 		{ 0, 0 },
 	}
 };
@@ -1291,7 +1301,7 @@ static DUMP_RUNNERREG_STRUCT FW_ERROR_VECTOR_TABLE =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0x3800 },
+		{ dump_RDD_BYTES_4, 0x3820 },
 		{ 0, 0 },
 	}
 };
@@ -1301,7 +1311,7 @@ static DUMP_RUNNERREG_STRUCT MULTICAST_KEY_MASK =
 {
 	4,
 	{
-		{ dump_RDD_MULTICAST_KEY_MASK_ENTRY, 0x3820 },
+		{ dump_RDD_MULTICAST_KEY_MASK_ENTRY, 0x3840 },
 		{ 0, 0 },
 	}
 };
@@ -7237,11 +7247,11 @@ static DUMP_RUNNERREG_STRUCT US_TM_RATE_LIMITER_PARAMS_DESCRIPTOR_TABLE_6 =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT US_TM_AQM_QUEUE_TIMER_TABLE_6 =
+static DUMP_RUNNERREG_STRUCT US_TM_RATE_LIMITER_FORCE_WAKEUP_6 =
 {
 	1,
 	{
-		{ dump_RDD_AQM_QUEUE_TIMER_DESCRIPTOR, 0x2280 },
+		{ dump_RDD_BYTE_1, 0x2280 },
 		{ 0, 0 },
 	}
 };
@@ -7317,21 +7327,11 @@ static DUMP_RUNNERREG_STRUCT US_TM_FLUSH_CFG_CPU_TABLE_6 =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT GENERAL_TIMER_STACK_6 =
+static DUMP_RUNNERREG_STRUCT US_TM_AQM_QUEUE_TIMER_TABLE_6 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x2780 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT TCAM_GENERIC_FIELDS_6 =
-{
-	2,
-	{
-		{ dump_RDD_TCAM_GENERIC, 0x27c8 },
+		{ dump_RDD_AQM_QUEUE_TIMER_DESCRIPTOR, 0x2780 },
 		{ 0, 0 },
 	}
 };
@@ -7367,11 +7367,11 @@ static DUMP_RUNNERREG_STRUCT PROCESSING0_STACK_6 =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT TUNNELS_PARSING_CFG_6 =
+static DUMP_RUNNERREG_STRUCT TCAM_GENERIC_FIELDS_6 =
 {
-	8,
+	2,
 	{
-		{ dump_RDD_TUNNELS_PARSING_CFG, 0x2968 },
+		{ dump_RDD_TCAM_GENERIC, 0x2968 },
 		{ 0, 0 },
 	}
 };
@@ -7387,31 +7387,21 @@ static DUMP_RUNNERREG_STRUCT US_TM_FLUSH_CFG_CURRENT_TABLE_6 =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT US_BUFFER_CONG_MGT_CFG_6 =
+static DUMP_RUNNERREG_STRUCT GENERAL_TIMER_STACK_6 =
 {
-	68,
+	1,
 	{
-		{ dump_RDD_BUFFER_CONG_MGT, 0x2980 },
+		{ dump_RDD_BYTE_1, 0x2980 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT CSO_BAD_IPV4_HDR_CSUM_PACKETS_6 =
-{
-	4,
-	{
-		{ dump_RDD_BYTES_4, 0x29c4 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT IPTV_CFG_TABLE_6 =
+static DUMP_RUNNERREG_STRUCT TUNNELS_PARSING_CFG_6 =
 {
 	8,
 	{
-		{ dump_RDD_IPTV_CFG, 0x29c8 },
+		{ dump_RDD_TUNNELS_PARSING_CFG, 0x29c8 },
 		{ 0, 0 },
 	}
 };
@@ -7457,11 +7447,21 @@ static DUMP_RUNNERREG_STRUCT US_TM_TX_QUEUE_DROP_TABLE_6 =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT IPTV_DDR_CTX_TABLE_ADDRESS_6 =
+static DUMP_RUNNERREG_STRUCT CSO_BAD_IPV4_HDR_CSUM_PACKETS_6 =
 {
-	8,
+	4,
 	{
-		{ dump_RDD_IPTV_DDR_CTX_TABLE_ADDRESS, 0x2de8 },
+		{ dump_RDD_BYTES_4, 0x2de8 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT TASK_IDX_6 =
+{
+	4,
+	{
+		{ dump_RDD_BYTES_4, 0x2dec },
 		{ 0, 0 },
 	}
 };
@@ -7477,11 +7477,21 @@ static DUMP_RUNNERREG_STRUCT US_TM_DISPATCHER_CREDIT_TABLE_6 =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT TASK_IDX_6 =
+static DUMP_RUNNERREG_STRUCT AQM_NUM_QUEUES_6 =
 {
-	4,
+	2,
 	{
-		{ dump_RDD_BYTES_4, 0x2dfc },
+		{ dump_RDD_BYTES_2, 0x2dfc },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT BUDGET_ALLOCATION_TIMER_VALUE_6 =
+{
+	2,
+	{
+		{ dump_RDD_BYTES_2, 0x2dfe },
 		{ 0, 0 },
 	}
 };
@@ -7497,21 +7507,91 @@ static DUMP_RUNNERREG_STRUCT US_TM_AQM_QUEUE_TABLE_6 =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT REGISTERS_BUFFER_6 =
+static DUMP_RUNNERREG_STRUCT UPDATE_FIFO_STACK_6 =
 {
-	4,
+	1,
 	{
-		{ dump_RDD_BYTES_4, 0x2f40 },
+		{ dump_RDD_BYTE_1, 0x2f40 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT UPDATE_FIFO_STACK_6 =
+static DUMP_RUNNERREG_STRUCT US_BUFFER_CONG_MGT_CFG_6 =
 {
-	1,
+	68,
 	{
-		{ dump_RDD_BYTE_1, 0x2fc0 },
+		{ dump_RDD_BUFFER_CONG_MGT, 0x2f80 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT DOS_DROP_REASONS_CFG_6 =
+{
+	2,
+	{
+		{ dump_RDD_BYTES_2, 0x2fc4 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT GENERAL_TIMER_ACTION_VEC_6 =
+{
+	2,
+	{
+		{ dump_RDD_BYTES_2, 0x2fc6 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT IPTV_CFG_TABLE_6 =
+{
+	8,
+	{
+		{ dump_RDD_IPTV_CFG, 0x2fc8 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT US_TM_FLUSH_DISPATCHER_CREDIT_TABLE_6 =
+{
+	4,
+	{
+		{ dump_RDD_BYTES_4, 0x2fd0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT US_TM_FLUSH_CFG_ENABLE_TABLE_6 =
+{
+	2,
+	{
+		{ dump_RDD_FLUSH_CFG_ENABLE_ENTRY, 0x2fdc },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT MCAST_MAX_REPLICATION_FLAG_TABLE_6 =
+{
+	2,
+	{
+		{ dump_RDD_BYTES_2, 0x2fde },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT BUFFER_CONG_DQM_NOT_EMPTY_6 =
+{
+	4,
+	{
+		{ dump_RDD_BYTES_4, 0x2fe0 },
 		{ 0, 0 },
 	}
 };
@@ -7557,11 +7637,31 @@ static DUMP_RUNNERREG_STRUCT US_TM_SCHEDULER_POOL_6 =
 };
 #endif
 #if defined BCM6813
+static DUMP_RUNNERREG_STRUCT IPTV_DDR_CTX_TABLE_ADDRESS_6 =
+{
+	8,
+	{
+		{ dump_RDD_IPTV_DDR_CTX_TABLE_ADDRESS, 0x33d8 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT US_TM_BBH_TX_WAKE_UP_DATA_TABLE_6 =
+{
+	8,
+	{
+		{ dump_RDD_BBH_TX_WAKE_UP_DATA_ENTRY, 0x33e0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
 static DUMP_RUNNERREG_STRUCT NAT_CACHE_CFG_6 =
 {
 	7,
 	{
-		{ dump_RDD_NAT_CACHE_CFG, 0x33d8 },
+		{ dump_RDD_NAT_CACHE_CFG, 0x33f8 },
 		{ 0, 0 },
 	}
 };
@@ -7571,17 +7671,7 @@ static DUMP_RUNNERREG_STRUCT SPDTEST_NUM_OF_RX_FLOWS_6 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x33df },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT BUFFER_CONG_DQM_NOT_EMPTY_6 =
-{
-	4,
-	{
-		{ dump_RDD_BYTES_4, 0x33e0 },
+		{ dump_RDD_BYTE_1, 0x33ff },
 		{ 0, 0 },
 	}
 };
@@ -7597,11 +7687,21 @@ static DUMP_RUNNERREG_STRUCT INGRESS_FILTER_PROFILE_TABLE_6 =
 };
 #endif
 #if defined BCM6813
+static DUMP_RUNNERREG_STRUCT REGISTERS_BUFFER_6 =
+{
+	4,
+	{
+		{ dump_RDD_BYTES_4, 0x3480 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
 static DUMP_RUNNERREG_STRUCT BUFFER_CONG_SCRATCHPAD_6 =
 {
 	8,
 	{
-		{ dump_RDD_BUFFER_CONG_Q_OCCUPANCY, 0x3480 },
+		{ dump_RDD_BUFFER_CONG_Q_OCCUPANCY, 0x3500 },
 		{ 0, 0 },
 	}
 };
@@ -7611,117 +7711,7 @@ static DUMP_RUNNERREG_STRUCT RX_MIRRORING_TABLE_6 =
 {
 	2,
 	{
-		{ dump_RDD_MIRRORING_TRUNCATE_ENTRY, 0x34c0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT AQM_NUM_QUEUES_6 =
-{
-	2,
-	{
-		{ dump_RDD_BYTES_2, 0x34fe },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT HOST_TX_TRUNCATE_MIRRORING_TABLE_6 =
-{
-	2,
-	{
-		{ dump_RDD_MIRRORING_TRUNCATE_ENTRY, 0x3500 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT BUDGET_ALLOCATION_TIMER_VALUE_6 =
-{
-	2,
-	{
-		{ dump_RDD_BYTES_2, 0x353e },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT PON_TM_TX_TRUNCATE_MIRRORING_TABLE_6 =
-{
-	2,
-	{
 		{ dump_RDD_MIRRORING_TRUNCATE_ENTRY, 0x3540 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT DOS_DROP_REASONS_CFG_6 =
-{
-	2,
-	{
-		{ dump_RDD_BYTES_2, 0x357e },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT LOOPBACK_QUEUE_TABLE_6 =
-{
-	2,
-	{
-		{ dump_RDD_BYTES_2, 0x3580 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT GENERAL_TIMER_ACTION_VEC_6 =
-{
-	2,
-	{
-		{ dump_RDD_BYTES_2, 0x35be },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT VPORT_CFG_EX_TABLE_6 =
-{
-	2,
-	{
-		{ dump_RDD_VPORT_CFG_EX_ENTRY, 0x35c0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT US_TM_FLUSH_CFG_ENABLE_TABLE_6 =
-{
-	2,
-	{
-		{ dump_RDD_FLUSH_CFG_ENABLE_ENTRY, 0x35fe },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT US_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_6 =
-{
-	40,
-	{
-		{ dump_RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY, 0x3600 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT MCAST_MAX_REPLICATION_FLAG_TABLE_6 =
-{
-	2,
-	{
-		{ dump_RDD_BYTES_2, 0x3678 },
 		{ 0, 0 },
 	}
 };
@@ -7731,7 +7721,7 @@ static DUMP_RUNNERREG_STRUCT TX_EXCEPTION_6 =
 {
 	1,
 	{
-		{ dump_RDD_TX_EXCEPTION_ENTRY, 0x367a },
+		{ dump_RDD_TX_EXCEPTION_ENTRY, 0x357e },
 		{ 0, 0 },
 	}
 };
@@ -7741,7 +7731,17 @@ static DUMP_RUNNERREG_STRUCT LLQ_SELECTOR_ECN_MASK_6 =
 {
 	1,
 	{
-		{ dump_RDD_LLQ_SELECTOR_ECN, 0x367b },
+		{ dump_RDD_LLQ_SELECTOR_ECN, 0x357f },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT HOST_TX_TRUNCATE_MIRRORING_TABLE_6 =
+{
+	2,
+	{
+		{ dump_RDD_MIRRORING_TRUNCATE_ENTRY, 0x3580 },
 		{ 0, 0 },
 	}
 };
@@ -7751,7 +7751,17 @@ static DUMP_RUNNERREG_STRUCT BBH_TX_US_WAN_0_FIFO_BYTES_THRESHOLD_6 =
 {
 	2,
 	{
-		{ dump_RDD_BYTES_2, 0x367c },
+		{ dump_RDD_BYTES_2, 0x35be },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT PON_TM_TX_TRUNCATE_MIRRORING_TABLE_6 =
+{
+	2,
+	{
+		{ dump_RDD_MIRRORING_TRUNCATE_ENTRY, 0x35c0 },
 		{ 0, 0 },
 	}
 };
@@ -7761,7 +7771,7 @@ static DUMP_RUNNERREG_STRUCT LOOPBACK_WAN_FLOW_TABLE_6 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x367e },
+		{ dump_RDD_BYTE_1, 0x35fe },
 		{ 0, 0 },
 	}
 };
@@ -7771,27 +7781,17 @@ static DUMP_RUNNERREG_STRUCT FORCE_DSCP_6 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x367f },
+		{ dump_RDD_BYTE_1, 0x35ff },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT US_TM_BBH_TX_EGRESS_COUNTER_TABLE_6 =
+static DUMP_RUNNERREG_STRUCT LOOPBACK_QUEUE_TABLE_6 =
 {
-	8,
+	2,
 	{
-		{ dump_RDD_BBH_TX_EGRESS_COUNTER_ENTRY, 0x3680 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT NAT_CACHE_KEY0_MASK_6 =
-{
-	4,
-	{
-		{ dump_RDD_BYTES_4, 0x36b8 },
+		{ dump_RDD_BYTES_2, 0x3600 },
 		{ 0, 0 },
 	}
 };
@@ -7801,7 +7801,17 @@ static DUMP_RUNNERREG_STRUCT US_TM_FIRST_QUEUE_MAPPING_6 =
 {
 	2,
 	{
-		{ dump_RDD_BYTES_2, 0x36bc },
+		{ dump_RDD_BYTES_2, 0x363e },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT VPORT_CFG_EX_TABLE_6 =
+{
+	2,
+	{
+		{ dump_RDD_VPORT_CFG_EX_ENTRY, 0x3640 },
 		{ 0, 0 },
 	}
 };
@@ -7811,7 +7821,7 @@ static DUMP_RUNNERREG_STRUCT CORE_ID_TABLE_6 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x36be },
+		{ dump_RDD_BYTE_1, 0x367e },
 		{ 0, 0 },
 	}
 };
@@ -7821,17 +7831,27 @@ static DUMP_RUNNERREG_STRUCT US_TM_ETH_BBH_TX_FIFO_SIZE_6 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x36bf },
+		{ dump_RDD_BYTE_1, 0x367f },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT US_TM_PI2_PROBABILITY_CALC_DESCRIPTOR_6 =
+static DUMP_RUNNERREG_STRUCT US_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_6 =
 {
-	52,
+	40,
 	{
-		{ dump_RDD_PI2_PROBABILITY_CALC_DESCRIPTOR, 0x36c0 },
+		{ dump_RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY, 0x3680 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT NAT_CACHE_KEY0_MASK_6 =
+{
+	4,
+	{
+		{ dump_RDD_BYTES_4, 0x36f8 },
 		{ 0, 0 },
 	}
 };
@@ -7841,7 +7861,7 @@ static DUMP_RUNNERREG_STRUCT RX_MIRRORING_CONFIGURATION_6 =
 {
 	2,
 	{
-		{ dump_RDD_MIRRORING_DESCRIPTOR, 0x36f4 },
+		{ dump_RDD_MIRRORING_DESCRIPTOR, 0x36fc },
 		{ 0, 0 },
 	}
 };
@@ -7851,7 +7871,17 @@ static DUMP_RUNNERREG_STRUCT TX_MIRRORING_CONFIGURATION_6 =
 {
 	2,
 	{
-		{ dump_RDD_MIRRORING_DESCRIPTOR, 0x36f6 },
+		{ dump_RDD_MIRRORING_DESCRIPTOR, 0x36fe },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT US_TM_BBH_TX_EGRESS_COUNTER_TABLE_6 =
+{
+	8,
+	{
+		{ dump_RDD_BBH_TX_EGRESS_COUNTER_ENTRY, 0x3700 },
 		{ 0, 0 },
 	}
 };
@@ -7861,7 +7891,7 @@ static DUMP_RUNNERREG_STRUCT NATC_L2_VLAN_KEY_MASK_6 =
 {
 	2,
 	{
-		{ dump_RDD_BYTES_2, 0x36f8 },
+		{ dump_RDD_BYTES_2, 0x3738 },
 		{ 0, 0 },
 	}
 };
@@ -7871,7 +7901,7 @@ static DUMP_RUNNERREG_STRUCT US_TM_ETH_1_BBH_TX_FIFO_SIZE_6 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x36fa },
+		{ dump_RDD_BYTE_1, 0x373a },
 		{ 0, 0 },
 	}
 };
@@ -7881,7 +7911,7 @@ static DUMP_RUNNERREG_STRUCT US_TM_PON_BBH_TX_FIFO_SIZE_6 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x36fb },
+		{ dump_RDD_BYTE_1, 0x373b },
 		{ 0, 0 },
 	}
 };
@@ -7891,7 +7921,7 @@ static DUMP_RUNNERREG_STRUCT MAC_TYPE_6 =
 {
 	1,
 	{
-		{ dump_RDD_MAC_TYPE_ENTRY, 0x36fc },
+		{ dump_RDD_MAC_TYPE_ENTRY, 0x373c },
 		{ 0, 0 },
 	}
 };
@@ -7901,7 +7931,7 @@ static DUMP_RUNNERREG_STRUCT CPU_REDIRECT_MODE_6 =
 {
 	1,
 	{
-		{ dump_RDD_CPU_REDIRECT_MODE_ENTRY, 0x36fd },
+		{ dump_RDD_CPU_REDIRECT_MODE_ENTRY, 0x373d },
 		{ 0, 0 },
 	}
 };
@@ -7911,7 +7941,7 @@ static DUMP_RUNNERREG_STRUCT CSO_DISABLE_6 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x36fe },
+		{ dump_RDD_BYTE_1, 0x373e },
 		{ 0, 0 },
 	}
 };
@@ -7921,27 +7951,17 @@ static DUMP_RUNNERREG_STRUCT DEBUG_PRINT_CORE_LOCK_6 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x36ff },
+		{ dump_RDD_BYTE_1, 0x373f },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT TR471_SPDSVC_RX_PKT_ID_TABLE_6 =
+static DUMP_RUNNERREG_STRUCT US_TM_PI2_PROBABILITY_CALC_DESCRIPTOR_6 =
 {
-	12,
+	52,
 	{
-		{ dump_RDD_TR471_SPDSVC_RX_PKT_ID, 0x3700 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT US_TM_FLUSH_DISPATCHER_CREDIT_TABLE_6 =
-{
-	4,
-	{
-		{ dump_RDD_BYTES_4, 0x3730 },
+		{ dump_RDD_PI2_PROBABILITY_CALC_DESCRIPTOR, 0x3740 },
 		{ 0, 0 },
 	}
 };
@@ -7951,7 +7971,7 @@ static DUMP_RUNNERREG_STRUCT TCAM_TABLE_CFG_TABLE_6 =
 {
 	1,
 	{
-		{ dump_RDD_TCAM_TABLE_CFG, 0x373c },
+		{ dump_RDD_TCAM_TABLE_CFG, 0x3774 },
 		{ 0, 0 },
 	}
 };
@@ -7961,7 +7981,7 @@ static DUMP_RUNNERREG_STRUCT WAN_0_BBH_TX_FIFO_SIZE_6 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x373d },
+		{ dump_RDD_BYTE_1, 0x3775 },
 		{ 0, 0 },
 	}
 };
@@ -7971,7 +7991,7 @@ static DUMP_RUNNERREG_STRUCT SRAM_DUMMY_STORE_6 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x373e },
+		{ dump_RDD_BYTE_1, 0x3776 },
 		{ 0, 0 },
 	}
 };
@@ -7981,57 +8001,7 @@ static DUMP_RUNNERREG_STRUCT IPTV_CLASSIFICATION_CFG_TABLE_6 =
 {
 	1,
 	{
-		{ dump_RDD_IPTV_CLASSIFICATION_CFG_ENTRY, 0x373f },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT CODEL_BIAS_SLOPE_TABLE_6 =
-{
-	4,
-	{
-		{ dump_RDD_CODEL_BIAS_SLOPE, 0x3740 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT INGRESS_FILTER_1588_CFG_6 =
-{
-	1,
-	{
-		{ dump_RDD_BYTE_1, 0x376c },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT RX_MIRRORING_DIRECT_ENABLE_6 =
-{
-	1,
-	{
-		{ dump_RDD_BYTE_1, 0x376d },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT DISPATCHER_CREDIT_TABLE_6 =
-{
-	4,
-	{
-		{ dump_RDD_BYTES_4, 0x3770 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT US_TM_PON_BBH_TX_ABS_COUNTER_TABLE_6 =
-{
-	1,
-	{
-		{ dump_RDD_BYTE_1, 0x3780 },
+		{ dump_RDD_IPTV_CLASSIFICATION_CFG_ENTRY, 0x3777 },
 		{ 0, 0 },
 	}
 };
@@ -8041,7 +8011,57 @@ static DUMP_RUNNERREG_STRUCT INGRESS_FILTER_CFG_6 =
 {
 	2,
 	{
-		{ dump_RDD_INGRESS_FILTER_CFG, 0x37a8 },
+		{ dump_RDD_INGRESS_FILTER_CFG, 0x3778 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT INGRESS_FILTER_1588_CFG_6 =
+{
+	1,
+	{
+		{ dump_RDD_BYTE_1, 0x377a },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT RX_MIRRORING_DIRECT_ENABLE_6 =
+{
+	1,
+	{
+		{ dump_RDD_BYTE_1, 0x377b },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT TR471_SPDSVC_RX_PKT_ID_TABLE_6 =
+{
+	12,
+	{
+		{ dump_RDD_TR471_SPDSVC_RX_PKT_ID, 0x3780 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT DISPATCHER_CREDIT_TABLE_6 =
+{
+	4,
+	{
+		{ dump_RDD_BYTES_4, 0x37b0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT CODEL_BIAS_SLOPE_TABLE_6 =
+{
+	4,
+	{
+		{ dump_RDD_CODEL_BIAS_SLOPE, 0x37c0 },
 		{ 0, 0 },
 	}
 };
@@ -8051,37 +8071,17 @@ static DUMP_RUNNERREG_STRUCT GENERAL_QUEUE_DYNAMIC_MNG_TABLE_6 =
 {
 	12,
 	{
-		{ dump_RDD_QUEUE_DYNAMIC_MNG_ENTRY, 0x37b0 },
+		{ dump_RDD_QUEUE_DYNAMIC_MNG_ENTRY, 0x37f0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT UPDATE_FIFO_TABLE_6 =
+static DUMP_RUNNERREG_STRUCT US_TM_PON_BBH_TX_ABS_COUNTER_TABLE_6 =
 {
-	4,
+	1,
 	{
-		{ dump_RDD_UPDATE_FIFO_ENTRY, 0x37c0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT US_TM_TX_OCTETS_COUNTERS_TABLE_6 =
-{
-	8,
-	{
-		{ dump_RDD_PACKETS_AND_BYTES, 0x37e0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT US_TM_BBH_TX_WAKE_UP_DATA_TABLE_6 =
-{
-	8,
-	{
-		{ dump_RDD_BBH_TX_WAKE_UP_DATA_ENTRY, 0x3820 },
+		{ dump_RDD_BYTE_1, 0x3800 },
 		{ 0, 0 },
 	}
 };
@@ -8091,47 +8091,7 @@ static DUMP_RUNNERREG_STRUCT NATC_L2_TOS_MASK_6 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x3838 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT VPORT_TO_RL_OVERHEAD_TABLE_6 =
-{
-	1,
-	{
-		{ dump_RDD_VPORT_TO_RL_OVERHEAD_ENTRY, 0x3840 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT US_TM_SCHEDULING_AGGREGATION_CONTEXT_VECTOR_6 =
-{
-	4,
-	{
-		{ dump_RDD_BYTES_4, 0x3860 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT VPORT_TO_LOOKUP_PORT_MAPPING_TABLE_6 =
-{
-	1,
-	{
-		{ dump_RDD_BYTE_1, 0x3880 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT DEBUG_SCRATCHPAD_6 =
-{
-	4,
-	{
-		{ dump_RDD_BYTES_4, 0x38a0 },
+		{ dump_RDD_BYTE_1, 0x3828 },
 		{ 0, 0 },
 	}
 };
@@ -8141,7 +8101,47 @@ static DUMP_RUNNERREG_STRUCT DHD_FPM_THRESHOLDS_6 =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0x38d0 },
+		{ dump_RDD_BYTES_4, 0x3830 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT UPDATE_FIFO_TABLE_6 =
+{
+	4,
+	{
+		{ dump_RDD_UPDATE_FIFO_ENTRY, 0x3840 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT US_TM_TX_OCTETS_COUNTERS_TABLE_6 =
+{
+	8,
+	{
+		{ dump_RDD_PACKETS_AND_BYTES, 0x3860 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT US_TM_SCHEDULING_AGGREGATION_CONTEXT_VECTOR_6 =
+{
+	4,
+	{
+		{ dump_RDD_BYTES_4, 0x38a0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT VPORT_TO_RL_OVERHEAD_TABLE_6 =
+{
+	1,
+	{
+		{ dump_RDD_VPORT_TO_RL_OVERHEAD_ENTRY, 0x38c0 },
 		{ 0, 0 },
 	}
 };
@@ -8157,11 +8157,21 @@ static DUMP_RUNNERREG_STRUCT US_TM_CODEL_DROP_DESCRIPTOR_6 =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT BITS_CALC_MASKS_TABLE_6 =
+static DUMP_RUNNERREG_STRUCT VPORT_TO_LOOKUP_PORT_MAPPING_TABLE_6 =
+{
+	1,
+	{
+		{ dump_RDD_BYTE_1, 0x3900 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT DEBUG_SCRATCHPAD_6 =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0x3900 },
+		{ dump_RDD_BYTES_4, 0x3920 },
 		{ 0, 0 },
 	}
 };
@@ -8171,7 +8181,7 @@ static DUMP_RUNNERREG_STRUCT TX_MIRRORING_DISPATCHER_CREDIT_TABLE_6 =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0x3910 },
+		{ dump_RDD_BYTES_4, 0x3950 },
 		{ 0, 0 },
 	}
 };
@@ -8181,7 +8191,17 @@ static DUMP_RUNNERREG_STRUCT FPM_GLOBAL_CFG_6 =
 {
 	28,
 	{
-		{ dump_RDD_FPM_GLOBAL_CFG, 0x3920 },
+		{ dump_RDD_FPM_GLOBAL_CFG, 0x3960 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT BITS_CALC_MASKS_TABLE_6 =
+{
+	4,
+	{
+		{ dump_RDD_BYTES_4, 0x3980 },
 		{ 0, 0 },
 	}
 };
@@ -8191,7 +8211,7 @@ static DUMP_RUNNERREG_STRUCT DEBUG_PRINT_TABLE_6 =
 {
 	16,
 	{
-		{ dump_RDD_DEBUG_PRINT_INFO, 0x3940 },
+		{ dump_RDD_DEBUG_PRINT_INFO, 0x3990 },
 		{ 0, 0 },
 	}
 };
@@ -8201,17 +8221,7 @@ static DUMP_RUNNERREG_STRUCT GDX_PARAMS_TABLE_6 =
 {
 	12,
 	{
-		{ dump_RDD_GDX_PARAMS, 0x3950 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT FW_ERROR_VECTOR_TABLE_6 =
-{
-	4,
-	{
-		{ dump_RDD_BYTES_4, 0x3960 },
+		{ dump_RDD_GDX_PARAMS, 0x39a0 },
 		{ 0, 0 },
 	}
 };
@@ -8221,17 +8231,17 @@ static DUMP_RUNNERREG_STRUCT US_TM_BBH_TX_ABS_COUNTER_TABLE_6 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x3980 },
+		{ dump_RDD_BYTE_1, 0x39c0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT MULTICAST_KEY_MASK_6 =
+static DUMP_RUNNERREG_STRUCT FW_ERROR_VECTOR_TABLE_6 =
 {
 	4,
 	{
-		{ dump_RDD_MULTICAST_KEY_MASK_ENTRY, 0x39a0 },
+		{ dump_RDD_BYTES_4, 0x39e0 },
 		{ 0, 0 },
 	}
 };
@@ -8241,7 +8251,17 @@ static DUMP_RUNNERREG_STRUCT US_TM_1_BBH_TX_ABS_COUNTER_TABLE_6 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x39c0 },
+		{ dump_RDD_BYTE_1, 0x3a00 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT MULTICAST_KEY_MASK_6 =
+{
+	4,
+	{
+		{ dump_RDD_MULTICAST_KEY_MASK_ENTRY, 0x3a20 },
 		{ 0, 0 },
 	}
 };
@@ -8367,11 +8387,11 @@ static DUMP_RUNNERREG_STRUCT DS_TM_RATE_LIMITER_PROFILE_RESIDUE_TABLE_7 =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT DS_TM_TM_FLOW_CNTR_TABLE_7 =
+static DUMP_RUNNERREG_STRUCT DS_TM_RATE_LIMITER_FORCE_WAKEUP_7 =
 {
 	1,
 	{
-		{ dump_RDD_TM_FLOW_CNTR_ENTRY, 0x1fc0 },
+		{ dump_RDD_BYTE_1, 0x1fc0 },
 		{ 0, 0 },
 	}
 };
@@ -8877,21 +8897,31 @@ static DUMP_RUNNERREG_STRUCT BUFMNG_DESCRIPTOR_TABLE_7 =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT VPORT_TX_FLOW_TABLE_7 =
+static DUMP_RUNNERREG_STRUCT DS_TM_TM_FLOW_CNTR_TABLE_7 =
 {
 	1,
 	{
-		{ dump_RDD_TX_FLOW_ENTRY, 0x2d40 },
+		{ dump_RDD_TM_FLOW_CNTR_ENTRY, 0x2d40 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT REGISTERS_BUFFER_7 =
+static DUMP_RUNNERREG_STRUCT VPORT_TX_FLOW_TABLE_7 =
 {
-	4,
+	1,
 	{
-		{ dump_RDD_BYTES_4, 0x2d80 },
+		{ dump_RDD_TX_FLOW_ENTRY, 0x2d80 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT DS_TM_AQM_QUEUE_TIMER_TABLE_7 =
+{
+	1,
+	{
+		{ dump_RDD_AQM_QUEUE_TIMER_DESCRIPTOR, 0x2dc0 },
 		{ 0, 0 },
 	}
 };
@@ -8957,11 +8987,11 @@ static DUMP_RUNNERREG_STRUCT BUFMNG_STATUS_TABLE_7 =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT DS_TM_AQM_QUEUE_TIMER_TABLE_7 =
+static DUMP_RUNNERREG_STRUCT UPDATE_FIFO_STACK_7 =
 {
 	1,
 	{
-		{ dump_RDD_AQM_QUEUE_TIMER_DESCRIPTOR, 0x33c0 },
+		{ dump_RDD_BYTE_1, 0x33c0 },
 		{ 0, 0 },
 	}
 };
@@ -8977,11 +9007,11 @@ static DUMP_RUNNERREG_STRUCT INGRESS_FILTER_PROFILE_TABLE_7 =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT UPDATE_FIFO_STACK_7 =
+static DUMP_RUNNERREG_STRUCT REGISTERS_BUFFER_7 =
 {
-	1,
+	4,
 	{
-		{ dump_RDD_BYTE_1, 0x3480 },
+		{ dump_RDD_BYTES_4, 0x3480 },
 		{ 0, 0 },
 	}
 };
@@ -8991,7 +9021,7 @@ static DUMP_RUNNERREG_STRUCT BUFFER_CONG_SCRATCHPAD_7 =
 {
 	8,
 	{
-		{ dump_RDD_BUFFER_CONG_Q_OCCUPANCY, 0x34c0 },
+		{ dump_RDD_BUFFER_CONG_Q_OCCUPANCY, 0x3500 },
 		{ 0, 0 },
 	}
 };
@@ -9001,7 +9031,7 @@ static DUMP_RUNNERREG_STRUCT RX_MIRRORING_TABLE_7 =
 {
 	2,
 	{
-		{ dump_RDD_MIRRORING_TRUNCATE_ENTRY, 0x3500 },
+		{ dump_RDD_MIRRORING_TRUNCATE_ENTRY, 0x3540 },
 		{ 0, 0 },
 	}
 };
@@ -9011,7 +9041,7 @@ static DUMP_RUNNERREG_STRUCT RX_MIRRORING_CONFIGURATION_7 =
 {
 	2,
 	{
-		{ dump_RDD_MIRRORING_DESCRIPTOR, 0x353e },
+		{ dump_RDD_MIRRORING_DESCRIPTOR, 0x357e },
 		{ 0, 0 },
 	}
 };
@@ -9021,7 +9051,7 @@ static DUMP_RUNNERREG_STRUCT HOST_TX_TRUNCATE_MIRRORING_TABLE_7 =
 {
 	2,
 	{
-		{ dump_RDD_MIRRORING_TRUNCATE_ENTRY, 0x3540 },
+		{ dump_RDD_MIRRORING_TRUNCATE_ENTRY, 0x3580 },
 		{ 0, 0 },
 	}
 };
@@ -9031,7 +9061,7 @@ static DUMP_RUNNERREG_STRUCT TX_MIRRORING_CONFIGURATION_7 =
 {
 	2,
 	{
-		{ dump_RDD_MIRRORING_DESCRIPTOR, 0x357e },
+		{ dump_RDD_MIRRORING_DESCRIPTOR, 0x35be },
 		{ 0, 0 },
 	}
 };
@@ -9041,7 +9071,7 @@ static DUMP_RUNNERREG_STRUCT ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_7 =
 {
 	2,
 	{
-		{ dump_RDD_MIRRORING_TRUNCATE_ENTRY, 0x3580 },
+		{ dump_RDD_MIRRORING_TRUNCATE_ENTRY, 0x35c0 },
 		{ 0, 0 },
 	}
 };
@@ -9051,43 +9081,13 @@ static DUMP_RUNNERREG_STRUCT CSO_DISABLE_7 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x35be },
+		{ dump_RDD_BYTE_1, 0x35fe },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined BCM6813
 static DUMP_RUNNERREG_STRUCT DEBUG_PRINT_CORE_LOCK_7 =
-{
-	1,
-	{
-		{ dump_RDD_BYTE_1, 0x35bf },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT LOOPBACK_QUEUE_TABLE_7 =
-{
-	2,
-	{
-		{ dump_RDD_BYTES_2, 0x35c0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT TCAM_TABLE_CFG_TABLE_7 =
-{
-	1,
-	{
-		{ dump_RDD_TCAM_TABLE_CFG, 0x35fe },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT SRAM_DUMMY_STORE_7 =
 {
 	1,
 	{
@@ -9117,27 +9117,27 @@ static DUMP_RUNNERREG_STRUCT BUFFER_CONG_DQM_NOT_EMPTY_7 =
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT VPORT_CFG_EX_TABLE_7 =
+static DUMP_RUNNERREG_STRUCT LOOPBACK_QUEUE_TABLE_7 =
 {
 	2,
 	{
-		{ dump_RDD_VPORT_CFG_EX_ENTRY, 0x3680 },
+		{ dump_RDD_BYTES_2, 0x3680 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT IPTV_CLASSIFICATION_CFG_TABLE_7 =
+static DUMP_RUNNERREG_STRUCT TCAM_TABLE_CFG_TABLE_7 =
 {
 	1,
 	{
-		{ dump_RDD_IPTV_CLASSIFICATION_CFG_ENTRY, 0x36be },
+		{ dump_RDD_TCAM_TABLE_CFG, 0x36be },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined BCM6813
-static DUMP_RUNNERREG_STRUCT INGRESS_FILTER_1588_CFG_7 =
+static DUMP_RUNNERREG_STRUCT SRAM_DUMMY_STORE_7 =
 {
 	1,
 	{
@@ -9147,11 +9147,41 @@ static DUMP_RUNNERREG_STRUCT INGRESS_FILTER_1588_CFG_7 =
 };
 #endif
 #if defined BCM6813
+static DUMP_RUNNERREG_STRUCT VPORT_CFG_EX_TABLE_7 =
+{
+	2,
+	{
+		{ dump_RDD_VPORT_CFG_EX_ENTRY, 0x36c0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT IPTV_CLASSIFICATION_CFG_TABLE_7 =
+{
+	1,
+	{
+		{ dump_RDD_IPTV_CLASSIFICATION_CFG_ENTRY, 0x36fe },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT INGRESS_FILTER_1588_CFG_7 =
+{
+	1,
+	{
+		{ dump_RDD_BYTE_1, 0x36ff },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
 static DUMP_RUNNERREG_STRUCT DS_TM_PI2_PROBABILITY_CALC_DESCRIPTOR_7 =
 {
 	52,
 	{
-		{ dump_RDD_PI2_PROBABILITY_CALC_DESCRIPTOR, 0x36c0 },
+		{ dump_RDD_PI2_PROBABILITY_CALC_DESCRIPTOR, 0x3700 },
 		{ 0, 0 },
 	}
 };
@@ -9161,7 +9191,7 @@ static DUMP_RUNNERREG_STRUCT RX_MIRRORING_DIRECT_ENABLE_7 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x36f4 },
+		{ dump_RDD_BYTE_1, 0x3734 },
 		{ 0, 0 },
 	}
 };
@@ -9171,7 +9201,7 @@ static DUMP_RUNNERREG_STRUCT NAT_CACHE_KEY0_MASK_7 =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0x36f8 },
+		{ dump_RDD_BYTES_4, 0x3738 },
 		{ 0, 0 },
 	}
 };
@@ -9181,7 +9211,7 @@ static DUMP_RUNNERREG_STRUCT TR471_SPDSVC_RX_PKT_ID_TABLE_7 =
 {
 	12,
 	{
-		{ dump_RDD_TR471_SPDSVC_RX_PKT_ID, 0x3700 },
+		{ dump_RDD_TR471_SPDSVC_RX_PKT_ID, 0x3740 },
 		{ 0, 0 },
 	}
 };
@@ -9191,7 +9221,7 @@ static DUMP_RUNNERREG_STRUCT DHD_FPM_THRESHOLDS_7 =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0x3730 },
+		{ dump_RDD_BYTES_4, 0x3770 },
 		{ 0, 0 },
 	}
 };
@@ -9201,7 +9231,7 @@ static DUMP_RUNNERREG_STRUCT CODEL_BIAS_SLOPE_TABLE_7 =
 {
 	4,
 	{
-		{ dump_RDD_CODEL_BIAS_SLOPE, 0x3740 },
+		{ dump_RDD_CODEL_BIAS_SLOPE, 0x3780 },
 		{ 0, 0 },
 	}
 };
@@ -9211,7 +9241,7 @@ static DUMP_RUNNERREG_STRUCT TX_MIRRORING_DISPATCHER_CREDIT_TABLE_7 =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0x3770 },
+		{ dump_RDD_BYTES_4, 0x37b0 },
 		{ 0, 0 },
 	}
 };
@@ -9221,7 +9251,7 @@ static DUMP_RUNNERREG_STRUCT DS_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_7 =
 {
 	40,
 	{
-		{ dump_RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY, 0x3780 },
+		{ dump_RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY, 0x37c0 },
 		{ 0, 0 },
 	}
 };
@@ -9231,7 +9261,7 @@ static DUMP_RUNNERREG_STRUCT DEBUG_SCRATCHPAD_7 =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0x37d0 },
+		{ dump_RDD_BYTES_4, 0x3810 },
 		{ 0, 0 },
 	}
 };
@@ -9241,7 +9271,7 @@ static DUMP_RUNNERREG_STRUCT UPDATE_FIFO_TABLE_7 =
 {
 	4,
 	{
-		{ dump_RDD_UPDATE_FIFO_ENTRY, 0x3800 },
+		{ dump_RDD_UPDATE_FIFO_ENTRY, 0x3840 },
 		{ 0, 0 },
 	}
 };
@@ -9251,7 +9281,7 @@ static DUMP_RUNNERREG_STRUCT DS_TM_SCHEDULING_AGGREGATION_CONTEXT_VECTOR_7 =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0x3820 },
+		{ dump_RDD_BYTES_4, 0x3860 },
 		{ 0, 0 },
 	}
 };
@@ -9261,7 +9291,7 @@ static DUMP_RUNNERREG_STRUCT NATC_L2_VLAN_KEY_MASK_7 =
 {
 	2,
 	{
-		{ dump_RDD_BYTES_2, 0x3838 },
+		{ dump_RDD_BYTES_2, 0x3878 },
 		{ 0, 0 },
 	}
 };
@@ -9271,7 +9301,7 @@ static DUMP_RUNNERREG_STRUCT VPORT_TO_RL_OVERHEAD_TABLE_7 =
 {
 	1,
 	{
-		{ dump_RDD_VPORT_TO_RL_OVERHEAD_ENTRY, 0x3840 },
+		{ dump_RDD_VPORT_TO_RL_OVERHEAD_ENTRY, 0x3880 },
 		{ 0, 0 },
 	}
 };
@@ -9281,7 +9311,7 @@ static DUMP_RUNNERREG_STRUCT DS_TM_CODEL_DROP_DESCRIPTOR_7 =
 {
 	20,
 	{
-		{ dump_RDD_CODEL_DROP_DESCRIPTOR, 0x3860 },
+		{ dump_RDD_CODEL_DROP_DESCRIPTOR, 0x38a0 },
 		{ 0, 0 },
 	}
 };
@@ -9291,7 +9321,7 @@ static DUMP_RUNNERREG_STRUCT INGRESS_FILTER_CFG_7 =
 {
 	2,
 	{
-		{ dump_RDD_INGRESS_FILTER_CFG, 0x3878 },
+		{ dump_RDD_INGRESS_FILTER_CFG, 0x38b8 },
 		{ 0, 0 },
 	}
 };
@@ -9301,7 +9331,7 @@ static DUMP_RUNNERREG_STRUCT VPORT_TO_LOOKUP_PORT_MAPPING_TABLE_7 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x3880 },
+		{ dump_RDD_BYTE_1, 0x38c0 },
 		{ 0, 0 },
 	}
 };
@@ -9311,47 +9341,7 @@ static DUMP_RUNNERREG_STRUCT FPM_GLOBAL_CFG_7 =
 {
 	28,
 	{
-		{ dump_RDD_FPM_GLOBAL_CFG, 0x38a0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT BITS_CALC_MASKS_TABLE_7 =
-{
-	4,
-	{
-		{ dump_RDD_BYTES_4, 0x38c0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT DEBUG_PRINT_TABLE_7 =
-{
-	16,
-	{
-		{ dump_RDD_DEBUG_PRINT_INFO, 0x38d0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT GDX_PARAMS_TABLE_7 =
-{
-	12,
-	{
-		{ dump_RDD_GDX_PARAMS, 0x38e0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined BCM6813
-static DUMP_RUNNERREG_STRUCT NATC_L2_TOS_MASK_7 =
-{
-	1,
-	{
-		{ dump_RDD_BYTE_1, 0x38f0 },
+		{ dump_RDD_FPM_GLOBAL_CFG, 0x38e0 },
 		{ 0, 0 },
 	}
 };
@@ -9367,11 +9357,51 @@ static DUMP_RUNNERREG_STRUCT DS_TM_BBH_TX_EGRESS_COUNTER_TABLE_7 =
 };
 #endif
 #if defined BCM6813
+static DUMP_RUNNERREG_STRUCT DEBUG_PRINT_TABLE_7 =
+{
+	16,
+	{
+		{ dump_RDD_DEBUG_PRINT_INFO, 0x3910 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT GDX_PARAMS_TABLE_7 =
+{
+	12,
+	{
+		{ dump_RDD_GDX_PARAMS, 0x3920 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT NATC_L2_TOS_MASK_7 =
+{
+	1,
+	{
+		{ dump_RDD_BYTE_1, 0x3930 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
+static DUMP_RUNNERREG_STRUCT BITS_CALC_MASKS_TABLE_7 =
+{
+	4,
+	{
+		{ dump_RDD_BYTES_4, 0x3940 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined BCM6813
 static DUMP_RUNNERREG_STRUCT FW_ERROR_VECTOR_TABLE_7 =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0x3920 },
+		{ dump_RDD_BYTES_4, 0x3960 },
 		{ 0, 0 },
 	}
 };
@@ -9381,7 +9411,7 @@ static DUMP_RUNNERREG_STRUCT DS_TM_BBH_TX_ABS_COUNTER_TABLE_7 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x3940 },
+		{ dump_RDD_BYTE_1, 0x3980 },
 		{ 0, 0 },
 	}
 };
@@ -9391,7 +9421,7 @@ static DUMP_RUNNERREG_STRUCT MULTICAST_KEY_MASK_7 =
 {
 	4,
 	{
-		{ dump_RDD_MULTICAST_KEY_MASK_ENTRY, 0x3960 },
+		{ dump_RDD_MULTICAST_KEY_MASK_ENTRY, 0x39a0 },
 		{ 0, 0 },
 	}
 };
@@ -9401,7 +9431,7 @@ static DUMP_RUNNERREG_STRUCT DS_TM_1_BBH_TX_ABS_COUNTER_TABLE_7 =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0x3980 },
+		{ dump_RDD_BYTE_1, 0x39c0 },
 		{ 0, 0 },
 	}
 };
@@ -9485,7 +9515,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "DHD_RX_COMPLETE_FLOW_RING_BUFFER", 1, CORE_0_INDEX, &DHD_RX_COMPLETE_FLOW_RING_BUFFER, 3, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "AQM_ENABLE_TABLE", 1, CORE_0_INDEX, &AQM_ENABLE_TABLE, 8, 1, 1 },
+	{ "SQ_TM_RATE_LIMITER_FORCE_WAKEUP", 1, CORE_0_INDEX, &SQ_TM_RATE_LIMITER_FORCE_WAKEUP, 32, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "PROCESSING3_STACK", 1, CORE_0_INDEX, &PROCESSING3_STACK, 360, 1, 1 },
@@ -9503,7 +9533,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "DHD_RX_POST_FLOW_RING_BUFFER", 1, CORE_0_INDEX, &DHD_RX_POST_FLOW_RING_BUFFER, 3, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "RUNNER_GLOBAL_REGISTERS_INIT", 1, CORE_0_INDEX, &RUNNER_GLOBAL_REGISTERS_INIT, 8, 1, 1 },
+	{ "AQM_ENABLE_TABLE", 1, CORE_0_INDEX, &AQM_ENABLE_TABLE, 8, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "PROCESSING4_STACK", 1, CORE_0_INDEX, &PROCESSING4_STACK, 360, 1, 1 },
@@ -9533,7 +9563,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "BUFMNG_HOST_CNT_DISABLE_TABLE", 1, CORE_0_INDEX, &BUFMNG_HOST_CNT_DISABLE_TABLE, 1, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "FPM_POOL_NUMBER_MAPPING_TABLE", 1, CORE_0_INDEX, &FPM_POOL_NUMBER_MAPPING_TABLE, 32, 1, 1 },
+	{ "RUNNER_GLOBAL_REGISTERS_INIT", 1, CORE_0_INDEX, &RUNNER_GLOBAL_REGISTERS_INIT, 8, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "PROCESSING5_STACK", 1, CORE_0_INDEX, &PROCESSING5_STACK, 360, 1, 1 },
@@ -9614,7 +9644,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "SQ_TM_TX_QUEUE_DROP_TABLE", 1, CORE_0_INDEX, &SQ_TM_TX_QUEUE_DROP_TABLE, 32, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "BUFMNG_DESCRIPTOR_TABLE", 1, CORE_0_INDEX, &BUFMNG_DESCRIPTOR_TABLE, 16, 1, 1 },
+	{ "FPM_POOL_NUMBER_MAPPING_TABLE", 1, CORE_0_INDEX, &FPM_POOL_NUMBER_MAPPING_TABLE, 32, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "DHD_TX_COMPLETE_2_STACK", 1, CORE_0_INDEX, &DHD_TX_COMPLETE_2_STACK, 64, 1, 1 },
@@ -9728,10 +9758,16 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "SQ_TM_UPDATE_FIFO_TABLE", 1, CORE_0_INDEX, &SQ_TM_UPDATE_FIFO_TABLE, 8, 1, 1 },
 #endif
 #if defined BCM6813
+	{ "BUFMNG_DESCRIPTOR_TABLE", 1, CORE_0_INDEX, &BUFMNG_DESCRIPTOR_TABLE, 16, 1, 1 },
+#endif
+#if defined BCM6813
 	{ "BUFMNG_STATUS_TABLE", 1, CORE_0_INDEX, &BUFMNG_STATUS_TABLE, 1, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "SQ_TM_BUFMNG_STATUS_TABLE", 1, CORE_0_INDEX, &SQ_TM_BUFMNG_STATUS_TABLE, 1, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "VPORT_TO_RL_OVERHEAD_TABLE", 1, CORE_0_INDEX, &VPORT_TO_RL_OVERHEAD_TABLE, 31, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "SQ_TM_SCHEDULER_TABLE", 1, CORE_0_INDEX, &SQ_TM_SCHEDULER_TABLE, 1, 1, 1 },
@@ -9740,7 +9776,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "NAT_CACHE_CFG", 1, CORE_0_INDEX, &NAT_CACHE_CFG, 1, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "VPORT_TO_RL_OVERHEAD_TABLE", 1, CORE_0_INDEX, &VPORT_TO_RL_OVERHEAD_TABLE, 31, 1, 1 },
+	{ "VPORT_TO_LOOKUP_PORT_MAPPING_TABLE", 1, CORE_0_INDEX, &VPORT_TO_LOOKUP_PORT_MAPPING_TABLE, 31, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "DEBUG_SCRATCHPAD", 1, CORE_0_INDEX, &DEBUG_SCRATCHPAD, 12, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "SPDSVC_WLAN_GEN_PARAMS_TABLE", 1, CORE_0_INDEX, &SPDSVC_WLAN_GEN_PARAMS_TABLE, 1, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "DHD_HW_CFG", 1, CORE_0_INDEX, &DHD_HW_CFG, 1, 1, 1 },
@@ -9749,31 +9791,22 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "NAT_CACHE_KEY0_MASK", 1, CORE_0_INDEX, &NAT_CACHE_KEY0_MASK, 1, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "VPORT_TO_LOOKUP_PORT_MAPPING_TABLE", 1, CORE_0_INDEX, &VPORT_TO_LOOKUP_PORT_MAPPING_TABLE, 31, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "DEBUG_SCRATCHPAD", 1, CORE_0_INDEX, &DEBUG_SCRATCHPAD, 12, 1, 1 },
+	{ "DHD_FPM_REPLY", 1, CORE_0_INDEX, &DHD_FPM_REPLY, 24, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "SQ_TM_AQM_QUEUE_TIMER_TABLE", 1, CORE_0_INDEX, &SQ_TM_AQM_QUEUE_TIMER_TABLE, 32, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "SPDSVC_WLAN_GEN_PARAMS_TABLE", 1, CORE_0_INDEX, &SPDSVC_WLAN_GEN_PARAMS_TABLE, 1, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "DHD_FPM_REPLY", 1, CORE_0_INDEX, &DHD_FPM_REPLY, 24, 1, 1 },
-#endif
-#if defined BCM6813
 	{ "NATC_L2_VLAN_KEY_MASK", 1, CORE_0_INDEX, &NATC_L2_VLAN_KEY_MASK, 1, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "FPM_GLOBAL_CFG", 1, CORE_0_INDEX, &FPM_GLOBAL_CFG, 1, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "BITS_CALC_MASKS_TABLE", 1, CORE_0_INDEX, &BITS_CALC_MASKS_TABLE, 4, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "DEBUG_PRINT_TABLE", 1, CORE_0_INDEX, &DEBUG_PRINT_TABLE, 1, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "FPM_GLOBAL_CFG", 1, CORE_0_INDEX, &FPM_GLOBAL_CFG, 1, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "GDX_PARAMS_TABLE", 1, CORE_0_INDEX, &GDX_PARAMS_TABLE, 1, 1, 1 },
@@ -11570,7 +11603,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_TM_RATE_LIMITER_PARAMS_DESCRIPTOR_TABLE", 1, CORE_6_INDEX, &US_TM_RATE_LIMITER_PARAMS_DESCRIPTOR_TABLE_6, 80, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "US_TM_AQM_QUEUE_TIMER_TABLE", 1, CORE_6_INDEX, &US_TM_AQM_QUEUE_TIMER_TABLE_6, 80, 1, 1 },
+	{ "US_TM_RATE_LIMITER_FORCE_WAKEUP", 1, CORE_6_INDEX, &US_TM_RATE_LIMITER_FORCE_WAKEUP_6, 80, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "SPDTEST_GEN_PARAM", 1, CORE_6_INDEX, &SPDTEST_GEN_PARAM_6, 4, 1, 1 },
@@ -11594,10 +11627,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_TM_FLUSH_CFG_CPU_TABLE", 1, CORE_6_INDEX, &US_TM_FLUSH_CFG_CPU_TABLE_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "GENERAL_TIMER_STACK", 1, CORE_6_INDEX, &GENERAL_TIMER_STACK_6, 72, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "TCAM_GENERIC_FIELDS", 1, CORE_6_INDEX, &TCAM_GENERIC_FIELDS_6, 4, 1, 1 },
+	{ "US_TM_AQM_QUEUE_TIMER_TABLE", 1, CORE_6_INDEX, &US_TM_AQM_QUEUE_TIMER_TABLE_6, 80, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "US_TM_FLUSH_CFG_FW_TABLE", 1, CORE_6_INDEX, &US_TM_FLUSH_CFG_FW_TABLE_6, 1, 1, 1 },
@@ -11609,19 +11639,16 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "PROCESSING0_STACK", 1, CORE_6_INDEX, &PROCESSING0_STACK_6, 360, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "TUNNELS_PARSING_CFG", 1, CORE_6_INDEX, &TUNNELS_PARSING_CFG_6, 1, 1, 1 },
+	{ "TCAM_GENERIC_FIELDS", 1, CORE_6_INDEX, &TCAM_GENERIC_FIELDS_6, 4, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "US_TM_FLUSH_CFG_CURRENT_TABLE", 1, CORE_6_INDEX, &US_TM_FLUSH_CFG_CURRENT_TABLE_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "US_BUFFER_CONG_MGT_CFG", 1, CORE_6_INDEX, &US_BUFFER_CONG_MGT_CFG_6, 1, 1, 1 },
+	{ "GENERAL_TIMER_STACK", 1, CORE_6_INDEX, &GENERAL_TIMER_STACK_6, 72, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "CSO_BAD_IPV4_HDR_CSUM_PACKETS", 1, CORE_6_INDEX, &CSO_BAD_IPV4_HDR_CSUM_PACKETS_6, 1, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "IPTV_CFG_TABLE", 1, CORE_6_INDEX, &IPTV_CFG_TABLE_6, 1, 1, 1 },
+	{ "TUNNELS_PARSING_CFG", 1, CORE_6_INDEX, &TUNNELS_PARSING_CFG_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "INGRESS_FILTER_L2_REASON_TABLE", 1, CORE_6_INDEX, &INGRESS_FILTER_L2_REASON_TABLE_6, 16, 1, 1 },
@@ -11636,22 +11663,49 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_TM_TX_QUEUE_DROP_TABLE", 1, CORE_6_INDEX, &US_TM_TX_QUEUE_DROP_TABLE_6, 80, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "IPTV_DDR_CTX_TABLE_ADDRESS", 1, CORE_6_INDEX, &IPTV_DDR_CTX_TABLE_ADDRESS_6, 1, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "US_TM_DISPATCHER_CREDIT_TABLE", 1, CORE_6_INDEX, &US_TM_DISPATCHER_CREDIT_TABLE_6, 1, 1, 1 },
+	{ "CSO_BAD_IPV4_HDR_CSUM_PACKETS", 1, CORE_6_INDEX, &CSO_BAD_IPV4_HDR_CSUM_PACKETS_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "TASK_IDX", 1, CORE_6_INDEX, &TASK_IDX_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
+	{ "US_TM_DISPATCHER_CREDIT_TABLE", 1, CORE_6_INDEX, &US_TM_DISPATCHER_CREDIT_TABLE_6, 1, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "AQM_NUM_QUEUES", 1, CORE_6_INDEX, &AQM_NUM_QUEUES_6, 1, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "BUDGET_ALLOCATION_TIMER_VALUE", 1, CORE_6_INDEX, &BUDGET_ALLOCATION_TIMER_VALUE_6, 1, 1, 1 },
+#endif
+#if defined BCM6813
 	{ "US_TM_AQM_QUEUE_TABLE", 1, CORE_6_INDEX, &US_TM_AQM_QUEUE_TABLE_6, 80, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "REGISTERS_BUFFER", 1, CORE_6_INDEX, &REGISTERS_BUFFER_6, 32, 1, 1 },
+	{ "UPDATE_FIFO_STACK", 1, CORE_6_INDEX, &UPDATE_FIFO_STACK_6, 64, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "UPDATE_FIFO_STACK", 1, CORE_6_INDEX, &UPDATE_FIFO_STACK_6, 64, 1, 1 },
+	{ "US_BUFFER_CONG_MGT_CFG", 1, CORE_6_INDEX, &US_BUFFER_CONG_MGT_CFG_6, 1, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "DOS_DROP_REASONS_CFG", 1, CORE_6_INDEX, &DOS_DROP_REASONS_CFG_6, 1, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "GENERAL_TIMER_ACTION_VEC", 1, CORE_6_INDEX, &GENERAL_TIMER_ACTION_VEC_6, 1, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "IPTV_CFG_TABLE", 1, CORE_6_INDEX, &IPTV_CFG_TABLE_6, 1, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "US_TM_FLUSH_DISPATCHER_CREDIT_TABLE", 1, CORE_6_INDEX, &US_TM_FLUSH_DISPATCHER_CREDIT_TABLE_6, 3, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "US_TM_FLUSH_CFG_ENABLE_TABLE", 1, CORE_6_INDEX, &US_TM_FLUSH_CFG_ENABLE_TABLE_6, 1, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "MCAST_MAX_REPLICATION_FLAG_TABLE", 1, CORE_6_INDEX, &MCAST_MAX_REPLICATION_FLAG_TABLE_6, 1, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "BUFFER_CONG_DQM_NOT_EMPTY", 1, CORE_6_INDEX, &BUFFER_CONG_DQM_NOT_EMPTY_6, 8, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "US_TM_PON_TM_FLOW_CNTR_TABLE", 1, CORE_6_INDEX, &US_TM_PON_TM_FLOW_CNTR_TABLE_6, 256, 1, 1 },
@@ -11666,16 +11720,22 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_TM_SCHEDULER_POOL", 1, CORE_6_INDEX, &US_TM_SCHEDULER_POOL_6, 312, 1, 1 },
 #endif
 #if defined BCM6813
+	{ "IPTV_DDR_CTX_TABLE_ADDRESS", 1, CORE_6_INDEX, &IPTV_DDR_CTX_TABLE_ADDRESS_6, 1, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "US_TM_BBH_TX_WAKE_UP_DATA_TABLE", 1, CORE_6_INDEX, &US_TM_BBH_TX_WAKE_UP_DATA_TABLE_6, 3, 1, 1 },
+#endif
+#if defined BCM6813
 	{ "NAT_CACHE_CFG", 1, CORE_6_INDEX, &NAT_CACHE_CFG_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "SPDTEST_NUM_OF_RX_FLOWS", 1, CORE_6_INDEX, &SPDTEST_NUM_OF_RX_FLOWS_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "BUFFER_CONG_DQM_NOT_EMPTY", 1, CORE_6_INDEX, &BUFFER_CONG_DQM_NOT_EMPTY_6, 8, 1, 1 },
+	{ "INGRESS_FILTER_PROFILE_TABLE", 1, CORE_6_INDEX, &INGRESS_FILTER_PROFILE_TABLE_6, 16, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "INGRESS_FILTER_PROFILE_TABLE", 1, CORE_6_INDEX, &INGRESS_FILTER_PROFILE_TABLE_6, 16, 1, 1 },
+	{ "REGISTERS_BUFFER", 1, CORE_6_INDEX, &REGISTERS_BUFFER_6, 32, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "BUFFER_CONG_SCRATCHPAD", 1, CORE_6_INDEX, &BUFFER_CONG_SCRATCHPAD_6, 8, 1, 1 },
@@ -11684,46 +11744,19 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "RX_MIRRORING_TABLE", 1, CORE_6_INDEX, &RX_MIRRORING_TABLE_6, 31, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "AQM_NUM_QUEUES", 1, CORE_6_INDEX, &AQM_NUM_QUEUES_6, 1, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "HOST_TX_TRUNCATE_MIRRORING_TABLE", 1, CORE_6_INDEX, &HOST_TX_TRUNCATE_MIRRORING_TABLE_6, 31, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "BUDGET_ALLOCATION_TIMER_VALUE", 1, CORE_6_INDEX, &BUDGET_ALLOCATION_TIMER_VALUE_6, 1, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "PON_TM_TX_TRUNCATE_MIRRORING_TABLE", 1, CORE_6_INDEX, &PON_TM_TX_TRUNCATE_MIRRORING_TABLE_6, 31, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "DOS_DROP_REASONS_CFG", 1, CORE_6_INDEX, &DOS_DROP_REASONS_CFG_6, 1, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "LOOPBACK_QUEUE_TABLE", 1, CORE_6_INDEX, &LOOPBACK_QUEUE_TABLE_6, 31, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "GENERAL_TIMER_ACTION_VEC", 1, CORE_6_INDEX, &GENERAL_TIMER_ACTION_VEC_6, 1, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "VPORT_CFG_EX_TABLE", 1, CORE_6_INDEX, &VPORT_CFG_EX_TABLE_6, 31, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "US_TM_FLUSH_CFG_ENABLE_TABLE", 1, CORE_6_INDEX, &US_TM_FLUSH_CFG_ENABLE_TABLE_6, 1, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "US_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE", 1, CORE_6_INDEX, &US_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_6, 3, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "MCAST_MAX_REPLICATION_FLAG_TABLE", 1, CORE_6_INDEX, &MCAST_MAX_REPLICATION_FLAG_TABLE_6, 1, 1, 1 },
-#endif
-#if defined BCM6813
 	{ "TX_EXCEPTION", 1, CORE_6_INDEX, &TX_EXCEPTION_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "LLQ_SELECTOR_ECN_MASK", 1, CORE_6_INDEX, &LLQ_SELECTOR_ECN_MASK_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
+	{ "HOST_TX_TRUNCATE_MIRRORING_TABLE", 1, CORE_6_INDEX, &HOST_TX_TRUNCATE_MIRRORING_TABLE_6, 31, 1, 1 },
+#endif
+#if defined BCM6813
 	{ "BBH_TX_US_WAN_0_FIFO_BYTES_THRESHOLD", 1, CORE_6_INDEX, &BBH_TX_US_WAN_0_FIFO_BYTES_THRESHOLD_6, 1, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "PON_TM_TX_TRUNCATE_MIRRORING_TABLE", 1, CORE_6_INDEX, &PON_TM_TX_TRUNCATE_MIRRORING_TABLE_6, 31, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "LOOPBACK_WAN_FLOW_TABLE", 1, CORE_6_INDEX, &LOOPBACK_WAN_FLOW_TABLE_6, 1, 1, 1 },
@@ -11732,13 +11765,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "FORCE_DSCP", 1, CORE_6_INDEX, &FORCE_DSCP_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "US_TM_BBH_TX_EGRESS_COUNTER_TABLE", 1, CORE_6_INDEX, &US_TM_BBH_TX_EGRESS_COUNTER_TABLE_6, 7, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "NAT_CACHE_KEY0_MASK", 1, CORE_6_INDEX, &NAT_CACHE_KEY0_MASK_6, 1, 1, 1 },
+	{ "LOOPBACK_QUEUE_TABLE", 1, CORE_6_INDEX, &LOOPBACK_QUEUE_TABLE_6, 31, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "US_TM_FIRST_QUEUE_MAPPING", 1, CORE_6_INDEX, &US_TM_FIRST_QUEUE_MAPPING_6, 1, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "VPORT_CFG_EX_TABLE", 1, CORE_6_INDEX, &VPORT_CFG_EX_TABLE_6, 31, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "CORE_ID_TABLE", 1, CORE_6_INDEX, &CORE_ID_TABLE_6, 1, 1, 1 },
@@ -11747,13 +11780,19 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_TM_ETH_BBH_TX_FIFO_SIZE", 1, CORE_6_INDEX, &US_TM_ETH_BBH_TX_FIFO_SIZE_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "US_TM_PI2_PROBABILITY_CALC_DESCRIPTOR", 1, CORE_6_INDEX, &US_TM_PI2_PROBABILITY_CALC_DESCRIPTOR_6, 1, 1, 1 },
+	{ "US_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE", 1, CORE_6_INDEX, &US_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_6, 3, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "NAT_CACHE_KEY0_MASK", 1, CORE_6_INDEX, &NAT_CACHE_KEY0_MASK_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "RX_MIRRORING_CONFIGURATION", 1, CORE_6_INDEX, &RX_MIRRORING_CONFIGURATION_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "TX_MIRRORING_CONFIGURATION", 1, CORE_6_INDEX, &TX_MIRRORING_CONFIGURATION_6, 1, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "US_TM_BBH_TX_EGRESS_COUNTER_TABLE", 1, CORE_6_INDEX, &US_TM_BBH_TX_EGRESS_COUNTER_TABLE_6, 7, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "NATC_L2_VLAN_KEY_MASK", 1, CORE_6_INDEX, &NATC_L2_VLAN_KEY_MASK_6, 1, 1, 1 },
@@ -11777,10 +11816,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "DEBUG_PRINT_CORE_LOCK", 1, CORE_6_INDEX, &DEBUG_PRINT_CORE_LOCK_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "TR471_SPDSVC_RX_PKT_ID_TABLE", 1, CORE_6_INDEX, &TR471_SPDSVC_RX_PKT_ID_TABLE_6, 4, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "US_TM_FLUSH_DISPATCHER_CREDIT_TABLE", 1, CORE_6_INDEX, &US_TM_FLUSH_DISPATCHER_CREDIT_TABLE_6, 3, 1, 1 },
+	{ "US_TM_PI2_PROBABILITY_CALC_DESCRIPTOR", 1, CORE_6_INDEX, &US_TM_PI2_PROBABILITY_CALC_DESCRIPTOR_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "TCAM_TABLE_CFG_TABLE", 1, CORE_6_INDEX, &TCAM_TABLE_CFG_TABLE_6, 1, 1, 1 },
@@ -11795,7 +11831,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "IPTV_CLASSIFICATION_CFG_TABLE", 1, CORE_6_INDEX, &IPTV_CLASSIFICATION_CFG_TABLE_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "CODEL_BIAS_SLOPE_TABLE", 1, CORE_6_INDEX, &CODEL_BIAS_SLOPE_TABLE_6, 11, 1, 1 },
+	{ "INGRESS_FILTER_CFG", 1, CORE_6_INDEX, &INGRESS_FILTER_CFG_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "INGRESS_FILTER_1588_CFG", 1, CORE_6_INDEX, &INGRESS_FILTER_1588_CFG_6, 1, 1, 1 },
@@ -11804,16 +11840,25 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "RX_MIRRORING_DIRECT_ENABLE", 1, CORE_6_INDEX, &RX_MIRRORING_DIRECT_ENABLE_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
+	{ "TR471_SPDSVC_RX_PKT_ID_TABLE", 1, CORE_6_INDEX, &TR471_SPDSVC_RX_PKT_ID_TABLE_6, 4, 1, 1 },
+#endif
+#if defined BCM6813
 	{ "DISPATCHER_CREDIT_TABLE", 1, CORE_6_INDEX, &DISPATCHER_CREDIT_TABLE_6, 3, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "CODEL_BIAS_SLOPE_TABLE", 1, CORE_6_INDEX, &CODEL_BIAS_SLOPE_TABLE_6, 11, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "GENERAL_QUEUE_DYNAMIC_MNG_TABLE", 1, CORE_6_INDEX, &GENERAL_QUEUE_DYNAMIC_MNG_TABLE_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "US_TM_PON_BBH_TX_ABS_COUNTER_TABLE", 1, CORE_6_INDEX, &US_TM_PON_BBH_TX_ABS_COUNTER_TABLE_6, 40, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "INGRESS_FILTER_CFG", 1, CORE_6_INDEX, &INGRESS_FILTER_CFG_6, 1, 1, 1 },
+	{ "NATC_L2_TOS_MASK", 1, CORE_6_INDEX, &NATC_L2_TOS_MASK_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "GENERAL_QUEUE_DYNAMIC_MNG_TABLE", 1, CORE_6_INDEX, &GENERAL_QUEUE_DYNAMIC_MNG_TABLE_6, 1, 1, 1 },
+	{ "DHD_FPM_THRESHOLDS", 1, CORE_6_INDEX, &DHD_FPM_THRESHOLDS_6, 3, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "UPDATE_FIFO_TABLE", 1, CORE_6_INDEX, &UPDATE_FIFO_TABLE_6, 8, 1, 1 },
@@ -11822,16 +11867,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_TM_TX_OCTETS_COUNTERS_TABLE", 1, CORE_6_INDEX, &US_TM_TX_OCTETS_COUNTERS_TABLE_6, 8, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "US_TM_BBH_TX_WAKE_UP_DATA_TABLE", 1, CORE_6_INDEX, &US_TM_BBH_TX_WAKE_UP_DATA_TABLE_6, 3, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "NATC_L2_TOS_MASK", 1, CORE_6_INDEX, &NATC_L2_TOS_MASK_6, 1, 1, 1 },
+	{ "US_TM_SCHEDULING_AGGREGATION_CONTEXT_VECTOR", 1, CORE_6_INDEX, &US_TM_SCHEDULING_AGGREGATION_CONTEXT_VECTOR_6, 5, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "VPORT_TO_RL_OVERHEAD_TABLE", 1, CORE_6_INDEX, &VPORT_TO_RL_OVERHEAD_TABLE_6, 31, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "US_TM_SCHEDULING_AGGREGATION_CONTEXT_VECTOR", 1, CORE_6_INDEX, &US_TM_SCHEDULING_AGGREGATION_CONTEXT_VECTOR_6, 5, 1, 1 },
+	{ "US_TM_CODEL_DROP_DESCRIPTOR", 1, CORE_6_INDEX, &US_TM_CODEL_DROP_DESCRIPTOR_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "VPORT_TO_LOOKUP_PORT_MAPPING_TABLE", 1, CORE_6_INDEX, &VPORT_TO_LOOKUP_PORT_MAPPING_TABLE_6, 31, 1, 1 },
@@ -11840,19 +11882,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "DEBUG_SCRATCHPAD", 1, CORE_6_INDEX, &DEBUG_SCRATCHPAD_6, 12, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "DHD_FPM_THRESHOLDS", 1, CORE_6_INDEX, &DHD_FPM_THRESHOLDS_6, 3, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "US_TM_CODEL_DROP_DESCRIPTOR", 1, CORE_6_INDEX, &US_TM_CODEL_DROP_DESCRIPTOR_6, 1, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "BITS_CALC_MASKS_TABLE", 1, CORE_6_INDEX, &BITS_CALC_MASKS_TABLE_6, 4, 1, 1 },
-#endif
-#if defined BCM6813
 	{ "TX_MIRRORING_DISPATCHER_CREDIT_TABLE", 1, CORE_6_INDEX, &TX_MIRRORING_DISPATCHER_CREDIT_TABLE_6, 3, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "FPM_GLOBAL_CFG", 1, CORE_6_INDEX, &FPM_GLOBAL_CFG_6, 1, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "BITS_CALC_MASKS_TABLE", 1, CORE_6_INDEX, &BITS_CALC_MASKS_TABLE_6, 4, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "DEBUG_PRINT_TABLE", 1, CORE_6_INDEX, &DEBUG_PRINT_TABLE_6, 1, 1, 1 },
@@ -11861,16 +11897,16 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "GDX_PARAMS_TABLE", 1, CORE_6_INDEX, &GDX_PARAMS_TABLE_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "FW_ERROR_VECTOR_TABLE", 1, CORE_6_INDEX, &FW_ERROR_VECTOR_TABLE_6, 1, 1, 1 },
-#endif
-#if defined BCM6813
 	{ "US_TM_BBH_TX_ABS_COUNTER_TABLE", 1, CORE_6_INDEX, &US_TM_BBH_TX_ABS_COUNTER_TABLE_6, 6, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "MULTICAST_KEY_MASK", 1, CORE_6_INDEX, &MULTICAST_KEY_MASK_6, 1, 1, 1 },
+	{ "FW_ERROR_VECTOR_TABLE", 1, CORE_6_INDEX, &FW_ERROR_VECTOR_TABLE_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "US_TM_1_BBH_TX_ABS_COUNTER_TABLE", 1, CORE_6_INDEX, &US_TM_1_BBH_TX_ABS_COUNTER_TABLE_6, 5, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "MULTICAST_KEY_MASK", 1, CORE_6_INDEX, &MULTICAST_KEY_MASK_6, 1, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "DS_TM_PD_FIFO_TABLE", 1, CORE_7_INDEX, &DS_TM_PD_FIFO_TABLE_7, 128, 1, 1 },
@@ -11909,7 +11945,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "DS_TM_RATE_LIMITER_PROFILE_RESIDUE_TABLE", 1, CORE_7_INDEX, &DS_TM_RATE_LIMITER_PROFILE_RESIDUE_TABLE_7, 32, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "DS_TM_TM_FLOW_CNTR_TABLE", 1, CORE_7_INDEX, &DS_TM_TM_FLOW_CNTR_TABLE_7, 64, 1, 1 },
+	{ "DS_TM_RATE_LIMITER_FORCE_WAKEUP", 1, CORE_7_INDEX, &DS_TM_RATE_LIMITER_FORCE_WAKEUP_7, 64, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "PROCESSING0_STACK", 1, CORE_7_INDEX, &PROCESSING0_STACK_7, 360, 1, 1 },
@@ -12062,10 +12098,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "BUFMNG_DESCRIPTOR_TABLE", 1, CORE_7_INDEX, &BUFMNG_DESCRIPTOR_TABLE_7, 16, 1, 1 },
 #endif
 #if defined BCM6813
+	{ "DS_TM_TM_FLOW_CNTR_TABLE", 1, CORE_7_INDEX, &DS_TM_TM_FLOW_CNTR_TABLE_7, 64, 1, 1 },
+#endif
+#if defined BCM6813
 	{ "VPORT_TX_FLOW_TABLE", 1, CORE_7_INDEX, &VPORT_TX_FLOW_TABLE_7, 64, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "REGISTERS_BUFFER", 1, CORE_7_INDEX, &REGISTERS_BUFFER_7, 32, 1, 1 },
+	{ "DS_TM_AQM_QUEUE_TIMER_TABLE", 1, CORE_7_INDEX, &DS_TM_AQM_QUEUE_TIMER_TABLE_7, 64, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "TX_TASK_DS_1_STACK", 1, CORE_7_INDEX, &TX_TASK_DS_1_STACK_7, 256, 1, 1 },
@@ -12086,13 +12125,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "BUFMNG_STATUS_TABLE", 1, CORE_7_INDEX, &BUFMNG_STATUS_TABLE_7, 1, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "DS_TM_AQM_QUEUE_TIMER_TABLE", 1, CORE_7_INDEX, &DS_TM_AQM_QUEUE_TIMER_TABLE_7, 64, 1, 1 },
+	{ "UPDATE_FIFO_STACK", 1, CORE_7_INDEX, &UPDATE_FIFO_STACK_7, 64, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "INGRESS_FILTER_PROFILE_TABLE", 1, CORE_7_INDEX, &INGRESS_FILTER_PROFILE_TABLE_7, 16, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "UPDATE_FIFO_STACK", 1, CORE_7_INDEX, &UPDATE_FIFO_STACK_7, 64, 1, 1 },
+	{ "REGISTERS_BUFFER", 1, CORE_7_INDEX, &REGISTERS_BUFFER_7, 32, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "BUFFER_CONG_SCRATCHPAD", 1, CORE_7_INDEX, &BUFFER_CONG_SCRATCHPAD_7, 8, 1, 1 },
@@ -12119,6 +12158,12 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "DEBUG_PRINT_CORE_LOCK", 1, CORE_7_INDEX, &DEBUG_PRINT_CORE_LOCK_7, 1, 1, 1 },
 #endif
 #if defined BCM6813
+	{ "DS_TM_BBH_QUEUE_TABLE", 1, CORE_7_INDEX, &DS_TM_BBH_QUEUE_TABLE_7, 12, 1, 1 },
+#endif
+#if defined BCM6813
+	{ "BUFFER_CONG_DQM_NOT_EMPTY", 1, CORE_7_INDEX, &BUFFER_CONG_DQM_NOT_EMPTY_7, 8, 1, 1 },
+#endif
+#if defined BCM6813
 	{ "LOOPBACK_QUEUE_TABLE", 1, CORE_7_INDEX, &LOOPBACK_QUEUE_TABLE_7, 31, 1, 1 },
 #endif
 #if defined BCM6813
@@ -12126,12 +12171,6 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 #endif
 #if defined BCM6813
 	{ "SRAM_DUMMY_STORE", 1, CORE_7_INDEX, &SRAM_DUMMY_STORE_7, 1, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "DS_TM_BBH_QUEUE_TABLE", 1, CORE_7_INDEX, &DS_TM_BBH_QUEUE_TABLE_7, 12, 1, 1 },
-#endif
-#if defined BCM6813
-	{ "BUFFER_CONG_DQM_NOT_EMPTY", 1, CORE_7_INDEX, &BUFFER_CONG_DQM_NOT_EMPTY_7, 8, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "VPORT_CFG_EX_TABLE", 1, CORE_7_INDEX, &VPORT_CFG_EX_TABLE_7, 31, 1, 1 },
@@ -12194,7 +12233,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "FPM_GLOBAL_CFG", 1, CORE_7_INDEX, &FPM_GLOBAL_CFG_7, 1, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "BITS_CALC_MASKS_TABLE", 1, CORE_7_INDEX, &BITS_CALC_MASKS_TABLE_7, 4, 1, 1 },
+	{ "DS_TM_BBH_TX_EGRESS_COUNTER_TABLE", 1, CORE_7_INDEX, &DS_TM_BBH_TX_EGRESS_COUNTER_TABLE_7, 2, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "DEBUG_PRINT_TABLE", 1, CORE_7_INDEX, &DEBUG_PRINT_TABLE_7, 1, 1, 1 },
@@ -12206,7 +12245,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "NATC_L2_TOS_MASK", 1, CORE_7_INDEX, &NATC_L2_TOS_MASK_7, 1, 1, 1 },
 #endif
 #if defined BCM6813
-	{ "DS_TM_BBH_TX_EGRESS_COUNTER_TABLE", 1, CORE_7_INDEX, &DS_TM_BBH_TX_EGRESS_COUNTER_TABLE_7, 2, 1, 1 },
+	{ "BITS_CALC_MASKS_TABLE", 1, CORE_7_INDEX, &BITS_CALC_MASKS_TABLE_7, 4, 1, 1 },
 #endif
 #if defined BCM6813
 	{ "FW_ERROR_VECTOR_TABLE", 1, CORE_7_INDEX, &FW_ERROR_VECTOR_TABLE_7, 1, 1, 1 },
@@ -12307,10 +12346,10 @@ TABLE_STACK_STRUCT RUNNER_STACK_TABLES[NUMBER_OF_STACK_TABLES] =
     { "TX_TASK_US_0_STACK", CORE_6_INDEX, 0x1700, 256},
     { "TX_TASK_US_1_STACK", CORE_6_INDEX, 0x1d00, 256},
     { "TX_TASK_PON_STACK", CORE_6_INDEX, 0x2300, 256},
-    { "GENERAL_TIMER_STACK", CORE_6_INDEX, 0x2780, 72},
     { "PROCESSING0_STACK", CORE_6_INDEX, 0x2800, 360},
+    { "GENERAL_TIMER_STACK", CORE_6_INDEX, 0x2980, 72},
     { "PROCESSING1_STACK", CORE_6_INDEX, 0x2a00, 360},
-    { "UPDATE_FIFO_STACK", CORE_6_INDEX, 0x2fc0, 64},
+    { "UPDATE_FIFO_STACK", CORE_6_INDEX, 0x2f40, 64},
     { "TX_TASK_DS_0_STACK", CORE_7_INDEX, 0xb00, 256},
     { "PROCESSING0_STACK", CORE_7_INDEX, 0x2000, 360},
     { "PROCESSING1_STACK", CORE_7_INDEX, 0x2200, 360},
@@ -12320,5 +12359,5 @@ TABLE_STACK_STRUCT RUNNER_STACK_TABLES[NUMBER_OF_STACK_TABLES] =
     { "PROCESSING4_STACK", CORE_7_INDEX, 0x2800, 360},
     { "PROCESSING5_STACK", CORE_7_INDEX, 0x2a00, 360},
     { "TX_TASK_DS_1_STACK", CORE_7_INDEX, 0x2e00, 256},
-    { "UPDATE_FIFO_STACK", CORE_7_INDEX, 0x3480, 64}
+    { "UPDATE_FIFO_STACK", CORE_7_INDEX, 0x33c0, 64}
 };

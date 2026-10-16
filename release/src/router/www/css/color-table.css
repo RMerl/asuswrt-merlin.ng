@@ -820,164 +820,6 @@
     --teal-60-alpha-40: #1DA5A066;
 }
 
-/* ==================== Brand Palettes - RT ==================== */
-[data-asuswrt-theme="rt"] {
-    --logo-color: linear-gradient(to right,var(--primary-50), var(--primary-60));
-    --logo-color-rgb: 36, 141, 255, 0, 108, 225;
-    --global-font-style: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
-
-    --body-bg-color: #4D595D;
-    --body-text-color: #FFFFFF;
-    --textbox-color: var(--text-primary);
-    --textbox-bg-color: #475A5F;
-
-    --textbox-normal-fill-color: #576D73;
-    --textbox-focus-fill-color: #6C8085;
-
-    --primary-10: #ECF5FF;
-    --primary-20: #CCE4FF;
-    --primary-30: #99CAFF;
-    --primary-40: #61ADFF;
-    --primary-50: #248DFF;
-    --primary-60: #006CE1;
-    --primary-70: #0051A8;
-    --primary-80: #003A7A;
-    --primary-90: #002752;
-
-    --radius-sm: 10px;
-    --global-radius: 8px;
-
-    --borderColor: var(--primary-60);
-
-    --primary-btn-normal-fill: var(--primary-60);
-    --primary-btn-normal-stroke: var(--primary-60);
-
-    --primary-btn-active-fill: var(--primary-60);
-    --primary-btn-hover-fill: var(--primary-40);
-    --primary-btn-disable-fill: #999999;
-    --primary-btn-text-color: #FFFFFF;
-    --primary-btn-disable-text-color: #FFFFFF;
-    --primary-btn-hover-boxshadow: 0 0 8px 0 var(--primary-80);
-
-    /* Datatable */
-    --datatable-page-btn-normal-color: var(--white-alpha-70);
-    --datatable-page-btn-current-color: var(--white-alpha-100);
-    --clientlist-table-bg-color: #475A5F;
-    --clientlist-table-row-bg-color: #475A5F;
-    --clientlist-table-row-selected-bg-color: var(--white-alpha-100);
-    --clientlist-table-info-text-color: var(--neutral-80);
-    --clientlist-table-border-color: var(--neutral-30);
-    --clientlist-pagination-border-color: var(--neutral-20);
-
-    --card-bg-color: #303d43;
-
-    --popup-bg-color: #303d43;
-    --policy-notice-title-color: #FFFFFF;
-    --policy-border-color: rgba(255, 255, 255, 0.2);
-
-    --ark-iam-client-mac-color: var(--white-alpha-40);
-    --ark-iam-tree-hover-bg-color: var(--white-alpha-40);
-    --ark-iam-tree-second-bg-color: var(--black-alpha-10);
-    --ark-iam-list-action-btn-text-color: var(--white-alpha-100);
-    --ark-iam-categories-container-bg-color: #475a5f;
-    --ark-iam-category-header-bg-color: var(--black-alpha-40);
-    --ark-iam-category-header-hover-bg-color: var(--black-alpha-60);
-    --ark-iam-app-item-hover-bg-color: var(--white-alpha-40);
-    --ark-iam-selected-app-item-bg-color: var(--black-alpha-10);
-    --ark-iam-selected-app-item-hover-bg-color: var(--black-alpha-20);
-    --ark-iam-category-action-btn-border-color: var(--neutral-40);
-    --ark-iam-empty-state-color: var(--neutral-20);
-
-    --qoe-button-bg-color: var(--neutral-60);
-    --qoe-button-active-bg-color: #0090d8;
-    --qoe-apply-button-bg-color: linear-gradient(#233438 0%, #0F1011 100%);
-    --qoe-apply-button-hover-bg-color: linear-gradient(#09639C 0%, #003047 100%);
-
-    --modal-bg-color: #303d43;
-    --modal-header-bg-color: #212d31;
-    --model-footer-bg-color: #212d31;
-    --modal-block-bg-color: #394a4f;
-}
-
-/* ==================== Brand Palettes - TS ==================== */
-[data-asuswrt-theme="ts"] {
-    --logo-color: linear-gradient(to right,var(--primary-50), var(--primary-60));
-    --logo-color-rgb: 36, 141, 255, 0, 108, 225;
-    --body-bg-color: #00000000;
-    --body-text-color: #FFFFFF;
-    --textbox-color: var(--text-primary);
-    --textbox-bg-color: #ffffff40;
-
-    --textbox-normal-fill-color: #4b4b4b;
-    --textbox-focus-fill-color: #6C8085;
-
-    --primary-10: #E8FAF8;
-    --primary-20: #B9F2EC;
-    --primary-30: #8AE9E0;
-    --primary-40: #5BE1D4;
-    --primary-50: #2ED9C8;
-    --primary-60: #2ED9C3;
-    --primary-70: #25AE9C;
-    --primary-80: #1C8376;
-    --primary-90: #135850;
-
-    --radius-sm: 10px;
-    --global-radius: 8px;
-
-    --borderColor: var(--primary-60);
-
-    --primary-btn-normal-fill: var(--primary-60);
-    --primary-btn-normal-stroke: var(--primary-60);
-
-    --primary-btn-active-fill: var(--primary-60);
-    --primary-btn-hover-fill: var(--primary-40);
-    --primary-btn-disable-fill: #999999;
-    --primary-btn-text-color: #FFFFFF;
-    --primary-btn-disable-text-color: #FFFFFF;
-    --primary-btn-hover-boxshadow: 0 0 8px 0 var(--primary-80);
-
-    /* Datatable */
-    --datatable-page-btn-normal-color: var(--white-alpha-70);
-    --datatable-page-btn-current-color: var(--white-alpha-100);
-    --clientlist-table-bg-color: #ffffff40;
-    --clientlist-table-row-bg-color: #ffffff40;
-    --clientlist-table-row-selected-bg-color: var(--white-alpha-100);
-    --clientlist-table-info-text-color: var(--neutral-80);
-    --clientlist-table-border-color: var(--neutral-30);
-    --clientlist-pagination-border-color: var(--neutral-20);
-
-    --card-bg-color: var(--neutral-110);
-
-    --popup-bg-color: #25272a;
-    --policy-notice-title-color: #FFFFFF;
-    --policy-border-color: rgba(255, 255, 255, 0.2);
-
-    --ark-iam-client-mac-color: var(--white-alpha-40);
-    --ark-iam-tree-hover-bg-color: var(--white-alpha-40);
-    --ark-iam-tree-second-bg-color: var(--black-alpha-10);
-    --ark-iam-list-action-btn-text-color: var(--white-alpha-100);
-    --ark-iam-categories-container-bg-color: #313739;
-    --ark-iam-category-header-bg-color: var(--black-alpha-40);
-    --ark-iam-category-header-hover-bg-color: var(--black-alpha-60);
-    --ark-iam-app-item-hover-bg-color: var(--white-alpha-40);
-    --ark-iam-selected-app-item-bg-color: var(--black-alpha-10);
-    --ark-iam-selected-app-item-hover-bg-color: var(--black-alpha-20);
-    --ark-iam-category-action-btn-border-color: var(--neutral-40);
-    --ark-iam-empty-state-color: var(--neutral-20);
-
-    --qoe-button-bg-color: var(--neutral-60);
-    --qoe-button-active-bg-color: #2ED9C3;
-    --qoe-apply-button-bg-color: var(--primary-80);
-    --qoe-apply-button-hover-bg-color: var(--primary-50);
-
-    --modal-bg-color: #303d43;
-    --modal-header-bg-color: #212d31;
-    --model-footer-bg-color: #212d31;
-    --modal-block-bg-color: #394a4f;
-
-    --textbox-focus-stroke-color: var(--primary-60);
-}
-
 /* ==================== Brand Palettes - ProArt ==================== */
 [data-asuswrt-theme="proart"] {
     --logo-color: linear-gradient(to bottom, #F4E0C3 0%, #cca673 51.73%, #9A7A59 100%);
@@ -1266,10 +1108,11 @@
     --accent-rgb: var(--secondary-50-rgb); /* 對應 --accent */
     --border-default-rgb: var(--neutral-30-rgb); /* 對應 --border-default */
     --shadow-primary-rgb: var(--primary-60-rgb); /* 對應 --shadow-primary */
+    --shadow-secondary-rgb: var(--neutral-60-rgb); /* 對應 --shadow-secondary */
 
     /* additional core tokens */
-    --surface-shade: var(--neutral-90); /* 陰影/遮罩背景 */
-    --surface-shade-rgb: var(--neutral-90-rgb);
+    --surface-shade: var(--neutral-70); /* 陰影/遮罩背景 */
+    --surface-shade-rgb: var(--neutral-70-rgb);
 
     --loader-bg: var(--neutral-60); /* 載入底色 */
     --loader-bg-rgb: var(--neutral-60-rgb);
@@ -1291,6 +1134,8 @@
     --link-color-rgb: var(--brand-primary-rgb);
     --link-hover-color: var(--primary-40);
     --link-hover-color-rgb: var(--primary-40-rgb);
+    --link-color-assistant: var(--primary-60);
+    --link-color-assistant-rgb: var(--primary-60-rgb);
 
     /* gradient cores */
     --gradient-color-primary: var(--gradient-50);
@@ -1303,6 +1148,42 @@
     --gradient-accent-end: var(--primary-10);
     --gradient-accent-end-rgb: var(--primary-10-rgb);
 
+    /* brand tone palettes（light） */
+    --brand-tone-accent: var(--primary-60);
+    --brand-tone-border-soft: color-mix(in srgb, var(--primary-30) 28%, var(--border-default) 72%);
+    --brand-tone-border-medium: color-mix(in srgb, var(--primary-40) 42%, var(--border-default) 58%);
+    --brand-tone-overlay-05: color-mix(in srgb, var(--primary-60) 5%, transparent);
+    --brand-tone-overlay-10: color-mix(in srgb, var(--primary-60) 10%, transparent);
+    --brand-tone-overlay-18: color-mix(in srgb, var(--primary-50) 18%, transparent);
+    --brand-tone-overlay-32: color-mix(in srgb, var(--primary-30) 32%, transparent);
+    --brand-tone-overlay-42: color-mix(in srgb, var(--primary-40) 42%, transparent);
+
+    /* brand tone semantics（light） */
+    --brand-tone-border-base: var(--brand-tone-border-soft);
+    --brand-tone-border-emphasis: var(--brand-tone-border-medium);
+    --brand-tone-surface-depth: var(--brand-tone-overlay-05);
+    --brand-tone-surface-base: var(--brand-tone-overlay-10);
+    --brand-tone-surface-active: var(--brand-tone-overlay-18);
+    --brand-tone-surface-highlight: var(--brand-tone-overlay-32);
+    --brand-tone-surface-strong: var(--brand-tone-overlay-42);
+    --brand-tone-stripe-gradient: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--primary-50) 86%, var(--white-alpha-100) 80%) 0%,
+        color-mix(in srgb, var(--primary-60) 90%, var(--black-alpha-100) 10%) 100%
+    );
+    --brand-tone-stripe-gradient-strong: linear-gradient(
+        135deg,
+        var(--primary-50) -10%,
+        var(--primary-40) 50%,
+        var(--primary-60) 100%
+    );
+    --brand-tone-stripe-glow: radial-gradient(
+        circle at 30% 25%,
+        color-mix(in srgb, var(--primary-20) 32%, transparent) 0%,
+        transparent 55%
+    ), var(--brand-tone-accent);
+
+    --text-on-emphasis-secondary: color-mix(in srgb, var(--text-primary) 60%, var(--brand-primary) 50%);
 
     /* interaction/border/focus cores */
     --surface-hover: var(--neutral-20);
@@ -1371,8 +1252,8 @@
     --status-msg-neutral-rgb: var(--neutral-50-rgb);
     --status-msg-positive-strong: var(--green-60);
     --status-msg-positive-strong-rgb: var(--green-60-rgb);
-    --status-msg-important: var(--brand-primary);
-    --status-msg-important-rgb: var(--brand-primary-rgb);
+    --status-msg-important: var(--teal-60);
+    --status-msg-important-rgb: var(--teal-60-rgb);
     --status-msg-negative: var(--orange-60);
     --status-msg-negative-rgb: var(--orange-60-rgb);
     --status-msg-negative-strong: var(--red-60);
@@ -1392,7 +1273,7 @@
     --badge-primary-container-text: var(--brand-primary);
     --badge-primary-container-border: rgba(var(--brand-primary-rgb), 0.30);
     --badge-primary-outline-bg: transparent;
-    --badge-primary-outline-text: var(--brand-primary);
+    --badge-primary-outline-text: color-mix(in srgb, var(--brand-primary) 50%, var(--text-invert) 50%);
     --badge-primary-outline-border: rgba(var(--brand-primary-rgb), 0.36);
 
     /* Neutral */
@@ -1444,7 +1325,7 @@
     --badge-info-container-text: var(--status-msg-important);
     --badge-info-container-border: rgba(var(--status-msg-important-rgb), 0.30);
     --badge-info-outline-bg: transparent;
-    --badge-info-outline-text: var(--status-msg-important);
+    --badge-info-outline-text: color-mix(in srgb, var(--status-msg-important) 50%, var(--text-invert) 50%);
     --badge-info-outline-border: rgba(var(--status-msg-important-rgb), 0.36);
 }
 
@@ -1455,7 +1336,7 @@
     --surface-panel: var(--neutral-110);
     --surface-card: var(--neutral-110);
     --surface-nav: var(--black-alpha-100);
-    --surface-banner: var(--neutral-110);
+    --surface-banner: var(--neutral-90);
     --surface-invert: var(--white-alpha-100);
     --text-primary: var(--white-alpha-100);
     --text-secondary: var(--neutral-50);
@@ -1506,6 +1387,8 @@
     --link-color-rgb: var(--brand-primary-rgb);
     --link-hover-color: var(--primary-40);
     --link-hover-color-rgb: var(--primary-40-rgb);
+    --link-color-assistant: var(--primary-30);
+    --link-color-assistant-rgb: var(--primary-30-rgb);
 
     /* gradient cores */
     --gradient-color-primary: var(--gradient-70);
@@ -1518,6 +1401,43 @@
     --gradient-accent-mid-02-rgb: var(--primary-70-rgb);
     --gradient-accent-end: var(--primary-80);
     --gradient-accent-end-rgb: var(--primary-80-rgb);
+
+    /* brand tone palettes（dark） */
+    --brand-tone-accent: var(--primary-50);
+    --brand-tone-border-soft: color-mix(in srgb, var(--primary-40) 24%, var(--border-default) 76%);
+    --brand-tone-border-medium: color-mix(in srgb, var(--primary-60) 34%, var(--border-default) 66%);
+    --brand-tone-overlay-05: color-mix(in srgb, var(--primary-50) 6%, transparent);
+    --brand-tone-overlay-10: color-mix(in srgb, var(--primary-50) 12%, transparent);
+    --brand-tone-overlay-18: color-mix(in srgb, var(--primary-60) 20%, transparent);
+    --brand-tone-overlay-32: color-mix(in srgb, var(--primary-40) 34%, transparent);
+    --brand-tone-overlay-42: color-mix(in srgb, var(--primary-60) 44%, transparent);
+
+    /* brand tone semantics（dark） */
+    --brand-tone-border-base: var(--brand-tone-border-soft);
+    --brand-tone-border-emphasis: var(--brand-tone-border-medium);
+    --brand-tone-surface-depth: var(--brand-tone-overlay-05);
+    --brand-tone-surface-base: var(--brand-tone-overlay-10);
+    --brand-tone-surface-active: var(--brand-tone-overlay-18);
+    --brand-tone-surface-highlight: var(--brand-tone-overlay-32);
+    --brand-tone-surface-strong: var(--brand-tone-overlay-42);
+    --brand-tone-stripe-gradient: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--primary-40) 88%, var(--white-alpha-100) 12%) 0%,
+        color-mix(in srgb, var(--primary-70) 90%, var(--black-alpha-100) 10%) 100%
+    );
+    --brand-tone-stripe-gradient-strong: linear-gradient(
+        135deg,
+        var(--primary-60) 0%,
+        var(--primary-50) 50%,
+        var(--primary-70) 100%
+    );
+    --brand-tone-stripe-glow: radial-gradient(
+        circle at 30% 25%,
+        color-mix(in srgb, var(--primary-40) 30%, transparent) 0%,
+        transparent 55%
+    ), var(--brand-tone-accent);
+
+    --text-on-emphasis-secondary: color-mix(in srgb, var(--text-primary) 60%, var(--brand-primary) 50%);
 
     /* optional chart cores */
     --chart-bg-rgb: var(--neutral-80-rgb);
@@ -1588,8 +1508,8 @@
     --status-msg-neutral-rgb: var(--neutral-70-rgb);
     --status-msg-positive-strong: var(--green-50);
     --status-msg-positive-strong-rgb: var(--green-50-rgb);
-    --status-msg-important: var(--brand-primary);
-    --status-msg-important-rgb: var(--brand-primary-rgb);
+    --status-msg-important: var(--teal-50);
+    --status-msg-important-rgb: var(--teal-50-rgb);
     --status-msg-negative: var(--yellow-30);
     --status-msg-negative-rgb: var(--yellow-30-rgb);
     --status-msg-negative-strong: var(--orange-50);
@@ -1802,6 +1722,7 @@
     --text-status-good-color: var(--status-quality-good);
 
     --hint-text-el10-warning: var(--status-warning);
+    --text-highlight-custom-01-color: #1849ff;
 
     /* text-hyperlink */
     --text-hyperlink-default-color: var(--link-color);
@@ -1917,12 +1838,6 @@
     --radio-selected-normal-ellipse-fill-color: var(--brand-primary);
     --radio-unselect-disable-fill-color: var(--border-subtle);
     --radio-selected-disable-ellipse-fill-color: var(--brand-primary);
-    /* check box */
-    --checkbox-unselect-normal-fill-color: var(--surface-active);
-    --checkbox-selected-normal-fill-color: var(--brand-primary);
-    --checkbox-unselect-disable-fill-color: var(--border-subtle);
-    --checkbox-selected-disable-fill-color: var(--brand-primary);
-    --checkbox-icon-fill-color: var(--white-alpha-100);
 
 
     /* toggle btn */
@@ -1962,7 +1877,7 @@
     --shadow-elevation40-primary-color: var(--shadow-ambient-primary-40); /* 重複定義 */
 
     /* about table*/
-    --th-fill: var(--surface-panel);
+    --th-fill: var(--surface-banner);
     --th-text-normal: var(--text-primary);
     --th-text-highlight: var(--text-highlight-color);
     --tbody-fill: var(--surface-panel);
@@ -2141,6 +2056,8 @@
     --ark-iam-selected-app-item-hover-bg-color: var(--primary-20);
     --ark-iam-category-action-btn-border-color: var(--neutral-40);
     --ark-iam-empty-state-color: var(--neutral-70);
+
+    --loader-mask-bg: var(--white-alpha-60);
 }
 
 [data-asuswrt-color="dark"] {
@@ -2176,6 +2093,11 @@
 
     --folder-normal-bg-color: ;
     --folder-active-bg-color: var(--neutral-110);
+
+    /* status usage */
+    --hint-on-status-fill: var(--status-on-dark);
+    --hint-off-status-fill: var(--status-off-dark);
+    --hint-warning-status-fill: var(--status-warning-dark);
 
     /* card, card-lists */
     --card-bg-color: var(--neutral-110); /* usage:normal, static */
@@ -2214,6 +2136,7 @@
     --text-input-color: var(--white-alpha-100);
 
     --policy-border-color: var(--white-alpha-10);
+    --text-highlight-custom-01-color: var(--teal-50);/* usage: highlight @keyword \ filter color */
 
 
     /* text-hyperlink */
@@ -2264,6 +2187,8 @@
     --shadow-elevation20-primary-color: 0 1px 6px 4px rgba(var(--primary-50-rgb), 0.5);
     --shadow-elevation30-primary-color: 0 6px 8px 0px rgba(var(--primary-60-rgb), 0.4);
     --shadow-elevation40-primary-color: 0 6px 14px 0px rgba(var(--primary-60-rgb), 0.4);
+
+    --loader-mask-bg: var(--black-alpha-60);
 }
 
 
@@ -2296,6 +2221,9 @@
     --clientinfo-traffic-chart-rx-border-color: var(--secondary-60);
     --clientinfo-traffic-chart-rx-fill-start-color: var(--secondary-60-alpha-0);
     --clientinfo-traffic-chart-rx-fill-end-color: var(--secondary-60-alpha-40);
+
+    --link-color-assistant: var(--primary-60);
+    --link-color-assistant-rgb: var(--primary-60-rgb);
 }
 
 /* ==================== Semantic Tokens - Color Mode: Dark + Theme: ROG ==================== */
@@ -2316,11 +2244,10 @@
     --switch-btn-on-normal-fill-color: var(--black-alpha-100);
     --switch-btn-on-normal-ellipse-fill-color: var(--primary-50);
     --switch-btn-on-normal-ellipse-stroke-color: var(--primary-50);
-    --switch-btn-off-normal-ellipse-stroke-color: var(--neutral-50);
 
     --switch-btn-off-normal-fill-color: var(--black-alpha-100);
     --switch-btn-off-normal-ellipse-fill-color: var(--neutral-90);
-    --switch-btn-off-normal-ellipse-stroke-color: var(--neutral-80);
+    --switch-btn-off-normal-ellipse-stroke-color: var(--neutral-60);
 
     /*primary-btns-fill-proportion-highest*/
     --primary-btn01-normal-fill: var(--neutral-btn-normal-fill-01);
@@ -2343,6 +2270,8 @@
     --clientinfo-traffic-chart-rx-fill-start-color: var(--secondary-50-alpha-0);
     --clientinfo-traffic-chart-rx-fill-end-color: var(--secondary-50-alpha-40);
 
+    --link-color-assistant: var(--secondary-20);
+    --link-color-assistant-rgb: var(--secondary-20-rgb);
 }
 
 /* ==================== Global Foundations - Sizing & Typography (brand-level) ==================== */
@@ -2389,14 +2318,14 @@
     --page-title-font-style: Xolonium;
     --global-font-style: "Roboto Condensed";
     /*light-mode-usage*/
-    --gradient-20: linear-gradient(88.88deg, #efefef 20.22%, #e3eaef 50.8%, #e3eaef 85.8%); /*light-mode-background*/
-    --gradient-30: linear-gradient(88.88deg, #cad5dd 20.22%, #efefef 85.8%); /*light-mode-foreground*/
+    --gradient-20: linear-gradient(135deg, var(--primary-20) 20.22%, var(--primary-40) 65.8%); /*light-mode-background*/
+    --gradient-30: linear-gradient(88.88deg, #f874ff 0.22%, #12fff8 85.8%); /*light-mode-foreground*/
     --gradient-40: linear-gradient(90deg, #aeee4c 25.8%, #00c1a7 49.56%, #847eec 80.33%); /*light-mode-primary*/
     --gradient-50: linear-gradient(88.88deg, #c3fe5f 5%, #3674f9 45.8%, #f99de6 95%); /*light-mode-secondary*/
     /*multi-mode-usage*/
     --gradient-60: linear-gradient(135deg, #6065ff 20.22%, #ff205a 80%, #ff5fc0 98%); /*multi-mode-tertiary*/
     /*dark-mode-usage*/
-    --gradient-70: linear-gradient(88.88deg, #2cfbfb -5%, #155fff 25.8%, #c344fd 50%, #2cfbfb 65%); /*dark-mode-primary*/
+    --gradient-70: linear-gradient(88.88deg, #2cfbfb -5%, #568bff 25.8%, #d881ff 50%, #2cfbfb 65%); /*dark-mode-primary*/
     --gradient-80: linear-gradient(135.88deg, #f466c7 25%, #2cfbfb 50%, #1e73ff 80.8%); /*dark-mode-secondary*/
 
     --gradient-90: linear-gradient(88.88deg, #d4202a -2.22%, #772cc4 10%, #0097ff 50.8%); /*dark-mode-tertiary*/
@@ -2490,7 +2419,7 @@
 
 /* ==================== Component/Decoration - ROG tech background ==================== */
 [data-asuswrt-color="light"][data-asuswrt-theme="rog"][data-asuswrt-style~="tech"] {
-    --global-bg-image: url('../images/rog-light-bg-T2.png');
+    --global-bg-image: url('../images/rog-light-bg-T2.webp');
 }
 
 [data-asuswrt-color="dark"][data-asuswrt-theme="rog"][data-asuswrt-style~="tech"] {
@@ -2663,14 +2592,143 @@
 
 /* end: animate-border for rog */
 
-[data-asuswrt-theme="rt"] {
+[data-asuswrt-page="qis"] {
+    --popup-bg-color: #000000e6;
+    --policy-border-color: var(--primary-80);
+    --policy-notice-title-color: #FFFFFF;
+}
 
+/* ==================== Chart Core Tokens (global) ==================== */
+:root {
+    /* Base */
+    --chart-bg: var(--surface-card);
+    --chart-bg-rgb: var(--surface-card-rgb);
+    --chart-grid: var(--border-subtle);
+    --chart-grid-rgb: var(--border-strong-rgb);
+    --grid-rectangle-rgb: rgba(var(--neutral-30-rgb), 0.1); /* WiFi interference chart: per-channel row band (canvas fillStyle) */
+    --chart-tick: var(--text-secondary);
+    --chart-tick-rgb: var(--text-secondary-rgb);
+    --chart-label: var(--text-primary);
+    --chart-label-rgb: var(--text-primary-rgb);
+    --chart-legend: var(--text-secondary);
+    --chart-legend-rgb: var(--text-secondary-rgb);
+    --chart-border: var(--border-strong);
+    --chart-border-rgb: var(--border-strong-rgb);
+
+    /* Common shape controls */
+    --chart-donut-cutout: 80%;
+    --chart-line-width: 2px;
+    --chart-point-radius: 2px;
+
+    /* Default palette sequence */
+    --chart-seq-1: var(--primary-50);
+    --chart-seq-1-rgb: var(--primary-50-rgb);
+    --chart-seq-2: var(--teal-50);
+    --chart-seq-2-rgb: var(--teal-50-rgb);
+    --chart-seq-3: var(--purple-50);
+    --chart-seq-3-rgb: var(--purple-50-rgb);
+    --chart-seq-4: var(--orange-40);
+    --chart-seq-4-rgb: var(--orange-40-rgb);
+    --chart-seq-5: var(--primary-60);
+    --chart-seq-5-rgb: var(--primary-60-rgb);
+    --chart-seq-5-bright: color-mix(in srgb, var(--chart-seq-1) 72%, white 28%);
+    --chart-seq-6: var(--secondary-50);
+    --chart-seq-6-rgb: var(--secondary-50-rgb);
+    --chart-seq-7: var(--primary-70);
+    --chart-seq-7-rgb: var(--primary-70-rgb);
+    --chart-seq-8: var(--neutral-60);
+    --chart-seq-8-rgb: var(--neutral-60-rgb);
+    --chart-seq-9: var(--primary-80);
+    --chart-seq-9-rgb: var(--primary-80-rgb);
+    --chart-seq-10: var(--primary-90);
+    --chart-seq-10-rgb: var(--primary-90-rgb);
+
+    /* Semantic */
+    --chart-success: var(--green-50);
+    --chart-success-rgb: var(--green-50-rgb);
+    --chart-warning: var(--yellow-50);
+    --chart-warning-rgb: var(--yellow-50-rgb);
+    --chart-danger: var(--red-50);
+    --chart-danger-rgb: var(--red-50-rgb);
+
+    /* Interference (WiFi diagnostics) */
+    --chart-interference-wifi-rgb: var(--orange-50-rgb);
+    --chart-interference-nonwifi-rgb: var(--purple-50-rgb);
+    --chart-interference-total-rgb: var(--red-50-rgb);
+}
+[data-asuswrt-theme="rog"] {
+
+    /* Default palette sequence */
+    --chart-seq-1: #516BFF;
+    --chart-seq-1-rgb: 81, 107, 255;
+    --chart-seq-2: var(--teal-50);
+    --chart-seq-2-rgb: var(--teal-50-rgb);
+    --chart-seq-3: var(--purple-50);
+    --chart-seq-3-rgb: var(--purple-50-rgb);
+    --chart-seq-4: var(--orange-40);
+    --chart-seq-4-rgb: var(--orange-40-rgb);
+    --chart-seq-5: #758AFF;
+    --chart-seq-5-rgb: 117, 138, 255;
+    --chart-seq-6: var(--secondary-50);
+    --chart-seq-6-rgb: var(--secondary-50-rgb);
+    --chart-seq-7: #8597FF;
+    --chart-seq-7-rgb: 133, 151, 255;
+    --chart-seq-8: var(--neutral-60);
+    --chart-seq-8-rgb: var(--neutral-60-rgb);
+    --chart-seq-9: #99A8FF;
+    --chart-seq-9-rgb: 153, 168, 255;
+    --chart-seq-10: #B8C2FF;
+    --chart-seq-10-rgb: 184, 194, 255;
+    /* Semantic */
+    --chart-success: var(--green-50);
+    --chart-success-rgb: var(--green-50-rgb);
+    --chart-warning: var(--yellow-50);
+    --chart-warning-rgb: var(--yellow-50-rgb);
+    --chart-danger: var(--red-50);
+    --chart-danger-rgb: var(--red-50-rgb);
+
+    /* Interference (WiFi diagnostics) */
+    --chart-interference-wifi-rgb: var(--orange-50-rgb);
+    --chart-interference-nonwifi-rgb: var(--purple-50-rgb);
+    --chart-interference-total-rgb: var(--red-50-rgb);
+
+    --modal-bg-color: var(--neutral-100);
+    --modal-header-bg-color: var(--card-bg-color);
+    --model-footer-bg-color: var(--card-bg-color);
+}
+
+/* Backward-compat aliases for legacy variables */
+:root {
+    --chart-color-1: rgb(var(--chart-seq-1-rgb));
+    --chart-bg-1: rgba(var(--chart-seq-1-rgb), .12);
+    --chart-color-2: rgb(var(--chart-seq-2-rgb));
+    --chart-bg-2: rgba(var(--chart-seq-2-rgb), .12);
+    --chart-circle-1: rgba(var(--chart-seq-1-rgb), 1);
+    --chart-circle-2: rgba(var(--chart-seq-5-rgb), 1);
+    --chart-circle-2-2: rgba(var(--chart-seq-2-rgb), 1);
+    --chart-circle-3: rgba(var(--chart-seq-7-rgb), 1);
+    --chart-circle-4: rgba(var(--chart-seq-9-rgb), 1);
+    --chart-circle-5: rgba(var(--chart-seq-10-rgb), 1);
+    --chart-color-good: rgb(var(--chart-seq-2-rgb), 1);
+    --chart-bg-good: rgba(var(--chart-seq-2-rgb), .12);
+    --chart-color-warning: rgb(var(--chart-seq-4-rgb), 1);
+    --chart-bg-warning: rgba(var(--chart-seq-4-rgb), .12);
+    --chart-color-unplug: rgb(var(--chart-seq-8-rgb), 1);
+    --chart-bg-unplug: rgba(var(--chart-seq-8-rgb), .12);
+    --chart-color-connected: #10b880;
+}
+
+/* ==================== Brand Palettes - RT ==================== */
+[data-asuswrt-theme="rt"] {
+    --logo-color: linear-gradient(to right,var(--primary-50), var(--primary-60));
+    --logo-color-rgb: 36, 141, 255, 0, 108, 225;
     --global-font-style: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
 
     --body-bg-color: #4D595D;
     --body-text-color: #FFFFFF;
-    --textbox-color: #FFFFFF;
+    --textbox-color: var(--text-primary);
     --textbox-bg-color: #475A5F;
+    --surface-body: var(--body-bg-color);
 
     --textbox-normal-fill-color: #576D73;
     --textbox-focus-fill-color: #6C8085;
@@ -2711,6 +2769,7 @@
     --clientlist-pagination-border-color: var(--neutral-20);
 
     --card-bg-color: #303d43;
+    --surface-card: var(--card-bg-color);
 
     --popup-bg-color: #303d43;
     --policy-notice-title-color: #FFFFFF;
@@ -2740,11 +2799,15 @@
     --modal-block-bg-color: #394a4f;
 }
 
+/* ==================== Brand Palettes - TS ==================== */
 [data-asuswrt-theme="ts"] {
+    --logo-color: linear-gradient(to right,var(--primary-50), var(--primary-60));
+    --logo-color-rgb: 36, 141, 255, 0, 108, 225;
     --body-bg-color: #00000000;
     --body-text-color: #FFFFFF;
-    --textbox-color: #FFFFFF;
+    --textbox-color: var(--text-primary);
     --textbox-bg-color: #ffffff40;
+    --surface-body: var(--body-bg-color);
 
     --textbox-normal-fill-color: #4b4b4b;
     --textbox-focus-fill-color: #6C8085;
@@ -2785,6 +2848,7 @@
     --clientlist-pagination-border-color: var(--neutral-20);
 
     --card-bg-color: var(--neutral-110);
+    --surface-card: var(--card-bg-color);
 
     --popup-bg-color: #25272a;
     --policy-notice-title-color: #FFFFFF;
@@ -2814,122 +2878,4 @@
     --modal-block-bg-color: #394a4f;
 
     --textbox-focus-stroke-color: var(--primary-60);
-}
-
-[data-asuswrt-page="qis"] {
-    --popup-bg-color: #000000e6;
-    --policy-border-color: var(--primary-80);
-    --policy-notice-title-color: #FFFFFF;
-}
-
-/* ==================== Chart Core Tokens (global) ==================== */
-:root {
-    /* Base */
-    --chart-bg: var(--surface-card);
-    --chart-bg-rgb: var(--surface-card-rgb);
-    --chart-grid: var(--border-subtle);
-    --chart-grid-rgb: var(--border-subtle-rgb);
-    --chart-tick: var(--text-secondary);
-    --chart-tick-rgb: var(--text-secondary-rgb);
-    --chart-label: var(--text-primary);
-    --chart-label-rgb: var(--text-primary-rgb);
-    --chart-legend: var(--text-secondary);
-    --chart-legend-rgb: var(--text-secondary-rgb);
-    --chart-border: var(--border-strong);
-    --chart-border-rgb: var(--border-strong-rgb);
-
-    /* Common shape controls */
-    --chart-donut-cutout: 80%;
-    --chart-line-width: 2px;
-    --chart-point-radius: 2px;
-
-    /* Default palette sequence */
-    --chart-seq-1: var(--primary-50);
-    --chart-seq-1-rgb: var(--primary-50-rgb);
-    --chart-seq-2: var(--teal-50);
-    --chart-seq-2-rgb: var(--teal-50-rgb);
-    --chart-seq-3: var(--purple-50);
-    --chart-seq-3-rgb: var(--purple-50-rgb);
-    --chart-seq-4: var(--orange-40);
-    --chart-seq-4-rgb: var(--orange-40-rgb);
-    --chart-seq-5: var(--primary-60);
-    --chart-seq-5-rgb: var(--primary-60-rgb);
-    --chart-seq-6: var(--secondary-50);
-    --chart-seq-6-rgb: var(--secondary-50-rgb);
-    --chart-seq-7: var(--primary-70);
-    --chart-seq-7-rgb: var(--primary-70-rgb);
-    --chart-seq-8: var(--neutral-60);
-    --chart-seq-8-rgb: var(--neutral-60-rgb);
-    --chart-seq-9: var(--primary-80);
-    --chart-seq-9-rgb: var(--primary-80-rgb);
-    --chart-seq-10: var(--primary-90);
-    --chart-seq-10-rgb: var(--primary-90-rgb);
-
-    /* Semantic */
-    --chart-success: var(--green-50);
-    --chart-success-rgb: var(--green-50-rgb);
-    --chart-warning: var(--yellow-50);
-    --chart-warning-rgb: var(--yellow-50-rgb);
-    --chart-danger: var(--red-50);
-    --chart-danger-rgb: var(--red-50-rgb);
-
-    /* Interference (WiFi diagnostics) */
-    --chart-interference-wifi-rgb: var(--orange-50-rgb);
-    --chart-interference-nonwifi-rgb: var(--purple-50-rgb);
-    --chart-interference-total-rgb: var(--red-50-rgb);
-}
-[data-asuswrt-theme="rog"] {
-
-    /* Default palette sequence */
-    --chart-seq-1: #4545FF;
-    --chart-seq-1-rgb: 69, 69, 255;
-    --chart-seq-2: var(--teal-50);
-    --chart-seq-2-rgb: var(--teal-50-rgb);
-    --chart-seq-3: var(--purple-50);
-    --chart-seq-3-rgb: var(--purple-50-rgb);
-    --chart-seq-4: var(--orange-40);
-    --chart-seq-4-rgb: var(--orange-40-rgb);
-    --chart-seq-5: #5757FF;
-    --chart-seq-5-rgb: 87, 87, 255;
-    --chart-seq-6: var(--secondary-50);
-    --chart-seq-6-rgb: var(--secondary-50-rgb);
-    --chart-seq-7: #6A6AFF;
-    --chart-seq-7-rgb: 106, 106, 255;
-    --chart-seq-8: var(--neutral-60);
-    --chart-seq-8-rgb: 125, 125, 255;
-    --chart-seq-9: #7D7DFF;
-    --chart-seq-9-rgb: 125, 125, 255;
-    --chart-seq-10: #8F8FFF;
-    --chart-seq-10-rgb: 143, 143, 255;
-    /* Semantic */
-    --chart-success: var(--green-50);
-    --chart-success-rgb: var(--green-50-rgb);
-    --chart-warning: var(--yellow-50);
-    --chart-warning-rgb: var(--yellow-50-rgb);
-    --chart-danger: var(--red-50);
-    --chart-danger-rgb: var(--red-50-rgb);
-
-    /* Interference (WiFi diagnostics) */
-    --chart-interference-wifi-rgb: var(--orange-50-rgb);
-    --chart-interference-nonwifi-rgb: var(--purple-50-rgb);
-    --chart-interference-total-rgb: var(--red-50-rgb);
-}
-
-/* Backward-compat aliases for legacy variables */
-:root {
-    --chart-color-1: rgb(var(--chart-seq-1-rgb));
-    --chart-bg-1: rgba(var(--chart-seq-1-rgb), .12);
-    --chart-color-2: rgb(var(--chart-seq-2-rgb));
-    --chart-bg-2: rgba(var(--chart-seq-2-rgb), .12);
-    --chart-circle-1: rgba(var(--chart-seq-1-rgb), 1);
-    --chart-circle-2: rgba(var(--chart-seq-5-rgb), 1);
-    --chart-circle-3: rgba(var(--chart-seq-7-rgb), 1);
-    --chart-circle-4: rgba(var(--chart-seq-9-rgb), 1);
-    --chart-circle-5: rgba(var(--chart-seq-10-rgb), 1);
-    --chart-color-good: rgb(var(--chart-seq-5-rgb), 1);
-    --chart-bg-good: rgba(var(--chart-seq-5-rgb), .12);
-    --chart-color-warning: rgb(var(--chart-seq-4-rgb), 1);
-    --chart-bg-warning: rgba(var(--chart-seq-4-rgb), .12);
-    --chart-color-unplug: rgb(var(--chart-seq-8-rgb), 1);
-    --chart-bg-unplug: rgba(var(--chart-seq-8-rgb), .12);
 }

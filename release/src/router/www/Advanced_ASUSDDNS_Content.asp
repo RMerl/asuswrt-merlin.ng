@@ -32,7 +32,7 @@
         -moz-border-radius: 5px;
         border-radius: 5px;
         z-index: 500;
-        background-color: #2B373B;
+        background-color: var(--surface-panel, #2B373B);
         display: none;
         margin-left: 30%;
         top: 570px;
@@ -43,15 +43,15 @@
         font-family: Arial, Helvetica, sans-serif;
         font-size: 13px;
         font-weight: bolder;
-        color: #FFFFFF;
+        color: var(--wrt-text-color,#FFFFFF);
         margin-left: 15px;
         margin-bottom: 15px;
         margin-top: 15px;
     }
 
     .Upload_file {
-        background-color: #2B373B;
-        color: #FC0;
+        background-color: var(--surface-panel, #2B373B);
+        color: var(--wrt-badge-warning-color,#FFCC00);
         *color: #000;
         border: 0px;
     }
@@ -114,7 +114,7 @@
         display: none;
         width: 60px;
         background-color: black;
-        color: #fff;
+        color: var(--wrt-text-color,#FFFFFF);
         text-align: center;
         border-radius: 6px;
         padding: 5px;
@@ -141,7 +141,7 @@
         width: 20vw;
         word-break: break-all;
         background-color: rgba(22, 27, 33, 0.75);
-        color: #fff;
+        color: var(--wrt-text-color,#FFFFFF);
         border-radius: 6px;
         padding: 5px;
         position: absolute;
@@ -574,8 +574,23 @@ function apply_eula_check(){
         });
 }
 
+function confirm_ddns_disable_for_vpn(){
+	//prompt once per apply, only on the enabled -> disabled transition
+	if(ddns_enable_x != "1" || document.form.ddns_enable_x.value != "0")
+		return true;
+
+	//the Endpoint mode is not checked, Auto may also end up picking the system DDNS
+	if(httpApi.nvramGet(["wgs_enable"], true).wgs_enable != "1")
+		return true;
+
+	return confirm(stringSafeGet(`<#vpn_wireguard_ep_ddns_disable_confirm#>`));
+}
+
 function applyRule(){
 	if(validForm()){
+		if(!confirm_ddns_disable_for_vpn())
+			return false;
+
 		if(document.form.ddns_enable_x.value == "1" && (document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1)){
 			document.form.ddns_hostname_x.value = document.form.DDNSName.value+$("#domain_text").text();
 		}
@@ -663,7 +678,7 @@ function validForm(){
 					return false;
 				}
 
-				if(document.form.ddns_passwd_x.value == ""){
+				if(document.form.ddns_server_x.value != "DYNV6.COM" && document.form.ddns_passwd_x.value == ""){
 					alert("<#File_Pop_content_alert_desc6#>");
 					document.form.ddns_passwd_x.focus();
 					document.form.ddns_passwd_x.select();
@@ -899,9 +914,12 @@ function change_ddns_setting(v){
 				inputCtrl(document.form.ddns_username_x, 0);
 			else
 				inputCtrl(document.form.ddns_username_x, 1);
-			inputCtrl(document.form.ddns_passwd_x, 1);
+			if(v == "DYNV6.COM")
+				inputCtrl(document.form.ddns_passwd_x, 0);
+			else
+				inputCtrl(document.form.ddns_passwd_x, 1);
 			var disable_wild = 0;
-			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM" || v == "DYNU.COM" || v == "CLOUDFLARE.COM" || v == "PUBYUN.COM")
+			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM" || v == "DYNU.COM" || v == "CLOUDFLARE.COM" || v == "PUBYUN.COM" || v == "DUCKDNS.ORG")
 				var disable_wild = 1;
 			else
 				var disable_wild = 0;
@@ -941,6 +959,11 @@ function change_ddns_setting(v){
 		document.getElementById("ddns_username_th").innerHTML = "Account Name";
 		document.getElementById("ddns_password_th").innerHTML = "Update Key";
 		document.getElementById("ddns_hostname_th").innerHTML = "Tunnel ID";
+	}
+	else if (v == "DYNV6.COM") {
+		document.getElementById("ddns_username_th").innerHTML = "User Token";	/*Untranslated*/
+		document.getElementById("ddns_password_th").innerHTML = "<#LANHostConfig_x_DDNSPassword_itemname#>";
+		document.getElementById("ddns_hostname_th").innerHTML = default_hostname_label;
 	}
 	else {
 		document.getElementById("ddns_username_th").innerHTML = "<#LANHostConfig_x_DDNSUserName_itemname#>";
@@ -1054,7 +1077,7 @@ function show_cert_details(){
 		if(le_auxstate_t == "5" && le_sbstate_t == "7"){
 			var ddnsHint = "<#DDNS_Auth_Fail_Hint#>";
 			$("#cert_status").text(ddnsHint);
-			$("#cert_status").css("color", "#FFCC00")
+			$("#cert_status").css("color", "var(--wrt-badge-warning-color,#FFCC00)")
 		}
 		else{
 			document.getElementById("cert_status").innerHTML = "Unknown or processing...";
@@ -1270,8 +1293,8 @@ function clear_cert_key(){
 
 		 		<div class="formfontdesc formfontdesc_help_left"></div>
 
-				<div class="formfontdesc hint-color" id="wan_ip_hide2" style="color:#FC0; display:none;"><#LANHostConfig_x_DDNSEnable_sectiondesc4#><#LANHostConfig_x_DDNSEnable_sectiondesc2#></div>
-				<div class="formfontdesc hint-color" id="lb_note" style="color:#FC0; display:none;"><#lb_note_ddns#></div>
+				<div class="formfontdesc hint-color" id="wan_ip_hide2" style="color:var(--wrt-badge-warning-color,#FFCC00); display:none;"><#LANHostConfig_x_DDNSEnable_sectiondesc4#><#LANHostConfig_x_DDNSEnable_sectiondesc2#></div>
+				<div class="formfontdesc hint-color" id="lb_note" style="color:var(--wrt-badge-warning-color,#FFCC00); display:none;"><#lb_note_ddns#></div>
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 				<input type="hidden" name="wl_gmode_protection_x" value="<% nvram_get("wl_gmode_protection_x"); %>">
 			<tr>
@@ -1299,7 +1322,7 @@ function clear_cert_key(){
                         }
                     });
                     </script>
-                    <div style="color:#FFCC00">*<#LANHostConfig_x_DDNSEnable_security_info#></div>
+                    <div style="color:var(--wrt-badge-warning-color,#FFCC00)">*<#LANHostConfig_x_DDNSEnable_security_info#></div>
 				</td>
 			</tr>		
 			<tr>
@@ -1336,6 +1359,7 @@ function clear_cert_key(){
 						<option value="DYNU.COM" <% nvram_match("ddns_server_x", "DYNU.COM","selected"); %>>DYNU.COM</option>
 						<option value="CLOUDFLARE.COM" <% nvram_match("ddns_server_x", "CLOUDFLARE.COM","selected"); %>>CLOUDFLARE.COM</option>
 						<option value="PUBYUN.COM" <% nvram_match("ddns_server_x", "PUBYUN.COM","selected"); %>>PUBYUN.COM</option>
+						<option value="DYNV6.COM" <% nvram_match("ddns_server_x", "DYNV6.COM","selected"); %>>DYNV6.COM</option>
 						<option value="WWW.TUNNELBROKER.NET" <% nvram_match("ddns_server_x", "WWW.TUNNELBROKER.NET","selected"); %>>WWW.TUNNELBROKER.NET</option>
 						<option value="WWW.NO-IP.COM" <% nvram_match("ddns_server_x", "WWW.NO-IP.COM","selected"); %>>WWW.NO-IP.COM</option>
 						<option value="WWW.ORAY.COM" <% nvram_match("ddns_server_x", "WWW.ORAY.COM","selected"); %>>WWW.ORAY.COM(花生壳)</option>
@@ -1343,6 +1367,8 @@ function clear_cert_key(){
 						<option value="FREEDNS.AFRAID.ORG" <% nvram_match("ddns_server_x", "FREEDNS.AFRAID.ORG","selected"); %>>FREEDNS.AFRAID.ORG</option>
 						<option value="FREEMYIP.COM" <% nvram_match("ddns_server_x", "FREEMYIP.COM","selected"); %>>FREEMYIP.COM</option>
 						<option value="DEDYN.IO" <% nvram_match("ddns_server_x", "DEDYN.IO","selected"); %>>DEDYN.IO</option>
+						<option value="DUCKDNS.ORG" <% nvram_match("ddns_server_x", "DUCKDNS.ORG","selected"); %>>DUCKDNS.ORG</option>
+						<option value="DNSPOD.CN" <% nvram_match("ddns_server_x", "DNSPOD.CN","selected"); %>>DNSPOD.CN</option>
 						<option value="CUSTOM" <% nvram_match("ddns_server_x", "CUSTOM","selected");  %>>Custom</option>
 					</select>
 					<input id="deregister_btn" class="button_gen" style="display: none; margin-left: 5px;" type="button" value="<#CTL_Deregister#>"/>
@@ -1361,7 +1387,7 @@ function clear_cert_key(){
 					</div>
 					<div id="asusddnsname_input" style="width:500px; display:none;">
 						<input type="text" maxlength="50" class="input_32_table" name="DDNSName" id="DDNSName" class="inputtext" onKeyPress="return validator.isString(this, event)" OnClick="cleandef();" autocorrect="off" autocapitalize="off"><span id="domain_text" style="color: #FFFFFF;">.asuscomm.com</span>
-						<div id="alert_block" style="color:#FFCC00; margin-left:5px; font-size:11px;display:none;">
+						<div id="alert_block" style="color:var(--wrt-badge-warning-color,#FFCC00); margin-left:5px; font-size:11px;display:none;">
 								<span id="alert_str"></span>
 						</div>
 					</div>
@@ -1375,7 +1401,7 @@ function clear_cert_key(){
 			</tr>
 			<tr>
 				<th id="ddns_username_th"><#LANHostConfig_x_DDNSUserName_itemname#></th>
-				<td><input type="text" maxlength="32" class="input_25_table" name="ddns_username_x" value="<% nvram_get("ddns_username_x"); %>" onKeyPress="return validator.isString(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off"></td>
+				<td><input type="text" maxlength="64" class="input_25_table" name="ddns_username_x" value="<% nvram_get("ddns_username_x"); %>" onKeyPress="return validator.isString(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off"></td>
 			</tr>
 			<tr>
 				<th id="ddns_password_th"><#LANHostConfig_x_DDNSPassword_itemname#></th>
@@ -1415,7 +1441,7 @@ function clear_cert_key(){
 			</tr>
 			<tr id="ddns_status_tr" style="display:none;">
 				<th>DDNS Status</th>
-				<td><span id="ddns_status" style="color:#FFCC00"></span><span id="ddns_status_detail" class="notificationon" style="display: none;" onmouseover="show_ddns_status_detail();" onMouseOut="nd();"></span></td>
+				<td><span id="ddns_status" style="color:var(--wrt-badge-warning-color,#FFCC00)"></span><span id="ddns_status_detail" class="notificationon" style="display: none;" onmouseover="show_ddns_status_detail();" onMouseOut="nd();"></span></td>
 			</tr>
 			<tr id="ddns_result_tr" style="display:none;">
 				<th>DDNS Registration Result</th>
@@ -1431,10 +1457,10 @@ function clear_cert_key(){
 					<span id="self_signed" style="color:#FFF;">
 					<input type="radio" value="0" name="le_enable" onClick="change_cert_method(this.value);" <% nvram_match("le_enable", "0", "checked"); %>><#Auto#>
 					</span>	
-					<div id="cert_desc" style="color:#FFCC00; margin-top: 5px;">
+					<div id="cert_desc" style="color:var(--wrt-badge-warning-color,#FFCC00); margin-top: 5px;">
 						<span id="le_desc"></span>
 						<span id="le_faq">
-							<a id="faq" href="" target="_blank" style="margin-left: 5px; color:#FFCC00; text-decoration: underline;">FAQ</a>
+							<a id="faq" href="" target="_blank" style="margin-left: 5px; color:var(--wrt-badge-warning-color,#FFCC00); text-decoration: underline;">FAQ</a>
 						</span>
 					</div>
 					<div id="cert_act" style="margin-top: 5px;"></div>
@@ -1514,7 +1540,7 @@ function clear_cert_key(){
 <input type="hidden" name="action_script" value="">
 <input type="hidden" name="action_wait" value="">
 <input type="hidden" name="le_enable" value="2">
-<div id="upload_cert_window"  class="contentM_upload" style="box-shadow: 1px 5px 10px #000;">
+<div id="upload_cert_window"  class="contentM_upload" style="box-shadow: var(--wrt-card-shadow, 1px 5px 10px #000);">
 	<div class="formfonttitle" style="margin-top: 15px; margin-left: 15px;"><#DDNS_https_cert_Import#></div>
 	<div class="formfontdesc" style="margin: 15px;"><#DDNS_https_cert_Import_desc#></div>
 	<div class="Upload_item">
@@ -1525,7 +1551,7 @@ function clear_cert_key(){
 		<div style="display:table-cell; width: 45%;"><#DDNS_ssl_cert#> :</div>
 		<div style="display:table-cell;"><input type="file" name="file_cert" class="input Upload_file"></div>
 	</div>
-	<div style="color: #FC0; margin-left: 15px; margin-top: 20px">* <#DDNS_https_cert_PrivateKey_note#></div>
+	<div style="color: var(--wrt-badge-warning-color,#FFCC00); margin-left: 15px; margin-top: 20px">* <#DDNS_https_cert_PrivateKey_note#></div>
 	<div align="center" style="margin-top:30px; padding-bottom:15px; display: flex; justify-content: center;">
 		<div style=""><input class="button_gen" type="button" onclick="hide_upload_window();" id="cancelBtn" value="<#CTL_Cancel#>"></div>
 		<div style=""><input class="button_gen" type="button" onclick="upload_cert_key();" id="applyBtn" value="<#CTL_ok#>"></div>

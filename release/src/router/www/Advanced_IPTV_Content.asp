@@ -29,12 +29,12 @@
 	-moz-border-radius: 5px;
 	border-radius: 5px;
 	z-index:500;
-	background-color:#2B373B;
+	background-color:var(--surface-panel, #2B373B);
 	margin-left: 30%;
 	margin-top: 10px;
 	width:650px;
 	display:none;
-	box-shadow: 3px 3px 10px #000;
+	box-shadow: var(--wrt-card-shadow, 3px 3px 10px #000);
 }
 
 #autowan_hint_div{
@@ -43,10 +43,10 @@
 	width: 600px;
 	height: 550px;
 	margin-left: 40%;
-	background-color: #232629;
-	box-shadow: 3px 3px 10px #000;
+	background-color: var(--surface-panel, #232629);
+	box-shadow: var(--wrt-card-shadow, 3px 3px 10px #000);
 	border-radius: 4px;
-	border: 2px solid #818181;
+	border: 2px solid var(--border-default, #818181);
 	font-size: 13px;
 }
 
@@ -919,7 +919,7 @@ function applyRule(){
 		let is_mswan_conflicted = false;
 		let is_dot1q_conflicted = false;
 
-		if(document.form.switch_stb_x.value != "0" || document.form.switch_wantag.value != "none"){
+		if(document.form.switch_wantag.value != "none"){
 			if(mswan_support && with_multiservice >= 1){
 				is_mswan_conflicted = true;
 				conflict_functions = `Multi-Service WAN`;
@@ -2120,15 +2120,15 @@ function use_single_default_wan_sfp(){
 		<td align="left">
 		    <select id="switch_stb_x0" name="switch_stb_x0" class="input_option" onchange="control_wans_primary(this.value);change_switch_stb(this.value);">
 		    </select>
-			<span id="dsl_vlan_check" style="color:#FFFFFF; display:none;"><input type="checkbox" name="dslx_rmvlan_check" id="dslx_rmvlan_check" value="" onClick="change_rmvlan();"> Remove VLAN TAG from DSL WAN</input></span>
+			<span id="dsl_vlan_check" style="color:var(--wrt-text-color,#FFFFFF); display:none;"><input type="checkbox" name="dslx_rmvlan_check" id="dslx_rmvlan_check" value="" onClick="change_rmvlan();"> Remove VLAN TAG from DSL WAN</input></span>
 		</td>
 		</tr>
 		<tr id="tr_wans_primary" style="display:none;">
 			<th width="30%"><#dualwan_primary#></th>
 			<td align="left">
-				<span style="color:#FFFFFF;"><#dualwan_ethernet_lan#></span>
+				<span style="color:var(--wrt-text-color,#FFFFFF);"><#dualwan_ethernet_lan#></span>
 				<select id="wans_lanport1" name="wans_lanport1" class="input_option" style="margin-left:7px;"></select>
-				<div style="margin-top:2px;"><span style="color:#FFFFFF;">( <#dualwan_primary_hint#> : </span><span id="cur_primary" style="color:#FFFFFF;"></span><span style="color:#FFFFFF;"> )</span></div>
+				<div style="margin-top:2px;"><span style="color:var(--wrt-text-color,#FFFFFF);">( <#dualwan_primary_hint#> : </span><span id="cur_primary" style="color:var(--wrt-text-color,#FFFFFF);"></span><span style="color:var(--wrt-text-color,#FFFFFF);"> )</span></div>
 			</td>
 		</tr>
 		<tr id="wan_iptv_x" style="display:none;">

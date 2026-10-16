@@ -206,7 +206,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	if(flag == 1){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color="#FFCC00";
+		childsel.style.color="var(--wrt-badge-warning-color,#FFCC00)";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#LANHostConfig_ManualDHCPMacaddr_itemdesc#>";
 		document.getElementById("check_mac").style.display = "";
@@ -214,7 +214,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	}else if(flag ==2){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color="#FFCC00";
+		childsel.style.color="var(--wrt-badge-warning-color,#FFCC00)";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#IPConnection_x_illegal_mac#>";
 		document.getElementById("check_mac").style.display = "";
@@ -345,7 +345,7 @@ function genMain_table(){
 	code += '<th width="10%"><#list_add_delete#></th>';
 	code += '</tr>';
 	code += '<tr id="main_element">';
-	code += '<td style="border-bottom:2px solid #000;" title="<#WLANConfig11b_WirelessCtrl_button1name#>/<#btn_disable#>">';
+	code += '<td style="border-bottom:2px solid var(--border-default, #000);" title="<#WLANConfig11b_WirelessCtrl_button1name#>/<#btn_disable#>">';
 	code += '<input type="checkbox" checked="">';
 	code += '</td>';
 	code += '<td style="border-bottom:2px solid #000;">';
@@ -353,7 +353,7 @@ function genMain_table(){
 	code += '<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_client#>">';
 	code += '<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-top:25px;margin-left:10px;"></div>';
 	code += '</td>';
-	code += '<td style="border-bottom:2px solid #000;text-align:left;">';
+	code += '<td style="border-bottom:2px solid var(--border-default, #000);text-align:left;">';
 	for(var i=0;i<category_name.length;i++){
 		code += '<div style="font-size:14px;font-weight:bold">';
 		code += '<img class="closed" src="/images/Tree/vert_line_s10.gif" onclick="show_subCategory(this);">';
@@ -369,10 +369,10 @@ function genMain_table(){
 	}
 
 	code += '</td>';
-	code += '<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onclick="addRow_main(this)" value=""></td>';
+	code += '<td style="border-bottom:2px solid var(--border-default, #000);"><input class="add_btn" type="button" onclick="addRow_main(this)" value=""></td>';
 	code += '</tr>';
 	if(apps_filter == ""){
-		code += '<tr><td class="tableNoRule" style="color:#FFCC00;" colspan="10"><#IPConnection_VSList_Norule#></td></tr>';
+		code += '<tr><td class="tableNoRule" style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="10"><#IPConnection_VSList_Norule#></td></tr>';
 	}
 	else{
 		for(var k=0;k< apps_filter_row.length;k++){

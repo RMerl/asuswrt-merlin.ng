@@ -1,0 +1,44 @@
+iptables-translate -A INPUT -p sctp --dport 80 -j DROP
+nft 'add rule ip filter INPUT sctp dport 80 counter drop'
+
+iptables-translate -A INPUT -p sctp --sport 50 -j DROP
+nft 'add rule ip filter INPUT sctp sport 50 counter drop'
+
+iptables-translate -A INPUT -p sctp ! --dport 80 -j DROP
+nft 'add rule ip filter INPUT sctp dport != 80 counter drop'
+
+iptables-translate -A INPUT -p sctp ! --sport 50 -j DROP
+nft 'add rule ip filter INPUT sctp sport != 50 counter drop'
+
+iptables-translate -A INPUT -p sctp --sport 80:100 -j ACCEPT
+nft 'add rule ip filter INPUT sctp sport 80-100 counter accept'
+
+iptables-translate -A INPUT -p sctp --dport 50:56 -j ACCEPT
+nft 'add rule ip filter INPUT sctp dport 50-56 counter accept'
+
+iptables-translate -A INPUT -p sctp ! --sport 80:100 -j ACCEPT
+nft 'add rule ip filter INPUT sctp sport != 80-100 counter accept'
+
+iptables-translate -A INPUT -p sctp ! --dport 50:56 -j ACCEPT
+nft 'add rule ip filter INPUT sctp dport != 50-56 counter accept'
+
+iptables-translate -A INPUT -p sctp --dport 80 --sport 50 -j ACCEPT
+nft 'add rule ip filter INPUT sctp sport 50 sctp dport 80 counter accept'
+
+iptables-translate -A INPUT -p sctp --dport 80:100 --sport 50 -j ACCEPT
+nft 'add rule ip filter INPUT sctp sport 50 sctp dport 80-100 counter accept'
+
+iptables-translate -A INPUT -p sctp --dport 80 --sport 50:55 -j ACCEPT
+nft 'add rule ip filter INPUT sctp sport 50-55 sctp dport 80 counter accept'
+
+iptables-translate -A INPUT -p sctp ! --dport 80:100 --sport 50 -j ACCEPT
+nft 'add rule ip filter INPUT sctp sport 50 sctp dport != 80-100 counter accept'
+
+iptables-translate -A INPUT -p sctp --dport 80 ! --sport 50:55 -j ACCEPT
+nft 'add rule ip filter INPUT sctp sport != 50-55 sctp dport 80 counter accept'
+
+iptables-translate -A INPUT -p sctp --chunk-types all INIT,DATA:iUbE,SACK,ABORT:T -j ACCEPT
+nft 'add rule ip filter INPUT sctp chunk data flags & 0xf == 0x5 sctp chunk init exists sctp chunk sack exists sctp chunk abort flags & 0x1 == 0x1 counter accept'
+
+iptables-translate -A INPUT -p sctp --chunk-types only SHUTDOWN_COMPLETE -j ACCEPT
+nft 'add rule ip filter INPUT sctp chunk data missing sctp chunk init missing sctp chunk init-ack missing sctp chunk sack missing sctp chunk heartbeat missing sctp chunk heartbeat-ack missing sctp chunk abort missing sctp chunk shutdown missing sctp chunk shutdown-ack missing sctp chunk error missing sctp chunk cookie-echo missing sctp chunk cookie-ack missing sctp chunk ecne missing sctp chunk cwr missing sctp chunk shutdown-complete exists sctp chunk i-data missing sctp chunk re-config missing sctp chunk pad missing sctp chunk asconf missing sctp chunk asconf-ack missing sctp chunk forward-tsn missing sctp chunk i-forward-tsn missing counter accept'

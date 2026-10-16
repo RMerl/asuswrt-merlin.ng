@@ -1,0 +1,5 @@
+iptables-translate -I INPUT -p tcp -m mark ! --mark 0xa/0xa
+nft 'insert rule ip filter INPUT ip protocol tcp mark and 0xa != 0xa counter'
+
+iptables-translate -I INPUT -p tcp -m mark ! --mark 0x1
+nft 'insert rule ip filter INPUT ip protocol tcp mark != 0x1 counter'

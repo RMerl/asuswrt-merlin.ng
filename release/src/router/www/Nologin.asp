@@ -1,4 +1,4 @@
-﻿<html>
+<html>
 <head>
 <title>ASUS Wireless Router Web Manager</title>
 </head>
@@ -37,7 +37,7 @@
 			+ 'font-weight:bolder;'
 			+ 'font-size:32px;'
 			+ 'font-family:Segoe UI, Arial, sans-serif;'
-			+ 'color:#000;'
+			+ 'color:var(--wrt-text-color, #000);'
 			+ 'text-align:center;'
 		+ '"><span><#login_hint2#><br>'
 		+ loginUser

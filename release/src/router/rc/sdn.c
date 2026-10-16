@@ -734,12 +734,12 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 #endif
 
 #ifdef RTCONFIG_IPV6
-		fprintf(fp, "interface=%s\n", pmtl->nw_t.ifname);
-		fprintf(fp, "except-interface=lo\n");
- 
 		have_dhcp |= write_dnsmasq_conf_sdn_ra_dhcp6_range(fp, pmtl);
 		if (have_dhcp & HAVE_DHCP6)
 		{
+			fprintf(fp, "interface=%s\n", pmtl->nw_t.ifname);
+			fprintf(fp, "except-interface=lo\n");
+
 			/* DNS server */
 			if (pmtl->nw_t.dns6[0][0])
 			{

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <html xmlns:v>
 <head>
@@ -26,32 +26,32 @@
 .Bar_container{
 	width:85%;
 	height:21px;
-	border:1px inset #999;
+	border:1px inset var(--border-default, #999);
 	margin:0 auto;
 	margin-top:20px \9;
-	background-color:#FFFFFF;
+	background-color:var(--wrt-card-bg, #FFFFFF);
 	z-index:100;
 }
 #proceeding_img_text{
 	position:absolute; 
 	z-index:101; 
-	font-size:11px; color:#000000; 
+	font-size:11px; color:var(--wrt-text-color, #000000);
 	line-height:21px;
 	width: 83%;
 }
 #proceeding_img{
  	height:21px;
-	background: #D7E8F4;
-	background: -webkit-linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%);
-	background: -o-linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%);
-	background: linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%);
+	background: var(--surface-panel, #D7E8F4);
+	background: var(--surface-panel, -webkit-linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%));
+	background: var(--surface-panel, -o-linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%));
+	background: var(--surface-panel, linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%));
 }
 
 .desc_container {
 	margin-top: 2%;
 	font-family: Helvetica, Arial;
 	font-size: 16pt;
-	color: #EEE;
+	color: var(--wrt-text-muted-color, #EEE);
 	text-align: left;
 	font-weight: bolder;
 }
@@ -71,7 +71,7 @@
 	margin: auto;
 }
 #desc {
-	font-size:18px; color:#FFFFFF;
+	font-size:18px; color:var(--wrt-text-color,#FFFFFF);
 	line-height:21px;
 }
 

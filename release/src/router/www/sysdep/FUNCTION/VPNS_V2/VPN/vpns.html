@@ -365,7 +365,7 @@ function show_vpn_serverlist(){
 		});
 
 		function append_WGS_profile(_obj){
-			var wgs_settings = httpApi.nvramGet(["wgs_lanaccess","wgs_addr", "wgs_port", "wgs_dns", "wgs_nat6", "wgs_psk", "wgs_alive"]);
+			var wgs_settings = httpApi.nvramGet(["wgs_lanaccess","wgs_addr", "wgs_port", "wgs_dns", "wgs_nat6", "wgs_psk", "wgs_alive", "wgs_ep_mode", "wgs_ep_custom"]);
 			_obj.wgs_lanaccess = wgs_settings.wgs_lanaccess;
 			_obj.wgs_addr = wgs_settings.wgs_addr;
 			_obj.wgs_port = wgs_settings.wgs_port;
@@ -373,6 +373,8 @@ function show_vpn_serverlist(){
 			_obj.wgs_nat6 = wgs_settings.wgs_nat6;
 			_obj.wgs_psk = wgs_settings.wgs_psk;
 			_obj.wgs_alive = wgs_settings.wgs_alive;
+			_obj.wgs_ep_mode = wgs_settings.wgs_ep_mode;
+			_obj.wgs_ep_custom = wgs_settings.wgs_ep_custom;
 		}
 	}
 

@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ctype.h>
 #include "codb_utils.h"
 #include "cosql_utils.h"
 #include "log.h"
@@ -147,7 +148,7 @@ static int get_backup_db_path_by_datetime(const char* db_name, const char* db_ve
 
         char file_name[40] = "\0";
 
-        sprintf(file_name, "%lu_%s_%s.db", timestamp_day, db_name, pch_db_version);
+        snprintf(file_name, sizeof(file_name), "%lu_%s_%s.db", timestamp_day, db_name, pch_db_version);
 
         strncpy(db_file_path, db_bakcup_path, strlen(db_bakcup_path));
         strncat(db_file_path, "/", 1);
@@ -271,6 +272,26 @@ static sql_column_match_t* parse_match_columns_data(char* data, int data_count) 
     return match_columns;   
 }
 
+//- Avoid SQL identifier injection: requested column names may only contain
+//- alphanumeric characters and underscore.
+static int is_valid_column_name(const char *name) {
+    int i, len;
+
+    if (!name)
+        return 0;
+
+    len = strlen(name);
+    if (len <= 0 || len > 64)
+        return 0;
+
+    for (i = 0; i < len; i++) {
+        if (!isalnum((unsigned char)name[i]) && name[i] != '_')
+            return 0;
+    }
+
+    return 1;
+}
+
 static sql_column_prototype_t* parse_query_columns_data(char* data, int data_count) {
  
     if (data == NULL || data_count <= 0) {
@@ -293,7 +314,17 @@ static sql_column_prototype_t* parse_query_columns_data(char* data, int data_cou
     char* pch = strtok(data_copy, ";");
     while (pch != NULL) {
         int len = strlen(pch);
- 
+
+        if (!is_valid_column_name(pch)) {
+            // Free previously allocated memory
+            for (sql_column_prototype_t* ptr = query_columns; ptr < query_columns_idx; ++ptr) {
+                free(ptr->name);
+            }
+            free(query_columns);
+            free(data_copy);
+            return NULL;
+        }
+
         query_columns_idx->name = (char *)malloc(sizeof(char) * (len + 1));
         if (query_columns_idx->name == NULL) {
             // Free previously allocated memory

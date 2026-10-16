@@ -304,7 +304,7 @@ function gen_mainTable(){
 	code +='<td style="border-bottom:2px solid #000;">--</td>';
 	code +='<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onClick="addRow_main(16)" value=""></td></tr>';
 	if(MULTIFILTER_DEVICENAME == "" && MULTIFILTER_MAC == "")
-		code += '<tr><td style="color:#FFCC00;" colspan="4"><#IPConnection_VSList_Norule#></td></tr>';
+		code += '<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="4"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		//user icon
 		var userIconBase64 = "NoIcon";
@@ -1068,8 +1068,8 @@ function show_inner_tab(){
 							<li><#ParentalCtrl_Desc4#></li>
 							<li><#ParentalCtrl_Desc5#></li>							
 						</ol>
-						<span id="desc_note" style="color:#FC0;"><#ADSL_FW_note#></span>
-						<ol style="color:#FC0;margin:-5px 0px 3px -18px;*margin-left:18px;">
+						<span id="desc_note" style="color:var(--wrt-badge-warning-color,#FFCC00);"><#ADSL_FW_note#></span>
+						<ol style="color:var(--wrt-badge-warning-color,#FFCC00);margin:-5px 0px 3px -18px;*margin-left:18px;">
 							<li><#ParentalCtrl_default#></li>
 							<li id="nat_desc"><#ParentalCtrl_disable_NAT#></li>
 						</ol>	
@@ -1116,8 +1116,8 @@ function show_inner_tab(){
 								<tr>
 									<th width="20%"><#General_x_SystemTime_itemname#></th>
 									<td align="left"><input type="text" id="system_time" name="system_time" class="devicepin" value="" readonly="1" style="font-size:12px;width:200px;" autocorrect="off" autocapitalize="off">
-										<div id="svc_hint_div" style="display:none;"><span onClick="location.href='Advanced_System_Content.asp?af=ntp_server0'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"><#General_x_SystemTime_syncNTP#></span></div>
-		  								<div id="timezone_hint_div" style="display:none;"><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"></span></div>
+										<div id="svc_hint_div" style="display:none;"><span onClick="location.href='Advanced_System_Content.asp?af=ntp_server0'" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;cursor:pointer;"><#General_x_SystemTime_syncNTP#></span></div>
+		  								<div id="timezone_hint_div" style="display:none;"><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;cursor:pointer;"></span></div>
 									</td>
 								</tr>
 							</table>

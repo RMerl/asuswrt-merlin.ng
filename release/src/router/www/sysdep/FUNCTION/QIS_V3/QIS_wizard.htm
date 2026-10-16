@@ -44,6 +44,10 @@
 					return "";
 			})();
 
+			//confirm_block.js reads these globals; QIS does not load state.js
+			const rog_support = isSupport("rog");
+			const tuf_support = isSupport("tuf");
+
 			if (isSupport("UI4")) {
 				const _nvram_basic = httpApi.nvramGet(["productid", "odmpid"]);
 				let productId = _nvram_basic.productid || "";
@@ -892,7 +896,7 @@
 					<div class="pageDesc">
 						<div><#QKSet_detect_waitdesc#></div>
 					</div>
-					<strong><span class="pageDesc" id="LED_state" style="color:#FFCC00;display:none;"></span></strong>
+					<strong><span class="pageDesc" id="LED_state" style="color:var(--wrt-badge-warning-color,#FFCC00);display:none;"></span></strong>
 					<div class="cssload-bellContainer">
 						<div class="cssload-bell">
 							<div class="cssload-circle">

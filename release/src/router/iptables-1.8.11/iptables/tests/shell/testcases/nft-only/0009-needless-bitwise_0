@@ -1,0 +1,346 @@
+#!/bin/bash -x
+
+[[ $XT_MULTI == *xtables-nft-multi ]] || { echo "skip $XT_MULTI"; exit 0; }
+set -e
+
+nft flush ruleset
+
+(
+	echo "*filter"
+	for plen in "" 32 30 24 16 8 0; do
+		addr="10.1.2.3${plen:+/}$plen"
+		echo "-A OUTPUT -d $addr"
+	done
+	echo "COMMIT"
+) | $XT_MULTI iptables-restore
+
+(
+	echo "*filter"
+	for plen in "" 128 124 120 112 88 80 64 48 16 8 0; do
+		addr="feed:c0ff:ee00:0102:0304:0506:0708:090A${plen:+/}$plen"
+		echo "-A OUTPUT -d $addr"
+	done
+	echo "COMMIT"
+) | $XT_MULTI ip6tables-restore
+
+masks="
+ff:ff:ff:ff:ff:ff
+ff:ff:ff:ff:ff:f0
+ff:ff:ff:ff:ff:00
+ff:ff:ff:ff:00:00
+ff:ff:ff:00:00:00
+ff:ff:00:00:00:00
+ff:00:00:00:00:00
+"
+(
+	echo "*filter"
+	for plen in "" 32 30 24 16 8 0; do
+		addr="10.1.2.3${plen:+/}$plen"
+		echo "-A OUTPUT -d $addr"
+	done
+	for mask in $masks; do
+		echo "-A OUTPUT --destination-mac fe:ed:00:c0:ff:ee/$mask"
+	done
+	echo "COMMIT"
+) | $XT_MULTI arptables-restore
+
+(
+	echo "*filter"
+	for mask in $masks; do
+		echo "-A OUTPUT -d fe:ed:00:c0:ff:ee/$mask"
+	done
+	echo "COMMIT"
+) | $XT_MULTI ebtables-restore
+
+EXPECT="ip filter OUTPUT 4
+  [ payload load 4b @ network header + 16 => reg 1 ]
+  [ cmp eq reg 1 0x0302010a ]
+  [ counter pkts 0 bytes 0 ]
+
+ip filter OUTPUT 5 4
+  [ payload load 4b @ network header + 16 => reg 1 ]
+  [ cmp eq reg 1 0x0302010a ]
+  [ counter pkts 0 bytes 0 ]
+
+ip filter OUTPUT 6 5
+  [ payload load 4b @ network header + 16 => reg 1 ]
+  [ bitwise reg 1 = ( reg 1 & 0xfcffffff ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x0002010a ]
+  [ counter pkts 0 bytes 0 ]
+
+ip filter OUTPUT 7 6
+  [ payload load 3b @ network header + 16 => reg 1 ]
+  [ cmp eq reg 1 0x0002010a ]
+  [ counter pkts 0 bytes 0 ]
+
+ip filter OUTPUT 8 7
+  [ payload load 2b @ network header + 16 => reg 1 ]
+  [ cmp eq reg 1 0x0000010a ]
+  [ counter pkts 0 bytes 0 ]
+
+ip filter OUTPUT 9 8
+  [ payload load 1b @ network header + 16 => reg 1 ]
+  [ cmp eq reg 1 0x0000000a ]
+  [ counter pkts 0 bytes 0 ]
+
+ip filter OUTPUT 10 9
+  [ counter pkts 0 bytes 0 ]
+
+ip6 filter OUTPUT 4
+  [ payload load 16b @ network header + 24 => reg 1 ]
+  [ cmp eq reg 1 0xffc0edfe 0x020100ee 0x06050403 0x0a090807 ]
+  [ counter pkts 0 bytes 0 ]
+
+ip6 filter OUTPUT 5 4
+  [ payload load 16b @ network header + 24 => reg 1 ]
+  [ cmp eq reg 1 0xffc0edfe 0x020100ee 0x06050403 0x0a090807 ]
+  [ counter pkts 0 bytes 0 ]
+
+ip6 filter OUTPUT 6 5
+  [ payload load 16b @ network header + 24 => reg 1 ]
+  [ bitwise reg 1 = ( reg 1 & 0xffffffff 0xffffffff 0xffffffff 0xf0ffffff ) ^ 0x00000000 0x00000000 0x00000000 0x00000000 ]
+  [ cmp eq reg 1 0xffc0edfe 0x020100ee 0x06050403 0x00090807 ]
+  [ counter pkts 0 bytes 0 ]
+
+ip6 filter OUTPUT 7 6
+  [ payload load 15b @ network header + 24 => reg 1 ]
+  [ cmp eq reg 1 0xffc0edfe 0x020100ee 0x06050403 0x00090807 ]
+  [ counter pkts 0 bytes 0 ]
+
+ip6 filter OUTPUT 8 7
+  [ payload load 14b @ network header + 24 => reg 1 ]
+  [ cmp eq reg 1 0xffc0edfe 0x020100ee 0x06050403 0x00000807 ]
+  [ counter pkts 0 bytes 0 ]
+
+ip6 filter OUTPUT 9 8
+  [ payload load 11b @ network header + 24 => reg 1 ]
+  [ cmp eq reg 1 0xffc0edfe 0x020100ee 0x00050403 ]
+  [ counter pkts 0 bytes 0 ]
+
+ip6 filter OUTPUT 10 9
+  [ payload load 10b @ network header + 24 => reg 1 ]
+  [ cmp eq reg 1 0xffc0edfe 0x020100ee 0x00000403 ]
+  [ counter pkts 0 bytes 0 ]
+
+ip6 filter OUTPUT 11 10
+  [ payload load 8b @ network header + 24 => reg 1 ]
+  [ cmp eq reg 1 0xffc0edfe 0x020100ee ]
+  [ counter pkts 0 bytes 0 ]
+
+ip6 filter OUTPUT 12 11
+  [ payload load 6b @ network header + 24 => reg 1 ]
+  [ cmp eq reg 1 0xffc0edfe 0x000000ee ]
+  [ counter pkts 0 bytes 0 ]
+
+ip6 filter OUTPUT 13 12
+  [ payload load 2b @ network header + 24 => reg 1 ]
+  [ cmp eq reg 1 0x0000edfe ]
+  [ counter pkts 0 bytes 0 ]
+
+ip6 filter OUTPUT 14 13
+  [ payload load 1b @ network header + 24 => reg 1 ]
+  [ cmp eq reg 1 0x000000fe ]
+  [ counter pkts 0 bytes 0 ]
+
+ip6 filter OUTPUT 15 14
+  [ counter pkts 0 bytes 0 ]
+
+arp filter OUTPUT 3
+  [ payload load 2b @ network header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000100 ]
+  [ payload load 1b @ network header + 4 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 1b @ network header + 5 => reg 1 ]
+  [ cmp eq reg 1 0x00000004 ]
+  [ payload load 4b @ network header + 24 => reg 1 ]
+  [ cmp eq reg 1 0x0302010a ]
+  [ counter pkts 0 bytes 0 ]
+
+arp filter OUTPUT 4 3
+  [ payload load 2b @ network header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000100 ]
+  [ payload load 1b @ network header + 4 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 1b @ network header + 5 => reg 1 ]
+  [ cmp eq reg 1 0x00000004 ]
+  [ payload load 4b @ network header + 24 => reg 1 ]
+  [ cmp eq reg 1 0x0302010a ]
+  [ counter pkts 0 bytes 0 ]
+
+arp filter OUTPUT 5 4
+  [ payload load 2b @ network header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000100 ]
+  [ payload load 1b @ network header + 4 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 1b @ network header + 5 => reg 1 ]
+  [ cmp eq reg 1 0x00000004 ]
+  [ payload load 4b @ network header + 24 => reg 1 ]
+  [ bitwise reg 1 = ( reg 1 & 0xfcffffff ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x0002010a ]
+  [ counter pkts 0 bytes 0 ]
+
+arp filter OUTPUT 6 5
+  [ payload load 2b @ network header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000100 ]
+  [ payload load 1b @ network header + 4 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 1b @ network header + 5 => reg 1 ]
+  [ cmp eq reg 1 0x00000004 ]
+  [ payload load 3b @ network header + 24 => reg 1 ]
+  [ cmp eq reg 1 0x0002010a ]
+  [ counter pkts 0 bytes 0 ]
+
+arp filter OUTPUT 7 6
+  [ payload load 2b @ network header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000100 ]
+  [ payload load 1b @ network header + 4 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 1b @ network header + 5 => reg 1 ]
+  [ cmp eq reg 1 0x00000004 ]
+  [ payload load 2b @ network header + 24 => reg 1 ]
+  [ cmp eq reg 1 0x0000010a ]
+  [ counter pkts 0 bytes 0 ]
+
+arp filter OUTPUT 8 7
+  [ payload load 2b @ network header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000100 ]
+  [ payload load 1b @ network header + 4 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 1b @ network header + 5 => reg 1 ]
+  [ cmp eq reg 1 0x00000004 ]
+  [ payload load 1b @ network header + 24 => reg 1 ]
+  [ cmp eq reg 1 0x0000000a ]
+  [ counter pkts 0 bytes 0 ]
+
+arp filter OUTPUT 9 8
+  [ payload load 2b @ network header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000100 ]
+  [ payload load 1b @ network header + 4 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 1b @ network header + 5 => reg 1 ]
+  [ cmp eq reg 1 0x00000004 ]
+  [ counter pkts 0 bytes 0 ]
+
+arp filter OUTPUT 10 9
+  [ payload load 2b @ network header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000100 ]
+  [ payload load 1b @ network header + 4 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 1b @ network header + 5 => reg 1 ]
+  [ cmp eq reg 1 0x00000004 ]
+  [ payload load 6b @ network header + 18 => reg 1 ]
+  [ cmp eq reg 1 0xc000edfe 0x0000eeff ]
+  [ counter pkts 0 bytes 0 ]
+
+arp filter OUTPUT 11 10
+  [ payload load 2b @ network header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000100 ]
+  [ payload load 1b @ network header + 4 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 1b @ network header + 5 => reg 1 ]
+  [ cmp eq reg 1 0x00000004 ]
+  [ payload load 6b @ network header + 18 => reg 1 ]
+  [ bitwise reg 1 = ( reg 1 & 0xffffffff 0x0000f0ff ) ^ 0x00000000 0x00000000 ]
+  [ cmp eq reg 1 0xc000edfe 0x0000e0ff ]
+  [ counter pkts 0 bytes 0 ]
+
+arp filter OUTPUT 12 11
+  [ payload load 2b @ network header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000100 ]
+  [ payload load 1b @ network header + 4 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 1b @ network header + 5 => reg 1 ]
+  [ cmp eq reg 1 0x00000004 ]
+  [ payload load 5b @ network header + 18 => reg 1 ]
+  [ cmp eq reg 1 0xc000edfe 0x000000ff ]
+  [ counter pkts 0 bytes 0 ]
+
+arp filter OUTPUT 13 12
+  [ payload load 2b @ network header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000100 ]
+  [ payload load 1b @ network header + 4 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 1b @ network header + 5 => reg 1 ]
+  [ cmp eq reg 1 0x00000004 ]
+  [ payload load 4b @ network header + 18 => reg 1 ]
+  [ cmp eq reg 1 0xc000edfe ]
+  [ counter pkts 0 bytes 0 ]
+
+arp filter OUTPUT 14 13
+  [ payload load 2b @ network header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000100 ]
+  [ payload load 1b @ network header + 4 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 1b @ network header + 5 => reg 1 ]
+  [ cmp eq reg 1 0x00000004 ]
+  [ payload load 3b @ network header + 18 => reg 1 ]
+  [ cmp eq reg 1 0x0000edfe ]
+  [ counter pkts 0 bytes 0 ]
+
+arp filter OUTPUT 15 14
+  [ payload load 2b @ network header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000100 ]
+  [ payload load 1b @ network header + 4 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 1b @ network header + 5 => reg 1 ]
+  [ cmp eq reg 1 0x00000004 ]
+  [ payload load 2b @ network header + 18 => reg 1 ]
+  [ cmp eq reg 1 0x0000edfe ]
+  [ counter pkts 0 bytes 0 ]
+
+arp filter OUTPUT 16 15
+  [ payload load 2b @ network header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x00000100 ]
+  [ payload load 1b @ network header + 4 => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]
+  [ payload load 1b @ network header + 5 => reg 1 ]
+  [ cmp eq reg 1 0x00000004 ]
+  [ payload load 1b @ network header + 18 => reg 1 ]
+  [ cmp eq reg 1 0x000000fe ]
+  [ counter pkts 0 bytes 0 ]
+
+bridge filter OUTPUT 4
+  [ payload load 6b @ link header + 0 => reg 1 ]
+  [ cmp eq reg 1 0xc000edfe 0x0000eeff ]
+  [ counter pkts 0 bytes 0 ]
+
+bridge filter OUTPUT 5 4
+  [ payload load 6b @ link header + 0 => reg 1 ]
+  [ bitwise reg 1 = ( reg 1 & 0xffffffff 0x0000f0ff ) ^ 0x00000000 0x00000000 ]
+  [ cmp eq reg 1 0xc000edfe 0x0000e0ff ]
+  [ counter pkts 0 bytes 0 ]
+
+bridge filter OUTPUT 6 5
+  [ payload load 5b @ link header + 0 => reg 1 ]
+  [ cmp eq reg 1 0xc000edfe 0x000000ff ]
+  [ counter pkts 0 bytes 0 ]
+
+bridge filter OUTPUT 7 6
+  [ payload load 4b @ link header + 0 => reg 1 ]
+  [ cmp eq reg 1 0xc000edfe ]
+  [ counter pkts 0 bytes 0 ]
+
+bridge filter OUTPUT 8 7
+  [ payload load 3b @ link header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x0000edfe ]
+  [ counter pkts 0 bytes 0 ]
+
+bridge filter OUTPUT 9 8
+  [ payload load 2b @ link header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x0000edfe ]
+  [ counter pkts 0 bytes 0 ]
+
+bridge filter OUTPUT 10 9
+  [ payload load 1b @ link header + 0 => reg 1 ]
+  [ cmp eq reg 1 0x000000fe ]
+  [ counter pkts 0 bytes 0 ]
+"
+
+# print nothing but:
+# - lines with bytecode (starting with '  [')
+# - empty lines (so printed diff is not a complete mess)
+filter() {
+	awk '/^table /{exit} /^(  \[|$)/{print}'
+}
+
+diff -u -Z -B <(filter <<< "$EXPECT") <(nft --debug=netlink list ruleset | filter)

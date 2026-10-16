@@ -1,0 +1,366 @@
+diff --git a/release/src/router/iptables-1.8.11/extensions/libxt_BCMMARK.c b/release/src/router/iptables-1.8.11/extensions/libxt_BCMMARK.c
+index dab849fd53..8917427713 100644
+--- a/release/src/router/iptables-1.8.11/extensions/libxt_BCMMARK.c
++++ b/release/src/router/iptables-1.8.11/extensions/libxt_BCMMARK.c
+@@ -1,6 +1,7 @@
+ #include <getopt.h>
+ #include <stdbool.h>
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <xtables.h>
+ #include <linux/netfilter/xt_BCMMARK.h>
+ 
+@@ -56,15 +57,15 @@ static const struct xt_option_entry MARK_opts[] = {
+ };
+ 
+ static const struct xt_option_entry mark_tg_opts[] = {
+-	{.name = "set-xmark", .id = O_SET_XMARK, .type = XTTYPE_MARKMASK32,
++	{.name = "set-xmark", .id = O_SET_XMARK, .type = XTTYPE_STRING,
+ 	 .excl = F_ANY},
+-	{.name = "set-mark", .id = O_SET_MARK, .type = XTTYPE_MARKMASK32,
++	{.name = "set-mark", .id = O_SET_MARK, .type = XTTYPE_STRING,
+ 	 .excl = F_ANY},
+-	{.name = "and-mark", .id = O_AND_MARK, .type = XTTYPE_UINT32,
++	{.name = "and-mark", .id = O_AND_MARK, .type = XTTYPE_STRING,
+ 	 .excl = F_ANY},
+-	{.name = "or-mark", .id = O_OR_MARK, .type = XTTYPE_UINT32,
++	{.name = "or-mark", .id = O_OR_MARK, .type = XTTYPE_STRING,
+ 	 .excl = F_ANY},
+-	{.name = "xor-mark", .id = O_XOR_MARK, .type = XTTYPE_UINT32,
++	{.name = "xor-mark", .id = O_XOR_MARK, .type = XTTYPE_STRING,
+ 	 .excl = F_ANY},
+ 	XTOPT_TABLEEND,
+ };
+@@ -73,11 +74,44 @@ static void mark_tg_help(void)
+ {
+ 	printf(
+ "BCMMARK target options:\n"
+-"  --set-xmark value[/mask]  Clear bits in mask and XOR value into nfmark\n"
+-"  --set-mark value[/mask]   Clear bits in mask and OR value into nfmark\n"
+-"  --and-mark bits           Binary AND the nfmark with bits\n"
+-"  --or-mark bits            Binary OR the nfmark with bits\n"
+-"  --xor-mark bits           Binary XOR the nfmark with bits\n");
++"  --set-xmark value[/mask]  Clear bits in mask and XOR value into nfmark (64-bit)\n"
++"  --set-mark value[/mask]   Clear bits in mask and OR value into nfmark (64-bit)\n"
++"  --and-mark bits           Binary AND the nfmark with bits (64-bit)\n"
++"  --or-mark bits            Binary OR the nfmark with bits (64-bit)\n"
++"  --xor-mark bits           Binary XOR the nfmark with bits (64-bit)\n");
++}
++
++/* Parse 64-bit value from string */
++static __u64 bcmmark_tg_parse_u64(const char *arg, const char *opt_name)
++{
++	char *end;
++	__u64 val;
++
++	val = strtoull(arg, &end, 0);
++	if (*end != '\0' && *end != '/')
++		xtables_error(PARAMETER_PROBLEM,
++			"BCMMARK: bad value for option \"--%s\", or out of range (0-18446744073709551615).",
++			opt_name);
++	return val;
++}
++
++/* Parse 64-bit mark/mask value from string "value[/mask]" */
++static void bcmmark_tg_parse_val_mask64(const char *arg, const char *opt_name,
++					__u64 *mark, __u64 *mask)
++{
++	char *end;
++
++	*mark = strtoull(arg, &end, 0);
++	*mask = ~(__u64)0;
++
++	if (*end == '/') {
++		*mask = strtoull(end + 1, &end, 0);
++	}
++
++	if (*end != '\0')
++		xtables_error(PARAMETER_PROBLEM,
++			"BCMMARK: bad value for option \"--%s\", or out of range (0-18446744073709551615).",
++			opt_name);
+ }
+ 
+ static void MARK_parse_v0(struct xt_option_call *cb)
+@@ -126,26 +160,32 @@ static void MARK_parse_v1(struct xt_option_call *cb)
+ static void mark_tg_parse(struct xt_option_call *cb)
+ {
+ 	struct xt_bcmmark_tginfo2 *info = cb->data;
++	__u64 mark, mask;
+ 
+ 	xtables_option_parse(cb);
+ 	switch (cb->entry->id) {
+ 	case O_SET_XMARK:
+-		info->mark = cb->val.mark;
+-		info->mask = cb->val.mask;
++		bcmmark_tg_parse_val_mask64(cb->arg, "set-xmark", &mark, &mask);
++		info->mark = mark;
++		info->mask = mask;
+ 		break;
+ 	case O_SET_MARK:
+-		info->mark = cb->val.mark;
+-		info->mask = cb->val.mark | cb->val.mask;
++		bcmmark_tg_parse_val_mask64(cb->arg, "set-mark", &mark, &mask);
++		info->mark = mark;
++		info->mask = mark | mask;
+ 		break;
+ 	case O_AND_MARK:
++		mark = bcmmark_tg_parse_u64(cb->arg, "and-mark");
+ 		info->mark = 0;
+-		info->mask = ~cb->val.u32;
++		info->mask = ~mark;
+ 		break;
+ 	case O_OR_MARK:
+-		info->mark = info->mask = cb->val.u32;
++		mark = bcmmark_tg_parse_u64(cb->arg, "or-mark");
++		info->mark = info->mask = mark;
+ 		break;
+ 	case O_XOR_MARK:
+-		info->mark = cb->val.u32;
++		mark = bcmmark_tg_parse_u64(cb->arg, "xor-mark");
++		info->mark = mark;
+ 		info->mask = 0;
+ 		break;
+ 	}
+@@ -208,15 +248,15 @@ static void mark_tg_print(const void *ip, const struct xt_entry_target *target,
+ 	const struct xt_bcmmark_tginfo2 *info = (const void *)target->data;
+ 
+ 	if (info->mark == 0)
+-		printf(" BCMMARK and 0x%x", (unsigned int)(uint32_t)~info->mask);
++		printf(" BCMMARK and 0x%llx", (unsigned long long)(uint64_t)~info->mask);
+ 	else if (info->mark == info->mask)
+-		printf(" BCMMARK or 0x%x", info->mark);
++		printf(" BCMMARK or 0x%llx", info->mark);
+ 	else if (info->mask == 0)
+-		printf(" BCMMARK xor 0x%x", info->mark);
+-	else if (info->mask == 0xffffffffU)
+-		printf(" BCMMARK set 0x%x", info->mark);
++		printf(" BCMMARK xor 0x%llx", info->mark);
++	else if (info->mask == 0xffffffffffffffffULL)
++		printf(" BCMMARK set 0x%llx", info->mark);
+ 	else
+-		printf(" BCMMARK xset 0x%x/0x%x", info->mark, info->mask);
++		printf(" BCMMARK xset 0x%llx/0x%llx", info->mark, info->mask);
+ }
+ 
+ static void MARK_save_v1(const void *ip, const struct xt_entry_target *target)
+@@ -242,7 +282,7 @@ static void mark_tg_save(const void *ip, const struct xt_entry_target *target)
+ {
+ 	const struct xt_bcmmark_tginfo2 *info = (const void *)target->data;
+ 
+-	printf(" --set-xmark 0x%x/0x%x", info->mark, info->mask);
++	printf(" --set-xmark 0x%llx/0x%llx", info->mark, info->mask);
+ }
+ 
+ static void mark_tg_arp_save(const void *ip, const struct xt_entry_target *target)
+@@ -250,11 +290,11 @@ static void mark_tg_arp_save(const void *ip, const struct xt_entry_target *targe
+ 	const struct xt_bcmmark_tginfo2 *info = (const void *)target->data;
+ 
+ 	if (info->mark == 0)
+-		printf(" --and-mark %x", (unsigned int)(uint32_t)~info->mask);
++		printf(" --and-mark %llx", (unsigned long long)(uint64_t)~info->mask);
+ 	else if (info->mark == info->mask)
+-		printf(" --or-mark %x", info->mark);
++		printf(" --or-mark %llx", info->mark);
+ 	else
+-		printf(" --set-mark %x", info->mark);
++		printf(" --set-mark %llx", info->mark);
+ }
+ 
+ static void mark_tg_arp_print(const void *ip,
+@@ -280,41 +320,41 @@ mark_tg_arp_parse(int c, char **argv, int invert, unsigned int *flags,
+ {
+ 	struct xt_bcmmark_tginfo2 *info =
+ 		(struct xt_bcmmark_tginfo2 *)(*target)->data;
+-	int i;
++	unsigned long long val;
+ 
+ 	switch (c) {
+ 	case MARK_OPT:
+-		if (sscanf(argv[optind-1], "%x", &i) != 1) {
++		if (sscanf(argv[optind-1], "%llx", &val) != 1) {
+ 			xtables_error(PARAMETER_PROBLEM,
+ 				"Bad mark value `%s'", optarg);
+ 			return 0;
+ 		}
+-		info->mark = i;
++		info->mark = val;
+ 		if (*flags)
+ 			xtables_error(PARAMETER_PROBLEM,
+ 				"BCMMARK: Can't specify --set-mark twice");
+ 		*flags = 1;
+ 		break;
+ 	case AND_MARK_OPT:
+-		if (sscanf(argv[optind-1], "%x", &i) != 1) {
++		if (sscanf(argv[optind-1], "%llx", &val) != 1) {
+ 			xtables_error(PARAMETER_PROBLEM,
+ 				"Bad mark value `%s'", optarg);
+ 			return 0;
+ 		}
+ 		info->mark = 0;
+-		info->mask = ~i;
++		info->mask = ~val;
+ 		if (*flags)
+ 			xtables_error(PARAMETER_PROBLEM,
+ 				"BCMMARK: Can't specify --and-mark twice");
+ 		*flags = 1;
+ 		break;
+ 	case OR_MARK_OPT:
+-		if (sscanf(argv[optind-1], "%x", &i) != 1) {
++		if (sscanf(argv[optind-1], "%llx", &val) != 1) {
+ 			xtables_error(PARAMETER_PROBLEM,
+ 				"Bad mark value `%s'", optarg);
+ 			return 0;
+ 		}
+-		info->mark = info->mask = i;
++		info->mark = info->mask = val;
+ 		if (*flags)
+ 			xtables_error(PARAMETER_PROBLEM,
+ 				"BCMMARK: Can't specify --or-mark twice");
+@@ -333,17 +373,17 @@ static int mark_tg_xlate(struct xt_xlate *xl,
+ 
+ 	xt_xlate_add(xl, "meta mark set ");
+ 
+-	if (info->mask == 0xffffffffU)
+-		xt_xlate_add(xl, "0x%x ", info->mark);
++	if (info->mask == 0xffffffffffffffffULL)
++		xt_xlate_add(xl, "0x%llx ", (unsigned long long)info->mark);
+ 	else if (info->mark == 0)
+-		xt_xlate_add(xl, "mark and 0x%x ", ~info->mask);
++		xt_xlate_add(xl, "mark and 0x%llx ", (unsigned long long)~info->mask);
+ 	else if (info->mark == info->mask)
+-		xt_xlate_add(xl, "mark or 0x%x ", info->mark);
++		xt_xlate_add(xl, "mark or 0x%llx ", (unsigned long long)info->mark);
+ 	else if (info->mask == 0)
+-		xt_xlate_add(xl, "mark xor 0x%x ", info->mark);
++		xt_xlate_add(xl, "mark xor 0x%llx ", (unsigned long long)info->mark);
+ 	else
+-		xt_xlate_add(xl, "mark and 0x%x xor 0x%x ", ~info->mask,
+-			     info->mark);
++		xt_xlate_add(xl, "mark and 0x%llx xor 0x%llx ", (unsigned long long)~info->mask,
++			     (unsigned long long)info->mark);
+ 
+ 	return 1;
+ }
+diff --git a/release/src/router/iptables-1.8.11/extensions/libxt_bcmmark.c b/release/src/router/iptables-1.8.11/extensions/libxt_bcmmark.c
+index 40767c0e09..aa211fe9c2 100644
+--- a/release/src/router/iptables-1.8.11/extensions/libxt_bcmmark.c
++++ b/release/src/router/iptables-1.8.11/extensions/libxt_bcmmark.c
+@@ -1,5 +1,6 @@
+ #include <stdbool.h>
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <xtables.h>
+ #include <linux/netfilter/xt_bcmmark.h>
+ 
+@@ -16,15 +17,32 @@ static void mark_mt_help(void)
+ {
+ 	printf(
+ "bcmmark match options:\n"
+-"[!] --bcmmark value[/mask]    Match nfmark value with optional mask\n");
++"[!] --bcmmark value[/mask]    Match nfmark value with optional mask (64-bit)\n");
+ }
+ 
+ static const struct xt_option_entry mark_mt_opts[] = {
+-	{.name = "bcmmark", .id = O_BCMMARK, .type = XTTYPE_MARKMASK32,
++	{.name = "bcmmark", .id = O_BCMMARK, .type = XTTYPE_STRING,
+ 	 .flags = XTOPT_MAND | XTOPT_INVERT},
+ 	XTOPT_TABLEEND,
+ };
+ 
++/* Parse 64-bit mark/mask value from string "value[/mask]" */
++static void bcmmark_parse_val_mask64(const char *arg, __u64 *mark, __u64 *mask)
++{
++	char *end;
++
++	*mark = strtoull(arg, &end, 0);
++	*mask = ~(__u64)0;
++
++	if (*end == '/') {
++		*mask = strtoull(end + 1, &end, 0);
++	}
++
++	if (*end != '\0')
++		xtables_error(PARAMETER_PROBLEM,
++			"bcmmark: bad integer value for option \"--bcmmark\", or out of range.");
++}
++
+ static void mark_mt_parse(struct xt_option_call *cb)
+ {
+ 	struct xt_bcmmark_mtinfo1 *info = cb->data;
+@@ -32,8 +50,7 @@ static void mark_mt_parse(struct xt_option_call *cb)
+ 	xtables_option_parse(cb);
+ 	if (cb->invert)
+ 		info->invert = true;
+-	info->mark = cb->val.mark;
+-	info->mask = cb->val.mask;
++	bcmmark_parse_val_mask64(cb->arg, &info->mark, &info->mask);
+ }
+ 
+ static void mark_parse(struct xt_option_call *cb)
+@@ -56,7 +73,11 @@ mark_mt_print(const void *ip, const struct xt_entry_match *match, int numeric)
+ 	if (info->invert)
+ 		printf(" !");
+ 
+-	xtables_print_mark_mask(info->mark, info->mask);
++	if (info->mask == ~(__u64)0)
++		printf(" 0x%llx", (unsigned long long)info->mark);
++	else
++		printf(" 0x%llx/0x%llx", (unsigned long long)info->mark,
++		       (unsigned long long)info->mask);
+ }
+ 
+ static void
+@@ -79,8 +100,11 @@ static void mark_mt_save(const void *ip, const struct xt_entry_match *match)
+ 	if (info->invert)
+ 		printf(" !");
+ 
+-	printf(" --bcmmark");
+-	xtables_print_mark_mask(info->mark, info->mask);
++	if (info->mask == ~(__u64)0)
++		printf(" --bcmmark 0x%llx", (unsigned long long)info->mark);
++	else
++		printf(" --bcmmark 0x%llx/0x%llx", (unsigned long long)info->mark,
++		       (unsigned long long)info->mask);
+ }
+ 
+ static void
+@@ -96,15 +120,15 @@ mark_save(const void *ip, const struct xt_entry_match *match)
+ }
+ 
+ static void
+-print_mark_xlate(struct xt_xlate *xl, unsigned int mark,
+-		 unsigned int mask, uint32_t op)
++print_mark_xlate(struct xt_xlate *xl, __u64 mark,
++		 __u64 mask, uint32_t op)
+ {
+-	if (mask != 0xffffffffU)
+-		xt_xlate_add(xl, " and 0x%x %s 0x%x", mask,
+-			   op == XT_OP_EQ ? "==" : "!=", mark);
++	if (mask != ~(__u64)0)
++		xt_xlate_add(xl, " and 0x%llx %s 0x%llx", (unsigned long long)mask,
++			   op == XT_OP_EQ ? "==" : "!=", (unsigned long long)mark);
+ 	else
+-		xt_xlate_add(xl, " %s0x%x",
+-			   op == XT_OP_EQ ? "" : "!= ", mark);
++		xt_xlate_add(xl, " %s0x%llx",
++			   op == XT_OP_EQ ? "" : "!= ", (unsigned long long)mark);
+ }
+ 
+ static int mark_mt_xlate(struct xt_xlate *xl,
+diff --git a/release/src/router/iptables-1.8.11/include/linux/netfilter/xt_bcmmark.h b/release/src/router/iptables-1.8.11/include/linux/netfilter/xt_bcmmark.h
+index a919206c5b..046ec9e0ec 100644
+--- a/release/src/router/iptables-1.8.11/include/linux/netfilter/xt_bcmmark.h
++++ b/release/src/router/iptables-1.8.11/include/linux/netfilter/xt_bcmmark.h
+@@ -5,11 +5,11 @@
+ #include <linux/types.h>
+ 
+ struct xt_bcmmark_tginfo2 {
+-	__u32 mark, mask;
++	__u64 mark, mask;
+ };
+ 
+ struct xt_bcmmark_mtinfo1 {
+-	__u32 mark, mask;
++	__u64 mark, mask;
+ 	__u8 invert;
+ };

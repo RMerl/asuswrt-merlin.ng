@@ -1,0 +1,11 @@
+iptables-translate -A INPUT -m addrtype --src-type LOCAL
+nft 'add rule ip filter INPUT fib saddr type local counter'
+
+iptables-translate -A INPUT -m addrtype --dst-type LOCAL
+nft 'add rule ip filter INPUT fib daddr type local counter'
+
+iptables-translate -A INPUT -m addrtype ! --dst-type ANYCAST,LOCAL
+nft 'add rule ip filter INPUT fib daddr type != { local, anycast } counter'
+
+iptables-translate -A INPUT -m addrtype --limit-iface-in --dst-type ANYCAST,LOCAL
+nft 'add rule ip filter INPUT fib daddr . iif type { local, anycast } counter'

@@ -367,31 +367,16 @@
             }
         }
 
-        var GN_with_BandwidthLimeter = false;
-        if (wl_info.band2g_support != '-1') {
-            var gn_array_2g_length = gn_array_2g.length;
-            for (var i = 0; i < gn_array_2g_length; i++) {
-                if (gn_array_2g[i][18] == "1") {	//GN with Bandwidth Limiter
-                    GN_with_BandwidthLimeter = true;
-                }
-            }
-        }
-        if (wl_info.band5g_support != '-1') {
-            var gn_array_5g_length = gn_array_5g.length;
-            for (var j = 0; j < gn_array_5g_length; j++) {
-                if (gn_array_5g[j][18] == "1") {	//GN with Bandwidth Limiter
-                    GN_with_BandwidthLimeter = true;
-                }
-            }
-        }
-        if (wl_info.band5g_2_support != '-1' || wl_info.band6g_support != '-1') {
-            var gn_array_5g_2_length = gn_array_5g_2.length;
-            for (var k = 0; k < gn_array_5g_2_length; k++) {
-                if (gn_array_5g_2[k][18] == "1") {	//GN with Bandwidth Limiter
-                    GN_with_BandwidthLimeter = true;
-                }
-            }
-        }
+        var GN_with_BandwidthLimeter = [
+            { supported: wl_info.band2g_support,                                arr: gn_array_2g   },
+            { supported: wl_info.band5g_support,                                arr: gn_array_5g   },
+            { supported: wl_info.band5g_2_support || wl_info.band6g_support,    arr: gn_array_5g_2 },
+            { supported: wl_info.band6g_2_support || wl_info.band60g_support,   arr: gn_array_60g  },
+        ].some(function(band) {
+            return band.supported && band.arr.some(function(gn) {
+                return gn[0] == "1" && gn[18] == "1";	//GN with Bandwidth Limiter
+            });
+        });
         var GN_with_Amazon_WSS_enabled = (amazon_wss_support && ((httpApi.amazon_wss.getStatue(0, 2) == "1") ? true : false));
 
         if (pm_support) {
@@ -610,7 +595,7 @@
                 },
                 function () {
                     document.form.qos_enable.value = "0";
-                    document.form.ark_qoe_enable = "0";
+                    document.form.ark_qoe_enable.value = "0";
                     show_up_down(0);
                     document.getElementById('qos_type_tr').style.display = "none";
                     document.getElementById('bandwidth_setting_tr').style.display = "none";
@@ -989,7 +974,11 @@
                     else
                         document.form.action_script.value = "restart_routerboost;restart_wireless;restart_qos;restart_firewall;";
                 } else {
-                    document.form.action_script.value = "restart_qos;restart_firewall;";
+                    if (isSupport("gtbooster")) {
+                        document.form.action_script.value = "restart_ark;restart_qos;restart_firewall;";
+                    } else {
+                        document.form.action_script.value = "restart_qos;restart_firewall;";
+                    }
                 }
                 document.form.action_wait.value = "15";
             } else if (document.form.qos_enable.value == "1" && document.form.qos_type.value == "1" && (ctf_fa_mode != "2" || qca_support)) {
@@ -1811,7 +1800,7 @@
             code += '</tr>';
 
             if (qos_bw_rulelist == "") {
-                code += '<tr><td style="color:#FFCC00;" colspan="10"><#IPConnection_VSList_Norule#></td></tr>';
+                code += '<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="10"><#IPConnection_VSList_Norule#></td></tr>';
             } else {
                 for (k = 0; k < qos_bw_rulelist_row.length; k++) {
                     var qos_bw_rulelist_col = qos_bw_rulelist_row[k].split('>');
@@ -2232,7 +2221,7 @@
                                                              style="width:94px; float:left; cursor:pointer;"
                                                              id="radio_qos_enable"></div>
                                                         <div id="qos_enable_hint"
-                                                             style="color:#FC0;margin:5px 0px 0px 100px;display:none">
+                                                             style="color:var(--wrt-badge-warning-color,#FFCC00);margin:5px 0px 0px 100px;display:none">
                                                             <#QzQoS_note#>
                                                         </div>
                                                     </td>

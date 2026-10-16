@@ -20,6 +20,7 @@
 #define ARK_MOSQUITTO           "mosquitto"
 #define ARK_GHS                 "ghs"
 #define ARK_GBUSD_SH            "gbusd.sh"
+#define ARK_GBUS_SH             "gbus.sh"
 #define ARK_GBUSD               "gbusd"
 #define ARK_GLOGER_SH           "gloger.sh"
 #define ARK_GLOGER              "gloger"
@@ -32,15 +33,15 @@
 
 /* features */
 #define ARK_BLOCK_ALL           nvram_get_int("ark_feature_block")  // will disable below features
-#define ARK_QOE                 nvram_get_int("ark_qoe_enable")
-#define ARK_IAM                 nvram_get_int("ark_iam_enable")
-#define ARK_LIMITER             nvram_get_int("ark_limiter_enable")
-#define ARK_LOG                 nvram_get_int("ark_log_enable")
-#define ARK_HYQOS               nvram_get_int("ark_hyqos_enable")
-#define ARK_MALS                nvram_get_int("ark_mals_enable")
-#define ARK_ADBLOCK             nvram_get_int("ark_adblock_enable")
-#define ARK_TRACKER             nvram_get_int("ark_tracker_enable")
-#define ARK_IDS                 nvram_get_int("ark_ids_enable")
+#define ARK_QOE                 ark_feature_enabled(ARK_S_QOE)
+#define ARK_IAM                 ark_feature_enabled(ARK_S_IAM)
+#define ARK_LIMITER             ark_feature_enabled(ARK_S_LIMITER)
+#define ARK_LOG                 ark_feature_enabled(ARK_S_LOG)
+#define ARK_HYQOS               ark_feature_enabled(ARK_S_HYQOS)
+#define ARK_MALS                ark_feature_enabled(ARK_S_MALS)
+#define ARK_ADBLOCK             ark_feature_enabled(ARK_S_ADBLOCK)
+#define ARK_TRACKER             ark_feature_enabled(ARK_S_TRACKER)
+#define ARK_IDS                 ark_feature_enabled(ARK_S_IDS)
 //#define ARK_GDM                 nvram_get_int("ark_gdm_enable") // GDM : add support, no need nvram to control
 //#define ARK_GST                 nvram_get_int("ark_gst_enable") // GST : add support, no need nvram to control
 
@@ -68,7 +69,8 @@ enum {
 	ARK_MON_TYPE_NONE         = 0,
 	ARK_MON_TYPE_MALS         = 1,
 	ARK_MON_TYPE_ADBLOCK      = 2,
-	ARK_MON_TYPE_TRACKER      = 3
+	ARK_MON_TYPE_TRACKER      = 3,
+	ARK_MON_TYPE_IDS          = 4
 };
 
 typedef struct {
@@ -80,8 +82,8 @@ static const FeatureMap feature_table[] = {
 	{40, ARK_MON_TYPE_MALS},
 	{41, ARK_MON_TYPE_MALS},
 	{42, ARK_MON_TYPE_MALS},
-	{43, ARK_MON_TYPE_MALS},
-	{44, ARK_MON_TYPE_MALS},
+	{43, ARK_MON_TYPE_IDS},
+	{44, ARK_MON_TYPE_IDS},
 	{45, ARK_MON_TYPE_MALS},
 	{46, ARK_MON_TYPE_MALS},
 	{47, ARK_MON_TYPE_MALS},
@@ -203,15 +205,24 @@ extern ArkFeature limiterFeature;
 #define IAM_MAX_APP_LIST        4                                // eq. nvram "ark_iam_app_list1", "ark_iam_app_list2", "ark_iam_app_list3" ...
 #define IAM_GLOBAL_CT_INDEX     3                                // global category id will be stored into category[3]
 
-/* domain size in profile struct */
-#define MAX_DOMAIN_SIZE         64 * 128
-
 /* White List parameters */
 #define ARK_WLIST               ARK_JFFS_SYS"/ARKWBL"
 #define ARK_WLIST_DIR           ARK_WLIST"/ark_wlist_url"
 #define ARK_WLIST_TMP           ARK_WLIST"/ark_wlist_url.tmp"
+#define ARK_WLIST_LOCK_TAG      "ark_wlist"
 #define MAX_DOMAIN_LEN          128
 #define MAX_DOMAINS             64
+
+/*
+ * domain size in profile struct
+ *
+ * Worst case is MAX_DOMAINS domains of up to (MAX_DOMAIN_LEN - 1) chars
+ * each, joined by single spaces plus a NUL terminator: that alone already
+ * fills MAX_DOMAINS * MAX_DOMAIN_LEN exactly, with zero slack. Add one
+ * MAX_DOMAINS worth of headroom so a fully-packed whitelist never sits
+ * flush against the edge of the buffer.
+ */
+#define MAX_DOMAIN_SIZE         (MAX_DOMAINS * MAX_DOMAIN_LEN + MAX_DOMAINS)
 
 /* White List action types */
 #define ARK_WLIST_ACTION_ADD    "add"
@@ -270,7 +281,8 @@ typedef struct {
 enum {
 	FLAG_MALS = 1 << 0,
 	FLAG_ADBLOCK = 1 << 1,
-	FLAG_TRACKER = 1 << 2
+	FLAG_TRACKER = 1 << 2,
+	FLAG_IDS = 1 << 3
 };
 
 // Feature name mapping
@@ -336,13 +348,21 @@ struct arkSupport_t {
 };
 
 /* ark_utils.c */
+extern int ark_feature_enabled(int feature_idx);
+extern const char *ark_feature_name_by_idx(int feature_idx);
+extern const char *ark_feature_enable_nvram(int feature_idx);
 extern int check_ark_setting();
 extern int ark_atoi_checked_range(const char *s, int *out, int min, int max);
 extern int ark_atoi_checked_value(const char *s, int *out);
 extern int ARKisSupport(const char *name);
+extern int ark_exec(char *const cmd[], const char *redirect, int timeout, const char *tag);
+extern FILE *ark_fopen(const char *path, const char *mode, const char *tag);
+extern int ark_disable_hw_accel();
+extern const char *ark_feature_nat_notice(void);
 
 /* ark.c */
-extern void stop_ark_engine();
+extern int ark_white_list(char *action, char *domain, char *buffer, size_t buf_len);
+extern void stop_ark_engine(int force);
 extern void start_ark_engine();
 extern int ark_check_wan_changed();
 extern void wan_start_ark_engine(int wan_unit);
@@ -351,7 +371,9 @@ extern void exe_ark_limiter_service();
 extern void exe_ark_iam_service();
 extern void check_ark_alive_service();
 extern void ark_sig_update_flow();
+extern void start_ark_engine_with_mute(int mute);
 extern int IS_ARK_IAM();
+extern int ark_rc_service_dispatch(const char *script, int action);
 
 /* ark_db.c */
 extern void exe_ark_protection();
@@ -361,8 +383,9 @@ extern void exe_ark_history();
 extern void ark_cgi_mon_to_json(char *type, char *start, char *end, FILE *stream);
 extern void ark_cgi_mon_del_db(char *type, FILE *stream);
 extern void ark_cgi_log_to_json(char *start, char *end, char *mac, char *page, char *num, char *sortBy, char *sortOrder, FILE *stream);
+extern void ark_cgi_log_count(char *start, char *end, char *mac, FILE *stream);
 
 /* ark_migrate.c */
-extern void exe_ark_protection();
+extern void exe_ark_migrate_run(void);
 
 #endif /* _ark_common_h_ */

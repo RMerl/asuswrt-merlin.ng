@@ -403,6 +403,9 @@ void mtwan_append_s46_resolvconf_ipv6(int wan_unit)
 	case WAN_OCNVC:
 		strlcpy(wan_dns_buf, nvram_safe_get(ipv6_nvname_by_unit("ipv6_get_dns", wan_unit)), sizeof(wan_dns_buf));
 		foreach (wan_dns, wan_dns_buf, next_dns) {
+			if (!is_valid_ip6(wan_dns)) {
+				continue;
+			}
 			if (doSystem("cat /tmp/resolv.conf | grep %s", wan_dns)) {
 				fp = fopen("/tmp/resolv.conf", "a");
 				if(fp) {

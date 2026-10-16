@@ -275,6 +275,13 @@ start_emf(char *lan_ifname)
 		FREE_MTLAN((void *)pmtl);
 	}
 #endif
+#if defined(IPVLAN3)
+	if (nvram_match("switch_wantag", "movistar")) {
+		eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "1",  "-m", "0");
+		eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "2",  "-m", "0");
+		return;
+	}
+#endif
 	if (nvram_match("switch_wantag", "hinet_mesh")) {
 		eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "1",  "-m", "1");
 		eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "2",  "-m", "1");
@@ -3391,27 +3398,40 @@ void hotplug_net(void)
 #endif
 #endif
 
-#if defined(RTCONFIG_AMAS_WGN) || defined(RTCONFIG_MULTILAN_CFG)
-		if (is_wds_vlan_if == 0) {
-#endif	
 		if (!strncmp(lan_ifname, "br", 2)) {
-			eval("brctl", "addif", lan_ifname, interface);
+#if defined(RTCONFIG_AMAS_WGN) || defined(RTCONFIG_MULTILAN_CFG)
+			if (is_wds_vlan_if == 0)
+#endif
+				eval("brctl", "addif", lan_ifname, interface);
 
 #ifdef CONFIG_BCMWL5
+			/*
+			 * is_wds_vlan_if==1 covers two different cases: a raw wds
+			 * interface steered away from the default bridge because
+			 * it belongs to a guest/SDN BSS (apg_is_wds_vlan_if()), or
+			 * an already-tagged wdsX.Y(.Z).<vid> vconfig sub-interface
+			 * (never a real wireless netdev). The driver notification
+			 * below is only meaningful for the former -- re-check with
+			 * apg_is_wds_raw_if() so a tagged sub-interface still skips
+			 * it, same as before.
+			 */
+#if defined(RTCONFIG_MULTILAN_CFG)
+			if (is_wds_vlan_if == 0 || apg_is_wds_raw_if(interface)) {
+#endif
 #ifdef HND_ROUTER
-			wait_to_forward_state(interface);
+				wait_to_forward_state(interface);
 #endif
 
-			/* Inform driver to send up new WDS link event */
-			if (wl_iovar_setint(interface, "wds_enable", 1)) {
-				_dprintf("%s set wds_enable failed\n", interface);
-				return;
+				/* Inform driver to send up new WDS link event */
+				if (wl_iovar_setint(interface, "wds_enable", 1)) {
+					_dprintf("%s set wds_enable failed\n", interface);
+					return;
+				}
+#if defined(RTCONFIG_MULTILAN_CFG)
 			}
 #endif
-		}
-#if defined(RTCONFIG_AMAS_WGN) || defined(RTCONFIG_MULTILAN_CFG)
-		}
 #endif
+		}
 #endif
 
 #if 0

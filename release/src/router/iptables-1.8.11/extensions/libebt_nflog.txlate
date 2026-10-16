@@ -1,0 +1,11 @@
+ebtables-translate -A INPUT --nflog
+nft 'add rule bridge filter INPUT log group 1 counter'
+
+ebtables-translate -A INPUT --nflog-group 42
+nft 'add rule bridge filter INPUT log group 42 counter'
+
+ebtables-translate -A INPUT --nflog-range 42
+nft 'add rule bridge filter INPUT log group 1 snaplen 42 counter'
+
+ebtables-translate -A INPUT --nflog-threshold 100 --nflog-prefix foo
+nft 'add rule bridge filter INPUT log prefix "foo" group 1 queue-threshold 100 counter'

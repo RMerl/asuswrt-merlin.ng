@@ -323,7 +323,7 @@ bound(int renew)
 {
 	char *wan_ifname = safe_getenv("interface");
 	char *value;
-	char tmp[100], prefix[sizeof("wanXXXXXXXXXX_")];
+	char tmp[256], prefix[sizeof("wanXXXXXXXXXX_")];
 	char wanprefix[sizeof("wanXXXXXXXXXX_")];
 	int unit, ifunit;
 	int changed = 0;
@@ -1246,7 +1246,7 @@ bound_lan(void)
 	char *lan_ifname = safe_getenv("interface");
 	char *value;
 #if defined(RTCONFIG_TR069) && defined(RTCONFIG_TR181)
-	char tmp[100];
+	char tmp[256];
 	int size;
 #endif
 	int lanchange = 0;
@@ -2080,10 +2080,6 @@ skip:
 	case WAN_V6OPTION:
 		draft = 1;
 	case WAN_DSLITE:
-		/* Workaround for system boot case. */
-		if (!get_s46_ra(wan_unit))
-			S46_DBG("[Warning] Unable to obtain RA.\n");
-
 		if (get_ipv6_service_by_unit(wan_unit) == IPV6_NATIVE_DHCP) {
 			if (ra_changed)
 				eval("ip", "-6", "addr", "flush", "scope", "global", "dev", lan_ifname);

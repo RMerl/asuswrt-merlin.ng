@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Test recent performance improvements in iptables-save due to reduced
+# overhead.
+
+strace --version >/dev/null || { echo "skip for missing strace"; exit 0; }
+
+RULESET=$(
+	echo "*filter"
+	for ((i = 0; i < 100; i++)); do
+		echo ":mychain$i -"
+		echo "-A FORWARD -p tcp --dport 22 -j mychain$i"
+	done
+	echo "COMMIT"
+)
+
+RESTORE_STRACE=$(strace $XT_MULTI iptables-restore <<< "$RULESET" 2>&1 >/dev/null)
+SAVE_STRACE=$(strace $XT_MULTI iptables-save 2>&1 >/dev/null)
+
+do_grep() { # (name, threshold, pattern)
+	local cnt=$(grep -c "$3")
+	[[ $cnt -le $2 ]] && return 0
+	echo "ERROR: Too many $3 lookups for $1: $cnt > $2"
+	exit 1
+}
+
+# iptables prefers hard-coded protocol names instead of looking them up first
+
+do_grep "$XT_MULTI iptables-restore" 0 /etc/protocols <<< "$RESTORE_STRACE"
+do_grep "$XT_MULTI iptables-save" 0 /etc/protocols <<< "$SAVE_STRACE"
+
+# iptables-nft-save pointlessly checked whether chain jumps are targets
+
+do_grep "$XT_MULTI iptables-restore" 10 libxt_ <<< "$RESTORE_STRACE"
+do_grep "$XT_MULTI iptables-save" 10 libxt_ <<< "$SAVE_STRACE"
+
+exit 0

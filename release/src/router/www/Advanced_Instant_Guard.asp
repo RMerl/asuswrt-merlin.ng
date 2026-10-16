@@ -34,8 +34,8 @@
 	-moz-border-radius: 5px;
 	border-radius: 5px;
 	z-index: 200;
-	background-color: #2B373B;
-	box-shadow: 3px 3px 10px #000;
+	background-color: var(--surface-panel, #2B373B);
+	box-shadow: var(--wrt-card-shadow, 3px 3px 10px #000);
 	display: none;
 	overflow: auto;
 }

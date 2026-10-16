@@ -99,7 +99,7 @@ function show_wl_maclist_x(){
 	var clientListEventData = [];
 	code += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table"  id="wl_maclist_x_table">';
 	if(Object.keys(manually_maclist_list_array).length == 0)
-		code += '<tr><td style="color:#FFCC00;"><#IPConnection_VSList_Norule#></td></tr>';
+		code += '<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		//user icon
 		var userIconBase64 = "NoIcon";
@@ -342,7 +342,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	if(flag == 1){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color="#FFCC00";
+		childsel.style.color="var(--wrt-badge-warning-color,#FFCC00)";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#LANHostConfig_ManualDHCPMacaddr_itemdesc#>";		
 		document.getElementById("check_mac").style.display = "";
@@ -350,7 +350,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	}else if(flag ==2){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color="#FFCC00";
+		childsel.style.color="var(--wrt-badge-warning-color,#FFCC00)";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#IPConnection_x_illegal_mac#>";
 		document.getElementById("check_mac").style.display = "";
@@ -491,7 +491,7 @@ function change_wl_macmode(){
 					<div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 					<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 					<div class="formfontdesc"><#DeviceSecurity11a_display1_sectiondesc#></div>
-					<div id="lantiq_ready" style="display:none;color:#FC0;margin-left:5px;font-size:13px;">Wireless is setting...</div>
+					<div id="lantiq_ready" style="display:none;color:var(--wrt-badge-warning-color,#FFCC00);margin-left:5px;font-size:13px;">Wireless is setting...</div>
 					<table id="MainTable1" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 						<thead>
 						  <tr>
@@ -510,7 +510,7 @@ function change_wl_macmode(){
 					  </tr>
 
 						<tr id="repeaterModeHint" style="display:none;">
-							<td colspan="2" style="color:#FFCC00;height:30px;" align="center"><#page_not_support_mode_hint#></td>
+							<td colspan="2" style="color:var(--wrt-badge-warning-color,#FFCC00);height:30px;" align="center"><#page_not_support_mode_hint#></td>
 						</tr>
 						<tr>
 							<th width="30%"><#enable_macmode#></th>

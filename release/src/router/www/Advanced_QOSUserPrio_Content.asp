@@ -275,7 +275,7 @@ function switchPage(page){
 					<tr>
 						<td style="font-style: italic;font-size: 14px;">
 		  				<div class="formfontdesc"><#UserQoS_desc#></div>
-							<div class="formfontdesc" id="is_qos_enable_desc" style="color:#FFCC00;"><#UserQoS_desc_zero#></div>
+							<div class="formfontdesc" id="is_qos_enable_desc" style="color:var(--wrt-badge-warning-color,#FFCC00);"><#UserQoS_desc_zero#></div>
 		  			</td>
 					</tr>
 
@@ -298,10 +298,10 @@ function switchPage(page){
 													<td colspan="4" ><#upload_bandwidth#></td>
 												</tr>
 												<tr style="height: 55px;">
-													<th style="width:22%;line-height:15px;color:#FFFFFF;"><#upload_prio#></th>
-													<th style="width:25%;line-height:15px;color:#FFFFFF;"><a href="javascript:void(0);" onClick="openHint(20,3);"><div class="table_text"><#min_bound#></div></a></th>
-													<th style="width:26%;line-height:15px;color:#FFFFFF;"><a href="javascript:void(0);" onClick="openHint(20,4);"><div class="table_text"><#max_bound#></div></a></th>
-													<th style="width:27%;line-height:15px;color:#FFFFFF;"><#current_settings#></th>
+													<th style="width:22%;line-height:15px;color:var(--wrt-text-color,#FFFFFF);"><#upload_prio#></th>
+													<th style="width:25%;line-height:15px;color:var(--wrt-text-color,#FFFFFF);"><a href="javascript:void(0);" onClick="openHint(20,3);"><div class="table_text"><#min_bound#></div></a></th>
+													<th style="width:26%;line-height:15px;color:var(--wrt-text-color,#FFFFFF);"><a href="javascript:void(0);" onClick="openHint(20,4);"><div class="table_text"><#max_bound#></div></a></th>
+													<th style="width:27%;line-height:15px;color:var(--wrt-text-color,#FFFFFF);"><#current_settings#></th>
 												</tr>
 												</thead>												
 												<tr>
@@ -384,9 +384,9 @@ function switchPage(page){
 													<td colspan="3"><#download_bandwidth#></td>
 												</tr>
 												<tr style="height: 55px;">
-													<th style="width:31%;line-height:15px;color:#FFFFFF;"><#download_prio#></th>
-													<th style="width:37%;line-height:15px;color:#FFFFFF;"><a href="javascript:void(0);" onClick="openHint(20,5);"><div class="table_text"><#max_bound#></div></a></th>
-													<th style="width:32%;line-height:15px;color:#FFFFFF;"><#current_settings#></th>
+													<th style="width:31%;line-height:15px;color:var(--wrt-text-color,#FFFFFF);"><#download_prio#></th>
+													<th style="width:37%;line-height:15px;color:var(--wrt-text-color,#FFFFFF);"><a href="javascript:void(0);" onClick="openHint(20,5);"><div class="table_text"><#max_bound#></div></a></th>
+													<th style="width:32%;line-height:15px;color:var(--wrt-text-color,#FFFFFF);"><#current_settings#></th>
 												</tr>
 												</thead>
 												<tr>

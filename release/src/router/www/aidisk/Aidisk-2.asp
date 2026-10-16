@@ -220,7 +220,7 @@ function checkPasswdValid(obj){
             		</p>
 						</div>
 
-						<div id="share0_Hint" style="margin-top:10px;color:#FC0;margin-left:45px;">
+						<div id="share0_Hint" style="margin-top:10px;color:var(--wrt-badge-warning-color,#FFCC00);margin-left:45px;">
 							<span><#AiDisk_shareHint#></span>
 						</div>
 

@@ -1,0 +1,63 @@
+#!/bin/bash
+
+set -e
+set -x
+
+# there is no legacy backend to test
+[[ $XT_MULTI == *xtables-nft-multi ]] || { echo "skip $XT_MULTI"; exit 0; }
+
+$XT_MULTI arptables -N foo
+
+# check verbose output matches expectations
+
+RULE1='-i eth23 -j ACCEPT'
+VOUT1='-j ACCEPT -i eth23 -o *'
+
+RULE2='-i eth23'
+VOUT2='-i eth23 -o *'
+
+RULE3='-i eth23 -j MARK --set-mark 42'
+VOUT3='-j MARK -i eth23 -o * --set-mark 42'
+
+RULE4='-o eth23 -j CLASSIFY --set-class 23:42'
+VOUT4='-j CLASSIFY -i * -o eth23 --set-class 23:42'
+
+RULE5='-o eth23 -j foo'
+VOUT5='-j foo -i * -o eth23'
+
+RULE6='-o eth23 -j mangle --mangle-ip-s 10.0.0.1'
+VOUT6='-j mangle -i * -o eth23 --mangle-ip-s 10.0.0.1'
+
+diff -u -Z <(echo -e "$VOUT1") <($XT_MULTI arptables -v -A INPUT $RULE1)
+diff -u -Z <(echo -e "$VOUT2") <($XT_MULTI arptables -v -A INPUT $RULE2)
+diff -u -Z <(echo -e "$VOUT3") <($XT_MULTI arptables -v -A INPUT $RULE3)
+diff -u -Z <(echo -e "$VOUT4") <($XT_MULTI arptables -v -A OUTPUT $RULE4)
+diff -u -Z <(echo -e "$VOUT5") <($XT_MULTI arptables -v -A OUTPUT $RULE5)
+diff -u -Z <(echo -e "$VOUT6") <($XT_MULTI arptables -v -A foo $RULE6)
+
+EXPECT='Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+-j ACCEPT -i eth23 -o * , pcnt=0 -- bcnt=0
+-i eth23 -o * , pcnt=0 -- bcnt=0
+-j MARK -i eth23 -o * --set-mark 42 , pcnt=0 -- bcnt=0
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+-j CLASSIFY -i * -o eth23 --set-class 23:42 , pcnt=0 -- bcnt=0
+-j foo -i * -o eth23 , pcnt=0 -- bcnt=0
+
+Chain foo (1 references)
+-j mangle -i * -o eth23 --mangle-ip-s 10.0.0.1 , pcnt=0 -- bcnt=0'
+
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI arptables -v -n -L)
+
+EXPECT='*filter
+:INPUT ACCEPT
+:OUTPUT ACCEPT
+:foo -
+-A INPUT -j ACCEPT -i eth23
+-A INPUT -i eth23
+-A INPUT -j MARK -i eth23 --set-mark 42
+-A OUTPUT -j CLASSIFY -o eth23 --set-class 23:42
+-A OUTPUT -j foo -o eth23
+-A foo -j mangle -o eth23 --mangle-ip-s 10.0.0.1'
+
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI arptables-save | grep -v '^#')

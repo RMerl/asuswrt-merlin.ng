@@ -1,42 +1,44 @@
 include ../common.mak
 
-#OOKLA_VER = 36521# updated in 2019.12.31
-#OOKLA_VER = 371237# updated in 2021.10.19
-#OOKLA_VER = 38000# updated in 2022.08.16
-OOKLA_VER = 38056# from GPL 388_24353
+OOKLA_VER = 38000# updated in 2022.08.16
 OOKLA_PATH = OOKLA-$(OOKLA_VER)
+OOKLA_VER2 = 39027# updated in 2026.6.17
+OOKLA_PATH2 = OOKLA-$(OOKLA_VER2)
+
+.PHONY: prebuild
 
 prebuild:
-	-@mkdir prebuild
+	@[ -e prebuild ] || mkdir prebuild
 # QCA
-ifeq ($(or $(RTCONFIG_SOC_IPQ8064),$(RTCONFIG_SOC_IPQ8074),$(RTCONFIG_SOC_IPQ40XX)),y)
-	-cp -f $(OOKLA_PATH)/ookla-IPQ807-401X  prebuild/ookla # IPQ80XX / IPQ40XX
-else ifeq ($(RTCONFIG_SOC_IPQ60XX),y)
-ifeq ($(RTCONFIG_QCA_PLC2),y)
-	-cp -f $(OOKLA_PATH)/ookla-IPQ60XX      prebuild/ookla # IPQ60XX
-endif
-else ifeq ($(RTCONFIG_QCN550X),y)
+ifeq ($(RTCONFIG_QCA),y)
+ifeq ($(RTCONFIG_QCN550X),y)
 	-cp -f $(OOKLA_PATH)/ookla-QCN5502      prebuild/ookla # QCN550X (3.7.12.35)
+else ifeq ($(RTCONFIG_SOC_IPQ53XX),y)
+ifeq ($(MUSL64),y)
+	-cp -f $(OOKLA_PATH)/ookla-IPQ53XX      prebuild/ookla
 else
-	# nothing
-endif
+	-cp -f $(OOKLA_PATH)/ookla-IPQ53XX-32   prebuild/ookla
+endif # MSUL64
+endif # RTCONFIG_QCN550X
+endif # RTCONFIG_QCA
 
 # BRCM
 ifeq ($(RTCONFIG_BCMARM),y)
-ifeq ($(RTCONFIG_HND_ROUTER),y)
-	-cp -f $(OOKLA_PATH)/ookla-AXHND-A7 prebuild/ookla     # AXHND-A7
+ifneq (,$(and $(RTCONFIG_HND_ROUTER_BE_4916),$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20260402 WIFI8_SDK_20260601)))
+	-cp -f $(OOKLA_PATH2)/ookla-BCM4916-WIFI8 prebuild/ookla # BCM4916 WIFI8 SDK
 else
-	-cp -f $(OOKLA_PATH)/ookla-BCM7.x-6.x prebuild/ookla   # BCM6 / BCM7
-endif # RTCONFIG_HND_ROUTER
+	-cp -f $(OOKLA_PATH)/ookla-AXHND-A7 prebuild/ookla     # AXHND-A7
+endif # WIFI8
 endif # RTCONFIG_BCMARM
 
 # MTK
 ifeq ($(RTCONFIG_RALINK),y)
-	-cp -f $(OOKLA_PATH)/ookla-MTK7621A prebuild/ookla     # MTK7621A
-endif # RTCONFIG_RALINK
-ifeq ($(RTCONFIG_MT798X),y)
+ifeq ($(or $(RTCONFIG_MT798X),$(RTCONFIG_MT799X)),y)
 	-cp -f $(OOKLA_PATH)/ookla-MT7986A  prebuild/ookla     # MT7986A
-endif # RTCONFIG_MT798X
+else
+	-cp -f $(OOKLA_PATH)/ookla-MTK7621A prebuild/ookla     # MTK7621A
+endif # RTCONFIG_MT798X / RTCONFIG_MT799X
+endif # RTCONFIG_RALINK
 
 all: prebuild
 

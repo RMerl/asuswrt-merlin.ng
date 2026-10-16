@@ -1155,7 +1155,7 @@ function clean_macerr(){
 								</td>
 								<td id="ended_date_td">
 							  		<span id="ended_date"></span><span id="days_title" style="margin-left:10px;">(Days Left: <span id="days_left"></span>)</span> <!--untranslated-->
-							  		<div id="trail_desc" style="color:#FFCC00; margin-top: 10px;"><#GB_ended_date_desc#></div>
+							  		<div id="trail_desc" style="color:var(--wrt-badge-warning-color,#FFCC00); margin-top: 10px;"><#GB_ended_date_desc#></div>
 								</td>
 							</tr>
 						</table>
@@ -1206,11 +1206,11 @@ function clean_macerr(){
 						</table>
 						<table cellspacing="0"><tr><td><div id="wtfast_rulelist_Block"></div></td></tr></table>
 						<ul>
-							<li style="color: #FFCC00;"><div class="comment_div"><#GB_management_note1#></div></li>
-							<li style="color: #FFCC00;"><div class="comment_div"><#GB_management_note2#></div></li>
-							<li style="color: #FFCC00;"><div class="comment_div"><#GB_management_note3#></div></li>
-							<li style="color: #FFCC00;"><div class="comment_div"><#GB_management_note4#></div></li>
-							<li style="color: #FFCC00;"><div class="comment_div"><#GB_management_note5#></div></li>
+							<li style="color: var(--wrt-badge-warning-color,#FFCC00);"><div class="comment_div"><#GB_management_note1#></div></li>
+							<li style="color: var(--wrt-badge-warning-color,#FFCC00);"><div class="comment_div"><#GB_management_note2#></div></li>
+							<li style="color: var(--wrt-badge-warning-color,#FFCC00);"><div class="comment_div"><#GB_management_note3#></div></li>
+							<li style="color: var(--wrt-badge-warning-color,#FFCC00);"><div class="comment_div"><#GB_management_note4#></div></li>
+							<li style="color: var(--wrt-badge-warning-color,#FFCC00);"><div class="comment_div"><#GB_management_note5#></div></li>
 						</ul>
 						<div id="applyBtn" align="center" style="margin-top:20px; display:none;">
 							<input class="wtfast_button" onclick="applyRule()" type="button" value="<#CTL_apply#>"/>

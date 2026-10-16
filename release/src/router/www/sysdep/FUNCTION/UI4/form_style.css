@@ -206,7 +206,7 @@ html::-webkit-scrollbar-track{
 	position: relative;
 }
 .FormTable_table td span{
-	color:#FFCC00;
+	color: var(--wrt-badge-warning-color, #FFCC00);
 }
 .FormTable_table thead td{
 	font-size:12px;
@@ -503,7 +503,7 @@ th a {
 	color:#262626;
 }
 th a:link, th a:visited {
-	color: #262626;	
+	color: #262626;
 	/*display: block;	*/
 	/*background: url(../images/button-next.gif);*/
 	}

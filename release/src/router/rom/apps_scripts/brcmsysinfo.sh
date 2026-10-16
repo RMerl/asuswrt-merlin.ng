@@ -146,9 +146,11 @@ echo "######ifconfig -a######"
 ifconfig -a
 
 #virtual interface info
-echo
-echo "###### dump all vlanctl rules ######"
-vlanctl --rule-dump-all
+if [ -e /bin/vlanctl ]; then
+   echo
+   echo "###### dump all vlanctl rules ######"
+   vlanctl --rule-dump-all
+fi
 
 #TC rules
 echo
@@ -166,6 +168,25 @@ for i in $(ip -br a | awk '{print$1}'); do echo "### $i qdisc ###"; tc qdisc sho
 echo
 echo "######brctl show######"
 brctl show
+dump_br_showmacs()
+{
+    i=0
+
+    while [ "$i" -le 255 ]
+    do
+        br="br$i"
+        path="/sys/devices/virtual/net/$br"
+
+        if [ -d "$path" ]; then
+            echo
+            echo "###### brctl showmacs $br ######"
+            brctl showmacs "$br"
+        fi
+
+        i=$((i + 1))
+    done
+}
+dump_br_showmacs
 
 echo
 echo "######route -n######"
@@ -174,6 +195,72 @@ route -n
 echo
 echo "######route -A inet6######"
 route -A inet6
+
+parse_tcp_udp()
+{
+    echo
+    echo "###### RAW: /proc/net/tcp ######"
+    if [ -e /proc/net/tcp ]; then
+        cat /proc/net/tcp
+    else
+        echo "/proc/net/tcp does not exist on this system."
+    fi
+
+    echo
+    echo "###### RAW: /proc/net/udp ######"
+    if [ -e /proc/net/udp ]; then
+        cat /proc/net/udp
+    else
+        echo "/proc/net/udp does not exist on this system."
+    fi
+
+    echo
+    echo "###### PARSED: /proc/net/tcp /proc/net/udp ######"
+
+    awk '
+    function h2d(h, i,c,n) {
+      n=0
+      for (i=1;i<=length(h);i++) {
+        c=substr(h,i,1)
+        if (c>="0" && c<="9") n=n*16+c
+        else if (c>="A" && c<="F") n=n*16+index("ABCDEF",c)+9
+        else if (c>="a" && c<="f") n=n*16+index("abcdef",c)+9
+      }
+      return n
+    }
+
+    function ip4(h) {
+      return h2d(substr(h,7,2)) "." h2d(substr(h,5,2)) "." h2d(substr(h,3,2)) "." h2d(substr(h,1,2))
+    }
+
+    BEGIN {
+      st["01"]="ESTABLISHED"; st["02"]="SYN_SENT"; st["03"]="SYN_RECV"
+      st["04"]="FIN_WAIT1";   st["05"]="FIN_WAIT2"; st["06"]="TIME_WAIT"
+      st["07"]="CLOSE";       st["08"]="CLOSE_WAIT";st["09"]="LAST_ACK"
+      st["0A"]="LISTEN";      st["0B"]="CLOSING"
+    }
+
+    FNR==1 {
+      proto=(FILENAME ~ /udp$/) ? "UDP" : "TCP"
+      next
+    }
+
+    {
+      split($2,l,":")
+      split($3,r,":")
+      s = ($4 in st) ? st[$4] : $4
+
+      printf "%-3s Local: %-22s Remote: %-22s State: %s\n", \
+        proto, ip4(l[1]) ":" h2d(l[2]), ip4(r[1]) ":" h2d(r[2]), s
+    }
+    ' /proc/net/tcp /proc/net/udp
+}
+
+parse_tcp_udp
+
+echo
+echo "######ip -f inet neigh######"
+ip -f inet neigh
 
 echo
 echo "######ip -f inet6 neigh######"
@@ -300,18 +387,328 @@ mcast_info_list="/proc/net/igmp
                  /proc/net/ip6_mr_cache
                  /proc/net/ip6_mr_vif"
 
-# busybox msh does not support passing lists to functions
-# so must repeat the function here
-for f in $mcast_info_list
-do
+dump_raw()
+{
+    f="$1"
     echo
-    echo "######${f}######"
-    if [ -e $f ]; then
-        cat $f
+    echo "###### RAW: $f ######"
+    if [ -e "$f" ]; then
+        cat "$f"
     else
         echo "$f does not exist on this system."
     fi
-done
+}
+
+parse_igmp()
+{
+    f="$1"
+    echo
+    echo "###### PARSED: $f ######"
+
+    awk '
+    function h2d(h, i,c,n) {
+      n=0
+      for (i=1;i<=length(h);i++) {
+        c=substr(h,i,1)
+        if (c>="0" && c<="9") n=n*16+c
+        else if (c>="A" && c<="F") n=n*16+index("ABCDEF",c)+9
+        else if (c>="a" && c<="f") n=n*16+index("abcdef",c)+9
+      }
+      return n
+    }
+    function ip4le(h) {
+      return h2d(substr(h,7,2)) "." h2d(substr(h,5,2)) "." h2d(substr(h,3,2)) "." h2d(substr(h,1,2))
+    }
+    BEGIN {
+      name["224.0.0.1"]="all-hosts"
+      name["224.0.0.2"]="all-routers"
+      name["224.0.0.22"]="IGMPv3"
+      name["224.0.0.251"]="mDNS"
+      name["224.0.0.252"]="LLMNR"
+      name["239.255.255.250"]="SSDP/UPnP"
+
+      printf "%-8s %-15s %-18s %-7s %-14s %-8s\n", "Device", "Group", "Name", "Users", "Timer", "Reporter"
+    }
+    $0 ~ /^[0-9]+[ \t]+/ {
+      dev=$2
+      sub(/:$/,"",dev)
+      next
+    }
+    $1 ~ /^[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]$/ {
+      ip=ip4le($1)
+      printf "%-8s %-15s %-18s %-7s %-14s %-8s\n", dev, ip, ((ip in name)?name[ip]:"-"), $2, $3, $4
+    }
+    ' "$f"
+}
+
+parse_ip_mr_cache()
+{
+    f="$1"
+    echo
+    echo "###### PARSED: $f ######"
+
+    awk '
+    function h2d(h, i,c,n) {
+      n=0
+      for (i=1;i<=length(h);i++) {
+        c=substr(h,i,1)
+        if (c>="0" && c<="9") n=n*16+c
+        else if (c>="A" && c<="F") n=n*16+index("ABCDEF",c)+9
+        else if (c>="a" && c<="f") n=n*16+index("abcdef",c)+9
+      }
+      return n
+    }
+    function ip4le(h) {
+      return h2d(substr(h,7,2)) "." h2d(substr(h,5,2)) "." h2d(substr(h,3,2)) "." h2d(substr(h,1,2))
+    }
+    NR==1 {
+      printf "%-15s %-15s %4s %8s %10s %8s %s\n", $1, $2, $3, $4, $5, $6, "Oifs"
+      next
+    }
+    {
+      printf "%-15s %-15s %4s %8s %10s %8s", ip4le($1), ip4le($2), $3, $4, $5, $6
+      for (i=7;i<=NF;i++) printf " %s", $i
+      printf "\n"
+    }
+    ' "$f"
+}
+
+parse_ip_mr_vif()
+{
+    f="$1"
+    echo
+    echo "###### PARSED: $f ######"
+
+    awk '
+    function h2d(h, i,c,n) {
+      n=0
+      for (i=1;i<=length(h);i++) {
+        c=substr(h,i,1)
+        if (c>="0" && c<="9") n=n*16+c
+        else if (c>="A" && c<="F") n=n*16+index("ABCDEF",c)+9
+        else if (c>="a" && c<="f") n=n*16+index("abcdef",c)+9
+      }
+      return n
+    }
+    function ip4le(h) {
+      return h2d(substr(h,7,2)) "." h2d(substr(h,5,2)) "." h2d(substr(h,3,2)) "." h2d(substr(h,1,2))
+    }
+    NR==1 {
+      printf "%3s %-10s %10s %8s %10s %8s %-7s %-15s %-15s\n", \
+        "Vif", $1, $2, $3, $4, $5, $6, $7, $8
+      next
+    }
+    {
+      printf "%3s %-10s %10s %8s %10s %8s %-7s %-15s %-15s\n", \
+        $1, $2, $3, $4, $5, $6, $7, ip4le($8), ip4le($9)
+    }
+    ' "$f"
+}
+
+parse_dev_mcast()
+{
+    f="$1"
+    echo
+    echo "###### PARSED: $f ######"
+
+    awk '
+    function macfmt(s, i,out) {
+      out=""
+      for (i=1;i<=length(s);i+=2) {
+        if (out!="") out=out ":"
+        out=out substr(s,i,2)
+      }
+      return out
+    }
+    BEGIN {
+      name["01:00:5e:00:00:01"]="IPv4 all-hosts 224.0.0.1"
+      name["01:00:5e:00:00:02"]="IPv4 all-routers 224.0.0.2"
+      name["01:00:5e:00:00:16"]="IPv4 IGMPv3 224.0.0.22"
+      name["01:00:5e:00:00:fb"]="IPv4 mDNS 224.0.0.251"
+      name["01:00:5e:00:00:fc"]="IPv4 LLMNR 224.0.0.252"
+      name["01:00:5e:7f:ff:fa"]="IPv4 SSDP 239.255.255.250"
+
+      name["33:33:00:00:00:01"]="IPv6 all-nodes ff02::1"
+      name["33:33:00:00:00:02"]="IPv6 all-routers ff02::2"
+      name["33:33:00:00:00:fb"]="IPv6 mDNS ff02::fb"
+    }
+    NR==1 {
+      printf "%-5s %-8s %-8s %-8s %-17s %s\n", "Idx", "Device", "Users", "Global", "Address", "Name"
+      next
+    }
+    {
+      mac=macfmt($5)
+      printf "%-5s %-8s %-8s %-8s %-17s %s\n", $1, $2, $3, $4, mac, ((mac in name)?name[mac]:"-")
+    }
+    ' "$f"
+}
+
+parse_igmp6()
+{
+    f="$1"
+    echo
+    echo "###### PARSED: $f ######"
+
+    awk '
+    function trim0(s) {
+      sub(/^0+/, "", s)
+      return s == "" ? "0" : s
+    }
+
+    function ipv6_short(h, i,g,n,best_s,best_l,cur_s,cur_l,out,part) {
+      n=0
+      for (i=1;i<=32;i+=4) {
+        n++
+        g[n]=substr(h,i,4)
+      }
+
+      best_s=0; best_l=0; cur_s=0; cur_l=0
+      for (i=1;i<=8;i++) {
+        if (g[i]=="0000") {
+          if (cur_l==0) cur_s=i
+          cur_l++
+          if (cur_l>best_l) {
+            best_s=cur_s
+            best_l=cur_l
+          }
+        } else {
+          cur_l=0
+        }
+      }
+
+      if (best_l < 2) best_s=0
+
+      out=""
+      for (i=1;i<=8;i++) {
+        if (best_s && i==best_s) {
+          if (out=="") out="::"
+          else out=out ":"
+          i += best_l - 1
+          continue
+        }
+
+        part=trim0(g[i])
+        if (out!="" && out!="::") out=out ":"
+        out=out part
+      }
+
+      if (out=="") out="::"
+      return out
+    }
+
+    function mgroup(h, ip) {
+      ip=ipv6_short(h)
+
+      if (ip=="ff01::1")  return "All IPv6 nodes within the node-local scope"
+      if (ip=="ff01::2")  return "All IPv6 routers within the node-local scope"
+      if (ip=="ff02::1")  return "All IPv6 nodes within the link-local scope"
+      if (ip=="ff02::2")  return "All IPv6 routers within the link-local scope"
+      if (ip=="ff02::5")  return "All OSPFv3 routers within the link-local scope"
+      if (ip=="ff02::6")  return "All OSPFv3 designated routers within the link-local scope"
+      if (ip=="ff02::9")  return "All RIPng routers within the link-local scope"
+      if (ip=="ff02::a")  return "All EIGRP routers within the link-local scope"
+      if (ip=="ff02::d")  return "All PIM routers within the link-local scope"
+      if (ip=="ff02::16") return "All MLDv2-capable routers"
+      if (ip=="ff02::1:2") return "All DHCPv6 agents within the link-local scope"
+      if (ip=="ff05::2")  return "All IPv6 routers within the site-local scope"
+
+      if (substr(h,1,26)=="ff0200000000000000000001ff")
+        return "IPv6 solicited-node multicast address within the link-local scope"
+
+      return "-"
+    }
+
+    BEGIN {
+      printf "%-5s %-8s %-25s %-45s %-8s %-10s %s\n", \
+        "Idx", "Device", "Multicast Address", "Multicast Group", "Users", "Flags", "Timer"
+    }
+
+    NF >= 6 {
+      addr=ipv6_short($3)
+      printf "%-5s %-8s %-25s %-45s %-8s %-10s %s\n", \
+        $1, $2, addr, mgroup($3), $4, $5, $6
+    }
+    ' "$f"
+}
+
+parse_ip6_mr_cache()
+{
+    f="$1"
+    echo
+    echo "###### PARSED: $f ######"
+
+    awk '
+    function ipv6(h, i,out) {
+      out=""
+      for (i=1;i<=32;i+=4) {
+        if (out!="") out=out ":"
+        out=out substr(h,i,4)
+      }
+      return out
+    }
+    NR==1 {
+      printf "%-39s %-39s %-5s %-10s %-10s %s\n", $1, $2, $3, $4, $5, "Wrong Oifs"
+      next
+    }
+    {
+      printf "%-39s %-39s %-5s %-10s %-10s", ipv6($1), ipv6($2), $3, $4, $5
+      for (i=6;i<=NF;i++) printf " %s", $i
+      printf "\n"
+    }
+    ' "$f"
+}
+
+parse_ip6_mr_vif()
+{
+    f="$1"
+    echo
+    echo "###### PARSED: $f ######"
+
+    awk '
+    NR==1 {
+      printf "%-5s %-8s %-15s %-15s %-8s %-8s %-10s %-10s %-8s\n", \
+        $1, $2, $3, $4, $5, $6, $7, $8, $9
+      next
+    }
+    {
+      printf "%-5s %-8s %-15s %-15s %-8s %-8s %-10s %-10s %-8s\n", \
+        $1, $2, $3, $4, $5, $6, $7, $8, $9
+    }
+    ' "$f"
+}
+
+parse_file()
+{
+    f="$1"
+
+    if [ ! -e "$f" ]; then
+        return
+    fi
+
+    case "$f" in
+        /proc/net/igmp)
+            parse_igmp "$f"
+            ;;
+        /proc/net/ip_mr_cache)
+            parse_ip_mr_cache "$f"
+            ;;
+        /proc/net/ip_mr_vif)
+            parse_ip_mr_vif "$f"
+            ;;
+        /proc/net/dev_mcast)
+            parse_dev_mcast "$f"
+            ;;
+        /proc/net/igmp6)
+            parse_igmp6 "$f"
+            ;;
+        /proc/net/ip6_mr_cache)
+            parse_ip6_mr_cache "$f"
+            ;;
+        /proc/net/ip6_mr_vif)
+            parse_ip6_mr_vif "$f"
+            ;;
+    esac
+}
 
 echo
 echo
@@ -349,12 +746,28 @@ if [ -e /bin/archerctl ]; then
     archerctl status
     redirect_dmesg
     echo
+    echo "###### archerctl flows --all ######"
+    archerctl flows --all
+    redirect_dmesg
+    echo
+    echo "###### archerctl host ######"
+    archerctl host
+    redirect_dmesg
+    echo
     echo "###### archerctl stats ######"
     archerctl stats
     redirect_dmesg
     echo
     echo "###### archerctl sysport_tm stats ######"
     archerctl sysport_tm stats
+    redirect_dmesg
+    echo
+    echo "###### archerctl sysport --reg ######"
+    archerctl sysport --reg
+    redirect_dmesg
+    echo
+    echo "###### archerctl sysport --port ######"
+    archerctl sysport --port
     redirect_dmesg
 fi
 
@@ -371,8 +784,8 @@ if [ -e /proc/driver/phy/cmd ]; then
     redirect_dmesg
 fi
 
-mibdump=`nvram get eth_mibdump`
-if [ "$mibdump" == "1" ]; then
+nomibdump=`nvram get nomibdump`
+if [ "$nomibdump" != "1" ]; then
 if [ -e /bin/ethswctl ]; then
     echo
     echo "###### ethswctl -c mibdump -a ######"

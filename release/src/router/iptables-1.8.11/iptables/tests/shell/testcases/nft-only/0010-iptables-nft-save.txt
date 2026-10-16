@@ -1,0 +1,26 @@
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+-A INPUT -s 1.2.3.4/32 -p tcp -m tcp --dport 23 -j ACCEPT
+-A INPUT -s 1.2.3.0/24 -d 0.0.0.0/32 -p udp -m udp --dport 67:69 -j DROP
+-A INPUT -s 1.0.0.0/8 -d 0.0.0.0/32 -p tcp -m tcp --sport 1024:65535 --dport 443 --tcp-flags SYN,ACK SYN -j ACCEPT
+-A INPUT -p tcp -m tcp --dport 443 ! --tcp-flags SYN NONE -m comment --comment "checks if SYN bit is set"
+-A INPUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -m comment --comment "same as iptables --syn"
+-A INPUT -p tcp -m tcp --tcp-flags SYN SYN
+-A INPUT -p tcp -m tcp ! --tcp-flags SYN,ACK SYN,ACK
+-A INPUT -d 0.0.0.0/1 -m ttl --ttl-eq 1 -j DROP
+-A INPUT -d 0.0.0.0/2 -m ttl --ttl-gt 2 -j ACCEPT
+-A INPUT -d 0.0.0.0/3 -m ttl --ttl-lt 254 -j ACCEPT
+-A INPUT -d 0.0.0.0/4 -m ttl ! --ttl-eq 255 -j DROP
+-A INPUT -d 8.0.0.0/5 -p icmp -m icmp --icmp-type 1 -j ACCEPT
+-A INPUT -d 8.0.0.0/6 -p icmp -m icmp --icmp-type 2/3 -j ACCEPT
+-A INPUT -d 10.0.0.0/7 -p icmp -m icmp --icmp-type 8 -j ACCEPT
+-A INPUT -m pkttype --pkt-type broadcast -j ACCEPT
+-A INPUT -m pkttype ! --pkt-type unicast -j DROP
+-A INPUT -p tcp
+-A INPUT -d 0.0.0.0/1 -p udp
+-A FORWARD -m limit --limit 10/day
+-A FORWARD -p udp -m udp --dport 42
+-A FORWARD -i lo -o lo+ -j NFLOG --nflog-prefix "should use NFLOG" --nflog-group 1 --nflog-size 123 --nflog-threshold 42
+COMMIT

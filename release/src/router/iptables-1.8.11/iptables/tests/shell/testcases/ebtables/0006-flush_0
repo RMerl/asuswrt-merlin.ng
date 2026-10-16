@@ -1,0 +1,47 @@
+#!/bin/bash
+
+set -e
+
+# there is no legacy backend to test
+[[ $XT_MULTI == *xtables-nft-multi ]] || { echo "skip $XT_MULTI"; exit 0; }
+
+RULESET='*filter
+:INPUT ACCEPT
+:FORWARD ACCEPT
+:OUTPUT ACCEPT
+-A FORWARD --among-dst fe:ed:ba:be:13:37=10.0.0.1 -j ACCEPT
+-A OUTPUT --among-src c0:ff:ee:90:0:0=192.168.0.1 -j DROP
+*nat
+:PREROUTING ACCEPT
+:OUTPUT ACCEPT
+:POSTROUTING ACCEPT
+-A OUTPUT --among-src c0:ff:ee:90:90:90=192.168.0.1 -j DROP'
+
+$XT_MULTI ebtables-restore <<<$RULESET
+diff -u <(echo -e "$RULESET") <($XT_MULTI ebtables-save | grep -v '^#')
+
+RULESET='*filter
+:INPUT ACCEPT
+:FORWARD ACCEPT
+:OUTPUT ACCEPT
+-A FORWARD --among-dst fe:ed:ba:be:13:37=10.0.0.1 -j ACCEPT
+-A OUTPUT --among-src c0:ff:ee:90:0:0=192.168.0.1 -j DROP
+*nat
+:PREROUTING ACCEPT
+:OUTPUT ACCEPT
+:POSTROUTING ACCEPT'
+
+$XT_MULTI ebtables -t nat -F
+diff -u <(echo -e "$RULESET") <($XT_MULTI ebtables-save | grep -v '^#')
+
+RULESET='*filter
+:INPUT ACCEPT
+:FORWARD ACCEPT
+:OUTPUT ACCEPT
+*nat
+:PREROUTING ACCEPT
+:OUTPUT ACCEPT
+:POSTROUTING ACCEPT'
+
+$XT_MULTI ebtables -t filter -F
+diff -u <(echo -e "$RULESET") <($XT_MULTI ebtables-save | grep -v '^#')

@@ -1,0 +1,5 @@
+iptables-translate -A FORWARD -p tcp -j LOG --log-level error
+nft 'add rule ip filter FORWARD ip protocol tcp counter log level err'
+
+iptables-translate -A FORWARD -p tcp -j LOG --log-prefix "Random prefix"
+nft 'add rule ip filter FORWARD ip protocol tcp counter log prefix "Random prefix"'

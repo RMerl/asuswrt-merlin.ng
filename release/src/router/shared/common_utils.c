@@ -49,7 +49,12 @@
 char*
 strncpy_n(char *destination, const char *source, size_t num)
 {
-	char *ret = strncpy(destination, source, num - 1);
+	char *ret;
+
+	if (num == 0)
+		return destination;
+
+	ret = strncpy(destination, source, num - 1);
 	destination[num - 1] = '\0';
 	return ret;
 }
@@ -151,11 +156,15 @@ get_hex_data(uchar *data_str, uchar *hex_data, int len)
 {
 	uchar *src, *dest;
 	uchar val;
-	int idx;
+	int idx, avail;
 	char hexstr[3] = {0};
 
 	src = data_str;
 	dest = hex_data;
+
+	avail = strlen((char *)data_str) / 2;
+	if (len > avail)
+		len = avail;
 
 	for (idx = 0; idx < len; idx++) {
 		hexstr[0] = src[0];
@@ -240,7 +249,7 @@ dm_register_app_restart_info(int pid, int argc, char **argv,
 	dir = opendir("/tmp/dm");
 	if (!dir) {
 		printf("dm directory may not exist (%s). Creating it\n", strerror(errno));
-		if (mkdir("/tmp/dm", 0777)) {
+		if (mkdir("/tmp/dm", 0750)) {
 			printf("Unable to create dm directory. %s\n", strerror(errno));
 			return;
 		}

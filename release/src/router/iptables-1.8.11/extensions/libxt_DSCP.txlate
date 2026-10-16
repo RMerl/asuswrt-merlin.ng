@@ -1,0 +1,5 @@
+iptables-translate -A OUTPUT -j DSCP --set-dscp 1
+nft 'add rule ip filter OUTPUT counter ip dscp set 0x01'
+
+ip6tables-translate -A OUTPUT -j DSCP --set-dscp 6
+nft 'add rule ip6 filter OUTPUT counter ip6 dscp set 0x06'

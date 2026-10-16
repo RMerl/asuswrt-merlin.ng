@@ -38,6 +38,7 @@
 /* smb_auth.c */
 extern void smbc_wrapper_response_401(server *srv, connection *con);
 extern int smbc_parser_basic_authentication(server *srv, connection* con, char** username,  char** password);
+extern void generate_asus_token(buffer *b);
 /* disk_data.c */
 extern int compare_passwd_in_shadow(const char *username, const char *passwd);
 
@@ -446,10 +447,29 @@ handler_t basic_authentication_handler(server *srv, connection *con, plugin_data
 		buffer_copy_buffer(con->smb_info->password, pass);
 		Cdbg(DBE, "save username=[%s], time=[%d] to con->smb_info", con->smb_info->username->ptr, con->smb_info->auth_time);
 	}
-	
+
+	//- Credentials for this request were just freshly verified (not reused
+	//- from the cached smb_info) -> (re)issue a server-generated asus_token
+	//- and hand it to the client via Set-Cookie. A token must never be
+	//- accepted or derived from anything the client sent in this request.
+	if (!get_account_from_smb_info) {
+		buffer *cookie;
+
+		generate_asus_token(con->smb_info->asus_token);
+
+		cookie = buffer_init_string("asus_token=");
+		buffer_append_string_buffer(cookie, con->smb_info->asus_token);
+		//- Max-Age matches the 30-minute server-side auth_time timeout above,
+		//- so the cookie outlives a full browser restart within that window
+		//- instead of vanishing as an unbounded session cookie would.
+		buffer_append_string(cookie, "; Path=/; Max-Age=1800; SameSite=Strict");
+		response_header_overwrite(srv, con, CONST_STR_LEN("Set-Cookie"), CONST_BUF_LEN(cookie));
+		buffer_free(cookie);
+	}
+
 	buffer_free(user);
 	buffer_free(pass);
-	
+
 	return HANDLER_UNSET;
 
 error_401:

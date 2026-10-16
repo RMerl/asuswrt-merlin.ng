@@ -36,6 +36,28 @@
 	color: #F13E3E;
 }
 
+.quota_notice_text{
+	color: #3E4044;
+}
+
+.quota_notice_desc{
+	color: #5E6470;
+}
+
+.quota_notice_icon{
+	background-color: #006EFF;
+}
+
+.quota_notice_button{
+	border-color: #006EFF;
+	background: #006EFF;
+	color: #FFFFFF;
+}
+
+.speedTest_quota_overlay{
+	background: rgba(255, 255, 255, 0.96);
+}
+
 .split-Line{
 	background: linear-gradient(#CEC1C7 0%, #CEC1C7 20%, #766D71 80%,#766D71 100%);
 	height: 1px;

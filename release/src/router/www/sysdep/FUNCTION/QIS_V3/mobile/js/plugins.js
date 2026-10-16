@@ -213,6 +213,8 @@ function getPAPList(siteSurveyAPList, filterType, filterValue) {
 	var based_modelid = modelInfo.productid;
 	var papList = [];
 
+	const bssidToMld = getBssidToMldMap();
+
 	var profile = function(_profile){
 		var getBandWidthName = function(band, ch){
 			if(band == "2G"){
@@ -261,15 +263,25 @@ function getPAPList(siteSurveyAPList, filterType, filterValue) {
 		this.thekey = "";
 		this.thekeyindex = "";
 		this.thekeyauthmode = "";
-		this.mlomacaddr = (_profile[10] && typeof _profile[10] === "string" && _profile[10].length > 2) ? _profile[10] : "";
+		const mloFields = getMloFields(_profile, bssidToMld);
+		this.mlomacaddr = mloFields.mlomacaddr;
+		this.mldmac = mloFields.mldmac;
 	}
 
+	const seenMld = [];
 	for(var i=0; i<siteSurveyAPList.length; i++){
 		var site = new profile(siteSurveyAPList[i]);
 		if(filterType != undefined && filterType != ""){
 			if(site[filterType] == filterValue)
 				continue;
 		}
+
+		if(isSupport("mlo_media_bridge") && site.mldmac != ""){
+			if(seenMld.indexOf(site.mldmac) !== -1)
+				continue;
+			seenMld.push(site.mldmac);
+		}
+
 		if(papList.indexOf(site.macaddr) === -1){
 			papList.push(site.macaddr);
 			papList[site.macaddr] = site;
@@ -844,6 +856,34 @@ var Get_Component_Loading = function(){
 	}
 }
 
+function getBssidToMldMap(){
+	const map = {};
+	if(Array.isArray(systemVariable.mloMultilinkList)){
+		systemVariable.mloMultilinkList.forEach(function(group){
+			(group.bssid || []).forEach(function(bssid){
+				map[bssid] = group.mld;
+			});
+		});
+	}
+	return map;
+}
+
+function getMloFields(_profile, bssidToMld){
+	return {
+		mlomacaddr: (_profile[10] && typeof _profile[10] === "string" && _profile[10].length > 2) ? _profile[10] : "",
+		mldmac: (bssidToMld[_profile[6]] != undefined) ? bssidToMld[_profile[6]] : ""
+	};
+}
+
+function isMloAPProfile(AP){
+	if(AP == undefined) return false;
+	return (!!AP.mlomacaddr && isSupport("MLO_CLIENT")) || (!!AP.mldmac && isSupport("mlo_media_bridge"));
+}
+
+function isMloMbParentAP(mode, AP){
+	return (mode === "MB" && isSupport("mlo_media_bridge") && isMloAPProfile(AP));
+}
+
 var Get_Component_SiteSurvey_List = function(papList, filterBand) {
 	var siteSurveyContainer = $("<div>");
 	papList.forEach(function(macIndex){
@@ -874,7 +914,7 @@ var Get_Component_SiteSurvey_List = function(papList, filterBand) {
 			$(this).removeClass("ap_ssid_hover")
 		})
 
-		var ap_band = $("<div>").addClass("ap_band").html((AP.mlomacaddr == "" || !isSupport("MLO_CLIENT")) ? AP.band : "MLO");
+		var ap_band = $("<div>").addClass("ap_band").html(isMloAPProfile(AP) ? "MLO" : AP.band);
 		apListDiv.append(ap_band);
 
 		var ap_narrow_container = $("<div>").addClass("ap_narrow_container");
@@ -1770,8 +1810,16 @@ function setupFronthaulNetwork(_smart_connect){
 }
 
 function sortAP(kind, sequence){
+	const bssidToMld = getBssidToMldMap();
 	var array_tmp = new Array();
 	array_tmp = httpApi.hookGet("get_ap_info", false).sort(function(a,b){
+		if(kind != "alpha"){
+			const a_mlo = isMloAPProfile(getMloFields(a, bssidToMld)) ? 1 : 0;
+			const b_mlo = isMloAPProfile(getMloFields(b, bssidToMld)) ? 1 : 0;
+			if(a_mlo != b_mlo)
+				return (sequence == "top") ? (b_mlo - a_mlo) : (a_mlo - b_mlo);
+		}
+
 		if(kind == "signal"){
 			var a_tmp = parseInt(a[5]);	//compare signal strength
 			var b_tmp = parseInt(b[5]);
@@ -2126,10 +2174,10 @@ var isSupport = function(_ptn){
 			matchingResult = false;
 			break;
 		case "VPNCLIENT":
-			matchingResult = (isSku("US") || isSku("CA") || isSku("TW") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC")) ? false : true;
+			matchingResult = (isSku("US") || isSku("U2") || isSku("U3") || isSku("CA") || isSku("TW") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC")) ? false : true;
 			break;
 		case "IPTV":
-			matchingResult = (isSupport("noiptv") || isSku("US") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC") || isSku("CA")|| isSku("U2") || isSku("TW")) ? false : true;
+			matchingResult = (isSupport("noiptv") || isSku("US") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC") || isSku("CA")|| isSku("U2") || isSku("U3") || isSku("TW")) ? false : true;
 			break;
 		case "ENABLE_IPv6":
 			matchingResult = (isSku("CN") || isSku("GD") || isSku("TC")) ? true : false;
@@ -2585,8 +2633,57 @@ var genPAPList = function(papList, filterBand){
 	$("#papList_page").find("#apList")
 		.html(Get_Component_SiteSurvey_List(papList, filterBand))
 		.find(".apProfile").click(function() {
-			setupWLCNvram(this.id);
-			goTo.papSet();
+			if($(".confirm_block").length > 0) return;
+
+			const apProfileID = this.id;
+			const selectAP = function(_useMlo){
+				systemVariable.useMloConnection = _useMlo;
+				setupWLCNvram(apProfileID);
+				handle_mld_enable(systemVariable.opMode);
+				goTo.papSet();
+			};
+
+			if(!isMloMbParentAP(systemVariable.opMode, papList[apProfileID])){
+				selectAP(true);
+				return;
+			}
+
+			const mloConfirmTitle = `Use MLO connection?`;
+			const mloConfirmMsg = [
+				`MLO (Multi-Link Operation) is currently supported only between the same ASUS router model. If the models are different, the connection may fail.`,
+				``,
+				`<#checkbox_Yes#>: Try to connect using MLO.`,
+				`<#CTL_later#>: Use standard single-band connection instead.`,
+				``,
+				`Do you want to use MLO connection?`
+			].join("\n");
+
+			if(typeof confirm_asus !== "function"){
+				selectAP(confirm(`${mloConfirmTitle}\n\n${mloConfirmMsg}`));
+				return;
+			}
+
+			confirm_asus({
+				title: mloConfirmTitle,
+				contentA: mloConfirmMsg.replace(/\n/g, "<br>"),
+				contentC: "",
+				left_button: `<#checkbox_Yes#>`,
+				left_button_callback: function(){
+					confirm_cancel();
+					selectAP(true);
+				},
+				left_button_args: {},
+				right_button: `<#CTL_later#>`,
+				right_button_callback: function(){
+					confirm_cancel();
+					selectAP(false);
+				},
+				right_button_args: {},
+				iframe: "",
+				margin: "0px",
+				note_display_flag: 0
+			});
+			$(".confirm_block").css("zIndex", 10001);
 		});
 };
 
@@ -3165,6 +3262,8 @@ function get_sdn_main_fh_info(){
 function handle_mld_enable(mode) {
 	if (!isSupport("mlo")) return;
 
+	delete qisPostData.mld_enable;
+
 	if (mode === "RT" || mode === "AP") {
 		if (isSwModeChanged()) {
 			postDataModel.insert(mloObj);
@@ -3172,8 +3271,14 @@ function handle_mld_enable(mode) {
 		}
 	}
 	else if (mode === "RP" || mode === "MB" || mode === "WISP") {
+		/* WiFi7/WiFi8 standalone MLO media bridge: enable MLO uplink so the reboot
+		 * brings up multi-link. Repeater/WISP, devices without MLO media bridge
+		 * support, non-MLO parent AP, and users who declined the MLO prompt keep
+		 * mld_enable=0. */
+		const isMloParentAP = isMloMbParentAP(mode, systemVariable.selectedAP);
+		const useMloUplink = (isMloParentAP && systemVariable.useMloConnection);
 		let needInsert = false;
-		if (isSwModeChanged()) {
+		if (isSwModeChanged() || isMloParentAP) {
 			needInsert = true;
 		}
 		else {
@@ -3184,7 +3289,7 @@ function handle_mld_enable(mode) {
 		}
 		if (needInsert) {
 			postDataModel.insert(mloObj);
-			qisPostData.mld_enable = "0";
+			qisPostData.mld_enable = useMloUplink ? "1" : "0";
 		}
 	}
 }

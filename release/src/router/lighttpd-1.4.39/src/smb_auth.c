@@ -13,6 +13,8 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h> //isdigit()
+#include <fcntl.h>
+#include <unistd.h>
 
 #if IM_MESSGAE_EANBLE
 #include "im_ipc.h" // asusnatnl/natnl
@@ -1772,6 +1774,31 @@ int isBrowser(connection *con)
 {
 	data_string *ds = (data_string *)array_get_element(con->request.headers, "user-Agent");
 	return (ds && (strstr(ds->value->ptr, "Mozilla") || strstr(ds->value->ptr, "Opera"))) ? 1 : 0;
+}
+
+//- Server-side issuance of asus_token. Must only be called right after a
+//- fresh credential check (do_account_authentication/smbc_server_check_creds)
+//- has succeeded for this request; never accept/echo a client-supplied value.
+void generate_asus_token(buffer *b)
+{
+	unsigned char raw[16];
+	int fd, n = -1;
+
+	fd = open("/dev/urandom", O_RDONLY);
+	if (fd >= 0) {
+		n = read(fd, raw, sizeof(raw));
+		close(fd);
+	}
+
+	if (n != (int)sizeof(raw)) {
+		size_t i;
+		srand((unsigned int)time(NULL) ^ (unsigned int)getpid());
+		for (i = 0; i < sizeof(raw); i++)
+			raw[i] = (unsigned char)(rand() & 0xff);
+	}
+
+	buffer_reset(b);
+	buffer_copy_string_hex(b, (const char *)raw, sizeof(raw));
 }
 
 void smbc_wrapper_response_401(server *srv, connection *con)

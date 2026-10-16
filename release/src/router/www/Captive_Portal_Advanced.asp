@@ -170,7 +170,7 @@ function show_profilelist() {
 	used_profile_wl_if = [];
 	code += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="captive_portal_adv_profile_table">';
 	if(arrayLength == 0)
-		code += '<tr><td style="color:#FFCC00;" colspan="5"><#IPConnection_VSList_Norule#></td></tr>';
+		code += '<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="5"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		for(var i = 0; i < arrayLength; i += 1) {
 			if(captive_portal_list_row[i] != "") {
@@ -4106,7 +4106,7 @@ function show_local_clientlist() {
 
 	code += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="cpa_local_client_list_table">';
 	if(local_client_list_row.length == 1)
-		code += '<tr><td style="color:#FFCC00;" colspan="5"><#IPConnection_VSList_Norule#></td></tr>';
+		code += '<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="5"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		for(var i = 1; i < local_client_list_row.length; i++){
 			code += '<tr>';
@@ -4473,7 +4473,7 @@ function gen_event_log(_array, _connect_type) {
 	var code = "";
 	code += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="connect_client_auth_' + _connect_type + '_table">';
 	if(_array.length == 0)
-		code += '<tr><td style="color:#FFCC00;" colspan=' + _colspan_num[_connect_type] + '><#IPConnection_VSList_Norule#></td></tr>';
+		code += '<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan=' + _colspan_num[_connect_type] + '><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		for(var i = 0; i < _array.length; i += 1) {
 			code += '<tr style="height:30px;">';
@@ -5085,7 +5085,7 @@ function remove_hint_msg() {
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="captive_portal_adv_intro_icon"></div>
 									<div style='float:left;width:80%;'>
-									<div class="captive_portal_adv_intro_txt" style="color:#FC0;"><#Captive_Portal_desc1#></div>
+									<div class="captive_portal_adv_intro_txt" style="color:var(--wrt-badge-warning-color,#FFCC00);"><#Captive_Portal_desc1#></div>
 									<div class="captive_portal_adv_intro_txt"><#Captive_Portal_desc2#></div>
 									<div class="captive_portal_adv_intro_txt brt_series">
 										<#FAQ_Find#> : <a id="faq" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;" href="" target="_blank">GO</a>
@@ -5127,7 +5127,7 @@ function remove_hint_msg() {
 											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(31, 1);"><#Captive_Portal_timeout#></a></th>
 											<td>
 												<input type="text" maxlength="3" class="input_6_table" id="captive_portal_adv_idle_timeout" name="captive_portal_adv_idle_timeout" value="<% nvram_get("captive_portal_adv_idle_timeout"); %>" onkeypress="return validator.isNumber(this,event)" autocorrect="off" autocapitalize="off">
-												<span style="color:#FFCC00;">(<#Captive_Portal_Range#>: 60 - 800, <#Setting_factorydefault_value#>: 300 <#Second#>)</span>
+												<span style="color:var(--wrt-badge-warning-color,#FFCC00);">(<#Captive_Portal_Range#>: 60 - 800, <#Setting_factorydefault_value#>: 300 <#Second#>)</span>
 											</td>
 										</tr>
 										<tr id="tr_event_log">

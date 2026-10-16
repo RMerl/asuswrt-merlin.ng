@@ -1,0 +1,45 @@
+#!/bin/bash
+
+case "$XT_MULTI" in
+*xtables-nft-multi)
+	;;
+*)
+	echo "skip $XT_MULTI"
+	exit 0
+	;;
+esac
+
+set -e
+set -x
+
+check_rule() { # (pcnt, bcnt)
+	$XT_MULTI ebtables -L FORWARD --Lc --Ln | \
+		grep -q "^1. -o eth0 -j CONTINUE , pcnt = $1 -- bcnt = $2$"
+}
+
+$XT_MULTI ebtables -A FORWARD -o eth0 -c 10 20
+check_rule 10 20
+
+$XT_MULTI ebtables -C FORWARD 1 100 200
+check_rule 100 200
+
+$XT_MULTI ebtables -C FORWARD 101 201 -o eth0
+check_rule 101 201
+
+$XT_MULTI ebtables -C FORWARD 1 +10 -20
+check_rule 111 181
+
+$XT_MULTI ebtables -C FORWARD -10 +20 -o eth0
+check_rule 101 201
+
+$XT_MULTI ebtables -A FORWARD -o eth1 -c 111 211
+$XT_MULTI ebtables -A FORWARD -o eth2 -c 121 221
+
+$XT_MULTI ebtables -C FORWARD 2:3 +100 -200
+
+EXPECT='1. -o eth0 -j CONTINUE , pcnt = 101 -- bcnt = 201
+2. -o eth1 -j CONTINUE , pcnt = 211 -- bcnt = 11
+3. -o eth2 -j CONTINUE , pcnt = 221 -- bcnt = 21'
+diff -u <(echo "$EXPECT") \
+	<($XT_MULTI ebtables -L FORWARD --Lc --Ln | grep -- '-o eth')
+

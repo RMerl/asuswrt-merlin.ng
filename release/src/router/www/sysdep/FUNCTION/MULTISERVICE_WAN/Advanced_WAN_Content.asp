@@ -39,25 +39,25 @@
 }
 
 .splitLine_dns{
-	background: #32393B;
-	background: -webkit-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
-	background: -o-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
-	background: linear-gradient(#32393B 0%, #32393B 20%, #667881 80%,#667881 100%);
+	background: var(--border-default, #32393B);
+	background: var(--border-default, -webkit-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%));
+	background: var(--border-default, -o-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%));
+	background: var(--border-default, linear-gradient(#32393B 0%, #32393B 20%, #667881 80%,#667881 100%));
 	height: 2px;
 	max-width:440px;
 	margin: 1px 0;
 }
 .splitLine_dns_bussiness{
-	background: #32393B;
-	background: -webkit-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
-	background: -o-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
-	background: linear-gradient(#32393B 0%, #32393B 20%, #667881 80%,#667881 100%);
+	background: var(--border-default, #32393B);
+	background: var(--border-default, -webkit-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%));
+	background: var(--border-default, -o-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%));
+	background: var(--border-default, linear-gradient(#32393B 0%, #32393B 20%, #667881 80%,#667881 100%));
 	height: 2px;
 	max-width:600px;
 	margin: 1px 0;
 }
 .assign_dns{
-	color:#FFF;
+	color:var(--wrt-text-color,#FFFFFF);
 	opacity: 0.7;
 	max-width:330px;
 }
@@ -68,7 +68,7 @@
 }
 #dns_list_Block{
 	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
-	border: 1px solid #FFF;
+	border: 1px solid var(--border-default, #FFF);
 }
 .dnslist_viewlist {
 	position: absolute;
@@ -76,12 +76,12 @@
 	-moz-border-radius: 5px;
 	border-radius: 5px;
 	z-index: 200;
-	background-color:#444f53;
+	background-color:var(--wrt-card-surface-2-bg, #444f53);
 	margin-left: 10%;
 	margin-top: -1500px;
 	width: 80%;
 	height:auto;
-	box-shadow: 3px 3px 10px #000;
+	box-shadow: var(--wrt-card-shadow, 3px 3px 10px #000);
 	display:block;
 	overflow: auto;
 }
@@ -101,8 +101,8 @@
 }
 
 .aftr_Block_PC{
-	border:1px outset #999;
-	background-color:#576D73;
+	border:1px outset var(--border-default, #999);
+	background-color:var(--wrt-card-surface-2-bg, #576D73);
 	position:absolute;
 	*margin-top:26px;	
 	margin-left:2px;
@@ -115,7 +115,7 @@
 	padding: 1px;
 }
 .aftr_Block_PC div{
-	background-color:#576D73;
+	background-color:var(--wrt-card-surface-2-bg, #576D73);
 	height:auto;
 	*height:20px;
 	line-height:20px;
@@ -125,37 +125,37 @@
 }
 
 .aftr_Block_PC a{
-	background-color:#EFEFEF;
-	color:#FFF;
+	background-color:var(--surface-hover, #EFEFEF);
+	color:var(--wrt-text-color,#FFFFFF);
 	font-size:12px;
 	font-family:Arial, Helvetica, sans-serif;
 	text-decoration:none;	
 }
 .aftr_Block_PC div:hover{
-	background-color:#3366FF;
-	color:#FFFFFF;
+	background-color:var(--surface-hover, #3366FF);
+	color:var(--wrt-text-color,#FFFFFF);
 	cursor:default;
 }
 
 .aftr_Block_PC_WHITE {
-	background-color:#f5f5f5;
-	border: solid 1px #f5f5f5;
+	background-color:var(--surface-panel, #f5f5f5);
+	border: solid 1px var(--surface-panel, #f5f5f5);
 	width: 60% !important;
 	box-shadow: 0px 12px 12px rgb(0 0 0 / 10%);
 }
 .aftr_Block_PC_WHITE div {
-	background-color:#f5f5f5;
-	border: solid 1px #f5f5f5;
+	background-color:var(--surface-panel, #f5f5f5);
+	border: solid 1px var(--surface-panel, #f5f5f5);
 }
 
 .aftr_Block_PC_WHITE a {
-	background-color:#ffffff;
-	color:#262626;
+	background-color:var(--wrt-card-bg, #ffffff);
+	color:var(--wrt-text-color, #262626);
 }
 .aftr_Block_PC_WHITE a div:hover, .aftr_Block_PC_WHITE_expand:hover{
-	background-color:#ffffff;
-	color:#248dff;
-	border: solid 1px #248dff;
+	background-color:var(--wrt-card-bg, #ffffff);
+	color:var(--primary-50, #248dff);
+	border: solid 1px var(--primary-50, #248dff);
 	border-radius: 3px;
 }
 
@@ -166,10 +166,10 @@
 	height: 550px;
 	top: 100px;
 	margin-left: 35%;
-	background-color: #232629;
-	box-shadow: 3px 3px 10px #000;
+	background-color: var(--surface-panel, #232629);
+	box-shadow: var(--wrt-card-shadow, 3px 3px 10px #000);
 	border-radius: 4px;
-	border: 2px solid #818181;
+	border: 2px solid var(--border-default, #818181);
 	font-size: 13px;
 }
 
@@ -238,6 +238,9 @@ var original_ppp_echo = parseInt('<% nvram_get("wan_ppp_echo"); %>');
 var default_ppp_echo = parseInt('<% nvram_default_get("wan_ppp_echo"); %>');
 var orig_mtu = '<% nvram_get("wan_mtu"); %>';
 var default_wan_mtu = httpApi.nvramDefaultGet(["wan_mtu"]).wan_mtu;
+var wan_mtu_max = 1500;
+var wan_pppoe_mtu_max = (isSupport("mtk") || isSupport("qca") || !isSupport("no_jumbo_frame")) ? 1500 : 1492;
+var mtu_last_changed = "";
 
 var chg_pvc_unit_flag = '<% get_parameter("chg_pvc"); %>';
 
@@ -391,13 +394,21 @@ function save_applyData(wan_unit){
 		applyData["wan_enable"] = "1";
 
 	if(applyData["wan_proto"] == "pppoe"){
-		if($("#wan_mtu_container").is(":visible")){
-			if(parseInt($("#wan_pppoe_mtu").val()) + 8 > parseInt($("#wan_mtu").val())){
-				applyData["wan_pppoe_mtu"] = parseInt($("#wan_mtu").val()) - 8;
-			}
+		if(mtu_last_changed == "wan_pppoe_mtu"){
+			if(parseInt($("#wan_pppoe_mtu").val()) + 8 > parseInt($("#wan_mtu").val()))
+				applyData["wan_mtu"] = parseInt($("#wan_pppoe_mtu").val()) + 8;
+			if(parseInt($("#wan_pppoe_mru").val()) + 8 > (applyData["wan_mtu"] || parseInt($("#wan_mtu").val())))
+				applyData["wan_mtu"] = parseInt($("#wan_pppoe_mru").val()) + 8;
+		}
+		else if(mtu_last_changed == "wan_pppoe_mru"){
+			if(parseInt($("#wan_pppoe_mru").val()) + 8 > parseInt($("#wan_mtu").val()))
+				applyData["wan_mtu"] = parseInt($("#wan_pppoe_mru").val()) + 8;
 		}
 		else{
-			applyData["wan_mtu"] = default_wan_mtu;
+			if(parseInt($("#wan_pppoe_mtu").val()) + 8 > parseInt($("#wan_mtu").val())){
+				applyData["wan_pppoe_mtu"] = parseInt($("#wan_mtu").val()) - 8;
+				applyData["wan_pppoe_mru"] = applyData["wan_pppoe_mtu"];
+			}
 		}
 	}
 
@@ -425,7 +436,7 @@ function save_applyData(wan_unit){
 		applyData["rc_service"] += ";restart_dnsmasq";
 
 	/* Multi-Service WAN / IPTV Conflict check */
-	if(httpApi.nvramGet(["switch_wantag"], true).switch_wantag != "none" || original_switch_stb_x != "0"){
+	if(httpApi.nvramGet(["switch_wantag"], true).switch_wantag != "none"){
 		var hint_str = `<#conflict_function_hint#>`;
 		var msg = hint_str.replace("%1$@", `Multi-Service WAN`).replace("%2$@", "IPTV");
 
@@ -721,7 +732,7 @@ function Get_Component_Setting_Profile(type){//internet, user_defined
 	$dot1q_container.appendTo($content_container);
 	$dot1q_container.append($("<div>").addClass("profile_title_item").attr({"id":"dit1q_div"}).append($("<span>").html("802.1Q")));
 
-	var dot1q_enabled_parm = {"title":"<#WLANConfig11b_WirelessCtrl_button1name#>", "type":"switch", "id":"wan_dot1q"};
+	var dot1q_enabled_parm = {"title":"<#WLANConfig11b_WirelessCtrl_button1name#>", "type":"switch", "id":"wan_dot1q", "set_value":"off"};
 	Get_Component_Switch(dot1q_enabled_parm).appendTo($dot1q_container)
 		.find("#" + dot1q_enabled_parm.id + "").click(function(e){
 			e = e || event;
@@ -997,24 +1008,24 @@ function Get_Component_Setting_Profile(type){//internet, user_defined
 			return validator.numberRange(this, 0, 4294967295);
 		})
 
-	var pppoe_mtu_parm = {"title":"<#PPPConnection_x_PPPoEMTU_itemname#> (128 - 1492)", "type":"text", "id":"wan_pppoe_mtu", "need_check":true, "maxlength":5, "openHint":"7_7"};
+	var pppoe_mtu_parm = {"title":"<#PPPConnection_x_PPPoEMTU_itemname#> (128 - " + wan_pppoe_mtu_max + ")", "type":"text", "id":"wan_pppoe_mtu", "need_check":true, "maxlength":5, "openHint":"7_7"};
 	Get_Component_Input(pppoe_mtu_parm).attr({"data-sec-option-id":"pppoe-only"}).appendTo($account_settings_container)
 		.find("#" + pppoe_mtu_parm.id)
 		.unbind("keypress").keypress(function(){
 			return validator.isNumber(this, event);
 		})
 		.change(function(){
-			return validator.numberRange(this, 128, 1492);
+			return validator.numberRange(this, 128, wan_pppoe_mtu_max);
 		})
 
-	var pppoe_mru_parm = {"title":"<#PPPConnection_x_PPPoEMRU_itemname#> (128 - 1492)", "type":"text", "id":"wan_pppoe_mru", "need_check":true, "maxlength":5, "openHint":"7_8"};
+	var pppoe_mru_parm = {"title":"<#PPPConnection_x_PPPoEMRU_itemname#> (128 - " + wan_pppoe_mtu_max + ")", "type":"text", "id":"wan_pppoe_mru", "need_check":true, "maxlength":5, "openHint":"7_8"};
 	Get_Component_Input(pppoe_mru_parm).attr({"data-sec-option-id":"pppoe-only"}).appendTo($account_settings_container)
 		.find("#" + pppoe_mru_parm.id)
 		.unbind("keypress").keypress(function(){
 			return validator.isNumber(this, event);
 		})
 		.change(function(){
-			return validator.numberRange(this, 128, 1492);
+			return validator.numberRange(this, 128, wan_pppoe_mtu_max);
 		})
 
 	var pppoe_service_parm = {"title":"<#PPPConnection_x_ServiceName_itemname#>", "type":"text", "id":"wan_pppoe_service", "need_check":true, "maxlength":32, "openHint":"7_9"};
@@ -1168,14 +1179,14 @@ function Get_Component_Setting_Profile(type){//internet, user_defined
 			});
 	}
 
-	var wan_mtu_parm = {"title":"<#PPPConnection_x_PPPoEMTU_itemname#> (1280-1500)", "type":"text", "id":"wan_mtu", "need_check":true, "maxlength":4, "container_id":"wan_mtu_container"};
+	var wan_mtu_parm = {"title":"<#PPPConnection_x_PPPoEMTU_itemname#> (1280-" + wan_mtu_max + ")", "type":"text", "id":"wan_mtu", "need_check":true, "maxlength":4, "container_id":"wan_mtu_container"};
 	Get_Component_Input(wan_mtu_parm).appendTo($special_isp_container)
 		.find("#" + wan_mtu_parm.id + "")
 		.unbind("keypress").keypress(function(){
 			return validator.isNumber(this,event);
 		})
 		.change(function(){
-			return validator.numberRange(this, 1280, 1500);
+			return validator.numberRange(this, 1280, wan_mtu_max);
 		})
 
 	var $action_container = $("<div>").addClass("action_container").appendTo($content_container);
@@ -1616,6 +1627,12 @@ function showMSWANList(){
 }
 
 function initial(){
+	document.getElementById("wan_mtu_range_hint").textContent = "1280 - " + wan_mtu_max;
+	document.getElementById("wan_pppoe_mtu_range_hint").textContent = "128 - " + wan_pppoe_mtu_max;
+	document.getElementById("wan_pppoe_mru_range_hint").textContent = "128 - " + wan_pppoe_mtu_max;
+	$(document).on("input", "input[name='wan_mtu'], #wan_mtu", function() { mtu_last_changed = "wan_mtu"; });
+	$(document).on("input", "input[name='wan_pppoe_mtu'], #wan_pppoe_mtu", function() { mtu_last_changed = "wan_pppoe_mtu"; });
+	$(document).on("input", "input[name='wan_pppoe_mru'], #wan_pppoe_mru", function() { mtu_last_changed = "wan_pppoe_mru"; });
 	show_menu();
 
 	document.form.wan_clientid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wan_clientid"); %>');
@@ -2030,7 +2047,7 @@ function applyRule(){
 			document.form.action_script.value += ";restart_dnsmasq";
 
 		/* Check function conflict between 802.1Q and IPTV */
-		if(httpApi.nvramGet(["switch_wantag"], true).switch_wantag != "none" || original_switch_stb_x != "0"){
+		if(document.form.wan_dot1q.value == "1" && httpApi.nvramGet(["switch_wantag"], true).switch_wantag != "none"){
 			var hint_str = `<#conflict_function_hint#>`;
 			var msg = hint_str.replace("%1$@", `802.1Q`).replace("%2$@", "IPTV");
 
@@ -2218,21 +2235,26 @@ function validForm(){
 	}
 
 	if(document.form.wan_proto.value == "pppoe"){
-		if(!validator.numberRange(document.form.wan_pppoe_mtu, 128, 1492)
-			|| !validator.numberRange(document.form.wan_pppoe_mru, 128, 1492))
+		if(!validator.numberRange(document.form.wan_pppoe_mtu, 128, wan_pppoe_mtu_max)
+			|| !validator.numberRange(document.form.wan_pppoe_mru, 128, wan_pppoe_mtu_max))
 			return false;
 
-		/* reset wan_mtu to default value */
-		if($("#wan_mtu_tr").css("display") != "none"){
-			if(document.form.wan_mtu.value != "") {
-				if(parseInt(document.form.wan_pppoe_mtu.value) + 8 > parseInt(document.form.wan_mtu.value)){
+		/* adjust mtu pair based on which field the user last changed */
+		if(document.form.wan_mtu.value != "") {
+			if(mtu_last_changed == "wan_mtu"){
+				if((parseInt(document.form.wan_pppoe_mtu.value) + 8 > parseInt(document.form.wan_mtu.value)) ||
+				   (parseInt(document.form.wan_pppoe_mru.value) + 8 > parseInt(document.form.wan_mtu.value))){
 					document.form.wan_pppoe_mtu.value = parseInt(document.form.wan_mtu.value) - 8;
+					document.form.wan_pppoe_mru.value = document.form.wan_pppoe_mtu.value;
 				}
 			}
-		}
-		else if(document.form.wan_mtu.value != default_wan_mtu){
-			document.form.wan_mtu.value = default_wan_mtu;
-			document.form.wan_mtu.disabled = false;
+			else{
+				var max_pppoe = Math.max(parseInt(document.form.wan_pppoe_mtu.value), parseInt(document.form.wan_pppoe_mru.value));
+				if(max_pppoe + 8 > parseInt(document.form.wan_mtu.value)){
+					document.form.wan_mtu.value = max_pppoe + 8;
+					document.form.wan_mtu.disabled = false;
+				}
+			}
 		}
 
 		if(!validator.string(document.form.wan_pppoe_service)
@@ -2255,8 +2277,8 @@ function validForm(){
 				return false;
 		}
 
-	if($("#wan_mtu_tr").css("display") != "none" && (orig_mtu != "" || document.form.wan_mtu.value.length > 0)) {
-		if(!validator.numberRange(document.form.wan_mtu, 1280, 1500)) {
+	if(document.form.wan_proto.value != "pppoe" && $("#wan_mtu_tr").css("display") != "none" && (orig_mtu != "" || document.form.wan_mtu.value.length > 0)) {
+		if(!validator.numberRange(document.form.wan_mtu, 1280, wan_mtu_max)) {
 			document.form.wan_mtu.focus();
 			document.form.wan_mtu.select();
 			return false;
@@ -2407,6 +2429,8 @@ function change_wan_proto_type(proto_type){
 	//change_dhcp_enable();
 	change_wan_dhcp_enable();
 
+	document.form.wan_mtu.value = orig_mtu;
+
 	if(proto_type == "pppoe" || proto_type == "pppoa"){
 		showhide("wan_DHCP_opt",0);
 		inputCtrl(document.form.wan_vendorid, 0);
@@ -2493,7 +2517,7 @@ function change_wan_proto_type(proto_type){
 			document.form.bond_wan_radio.value = "0";
 		}
 
-		inputCtrl(document.form.wan_mtu, 1);
+		inputCtrl(document.form.wan_mtu, 0);
 	}
 	else if(proto_type == "l2tp"){
 		showhide("wan_DHCP_opt",0);
@@ -2538,6 +2562,7 @@ function change_wan_proto_type(proto_type){
 		}
 
 		inputCtrl(document.form.wan_mtu, 1);
+		if(parseInt(document.form.wan_mtu.value) > 1500) document.form.wan_mtu.value = 1500;
 	}
 	else if(proto_type == "static"){
 		showhide("wan_DHCP_opt",0);
@@ -2598,6 +2623,7 @@ function change_wan_proto_type(proto_type){
 		}
 
 		inputCtrl(document.form.wan_mtu, 1);
+		if(parseInt(document.form.wan_mtu.value) > 1500) document.form.wan_mtu.value = 1500;
 	}
 	else if(Softwire46_support && (proto_type == "lw4o6" || proto_type == "map-e" || proto_type == "v6plus" || proto_type == "ocnvc" || proto_type == "dslite" || proto_type == "v6opt")){
 
@@ -2645,6 +2671,7 @@ function change_wan_proto_type(proto_type){
 		}
 
 		inputCtrl(document.form.wan_mtu, 1);
+		if(parseInt(document.form.wan_mtu.value) > 1500) document.form.wan_mtu.value = 1500;
 	}
 	else if(proto_type == "dhcp"){
 		showhide("wan_DHCP_opt",1);
@@ -2710,6 +2737,7 @@ function change_wan_proto_type(proto_type){
 		}
 
 		inputCtrl(document.form.wan_mtu, 1);
+		if(parseInt(document.form.wan_mtu.value) > 1500) document.form.wan_mtu.value = 1500;
 	}
 	else if(proto_type == "bridge") {
 		showhide("wan_DHCP_opt",0);
@@ -2751,6 +2779,7 @@ function change_wan_proto_type(proto_type){
 		}
 
 		inputCtrl(document.form.wan_mtu, 1);
+		if(parseInt(document.form.wan_mtu.value) > 1500) document.form.wan_mtu.value = 1500;
 	}
 	else {
 		alert("error");
@@ -2922,14 +2951,14 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	if(flag == 1){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color="#FFCC00";
+		childsel.style.color="var(--wrt-badge-warning-color,#FFCC00)";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#LANHostConfig_ManualDHCPMacaddr_itemdesc#>";
 		return false;
 	}else if(flag ==2){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color="#FFCC00";
+		childsel.style.color="var(--wrt-badge-warning-color,#FFCC00)";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#IPConnection_x_illegal_mac#>";
 		return false;
@@ -3043,7 +3072,7 @@ function show_dnspriv_rulelist(){
 
 	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table" id="dnspriv_rulelist_table">';
 	if(dnspriv_rulelist_row.length == 1)
-		code +='<tr><td style="color:#FFCC00;" colspan="5"><#IPConnection_VSList_Norule#></td></tr>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="5"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		for(var i = 1; i < dnspriv_rulelist_row.length; i++){
 			code +='<tr id="row'+i+'">';
@@ -3307,7 +3336,7 @@ function create_DNSlist_view(){
 
 	var code="";
 
-	code += "<div style='margin-top:15px;margin-left:15px;float:left;font-size:15px;color:#93A9B1;'><#IPConnection_x_DNS_List#></div>";
+	code += "<div style='margin-top:15px;margin-left:15px;float:left;font-size:15px;color:var(--wrt-text-muted-color,#93A9B1);'><#IPConnection_x_DNS_List#></div>";
 	code += "<div style='float:right;'><img src='/images/button-close.gif' style='width:30px;cursor:pointer' onclick='closeDNSListView();'></div>";
 	code += "<table border='0' align='center' cellpadding='0' cellspacing='0' style='width:100%;padding:0 15px 15px 15px;'><tbody><tr><td>";
 
@@ -3889,7 +3918,7 @@ function change_wizard(o, id){
 											</td>
 										</tr>
 										<tr style="display: none;">
-												<th><a class="hintstyle" href="javascript:void(0);" onClick=""><#BasicConfig_EnableDHCPFilter_itemname#></a></th>
+												<th><a class="hintstyle"><#BasicConfig_EnableDHCPFilter_itemname#></a></th>
 												<td>
 													<input type="radio" name="wan_dhcpfilter_enable" class="input" value="1" <% nvram_match("wan_dhcpfilter_enable", "1", "checked"); %>><#checkbox_Yes#>
 													<input type="radio" name="wan_dhcpfilter_enable" class="input" value="0" <% nvram_match("wan_dhcpfilter_enable", "0", "checked"); %>><#checkbox_No#>
@@ -3900,7 +3929,7 @@ function change_wizard(o, id){
 											<td>
 												<input type="radio" name="bond_wan_radio" class="input" value="1" onclick="return change_common_radio(this, 'LANHostConfig', 'bond_wan', '1')" <% nvram_match("bond_wan", "1", "checked"); %>><#checkbox_Yes#>
 												<input type="radio" name="bond_wan_radio" class="input" value="0" onclick="return change_common_radio(this, 'LANHostConfig', 'bond_wan', '0')" <% nvram_match("bond_wan", "0", "checked"); %>><#checkbox_No#>
-												<div id="wanAgg_desc" style="color:#FFCC00;"><#WANAggregation_desc#></div>
+												<div id="wanAgg_desc" style="color:var(--wrt-badge-warning-color,#FFCC00);"><#WANAggregation_desc#></div>
 												<select id="wanports_bond_menu" class="input_option" style="display:none;" name="wanports_bond" onchange="change_wanAggre_desc();" disabled>
 													<option value="0 1" <% find_word("wanports_bond", "1", "selected"); %>>LAN 1</option>
 													<option value="0 2" <% find_word("wanports_bond", "2", "selected"); %>>LAN 2</option>
@@ -3987,7 +4016,7 @@ function change_wizard(o, id){
 							<tr id="wan_s46_dslite_svc_r" style="display:none;">
 								<th><#BM_UserList1#></th>
 								<td>
-									<div id="wan_s46_dslite_svc_span" name="wan_s46_dslite_svc_span" style="color:#FFFFFF;margin-left:8px;"></div>
+									<div id="wan_s46_dslite_svc_span" name="wan_s46_dslite_svc_span" style="color:var(--wrt-text-color,#FFFFFF);margin-left:8px;"></div>
 								</td>
 							</tr>
 							<tr>
@@ -4001,7 +4030,7 @@ function change_wizard(o, id){
 							<tr id="ipv6_s46_aftr_r" style="display:none;">
 								<th>AFTR Address</th>
 								<td>
-									<div id="ipv6_s46_aftr_span" name="ipv6_s46_aftr_span" style="color:#FFFFFF;margin-left:8px;"></div>
+									<div id="ipv6_s46_aftr_span" name="ipv6_s46_aftr_span" style="color:var(--wrt-text-color,#FFFFFF);margin-left:8px;"></div>
 								</td>
 							</tr>
 							<tr>
@@ -4013,7 +4042,7 @@ function change_wizard(o, id){
 							<tr id="ipv6_s46_b4addr_r" style="display:none;">
 								<th>B4 IPv4 Address</th>
 								<td>
-									<div id="ipv6_s46_b4addr_span" name="ipv6_s46_b4addr_span" style="color:#FFFFFF;margin-left:8px;"></div>
+									<div id="ipv6_s46_b4addr_span" name="ipv6_s46_b4addr_span" style="color:var(--wrt-text-color,#FFFFFF);margin-left:8px;"></div>
 								</td>
 							</tr>
 						</table>
@@ -4260,7 +4289,7 @@ function change_wizard(o, id){
 												<a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,7);"><#PPPConnection_x_PPPoEMTU_itemname#></a>
 											</th>
 											<td>
-												<input type="text" maxlength="5" name="wan_pppoe_mtu" class="input_6_table" value="<% nvram_get("wan_pppoe_mtu"); %>" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"/>&nbsp;128 - 1492
+												<input type="text" maxlength="5" name="wan_pppoe_mtu" class="input_6_table" value="<% nvram_get("wan_pppoe_mtu"); %>" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"/>&nbsp;<span id="wan_pppoe_mtu_range_hint"></span>
 											</td>
 										</tr>
 										<tr>
@@ -4268,7 +4297,7 @@ function change_wizard(o, id){
 												<a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,8);"><#PPPConnection_x_PPPoEMRU_itemname#></a>
 											</th>
 											<td>
-												<input type="text" maxlength="5" name="wan_pppoe_mru" class="input_6_table" value="<% nvram_get("wan_pppoe_mru"); %>" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"/>&nbsp;128 - 1492
+												<input type="text" maxlength="5" name="wan_pppoe_mru" class="input_6_table" value="<% nvram_get("wan_pppoe_mru"); %>" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"/>&nbsp;<span id="wan_pppoe_mru_range_hint"></span>
 											</td>
 										</tr>
 										<tr>
@@ -4374,7 +4403,7 @@ function change_wizard(o, id){
         							<tr>
           								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,15);"><#PPPConnection_x_HostNameForISP_itemname#></a></th>
           								<td>
-          									<div><input type="text" name="wan_hostname" class="input_32_table" maxlength="32" value="<% nvram_get("wan_hostname"); %>" onkeypress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off"><br/><span id="alert_msg1" style="color:#FC0;"></span></div>
+          									<div><input type="text" name="wan_hostname" class="input_32_table" maxlength="32" value="<% nvram_get("wan_hostname"); %>" onkeypress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off"><br/><span id="alert_msg1" style="color:var(--wrt-badge-warning-color,#FFCC00);"></span></div>
           								</td>
         							</tr>
         							<tr>
@@ -4414,7 +4443,7 @@ function change_wizard(o, id){
 											<#PPPConnection_x_PPPoEMTU_itemname#>
 										</th>
 										<td>
-											<input type="text" maxlength="5" name="wan_mtu" class="input_6_table" value="<% nvram_get("wan_mtu"); %>" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"/>&nbsp;1280 - 1500
+											<input type="text" maxlength="5" name="wan_mtu" class="input_6_table" value="<% nvram_get("wan_mtu"); %>" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"/>&nbsp;<span id="wan_mtu_range_hint"></span>
 										</td>
 									</tr>
 									</table>

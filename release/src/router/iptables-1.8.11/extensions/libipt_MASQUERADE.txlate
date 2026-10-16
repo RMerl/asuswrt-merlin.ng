@@ -1,0 +1,17 @@
+iptables-translate -t nat -A POSTROUTING -j MASQUERADE
+nft 'add rule ip nat POSTROUTING counter masquerade'
+
+iptables-translate -t nat -A POSTROUTING -p tcp -j MASQUERADE --to-ports 10
+nft 'add rule ip nat POSTROUTING ip protocol tcp counter masquerade to :10'
+
+iptables-translate -t nat -A POSTROUTING -p tcp -j MASQUERADE --to-ports 10-20 --random
+nft 'add rule ip nat POSTROUTING ip protocol tcp counter masquerade to :10-20 random'
+
+iptables-translate -t nat -A POSTROUTING -p tcp -j MASQUERADE --random
+nft 'add rule ip nat POSTROUTING ip protocol tcp counter masquerade random'
+
+iptables-translate -t nat -A POSTROUTING -p tcp -j MASQUERADE --random-fully
+nft 'add rule ip nat POSTROUTING ip protocol tcp counter masquerade fully-random'
+
+iptables-translate -t nat -A POSTROUTING -p tcp -j MASQUERADE --random --random-fully
+nft 'add rule ip nat POSTROUTING ip protocol tcp counter masquerade random,fully-random'

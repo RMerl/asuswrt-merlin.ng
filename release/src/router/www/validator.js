@@ -132,7 +132,7 @@ var validator = {
 		if(!this.ipAddr4(obj) || (emp == 1 && obj.value == "")){
 			var childsel=document.createElement("div");
 			childsel.setAttribute("id","check_ip_input");
-			childsel.style.color="#FFCC00";
+			childsel.style.color="var(--wrt-badge-warning-color,#FFCC00)";
 			obj.parentNode.appendChild(childsel);
 			document.getElementById("check_ip_input").innerHTML="<#JS_validip#>";		
 			document.getElementById("check_ip_input").style.display = "";
@@ -2070,7 +2070,7 @@ var validator = {
 			$("<div>")
 				.html(hintStr)
 				.addClass("hint")
-				.css("color", "#FC0")
+				.css("color", "var(--wrt-badge-warning-color,#FC0)")
 				.css("margin", "2px 0 0 5px")
 				.appendTo(ssid_obj.parent());
 

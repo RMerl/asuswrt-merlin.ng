@@ -1,0 +1,23 @@
+ip6tables-translate -t filter -A INPUT -m frag --fragid 100:200 -j ACCEPT
+nft 'add rule ip6 filter INPUT frag id 100-200 counter accept'
+
+ip6tables-translate -t filter -A INPUT -m frag --fragid 100 --fragres --fragmore -j ACCEPT
+nft 'add rule ip6 filter INPUT frag id 100 frag reserved 1 frag more-fragments 1 counter accept'
+
+ip6tables-translate -t filter -A INPUT -m frag ! --fragid 100:200 -j ACCEPT
+nft 'add rule ip6 filter INPUT frag id != 100-200 counter accept'
+
+ip6tables-translate -t filter -A INPUT -m frag --fragid 100:200 --fraglast -j ACCEPT
+nft 'add rule ip6 filter INPUT frag id 100-200 frag more-fragments 0 counter accept'
+
+ip6tables-translate -t filter -A INPUT -m frag --fragid 100:200 --fragfirst -j ACCEPT
+nft 'add rule ip6 filter INPUT frag id 100-200 frag frag-off 0 counter accept'
+
+ip6tables-translate -t filter -A INPUT -m frag --fraglast -j ACCEPT
+nft 'add rule ip6 filter INPUT frag more-fragments 0 counter accept'
+
+ip6tables-translate -t filter -A INPUT -m frag --fragid 0:4294967295
+nft 'add rule ip6 filter INPUT exthdr frag exists counter'
+
+ip6tables-translate -t filter -A INPUT -m frag ! --fragid 0:4294967295
+nft 'add rule ip6 filter INPUT frag id != 0-4294967295 counter'

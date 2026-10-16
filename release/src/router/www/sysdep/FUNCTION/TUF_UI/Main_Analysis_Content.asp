@@ -460,7 +460,7 @@ validator.targetDomainName = function($o){
 												<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_network_host#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
 												<div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>
 												<br/>
-												<span id="alert_block" style="color:#FC0;display:none"></span>
+												<span id="alert_block" style="color:var(--wrt-badge-warning-color,#FFCC00);display:none"></span>
 											</td>
 										</tr>
 										<tr id="pingCNT_tr" style="display:none">

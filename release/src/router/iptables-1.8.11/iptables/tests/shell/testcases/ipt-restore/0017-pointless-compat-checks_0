@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# A bug in extension registration would leave unsupported older extension
+# revisions in pending list and get compatibility checked again for each rule
+# using them. With SELinux enabled, the resulting socket() call per rule leads
+# to significant slowdown (~50% performance in worst cases).
+
+set -e
+
+strace --version >/dev/null || { echo "skip for missing strace"; exit 0; }
+
+RULESET="$(
+	echo "*filter"
+	for ((i = 0; i < 100; i++)); do
+		echo "-A FORWARD -m conntrack --ctstate NEW"
+	done
+	echo "COMMIT"
+)"
+
+cmd="$XT_MULTI iptables-restore"
+socketcount=$(strace -esocket $cmd <<< "$RULESET" 2>&1 | wc -l)
+
+# unpatched iptables-restore would open 111 sockets,
+# patched only 12 but keep a certain margin for future changes
+[[ $socketcount -lt 20 ]]

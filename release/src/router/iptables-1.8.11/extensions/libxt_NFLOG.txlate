@@ -1,0 +1,14 @@
+iptables-translate -A FORWARD -j NFLOG --nflog-group 32 --nflog-prefix "Prefix 1.0"
+nft 'add rule ip filter FORWARD counter log prefix "Prefix 1.0" group 32'
+
+iptables-translate -A OUTPUT -j NFLOG --nflog-group 30
+nft 'add rule ip filter OUTPUT counter log group 30'
+
+iptables-translate -I INPUT -j NFLOG --nflog-threshold 2
+nft 'insert rule ip filter INPUT counter log queue-threshold 2 group 0'
+
+iptables-translate -I INPUT -j NFLOG --nflog-size 256
+nft 'insert rule ip filter INPUT counter log snaplen 256 group 0'
+
+iptables-translate -I INPUT -j NFLOG --nflog-threshold 25
+nft 'insert rule ip filter INPUT counter log queue-threshold 25 group 0'

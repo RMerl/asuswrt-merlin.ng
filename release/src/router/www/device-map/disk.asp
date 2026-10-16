@@ -12,19 +12,19 @@
 <style>
 a:link {
 	text-decoration: underline;
-	color: #FFFFFF;
+	color: var(--wrt-text-color,#FFFFFF);
 }
 a:visited {
 	text-decoration: underline;
-	color: #FFFFFF;
+	color: var(--wrt-text-color,#FFFFFF);
 }
 a:hover {
 	text-decoration: underline;
-	color: #FFFFFF;
+	color: var(--wrt-text-color,#FFFFFF);
 }
 a:active {
 	text-decoration: none;
-	color: #FFFFFF;
+	color: var(--wrt-text-color,#FFFFFF);
 }
 </style>
 <script type="text/javascript" src="/js/jquery.js"></script>
@@ -159,7 +159,7 @@ function switchUSBType(){
 	<tr>
     <td style="padding:5px 10px 0px 15px;">
     	<p class="formfonttitle_nwm"><#Modelname#>:</p>
-			<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px; color:#FFFFFF;" id="disk_model_name"></p>
+			<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px; color:var(--wrt-text-color,#FFFFFF);" id="disk_model_name"></p>
     	<div style="margin-top:5px;" class="line_horizontal"></div>
     </td>
   </tr>
@@ -169,7 +169,7 @@ function switchUSBType(){
   <tr>
     <td style="padding:5px 10px 0px 15px;">
     	<p class="formfonttitle_nwm"><#Availablespace#>:</p>
-    	<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px; color:#FFFFFF;" id="disk_avail_size"></p>
+    	<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px; color:var(--wrt-text-color,#FFFFFF);" id="disk_avail_size"></p>
     	<div style="margin-top:5px;" class="line_horizontal"></div>
     </td>
   </tr>
@@ -177,7 +177,7 @@ function switchUSBType(){
   <tr>
     <td style="padding:5px 10px 0px 15px;">
     	<p class="formfonttitle_nwm"><#Totalspace#>:</p>
-    	<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px; color:#FFFFFF;" id="disk_total_size"></p>
+    	<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px; color:var(--wrt-text-color,#FFFFFF);" id="disk_total_size"></p>
 		<div style="margin-top:5px;" class="line_horizontal"></div>
     </td>
   </tr>

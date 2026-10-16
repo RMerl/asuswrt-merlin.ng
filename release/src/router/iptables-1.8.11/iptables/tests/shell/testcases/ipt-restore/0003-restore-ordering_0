@@ -1,0 +1,141 @@
+#!/bin/bash
+
+# Make sure iptables-restore does the right thing
+# when encountering INSERT rules with index.
+
+set -e
+
+# show rules, drop uninteresting policy settings
+ipt_show() {
+	$XT_MULTI iptables -S | grep -v '^-P'
+}
+
+# basic issue reproducer
+
+$XT_MULTI iptables-restore <<EOF
+*filter
+-A FORWARD -m comment --comment "rule 4" -j ACCEPT
+-I FORWARD 1 -m comment --comment "rule 1" -j ACCEPT
+-I FORWARD 2 -m comment --comment "rule 2" -j ACCEPT
+-I FORWARD 3 -m comment --comment "rule 3" -j ACCEPT
+COMMIT
+EOF
+
+EXPECT='-A FORWARD -m comment --comment "rule 1" -j ACCEPT
+-A FORWARD -m comment --comment "rule 2" -j ACCEPT
+-A FORWARD -m comment --comment "rule 3" -j ACCEPT
+-A FORWARD -m comment --comment "rule 4" -j ACCEPT'
+
+diff -u -Z <(echo -e "$EXPECT") <(ipt_show)
+
+# insert rules into existing ruleset
+
+$XT_MULTI iptables-restore --noflush <<EOF
+*filter
+-A FORWARD -m comment --comment "rule 5" -j ACCEPT
+-I FORWARD 1 -m comment --comment "rule 0.5" -j ACCEPT
+-I FORWARD 3 -m comment --comment "rule 1.5" -j ACCEPT
+-I FORWARD 5 -m comment --comment "rule 2.5" -j ACCEPT
+-I FORWARD 7 -m comment --comment "rule 3.5" -j ACCEPT
+-I FORWARD 9 -m comment --comment "rule 4.5" -j ACCEPT
+-I FORWARD 11 -m comment --comment "rule 5.5" -j ACCEPT
+-A FORWARD -m comment --comment "rule 6" -j ACCEPT
+COMMIT
+EOF
+
+EXPECT='-A FORWARD -m comment --comment "rule 0.5" -j ACCEPT
+-A FORWARD -m comment --comment "rule 1" -j ACCEPT
+-A FORWARD -m comment --comment "rule 1.5" -j ACCEPT
+-A FORWARD -m comment --comment "rule 2" -j ACCEPT
+-A FORWARD -m comment --comment "rule 2.5" -j ACCEPT
+-A FORWARD -m comment --comment "rule 3" -j ACCEPT
+-A FORWARD -m comment --comment "rule 3.5" -j ACCEPT
+-A FORWARD -m comment --comment "rule 4" -j ACCEPT
+-A FORWARD -m comment --comment "rule 4.5" -j ACCEPT
+-A FORWARD -m comment --comment "rule 5" -j ACCEPT
+-A FORWARD -m comment --comment "rule 5.5" -j ACCEPT
+-A FORWARD -m comment --comment "rule 6" -j ACCEPT'
+
+diff -u -Z <(echo -e "$EXPECT") <(ipt_show)
+
+# insert rules in between added ones
+
+$XT_MULTI iptables-restore <<EOF
+*filter
+-A FORWARD -m comment --comment "appended rule 1" -j ACCEPT
+-A FORWARD -m comment --comment "appended rule 2" -j ACCEPT
+-A FORWARD -m comment --comment "appended rule 3" -j ACCEPT
+-I FORWARD 1 -m comment --comment "rule 1" -j ACCEPT
+-I FORWARD 3 -m comment --comment "rule 2" -j ACCEPT
+-I FORWARD 5 -m comment --comment "rule 3" -j ACCEPT
+COMMIT
+EOF
+
+EXPECT='-A FORWARD -m comment --comment "rule 1" -j ACCEPT
+-A FORWARD -m comment --comment "appended rule 1" -j ACCEPT
+-A FORWARD -m comment --comment "rule 2" -j ACCEPT
+-A FORWARD -m comment --comment "appended rule 2" -j ACCEPT
+-A FORWARD -m comment --comment "rule 3" -j ACCEPT
+-A FORWARD -m comment --comment "appended rule 3" -j ACCEPT'
+
+diff -u -Z <(echo -e "$EXPECT") <(ipt_show)
+
+# test rule deletion in dump files
+
+$XT_MULTI iptables-restore --noflush <<EOF
+*filter
+-A FORWARD -m comment --comment "appended rule 4" -j ACCEPT
+-D FORWARD 7
+-D FORWARD -m comment --comment "appended rule 1" -j ACCEPT
+-D FORWARD 3
+-I FORWARD 3 -m comment --comment "manually replaced rule 2" -j ACCEPT
+COMMIT
+EOF
+
+EXPECT='-A FORWARD -m comment --comment "rule 1" -j ACCEPT
+-A FORWARD -m comment --comment "rule 2" -j ACCEPT
+-A FORWARD -m comment --comment "manually replaced rule 2" -j ACCEPT
+-A FORWARD -m comment --comment "rule 3" -j ACCEPT
+-A FORWARD -m comment --comment "appended rule 3" -j ACCEPT'
+
+diff -u -Z <(echo -e "$EXPECT") <(ipt_show)
+
+# test rule replacement in dump files
+
+$XT_MULTI iptables-restore <<EOF
+*filter
+-A FORWARD -m comment --comment "rule 1" -j ACCEPT
+-A FORWARD -m comment --comment "rule to be replaced" -j ACCEPT
+-A FORWARD -m comment --comment "rule 3" -j ACCEPT
+COMMIT
+EOF
+
+$XT_MULTI iptables-restore --noflush <<EOF
+*filter
+-R FORWARD 2 -m comment --comment "replacement" -j ACCEPT
+-I FORWARD 2 -m comment --comment "insert referencing replaced rule" -j ACCEPT
+COMMIT
+EOF
+
+EXPECT='-A FORWARD -m comment --comment "rule 1" -j ACCEPT
+-A FORWARD -m comment --comment "insert referencing replaced rule" -j ACCEPT
+-A FORWARD -m comment --comment replacement -j ACCEPT
+-A FORWARD -m comment --comment "rule 3" -j ACCEPT'
+
+diff -u -Z <(echo -e "$EXPECT") <(ipt_show)
+
+# test adding, referencing and deleting the same rule in a batch
+
+$XT_MULTI iptables-restore <<EOF
+*filter
+-A FORWARD -m comment --comment "first rule" -j ACCEPT
+-A FORWARD -m comment --comment "referenced rule" -j ACCEPT
+-I FORWARD 2 -m comment --comment "referencing rule" -j ACCEPT
+-D FORWARD -m comment --comment "referenced rule" -j ACCEPT
+COMMIT
+EOF
+
+EXPECT='-A FORWARD -m comment --comment "first rule" -j ACCEPT
+-A FORWARD -m comment --comment "referencing rule" -j ACCEPT'
+
+diff -u -Z <(echo -e "$EXPECT") <(ipt_show)

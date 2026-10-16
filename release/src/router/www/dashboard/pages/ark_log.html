@@ -107,7 +107,36 @@
     }
 
     .daterangepicker {
-        color: var(--black-alpha-100);
+        color: var(--wrt-text-color);
+        background-color: var(--wrt-modal-bg);
+        border: 1px solid var(--wrt-modal-border-color);
+        border-radius: var(--wrt-btn-radius);
+        box-shadow: var(--wrt-modal-shadow);
+        animation: slideUp 0.3s ease-out;
+    }
+
+    /* Prevent business-white.css generic `table` rules from bleeding into the calendar */
+    .daterangepicker table {
+        background-color: unset;
+        color: unset;
+        border: unset;
+        border-radius: unset;
+        box-shadow: unset;
+    }
+
+    .daterangepicker table thead th {
+        background-color: unset;
+        color: unset;
+        border-bottom: unset;
+        padding: unset;
+        vertical-align: unset;
+    }
+
+    .daterangepicker table td,
+    .daterangepicker table th {
+        border-bottom: unset;
+        padding: unset;
+        vertical-align: unset;
     }
 
     /* Modal Dialog Styles */
@@ -147,18 +176,19 @@
     }
 
     .card-float {
-        background: var(--card-bg, #fff);
+        background: var(--wrt-modal-bg);
         border-radius: 12px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        box-shadow: var(--wrt-modal-shadow);
         min-width: 400px;
         max-width: 90%;
         overflow: hidden;
         animation: slideUp 0.3s ease-out;
+        border: 1px solid var(--wrt-modal-border-color);
     }
 
     .card-header-float {
-        background: var(--primary-color, #1a73e8);
-        color: #fff;
+        background: var(--wrt-modal-header-bg);
+        color: var(--wrt-modal-color);
         padding: 20px 24px;
         font-size: 1.25rem;
         font-weight: 600;
@@ -167,7 +197,7 @@
 
     .card-body-float {
         padding: 24px;
-        color: var(--text-color, #333);
+        color: var(--wrt-modal-color);
         font-size: 0.95rem;
         line-height: 1.6;
         min-height: 80px;
@@ -175,52 +205,70 @@
 
     .card-footer-float {
         padding: 16px 24px;
-        background: var(--card-footer-bg, #f8f9fa);
-        border-top: 1px solid var(--border-color, #e0e0e0);
+        background: var(--wrt-modal-footer-bg);
+        border-top: 1px solid var(--wrt-modal-footer-border-color);
         gap: 12px;
     }
 
     .btn-regular,
     .btn-confirm {
         padding: 10px 24px;
-        border-radius: 6px;
         cursor: pointer;
         font-size: 0.9rem;
         font-weight: 500;
         transition: all 0.2s ease;
         user-select: none;
         min-width: 80px;
+        border-radius: var(--wrt-btn-radius);
     }
 
     .btn-regular {
-        background: var(--btn-secondary-bg, #fff);
-        color: var(--btn-secondary-color, #666);
-        border: 1px solid var(--border-color, #ddd);
+        background: var(--wrt-btn-default-bg);
+        color: var(--wrt-btn-default-color);
+        border: 1px solid var(--wrt-btn-default-border);
+        transition: all 0.2s ease;
+        &:hover {
+            background: var(--wrt-btn-default-hover-bg);
+            color: var(--wrt-btn-default-hover-color);
+            border: 1px solid var(--wrt-btn-default-hover-border);
+        }
     }
-
-    .btn-regular:hover {
-        background: var(--btn-secondary-hover-bg, #f5f5f5);
-        border-color: var(--border-hover-color, #999);
-    }
-
     .btn-regular:active {
         transform: scale(0.98);
     }
 
     .btn-confirm {
-        background: var(--btn-danger-bg, #dc3545);
-        color: #fff;
-        border: 1px solid var(--btn-danger-bg, #dc3545);
-    }
-
-    .btn-confirm:hover {
-        background: var(--btn-danger-hover-bg, #c82333);
-        border-color: var(--btn-danger-hover-bg, #c82333);
-        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
+        background: var(--wrt-btn-outline-primary-bg);
+        color: var(--wrt-btn-outline-primary-color);
+        border: 1px solid var(--wrt-btn-outline-primary-border);
+        transition: all 0.2s ease;
+        &:hover {
+            background: var(--wrt-btn-outline-primary-hover-bg);
+            color: var(--wrt-btn-outline-primary-hover-color);
+            border: 1px solid var(--wrt-btn-outline-primary-hover-border);
+        }
     }
 
     .btn-confirm:active {
         transform: scale(0.98);
+    }
+
+    .formfontdesc {
+        font-size: 14px;
+    }
+
+    .feature-title {
+        font-size: 14px;
+    }
+
+    .feature-switch-div {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--surface-card);
+        border: var(--border-subtle);
+        margin: 1rem auto;
+        padding: 1rem 2rem;
     }
 
     /* Responsive Design */
@@ -255,6 +303,28 @@
     #content_title, .split-line {
         display: none;
     }
+
+    /* Narrow screens: stack the datatable toolbar controls full-width */
+    @media (max-width: 575.98px) {
+        #ark_log_datatable_wrapper .dt-length {
+            margin-bottom: 0.5rem;
+        }
+
+        #ark_log_datatable_wrapper .d-flex.justify-content-end.flex-wrap.gap-2 {
+            justify-content: flex-start !important;
+        }
+
+        #ark_log_datatable_wrapper #mac-filter-container,
+        #ark_log_datatable_wrapper #daterange-container,
+        #ark_log_datatable_wrapper .input-date-selector {
+            width: 100%;
+        }
+
+        #ark_log_datatable_wrapper #mac-filter,
+        #ark_log_datatable_wrapper #daterange {
+            width: 100% !important;
+        }
+    }
 </style>
 <body onload="initial()">
 <div id="TopBanner"></div>
@@ -262,19 +332,17 @@
 <div id="whiteThemeWrapper" class="container-fluid mt-3">
     <div class="row">
         <div class="col-12">
-            <div id="content_title" class="formfonttitle"><#Adaptive_History#>
+            <div id="content_title" class="formfonttitle fw-bold"><#Adaptive_History#>
             </div>
             <div class="split-line my-2"></div>
             <div class="formfontdesc">
                 <#Adaptive_History_desc#>
             </div>
         </div>
-        <div class="col-12 mt-3 mb-2 d-flex">
-            <div class="col-6"><#Adaptive_History#></div>
-            <div class="col-6">
-                <div align="center" class="left"
-                     style="width:94px; float:left; cursor:pointer;"
-                     id="ark_log_enable"></div>
+        <div class="col-12 feature-switch-div">
+            <div class="col-6 feature-title"><#Adaptive_History#></div>
+            <div class="col-6 d-flex justify-content-end">
+                <div id="ark_log_enable"></div>
             </div>
         </div>
         <div class="card col-12" id="log_field">
@@ -319,10 +387,11 @@
 
     import {ClientList} from '../js/clientlist.module.js';
     import {ToggleButton} from "../js/component.module.js";
+    import {confirmArkFeatureNatNotice} from "../js/utils.module.js";
 
     const _nvram = {
         ...httpApi.nvramGet([
-            "ark_log_enable",
+            "ark_log_enable"
         ], true)
     };
 
@@ -332,6 +401,10 @@
             label: `<#Adaptive_History#> Toggle`,
         });
         toggle.setOnChange(function (active) {
+            if (active && !confirmArkFeatureNatNotice("ark_log")) {
+                toggle.disable();
+                return;
+            }
             switch_control(active);
         });
         enableToggleBtn.appendChild(toggle.render());
@@ -348,11 +421,6 @@
             "action_mode": "apply",
             "rc_service": "restart_ark",
         }, () => {
-            if(value){
-                document.getElementById('log_field').style.display = 'block';
-            } else {
-                document.getElementById('log_field').style.display = 'none';
-            }
             top.hideLoading();
         })
     }
@@ -725,7 +793,7 @@
             const table = $(`#${tableId}`).DataTable({
                 processing: true,
                 serverSide: true,
-                dom: `<"row"<"col-sm-6"l><"col-sm-6"<"d-flex justify-content-end gap-2"<"#mac-filter-container"><"#daterange-container">>>>rtip`,
+                dom: `<"row"<"col-sm-3"l><"col-sm-9"<"d-flex justify-content-end flex-wrap gap-2"<"#mac-filter-container"><"#daterange-container">>>>rtip`,
                 ajax: (data, callback, settings) => {
 
                     const page = Math.floor(data.start / data.length) + 1;
@@ -797,10 +865,10 @@
                     lengthMenu: `<div class="d-flex align-items-center gap-2"><div><#Rows_Per_Page#>:</div><div>_MENU_</div></div>`,
                     search: '',
                     paginate: {
-                        first: '<svg width="24" height="24" viewBox="0 0 24 24"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"/></svg>',
-                        previous: '<svg width="24" height="24" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>',
-                        next: '<svg width="24" height="24" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>',
-                        last: '<svg width="24" height="24" viewBox="0 0 24 24"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"/></svg>'
+                        first: '<svg width="24" height="24" viewBox="0 0 24 24" fill="var(--brand-color)"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"/></svg>',
+                        previous: '<svg width="24" height="24" viewBox="0 0 24 24" fill="var(--brand-color)"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>',
+                        next: '<svg width="24" height="24" viewBox="0 0 24 24" fill="var(--brand-color)"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>',
+                        last: '<svg width="24" height="24" viewBox="0 0 24 24" fill="var(--brand-color)"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"/></svg>'
                     }
                 },
                 drawCallback: () => {
@@ -840,14 +908,14 @@
 
             // MAC filter input
             $('#mac-filter-container').html(
-                `<input type="text" id="mac-filter" class="form-control" placeholder="<#MAC_Address#>" style="width: 180px; display: inline-block;" />`
+                `<input type="text" id="mac-filter" class="form-control" placeholder="<#MAC_Address#>" style="width: 180px; max-width: 100%; display: inline-block; font-size: unset;" />`
             );
 
             // Date range picker
             $('#daterange-container').html(
                 `<div class="input-date-selector">
                     <i class="icon icon-calendar icon-size-24"></i>
-                    <input type="text" id="daterange" class="form-control" style="width: 250px; display: inline-block;" />
+                    <input type="text" id="daterange" class="form-control ps-5" style="width: 250px; max-width: 100%; display: inline-block; font-size: unset;" />
                 </div>`
             );
 
@@ -883,7 +951,7 @@
 
         render() {
             const div = document.createElement('div');
-            div.className = "col-12 my-3";
+            div.className = "col-12";
             const card = document.createElement('div');
             card.className = "pt-2 h-100";
             card.innerHTML = this.generateHTML();

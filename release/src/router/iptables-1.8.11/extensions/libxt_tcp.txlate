@@ -1,0 +1,38 @@
+iptables-translate -A INPUT -p tcp -i eth0 --sport 53 -j ACCEPT
+nft 'add rule ip filter INPUT iifname "eth0" tcp sport 53 counter accept'
+
+iptables-translate -A OUTPUT -p tcp -o eth0 --dport 53:66 -j DROP
+nft 'add rule ip filter OUTPUT oifname "eth0" tcp dport 53-66 counter drop'
+
+iptables-translate -I OUTPUT -p tcp -d 8.8.8.8 -j ACCEPT
+nft 'insert rule ip filter OUTPUT ip protocol tcp ip daddr 8.8.8.8 counter accept'
+
+iptables-translate -I OUTPUT -p tcp --dport 1020:1023 --sport 53 -j ACCEPT
+nft 'insert rule ip filter OUTPUT tcp sport 53 tcp dport 1020-1023 counter accept'
+
+iptables -A INPUT -p tcp --tcp-flags ACK,FIN FIN -j DROP
+nft 'add rule ip filter INPUT tcp flags fin / fin,ack counter drop'
+
+iptables-translate -A INPUT -p tcp --syn -j ACCEPT
+nft 'add rule ip filter INPUT tcp flags syn / fin,syn,rst,ack counter accept'
+
+iptables-translate -A INPUT -p tcp --syn --dport 80 -j ACCEPT
+nft 'add rule ip filter INPUT tcp dport 80 tcp flags syn / fin,syn,rst,ack counter accept'
+
+iptables-translate -A INPUT -f -p tcp
+nft 'add rule ip filter INPUT ip frag-off & 0x1fff != 0 ip protocol tcp counter'
+
+iptables-translate -A INPUT ! -f -p tcp --dport 22
+nft 'add rule ip filter INPUT ip frag-off & 0x1fff 0 tcp dport 22 counter'
+
+iptables-translate -A INPUT -p tcp --tcp-option 23
+nft 'add rule ip filter INPUT tcp option 23 exists counter'
+
+iptables-translate -A INPUT -p tcp ! --tcp-option 23
+nft 'add rule ip filter INPUT tcp option 23 missing counter'
+
+iptables-translate -I OUTPUT -p tcp --sport 0:65535 -j ACCEPT
+nft 'insert rule ip filter OUTPUT meta l4proto tcp counter accept'
+
+iptables-translate -I OUTPUT -p tcp ! --sport 0:65535 -j ACCEPT
+nft 'insert rule ip filter OUTPUT tcp sport != 0-65535 counter accept'

@@ -1,0 +1,78 @@
+#!/bin/bash -e
+
+SETUP="*filter
+:FORWARD ACCEPT [13:37]
+-A FORWARD -c 1 2 -j ACCEPT
+-A FORWARD -c 3 4 -j ACCEPT
+COMMIT"
+
+
+### -Z with index shall zero a single chain only
+
+EXPECT="-P FORWARD ACCEPT -c 13 37
+-A FORWARD -c 0 0 -j ACCEPT
+-A FORWARD -c 3 4 -j ACCEPT"
+
+$XT_MULTI iptables-restore --counters <<< "$SETUP"
+$XT_MULTI iptables -Z FORWARD 1
+diff -u <(echo "$EXPECT") <($XT_MULTI iptables -vS FORWARD)
+
+
+### -Z without index shall zero the chain and all rules
+
+EXPECT="-P FORWARD ACCEPT -c 0 0
+-A FORWARD -c 0 0 -j ACCEPT
+-A FORWARD -c 0 0 -j ACCEPT"
+
+$XT_MULTI iptables -Z FORWARD
+diff -u <(echo "$EXPECT") <($XT_MULTI iptables -vS FORWARD)
+
+
+### prepare for live test
+
+# iptables-nft will create output chain on demand, so make sure it exists
+$XT_MULTI iptables -A OUTPUT -d 127.2.3.4 -j ACCEPT
+
+# test runs in its own netns, lo is there but down by default
+ip link set lo up
+
+
+### pings (and pongs) hit OUTPUT policy, its counters must increase
+
+get_pkt_counter() { # (CHAIN)
+	$XT_MULTI iptables -vS $1 | awk '/^-P '$1'/{print $5; exit}'
+}
+
+counter_inc_test() {
+	pkt_pre=$(get_pkt_counter OUTPUT)
+	ping -q -i 0.2 -c 3 127.0.0.1
+	pkt_post=$(get_pkt_counter OUTPUT)
+	[[ $pkt_post -gt $pkt_pre ]]
+}
+
+counter_inc_test
+
+# iptables-nft-restore needed --counters to create chains with them
+if [[ $XT_MULTI == *xtables-nft-multi ]]; then
+	$XT_MULTI iptables -F OUTPUT
+	$XT_MULTI iptables -X OUTPUT
+	$XT_MULTI iptables-restore <<EOF
+*filter
+:OUTPUT ACCEPT [0:0]
+COMMIT
+EOF
+	counter_inc_test
+fi
+
+### unrelated restore must not touch changing counters in kernel
+
+# With legacy iptables, this works without --noflush even. With iptables-nft,
+# ruleset is flushed though. Not sure which behaviour is actually correct. :)
+pkt_pre=$pkt_post
+$XT_MULTI iptables-restore --noflush <<EOF
+*filter$(ping -i 0.2 -c 3 127.0.0.1 >/dev/null 2>&1)
+COMMIT
+EOF
+nft list ruleset
+pkt_post=$(get_pkt_counter OUTPUT)
+[[ $pkt_post -eq $((pkt_pre + 6 )) ]]

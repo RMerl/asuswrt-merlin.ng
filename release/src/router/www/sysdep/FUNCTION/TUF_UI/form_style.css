@@ -1,17 +1,25 @@
 /* CSS Document */
-html::-webkit-scrollbar{
+html::-webkit-scrollbar {
     display: block;
-    width: 4px;
-    height: 4px;
-    padding: 2px;
+    width: 8px;
+    height: 8px;
 }
-html::-webkit-scrollbar-thumb{
+
+html::-webkit-scrollbar-thumb {
     background-color: rgb(255,165,35) !important;
     border-radius: 50px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
 }
-html::-webkit-scrollbar-track{
+
+html::-webkit-scrollbar-thumb:hover {
+    border: 0px solid transparent;
+}
+
+html::-webkit-scrollbar-track {
     background-color: #192229 !important;
 }
+
 .buttonok {width:52px; font-family:Verdana; font-size:11px; line-height:25px; text-align:center;}
 .buttonok a {height:28px; text-decoration: none;}
 .buttonok a:link, .buttonok a:visited {

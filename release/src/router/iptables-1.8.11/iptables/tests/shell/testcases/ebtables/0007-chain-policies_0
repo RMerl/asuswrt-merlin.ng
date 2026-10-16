@@ -1,0 +1,41 @@
+#!/bin/bash
+
+case "$XT_MULTI" in
+*xtables-nft-multi)
+	;;
+*)
+	echo "skip $XT_MULTI"
+	exit 0
+	;;
+esac
+
+set -e
+
+# ebtables supports policies in user-defined chains %)
+# and the default policy is ACCEPT ...
+$XT_MULTI ebtables -N FOO -P DROP
+$XT_MULTI ebtables -N BAR
+$XT_MULTI ebtables -P BAR RETURN
+$XT_MULTI ebtables -N BAZ
+
+EXPECT_BASE="*filter
+:INPUT ACCEPT
+:FORWARD ACCEPT
+:OUTPUT ACCEPT"
+
+EXPECT="$EXPECT_BASE
+:BAR RETURN
+:BAZ ACCEPT
+:FOO DROP"
+
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI ebtables-save | grep -v '^#')
+
+# rule commands must not break the policies
+$XT_MULTI ebtables -A FOO -j ACCEPT
+$XT_MULTI ebtables -D FOO -j ACCEPT
+$XT_MULTI ebtables -F
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI ebtables-save | grep -v '^#')
+
+# dropping the chains must implicitly remove the policy rule as well
+$XT_MULTI ebtables -X
+diff -u -Z <(echo -e "$EXPECT_BASE") <($XT_MULTI ebtables-save | grep -v '^#')

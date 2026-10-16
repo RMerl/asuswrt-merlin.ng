@@ -149,7 +149,7 @@ function cal_panel_block(){
 			</tr>
 			<tr>
 				<div style="margin-left:30px; margin-top:10px;">
-					<p>Only paste the content of the <span style="color:#FFCC00;">----- BEGIN xxx ----- </span>/<span style="color:#FFCC00;"> ----- END xxx -----</span> block (including those two lines).
+					<p>Only paste the content of the <span style="color:var(--wrt-badge-warning-color,#FFCC00);">----- BEGIN xxx ----- </span>/<span style="color:var(--wrt-badge-warning-color,#FFCC00);"> ----- END xxx -----</span> block (including those two lines).
 					<p>Limit: 2999 characters per field
 				</div>
 				<div style="margin:5px;*margin-left:-5px;width: 730px; height: 2px;" class="splitLine"></div>

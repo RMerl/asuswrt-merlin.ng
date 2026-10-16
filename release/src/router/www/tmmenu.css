@@ -492,7 +492,7 @@ table.fields {
 }
 .DescTable td span{
 	background-color:#475a5f;
-	color:#FFCC00;
+	color:var(--wrt-badge-warning-color,#FFCC00);
 }
 /*Viz Add  20120709   ---  end  */
 

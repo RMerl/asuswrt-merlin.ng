@@ -1,0 +1,5 @@
+ip6tables-translate -t filter -A INPUT -m hbh --hbh-len 22
+nft 'add rule ip6 filter INPUT hbh hdrlength 22 counter'
+
+ip6tables-translate -t filter -A INPUT -m hbh ! --hbh-len 22
+nft 'add rule ip6 filter INPUT hbh hdrlength != 22 counter'

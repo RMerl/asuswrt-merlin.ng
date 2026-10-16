@@ -1,0 +1,17 @@
+To run the test suite (as root):
+ $ cd iptables/tests/shell
+ # ./run-tests.sh
+
+Test files are executable files with the pattern <<name_N>> , where N is the
+expected return code of the executable. Since they are located with `find',
+test-files can be spreaded in any sub-directories.
+
+You can turn on a verbose execution by calling:
+ # ./run-tests.sh -v
+
+And to run test suite for pariticular test files:
+ # ./run-tests.sh <PATH_OF_TESTFILES>
+
+Also, test-files will receive the environment variable $XT_MULTI which contains
+the path to the old iptables (xtables-legacy-multi) or new iptables (xtables-nft-multi)
+binary being tested.

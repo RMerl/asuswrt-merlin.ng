@@ -69,12 +69,12 @@
 	-moz-border-radius: 5px;
 	border-radius: 5px;
 	z-index: 200;
-	background-color:#444f53;
+	background-color:var(--wrt-card-surface-2-bg, #444f53);
 	margin-left: 140px;
 	margin-top: -920px;
 	width:950px;
 	height:auto;
-	box-shadow: 3px 3px 10px #000;
+	box-shadow: var(--wrt-card-shadow, 3px 3px 10px #000);
 	display:block;
 	overflow: auto;
 }
@@ -200,7 +200,7 @@ if (vlan_trunklist_array.length > 1) {
 				vlan_trunklist_port = vlan_trunklist_port_array_one_mac[b][c].split("#")[0];
 				vlan_trunklist_port_vid_array = vlan_trunklist_port_array_one_mac[b][c].split("#")[1].split(",");
 				vlan_rl_vid_array_tmp = vlan_trunklist_port_vid_array;
-				
+
 				//suppose 1st vid (vlan_rl_vid_array_tmp[0]) to bethe only one vid binded
 				vlan_trunklist_string += "<"+vlan_trunklist_port_array_one_mac[b][0]+">"+vlan_trunklist_port+">"+vlan_rl_vid_array_tmp[0];
 			}
@@ -220,7 +220,7 @@ $.each(sdn_rl_json, function(idx, _sdn_rl) {
 	var vlanArrayIdx = -1;
 	if(_sdn_rl.vlan_idx > 0){	//exclude : sdn without VID
 		$.each(vlan_rl_json, function(_idx, _vlan_rl) {
-			if (_sdn_rl.vlan_idx == _vlan_rl.vlan_idx) 
+			if (_sdn_rl.vlan_idx == _vlan_rl.vlan_idx)
 				vlanArrayIdx = _idx;
 		})
 
@@ -255,7 +255,7 @@ function arrayRemove(arr, value) {
 	}
 
 	function show_vlan_profile(){
-		
+
 		var $target_div = $("#divVLANProfile");
 		var table_id = "table_vlanProfile";
 		$('#divVLANProfile').empty().show();
@@ -276,12 +276,12 @@ function arrayRemove(arr, value) {
 		var $table_th_tr = $("<tr>").appendTo($table_bg);
 		var $table_th_name = $("<th>").html("<#QIS_finish_wireless_item1#>").css({'text-align':'center','width':'50%'}).appendTo($table_th_tr);
 		var $table_th_vid = $("<th>").html("<#WANVLANIDText#>").css({'text-align':'center','width':'20%'}).appendTo($table_th_tr);
-		var $table_th_iso = $("<th>").html("<#VLAN_port_iso#>").css({'text-align':'center','width':'15%'}).appendTo($table_th_tr); 
+		var $table_th_iso = $("<th>").html("<#VLAN_port_iso#>").css({'text-align':'center','width':'15%'}).appendTo($table_th_tr);
 		var $table_th_edit = $("<th>").html("<#list_add_delete#>").css({'text-align':'center','width':'15%'}).appendTo($table_th_tr); // / <#CTL_modify#>
 
 		var $table_edit_tr = $("<tr>").appendTo($table_bg);
 		var $table_edit_name = $("<td>").appendTo($table_edit_tr);
-		
+
 		var $edit_name = $("<div>--</div>").appendTo($table_edit_name);
 		var $table_edit_vid = $("<td>").appendTo($table_edit_tr);
 		var $edit_vid = $("<input type='text' maxlength='4' class='input_6_table' name='edit_vid' id='edit_vid' autocorrect='off' autocapitalize='off'>").appendTo($table_edit_vid);
@@ -293,7 +293,7 @@ function arrayRemove(arr, value) {
 			var $edit_add = $("<input type='button' class='add_btn' onClick='addRow_Group("+sdn_maximum+");' id='profile_add' value=''>").appendTo($table_edit_edit);
 		}
 		else{
-			var $edit_add = $("<input type='button' class='add_btn_disabled' onClick='' id='profile_add' value=''>").appendTo($table_edit_edit);	
+			var $edit_add = $("<input type='button' class='add_btn_disabled' onClick='' id='profile_add' value=''>").appendTo($table_edit_edit);
 		}
 
 		//Draw vlan_rl_json first and get apgX_ssid from vlan_idx
@@ -322,7 +322,7 @@ function arrayRemove(arr, value) {
 				var $table_td_name = $("<td>").addClass("list_edit").html(network_name).appendTo($table_tr);
 			}
 			else{
-				var $table_td_name = $("<td>").addClass("list_edit").html("--").appendTo($table_tr);	
+				var $table_td_name = $("<td>").addClass("list_edit").html("--").appendTo($table_tr);
 			}
 			var $table_td_vid = $("<td>").addClass("list_edit").html(profile_vlan_rl.vid).appendTo($table_tr);
 			var $table_td_iso = $("<td>").addClass("list_edit").appendTo($table_tr);
@@ -352,7 +352,7 @@ function arrayRemove(arr, value) {
 
 				create_vlan_profile_view(matched_apgx_array[i], matched_ssid_array[i], $table_tr.find("td:eq(1)").html(), $table_tr.find("input[type=checkbox]").prop('checked'));
 			});
-		});	
+		});
 
 	}
 
@@ -369,7 +369,7 @@ function show_vlan_profile_view_block() {
 	vlan_view_hide_flag = false;
 }
 function close_vlan_profile_View() {
-	
+
 	$('.button_gen').show();
 	$("#vlan_profile_Block").fadeOut();
 }
@@ -378,7 +378,7 @@ var choosed_rl_index="";
 var choosed_rl_vid="";
 var choosed_rl_iso="";
 function create_vlan_profile_view( _apgx_array, _ssid_array, _vid, _iso){
-	
+
 	//register event to detect mouse click
 	document.body.onclick = function() {hide_vlan_profile_view_block();}
 	vlan_view_hide_flag = false;
@@ -410,7 +410,7 @@ function create_vlan_profile_view( _apgx_array, _ssid_array, _vid, _iso){
 
 	var code="";
 
-	code += "<div style='margin-top:15px;margin-left:15px;float:left;font-size:15px;color:#93A9B1;'>Edit profile</div>";
+	code += "<div style='margin-top:15px;margin-left:15px;float:left;font-size:15px;color:var(--wrt-text-muted-color,#93A9B1);'>Edit profile</div>";
 	code += "<div style='float:right;'><img src='/images/button-close.gif' style='width:30px;cursor:pointer' onclick='close_vlan_profile_View();'></div>";
 
 	code += "<table border='0' align='center' cellpadding='0' cellspacing='0' style='width:100%;padding:0 15px 15px 15px;'><tbody><tr><td>";
@@ -436,14 +436,14 @@ function create_vlan_profile_view( _apgx_array, _ssid_array, _vid, _iso){
 	code += "<input type='radio' name='update_iso' class='input' value='0'><#checkbox_No#>";
 	code += "</td>";
 	code += "</tr>";
-	
+
 	code += "</table>";
 
 	code += "</td></tr></tbody></table>";
 
-	code += "<div style='margin-top:10px;margin-bottom:20px;width:100%;text-align:center;'>";
+	code += "<div style='margin-top:10px;margin-bottom:20px;width:100%;display:flex;justify-content:center;gap:15px;'>";
 	code += "<input class='button_gen' type='button' onclick='close_vlan_profile_View()' value='<#CTL_Cancel#>'>";
-	code += "<input class='button_gen' type='button' onclick='Update_vlan_rl(\""+apgx_id_string+"\","+choosed_rl_index+","+choosed_rl_vid+","+choosed_rl_iso+")' style='margin-left:15px;' value='<#CTL_ok#>'>";
+	code += "<input class='button_gen' type='button' onclick='Update_vlan_rl(\""+apgx_id_string+"\","+choosed_rl_index+","+choosed_rl_vid+","+choosed_rl_iso+")' value='<#CTL_ok#>'>";
 	code += "</div>";
 
 	$("#vlan_profile_Block").html(code);

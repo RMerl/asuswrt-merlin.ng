@@ -106,8 +106,11 @@ enum
 #define NMP_DEBUG_MORE_FILE			"/tmp/NMP_DEBUG_MORE"
 #define NMP_DEBUG_FUNCTION_FILE		"/tmp/NMP_DEBUG_FUNCTION"
 #define NMP_DEBUG_VC_FILE			"/tmp/NMP_DEBUG_VC"
+#ifdef RTCONFIG_GTBOOSTER
+#define GDM_INFO_JSON				"/tmp/gdm_info.json"
+#endif
 
-#define NEWORKMAP_OUI_FILE		"/usr/networkmap/networkmap.oui.js"
+#define IEEE_OUI_FILE		"/usr/networkmap/ieee.oui.json"
 
 #if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION))
 #define NMP_CL_JSON_FILE		"/jffs/nmp_cl_json.js"

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+[[ $XT_MULTI == *xtables-nft-multi ]] || { echo "skip $XT_MULTI"; exit 0; }
+nft --version >/dev/null 2>&1 || { echo "skip nft"; exit 0; }
+
+set -e
+
+nft flush ruleset
+$XT_MULTI iptables -Z INPUT
+
+EXP="Zeroing chain \`INPUT'"
+diff -u <(echo "$EXP") <($XT_MULTI iptables -v -Z INPUT)
+
+EXP="Zeroing chain \`INPUT'
+Zeroing chain \`FORWARD'
+Zeroing chain \`OUTPUT'"
+diff -u <(echo "$EXP") <($XT_MULTI iptables -v -Z)

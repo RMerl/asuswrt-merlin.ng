@@ -274,7 +274,7 @@ function showqos_rulelist(){
 	var code = "";
 	code +='<table width="100%"  border="1" align="center" cellpadding="4" cellspacing="0" class="list_table" id="qos_rulelist_table">';
 	if(qos_rulelist_row.length == 1)	// no exist "<"
-		code +='<tr><td style="color:#FFCC00;" colspan="10"><#IPConnection_VSList_Norule#></td></tr>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="10"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		for(var i = 1; i < qos_rulelist_row.length; i++){
 			overlib_str0[i] ="";
@@ -757,7 +757,7 @@ function linkport(obj){
         			</tr>
 					<tr>
 					<td>
-		  			<div id="is_qos_enable_desc" class="formfontdesc" style="font-style: italic;font-size: 14px;color:#FFCC00;">
+		  			<div id="is_qos_enable_desc" class="formfontdesc" style="font-style: italic;font-size: 14px;color:var(--wrt-badge-warning-color,#FFCC00);">
 							<ul>
 									<li><#UserQoSRule_desc_zero#></li>
 									<li><#UserQoSRule_desc_one#></li>

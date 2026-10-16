@@ -1,0 +1,29 @@
+iptables-translate -A INPUT -m ecn --ecn-ip-ect 0
+nft 'add rule ip filter INPUT ip ecn not-ect counter'
+
+iptables-translate -A INPUT -m ecn --ecn-ip-ect 1
+nft 'add rule ip filter INPUT ip ecn ect1 counter'
+
+iptables-translate -A INPUT -m ecn --ecn-ip-ect 2
+nft 'add rule ip filter INPUT ip ecn ect0 counter'
+
+iptables-translate -A INPUT -m ecn --ecn-ip-ect 3
+nft 'add rule ip filter INPUT ip ecn ce counter'
+
+iptables-translate -A INPUT -m ecn ! --ecn-ip-ect 0
+nft 'add rule ip filter INPUT ip ecn != not-ect counter'
+
+iptables-translate -A INPUT -m ecn ! --ecn-ip-ect 1
+nft 'add rule ip filter INPUT ip ecn != ect1 counter'
+
+iptables-translate -A INPUT -m ecn ! --ecn-ip-ect 2
+nft 'add rule ip filter INPUT ip ecn != ect0 counter'
+
+iptables-translate -A INPUT -m ecn ! --ecn-ip-ect 3
+nft 'add rule ip filter INPUT ip ecn != ce counter'
+
+iptables-translate -A INPUT -m ecn ! --ecn-tcp-ece
+nft 'add rule ip filter INPUT tcp flags != ecn counter'
+
+iptables-translate -A INPUT -m ecn --ecn-tcp-cwr
+nft 'add rule ip filter INPUT tcp flags cwr counter'

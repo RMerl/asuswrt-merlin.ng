@@ -1,0 +1,5 @@
+ebtables-translate -t nat -A POSTROUTING -s 0:0:0:0:0:0 -o someport+ -j snat --to-source de:ad:00:be:ee:ff
+nft 'add rule bridge nat POSTROUTING oifname "someport*" ether saddr 00:00:00:00:00:00 counter ether saddr set de:ad:0:be:ee:ff accept'
+
+ebtables-translate -t nat -A POSTROUTING -o someport -j snat --to-src de:ad:00:be:ee:ff --snat-target CONTINUE
+nft 'add rule bridge nat POSTROUTING oifname "someport" counter ether saddr set de:ad:0:be:ee:ff continue'

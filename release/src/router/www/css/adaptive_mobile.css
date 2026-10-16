@@ -67,7 +67,7 @@ body{
     font-size: 14px;
 }
 .event-hit, .count-hit, .no-data{
-    color: #FC0;
+    color: var(--wrt-badge-warning-color,#FC0);
 }
 .event-count, .event-hit, .list-count{
     text-align: right;
@@ -104,7 +104,7 @@ body{
     background-color:#293544;
 }
 .bar-cal{
-    background-color:#FC0;
+    background-color:var(--wrt-badge-warning-color,#FC0);
 }
 .page-title{
     color: #FFF;

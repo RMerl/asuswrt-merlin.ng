@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# when restoring a ruleset, *tables-restore prefixes each rule with
+# '-t <tablename>' so standard rule parsing routines may be used. This means
+# that it has to detect and reject rules which already contain a table option.
+
+families="ip ip6"
+[[ $(basename $XT_MULTI) == xtables-nft-multi ]] && families+=" eb"
+
+for fam in $families; do
+	$XT_MULTI ${fam}tables-restore <<EOF
+*filter
+-t nat -A FORWARD -j ACCEPT
+COMMIT
+EOF
+	[[ $? != 0 ]] || {
+		echo "${fam}tables-restore did not fail when it should have"
+		exit 1
+	}
+
+	$XT_MULTI ${fam}tables-restore <<EOF
+*filter
+-A FORWARD -j ACCEPT
+COMMIT
+EOF
+	[[ $? == 0 ]] || {
+		echo "${fam}tables-restore failed when it should not have"
+		exit 1
+	}
+done

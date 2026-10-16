@@ -84,7 +84,7 @@ window.addEventListener('message', function(event) {
 				<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
 					<tr>
 						<td valign="top">
-							<div style="background-color: #4D595D; border-radius: 0 0 3px 3px;" id="FormTitle"><iframe id="adguard_iframe" style="width: 100%; border: none;"></iframe></div>
+							<div style="background-color: var(--surface-panel, #4D595D); border-radius: 0 0 3px 3px;" id="FormTitle"><iframe id="adguard_iframe" style="width: 100%; border: none;"></iframe></div>
 						</td>
 					</tr>
 				</table>

@@ -2212,6 +2212,7 @@ void mxlswitch_linkrate(int phymode_wan, int phymode_lan)
 #else
 		if (i == 5)
 #endif
+		{
 		       switch(phymode) {
 				case PHYMODE_1000FD:
 					system("ethctl phy-ext84991 extmedia-type 0x19 1000FD");
@@ -2226,34 +2227,60 @@ void mxlswitch_linkrate(int phymode_wan, int phymode_lan)
 				default:
 					break;
 			}
+
+			doSystem("ethctl phy-ext84991 phyext-eee 0x19 %s", nvram_get_int("mxl_eee") ? "on" : "off");
+		}
 		else
 #endif
+		{
 			switch(phymode) {
+				case PHYMODE_10HD:
+					mxl_gphy_mod(i, 0, 4, 0x1e0, 0x20);
+					mxl_gphy_mod(i, 0, 9, 0x200, 0);
+					mxl_gphy_mod(i, 7, 32, 0x80, 0);
+					break;
 				case PHYMODE_10FD:
-					mxl_gphy_mod(i, 0, 4, 0x91e0, 0x40);
-					mxl_gphy_mod(i, 0, 0, 0x3140, 0x100);
+					mxl_gphy_mod(i, 0, 4, 0x1e0, 0x40);
+					mxl_gphy_mod(i, 0, 9, 0x200, 0);
+					mxl_gphy_mod(i, 7, 32, 0x80, 0);
+					break;
+				case PHYMODE_100HD:
+					mxl_gphy_mod(i, 0, 4, 0x1e0, 0x80);
+					mxl_gphy_mod(i, 0, 9, 0x200, 0);
+					mxl_gphy_mod(i, 7, 32, 0x80, 0);
 					break;
 				case PHYMODE_100FD:
-					mxl_gphy_mod(i, 0, 4, 0x91e0, 0x100);
-					mxl_gphy_mod(i, 0, 0, 0x3140, 0x2100);
+					mxl_gphy_mod(i, 0, 4, 0x1e0, 0x100);
+					mxl_gphy_mod(i, 0, 9, 0x200, 0);
+					mxl_gphy_mod(i, 7, 32, 0x80, 0);
 					break;
 				case PHYMODE_1000FD:
-					mxl_gphy_mod(i, 0, 4, 0x91e0, 0x0);
+					mxl_gphy_mod(i, 0, 4, 0x1e0, 0);
 					mxl_gphy_mod(i, 0, 9, 0x200, 0x200);
-					mxl_gphy_mod(i, 0, 0, 0x3240, 0x1240);
+					mxl_gphy_mod(i, 7, 32, 0x80, 0);
 					break;
 				case PHYMODE_2500FD:
-					mxl_gphy_mod(i, 0, 4, 0x91e0, 0x9000);
+					mxl_gphy_mod(i, 0, 4, 0x1e0, 0);
 					mxl_gphy_mod(i, 0, 9, 0x200, 0);
-					mxl_gphy_mod(i, 0, 0, 0x3240, 0x3240);
+					mxl_gphy_mod(i, 7, 32, 0x80, 0x80);
 					break;
 				case PHYMODE_AUTO:
 				default:
-					mxl_gphy_mod(i, 0, 4, 0x91e0, 0x91e0);
-					mxl_gphy_mod(i, 0, 9, 0x200, 0x200);
-					mxl_gphy_mod(i, 0, 0, 0x3240, 0x3240);
+					mxl_gphy_mod(i, 0, 4, 0x1e0, 0x1e0);	//10M/100M
+					mxl_gphy_mod(i, 0, 9, 0x200, 0x200);	//1G
+					mxl_gphy_mod(i, 7, 32, 0x80, 0x80);	//2.5G
 					break;
 			}
+
+			/* Disable 2.5G/1G/100M EEE */
+			if (!nvram_get_int("mxl_eee")) {
+				mxl_gphy_write(i, 7, 60, 0x0000);
+				mxl_gphy_write(i, 7, 62, 0x0000);
+			}
+
+			/* Restart auto-negotiation */
+			mxl_gphy_mod(i, 0, 0, 0x200, 0x200);
+		}
 	}
 }
 #endif
@@ -2389,6 +2416,41 @@ void init_switch_pre()
 	system("ethswctl -c pause -p 10 -v 2");
 #endif
 
+	/* Set pause mode for switch ports parsed from "ethctl phy-map".
+	 * Each ethX/<IntnlDev> line reports its switch port as "IntSw:P<n>", e.g.
+	 *   "eth0      : Up ... IntSw:P6 ..." => eth0 maps to port 6,
+	 *   "<IntnlDev>: Up ... IntSw:P8 ..." => internal device maps to port 8.
+	 */
+	{
+		FILE *phymap_fp = NULL;
+		char phymap_buf[256];
+		int phymap_fd;
+		pid_t phymap_pid;
+
+		if ((phymap_fd = safe_popen("ethctl phy-map", &phymap_pid)) != -1) {
+			if ((phymap_fp = fdopen(phymap_fd, "r")) == NULL)
+				close(phymap_fd);
+		}
+		if (phymap_fp != NULL) {
+			while (fgets(phymap_buf, sizeof(phymap_buf), phymap_fp) != NULL) {
+				char *p;
+
+				if (strncmp(phymap_buf, "eth", strlen("eth")) != 0
+				 && strncmp(phymap_buf, "<IntnlDev>", strlen("<IntnlDev>")) != 0)
+					continue;
+				if ((p = strstr(phymap_buf, "IntSw:P")) != NULL) {
+					int port = atoi(p + strlen("IntSw:P"));
+
+					if (port >= 0)
+						safe_do_system("ethswctl -c pause -p %d -v 2", port);
+				}
+			}
+			fclose(phymap_fp); /* also closes phymap_fd */
+		}
+		if (phymap_fd != -1)
+			safe_pclose(phymap_pid, NULL);
+	}
+
 	memset(ifnames, 0, sizeof(ifnames));
 	add_to_list("eth0", ifnames, sizeof(ifnames));
 #if !defined(RTAX55) && !defined(RTAX1800) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTAX58U_V2) && !defined(RTAX3000N) && !defined(BR63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE58U_PRO)
@@ -2457,12 +2519,15 @@ void init_switch_pre()
 			continue;
 		}
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTCONFIG_MXL_826XX) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
+#if defined(BCM6813) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTCONFIG_MXL_826XX)
 		if (find_in_list(wan_ifnames, word)) {
 			dbg("%s: phy-power ctrl\n", word);
 			doSystem("ethctl %s phy-power down", word);
 			doSystem("ethctl %s phy-power up", word);
 		}
+#endif
+#if defined(BCM6813)
+		ethctl_lan |= ETHCTL_PWRDOWNUP;
 #endif
 		ethctl = find_in_list(wan_ifnames, word) ? ethctl_wan : ethctl_lan;
 		{
@@ -2906,11 +2971,7 @@ void init_switch()
 {
 	int model = get_model();
 
-#if !defined(RTBE88U) && !defined(BQ16_PRO) && !defined(BQ16)
 	init_switch_pre();
-#else
-	_dprintf("%s(%d): skip init_switch_pre() here.\n", __func__, getpid());
-#endif
 
 	switch(model) {
 		case MODEL_GTAC5300:
@@ -4270,12 +4331,13 @@ int mxls_init()
 
 	portnum = get_chip_port_num();
 	printf("%s: portnum=%d, (init:%d)\n", __func__, portnum, nvram_get_int("mxl_init"));  fflush(stdout);
-	logmessage("VLAN", "%s: portnum=%d\n", __func__, portnum);
 
 	if (nvram_match("mxl_init", "1") && !nvram_match("force_mxl_init", "1")) {
 		printf("No need to re-init mxl switch. (f:%d)\n", nvram_get_int("force_mxl_init"));
+		logmessage("mxl", "no need to re-init mxl switch. (f:%d)\n", nvram_get_int("force_mxl_init"));
 		return 0;
 	}
+	logmessage("mxl", "%s: total-portnum=%d\n", __func__, portnum);
 	
 	ret = tag_vlan_init();
 
@@ -4283,6 +4345,10 @@ int mxls_init()
 		LOG_ERR("Failed to re-init tag vlan: %d", ret);
 	}
 	printf("%s, tag_vlan_init, ret=%d\n\n", __func__, ret);
+
+#ifdef RTCONFIG_MXL_826XX
+	fid_vlan_reset();
+#endif
 
 	if (wait = nvram_get_int("tag_init_wait")) {
 		printf("%s, tag init wait:%d\n", __func__, wait);
@@ -4434,8 +4500,8 @@ int __setup_vlan(int vid, int prio, unsigned int mask)
 	api_gsw_get_links("");
 
 	portnum = get_chip_port_num();
-	printf("%s(dbg.vlan), vid=%d, prio=%d, mask=0x%08x, chip portnum is %d, <mbr:0x%04x, untag:0x%04x>.\n", __func__, vid, prio, mask, portnum, member_portmask, untag_portmask);
-	logmessage("VLAN", "%s: vid=%d, prio=%d, mask=0x%08x, chip portnum is %d, <mbr:0x%04x, untag:0x%04x>.\n", __func__, vid, prio, mask, portnum, member_portmask, untag_portmask);
+	_dprintf("%s(dbg.vlan), vid=%d, prio=%d, mask=0x%08x, chip portnum is %d, <mbr:0x%04x, untag:0x%04x>.\n", __func__, vid, prio, mask, portnum, member_portmask, untag_portmask);
+	logmessage("VLAN(mxl)", "%s: vid=%d, prio=%d, mask=0x%08x, chip portnum is %d, <mbr:0x%04x, untag:0x%04x>.\n", __func__, vid, prio, mask, portnum, member_portmask, untag_portmask);
 
 	if (_vid == 0) {
 		fid = 0;  /* default fid */
@@ -4458,17 +4524,17 @@ int __setup_vlan(int vid, int prio, unsigned int mask)
 		fid = get_fid_vlan(_vid);
 		printf("%s, vlan[%d]->fid[%d/%02x]\n", __func__, _vid, fid, fid);
 
-		if (fid == 0xFF && member_portmask) {
-			printf("%s, re-cfg vlan fid\n", __func__);
-			if ((fid = fid_vlan_cfg(true, _vid)) < 0) {
-				printf("%s, invalid fid cfg\n", __func__);
-				return (-1);
+		if (fid == 0xFF) {
+			if (member_portmask) {
+				printf("%s, re-cfg vlan fid\n", __func__);
+				if ((fid = fid_vlan_cfg(true, _vid)) < 0) {
+					printf("%s, invalid fid cfg\n", __func__);
+					return (-1);
+				}
+				printf("%s, update, vlan[%d]->fid[%d/%02x]\n", __func__, _vid, fid, fid);
+			} else {
+				return 0;
 			}
-			printf("%s, update, vlan[%d]->fid[%d/%02x]\n", __func__, _vid, fid, fid);
-		}
-		else {
-			printf("%s, invalid params (0x%02x, 0x%04x).\n", __func__, fid, member_portmask);
-			return (-1); /* invalid params */
 		}
 	}
 
@@ -4543,6 +4609,7 @@ int __setup_vlan(int vid, int prio, unsigned int mask)
 		prio = 0;
 
 	_dprintf("%s: vid %d prio %d mask 0x%08x\n", __func__, vid, prio, mask);
+	logmessage("VLAN(rtk)", "%s: vid %d prio %d mask 0x%08x\n", __func__, vid, prio, mask);
 
 	if (vid >= 0) {
 		sprintf(vlan_str, "%d", vid);
@@ -4596,16 +4663,16 @@ __setup_vlan_sdn(int vid, int prio, unsigned int mask)
 	}
 	else {
 		fid = get_fid_vlan(_vid);
-		if (fid == 0xFF && member_portmask) {
-			if ((fid = fid_vlan_cfg(true, _vid)) < 0) {
-				LOG_ERR("%s, invalid fid cfg\n", __func__);
-				return (-1);
+		if (fid == 0xFF) {
+			if (member_portmask) {
+				if ((fid = fid_vlan_cfg(true, _vid)) < 0) {
+					LOG_ERR("%s, invalid fid cfg\n", __func__);
+					return (-1);
+				}
+			} else {
+				return 0;
 			}
 		}
-		/*else {
-			LOG_ERR("%s, invalid params (0x%02x, 0x%04x).\n", __func__, fid, member_portmask);
-			return (-1); //invalid params
-		}*/
 		LOG_DBG("%s, vlan[%d]->fid[%d/%02x]\n", __func__, _vid, fid, fid);
 	}
 
@@ -5295,6 +5362,7 @@ void config_switch(void)
 	Vlan2-BID2: LAN1 untag BID2 (ctp2/bp2), CPU1 tagged vid2 BID2 (ctp13/new-BP17)
 */
 				if (nvram_match("wans_lanport", "1")) {
+	syslog(LOG_NOTICE, "mxl config switch:\n");
 // WAN-CPU0 (It is the default settings in start config)
 system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x200");
 system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x10");
@@ -7103,7 +7171,8 @@ int vlan4094_enabled()
 	if (re_mode() || is_router_mode() || !nvram_get_int("x_Setting")) {
 		if (is_router_mode() &&
 			(strcmp(nvram_safe_get("switch_wantag"), "none") ||
-			 strcmp(nvram_safe_get("switch_stb_x"), "0")))
+			 strcmp(nvram_safe_get("switch_stb_x"), "0") ||
+			(strlen(nvram_safe_get("switch_wan0tagid")) > 0)))
 			return 0;
 #ifdef GS7_PRO_MAX
 		if (nvram_get_int("wans_extwan") && ((get_wans_dualwan() & WANSCAP_LAN) && (nvram_get_int("wans_lanport") >= 1) && (nvram_get_int("wans_lanport") <= 4))) {
@@ -7801,8 +7870,7 @@ void config_extwan(void)
 		return;
 #endif
 
-	/* config_extwan will conflict with IPTV tag feature */
-	if (strcmp(nvram_safe_get("switch_wantag"), "none") || strcmp(nvram_safe_get("switch_stb_x"), "0"))
+	if (!vlan4094_enabled())
 		return;
 
 #ifdef GT7
@@ -10015,7 +10083,7 @@ void init_others(void)
 	usleep(25*1000);
 	f_write_string("/sys/class/leds/led_gpio_3/brightness", "0", 0, 0);
 #endif
-#if defined(RTBE92U) || defined(RTBE95U) || defined(RTBE58U_PRO)
+#if (defined(BCM4916) || defined(BCM6765)) && (defined(WIFI7_SDK_20231126) || defined(WIFI7_SDK_20250506))
 	if (!nvram_get_int("bcmspu_reqd"))
 	eval("rmmod", "bcmspu");
 #endif
@@ -10284,6 +10352,36 @@ void init_switch_mxl(void)
 	eval("insmod", "mxl");
 	sleep(3);
 	mxlswitch_LanPort_linkDown();
+
+#ifdef RTCONFIG_DUALWAN
+	int unit = 0;
+	int reset = 1;
+	if (is_router_mode() && nvram_get("wans_dualwan")) {
+		for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
+			if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_LAN) {
+#ifdef GS7_PRO_MAX
+				if (((nvram_get_int("wans_lanport") == 5) && (nvram_get_int("wans_extwan") == 1)) ||
+				    ((nvram_get_int("wans_lanport") == 6) && (nvram_get_int("wans_extwan") == 2)))
+					goto DISABLE_DUALWAN;
+				else
+#endif
+#ifdef GS7_PRO_MAX
+				if (((nvram_get_int("wans_lanport") > 4) && !nvram_get_int("wans_lan_ext")) ||
+				    ((nvram_get_int("wans_lanport") > 6) && nvram_get_int("wans_lan_ext")))
+#else
+				if (nvram_get_int("wans_lanport") > 4)
+#endif
+					goto DISABLE_DUALWAN;
+			}
+		}
+		reset = 0;
+DISABLE_DUALWAN:
+		if (reset) {
+			nvram_set("wans_dualwan", nvram_default_get("wans_dualwan"));
+			nvram_set("wans_lanport", "1");
+		}
+	}
+#endif
 }
 #endif
 
@@ -12101,6 +12199,18 @@ set_wan_tag(char *interface) {
 	int br_idx;
 #endif
 
+#ifdef IPVLAN3
+	if (!nvram_match("no_ipvlan", "1")) {
+#ifdef HND_ROUTER
+		char wan0_if[IFNAMSIZ];
+		get_wan0_ifname_phymap(wan0_if, sizeof(wan0_if));
+		logmessage("ipvlan", "%s(%s): go apply iptv profile; nv_wan is %s\n", __func__, interface, wan0_if);
+#endif
+		apply_iptv_profile();
+		return;
+	}
+#endif
+
 	model = get_model();
 	wan_vid = nvram_get_int("switch_wan0tagid") & 0x0fff;
 	iptv_vid = nvram_get_int("switch_wan1tagid") & 0x0fff;
@@ -13579,6 +13689,456 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 
 		_dprintf("%s:: wan_if=%s, wanVlanDev=%s\n", __func__, wan_if, wanVlanDev);
 
+#if defined(GTBN98_PRO) || defined(GTBN96X) || defined(GTBN98) || defined(GTBN96)
+		/* GT-BN series (wifi8): vlanctl not available, use ip link + brctl */
+		if ((!nvram_match("switch_wantag", "") && (wan_vid || switch_stb > 0))
+		 && !nvram_match("switch_wantag", "hinet_mesh")
+		) {
+			sprintf(port_id, "%d", wan_vid);
+			if (nvram_match("switch_wantag", "movistar") ||
+			    (switch_stb == 0 && wan_vid)) {
+				/* WAN-only VLAN, no STB bridge: use ip link VLAN sub-interface.
+				 * Includes google_fiber: a single tagged WAN needs no bridge.
+				 * movistar: use "vlanX" naming to match the non-GT-BN vconfig path. */
+				if (nvram_match("switch_wantag", "movistar"))
+					snprintf(wanVlanDev, sizeof(wanVlanDev), "vlan%d", wan_vid);
+				eval("ip", "link", "set", wan_if, "up");
+				eval("ip", "link", "add", "link", wan_if, "name", wanVlanDev,
+				     "type", "vlan", "id", port_id);
+				eval("ifconfig", wanVlanDev, "allmulti", "up");
+				if (!nvram_match("switch_wan0prio", "0")) {
+					char prio_map[16];
+					snprintf(prio_map, sizeof(prio_map), "0:%s", nvram_get("switch_wan0prio"));
+					eval("ip", "link", "set", "dev", wanVlanDev, "type", "vlan",
+					     "egress-qos-map", prio_map);
+				}
+				set_wan_phy("");
+				add_wan_phy(wanVlanDev);
+				nvram_set("wan0_ifname", wanVlanDev);
+				nvram_set("wan0_gw_ifname", wanVlanDev);
+				nvram_set("switch_wantag_ifname", wanVlanDev);
+			} else {
+				/* IPTV bridge: create br101 and add WAN + LAN STB port(s) */
+				sprintf(br_dev, "br%d", IPTV_BR_INDEX);
+				if ((!wan_vid || nvram_match("switch_wantag", "none")) && switch_stb > 0) {
+					/* Untagged bridge: use WAN interface directly (no VLAN sub-interface) */
+					snprintf(wanVlanDev, sizeof(wanVlanDev), "%s", wan_if);
+				} else {
+					/* Tagged WAN: create ip link VLAN sub-interface */
+					eval("ip", "link", "set", wan_if, "up");
+					eval("ip", "link", "add", "link", wan_if, "name", wanVlanDev,
+					     "type", "vlan", "id", port_id);
+					eval("ifconfig", wanVlanDev, "allmulti", "up");
+				}
+				/* For "free": skip creating an empty br101 here; vlan_forwarding()
+				 * will create the real WAN+LAN bridge at IPTV_BR_INDEX (br101). */
+				if (!nvram_match("switch_wantag", "free")) {
+					eval("brctl", "addbr", br_dev);
+					eval("bcmmcastctl", "mode", "-i", br_dev, "-p", "1", "-m", "0");
+					eval("bcmmcastctl", "mode", "-i", br_dev, "-p", "2", "-m", "0");
+					eval("brctl", "stp", br_dev, "off");
+					eval("ifconfig", br_dev, "up");
+					eval("brctl", "addif", br_dev, wanVlanDev);
+					set_wan_phy("");
+					add_wan_phy(br_dev);
+					nvram_set("wan0_ifname", br_dev);
+					nvram_set("wan0_gw_ifname", br_dev);
+					nvram_set("switch_wantag_ifname", br_dev);
+				}
+				/* For "free": switch_wantag_ifname points to br101, which
+				 * vlan_forwarding() creates in the STB section below. */
+				else
+					nvram_set("switch_wantag_ifname", br_dev);
+
+				/* STB LAN port(s) setup using brctl (untagged) or
+				 * vlan_forwarding() (tagged; ip link handled inside). */
+				if (nvram_match("switch_stb_x", "1") &&
+				    nvram_match("switch_wantag", "none")) {
+					/* LAN1 = ethPort4 = eth1 */
+					eval("brctl", "delif", "br0", ethPort4);
+					eval("brctl", "addif", br_dev, ethPort4);
+				} else if (nvram_match("switch_stb_x", "2") &&
+					   nvram_match("switch_wantag", "none")) {
+					/* LAN2 = ethPort3 = eth2 */
+					eval("brctl", "delif", "br0", ethPort3);
+					eval("brctl", "addif", br_dev, ethPort3);
+				} else if (nvram_match("switch_stb_x", "3")) {
+					if (nvram_match("switch_wantag", "none")) {
+						/* LAN3 = ethPort2 = eth3 */
+						eval("brctl", "delif", "br0", ethPort2);
+						eval("brctl", "addif", br_dev, ethPort2);
+					} else if (nvram_match("switch_wantag", "unifi_biz_voip")) {
+						/* unifi_biz_voip: WAN=VID500 (br101), VoIP=VID400.
+						 * LAN3 (eth3) is a non-tag (untagged) VoIP host port.
+						 * Create br102: WAN VIF (VID 400) + eth3 raw (untagged). */
+						eval("brctl", "delif", "br0", ethPort2);
+						vlan_forwarding(voip_vid, voip_prio, switch_stb, 1);
+					} else if (nvram_match("switch_wantag", "vodafone")) {
+						/* vodafone: WAN=VID100 (br101 = eth0.v0 already done by outer block).
+						 * Consolidate per-VID into 3 bridges:
+						 *   br101 (VID100): eth0.v0 + eth4.100  [WAN + LAN4 tagged VoIP]
+						 *   br102 (VID101): eth0.v1 + eth4.101  [LAN4 tagged VoIP]
+						 *   br103 (VID105): eth0.v2 + eth3(LAN3 untagged) + eth4.105 [LAN4 tagged] */
+						char wanv[16], lan4v[16], br102[8], br103[8], vid_s[8];
+						sprintf(br102, "br%d", IPTV_BR_INDEX + 1);
+						sprintf(br103, "br%d", IPTV_BR_INDEX + 2);
+						/* Remove LAN3 (eth3) and LAN4 (eth4) from br0 */
+						eval("brctl", "delif", "br0", ethPort2);
+						eval("brctl", "delif", "br0", ethPort1);
+						eval("ip", "link", "set", ethPort1, "up");
+						eval("ip", "link", "set", ethPort2, "up");
+						/* VID100: add eth4.100 to existing br101 (WAN bridge) */
+						sprintf(vid_s, "%d", wan_vid);
+						snprintf(lan4v, sizeof(lan4v), "%s.%d", ethPort1, wan_vid);
+						eval("ip", "link", "add", "link", ethPort1, "name", lan4v, "type", "vlan", "id", vid_s);
+						eval("ifconfig", lan4v, "allmulti", "up");
+						eval("brctl", "addif", br_dev, lan4v);
+						/* VID101: br102 = eth0.v1(VID101) + eth4.101 */
+						eval("brctl", "addbr", br102);
+						eval("bcmmcastctl", "mode", "-i", br102, "-p", "1", "-m", "0");
+						eval("bcmmcastctl", "mode", "-i", br102, "-p", "2", "-m", "0");
+						eval("brctl", "stp", br102, "off");
+						eval("ifconfig", br102, "up");
+						snprintf(wanv, sizeof(wanv), "%s.v1", wan_if);
+						eval("ip", "link", "add", "link", wan_if, "name", wanv, "type", "vlan", "id", "101");
+						eval("ifconfig", wanv, "allmulti", "up");
+						snprintf(lan4v, sizeof(lan4v), "%s.101", ethPort1);
+						eval("ip", "link", "add", "link", ethPort1, "name", lan4v, "type", "vlan", "id", "101");
+						eval("ifconfig", lan4v, "allmulti", "up");
+						eval("brctl", "addif", br102, wanv);
+						eval("brctl", "addif", br102, lan4v);
+						/* VID105: br103 = eth0.v2(VID105) + eth3(LAN3 untagged) + eth4.105(LAN4 tagged) */
+						eval("brctl", "addbr", br103);
+						eval("bcmmcastctl", "mode", "-i", br103, "-p", "1", "-m", "0");
+						eval("bcmmcastctl", "mode", "-i", br103, "-p", "2", "-m", "0");
+						eval("brctl", "stp", br103, "off");
+						eval("ifconfig", br103, "up");
+						sprintf(vid_s, "%d", voip_vid);
+						snprintf(wanv, sizeof(wanv), "%s.v2", wan_if);
+						eval("ip", "link", "add", "link", wan_if, "name", wanv, "type", "vlan", "id", vid_s);
+						eval("ifconfig", wanv, "allmulti", "up");
+						snprintf(lan4v, sizeof(lan4v), "%s.%d", ethPort1, voip_vid);
+						eval("ip", "link", "add", "link", ethPort1, "name", lan4v, "type", "vlan", "id", vid_s);
+						eval("ifconfig", lan4v, "allmulti", "up");
+						eval("brctl", "addif", br103, wanv);
+						eval("brctl", "addif", br103, ethPort2); /* eth3 raw: untagged LAN3 */
+						eval("brctl", "addif", br103, lan4v);
+						/* LAN4 has VLAN subs on multiple VIDs; raw eth4 stays out of br0 */
+					} else if (voip_vid) {
+						/* VoIP on LAN3: host receives tagged frames (default).
+						 * switch_wan2tagid may hold multiple comma-separated VIDs
+						 * (e.g. maxis_fiber "821,822").
+						 * Create a separate bridge for each VID; raw eth3 is NOT
+						 * re-added to br0 since voip_vid > 0 (LAN3 is dedicated to VoIP).
+						 * "manual": LAN3 is a raw IPTV switch port — the switch handles
+						 * VLAN tag stripping, so eth3 is untagged toward the CPU. */
+						char wan2tag_buf[32], *p2, *tok2;
+						strlcpy(wan2tag_buf, nvram_safe_get("switch_wan2tagid"),
+							sizeof(wan2tag_buf));
+						p2 = wan2tag_buf;
+						eval("brctl", "delif", "br0", ethPort2);
+						while ((tok2 = strsep(&p2, ",")) != NULL) {
+							int vid2 = atoi(tok2) & 0x0fff;
+							if (!vid2)
+								continue;
+							if (nvram_match("switch_wantag", "manual") && vid2 == wan_vid) {
+								/* "manual": LAN3 VID matches WAN VID — add raw eth3 to br101. */
+								eval("brctl", "addif", br_dev, ethPort2);
+							} else if (nvram_match("switch_wantag", "manual")) {
+								/* "manual": LAN3 is raw IPTV switch port — create bridge
+								 * with WAN VIF + raw LAN3 (switch strips the VLAN tag). */
+								vlan_forwarding(vid2, voip_prio, switch_stb, 1);
+							} else {
+								vlan_forwarding(vid2, voip_prio, switch_stb, 0);
+							}
+						}
+						/* voip_vid > 0: LAN3 raw stays out of br0 */
+					}
+				} else if (nvram_match("switch_stb_x", "4")) {
+					if (nvram_match("switch_wantag", "none") ||
+					    nvram_match("switch_wantag", "hinet")) {
+						/* LAN4 = ethPort1 = eth4 (untagged IPTV) */
+						eval("brctl", "delif", "br0", ethPort1);
+						eval("brctl", "addif", br_dev, ethPort1);
+					} else if (iptv_vid) {
+						/* IPTV on LAN4: "free" delivers tagged frames to host; others untagged.
+						 * Exception ("manual"): if iptv_vid == wan_vid, add raw LAN4 directly
+						 * to br101 so only one bridge is created per unique VID. */
+						eval("brctl", "delif", "br0", ethPort1);
+						if (nvram_match("switch_wantag", "free")) {
+							/* "free": eth4.<iptv_vid> in IPTV bridge; LAN4 removed from br0 */
+							vlan_forwarding(iptv_vid, iptv_prio, switch_stb, 0);
+						} else if (nvram_match("switch_wantag", "manual") && iptv_vid == wan_vid) {
+							/* "manual": IPTV shares WAN VID — add LAN4 (untagged)
+							 * to existing br101 instead of creating a duplicate bridge. */
+							eval("brctl", "addif", br_dev, ethPort1);
+						} else {
+							/* Normal: raw eth4 in IPTV bridge (untagged to host) */
+							vlan_forwarding(iptv_vid, iptv_prio, switch_stb, 1);
+						}
+					}
+				} else if (nvram_match("switch_stb_x", "5") &&
+					   nvram_match("switch_wantag", "none")) {
+					/* LAN1+LAN2 = ethPort4(eth1) + ethPort3(eth2) */
+					eval("brctl", "delif", "br0", ethPort4);
+					eval("brctl", "addif", br_dev, ethPort4);
+					eval("brctl", "delif", "br0", ethPort3);
+					eval("brctl", "addif", br_dev, ethPort3);
+				} else if (nvram_match("switch_stb_x", "6")) {
+					if (nvram_match("switch_wantag", "none")) {
+						/* LAN3+LAN4 = ethPort2(eth3) + ethPort1(eth4) */
+						eval("brctl", "delif", "br0", ethPort2);
+						eval("brctl", "addif", br_dev, ethPort2);
+						eval("brctl", "delif", "br0", ethPort1);
+						eval("brctl", "addif", br_dev, ethPort1);
+					} else if (nvram_match("switch_wantag", "meo_br")) {
+						/* meo_br bridge mode: WAN, IPTV, and VoIP all use VID 12.
+						 * br101 was already created by set_wan_tag with eth0.v0 (WAN VID 12).
+						 * Add both LAN ports to that same bridge — do NOT call vlan_forwarding
+						 * (which would create additional bridges with duplicate VID-12 WAN VIFs).
+						 *
+						 * IPTV: LAN3 (eth3) is untagged → add raw eth3 to br101.
+						 * VoIP: LAN4 (eth4) is tagged  → create eth4.<vid> sub-interface,
+						 *        add it to br101; keep raw eth4 in br0. */
+						if (iptv_vid) {
+							eval("brctl", "delif", "br0", ethPort2);
+							eval("brctl", "addif", br_dev, ethPort2);
+						}
+						if (voip_vid) {
+							char voipVlanDev[16], vid_str[8];
+							snprintf(vid_str, sizeof(vid_str), "%d", voip_vid);
+							snprintf(voipVlanDev, sizeof(voipVlanDev), "%s.%d",
+								 ethPort1, voip_vid);
+							/* Remove LAN4 (ethPort1) from br0; VoIP VLAN sub-interface
+							 * is added to the bridge. Raw eth4 stays out of br0 since
+							 * LAN4 is the VoIP port for meo_br. */
+							eval("brctl", "delif", "br0", ethPort1);
+							eval("ip", "link", "add", "link", ethPort1, "name",
+							     voipVlanDev, "type", "vlan", "id", vid_str);
+							eval("ifconfig", voipVlanDev, "allmulti", "up");
+							eval("brctl", "addif", br_dev, voipVlanDev);
+						}
+					} else if (nvram_match("switch_wantag", "meo_iptv")) {
+						/* meo_iptv: WAN and IPTV both use VID 12; no VoIP service.
+						 * br101 was already created by set_wan_tag with eth0.v0 (WAN VID 12).
+						 * Both IPTV ports LAN3 (eth3) and LAN4 (eth4) receive untagged frames.
+						 * switch_wan2tagid is set to 12 by web config but carries no VoIP;
+						 * add both ports directly to br101 (untagged), same as stb_x=6 "none". */
+						eval("brctl", "delif", "br0", ethPort2);
+						eval("brctl", "addif", br_dev, ethPort2);
+						eval("brctl", "delif", "br0", ethPort1);
+						eval("brctl", "addif", br_dev, ethPort1);
+					} else if (nvram_match("switch_wantag", "singtel_mstb")) {
+						/* singtel_mstb: WAN=VID10 (br101), IPTV/VoIP share VID20.
+						 * LAN3 (eth3) and LAN4 (eth4) are both untagged IPTV ports.
+						 * Create one bridge (br102): WAN VIF (VID20) + eth3 + eth4. */
+						if (iptv_vid) {
+							eval("brctl", "delif", "br0", ethPort2);	/* eth3 */
+							vlan_forwarding(iptv_vid, iptv_prio, 3, 1);
+							sprintf(br_dev, "br%d", IPTV_BR_INDEX + 1);
+							eval("brctl", "delif", "br0", ethPort1);	/* eth4 */
+							eval("brctl", "addif", br_dev, ethPort1);
+						}
+					} else if (nvram_match("switch_wantag", "manual")) {
+						/* "manual" STB6: LAN3 and LAN4 are both raw IPTV switch ports.
+						 * Process LAN4 (iptv_vid = switch_wan1tagid) first, then LAN3
+						 * (voip_vid = switch_wan2tagid).
+						 * - Same VID (switch_wan2tagid == switch_wan1tagid): both ports
+						 *   join the same bridge (raw eth3 added to LAN4's bridge).
+						 * - Different VIDs: create a new bridge (br103) for LAN3 with
+						 *   raw eth3 + WAN VIF(voip_vid). */
+						if (iptv_vid) {
+							eval("brctl", "delif", "br0", ethPort1);
+							if (iptv_vid == wan_vid)
+								eval("brctl", "addif", br_dev, ethPort1);
+							else
+								vlan_forwarding(iptv_vid, iptv_prio, 4, 1);
+						}
+						if (voip_vid) {
+							eval("brctl", "delif", "br0", ethPort2);
+							if (voip_vid == iptv_vid) {
+								/* Same VID as LAN4: add raw LAN3 to the same bridge */
+								char lan3_br[8];
+								if (iptv_vid == wan_vid)
+									strlcpy(lan3_br, br_dev, sizeof(lan3_br));
+								else
+									snprintf(lan3_br, sizeof(lan3_br), "br%d", IPTV_BR_INDEX + 1);
+								eval("brctl", "addif", lan3_br, ethPort2);
+							} else if (voip_vid == wan_vid) {
+								/* LAN3 VID matches WAN VID: raw LAN3 to br101 */
+								eval("brctl", "addif", br_dev, ethPort2);
+							} else {
+								/* Different VID: new bridge with raw LAN3 + WAN VIF */
+								vlan_forwarding(voip_vid, voip_prio, 3, 1);
+							}
+						}
+					} else {
+						/* Tagged STB6: VoIP on LAN3 (stb=3), IPTV on LAN4 (stb=4). */
+						if (voip_vid) {
+							/* VoIP: tagged LAN side; eth3.<vid> in VoIP bridge.
+							 * switch_wan2tagid may hold multiple comma-separated VIDs. */
+							char wan2tag_buf[32], *p2, *tok2;
+							strlcpy(wan2tag_buf, nvram_safe_get("switch_wan2tagid"),
+								sizeof(wan2tag_buf));
+							p2 = wan2tag_buf;
+							eval("brctl", "delif", "br0", ethPort2);
+							while ((tok2 = strsep(&p2, ",")) != NULL) {
+								int vid2 = atoi(tok2) & 0x0fff;
+								if (!vid2)
+									continue;
+								vlan_forwarding(vid2, voip_prio, 3, 0);
+							}
+							/* voip_vid > 0: LAN3 raw stays out of br0 */
+						}
+						if (iptv_vid) {
+							eval("brctl", "delif", "br0", ethPort1);
+							/* "free" only sets stb_x=4, never stb_x=6; always untagged to host */
+							vlan_forwarding(iptv_vid, iptv_prio, 4, 1);
+						}
+					}
+				}
+			}
+		}
+		/* Set iptv_ifname for mcpd proxy (wifi8, switch_stb_x 1-6 bridge IPTV cases) */
+		nvram_set("iptv_ifname", "");
+		if (switch_stb > 0 && switch_stb < 7) {
+			if (nvram_match("switch_wantag", "vodafone")) {
+				/* vodafone: IPTV stream is in br103 (VID105 bridge) */
+				nvram_set("iptv_ifname", "br103");
+			} else if (iptv_vid == 0) {
+				/* No IPTV VID: proxy upstream is the WAN interface */
+				nvram_set("iptv_ifname", nvram_safe_get("wan0_ifname"));
+			} else if (nvram_match("switch_wantag", "meo_br") ||
+				   nvram_match("switch_wantag", "meo_iptv")) {
+				/* meo_br / meo_iptv: IPTV LAN ports bridged directly into br101 */
+				nvram_set("iptv_ifname", "br101");
+			} else {
+				/* General case: IPTV bridge created by vlan_forwarding().
+				 * For "free", set_wan_tag skips br101, so vlan_forwarding starts at br101.
+				 * For others, set_wan_tag consumes br101, so vlan_forwarding starts at br102. */
+				char iptv_br[8];
+				int base_br = nvram_match("switch_wantag", "free") ? IPTV_BR_INDEX : IPTV_BR_INDEX + 1;
+
+				/* stb==6 with voip_vid (non-"manual"): VoIP consumes base bridge, IPTV gets next.
+				 * "manual" stb_x=6: LAN4 (IPTV) is processed first → base bridge (br102). */
+				if (voip_vid > 0 && switch_stb == 6 && !nvram_match("switch_wantag", "manual"))
+					snprintf(iptv_br, sizeof(iptv_br), "br%d", base_br + 1);
+				else
+					snprintf(iptv_br, sizeof(iptv_br), "br%d", base_br);
+
+				nvram_set("iptv_ifname", iptv_br);
+			}
+		}
+#ifdef RTCONFIG_MULTICAST_IPTV
+		if (switch_stb >= 7) {
+			if (iptv_vid) {
+				char ip_iptv_if[16];
+				if (nvram_match("switch_wantag", "movistar"))
+					snprintf(ip_iptv_if, sizeof(ip_iptv_if), "vlan%d", iptv_vid);
+				else
+					snprintf(ip_iptv_if, sizeof(ip_iptv_if), "%s.%d", wan_if, iptv_vid);
+				sprintf(port_id, "%d", iptv_vid);
+				eval("ip", "link", "add", "link", wan_if, "name", ip_iptv_if,
+				     "type", "vlan", "id", port_id);
+				eval("ifconfig", ip_iptv_if, "allmulti", "up");
+				nvram_set("wan10_ifname", ip_iptv_if);
+				nvram_set("wan10_proto", "dhcp");
+				nvram_set("wan10_enable", "1");
+				nvram_set("iptv_ifname", ip_iptv_if);
+				eval("bcmmcastctl", "mode", "-i", "br0", "-p", "1", "-m", "0");
+				eval("bcmmcastctl", "mode", "-i", "br0", "-p", "2", "-m", "0");
+			}
+			else if (nvram_match("switch_wantag", "hinet_mesh")) {
+#ifdef RTCONFIG_HINET_MESH_SNOOPER
+				int iptv_unit = WAN_UNIT_IPTV;
+				char prefix[sizeof("wanXXX_")];
+				char br_iptv[16];
+				char real_mac[18] = {0}; /* eth0 MAC, used later for wan10_hwaddr */
+
+				eval("ip", "link", "set", wan_if, "up");
+
+				/* br101 */
+				snprintf(br_iptv, sizeof(br_iptv), "br%d", IPTV_BR_INDEX);
+
+				/* setup br101 and join eth0 */
+				eval("brctl", "addbr", br_iptv);
+				eval("brctl", "addif", br_iptv, wan_if);
+
+				/* copy eth0 MAC to br101 so DHCP/PPPoE packets keep the
+				 * original WAN MAC and are not dropped by ebtables FORWARD */
+				{
+					char mac_path[64];
+					FILE *fp;
+
+					snprintf(mac_path, sizeof(mac_path),
+					         "/sys/class/net/%s/address", wan_if);
+					if ((fp = fopen(mac_path, "r")) != NULL) {
+						if (fgets(real_mac, sizeof(real_mac), fp)) {
+							real_mac[strcspn(real_mac, "\n")] = 0;
+							eval("ifconfig", br_iptv, "hw", "ether", real_mac);
+						}
+						fclose(fp);
+					}
+				}
+
+				eval("ifconfig", br_iptv, "allmulti", "up");
+
+				eval("bcmmcastctl", "mode", "-i", br_iptv, "-p", "1", "-m", "1");
+				eval("bcmmcastctl", "mode", "-i", br_iptv, "-p", "2", "-m", "1");
+
+				strncpy(wanVlanDev, br_iptv, sizeof(wanVlanDev));
+
+				/* assign wan to be br101 */
+				set_wan_phy("");
+				add_wan_phy(wanVlanDev);
+				nvram_set("wan0_ifname", wanVlanDev);
+				nvram_set("wan0_gw_ifname", wanVlanDev);
+				nvram_set("switch_wantag_ifname", wanVlanDev);
+
+				/* setup iptv wan10 */
+				snprintf(prefix, sizeof(prefix), "wan%d_", iptv_unit);
+				nvram_pf_set(prefix, "ifname", br_iptv);
+				nvram_set("iptv_ifname", br_iptv);
+				if (real_mac[0] != '\0')
+					nvram_pf_set(prefix, "hwaddr", real_mac);
+
+				/* wan10_proto=bridge so dhcpfwd runs */
+				nvram_pf_set(prefix, "proto", "bridge");
+				nvram_pf_set(prefix, "enable", "1");
+#elif defined(RTCONFIG_HINET_MESH_BRIDGE)
+				config_hinet_mesh(wan_if);
+#endif
+			}
+		}
+		if (switch_stb >= 8) {
+			if (voip_vid) {
+				char ip_voip_if[16];
+				if (nvram_match("switch_wantag", "movistar"))
+					snprintf(ip_voip_if, sizeof(ip_voip_if), "vlan%d", voip_vid);
+				else
+					snprintf(ip_voip_if, sizeof(ip_voip_if), "%s.%d", wan_if, voip_vid);
+				sprintf(port_id, "%d", voip_vid);
+				eval("ip", "link", "add", "link", wan_if, "name", ip_voip_if,
+				     "type", "vlan", "id", port_id);
+				eval("ifconfig", ip_voip_if, "allmulti", "up");
+				nvram_set("wan11_ifname", ip_voip_if);
+				nvram_set("wan11_proto", "dhcp");
+				nvram_set("wan11_enable", "1");
+			}
+		}
+#endif	/* RTCONFIG_MULTICAST_IPTV */
+		/* Fallback for iptv_ifname: if still empty (e.g. switch_stb==0, nowtv),
+		 * fall back to wan0_ifname (raw WAN, no IPTV/VoIP tagging needed). */
+		if (strcmp(nvram_safe_get("iptv_ifname"), "") == 0)
+			nvram_set("iptv_ifname", nvram_safe_get("wan0_ifname"));
+		/* All VLAN sub-interfaces and bridge members are now in place.
+		 * Bounce the WAN PHY so the upstream link re-negotiates cleanly. */
+		doSystem("ethctl %s phy-power down", wan_if);
+		sleep(1);
+		doSystem("ethctl %s phy-power up", wan_if);
+		break;
+#endif	/* GTBN98_PRO || GTBN96X || GTBN98 || GTBN96 */
+
 		/* Using vlanctl to handle vlan forwarding */
 		if ((!nvram_match("switch_wantag", "") && (wan_vid || switch_stb > 0))
 		 && !nvram_match("switch_wantag", "hinet_mesh")
@@ -14439,9 +14999,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x202");
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x6");
 
-				system("fapi-int-gphy-mod phy=1 mmd=0 reg=0 mask=0x800 data=0x800");
+				mxl_gphy_mod(1, 0, 0, 0x800, 0x800);
 				sleep(1);
-				system("fapi-int-gphy-mod phy=1 mmd=0 reg=0 mask=0x800 data=0x0");
+				mxl_gphy_mod(1, 0, 0, 0x800, 0);
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=6 bBridgePortMapEnable=1 Index=0 MapValue=0x218E");
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=7 bBridgePortMapEnable=1 Index=0 MapValue=0x214E");
@@ -14455,9 +15015,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=5 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x210");
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x30");
 
-				system("fapi-int-gphy-mod phy=4 mmd=0 reg=0 mask=0x800 data=0x800");
+				mxl_gphy_mod(4, 0, 0, 0x800, 0x800);
 				sleep(1);
-				system("fapi-int-gphy-mod phy=4 mmd=0 reg=0 mask=0x800 data=0x0");
+				mxl_gphy_mod(4, 0, 0, 0x800, 0);
 #endif
 			} else {
 
@@ -14509,9 +15069,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x202");
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0xa");
 
-				system("fapi-int-gphy-mod phy=2 mmd=0 reg=0 mask=0x800 data=0x800");
+				mxl_gphy_mod(2, 0, 0, 0x800, 0x800);
 				sleep(1);
-				system("fapi-int-gphy-mod phy=2 mmd=0 reg=0 mask=0x800 data=0x0");
+				mxl_gphy_mod(2, 0, 0, 0x800, 0);
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=5 bBridgePortMapEnable=1 Index=0 MapValue=0x218E");
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=7 bBridgePortMapEnable=1 Index=0 MapValue=0x212E");
@@ -14525,9 +15085,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=6 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x210");
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x50");
 
-				system("fapi-int-gphy-mod phy=5 mmd=0 reg=0 mask=0x800 data=0x800");
+				mxl_gphy_mod(5, 0, 0, 0x800, 0x800);
 				sleep(1);
-				system("fapi-int-gphy-mod phy=5 mmd=0 reg=0 mask=0x800 data=0x0");
+				mxl_gphy_mod(5, 0, 0, 0x800, 0);
 #endif
 			} else {
 
@@ -14919,9 +15479,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x202");
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x12");
 
-					system("fapi-int-gphy-mod phy=3 mmd=0 reg=0 mask=0x800 data=0x800");
+					mxl_gphy_mod(3, 0, 0, 0x800, 0x800);
 					sleep(1);
-					system("fapi-int-gphy-mod phy=3 mmd=0 reg=0 mask=0x800 data=0x0");
+					mxl_gphy_mod(3, 0, 0, 0x800, 0);
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=5 bBridgePortMapEnable=1 Index=0 MapValue=0x214E");
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=6 bBridgePortMapEnable=1 Index=0 MapValue=0x212E");
@@ -14935,9 +15495,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=7 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x210");
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x90");
 
-					system("fapi-int-gphy-mod phy=6 mmd=0 reg=0 mask=0x800 data=0x800");
+					mxl_gphy_mod(6, 0, 0, 0x800, 0x800);
 					sleep(1);
-					system("fapi-int-gphy-mod phy=6 mmd=0 reg=0 mask=0x800 data=0x0");
+					mxl_gphy_mod(6, 0, 0, 0x800, 0);
 #endif
 				} else {
 
@@ -15111,9 +15671,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=5 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x202");
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x22");
 
-					system("fapi-int-gphy-mod phy=4 mmd=0 reg=0 mask=0x800 data=0x800");
+					mxl_gphy_mod(4, 0, 0, 0x800, 0x800);
 					sleep(1);
-					system("fapi-int-gphy-mod phy=4 mmd=0 reg=0 mask=0x800 data=0x0");
+					mxl_gphy_mod(4, 0, 0, 0x800, 0);
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=5 bBridgePortMapEnable=1 Index=0 MapValue=0x20CE");
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=6 bBridgePortMapEnable=1 Index=0 MapValue=0x20AE");
@@ -15127,9 +15687,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=8 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x210");
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x110");
 
-					system("fapi-int-gphy-mod phy=7 mmd=0 reg=0 mask=0x800 data=0x800");
+					mxl_gphy_mod(7, 0, 0, 0x800, 0x800);
 					sleep(1);
-					system("fapi-int-gphy-mod phy=7 mmd=0 reg=0 mask=0x800 data=0x0");
+					mxl_gphy_mod(7, 0, 0, 0x800, 0);
 #endif
 				} else {
 
@@ -15502,11 +16062,11 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x206");
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0xe");
 
-				system("fapi-int-gphy-mod phy=1 mmd=0 reg=0 mask=0x800 data=0x800");
-				system("fapi-int-gphy-mod phy=2 mmd=0 reg=0 mask=0x800 data=0x800");
+				mxl_gphy_mod(1, 0, 0, 0x800, 0x800);
+				mxl_gphy_mod(2, 0, 0, 0x800, 0x800);
 				sleep(1);
-				system("fapi-int-gphy-mod phy=1 mmd=0 reg=0 mask=0x800 data=0x0");
-				system("fapi-int-gphy-mod phy=2 mmd=0 reg=0 mask=0x800 data=0x0");
+				mxl_gphy_mod(1, 0, 0, 0x800, 0);
+				mxl_gphy_mod(2, 0, 0, 0x800, 0);
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=7 bBridgePortMapEnable=1 Index=0 MapValue=0x210E");
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=8 bBridgePortMapEnable=1 Index=0 MapValue=0x208E");
@@ -15520,11 +16080,11 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=6 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x230");
 				system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x70");
 
-				system("fapi-int-gphy-mod phy=4 mmd=0 reg=0 mask=0x800 data=0x800");
-				system("fapi-int-gphy-mod phy=5 mmd=0 reg=0 mask=0x800 data=0x800");
+				mxl_gphy_mod(4, 0, 0, 0x800, 0x800);
+				mxl_gphy_mod(5, 0, 0, 0x800, 0x800);
 				sleep(1);
-				system("fapi-int-gphy-mod phy=4 mmd=0 reg=0 mask=0x800 data=0x0");
-				system("fapi-int-gphy-mod phy=5 mmd=0 reg=0 mask=0x800 data=0x0");
+				mxl_gphy_mod(4, 0, 0, 0x800, 0);
+				mxl_gphy_mod(5, 0, 0, 0x800, 0);
 #endif
 			} else {
 
@@ -15600,11 +16160,11 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=5 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x212");
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x32");
 
-					system("fapi-int-gphy-mod phy=3 mmd=0 reg=0 mask=0x800 data=0x800");
-					system("fapi-int-gphy-mod phy=4 mmd=0 reg=0 mask=0x800 data=0x800");
+					mxl_gphy_mod(3, 0, 0, 0x800, 0x800);
+					mxl_gphy_mod(4, 0, 0, 0x800, 0x800);
 					sleep(1);
-					system("fapi-int-gphy-mod phy=3 mmd=0 reg=0 mask=0x800 data=0x0");
-					system("fapi-int-gphy-mod phy=4 mmd=0 reg=0 mask=0x800 data=0x0");
+					mxl_gphy_mod(3, 0, 0, 0x800, 0);
+					mxl_gphy_mod(4, 0, 0, 0x800, 0);
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=5 bBridgePortMapEnable=1 Index=0 MapValue=0x204E");
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=6 bBridgePortMapEnable=1 Index=0 MapValue=0x202E");
@@ -15618,11 +16178,11 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=8 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x290");
 					system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 Index=0 MapValue=0x190");
 
-					system("fapi-int-gphy-mod phy=6 mmd=0 reg=0 mask=0x800 data=0x800");
-					system("fapi-int-gphy-mod phy=7 mmd=0 reg=0 mask=0x800 data=0x800");
+					mxl_gphy_mod(6, 0, 0, 0x800, 0x800);
+					mxl_gphy_mod(7, 0, 0, 0x800, 0x800);
 					sleep(1);
-					system("fapi-int-gphy-mod phy=6 mmd=0 reg=0 mask=0x800 data=0x0");
-					system("fapi-int-gphy-mod phy=7 mmd=0 reg=0 mask=0x800 data=0x0");
+					mxl_gphy_mod(6, 0, 0, 0x800, 0);
+					mxl_gphy_mod(7, 0, 0, 0x800, 0);
 #endif
 				} else {
 
@@ -18733,6 +19293,35 @@ void hnd_nat_ac_init(int bootup)
 		// bw limiter : disable fc
 		nvram_set_int("fc_disable", nvram_get_int("fc_disable_force") || (IS_BW_QOS()) ? 1 : 0);
 	}
+#endif
+
+#if defined(RTCONFIG_GTBOOSTER)
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756)
+	/*
+	 * 675X: runner_disable only toggles the hw-accel path
+	 * ("fc config --hw-accel"); fc_disable is the independent software
+	 * fc engine switch and must not be touched here, or the software
+	 * accelerator would be disabled along with it.
+	 */
+	int runner_disable_normal = nvram_get_int("runner_disable");
+
+	if (ark_disable_hw_accel())
+		nvram_set_int("runner_disable", 1);
+	else
+		nvram_set_int("runner_disable", runner_disable_normal);
+#else
+	if (ark_disable_hw_accel()) {
+		nvram_set_int("fc_disable", 1);
+		nvram_set_int("runner_disable", 1);
+	}
+	else if (!nvram_get_int("fc_disable")) {
+		/*
+		 * Restore the ARK-forced nvram state so hw acceleration can be
+		 * enabled again when no other condition is holding fc disabled.
+		 */
+		nvram_set_int("runner_disable", 0);
+	}
+#endif
 #endif
 
 	if (nvram_match("fc_disable", "1"))

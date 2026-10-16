@@ -180,13 +180,14 @@ a:link{
 	color: var(--text-status-good-color);
 }
 .checkbox, .checkbox.off{
-	border: 1.5px solid var(--checkbox-unselect-normal-fill-color);
-	border-radius: var(--radius-xs);
 	box-shadow: none;
+	border: var(--wrt-checkbox-border) solid 1px;
+	border-radius: var(--wrt-checkbox-radius);
+	background-color: var(--wrt-checkbox-bg);
 }
 .checkbox.on{
-	background-color: var(--checkbox-selected-normal-fill-color);
-	border: 1.5px solid var(--checkbox-selected-normal-fill-color);
+	background-color: var(--wrt-checkbox-checked-bg);
+	border: 1.5px solid var(--wrt-checkbox-checked-border);
 	box-shadow: none;
 }
 .profile_setting_item.policy{
@@ -252,6 +253,9 @@ a:link{
 	color: var(--body-text-color);
 	font-weight: bolder;
 }
+.textInput, .textareaInput, .custom_select_container{
+	box-sizing: border-box;
+}
 .textInput:focus, .textareaInput:focus{
 	box-shadow: var( --shadow-elevation10-primary-color);
 	border-bottom: 1px solid var(--textbox-focus-stroke-color);
@@ -279,15 +283,39 @@ a:link{
 .action_container .btn_container, .get_start_container .main_info_container .add_btn{
 	background: var(--primary-btn-normal-fill);
     border-radius: var(--radius-sm);
-    border: 1px outset transparent;
-    color: var(--primary-btn-text-color);
-    border-image: var(--primary-btn-normal-stroke);
-    border-image-slice: 2;
+	border: 1px solid var(--wrt-btn-accent-primary-border) !important;
+	color: var(--wrt-btn-accent-primary-color) !important;
+	background-image: none;
+	transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .06s ease;
+	transform: translateY(0);
+	mask-image: initial !important;
+}
+.action_container .btn_container:hover, .get_start_container .main_info_container .add_btn:hover{
+	background: var(--wrt-btn-accent-primary-hover-bg);
+	color: var(--wrt-btn-accent-primary-hover-color);
+	border-color: var(--wrt-btn-accent-primary-hover-border);
+	background-image: linear-gradient(rgba(var(--surface-invert-rgb), .06), rgba(var(--surface-invert-rgb), .06));
+	box-shadow: 0 2px 8px var(--shadow-ambient-20, rgba(0,0,0,.15));
+	transform: translateY(-1px);
+}
+.action_container .btn_container:active, .get_start_container .main_info_container .add_btn:active{
+	background: var(--wrt-btn-accent-primary-active-bg);
+	color: var(--wrt-btn-accent-primary-active-color);
+	border-color: var(--wrt-btn-accent-primary-active-border);
+	background-image: linear-gradient(rgba(var(--surface-invert-rgb), .1), rgba(var(--surface-invert-rgb), .1));
+	box-shadow: 0 1px 4px var(--shadow-ambient-10, rgba(0,0,0,.12));
+	transform: translateY(0) scale(0.99);
+}
+.action_container .btn_container:focus-visible, .get_start_container .main_info_container .add_btn:focus-visible{
+	outline: 0;
+	box-shadow: 0 0 0 3px rgba(var(--focus-ring-rgb), .35);
 }
 .action_container .btn_container.valid_fail{
-	background: #dcdcdc;
-	border: 0;
-	color: #4d4d4d;
+	background: var(--wrt-btn-accent-neutral-disabled-bg);
+	border: 1px solid var(--wrt-btn-accent-neutral-disabled-border);
+	color: var(--wrt-btn-accent-neutral-disabled-color);
+	pointer-events: none;
+	opacity: .7;
 }
 .action_container_hint{
 	color: var(--primary-50);

@@ -108,7 +108,7 @@ function show_nt_event_list(nt_page, sort){
 		if(i > nt_current_page_start + nt_each_page_num -1)	break;	//show select page in the end
 
 		if(first_line == true)
-			txt += '<div style="padding-top:6px"><div style="background-color:#AAAAAA;height:1px;width:95%;margin-left:7px;"></div></div>';
+			txt += '<div style="padding-top:6px"><div style="background-color:var(--border-default, #AAAAAA);height:1px;width:95%;margin-left:7px;"></div></div>';
 		else{
 			txt += '<div style="padding-top:0px"></div>';
 			first_line = true;
@@ -411,13 +411,13 @@ function nt_action_click(flag){
       	  	<div class="control_bg content_frame" style="width:auto;border solide: 1px #717171;border-radius:4px;height:120px;">
       	  	<div style="padding:6px;">
 	      	  	<div>
-	      	  		<div class="noti_bell_gray" style="display:table-cell"></div><div style="display:table-cell;font-size:14px;font-weight:bold;color:#FFFFFF;">Reminds</div>
+	      	  		<div class="noti_bell_gray" style="display:table-cell"></div><div style="display:table-cell;font-size:14px;font-weight:bold;color:var(--wrt-text-color,#FFFFFF);">Reminds</div>
 	      	  	</div>
-	      	  	<div style="font-size:12px;color:#C3D4D8;padding-left:25px">Please select the method you want to receive notifications when a system event occur.</div>
+	      	  	<div style="font-size:12px;color:var(--wrt-text-muted-color,#C3D4D8);padding-left:25px">Please select the method you want to receive notifications when a system event occur.</div>
 	      	  	<div>
 	      	  		<div style="padding:20px 0px 0px 230px;display:table-cell">
-	      	  		<span style="font-size:14px;color:#FFFFFF;"><input type="checkbox" style="width:14px; height:14px" name="nt_action_webapp" id="nt_action_webapp" onclick="nt_action_click('webapp')">Web/APP</span>
-	      	  		<span style="font-size:14px;color:#FFFFFF;margin-left:70px;"><input type="checkbox" style="width:14px; height:14px" name="nt_action_email" id="nt_action_email" value="0" onclick="nt_action_click('mail')">Email</span>
+	      	  		<span style="font-size:14px;color:var(--wrt-text-color,#FFFFFF);"><input type="checkbox" style="width:14px; height:14px" name="nt_action_webapp" id="nt_action_webapp" onclick="nt_action_click('webapp')">Web/APP</span>
+	      	  		<span style="font-size:14px;color:var(--wrt-text-color,#FFFFFF);margin-left:70px;"><input type="checkbox" style="width:14px; height:14px" name="nt_action_email" id="nt_action_email" value="0" onclick="nt_action_click('mail')">Email</span>
 	      	  		</div>
 	      	  		<div style="display:table-cell;" class="noti_setting"></div>
 	      	  	</div>
@@ -430,11 +430,11 @@ function nt_action_click(flag){
 
       	  	<div class="textarea_ssh_table content_frame" style="width:auto;border solide: 1px #717171;border-radius:4px;height:680px;margin-top:15px;">
       	  		<div style="padding:15px 6px;">
-      	  			<div class="noti_message" style="display:table-cell;"></div><div style="font-size:14px;color:#FFFFFF;font-weight:bold;display:table-cell;padding-left:7px;">Event List</div>
-      	  			<div style="display:"><div style="font-size:12px;color:#FFFFFF;font-weight:bold;display:table-cell;padding-left:7px;"><#diskUtility_time#></div><div id="change_data_sort" class="noti_event_down" style="display:table-cell;" onclick="change_data_sort(this);"></div><div style="display:table-cell;padding-left:58px;">Notice Type</div><div  id="change_priority_sort" class="noti_event_down" style="display:table-cell;" onclick="change_priority_sort(this)"></div><div style="display:table-cell;padding-left: 30px;">Content</div></div>
-      	  			<div style="padding-top:6px"><div style="background-color:#AAAAAA;height:2px;width:95%;margin-left:7px;"></div></div>
+      	  			<div class="noti_message" style="display:table-cell;"></div><div style="font-size:14px;color:var(--wrt-text-color,#FFFFFF);font-weight:bold;display:table-cell;padding-left:7px;">Event List</div>
+      	  			<div style="display:"><div style="font-size:12px;color:var(--wrt-text-color,#FFFFFF);font-weight:bold;display:table-cell;padding-left:7px;"><#diskUtility_time#></div><div id="change_data_sort" class="noti_event_down" style="display:table-cell;" onclick="change_data_sort(this);"></div><div style="display:table-cell;padding-left:58px;">Notice Type</div><div  id="change_priority_sort" class="noti_event_down" style="display:table-cell;" onclick="change_priority_sort(this)"></div><div style="display:table-cell;padding-left: 30px;">Content</div></div>
+      	  			<div style="padding-top:6px"><div style="background-color:var(--border-default, #AAAAAA);height:2px;width:95%;margin-left:7px;"></div></div>
       	  			<div id="nt_event_list_content"></div>
-      	  			<div style="padding-top:6px;"><div style="background-color:#AAAAAA;height:1px;width:95%;margin-left:7px;"></div></div>
+      	  			<div style="padding-top:6px;"><div style="background-color:var(--border-default, #AAAAAA);height:1px;width:95%;margin-left:7px;"></div></div>
       	  			<div id="change_message_page_list" style="padding-top:10px;width:600px;margin:0px auto;text-align:center;"></div>
       	  		</div>
       	  	</div>

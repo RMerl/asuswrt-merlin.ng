@@ -1224,11 +1224,12 @@ void set_rgbled(unsigned int mode)
 
 			/* parse nvram ledg_rgbXXX */
 			snprintf(nv, sizeof(nv), "ledg_rgb%d", ledg_scheme);
-			strcpy(buf, nvram_safe_get(nv));
+			strlcpy(buf, nvram_safe_get(nv), sizeof(buf));
 			while ((str = strsep(&ptr, ","))) {
-				rgb[i] = atoi(str);
-				if (++i > ARRAY_SIZE(rgb))
+				if (i >= ARRAY_SIZE(rgb))
 					break;
+				rgb[i] = atoi(str);
+				i++;
 			}
 
 			switch (ledg_scheme) {

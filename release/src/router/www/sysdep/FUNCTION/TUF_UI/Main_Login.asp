@@ -307,7 +307,7 @@ function initial(){
 			document.getElementById("error_captcha_field").style.display ="";
 		}
 		else if(flag == 11){
-			document.getElementById("error_status_field").innerHTML ="For security reasons, this router has been locked out because of 10 times of incorrect username and password attempts.<br>To unlock, please manually reset your router to factory setting by pressing the reset button on the back.<br>Click <a id=\"faq_SG\" href=\"\" target=\"_blank\" style=\"color:#FC0;text-decoration:underline;\">here</a> for more details.";
+			document.getElementById("error_status_field").innerHTML ="For security reasons, this router has been locked out because of 10 times of incorrect username and password attempts.<br>To unlock, please manually reset your router to factory setting by pressing the reset button on the back.<br>Click <a id=\"faq_SG\" href=\"\" target=\"_blank\" style=\"color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;\">here</a> for more details.";
 			document.getElementById("faq_SG").href = faq_href;
 			document.getElementById("error_status_field").className = "error_hint error_hint1";
 			disable_input(1);

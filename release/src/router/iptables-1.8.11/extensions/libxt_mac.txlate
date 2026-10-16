@@ -1,0 +1,5 @@
+iptables-translate -A INPUT -m mac --mac-source 0a:12:3e:4f:b2:c6 -j DROP
+nft 'add rule ip filter INPUT ether saddr 0a:12:3e:4f:b2:c6 counter drop'
+
+iptables-translate -A INPUT -p tcp --dport 80 -m mac --mac-source 0a:12:3e:4f:b2:c6 -j ACCEPT
+nft 'add rule ip filter INPUT tcp dport 80 ether saddr 0a:12:3e:4f:b2:c6 counter accept'

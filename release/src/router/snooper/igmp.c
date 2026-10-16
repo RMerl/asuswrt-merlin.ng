@@ -335,8 +335,12 @@ int accept_igmp(unsigned char *packet, int size, unsigned char *shost, int loopb
 	if (ptr > end - sizeof(*iph) ||
 	    iph->ip_p != IPPROTO_IGMP)
 		return 0;
+	if (iph->ip_hl < 5 || ptr + (iph->ip_hl << 2) > end)
+		return 0;
 	ptr += iph->ip_hl << 2;
 	end = MIN(end, (unsigned char *) iph + ntohs(iph->ip_len));
+	if (ptr > end)
+		return 0;
 
 	igmp.igmp = (struct igmp *) ptr;
 	igmp_len = end - ptr;
@@ -364,10 +368,14 @@ int accept_igmp(unsigned char *packet, int size, unsigned char *shost, int loopb
 		ptr = (unsigned char *) igmp.report3->igmp_grec;
 		ngrec = ntohs(igmp.report3->igmp_ngrec);
 		while (ngrec-- > 0) {
+			unsigned char *next_ptr;
 			grec = (struct igmp3_grec *) ptr;
 			if (ptr > end - sizeof(*grec))
 				break;
 			nsrcs = ntohs(grec->grec_nsrcs);
+			next_ptr = (unsigned char *) &grec->grec_src[nsrcs] + grec->grec_auxwords * 4;
+			if (next_ptr < ptr || next_ptr > end)
+				break;
 			switch (grec->grec_type) {
 			case IGMP3_ALLOW_NEW_SOURCES:
 				if (nsrcs == 0)
@@ -390,7 +398,7 @@ int accept_igmp(unsigned char *packet, int size, unsigned char *shost, int loopb
 			case IGMP3_BLOCK_OLD_SOURCES:
 				break;
 			}
-			ptr = (unsigned char *) &grec->grec_src[nsrcs] + grec->grec_auxwords * 4;
+			ptr = next_ptr;
 		}
 		break;
 	case IGMP_MEMBERSHIP_QUERY:

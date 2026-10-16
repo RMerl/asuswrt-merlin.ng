@@ -69,7 +69,7 @@
             }
 
             .a-hint-text {
-                color: #fc0 !important;
+                color: var(--wrt-badge-warning-color,#FFCC00) !important;
                 text-decoration: underline !important;
                 cursor: pointer;
             }
@@ -235,7 +235,7 @@
 
                     document.querySelectorAll(".setup_afc_help_icon").forEach((element) => {
                         let confirm_content = `
-                            <span style="color:#FFFFFF;font-size:10pt;"><#WiFi_AFC_desc#></span><br>
+                            <span style="color:var(--wrt-text-color,#FFFFFF);font-size:10pt;"><#WiFi_AFC_desc#></span><br>
                         `;
 
                         let confirm_content2 = `
@@ -243,7 +243,7 @@
                                 <div class="title_num">1</div>
                             </div>
                             <div style="margin-left:45px;margin-top:-22px;">
-                                <span style="color:#FFFFFF;"><b><#GB_mobile_desc_short#></b></span><br>
+                                <span style="color:var(--wrt-text-color,#FFFFFF);"><b><#GB_mobile_desc_short#></b></span><br>
                                 <#WiFi_AFC_step1#>
                             </div>
 
@@ -263,7 +263,7 @@
                                     <a href="${Android_app_link}" target="_blank">
                                         <div style="width:160px; ${
                                             is_CN || ui_lang === "CN"
-                                                ? "font-size:24px;border:1px solid #BDBDBD;padding:10px 4px;border-radius:6px;"
+                                                ? "font-size:24px;border:1px solid var(--border-default, #BDBDBD);padding:10px 4px;border-radius:6px;"
                                                 : "height:46px;background:url(images/googleplay.png) no-repeat;background-size:100%;"
                                         } margin:auto;">
                                             ${is_CN || ui_lang === "CN" ? "Android App" : ""}
@@ -283,7 +283,7 @@
                                 <div class="title_num">2</div>
                             </div>
                             <div style="margin-left:45px;margin-top:-22px;">
-                                <span style="color:#FFFFFF;"><b><#WiFi_AFC_enable#></b></span><br>
+                                <span style="color:var(--wrt-text-color,#FFFFFF);"><b><#WiFi_AFC_enable#></b></span><br>
                                 <#WiFi_AFC_step2#>
                             </div>
 
@@ -625,7 +625,7 @@
                             <li><#Outdoor_active_desc_1#></li>
                             <li><#Outdoor_active_desc_2#></li>
                             <li><#Outdoor_active_desc_3#></li>
-                            <li><span style="color:#FC0"><#Outdoor_active_desc_4#></span></li>
+                            <li><span style="color:var(--wrt-badge-warning-color,#FFCC00)"><#Outdoor_active_desc_4#></span></li>
                         </ol>
                     `;
                     confirm_asus({
@@ -1025,6 +1025,9 @@
                         } else {
                             chValue = ch20MHz[element][0];
                             chNumber = channelValue;
+if (isBRCMplatform && (prefix === "6g1" || prefix === "6g2")) {
+    chNumber = String(channelValue).split("/")[0].replace(/^6g/, "");
+}
                         }
                     } else if (bandwidthValue === "6") {
                         // 320 MHz
@@ -1095,6 +1098,9 @@
                         // 20 MHz
                         chValue = ch20MHz[element][0];
                         chNumber = channelValue;
+if (isBRCMplatform && (prefix === "6g1" || prefix === "6g2")) {
+    chNumber = String(channelValue).split("/")[0].replace(/^6g/, "");
+}
                     }
 
                     selected = element === chNumber ? "selected" : "";
@@ -1986,6 +1992,9 @@
                         } else {
                             chValue = ch20MHz[element][0];
                             chNumber = channelValue;
+if (isBRCMplatform && (prefix === "6g1" || prefix === "6g2")) {
+    chNumber = String(channelValue).split("/")[0].replace(/^6g/, "");
+}
                         }
                     } else if (bandwidthValue === "6") {
                         // 320 MHz
@@ -2054,9 +2063,12 @@
                         // 20 MHz
                         chValue = ch20MHz[element][0];
                         chNumber = channelValue;
+if (isBRCMplatform && (prefix === "6g1" || prefix === "6g2")) {
+    chNumber = String(channelValue).split("/")[0].replace(/^6g/, "");
+}
                     }
 
-                    selected = element === chNumber ? "selected" : "";
+                    selected = element === chNumber ? "selected" : "";                                
                     channelSnippet += `<option value="${chValue}" ${selected}>${element}</option>`;
                 }
 
@@ -2269,7 +2281,7 @@
                         <th><#Outdoor_status#></th>
                         <td>
                             <div id="${prefix}_outdoor_status">${od_mode === "1" ? "<#Outdoor_active#>" : "<#Status_Inactive#>"}</div>
-                            <div id="${prefix}_outdoor_status_hint" style="color:#fc0;display:${od_mode === "1" ? "" : "none"};"><#Outdoor_status_hint#></div>
+                            <div id="${prefix}_outdoor_status_hint" style="color:var(--wrt-badge-warning-color, #FFCC00);display:${od_mode === "1" ? "" : "none"};"><#Outdoor_status_hint#></div>
                         </td>
                     </tr>
                 `;
@@ -2487,12 +2499,12 @@
                                     ? `<div class="setup_afc_help_icon"></div>`
                                     : `<div class="setup_afc_help_icon" style="margin-top:-26px;margin-left:92px;"></div>`
                             }
-                            <div id="afc_status" style="line-height:28px;margin-left:125px;margin-top:-25px;color:#fc0">
+                            <div id="afc_status" style="line-height:28px;margin-left:125px;margin-top:-25px;color:var(--wrt-badge-warning-color,#FFCC00)">
                                 ${status}
                                 
                             </div>
 
-                            <span id="afc_err_message" style="margin-top:25px;color:#fc0;">${str_message}</span>
+                            <span id="afc_err_message" style="margin-top:25px;color:var(--wrt-badge-warning-color,#FFCC00);">${str_message}</span>
                         </td>
                     </tr>
                 `;

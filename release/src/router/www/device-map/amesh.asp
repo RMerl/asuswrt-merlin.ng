@@ -949,7 +949,7 @@ function scenario() {
 	description += "<br>";
 	description += "<#AiMesh_Desc32#>";
 	description += "<br>";
-	description += "<a id='aimesh_link' style='font-weight:bolder;text-decoration:underline;color:#FC0;' href='' target='_blank'><#AiMesh_Desc3_note#></a>";
+	description += "<a id='aimesh_link' style='font-weight:bolder;text-decoration:underline;color:var(--wrt-badge-warning-color,#FFCC00);' href='' target='_blank'><#AiMesh_Desc3_note#></a>";
 	gen_each_step_content(description, 3);
 
 	interval = setInterval(set_slider, 15000);
@@ -1206,9 +1206,9 @@ function show_connect_msg(_reMac, _newReMac, _node_info) {
 								var $amesh_wpa3_text = $('<div>');
 								$amesh_wpa3_text.addClass("amesh_hint_text");
 								var auth_change_str = "* <#ADSL_FW_note#> <#AiMesh_confirm_msg11#>".replace("WPA3-personal", current_auth).replace("WPA2/WPA3-personal", changeTo_auth);
-								$amesh_wpa3_text.append($("<div>").html(auth_change_str).css("color", "#FC0"));
+								$amesh_wpa3_text.append($("<div>").html(auth_change_str).css("color", "var(--wrt-badge-warning-color,#FC0)"));
 								$amesh_wpa3_text.append($("<div>").html("<#AiMesh_confirm_msg12#>"));
-								$amesh_wpa3_text.find("#wpa3FaqLink").attr("target", "_blank").css({"color": "#FC0", "text-decoration": "underline"});
+								$amesh_wpa3_text.find("#wpa3FaqLink").attr("target", "_blank").css({"color": "var(--wrt-badge-warning-color,#FC0)", "text-decoration": "underline"});
 								$amesh_wpa3_text.find("#wpa3FaqLink").attr("href", faq_href);
 								$connectHtml.find(".amesh_action_bg").before($amesh_wpa3_text);
 							}
@@ -2480,7 +2480,7 @@ function re_sort_AiMesh_node_client(_key, _sortType, _clickID) {
 function gen_AiMesh_node_client(_nodeClient_array) {
 	var nodeClientHtml = "";
 	if(_nodeClient_array.length == 0)
-		nodeClientHtml = "<tr class='aimesh_node_client_tr'><td style='color:#FFCC00;' colspan='" + aimesh_node_client_list_colspan + "'><#IPConnection_VSList_Norule#></td></tr>";
+		nodeClientHtml = "<tr class='aimesh_node_client_tr'><td style='color:var(--wrt-badge-warning-color,#FFCC00);' colspan='" + aimesh_node_client_list_colspan + "'><#IPConnection_VSList_Norule#></td></tr>";
 	else {
 		for(var i = 0; i < _nodeClient_array.length; i += 1) {
 			var nodeClientObj = _nodeClient_array[i];
@@ -2538,13 +2538,13 @@ function gen_AiMesh_node_client(_nodeClient_array) {
 				var bandClass = (navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)) ? "band_txt_chrome" : "band_txt";
 				let band_text = isWL_map[nodeClientObj.isWL]["text"];
 				if(isSupport("mlo") && nodeClientObj.mlo == "1") band_text = `MLO`;
-				nodeClientHtml += `<div class='band_block' style='margin: auto;'><span class="${bandClass}" style='color: #000000;'>${band_text}</span></div>`;
+				nodeClientHtml += `<div class='band_block' style='margin: auto;'><span class="${bandClass}" style='color: var(--wrt-text-color, #000000);'>${band_text}</span></div>`;
 			}
 			nodeClientHtml += "</td>";
 			nodeClientHtml += "</tr>";
 		}
 		if(nodeClientHtml == "")
-			nodeClientHtml = "<tr class='aimesh_node_client_tr'><td style='color:#FFCC00;' colspan='" + aimesh_node_client_list_colspan + "'><#IPConnection_VSList_Norule#></td></tr>";
+			nodeClientHtml = "<tr class='aimesh_node_client_tr'><td style='color:var(--wrt-badge-warning-color,#FFCC00);' colspan='" + aimesh_node_client_list_colspan + "'><#IPConnection_VSList_Norule#></td></tr>";
 	}
 	return nodeClientHtml;
 }
@@ -2858,6 +2858,15 @@ function get_mlo_quality(_node_info){
 		else if(mlo_status.rssi5g != undefined && mlo_status.rssi2g != undefined){//5G > 2G
 			if(mlo_status.rssi5g != "") mlo_rssi = mlo_status.rssi5g;
 			else if(mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
+		}
+		else{
+			if(mlo_status.rssi5gh != undefined && mlo_status.rssi5gh != "") mlo_rssi = mlo_status.rssi5gh;
+			else if(mlo_status.rssi5gl != undefined && mlo_status.rssi5gl != "") mlo_rssi = mlo_status.rssi5gl;
+			else if(mlo_status.rssi5g != undefined && mlo_status.rssi5g != "") mlo_rssi = mlo_status.rssi5g;
+			else if(mlo_status.rssi6gl != undefined && mlo_status.rssi6gl != "") mlo_rssi = mlo_status.rssi6gl;
+			else if(mlo_status.rssi6gh != undefined && mlo_status.rssi6gh != "") mlo_rssi = mlo_status.rssi6gh;
+			else if(mlo_status.rssi6g != undefined && mlo_status.rssi6g != "") mlo_rssi = mlo_status.rssi6g;
+			else if(mlo_status.rssi2g != undefined && mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
 		}
 	}
 	return mlo_rssi;

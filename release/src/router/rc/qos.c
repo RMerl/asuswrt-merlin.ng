@@ -1043,6 +1043,10 @@ static int start_tqos(void)
 	obw = strtoul(nvram_safe_get("qos_obw"), NULL, 10);
 	if(ibw==0||obw==0) return -1;
 
+	char wan[IFNAMSIZ];
+	strlcpy(wan, get_wan_ifname(wan_primary_ifunit()), sizeof(wan));
+	if (!is_valid_ifname(wan)) return -1;
+
 	if((f = fopen(qosfn, "w")) == NULL) return -2;
 
 	QOSDBG("[qos] tc START!\n");
@@ -1088,7 +1092,7 @@ static int start_tqos(void)
 	qsched = "sfq perturb 10";
 #endif
 
-	const char *wan_ifname = get_wan_ifname(wan_primary_ifunit());
+	const char *wan_ifname = wan;
 	const char *lan_ifname = nvram_safe_get("lan_ifname");
 
 	if(strncmp(wan_ifname, "ppp", 3)==0) {
@@ -1477,12 +1481,18 @@ static int add_bandwidth_limiter_rules(char *pcWANIF)
 
 	g = buf = strdup(nvram_safe_get("qos_bw_rulelist"));
 
-	if(!validate_apply_input_value(g, "qos_bw_rulelist"))
+	if(!validate_apply_input_value("qos_bw_rulelist", g))
 		goto QOS_BW_END;
 
 	while (g) {
 		if ((p = strsep(&g, "<")) == NULL) break;
 		if ((vstrsep(p, ">", &enable, &addr, &dlc, &upc, &prio)) != 5) continue;
+		/* Security: dlc/upc (DL/UL-Ceil) are written verbatim into a
+		 * root-executed tc shell script; reject empty or non-decimal
+		 * values (e.g. an embedded newline) to prevent OS command
+		 * injection via qos_bw_rulelist. */
+		if (*dlc == '\0' || !isNumber(dlc) || *upc == '\0' || !isNumber(upc))
+			continue;
 		if (!strcmp(enable, "0")) continue;
 		memset(addr_new, 0, sizeof(addr_new));
 		address_format_checker(&addr_type, addr, addr_new, sizeof(addr_new));
@@ -1575,6 +1585,10 @@ static int start_bandwidth_limiter(void)
 	qsched = "sfq perturb 10";
 #endif
 
+	char wan[IFNAMSIZ];
+	strlcpy(wan, get_wan_ifname(wan_primary_ifunit()), sizeof(wan));
+	if (!is_valid_ifname(wan)) return -1;
+
 	if ((f = fopen(qosfn, "w")) == NULL) return -2;
 	fprintf(f,
 		"#!/bin/sh\n"
@@ -1601,7 +1615,7 @@ static int start_bandwidth_limiter(void)
 		"\t$TQAU root handle 2: htb\n"
 		"\t$TCAU parent 2: classid 2:1 htb rate 10240000kbit\n"
 		, qsched
-		, get_wan_ifname(wan_primary_ifunit())
+		, wan
 	);
 	// access router : mark 9
 	// default : 10Gbps
@@ -1630,12 +1644,18 @@ static int start_bandwidth_limiter(void)
 
 	g = buf = strdup(nvram_safe_get("qos_bw_rulelist"));
 
-	if(!validate_apply_input_value(g, "qos_bw_rulelist"))
+	if(!validate_apply_input_value("qos_bw_rulelist", g))
 		goto QOS_BW_END;
 
 	while (g) {
 		if ((p = strsep(&g, "<")) == NULL) break;
 		if ((vstrsep(p, ">", &enable, &addr, &dlc, &upc, &prio)) != 5) continue;
+		/* Security: dlc/upc (DL/UL-Ceil) are written verbatim into a
+		 * root-executed tc shell script; reject empty or non-decimal
+		 * values (e.g. an embedded newline) to prevent OS command
+		 * injection via qos_bw_rulelist. */
+		if (*dlc == '\0' || !isNumber(dlc) || *upc == '\0' || !isNumber(upc))
+			continue;
 		if (!strcmp(enable, "0")) continue;
 
 		address_format_checker(&addr_type, addr, addr_new, sizeof(addr_new));
@@ -2036,6 +2056,10 @@ static int start_GeForce_QoS(void)
 	if (mtu == 0)
 		mtu = 1500;
 
+	char wan[IFNAMSIZ];
+	strlcpy(wan, get_wan_ifname(wan_primary_ifunit()), sizeof(wan));
+	if (!is_valid_ifname(wan)) return -1;
+
 	if ((f = fopen(qosfn, "w")) == NULL) return -2;
 	fprintf(f,
 		"#!/bin/sh\n"
@@ -2052,7 +2076,7 @@ static int start_GeForce_QoS(void)
 		"TFA=\"tc filter add dev $LAN\"\n"
 		"\n"
 		, qsched
-		, get_wan_ifname(wan_primary_ifunit())
+		, wan
 		, nvram_safe_get("lan_ifname")
 	);
 
@@ -2249,6 +2273,10 @@ static int start_RouterBoost_QoS(void)
 	if (ibw < 1024 && ibw != 0) ibw = 1024;
 	if (obw < 1024 && obw != 0) obw = 1024;
 	
+	char wan[IFNAMSIZ];
+	strlcpy(wan, get_wan_ifname(wan_primary_ifunit()), sizeof(wan));
+	if (!is_valid_ifname(wan)) return -1;
+
 	if ((f = fopen(qosfn, "w")) == NULL) return -2;
 	fprintf(f,
 		"#!/bin/sh\n"
@@ -2263,7 +2291,7 @@ static int start_RouterBoost_QoS(void)
 		"TCA=\"tc class add dev $LAN\"\n"
 		"TFA=\"tc filter add dev $LAN\"\n"
 		"\n"
-		, get_wan_ifname(wan_primary_ifunit())
+		, wan
 		, nvram_safe_get("lan_ifname")
 	);
 
@@ -2602,9 +2630,9 @@ static int start_rog_qos()
 	if (mtu == 0)
 		mtu = 1500;
 
-	if((f = fopen(qosfn, "w")) == NULL) return -2;
-
 	strlcpy(wan, get_wan_ifname(wan_primary_ifunit()), sizeof(wan));
+	if (!is_valid_ifname(wan)) return -1;
+	if((f = fopen(qosfn, "w")) == NULL) return -2;
 
 	/* Create top-level /tmp/qos */
 	QOSDBG("[qos] tc START!\n");
@@ -2821,6 +2849,10 @@ int start_cake(void)
 	char *mode;
 	char nvnat[16];
 	int nat;
+	char wan[IFNAMSIZ];
+
+	strlcpy(wan, get_wan_ifname(wan_primary_ifunit()), sizeof(wan));
+	if (!is_valid_ifname(wan)) return -1;
 
 	if((f = fopen("/etc/cake-qos.conf", "w")) == NULL) return -2;
 
@@ -2853,7 +2885,7 @@ int start_cake(void)
 
 	snprintf(overheadstr, sizeof(overheadstr), "overhead %d mpu %d", nvram_get_int("qos_overhead"), nvram_get_int("qos_mpu"));
 
-	const char *wan_ifname = get_wan_ifname(wan_primary_ifunit());
+	const char *wan_ifname = wan;
 
 	snprintf(nvnat, sizeof (nvnat), "wan%d_nat_x", wan_primary_ifunit());
 	nat = nvram_get_int(nvnat);

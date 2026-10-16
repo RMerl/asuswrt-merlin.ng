@@ -29,13 +29,13 @@
 	-moz-border-radius: 5px;
 	border-radius: 5px;
 	z-index:200;
-	background-color:#2B373B;
+	background-color:var(--surface-panel, #2B373B);
 	display:block;
 	margin-left: 450px;
 	margin-top: -450px;
 	width:340px;
 	height:160px;
-	box-shadow: 3px 3px 10px #000;
+	box-shadow: var(--wrt-card-shadow, 3px 3px 10px #000);
 	display:none;
 }
 #client_pwd_strength{
@@ -571,7 +571,7 @@ function showpptpd_clientlist(){
 
 	code +='<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="pptpd_clientlist_table">';
 	if(pptpd_clientlist_row.length == 1)
-		code +='<tr><td style="color:#FFCC00;" colspan="5"><#IPConnection_VSList_Norule#></td></tr>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="5"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		for(var i = 1; i < pptpd_clientlist_row.length; i++){
 			overlib_str0[i] = "";
@@ -898,7 +898,7 @@ function check_vpn_conflict() {		//if conflict with LAN ip & DHCP ip pool & stat
 									<div id="divVPNTitle" class="formfonttitle"><#BOP_isp_heart_item#> - PPTP</div>
 									<div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-									<div id="privateIP_notes" class="formfontdesc" style="display:none;color:#FC0;"><#vpn_privateIP_hint#></div>
+									<div id="privateIP_notes" class="formfontdesc" style="display:none;color:var(--wrt-badge-warning-color,#FFCC00);"><#vpn_privateIP_hint#></div>
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 										<thead>
 										<tr>
@@ -995,7 +995,7 @@ function check_vpn_conflict() {		//if conflict with LAN ip & DHCP ip pool & stat
 											<td>
 												<input type="radio" value="1" name="pptpd_broadcast_option" onClick="setBroadcast(this);"/><#checkbox_Yes#>
 												<input type="radio" value="0" name="pptpd_broadcast_option" onClick="setBroadcast(this);"/><#checkbox_No#>
-												<span id="pptpd_broadcast_hint" style="font-family: Lucida Console;color: #FFCC00;display: none;">When Network Place enabled, this must be enabled</span>
+												<span id="pptpd_broadcast_hint" style="font-family: Lucida Console;color: var(--wrt-badge-warning-color,#FFCC00);display: none;">When Network Place enabled, this must be enabled</span>
 											</td>
 										</tr>
 										<tr>
@@ -1058,7 +1058,7 @@ function check_vpn_conflict() {		//if conflict with LAN ip & DHCP ip pool & stat
 											<th><#vpn_client_ip#></th>
 											<td>
 												<input type="text" maxlength="15" class="input_15_table" name="_pptpd_clients_start" onBlur="setEnd();"  onKeyPress="return validator.isIPAddr(this, event);" value="" autocorrect="off" autocapitalize="off"/> ~
-												<span id="pptpd_subnet" style="font-family: Lucida Console;color: #FFF;"></span><input type="text" maxlength="3" class="input_3_table" name="_pptpd_clients_end" value="" autocorrect="off" autocapitalize="off"/><span style="color:#FFCC00;"> <#vpn_maximum_clients#></span>
+												<span id="pptpd_subnet" style="font-family: Lucida Console;color: var(--wrt-text-color,#FFFFFF);"></span><input type="text" maxlength="3" class="input_3_table" name="_pptpd_clients_end" value="" autocorrect="off" autocapitalize="off"/><span style="color:var(--wrt-badge-warning-color,#FFCC00);"> <#vpn_maximum_clients#></span>
 												<br /><span id="pptpd_conflict"></span>	
 											</td>
 										</tr>

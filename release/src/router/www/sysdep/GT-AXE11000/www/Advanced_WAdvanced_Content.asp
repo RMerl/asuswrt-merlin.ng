@@ -18,11 +18,49 @@
 	<script src="/help.js"></script>
 	<script src="/popup.js"></script>
 	<script src="/validator.js"></script>
-
 	<script language="JavaScript" type="text/javascript" src="/js/weekSchedule/weekSchedule.js"></script>
 	<script language="JavaScript" type="text/javascript" src="/form.js"></script>
 	<script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <style>
+.confirm{
+	background-color:var(--surface-panel, #191919) !important;
+	box-shadow:0 0 10px #21333E !important;
+	border:1px solid var(--border-default, #444f53) !important;
+	color:var(--text-primary, #B8B8B8) !important;
+}
+.confirm_title{
+	color:var(--text-primary, #FFF) !important;
+}
+.confirm_contentA{
+	color:var(--text-secondary, #B8B8B8) !important;
+}
+.confirm_button_gen_long_left,
+.confirm_button_gen_long_left_rog,
+.confirm_button_gen_long_left_tuf,
+.confirm_button_gen_long_right,
+.confirm_button_gen_long_right_rog,
+.confirm_button_gen_long_right_tuf{
+	color:#FFFFFF !important;
+	border:0 !important;
+	border-radius:8px !important;
+	text-shadow:1px 1px 0px rgba(0,0,0,.35) !important;
+}
+.confirm_button_gen_long_left,
+.confirm_button_gen_long_right{
+	background:rgb(var(--color-bg-btn-confirm, 18, 28, 30)) !important;
+}
+.confirm_button_gen_long_left_rog,
+.confirm_button_gen_long_right_rog{
+	background:rgb(var(--color-bg-btn-confirm, 145, 7, 31)) !important;
+}
+.confirm_button_gen_long_left_tuf,
+.confirm_button_gen_long_right_tuf{
+	background:rgb(var(--color-bg-btn-confirm, 255, 165, 35)) !important;
+}
+.business_confirm_container{
+	margin-left:0 !important;
+	justify-content:center !important;
+}
 .ui-slider {
 	position: relative;
 	text-align: left;
@@ -1357,8 +1395,12 @@ function check_mlo_status(obj){
 			left_button_args: {},
 			right_button: "<#btn_go#>",
 			right_button_callback: function () {
-			confirm_cancel();
-				location.href = "/MLO.asp";
+				confirm_cancel();
+				if(typeof top.pageRedirect === "function"){
+					top.pageRedirect("settings", "MLO.asp");
+				} else {
+					location.href = "/MLO.asp";
+				}
 			},
 			right_button_args: {},
 			iframe: "",
@@ -1597,7 +1639,11 @@ function wifi7_mode(obj){
                 right_button: "<#btn_go#>",
                 right_button_callback: function () {
                     confirm_cancel();
-                    location.href = "/MLO.asp";
+                    if(typeof top.pageRedirect === "function"){
+                        top.pageRedirect("settings", "MLO.asp");
+                    } else {
+                        location.href = "/MLO.asp";
+                    }
                 },
                 right_button_args: {},
                 iframe: "",

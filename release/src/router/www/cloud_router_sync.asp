@@ -292,7 +292,7 @@ function showcloud_synclist(){
 
 	code +='<table width="99%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="cloud_synclist_table">';
 	if(cloud_synclist_array == "")
-		code +='<tr height="55px"><td style="color:#FFCC00;" colspan="6"><#IPConnection_VSList_Norule#></td>';
+		code +='<tr height="55px"><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="6"><#IPConnection_VSList_Norule#></td>';
 	else{
 		for(var i = 0; i < cloud_synclist_row.length; i++){
 			rulenum++;
@@ -1155,7 +1155,7 @@ function checkDDNSReturnCode(){
 												2. <#sync_router_desc2#><br>
 												3. <#sync_router_desc3#><br>
 												4. <#sync_router_desc4#><br>
-												<span class="formfontdesc" id="wan_ip_hide2" style="color:#FFCC00;display:none;margin-left:0px;">5. <#sync_router_desc5#></span>
+												<span class="formfontdesc" id="wan_ip_hide2" style="color:var(--wrt-badge-warning-color,#FFCC00);display:none;margin-left:0px;">5. <#sync_router_desc5#></span>
 										</div>
 									</td>
 								</tr>
@@ -1199,7 +1199,7 @@ function checkDDNSReturnCode(){
 										<td>
 											<input type="text" id="PATH" class="input_25_table" style="height: 25px;" name="cloud_dir" value="" autocorrect="off" autocapitalize="off">
 											<input name="button" type="button" class="button_gen" onclick="get_disk_tree();" value="<#Cloudsync_browser_folder#>"/>
-											<div id="noUSB" style="color:#FC0;display:none;margin-left:3px;font-size:12px;line-height:140%;"><#no_usb_found#></div>
+											<div id="noUSB" style="color:var(--wrt-badge-warning-color,#FFCC00);display:none;margin-left:3px;font-size:12px;line-height:140%;"><#no_usb_found#></div>
 										</td>
 									</tr>
 									<tr style="height:40px;">
@@ -1251,7 +1251,7 @@ function checkDDNSReturnCode(){
 								<tr>
 									<td>
 										<div style="width:90%;margin:0px auto;">
-											<a href="cloud_main.asp"><span style="font-family:Lucida Console;text-decoration:underline;color:#FC0"><#routerSync_enable_hint1#></span></a><br><#routerSync_enable_hint2#>
+											<a href="cloud_main.asp"><span style="font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FFCC00)"><#routerSync_enable_hint1#></span></a><br><#routerSync_enable_hint2#>
 										</div>
 									</td>
 								</tr>

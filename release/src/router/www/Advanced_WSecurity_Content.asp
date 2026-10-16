@@ -191,7 +191,7 @@ function checkWLReady(){
 		  <div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 		  <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 		  <div class="formfontdesc RADIUS_Auth_desc"></div>
-		  <div id="lantiq_ready" style="display:none;color:#FC0;margin-left:5px;font-size:13px;">Wireless is setting...</div>
+		  <div id="lantiq_ready" style="display:none;color:var(--wrt-badge-warning-color,#FFCC00);margin-left:5px;font-size:13px;">Wireless is setting...</div>
 		<table id="MainTable1" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 
 		<tr id="wl_unit_field">
@@ -205,7 +205,7 @@ function checkWLReady(){
 	  </tr>
 
 		<tr id="repeaterModeHint" style="display:none;">
-			<td id="repeaterModeHint_desc" colspan="2" style="color:#FFCC00;height:30px;" align="center"><#page_not_support_mode_hint#></td>
+			<td id="repeaterModeHint_desc" colspan="2" style="color:var(--wrt-badge-warning-color,#FFCC00);height:30px;" align="center"><#page_not_support_mode_hint#></td>
 		</tr>
 
 		<tr>

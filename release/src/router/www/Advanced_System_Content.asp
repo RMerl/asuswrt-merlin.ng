@@ -52,8 +52,8 @@
 	color: #393;
 }
 .all_disable{
-	border: 1px solid #999;
-	color: #999;
+	border: 1px solid var(--border-default, #999);
+	color: var(--wrt-text-muted-color, #999);
 }
 }
 .highlight{
@@ -61,8 +61,8 @@
     border: 1px solid #f06767;
 }
 #NTPList_Block_PC{
-	border:1px outset #999;
-	background-color:#576D73;
+	border:1px outset var(--border-default, #999);
+	background-color:var(--wrt-card-surface-2-bg, #576D73);
 	position:absolute;
 	*margin-top:26px;	
 	margin-left:2px;
@@ -76,7 +76,7 @@
 	display:none;
 }
 #NTPList_Block_PC div{
-	background-color:#576D73;
+	background-color:var(--wrt-card-surface-2-bg, #576D73);
 	height:auto;
 	*height:20px;
 	line-height:20px;
@@ -86,22 +86,22 @@
 }
 
 #NTPList_Block_PC a{
-	background-color:#EFEFEF;
-	color:#FFF;
+	background-color:var(--surface-hover, #EFEFEF);
+	color:var(--wrt-text-color,#FFFFFF);
 	font-size:12px;
 	font-family:Arial, Helvetica, sans-serif;
 	text-decoration:none;	
 }
 #NTPList_Block_PC div:hover{
-	background-color:#3366FF;
-	color:#FFFFFF;
+	background-color:var(--surface-hover, #3366FF);
+	color:var(--wrt-text-color,#FFFFFF);
 	cursor:default;
 }
 #ntp_pull_arrow{
         float:left;
         cursor:pointer;
-        border:2px outset #EFEFEF;
-        background-color:#CCC;
+        border:2px outset var(--border-default, #EFEFEF);
+        background-color:var(--surface-hover, #CCC);
         padding:3px 2px 4px 0px;
 }
 
@@ -111,15 +111,15 @@
 	-moz-border-radius: 5px;
 	border-radius: 5px;
 	z-index:500;
-	background-color:#2B373B;
+	background-color:var(--surface-panel, #2B373B);
 	margin-left: 45%;
 	margin-top: 10px;
 	width:380px;
-	box-shadow: 3px 3px 10px #000;
+	box-shadow: var(--wrt-card-shadow, 3px 3px 10px #000);
 	display: none;
 }
 ::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
-  color: #323d40;
+  color: var(--wrt-text-color, #323d40);
   opacity: 1; /* Firefox */
 }
 
@@ -1132,9 +1132,11 @@ var timezones = [
 	["UTC10",	"(GMT-10:00) <#TZ03#>"],
 	["NAST9DST",	"(GMT-09:00) <#TZ04#>"],
 	["PST8DST",	"(GMT-08:00) <#TZ05#>"],
+	["PST7",	"(GMT-07:00) <#TZ05_1#>"],
 	["MST7DST_1",	"(GMT-07:00) <#TZ06#>"],
 	["MST7_2",	"(GMT-07:00) <#TZ07#>"],
 	["MST7_3",	"(GMT-07:00) <#TZ08#>"],	//MST7DST_3
+	["MST6",	"(GMT-06:00) <#TZ06_1#>"],
 	["CST6_2",	"(GMT-06:00) <#TZ10#>"],
 	["CST6_3",	"(GMT-06:00) <#TZ11#>"],	//CST6DST_3
 	["CST6_3_1",	"(GMT-06:00) <#TZ12#>"],	//CST6DST_3_1
@@ -1329,7 +1331,7 @@ function hide_https_lanport(_value){
 	if(sw_mode == '1' || sw_mode == '2' || sw_mode == '3'){
 		var https_lanport_num = "<% nvram_get("https_lanport"); %>";
 		document.getElementById("https_access_page").innerHTML = "<#https_access_url#> ";
-		document.getElementById("https_access_page").innerHTML += "<a href=\"https://"+theUrl+":"+https_lanport_num+"\" target=\"_blank\" style=\"color:#FC0;text-decoration: underline; font-family:Lucida Console;\">http<span>s</span>://"+theUrl+"<span>:"+https_lanport_num+"</span></a>";
+		document.getElementById("https_access_page").innerHTML += "<a href=\"https://"+theUrl+":"+https_lanport_num+"\" target=\"_blank\" style=\"color:var(--wrt-badge-warning-color,#FFCC00);text-decoration: underline; font-family:Lucida Console;\">http<span>s</span>://"+theUrl+"<span>:"+https_lanport_num+"</span></a>";
 		document.getElementById("https_access_page").style.display = (_value == "0") ? "none" : "";
 	}
 	else{
@@ -1376,7 +1378,7 @@ function show_http_clientlist(){
 	var code = "";
 	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table" id="http_clientlist_table">';
 	if(restrict_rulelist_array.length == 0) {
-		code +='<tr><td style="color:#FFCC00;"><#IPConnection_VSList_Norule#></td></tr>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);"><#IPConnection_VSList_Norule#></td></tr>';
 	}
 	else {
 		var transformNumToText = function(restrict_type) {
@@ -1395,9 +1397,9 @@ function show_http_clientlist(){
 		};
 		for(var i = 0; i < restrict_rulelist_array.length; i += 1) {
 			if(restrict_rulelist_array[i][0] == "1")
-				code += '<tr style="color:#FFFFFF;">';
+				code += '<tr style="color:var(--wrt-text-color,#FFFFFF);">';
 			else
-				code += '<tr style="color:#A0A0A0;">';
+				code += '<tr style="color:var(--wrt-text-muted-color,#A0A0A0);">';
 			code += '<td width="10%">';
 			if(restrict_rulelist_array[i][0] == "1")
 				code += '<div class="check" onclick="control_rule_status(this);"><div style="width:16px;height:16px;margin: 3px auto" class="icon_check"></div></div>';
@@ -1607,7 +1609,7 @@ function change_url(num, flag){
 	if(flag == 'https_lan'){
 		var https_lanport_num_new = num;
 		document.getElementById("https_access_page").innerHTML = "<#https_access_url#> ";
-		document.getElementById("https_access_page").innerHTML += "<a href=\"https://"+htmlEnDeCode.htmlEncode(theUrl)+":"+https_lanport_num_new+"\" target=\"_blank\" style=\"color:#FC0;text-decoration: underline; font-family:Lucida Console;\">http<span>s</span>://"+htmlEnDeCode.htmlEncode(theUrl)+"<span>:"+https_lanport_num_new+"</span></a>";
+		document.getElementById("https_access_page").innerHTML += "<a href=\"https://"+htmlEnDeCode.htmlEncode(theUrl)+":"+https_lanport_num_new+"\" target=\"_blank\" style=\"color:var(--wrt-badge-warning-color,#FFCC00);text-decoration: underline; font-family:Lucida Console;\">http<span>s</span>://"+htmlEnDeCode.htmlEncode(theUrl)+"<span>:"+https_lanport_num_new+"</span></a>";
 	}
 	else if(flag == 'https_wan'){
 		var https_wanport = num;
@@ -1620,7 +1622,7 @@ function change_url(num, flag){
 			host_addr = wan_ipaddr;
 
 		document.getElementById("wan_access_url").innerHTML = "<#https_access_url#> ";
-		document.getElementById("wan_access_url").innerHTML += "<a href=\"https://"+host_addr+":"+https_wanport+"\" target=\"_blank\" style=\"color:#FC0;text-decoration: underline; font-family:Lucida Console;\">http<span>s</span>://"+host_addr+"<span>:"+https_wanport+"</span></a>";		
+		document.getElementById("wan_access_url").innerHTML += "<a href=\"https://"+host_addr+":"+https_wanport+"\" target=\"_blank\" style=\"color:var(--wrt-badge-warning-color,#FFCC00);text-decoration: underline; font-family:Lucida Console;\">http<span>s</span>://"+host_addr+"<span>:"+https_wanport+"</span></a>";		
 	}
 }
 
@@ -2502,7 +2504,7 @@ function Get_Component_reboot_schedule_ui(config){
 	</tr>
 	<tr>
 		<td style="height: 25px;padding-top: 0px;">
-			<span id="pwd_msg" style="color:#FC0;margin-left:2px;"></span>
+			<span id="pwd_msg" style="color:var(--wrt-badge-warning-color,#FFCC00);margin-left:2px;"></span>
 		</td>
 	</tr>
 	<tr>
@@ -2522,7 +2524,7 @@ function Get_Component_reboot_schedule_ui(config){
 	</tr>
 	<tr id="new_pwd_td">
 		<td style="height: 35px; padding-top: 0px;">
-			<span id="new_pwd_msg" style="color:#FC0;margin-left:2px;"></span>
+			<span id="new_pwd_msg" style="color:var(--wrt-badge-warning-color,#FFCC00);margin-left:2px;"></span>
 		</td>
 	</tr>
 	<tr id="pwd_confirm_title" style="display: none;">
@@ -2541,7 +2543,7 @@ function Get_Component_reboot_schedule_ui(config){
 	</tr>
 	<tr>
 		<td style="height: 25px; padding-bottom: 15px; padding-top: 0px;">
-			<span id="alert_msg" style="color:#FC0;margin-left:2px;"></span>
+			<span id="alert_msg" style="color:var(--wrt-badge-warning-color,#FFCC00);margin-left:2px;"></span>
 		</td>
 	</tr>
 </table>
@@ -2810,8 +2812,8 @@ function Get_Component_reboot_schedule_ui(config){
 
 						<a href="javascript:openLink('x_NTPServer1')"  name="x_NTPServer1_link" style=" margin-left:5px; text-decoration: underline;"><#LANHostConfig_x_NTPServer1_linkname#></a>
 						<div id="svc_hint_div" style="display:none;">
-							<span style="color:#FFCC00;"><#General_x_SystemTime_syncNTP#></span>
-							<a id="ntp_faq" href="" target="_blank" style="margin-left:5px; color: #FFCC00; text-decoration: underline;">FAQ</a>
+							<span style="color:var(--wrt-badge-warning-color,#FFCC00);"><#General_x_SystemTime_syncNTP#></span>
+							<a id="ntp_faq" href="" target="_blank" style="margin-left:5px; color: var(--wrt-badge-warning-color,#FFCC00); text-decoration: underline;">FAQ</a>
 						</div>
 					</td>
 				</tr>
@@ -2966,7 +2968,7 @@ function Get_Component_reboot_schedule_ui(config){
 					<td>
 						<input type="radio" name="telnetd_enable" value="1" onchange="telnet_enable(this.value);" <% nvram_match_x("LANHostConfig", "telnetd_enable", "1", "checked"); %>><#checkbox_Yes#>
 						<input type="radio" name="telnetd_enable" value="0" onchange="telnet_enable(this.value);" <% nvram_match_x("LANHostConfig", "telnetd_enable", "0", "checked"); %>><#checkbox_No#>
-						<div style="color: #FFCC00;display:none;" id="SSH_Port_Suggestion2">* <#SSH_Port_Suggestion2#></div>
+						<div style="color: var(--wrt-badge-warning-color,#FFCC00);display:none;" id="SSH_Port_Suggestion2">* <#SSH_Port_Suggestion2#></div>
 					</td>
 				</tr>
 				<tr id="sshd_enable_tr">
@@ -2991,7 +2993,7 @@ function Get_Component_reboot_schedule_ui(config){
 					<td>
 						<input type="text" class="input_6_table" maxlength="5" id="sshd_port" name="sshd_port" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off" value='<% nvram_get("sshd_port"); %>' onkeydown="reset_portconflict_hint();">
 						<span id="port_conflict_sshdport" style="color: #e68282; display: none;">Port Conflict</span>
-						<div style="color: #FFCC00;display:none;" id="SSH_Port_Suggestion1">* Using a different port than the default port 22 is recommended to avoid port scan attacks.</div>
+						<div style="color: var(--wrt-badge-warning-color,#FFCC00);display:none;" id="SSH_Port_Suggestion1">* Using a different port than the default port 22 is recommended to avoid port scan attacks.</div>
 					</td>
 				</tr>
 				<tr id="sshd_password_tr">
@@ -3059,8 +3061,8 @@ function Get_Component_reboot_schedule_ui(config){
 					<td>
 						<input type="text" maxlength="5" class="input_6_table" id="https_lanport_input" name="https_lanport" value="<% nvram_get("https_lanport"); %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_lan');" autocorrect="off" autocapitalize="off" onkeydown="reset_portconflict_hint();">
 						<span id="port_conflict_httpslanport" style="color: #e68282; display: none;">Port Conflict</span>
-						<div id="https_access_page" style="color: #FFCC00;"></div>
-						<div style="color: #FFCC00; display: none;">* <#HttpsLanport_Hint#></div>
+						<div id="https_access_page" style="color: var(--wrt-badge-warning-color,#FFCC00);"></div>
+						<div style="color: var(--wrt-badge-warning-color,#FFCC00); display: none;">* <#HttpsLanport_Hint#></div>
 					</td>
 				</tr>
 				<tr id="cert_details" style="display:none;">
@@ -3078,7 +3080,7 @@ function Get_Component_reboot_schedule_ui(config){
 							<div style="display:table-cell;white-space: nowrap">Expires on :</div>
 							<div id="expireOn" style="display:table-cell; padding-left:10px;"></div>
 						</div>
-						<div id="cert_manage_link" style="padding-top:10px;"><span>Click <a style="color:#FC0;text-decoration: underline;" href="Advanced_ASUSDDNS_Content.asp">here</a> to manage.</span></div>
+						<div id="cert_manage_link" style="padding-top:10px;"><span>Click <a style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration: underline;" href="Advanced_ASUSDDNS_Content.asp">here</a> to manage.</span></div>
 					</td>
 				</tr>
 				<tr id="https_download_cert" style="display: none;">
@@ -3092,7 +3094,7 @@ function Get_Component_reboot_schedule_ui(config){
 							<input id="download_cacert_btn" class="button_gen buttonInTable" style="margin-top:10px" onclick="save_cacert_key();" type="button" value="<#btn_Export#> Root Certificate" />
 							<input id="clear_cacert_btn" class="button_gen buttonInTable" style="margin-left:10px;margin-top:10px" onclick="clear_cert_key();" type="button" value="<#CTL_renew#> Root Certificate" /><!-- untranslated -->
 						</div>
-						<span id="download_cacert_desc"><#Local_access_certificate_desc#></span><a id="creat_cert_link" href="" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>
+						<span id="download_cacert_desc"><#Local_access_certificate_desc#></span><a id="creat_cert_link" href="" style="font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FFCC00); margin-left: 5px;" target="_blank">FAQ</a>
 					</td>
 				</tr>
 			</table>
@@ -3108,8 +3110,8 @@ function Get_Component_reboot_schedule_ui(config){
 					<td>
 						<input type="radio" value="1" name="misc_http_x" onClick="hideport(1);enable_wan_access(1);" <% nvram_match("misc_http_x", "1", "checked"); %>><#checkbox_Yes#>
 						<input type="radio" value="0" name="misc_http_x" onClick="hideport(0);enable_wan_access(0);" <% nvram_match("misc_http_x", "0", "checked"); %>><#checkbox_No#><br>
-						<span class="formfontdesc" id="WAN_access_hint" style="color:#FFCC00; display:none;"><#FirewallConfig_x_WanWebEnable_HTTPS_only#> 
-							<a id="faq" href="" target="_blank" style="margin-left: 5px; color:#FFCC00; text-decoration: underline;">FAQ</a>
+						<span class="formfontdesc" id="WAN_access_hint" style="color:var(--wrt-badge-warning-color,#FFCC00); display:none;"><#FirewallConfig_x_WanWebEnable_HTTPS_only#> 
+							<a id="faq" href="" target="_blank" style="margin-left: 5px; color:var(--wrt-badge-warning-color,#FFCC00); text-decoration: underline;">FAQ</a>
 						</span>
 					</td>
 				</tr>

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+rc=0
+
+check() {
+	local cmd="$1"
+	local msg="$2"
+
+	$XT_MULTI $cmd 2>&1 | grep -q "$msg" || {
+		echo "cmd: $XT_MULTI $1"
+		echo "exp: $msg"
+		echo "res: $($XT_MULTI $cmd 2>&1)"
+		rc=1
+	}
+}
+
+cmds="iptables ip6tables"
+[[ $XT_MULTI == *xtables-nft-multi ]] && {
+	cmds+=" ebtables"
+	cmds+=" iptables-translate"
+	cmds+=" ip6tables-translate"
+	cmds+=" ebtables-translate"
+}
+
+for cmd in $cmds; do
+	check "${cmd} --foo" 'unknown option "--foo"'
+	check "${cmd} -A" 'option "-A" requires an argument'
+	check "${cmd} -aL" 'unknown option "-a"'
+done
+
+exit $rc

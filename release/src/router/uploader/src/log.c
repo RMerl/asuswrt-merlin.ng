@@ -8,6 +8,7 @@
 #include "time_util.h"
 #include <errno.h>
 #include <syslog.h>
+#include <shared.h>	/* refresh_tz_env(), provided by -lshared */
 #define LOG_PATH_LEN 250 
 #define LOG_PATH_EXT "%Y-%m-%d_%H%M%S"
 FILE* g_file_fp = NULL;
@@ -170,6 +171,7 @@ void dprintf_impl2(const char* file,const char* func, size_t line, int enable, i
 
         // Log to syslog
         if (level == 1 || fileExist(UL_DEBUG_TO_SYSLOG)) {
+            refresh_tz_env();	/* pick up runtime timezone change before syslog() */
             vsyslog(priority, fmt, ap);
             fprintf(stdout, WHERESTR, ts, file, func, line);
             vfprintf(stdout, fmt, ap);

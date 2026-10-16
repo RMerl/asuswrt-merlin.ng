@@ -201,8 +201,6 @@ function pop_s46_ports(p, flag){
 	divObj.innerHTML = "<div style='float:right;'><img src='/images/button-close.gif' style='width:30px;cursor:pointer' onclick='close_s46_ports();'></div>";
 	divObj.innerHTML += port_range_hint;
 	divObj.innerHTML += "<br><br>"+get_ipv6_s46_ports+"<br>";
-	divObj.innerHTML += port_range_hint;
-	divObj.innerHTML += "<br><br>"+get_ipv6_s46_ports+"<br>";
 
 	document.body.prepend(divObj);
 	if(flag=="pf")
@@ -365,7 +363,7 @@ function Get_Component_NT_WiFi(){
 			band_txt += `
 				<tr>
 					<td width="100%">
-						<div style="text-decoration:underline;text-align:right;color:#FFCC00;font-size:14px;cursor:pointer"
+						<div style="text-decoration:underline;text-align:right;color:var(--wrt-badge-warning-color,#FFCC00);font-size:14px;cursor:pointer"
 						onclick="${notification.clickCallBack[24]}">${notification.action_desc[24]}
 						</div>
 					</td>
@@ -382,7 +380,7 @@ function Get_Component_NT_WiFi(){
 				band_txt += `
 					<tr>
 						<td width="100%">
-							<div style="text-decoration:underline;text-align:right;color:#FFCC00;font-size:14px;cursor:pointer"
+							<div style="text-decoration:underline;text-align:right;color:var(--wrt-badge-warning-color,#FFCC00);font-size:14px;cursor:pointer"
 							onclick="${notification.clickCallBack[band.index]}">${notification.action_desc[band.index]}
 							</div>
 						</td>
@@ -491,20 +489,20 @@ var notification = {
 					txt += '</td></tr>';
 					 if( i == 7){
 						if(notification.array[18] != null){
-							txt += '<tr><td width="100%"><div style="text-align:right;text-decoration:underline;color:#FFCC00;font-size:14px;"><span style="cursor: pointer" onclick="' + notification.clickCallBack[18] + '">' + notification.action_desc[18] + '</span>';
+							txt += '<tr><td width="100%"><div style="text-align:right;text-decoration:underline;color:var(--wrt-badge-warning-color,#FFCC00);font-size:14px;"><span style="cursor: pointer" onclick="' + notification.clickCallBack[18] + '">' + notification.action_desc[18] + '</span>';
 						}
 						txt += '<span style="margin-left:10px;cursor: pointer" onclick="' + notification.clickCallBack[i] + '">' + notification.action_desc[i] + '</span></div></td></tr>';
 						notification.array[18] = "off";
 					}
 					else if( i == 9){
-						txt += '<tr><td width="100%"><div style="text-decoration:underline;text-align:right;color:#FFCC00;font-size:14px;cursor: pointer" onclick="' + notification.clickCallBack[i] + '">' + notification.action_desc[i] + '</div></td></tr>';
+						txt += '<tr><td width="100%"><div style="text-decoration:underline;text-align:right;color:var(--wrt-badge-warning-color,#FFCC00);font-size:14px;cursor: pointer" onclick="' + notification.clickCallBack[i] + '">' + notification.action_desc[i] + '</div></td></tr>';
 						if(notification.array[10] != null && notification.array[10] != "off"){
-							txt += '<tr><td width="100%"><div style="text-decoration:underline;text-align:right;color:#FFCC00;font-size:14px;cursor: pointer" onclick="' + notification.clickCallBack[i+1] + '">' + notification.action_desc[i+1] + '</div></td></tr>';
+							txt += '<tr><td width="100%"><div style="text-decoration:underline;text-align:right;color:var(--wrt-badge-warning-color,#FFCC00);font-size:14px;cursor: pointer" onclick="' + notification.clickCallBack[i+1] + '">' + notification.action_desc[i+1] + '</div></td></tr>';
 						}
 						notification.array[10] = "off";
 					}
 		  			else{
-	  					txt += '<tr><td><table width="100%"><div style="text-decoration:underline;text-align:right;color:#FFCC00;font-size:14px;cursor: pointer" onclick="' + notification.clickCallBack[i] + '">' + notification.action_desc[i] + '</div></table></td></tr>';
+	  					txt += '<tr><td><table width="100%"><div style="text-decoration:underline;text-align:right;color:var(--wrt-badge-warning-color,#FFCC00);font-size:14px;cursor: pointer" onclick="' + notification.clickCallBack[i] + '">' + notification.action_desc[i] + '</div></table></td></tr>';
 		  			}
 
 		  			txt += '</table></td></tr></table></td></tr>'
@@ -620,7 +618,7 @@ var notification = {
 			noti_upgrade_flag = 1;
 			notification.desc[1] = '<#ASUSGATE_note2#>';
 			if(!live_update_support || !HTTPS_support){
-				notification.action_desc[1] = '<a id="link_to_downlodpage" target="_blank" href="'+get_helplink()+'" style="color:#FFCC00;"><#ASUSGATE_act_update#></a>';
+				notification.action_desc[1] = '<a id="link_to_downlodpage" target="_blank" href="'+get_helplink()+'" style="color:var(--wrt-badge-warning-color,#FFCC00);"><#ASUSGATE_act_update#></a>';
 				notification.clickCallBack[1] = "";
 			}
 			else{

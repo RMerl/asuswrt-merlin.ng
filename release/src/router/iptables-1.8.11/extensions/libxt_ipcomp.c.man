@@ -1,0 +1,4 @@
+This module matches the parameters in IPcomp header of IPsec packets.
+.TP
+[\fB!\fP] \fB\-\-ipcompspi\fP \fIspi\fP[\fB:\fP\fIspi\fP]
+Matches IPcomp header CPI value.

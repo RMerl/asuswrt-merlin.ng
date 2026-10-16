@@ -1,0 +1,6 @@
+arptables-translate -A OUTPUT -d 10.21.22.129 -j mangle --mangle-ip-s 10.21.22.161
+nft 'add rule arp filter OUTPUT arp htype 1 arp hlen 6 arp plen 4 arp daddr ip 10.21.22.129 counter arp saddr ip set 10.21.22.161 accept'
+arptables-translate -A OUTPUT -d 10.2.22.129/24 -j mangle --mangle-ip-d 10.2.22.1 --mangle-target CONTINUE
+nft 'add rule arp filter OUTPUT arp htype 1 arp hlen 6 arp plen 4 arp daddr ip 10.2.22.0/24 counter arp daddr ip set 10.2.22.1'
+arptables-translate -A OUTPUT -d 10.2.22.129/24 -j mangle --mangle-ip-d 10.2.22.1 --mangle-mac-d a:b:c:d:e:f
+nft 'add rule arp filter OUTPUT arp htype 1 arp hlen 6 arp plen 4 arp daddr ip 10.2.22.0/24 counter arp daddr ip set 10.2.22.1 arp daddr ether set 0a:0b:0c:0d:0e:0f accept'

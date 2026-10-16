@@ -1346,7 +1346,7 @@ function shadeHandle(flag){
 												</td>
 												<td style="padding:10px;">
 													<div style="font-size:18px;text-shadow:1px 1px 0px black;"><#AiProtection_scan#></div>
-													<div style="font-size: 14px;color:#FC0;height:auto;padding-top:5px;"><#AiProtection_scan_desc#></div>
+													<div style="font-size: 14px;color:var(--wrt-badge-warning-color,#FFCC00);height:auto;padding-top:5px;"><#AiProtection_scan_desc#></div>
 												</td>
 												 <td width="6px">
 													<div class="line_vertical"></div>
@@ -1377,7 +1377,7 @@ function shadeHandle(flag){
 												<td style="padding:10px;cursor:pointer;" onclick="location.href='AiProtection_MaliciousSitesBlocking.asp'">
 													<div>
 														<div style="font-size:18px;text-shadow:1px 1px 0px black;"><#AiProtection_sites_blocking#></div>
-														<div style="font-size: 14px;color:#FC0;height:auto;padding-top:5px;"><#AiProtection_sites_block_desc#></div>
+														<div style="font-size: 14px;color:var(--wrt-badge-warning-color,#FFCC00);height:auto;padding-top:5px;"><#AiProtection_sites_block_desc#></div>
 													</div>
 												</td>
 												 <td width="6px">
@@ -1410,7 +1410,7 @@ function shadeHandle(flag){
 													<div style="position:relative" onclick="location.href='AiProtection_MaliciousSitesBlocking.asp'">
 														<div id="mals_count_shade" class="shadow shadow_m"></div>
 														<div style="text-align:center;">
-															<div id="mali_count" style="height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:#FC0;text-shadow:1px 1px 0px black"></div>
+															<div id="mali_count" style="height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:var(--wrt-badge-warning-color,#FFCC00);text-shadow:1px 1px 0px black"></div>
 															<div style="font-size: 16px;"><#AiProtection_scan_rHits#></div>
 															<div id="mali_time" style="height:25px;color:#A1A7A8"></div>
 														</div>
@@ -1430,7 +1430,7 @@ function shadeHandle(flag){
 												<td style="padding:10px;cursor:pointer;" onclick="location.href='AiProtection_IntrusionPreventionSystem.asp'">
 													<div>
 														<div style="font-size:18px;text-shadow:1px 1px 0px black;"><#AiProtection_two-way_IPS#></div>
-														<div style="font-size: 14px;color:#FC0;height:auto;padding-top:5px;"><#AiProtection_two-way_IPS_desc#></div>
+														<div style="font-size: 14px;color:var(--wrt-badge-warning-color,#FFCC00);height:auto;padding-top:5px;"><#AiProtection_two-way_IPS_desc#></div>
 													</div>
 												</td>
 												 <td width="6px">
@@ -1463,7 +1463,7 @@ function shadeHandle(flag){
 													<div style="position:relative" onclick="location.href='AiProtection_IntrusionPreventionSystem.asp'">
 														<div id="vp_count_shade" class="shadow shadow_m"></div>
 														<div style="text-align:center;">
-															<div id="vp_count" style="height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:#FC0;text-shadow:1px 1px 0px black"></div>
+															<div id="vp_count" style="height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:var(--wrt-badge-warning-color,#FFCC00);text-shadow:1px 1px 0px black"></div>
 															<div style="font-size: 16px;"><#AiProtection_scan_rHits#></div>
 															<div id="vp_time" style="height:25px;color:#A1A7A8"></div>
 														</div>
@@ -1481,7 +1481,7 @@ function shadeHandle(flag){
 												</td>
 												<td style="padding:10px;cursor:pointer" onclick="location.href='AiProtection_InfectedDevicePreventBlock.asp'">
 													<div style="font-size:18px;text-shadow:1px 1px 0px black;"><#AiProtection_detection_blocking#></div>
-													<div style="font-size: 14px;color:#FC0;height:auto;padding-top:5px;"><#AiProtection_detection_block_desc#></div>
+													<div style="font-size: 14px;color:var(--wrt-badge-warning-color,#FFCC00);height:auto;padding-top:5px;"><#AiProtection_detection_block_desc#></div>
 												</td>
 												 <td>
 													<div class="line_vertical"></div>
@@ -1513,7 +1513,7 @@ function shadeHandle(flag){
 													<div style="position:relative" onclick="location.href='AiProtection_InfectedDevicePreventBlock.asp'">
 														<div id="infected_count_shade" class="shadow shadow_m"></div>
 														<div style="text-align:center;">
-															<div id="infected_count" style="height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:#FC0;text-shadow:1px 1px 0px black"></div>
+															<div id="infected_count" style="height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:var(--wrt-badge-warning-color,#FFCC00);text-shadow:1px 1px 0px black"></div>
 															<div style="font-size: 16px;"><#AiProtection_scan_rHits#></div>
 															<div id="infected_time" style="height:25px;color:#A1A7A8"></div>
 														</div>

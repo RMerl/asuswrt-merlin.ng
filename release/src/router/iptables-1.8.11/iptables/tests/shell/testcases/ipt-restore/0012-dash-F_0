@@ -1,0 +1,12 @@
+#!/bin/bash -e
+
+# make sure -F lines don't cause segfaults
+
+RULESET='*nat
+-F PREROUTING
+-A PREROUTING -j ACCEPT
+-F PREROUTING
+COMMIT'
+
+echo -e "$RULESET" | $XT_MULTI iptables-restore
+echo -e "$RULESET" | $XT_MULTI iptables-restore -n

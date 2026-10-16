@@ -496,6 +496,8 @@ static inline char * strcat_r_s(const char *s1, const char *s2, char *buf, size_
 
 static inline int safe_atoi(const char *s)
 {
+    if (s == NULL)
+        return 0;
     return (int)strtol(s, NULL, 10);
 }
 
@@ -673,6 +675,7 @@ extern int ping_target_with_size(char *target, unsigned int size, unsigned int c
 extern int parse_ping_content(char *fname, ping_result_t *out);
 extern int replace_literal_newline(char *inputstr, char *output, int buflen);
 extern int safe_popen(const char *cmd, pid_t *pid);
+extern int safe_popen_argv(const char *path, char *const argv[], pid_t *child_pid);
 extern int safe_pclose(pid_t pid, int *wait_status);
 
 #endif /* _shutils_h_ */

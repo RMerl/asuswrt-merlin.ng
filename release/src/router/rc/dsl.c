@@ -376,7 +376,7 @@ static void convert_dsl_wan()
 static int check_if_route_exist(char *iface, char *dest, char *mask)
 {
 	FILE *f;
-	int i, n;
+	int i, n = 0;
 	char buf[256] = {0};
 	char get_iface[32] = {0};
 	u_int32_t get_dest, get_mask;
@@ -387,7 +387,8 @@ static int check_if_route_exist(char *iface, char *dest, char *mask)
 			if (++n == 1 && strncmp(buf, "Iface", 5) == 0)
 				continue;
 
-			i = sscanf(buf, "%255s %x %*s %*s %*s %*s %*s %x",
+			/* Bound the width to sizeof(get_iface) - 1 */
+			i = sscanf(buf, "%31s %x %*s %*s %*s %*s %*s %x",
 				get_iface, &get_dest, &get_mask);
 
 			if (i != 3)

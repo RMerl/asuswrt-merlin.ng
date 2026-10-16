@@ -1,0 +1,238 @@
+#!/bin/sh
+
+$XT_MULTI iptables -w -L -n > /dev/null || exit 1
+$XT_MULTI iptables -w2 -L -n > /dev/null || exit 1
+
+echo -n '#foo' | $XT_MULTI iptables-restore -w || exit 1
+
+# table probing
+for table in security raw mangle nat filter;do
+	$XT_MULTI iptables -w2 -t $table -L -n > /dev/null
+done
+
+$XT_MULTI iptables -w2 -p icmp --help | grep -q 'Valid ICMP Types' || exit 1
+
+cat <<EOF | $XT_MULTI iptables-restore -w -n
+*nat
+-F
+-X
+-Z
+-N PREROUTING_direct
+-I PREROUTING 1 -j PREROUTING_direct
+-N PREROUTING_ZONES_SOURCE
+-N PREROUTING_ZONES
+-I PREROUTING 2 -j PREROUTING_ZONES_SOURCE
+-I PREROUTING 3 -j PREROUTING_ZONES
+-N POSTROUTING_direct
+-I POSTROUTING 1 -j POSTROUTING_direct
+-N POSTROUTING_ZONES_SOURCE
+-N POSTROUTING_ZONES
+-I POSTROUTING 2 -j POSTROUTING_ZONES_SOURCE
+-I POSTROUTING 3 -j POSTROUTING_ZONES
+-N OUTPUT_direct
+-I OUTPUT 1 -j OUTPUT_direct
+COMMIT
+*mangle
+-F
+-X
+-Z
+-N PREROUTING_direct
+-I PREROUTING 1 -j PREROUTING_direct
+-N PREROUTING_ZONES_SOURCE
+-N PREROUTING_ZONES
+-I PREROUTING 2 -j PREROUTING_ZONES_SOURCE
+-I PREROUTING 3 -j PREROUTING_ZONES
+-N POSTROUTING_direct
+-I POSTROUTING 1 -j POSTROUTING_direct
+-N INPUT_direct
+-I INPUT 1 -j INPUT_direct
+-N OUTPUT_direct
+-I OUTPUT 1 -j OUTPUT_direct
+-N FORWARD_direct
+-I FORWARD 1 -j FORWARD_direct
+COMMIT
+*raw
+-F
+-X
+-Z
+-N PREROUTING_direct
+-I PREROUTING 1 -j PREROUTING_direct
+-N PREROUTING_ZONES_SOURCE
+-N PREROUTING_ZONES
+-I PREROUTING 2 -j PREROUTING_ZONES_SOURCE
+-I PREROUTING 3 -j PREROUTING_ZONES
+-N OUTPUT_direct
+-I OUTPUT 1 -j OUTPUT_direct
+COMMIT
+*filter
+-F
+-X
+-Z
+-N INPUT_direct
+-N INPUT_ZONES_SOURCE
+-N INPUT_ZONES
+-I INPUT 1 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-I INPUT 2 -i lo -j ACCEPT
+-I INPUT 3 -j INPUT_direct
+-I INPUT 4 -j INPUT_ZONES_SOURCE
+-I INPUT 5 -j INPUT_ZONES
+-I INPUT 6 -m conntrack --ctstate INVALID -j DROP
+-I INPUT 7 -j REJECT --reject-with icmp-host-prohibited
+-N FORWARD_direct
+-N FORWARD_IN_ZONES_SOURCE
+-N FORWARD_IN_ZONES
+-N FORWARD_OUT_ZONES_SOURCE
+-N FORWARD_OUT_ZONES
+-I FORWARD 1 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-I FORWARD 2 -i lo -j ACCEPT
+-I FORWARD 3 -j FORWARD_direct
+-I FORWARD 4 -j FORWARD_IN_ZONES_SOURCE
+-I FORWARD 5 -j FORWARD_IN_ZONES
+-I FORWARD 6 -j FORWARD_OUT_ZONES_SOURCE
+-I FORWARD 7 -j FORWARD_OUT_ZONES
+-I FORWARD 8 -m conntrack --ctstate INVALID -j DROP
+-I FORWARD 9 -j REJECT --reject-with icmp-host-prohibited
+-N OUTPUT_direct
+-I OUTPUT 1 -j OUTPUT_direct
+COMMIT
+EOF
+
+if [ $? -ne 0 ]; then
+	echo "Error during first iptables-restore"
+	exit 1
+fi
+
+cat <<EOF | $XT_MULTI iptables-restore -w -n
+*raw
+-N PRE_public
+-N PRE_public_log
+-N PRE_public_deny
+-N PRE_public_allow
+-I PRE_public 1 -j PRE_public_log
+-I PRE_public 2 -j PRE_public_deny
+-I PRE_public 3 -j PRE_public_allow
+-A PREROUTING_ZONES -i + -g PRE_public
+COMMIT
+*filter
+-N IN_public
+-N IN_public_log
+-N IN_public_deny
+-N IN_public_allow
+-I IN_public 1 -j IN_public_log
+-I IN_public 2 -j IN_public_deny
+-I IN_public 3 -j IN_public_allow
+-A IN_public_allow -p tcp --dport 22 -m conntrack --ctstate NEW -j ACCEPT
+-A IN_public_allow -p udp --dport 5353 -d 224.0.0.251 -m conntrack --ctstate NEW -j ACCEPT
+-N FWDI_public
+-N FWDI_public_log
+-N FWDI_public_deny
+-N FWDI_public_allow
+-I FWDI_public 1 -j FWDI_public_log
+-I FWDI_public 2 -j FWDI_public_deny
+-I FWDI_public 3 -j FWDI_public_allow
+-I IN_public 4 -p icmp -j ACCEPT
+-I FWDI_public 4 -p icmp -j ACCEPT
+-A INPUT_ZONES -i + -g IN_public
+-A FORWARD_IN_ZONES -i + -g FWDI_public
+-N FWDO_public
+-N FWDO_public_log
+-N FWDO_public_deny
+-N FWDO_public_allow
+-I FWDO_public 1 -j FWDO_public_log
+-I FWDO_public 2 -j FWDO_public_deny
+-I FWDO_public 3 -j FWDO_public_allow
+-A FORWARD_OUT_ZONES -o + -g FWDO_public
+COMMIT
+*nat
+-N PRE_public
+-N PRE_public_log
+-N PRE_public_deny
+-N PRE_public_allow
+-I PRE_public 1 -j PRE_public_log
+-I PRE_public 2 -j PRE_public_deny
+-I PRE_public 3 -j PRE_public_allow
+-A PREROUTING_ZONES -i + -g PRE_public
+-N POST_public
+-N POST_public_log
+-N POST_public_deny
+-N POST_public_allow
+-I POST_public 1 -j POST_public_log
+-I POST_public 2 -j POST_public_deny
+-I POST_public 3 -j POST_public_allow
+-A POSTROUTING_ZONES -o + -g POST_public
+COMMIT
+*mangle
+-N PRE_public
+-N PRE_public_log
+-N PRE_public_deny
+-N PRE_public_allow
+-I PRE_public 1 -j PRE_public_log
+-I PRE_public 2 -j PRE_public_deny
+-I PRE_public 3 -j PRE_public_allow
+-A PREROUTING_ZONES -i + -g PRE_public
+COMMIT
+EOF
+
+if [ $? -ne 0 ]; then
+	echo "Error during 2nd iptables-restore"
+	exit 1
+fi
+
+cat <<EOF | $XT_MULTI iptables-restore -w -n
+*mangle
+-P PREROUTING ACCEPT
+-P POSTROUTING ACCEPT
+-P INPUT ACCEPT
+-P OUTPUT ACCEPT
+-P FORWARD ACCEPT
+COMMIT
+*raw
+-P PREROUTING ACCEPT
+-P OUTPUT ACCEPT
+COMMIT
+*filter
+-P INPUT ACCEPT
+-P OUTPUT ACCEPT
+-P FORWARD ACCEPT
+COMMIT
+EOF
+
+if [ $? -ne 0 ]; then
+	echo "Error during 3rd iptables-restore"
+	exit 1
+fi
+
+cat <<EOF | $XT_MULTI iptables-restore -w -n
+*filter
+-I INPUT_ZONES 1 -i enp3s0 -g IN_public
+-I FORWARD_IN_ZONES 1 -i enp3s0 -g FWDI_public
+-I FORWARD_OUT_ZONES 1 -o enp3s0 -g FWDO_public
+COMMIT
+*nat
+-I PREROUTING_ZONES 1 -i enp3s0 -g PRE_public
+-I POSTROUTING_ZONES 1 -o enp3s0 -g POST_public
+COMMIT
+*mangle
+-I PREROUTING_ZONES 1 -i enp3s0 -g PRE_public
+COMMIT
+*raw
+-I PREROUTING_ZONES 1 -i enp3s0 -g PRE_public
+COMMIT
+EOF
+
+if [ $? -ne 0 ]; then
+	echo "Error during 4th iptables-restore"
+	exit 1
+fi
+
+tmpfile=$(mktemp) || exit 1
+for table in nat mangle raw filter;do
+	$XT_MULTI iptables-save -t $table | grep -v '^#' >> "$tmpfile"
+done
+
+diff -u $tmpfile  $(dirname "$0")/dumps/ipt-save-completed.txt
+RET=$?
+
+rm -f "$tmpfile"
+
+exit $RET

@@ -5055,6 +5055,15 @@ int wl_mlo_config_sort(char *group, char *subunit)
 /* get unit */
 	for (i = 0; i < len; i++) {
 		if (mlo_config_og[wl[i]] >= 0) {
+
+#ifdef RTCONFIG_WIFI8
+			/* Skip 2.4G interface, except for WiFi7/WiFi8 MLO media bridge which
+			 * must be able to use 2.4G as an uplink MLO member link. */
+			if (wl[i] == WL_2G_BAND && !is_mlo_media_bridge()) {
+				MLO_API_DBG("Skip 2.4G interface wl%d\n", wl[i]);
+				continue;
+			}
+#endif
 			if (first)
 				first = 0;
 			else

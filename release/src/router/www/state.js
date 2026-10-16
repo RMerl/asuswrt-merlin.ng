@@ -330,6 +330,7 @@ var is_CH_sku = in_territory_code("CH");
 var is_SG_sku = in_territory_code("SG");
 var is_EU_sku = in_territory_code("EU");
 var SG_mode = ('<% nvram_get("SG_mode"); %>' == 1);
+var ID_mode = ('<% nvram_get("ID_mode"); %>' == 1);
 
 var isGundam = in_territory_code("GD") || CoBrand_flag == 1;
 var isKimetsu = (CoBrand_flag == '2');
@@ -1376,7 +1377,7 @@ function show_banner(L3){// L3 = The third Level of Menu
 							</div>
 							<div style="display:table-cell;vertical-align:middle;width:100%;text-align:center">`;
 		if (is_CN || ui_lang == "CN") {
-			banner_code += `<div style="padding-left: 30px;"><a href="${Android_app_link}" target="_blank"><div style="width:160px;font-size:24px;border:1px solid #BDBDBD;padding: 10px 4px;border-radius: 6px;margin: auto;">Android App</div></a></div>`;
+			banner_code += `<div style="padding-left: 30px;"><a href="${Android_app_link}" target="_blank" rel="noreferrer"><div style="width:160px;font-size:24px;border:1px solid #BDBDBD;padding: 10px 4px;border-radius: 6px;margin: auto;">Android App</div></a></div>`;
 		} else {
 			banner_code += `<div style="padding-left: 30px;"><a href="${Android_app_link}" target="_blank"><div style="width:160px;height:46px;background:url('images/googleplay.png') no-repeat;background-size:100%;margin:auto;"></div></a></div>`;
 		}
@@ -2213,6 +2214,12 @@ function show_footer(){
 	//}
 
 	document.getElementById("footer").innerHTML = footer_code;
+	if(!isSupport("UI4") && !document.getElementById("ui3sr-script")){
+		var ui3sr_script = document.createElement("script");
+		ui3sr_script.id = "ui3sr-script";
+		ui3sr_script.src = "/js/ui3_search.js";
+		document.body.appendChild(ui3sr_script);
+	}
 }
 function filterFAQ(){
 	var string = $("#FAQ_input").val().trim().toUpperCase();
@@ -2669,25 +2676,55 @@ function reboot(){
 	var FbState = httpApi.nvramGet(["fb_state"], true).fb_state;
 	var FbNote = `<#feedback_note5#>`;
 
+	function clearWindowTimers(targetWindow){
+		var set_timeout = null;
+		var clear_timeout = null;
+		var set_interval = null;
+		var clear_interval = null;
+
+		if(!targetWindow)
+			return;
+
+		try{
+			set_timeout = targetWindow.setTimeout;
+			clear_timeout = targetWindow.clearTimeout;
+			set_interval = targetWindow.setInterval;
+			clear_interval = targetWindow.clearInterval;
+		}
+		catch(error){
+			return;
+		}
+
+		if(typeof(set_timeout) != "function"
+		 || typeof(clear_timeout) != "function"
+		 || typeof(set_interval) != "function"
+		 || typeof(clear_interval) != "function")
+			return;
+
+		var timeout_id = set_timeout.call(targetWindow, function() {}, 0);
+		while (timeout_id--)
+			clear_timeout.call(targetWindow, timeout_id);
+		var interval_id = set_interval.call(targetWindow, function() {}, 0);
+		while (interval_id--)
+			clear_interval.call(targetWindow, interval_id);
+	}
+
 	if(FbState == "0"){
 		alert(FbNote);
 	}
 	else{
 		if(confirm("<#Main_content_Login_Item7#>")){
-			var win_time = window.setTimeout(function() {}, 0);
-			while (win_time--)
-				window.clearTimeout(win_time);
-			var win_inter = window.setInterval(function() {}, 0);
-			while (win_inter--)
-				window.clearInterval(win_inter);
+			clearWindowTimers(window);
 			var iframe_len = frames.length;
 			for(var i = 0; i < iframe_len; i += 1) {
-				var ifr_time = frames[i].window.setTimeout(function() {}, 0);
-				while (ifr_time--)
-					frames[i].window.clearTimeout(ifr_time);
-				var ifr_inter = frames[i].window.setInterval(function() {}, 0);
-				while (ifr_inter--)
-					frames[i].window.clearInterval(ifr_inter);
+				var frame_window = null;
+				try{
+					frame_window = frames[i].window;
+				}
+				catch(error){
+					frame_window = null;
+				}
+				clearWindowTimers(frame_window);
 			}
 			document.rebootForm.submit();
 		}
@@ -5320,11 +5357,12 @@ function showArkMigrationNotification(arkMigrationPromise) {
                 }
             });
             observer.observe(top.document.body, { childList: true, subtree: true });
+        } else if (isSupport("ai_support") == 1) {
+            fetch('/set_ark_migration_done.cgi').catch(function() {});
         } else {
-			const functionList = [`<#AiProtection_filter#> (Web)`, `<#FamilyContentBlock#> (App)`, `<#Adaptive_QoS#>`];
+			const functionList = [`<#AiProtection_filter#> (Web)`, `<#FamilyContentBlock#> (App)`, `<#Adaptive_QoS#>`, `<#GB_mobile#> (App)`];
 			if(gameMode_support){
 				functionList.push(`<#Gear_Accelerator#> (Web)`)
-				functionList.push(`<#GB_mobile#> (App)`)
 			}
             var notification = new NotificationModalComponent({
                 id: 'ark_migration_notification',

@@ -1,0 +1,2 @@
+:INPUT,FORWARD,OUTPUT
+-m iprange;;FAIL

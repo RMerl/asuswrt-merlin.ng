@@ -26,6 +26,15 @@
         <meta name="theme-color" content="#000000" />
 
         <title><#Web_Title#></title>
+
+        <link rel="preload" as="style" href="./css/bootstrap.min.css" />
+        <link rel="preload" as="style" href="./css/bootstrap-customize.css" />
+        <link rel="preload" as="style" href="./css/architecture.css" />
+
+        <link rel="stylesheet" href="./css/bootstrap.min.css" />
+        <link rel="stylesheet" href="./css/bootstrap-customize.css" />
+        <link rel="stylesheet" href="./css/architecture.css" />
+
         <script src="./js/jquery.js"></script>
         <script src="./js/httpApi.js"></script>
         <script src="./js/preloadData.js"></script>
@@ -37,43 +46,55 @@
         <script src="./js/asus_policy.js?v=5"></script>
         <script src="./js/asus_clientlist.js"></script>
         <script src="./popup.js"></script>
-
-        <link rel="stylesheet" href="./css/bootstrap.min.css" />
-        <link rel="stylesheet" href="./css/bootstrap-customize.css" />
-        <link rel="stylesheet" href="./css/architecture.css" />
     </head>
     <script>
         postMessageToApp({ web_ready: "1" });
 
         var pathSegments = location.pathname.split("/").filter(Boolean);
         var rootPath = (pathSegments[0].length == 32) ? `/${pathSegments[0]}` : "";
-        const checkAuthInterval = setInterval(function () {
-            if(isSupport(`demoui`)) return false;
-            let loadingFlag = false;
+        var isCheckingAuth = false;
+        var checkAuthInterval = setInterval(function () {
+            if(isSupport(`demoui`)) return;
             const settingsWindow = document.querySelector('#settingsWindow');
             const loadingDivDom = settingsWindow?.contentDocument?.querySelector('#Loading');
             const loadingBarDivDom = settingsWindow?.contentDocument?.querySelector('#LoadingBar');
             const loadingText = document.querySelector('#loading_text');
 
+            const fwUpgradeOverlay = document.getElementById('settings-upgrade-overlay');
+
             if ((loadingDivDom && loadingDivDom.style.visibility === 'visible') ||
                 (loadingBarDivDom && loadingBarDivDom.style.visibility === 'visible') ||
-                loadingText) {
-                loadingFlag = true;
+                loadingText || fwUpgradeOverlay) {
+                return;
             }
-            if (loadingFlag) {
-                clearInterval(checkAuthInterval);
-            } else {
-                var targetDevice = (/^aae-sgrst001-\w+\.asuscomm\.com$/.test(window.location.hostname)) ? `${location.origin}/${location.pathname.split("/")[1]}` : ``;
 
-                fetch(`${targetDevice}/check_Auth.cgi`, {method: 'POST'})
-                    .then(response => response.json())
-                    .catch(e => {
-                        window.location.href = '/';
-                    })
-            }
+            if (isCheckingAuth) return;
+            isCheckingAuth = true;
+
+            var targetDevice = (/^.*\.expertwifi\.net$/.test(window.location.hostname)) ? `${location.origin}/${location.pathname.split("/").slice(1, 3).join("/")}` : ``;
+
+            fetch(`${targetDevice}/check_Auth.cgi`, {method: 'POST'})
+                .then(response => response.json())
+                .catch(e => {
+                    window.location.href = '/';
+                })
+                .finally(() => {
+                    isCheckingAuth = false;
+                });
         }, 3000);
 
         function checkPolicy() {
+            var arkMigrationPromise;
+            if (isSupport("gtbooster") >= 2) {
+                arkMigrationPromise = fetch('/get_ark_migration_done.cgi')
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .catch(function() {
+                        return {};
+                    });
+            }
+
             PolicyStatus()
                 .then(data => {
                     if (data.isFetchDone) {
@@ -94,7 +115,43 @@
                             policyModal.show();
                         }
                     }
+                    if (typeof arkMigrationPromise !== 'undefined') {
+                        showArkMigrationNotification(arkMigrationPromise);
+                    }
                 });
+        }
+
+        function showArkMigrationNotification(arkMigrationPromise) {
+            arkMigrationPromise.then(function(data) {
+                if (data.ark_migration_done != 2) return;
+
+                const policyModal = top.document.querySelector('#policy_popup_modal');
+                if (policyModal) {
+                    var observer = new MutationObserver(function() {
+                        if (!top.document.querySelector('#policy_popup_modal')) {
+                            observer.disconnect();
+                            showArkMigrationNotification(Promise.resolve(data));
+                        }
+                    });
+                    observer.observe(top.document.body, { childList: true, subtree: true });
+                } else if (isSupport("ai_support") == 1) {
+                    fetch('/set_ark_migration_done.cgi').catch(function() {});
+                } else {
+                    const functionList = [`<#AiProtection_filter#> (Web)`, `<#FamilyContentBlock#> (App)`, `<#Adaptive_QoS#>`, `<#GB_mobile#> (App)`];
+                    if (isSupport('gameMode')) {
+                        functionList.push(`<#Gear_Accelerator#> (Web)`);
+                    }
+                    var notification = new NotificationModalComponent({
+                        id: 'ark_migration_notification',
+                        title: '<#Notice#>',
+                        message: `<div class="d-flex flex-column gap-1"><div><#ArkMigrationNote_1#></div><div>[<#ArkMigrationNote#>] <#ArkMigrationNote_2#></div></div>`.replace('%@', functionList.join(' / ')),
+                        closeCallback: function() {
+                            fetch('/set_ark_migration_done.cgi').catch(function() {});
+                        },
+                    });
+                    notification.show();
+                }
+            });
         }
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -116,7 +173,7 @@
             let param = [];
             if (page === "aiprotection") {
                 let view = sanitizeParam(urlParameter.get("view"));
-                const validViews = ["ark_mals", "ark_adblock", "ark_tracker", "dpi_mals", "dpi_vp", "dpi_cc"];
+                const validViews = ["ark_mals", "ark_adblock", "ark_tracker", "ark_ids", "dpi_mals", "dpi_vp", "dpi_cc"];
                 if (view && validViews.includes(view)) {
                     param.push(`page=${page}`);
                     param.push(`view=${view}`);
@@ -176,6 +233,7 @@
 
                         if (src) {
                             scriptElement.src = src;
+                            scriptElement.async = false;
                         } else {
                             scriptElement.textContent = item.innerText;
                         }

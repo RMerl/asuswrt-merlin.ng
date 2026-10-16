@@ -19,40 +19,40 @@
 .Bar_container{
 	width:85%;
 	height:21px;
-	border:1px inset #999;
+	border:1px inset var(--border-default, #999);
 	margin:0 auto;
 	margin-top:20px \9;
-	background-color:#FFFFFF;
+	background-color:var(--wrt-card-bg, #FFFFFF);
 	z-index:100;
 }
 #proceeding_img_text{
 	position:absolute; 
 	z-index:101; 
-	font-size:11px; color:#000000; 
+	font-size:11px; color:var(--wrt-text-color, #000000); 
 	line-height:21px;
 	width: 83%;
 }
 #proceeding_img{
  	height:21px;
-	background: #D7E8F4;
-	background: -webkit-linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%);
-	background: -o-linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%);
-	background: linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%);
+	background: var(--surface-panel, #D7E8F4);
+	background: var(--surface-panel, -webkit-linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%));
+	background: var(--surface-panel, -o-linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%));
+	background: var(--surface-panel, linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%));
 }
 .button_helplink{
 	font-weight: bolder;
 	text-shadow: 1px 1px 0px black;
 	text-align: center;
 	vertical-align: middle;
-	background: #121C1E;
-	background: -webkit-linear-gradient(#233438 0%, #0F1011 100%);
-	background: -o-linear-gradient(#233438 0%, #0F1011 100%);
-	background: linear-gradient(#233438 0%, #0F1011 100%);
+	background: var(--surface-panel, #121C1E);
+	background: var(--surface-panel, -webkit-linear-gradient(#233438 0%, #0F1011 100%));
+	background: var(--surface-panel, -o-linear-gradient(#233438 0%, #0F1011 100%));
+	background: var(--surface-panel, linear-gradient(#233438 0%, #0F1011 100%));
 	-webkit-border-radius: 8px;
 	-moz-border-radius: 8px;
 	border-radius: 8px;
 	border:0;
-	color: #FFFFFF;
+	color: var(--wrt-text-color,#FFFFFF);
 	height:33px;
 	width:122px;
 	font-family:Verdana;
@@ -76,7 +76,7 @@
  	hlbr:expression(this.onFocus=this.blur()); /* for IE */
 }
 .current_fw_release_note {
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FFCC00);
 }
 
 #rbk_Block{
@@ -89,7 +89,7 @@
 	margin-left:15px;
 	float:left;
 	font-size:18px;
-	color:#93A9B1;
+	color:var(--wrt-text-muted-color,#93A9B1);
 }
 .rbk_close{
 	float:right;
@@ -98,6 +98,14 @@
 	text-decoration: underline;
 	cursor: pointer;	
 }
+
+
+[data-asuswrt-theme][data-asuswrt-color] {
+	#asus_link, #asus_link2, #faq_link1 {
+		color: var(--body-text-color, #FFFFFF) !important;
+	}
+}
+
 </style>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
@@ -156,6 +164,32 @@ var is_ISP_incompatible = (in_territory_code("CX/01") || in_territory_code("CX/0
 var dpi_engine_status = <%bwdpi_engine_status();%>;
 var sig_ver = '<% nvram_get("bwdpi_sig_ver"); %>';
 var sig_ver_ori = '<% nvram_get("bwdpi_sig_ver"); %>';
+var sig_ver_str = "";
+if(sig_ver_ori == ""){
+	sig_ver_str = "1.008";
+}
+else{
+	sig_ver_str = sig_ver_ori;
+}
+if(isSupport("gtbooster")){
+	var check_ark_setting = '<%check_ark_setting();%>';
+	var ark_state_update = '<% nvram_get("ark_state_update"); %>';
+	var ark_state_upgrade = '<% nvram_get("ark_state_upgrade"); %>';
+	var ark_state_flag = '<% nvram_get("ark_state_flag"); %>';
+	var ark_sig_state = '<% nvram_get("ark_sig_state"); %>';
+	var ark_sig_unzip = '<% nvram_get("ark_sig_unzip"); %>';
+	var ark_sig_ver_tmp = '<% nvram_get("ark_sig_ver"); %>';
+	var ark_sig_ver = ark_sig_ver_tmp.split("_").slice(0, 2).join("_");
+	var ark_sig_ver_tmp_ori = '<% nvram_get("ark_sig_ver"); %>';
+	var ark_sig_ver_ori = ark_sig_ver_tmp_ori.split("_").slice(0, 2).join("_");
+	var ark_sig_ver_str="";
+	if(ark_sig_ver_ori == ""){
+		ark_sig_ver_str = "GS_42512010L";
+	}
+	else{
+		ark_sig_ver_str = ark_sig_ver_ori;
+	}
+}
 var sig_update_t = '<% nvram_get("sig_update_t"); %>';
 var sig_type = '<% nvram_get("sig_type"); %>';
 if(cfg_sync_support){
@@ -347,7 +381,24 @@ function change_beta_path(flag){
 }
 
 function initial(){
-	show_menu();	
+	// In the settings.html shell the firmware-upgrade UI is a top-level overlay
+	// (driven by the real flow). Reroute this page's own popup functions:
+	//   dr_advise()        -> no-op (the iframe's #hiddenMask must not show; #drword
+	//                         is still updated by isDownloading and mirrored by the
+	//                         overlay).
+	//   showLoadingBar(s)  -> tell the overlay to start its determinate burn/flash
+	//                         countdown (the real flash phase begins here).
+	//   detect_httpd()     -> no-op: it would redirect to "/", but the device is
+	//                         rebooting so that lands on "can't reach this site".
+	// Standalone keeps the originals.
+	if(window.parent !== window && typeof window.parent.showSettingsUpgradeOverlay === "function"){
+		if(typeof dr_advise === "function") dr_advise = function(){};
+		if(typeof showLoadingBar === "function") showLoadingBar = function(sec){
+			try { if(typeof window.parent.startSettingsUpgradeBurn === "function") window.parent.startSettingsUpgradeBurn(sec); } catch(e){}
+		};
+		if(typeof detect_httpd === "function") detect_httpd = function(){};
+	}
+	show_menu();
 	showDST();
 	load_time_hour();
 	load_time_min();
@@ -389,7 +440,7 @@ function initial(){
 	
 	var exist_update = 0;
 	if(amesh_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
-		
+
 		var have_node = false;
 		var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist");		
 		$("#fw_version_tr").empty();
@@ -562,21 +613,41 @@ function initial(){
 
 	}
 
+	//display signature info
+	var sigver_display_bwdpi_flag = false;
+	var sigver_display_ark_flag = false;
+	var sigver_display_str = "";
 	if(bwdpi_support){
-		if(dpi_engine_status.DpiEngine == 1)
-			document.getElementById("sig_ver_field").style.display="";
-		else
-			document.getElementById("sig_ver_field").style.display="none";
-			
-		if(sig_ver_ori == "")
-			document.getElementById("sig_ver_word").innerHTML = "1.008";
-		else
-			document.getElementById("sig_ver_word").innerHTML = sig_ver_ori;
+		sigver_display_bwdpi_flag = (dpi_engine_status.DpiEngine == 1)? true:false;
+	}
+	if(isSupport("gtbooster")){
+		if(check_ark_setting == '1' && ark_sig_ver_str.length > 0){
+			sigver_display_ark_flag = true;
+		}
+	}
 
-		if(sig_update_t == "" || sig_update_t == "0")
+	if(sigver_display_bwdpi_flag && sigver_display_ark_flag){
+		sigver_display_str = sig_ver_str+" / "+ark_sig_ver_str;
+	}
+	else if(sigver_display_bwdpi_flag){
+		sigver_display_str = sig_ver_str;
+	}
+	else if(sigver_display_ark_flag){
+		sigver_display_str = ark_sig_ver_str;
+	}
+
+	if((bwdpi_support && dpi_engine_status.DpiEngine == 1) || (isSupport("gtbooster") && check_ark_setting == '1')){
+		document.getElementById("sig_ver_word").innerHTML = sigver_display_str;
+		document.getElementById("sig_ver_field").style.display="";
+
+		if(sig_update_t == "" || sig_update_t == "0" || (sigver_display_ark_flag && ark_sig_ver_str == "GS_42512010L"))
 			document.getElementById("sig_update_date").innerHTML = "";
 		else
 			document.getElementById("sig_update_date").innerHTML = "&nbsp;&nbsp;"+transferTimeFormat(sig_update_t*1000);
+
+	}
+	else{
+		document.getElementById("sig_ver_field").style.display="none";
 	}
 
 	if(cfg_sync_support){
@@ -653,6 +724,12 @@ function initial(){
 	else{
 		inputCtrl(document.form.file, 1);
 		inputCtrl(document.form.upload, 1);
+	}
+
+	// UI4 (settings shell): the manual-upgrade file picker uses the shell's form
+	// styling (.form-control) instead of the legacy .input class.
+	if(isSupport("UI4")){
+		document.form.file.className = "form-control";
 	}
 
 	if(amesh_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
@@ -1005,8 +1082,31 @@ function isDownloading(){
   		});
 }
 
+// UI4 / settings shell: hand the firmware-upgrade UI to the shell's top-level
+// overlay. Pass `seconds` to start the burn/flash countdown immediately (manual /
+// modem — no real progress source); omit it for MIRROR mode (online / revert),
+// where the real isDownloading drives the text and the flash phase later calls
+// startSettingsUpgradeBurn via the showLoadingBar hook. Returns true in the shell.
+function openShellUpgradeOverlay(seconds){
+	if(window.parent === window || typeof window.parent.showSettingsUpgradeOverlay !== "function")
+		return false;
+	try { window.parent.showSettingsUpgradeOverlay(seconds); } catch(e){}
+	return true;
+}
+// Flash-phase duration the real page uses (isDownloading: 120 for pipefw/urlfw, else 270).
+function shellUpgradeSecs(){
+	return ((typeof pipefw_support !== "undefined" && pipefw_support) ||
+	        (typeof urlfw_support !== "undefined" && urlfw_support)) ? 120 : 270;
+}
+
 function startDownloading(){
-	disableCheckChangedStatus();			
+	disableCheckChangedStatus();
+	// Show the overlay in MIRROR mode and let isDownloading() actually run: it
+	// polls ajax_fwdl_percent and its #drword updates are mirrored by the overlay;
+	// when it reaches the flash phase showLoadingBar() (hooked in initial()) starts
+	// the overlay's burn countdown. detect_httpd() is no-op'd → no reboot redirect.
+	// Standalone: openShellUpgradeOverlay() is a no-op and the original popup shows.
+	openShellUpgradeOverlay();
 	dr_advise();
 	document.getElementById("drword").innerHTML = "&nbsp;&nbsp;&nbsp;<#fw_downloading#>...";
 	isDownloading();
@@ -1074,7 +1174,10 @@ function isRevertDownloading(){
 }
 
 function startRevertDownloading(){
-	disableCheckChangedStatus();			
+	disableCheckChangedStatus();
+	// Revert / rollback firmware — same as startDownloading: MIRROR mode + run the
+	// real isRevertDownloading() (its flash phase calls showLoadingBar → burn).
+	openShellUpgradeOverlay();
 	dr_advise();
 	document.getElementById("drword").innerHTML = "&nbsp;&nbsp;&nbsp;<#fw_downloading#>...";
 	isRevertDownloading();
@@ -1095,17 +1198,25 @@ function check_zip(obj){
 function submitForm(){
 	if(isSupport("demoui"))
 		return;
-	else{
-		if(!check_zip(document.form.file))
-				return;
-		else {
-			var status = onSubmitCtrlOnly(document.form.upload, 'Upload1');
-			if(amesh_support && status && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
-				if(interval_update_AiMesh_fw_status) {
-					clearInterval(interval_update_AiMesh_fw_status);
-					interval_update_AiMesh_fw_status = false;
-				}
-			}
+	if(!check_zip(document.form.file))
+		return;
+
+	// Real upload: onSubmitCtrlOnly('Upload1') POSTs the firmware file to
+	// upgrade.cgi (target = hidden_frame). In the settings shell, initial() has
+	// already no-op'd dr_advise/showLoadingBar, so this page's own popups
+	// (#hiddenMask / #loadingBarBlock) don't appear — the shell's top-level
+	// overlay provides the UI instead.
+	var status = onSubmitCtrlOnly(document.form.upload, 'Upload1');
+httpApi.log("FirmwareUpgrade", `upload ${document.form.file.value} and got status: ${status}`);
+
+	// Manual upload has no download/flash polling to mirror, so run the overlay's
+	// own burn countdown (BURN mode) after the real POST.
+	if(status) openShellUpgradeOverlay(shellUpgradeSecs());
+
+	if(amesh_support && status && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
+		if(interval_update_AiMesh_fw_status) {
+			clearInterval(interval_update_AiMesh_fw_status);
+			interval_update_AiMesh_fw_status = false;
 		}
 	}
 }
@@ -1113,6 +1224,12 @@ function submitForm(){
 function sig_version_check(){
 	document.getElementById("sig_check").disabled = true;
 	$("#sig_status").show();
+	if(dpi_engine_status.DpiEngine == 1 && isSupport("gtbooster") && check_ark_setting == '1'){
+		document.sig_update.action_script.value = "start_sig_check;start_ark_sig_check";
+	}
+	else if(isSupport("gtbooster") && check_ark_setting == '1'){
+		document.sig_update.action_script.value = "start_ark_sig_check";
+	}
 	document.sig_update.submit();
 	$("#sig_status").html("<#sig_checking#>");
 	document.getElementById("sig_update_scan").style.display = "";
@@ -1121,6 +1238,45 @@ function sig_version_check(){
 
 var sdead=0;
 var sig_chk_count=(sig_type=="HNS")? 150:60;
+var skip_sig_no_need_upgrade=3;
+
+function getArkSigStateValue(){
+	var state = parseInt(ark_sig_state, 10);
+	return isNaN(state) ? 0 : state;
+}
+
+function arkSigUpdateFailed(){
+	return (parseInt(sig_state_error, 10) !== 0 || getArkSigStateValue() === 6);
+}
+
+function arkSigUpdateCompleted(){
+	var state = getArkSigStateValue();
+	return (state === 5 || (state === 0 && ark_sig_ver !== ark_sig_ver_ori));
+}
+
+function arkSigUpToDate(){
+	return (getArkSigStateValue() === 0 && ark_sig_ver === ark_sig_ver_ori && parseInt(ark_state_update, 10) === 1 && parseInt(ark_state_flag, 10) === 0);
+}
+
+function updateSigVersionWord(){
+	if(sig_ver == ""){
+		sig_ver = sig_ver_str;
+	}
+
+	if(isSupport("gtbooster") && check_ark_setting == '1'){
+		if(bwdpi_support && dpi_engine_status.DpiEngine == 1){
+			$("#sig_ver_word").html(sig_ver+" / "+ark_sig_ver);
+		}
+		else{
+			$("#sig_ver_word").html(ark_sig_ver);
+		}
+	}
+	else{
+		$("#sig_ver_word").html(sig_ver);
+	}
+	$("#sig_update_date").hide();
+}
+
 function sig_check_status(){
 	$.ajax({
     	url: '/detect_firmware.asp',
@@ -1138,42 +1294,97 @@ function sig_check_status(){
     	success: function(){
 			--sig_chk_count;
 			$("#sig_status").show();
-			if(sig_state_flag == 0 && sig_state_error == 0 && sig_state_update == 1){		// no need upgrade
-				$("#sig_status").html("<#sig_up2date#>");
-				document.getElementById("sig_update_scan").style.display = "none";
-				document.getElementById("sig_check").disabled = false;
+			if((sig_state_flag == 0 || sig_state_flag == "") && (sig_state_update == 1 || sig_state_update == "") && skip_sig_no_need_upgrade > 0 ){ // dpi sig no need upgrade
+				if(isSupport("gtbooster") && check_ark_setting == '1'){
+					if(arkSigUpdateFailed()){		// update error
+						$("#sig_status").html("<#sig_failed#>");
+						document.getElementById("sig_update_scan").style.display = "none";
+						document.getElementById("sig_check").disabled = false;
+					}
+					else if(arkSigUpToDate()){		// ark no need upgrade
+						$("#sig_status").html("<#sig_up2date#>");
+						document.getElementById("sig_update_scan").style.display = "none";
+						document.getElementById("sig_check").disabled = false;
+					}
+					else if(arkSigUpdateCompleted()){
+						document.getElementById("sig_update_scan").style.display = "none";
+						document.getElementById("sig_check").disabled = false;
+						$("#sig_status").html("<#sig_completed#>");
+						updateSigVersionWord();
+					}
+					else{
+						--skip_sig_no_need_upgrade;
+						$("#sig_status").html("<#sig_updating#>");
+						setTimeout("sig_check_status();", 1000);
+					}
+				}
+				else{
+					if(sig_state_error != 0){		// update error
+						$("#sig_status").html("<#sig_failed#>");
+						document.getElementById("sig_update_scan").style.display = "none";
+						document.getElementById("sig_check").disabled = false;
+					}
+					else{
+						$("#sig_status").html("<#sig_up2date#>");
+						document.getElementById("sig_update_scan").style.display = "none";
+						document.getElementById("sig_check").disabled = false;
+					}
+				}
 			}
-			else{
+			else{// dpi sig need upgrade
+
 				if(sig_state_error != 0){		// update error
 					$("#sig_status").html("<#sig_failed#>");
 					document.getElementById("sig_update_scan").style.display = "none";
 					document.getElementById("sig_check").disabled = false;
 				}
 				else{
-					if(sig_state_update == 0 && sig_state_upgrade == 1){		//upgrade complete
-						document.getElementById("sig_update_date").innerHTML = "";
-						if(sig_ver == sig_ver_ori){
-							$("#sig_status").html("<#sig_updating#>");
-							setTimeout("sig_check_status();", 1000);
-						}
-						else{
-							document.getElementById("sig_update_scan").style.display = "none";
-							document.getElementById("sig_check").disabled = false;
-							$("#sig_status").html("<#sig_completed#>");
-							$("#sig_ver_word").html(sig_ver);
-						}
-					}
-					else{		//updating
+					//updating
 						if(sig_chk_count < 1){
 							$("#sig_status").hide();
 							document.getElementById("sig_update_scan").style.display = "none";
 							document.getElementById("sig_check").disabled = false;
 						}
 						else{
-							$("#sig_status").html("<#sig_updating#>");
-							setTimeout("sig_check_status();", 1000);
+
+							if(isSupport("gtbooster") && check_ark_setting == '1'){
+								if(arkSigUpdateFailed()){		// update error
+									$("#sig_status").html("<#sig_failed#>");
+									document.getElementById("sig_update_scan").style.display = "none";
+									document.getElementById("sig_check").disabled = false;
+								}
+								else if(arkSigUpdateCompleted() || arkSigUpToDate()){
+									//if(sigver_display_bwdpi_flag && (sig_ver != sig_ver_ori) && sig_state_upgrade == 1){}
+									document.getElementById("sig_update_scan").style.display = "none";
+									document.getElementById("sig_check").disabled = false;
+									$("#sig_status").html("<#sig_completed#>");
+									updateSigVersionWord();
+								}
+								else{
+									$("#sig_status").html("<#sig_updating#>");
+									setTimeout("sig_check_status();", 1000);
+								}
+							}
+							else{
+								if(sig_state_error != 0){		// update error
+									$("#sig_status").html("<#sig_failed#>");
+									document.getElementById("sig_update_scan").style.display = "none";
+									document.getElementById("sig_check").disabled = false;
+								}
+								else if((sig_ver != sig_ver_ori) && sig_state_upgrade == 1){
+									document.getElementById("sig_update_scan").style.display = "none";
+									document.getElementById("sig_check").disabled = false;
+									$("#sig_status").html("<#sig_completed#>");
+									updateSigVersionWord();
+								}
+								else{
+									--skip_sig_no_need_upgrade;
+									$("#sig_status").html("<#sig_updating#>");
+									setTimeout("sig_check_status();", 1000);
+								}
+							}
 						}
-					}
+
 				}
 			}
   		}
@@ -1268,7 +1479,7 @@ function show_offline_msg(_checkFlag) {
 
 	var $amesh_hint_offline = $('<div>');
 	$amesh_hint_offline.addClass("amesh_hint_text");
-	$amesh_hint_offline.css("color", "#FC0");
+	$amesh_hint_offline.css("color", "var(--wrt-badge-warning-color,#FC0)");
 	$amesh_hint_offline.html("<#FW_note_AiMesh_offline#>");
 	$offlineHtml.append($amesh_hint_offline);
 
@@ -1882,6 +2093,13 @@ function upgrade_modem_fw(){
 		document.modem_form.focus();
 		return;
 	}
+	// Modem firmware upgrade. In the shell (UI4) POST the file (real upload) then
+	// show the overlay's own burn countdown (BURN mode — modem has no isDownloading
+	// polling to mirror), skipping the iframe spinner + status polling + redirect.
+	if(openShellUpgradeOverlay(shellUpgradeSecs())){
+		document.modem_form.submit();
+		return;
+	}
 	showLoading(300);
 	document.modem_form.submit();
 	setTimeout(get_mobile_fw_upgrade_status, 15000);
@@ -2130,14 +2348,14 @@ function get_mobile_fw_upgrade_status(){
 				<td><% nvram_get("dsllog_drvver"); %></td>
 			</tr>
 			<tr id="sig_ver_field" style="display:none;">
-				<th>Trend Micro: <#sig_ver#></th>
-				<td >
-					<div style="height:33px;margin-top:5px;"><span id="sig_ver_word" style="color:#FFFFFF;"></span><span id="sig_update_date"></span></div>
-					<div style="margin-left:200px;margin-top:-38px;">
+				<th><#sig_ver#></th>
+				<td class="sig_ver_info">
+					<div style="margin-top:1px;">
 						<input type="button" id="sig_check" name="sig_check" class="button_gen" onclick="sig_version_check();" value="<#liveupdate#>">
 					</div>
+					<div><span id="sig_ver_word" class="checkFWCurrent"></span><span id="sig_update_date"></span></div>
 					<div>
-						<span id="sig_status" style="display:none"></span>
+						<span id="sig_status" class="" style="display:none"></span>
 						<img id="sig_update_scan" style="display:none;" src="images/InternetScan.gif">
 					</div>
 				</td>
@@ -2152,10 +2370,10 @@ function get_mobile_fw_upgrade_status(){
 			<tr id="fw_version_tr">
 				<th><#FW_item2#></th>
 				<td>
-					<div id="FWString" style="height:33px;margin-top:5px;"></div>
-					<div id="update_div" style="margin-left:200px;margin-top:-38px;display:none;">
-						<input type="button" id="update" name="update" class="button_gen" onclick="detect_update();" value="<#liveupdate#>" />						
+					<div id="update_div" style="margin-top:1px;display:none;">
+						<input type="button" id="update" name="update" class="button_gen" onclick="detect_update();" value="<#liveupdate#>" />
 					</div>
+					<div id="FWString" style="height:30px;margin-left:135px;margin-top:-27px;"></div>
 					<div id="check_beta_div"><input type="checkbox" name="check_beta" id="path_beta" onclick="change_beta_path()" value="" <% nvram_match("webs_update_beta", "1", "checked"); %>/><#FW_beta_check#></div>
 					<div id="linkpage_div" class="button_helplink" style="margin-left:200px;margin-top:-38px;display:none;">
 						<a id="linkpage" target="_blank"><div style="padding-top:5px;"><#liveupdate#></div></a>
@@ -2169,7 +2387,7 @@ function get_mobile_fw_upgrade_status(){
 			<tr id="manually_upgrade_tr">
 				<th><#FW_item5#></th>
 				<td>
-					<input type="file" name="file" class="input" style="color:#FFCC00;*color:#000;width: 194px;">
+					<input type="file" name="file" class="input" style="var(--wrt-badge-warning-color, #FFCC00);*color:#000;width: 194px;">
 					<input type="button" name="upload" class="button_gen" onclick="submitForm()" value="<#CTL_upload#>" />
 				</td>
 			</tr>
@@ -2198,7 +2416,7 @@ function get_mobile_fw_upgrade_status(){
 			<tr>
 				<th><#New_modem_fw#></th>
 				<td>
-					<input type="file" name="file" class="input" style="color:#FFCC00;*color:#000;width: 194px;">
+					<input type="file" name="file" class="input" style="var(--wrt-badge-warning-color, #FFCC00);*color:#000;width: 194px;">
 					<input type="button" name="upload" class="button_gen" onclick="upgrade_modem_fw()" value="<#CTL_upload#>" />
 				</td>
 			</tr>

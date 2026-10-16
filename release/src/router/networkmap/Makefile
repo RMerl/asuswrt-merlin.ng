@@ -3,7 +3,9 @@ include ../.config
 EXEC = networkmap
 OBJS = JSON_checker.o function.o connections.o sm.o download.o shared_func.o protect_name.o networkmap.o
 OBJS += amas/cfg_client_lookup.o
-
+ifeq ($(RTCONFIG_GTBOOSTER),y)
+OBJS += gdm_rs_map.o
+endif
 CFLAGS += -I$(TOP)/networkmap/amas
 
 ifeq ($(HND_ROUTER),y)
@@ -58,7 +60,6 @@ endif
 
 LDFLAGS += -L$(TOP)/curl/lib/.libs -lcurl -L$(TOP)/
 LDFLAGS += -L$(TOP)/libasc -lasc
-
 
 ifeq ($(RTCONFIG_QSR10G),y)
 CFLAGS += -I$(TOP)/libqcsapi_client_10g
@@ -245,7 +246,7 @@ ifneq ($(wildcard $(SRCBASE)/router/networkmap/arpstorm),)
 endif
 endif
 	install -d $(INSTALLDIR)/usr/networkmap
-	cp -f db/networkmap.oui.js $(INSTALLDIR)/usr/networkmap/networkmap.oui.js
+	cp -f db/ieee.oui.json $(INSTALLDIR)/usr/networkmap/ieee.oui.json
 	cp -f db/nmp_conv_type.js $(INSTALLDIR)/usr/networkmap/nmp_conv_type.js
 	cp -f db/nmp_vendor_type.js $(INSTALLDIR)/usr/networkmap/nmp_vendor_type.js
 	cp -f db/nmp_bwdpi_type.js $(INSTALLDIR)/usr/networkmap/nmp_bwdpi_type.js

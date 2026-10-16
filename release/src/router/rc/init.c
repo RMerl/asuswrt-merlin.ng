@@ -1908,6 +1908,21 @@ convert_defaults()
 		nvram_unset("dms_rescan");
 		nvram_commit();
 	}
+#ifdef RTCONFIG_QUAGGA
+	/* Purge the legacy vendor-default Quagga VTY password ("zebra") that
+	 * earlier firmware seeded into NVRAM. start_quagga() no longer writes
+	 * a VTY password and the VTY listener is disabled, but a unit that
+	 * already stored the old default before upgrading needs it cleared
+	 * here so it isn't left sitting in NVRAM. */
+	if (nvram_match("zebra_passwd", "zebra") ||
+	         nvram_match("zebra_enpasswd", "zebra") ||
+	         nvram_match("rip_passwd", "zebra")) {
+		nvram_unset("zebra_passwd");
+		nvram_unset("zebra_enpasswd");
+		nvram_unset("rip_passwd");
+		nvram_commit();
+	}
+#endif
 }
 
 #ifdef RTCONFIG_AVBLCHAN
@@ -2786,6 +2801,24 @@ restore_defaults(void)
 		  || !strcmp(t->name, "territory_code"))
 		 && nvram_get(t->name))
 			continue;
+#endif
+#ifdef RTCONFIG_UUPLUGIN
+		if (!strcmp(t->name, "uuplugin_enable")) {
+			/* not exist (upgrade from old FW) or restore: decide default by SKU */
+			if (restore_defaults || !nvram_get(t->name)) {
+				int cn = is_CN_sku(), uu = uu_model_check();
+				/* only upgrade from old FW (not factory default / restore) turns it on */
+				int upgrade = !restore_defaults && strlen(nvram_safe_get("extendno_org")) > 0;
+				const char *val = (upgrade && cn && uu) ? "1" : t->value;
+				_dprintf("[UUPLUGIN] restore_defaults=[%d], enable=[%s](%s), extendno_org=[%s] upgrade=[%d], territory_code=[%s], is_CN_sku=[%d], uu_model_check=[%d] -> uuplugin_enable set %s\n",
+					restore_defaults, nvram_safe_get(t->name), nvram_get(t->name) ? "Y" : "N",
+					nvram_safe_get("extendno_org"), upgrade,
+					nvram_safe_get("territory_code"), cn, uu, val);
+				nvram_set(t->name, val);
+			} else
+				_dprintf("[UUPLUGIN] keep existing uuplugin_enable=[%s]\n", nvram_safe_get(t->name));
+			continue;
+		}
 #endif
 		if (restore_defaults || !nvram_get(t->name))
 			nvram_set(t->name, t->value);
@@ -22952,6 +22985,10 @@ int init_nvram(void)
 #endif
 
 #ifdef RTCONFIG_MULTICAST_IPTV
+	char wan0_if[IFNAMSIZ];
+	get_wan0_ifname_phymap(wan0_if, sizeof(wan0_if));
+	nvram_set("iptv_ifname", wan0_if);
+
 	if (nvram_get_int("switch_stb_x") > 6) {
 #if !defined(HND_ROUTER) && !defined(BLUECAVE)
 		if(nvram_match("switch_wantag", "singtel")) {
@@ -24202,7 +24239,6 @@ int init_nvram2(void)
 	int i;
 	int dhcpc_mode = nvram_get_int("dhcpc_mode");
 	char varname[20];
-	char amas_rc_count[16] = {0};
 #if defined(RTCONFIG_CONNDIAG) && defined(RTCONFIG_QCA)
 	char word[256],fetch[30], *next;
         int unit;
@@ -24219,6 +24255,11 @@ int init_nvram2(void)
 	char *desc = NULL, *ts = NULL, *active = NULL;
 	int need_update = 0;
 #endif
+#ifdef RTCONFIG_AMAS
+	char amas_rc_count[16] = {0};
+	char wifi_gen[16] = {0};
+	unsigned int wifi_gen_val = 0;
+#endif /* AMAS */
 
 	if (nvram_match("x_Setting", "0")) {
 		snprintf(ver, sizeof(ver), "%s.%s_%s", nvram_safe_get("firmver"), nvram_safe_get("buildno"), nvram_safe_get("extendno"));
@@ -24393,6 +24434,12 @@ int init_nvram2(void)
 		amas_set_misc_info(MISC_INFO_COBRAND, nvram_safe_get("CoBrand"));
 	}
 	amas_set_misc_info(MISC_INFO_RCSUPPORT, get_rcSupport_count(amas_rc_count, sizeof(amas_rc_count)));
+	/* set wifi generation in misc info */
+	wifi_gen_val = get_wifi_gen();
+	if (wifi_gen_val != 0) {
+		snprintf(wifi_gen, sizeof(wifi_gen), "%u", wifi_gen_val);
+		amas_set_misc_info(MISC_INFO_WIFI_GEN, wifi_gen);
+	}
 #endif /* AMAS */
 #endif /* CFGSYNC */
 #ifdef RTCONFIG_AMAS
@@ -25367,9 +25414,7 @@ void rc_cled_init()
 
 static void sysinit(void)
 {
-#if defined(RTCONFIG_DEBUG)
 	struct rlimit limit;
-#endif
 	static int noconsole = 0;
 	static const time_t tm = 0;
 	int i, r, retry = 0;
@@ -25418,6 +25463,20 @@ static void sysinit(void)
 
 #define MKNOD(name,mode,dev)		if (mknod(name,mode,dev))		perror("## mknod " name)
 #define MOUNT(src,dest,type,flag,data)	if (mount(src,dest,type,flag,data))	perror("## mount " src)
+/* Some pseudo filesystems are already mounted by the platform boot scripts
+ * that run before rc (on HND: /rom/etc/rc3.d/S25mount-fs). Mounting them a
+ * second time is not a harmless no-op:
+ *   - Filesystems that reuse their superblock (sysfs) are rejected with
+ *     EBUSY by do_add_mount(), so rc only produces a perror() every boot.
+ *   - Filesystems that allocate a fresh superblock per mount (devpts uses
+ *     mount_nodev()) are NOT rejected. A second, fully independent instance
+ *     is stacked on top of the first one, permanently shadowing it; the
+ *     lower instance can then never be unmounted by path again.
+ * Mount only when the target is not a mount point yet. If /proc/mounts
+ * cannot be read, check_mountpoint() returns 0 and we fall back to the
+ * unconditional mount, preserving the previous behaviour. */
+#define MOUNT_ONCE(src,dest,type,flag,data) \
+	do { if (!check_mountpoint(dest)) MOUNT(src,dest,type,flag,data); } while (0)
 #define MKDIR(pathname,mode)		if (mkdir(pathname,mode))		perror("## mkdir " pathname)
 
 #ifdef RTCONFIG_RTK_NAND
@@ -25465,7 +25524,7 @@ static void sysinit(void)
 		MKNOD("/dev/null", S_IFCHR | 0666, makedev(1, 3));
 	if (!f_exists("/dev/console"))
 		MKNOD("/dev/console", S_IFCHR | 0600, makedev(5, 1));
-	MOUNT("sysfs", "/sys", "sysfs", MS_MGC_VAL, NULL);
+	MOUNT_ONCE("sysfs", "/sys", "sysfs", MS_MGC_VAL, NULL);
 	MKDIR("/dev/shm", 0777);
 	MKDIR("/dev/pts", 0777);
 #ifdef BLUECAVE
@@ -25479,7 +25538,7 @@ static void sysinit(void)
         f_write_string("/sys/class/gpio/gpio16/value", "0", 0, 0);
 #endif
 
-	MOUNT("devpts", "/dev/pts", "devpts", MS_MGC_VAL, NULL);
+	MOUNT_ONCE("devpts", "/dev/pts", "devpts", MS_MGC_VAL, NULL);
 #if defined(RTCONFIG_WIFI_QCA9994_QCA9994) || \
     defined(RTCONFIG_WIFI_QCN5024_QCN5054) || \
     defined(RTCONFIG_QCA_AXCHIP) || \
@@ -25933,17 +25992,14 @@ def_boot_reinit:
 	f_write_string("/proc/sys/kernel/crashlog_mtd", "misc3", 0, 0);
 #endif
 
-#if defined(RTCONFIG_DEBUG)
 	/* Unlock core-dump generation. */
 	limit.rlim_cur = RLIM_INFINITY;
 	limit.rlim_max = RLIM_INFINITY;
 	setrlimit(RLIMIT_CORE, &limit);
-#endif
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_DEBUG)
 	f_write_string("/proc/sys/kernel/core_uses_pid", "1", 0, 0);
-	f_write_string("/proc/sys/kernel/core_pattern", "/tmp/core-%e-%g-%p-%s-%t-%u", 0, 0);
+	f_write_string("/proc/sys/kernel/core_pattern", "/tmp/core/%e.%p.sig%s.%t", 0, 0);
 	f_write_string("/proc/sys/fs/suid_dumpable", "2", 0, 0);
-#endif
+	mkdir("/tmp/core", 0600);
 #if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_DEBUG)
 	f_write_string("/proc/sys/kernel/print-fatal-signals", "1", 0, 0);
 #endif
@@ -26013,6 +26069,13 @@ def_boot_reinit:
 	nvram_set("success_start_service", "0");
 #if defined(RTCONFIG_AURA_RGBLED)
 	nvram_unset("rgbled_qis_running");
+#endif
+#ifdef RTCONFIG_IPSEC
+	/* This shadow flag (see ipsec_intranet_access_FORWARD() in firewall.c)
+	 * is only meaningful within the current boot -- clear it here so a
+	 * stale value left over from before a reboot can't be mistaken for
+	 * this boot's state. */
+	nvram_unset("ipsec_block_intranet_last");
 #endif
 #ifdef GT10
 	gt10_nvram_convert();
@@ -26249,6 +26312,13 @@ def_boot_reinit:
 		nvram_set("ipv6_service", "ipv6pt");
 	}
 	nvram_set("s46_mapsvr_id", "");
+
+	int unit;
+	if(!nvram_match("extendno_org", nvram_safe_get("extendno"))){
+		for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
+			s46reset(unit);
+		}
+	}
 #endif
 
 #ifdef RTCONFIG_PC_SCHED_V2
@@ -26353,6 +26423,7 @@ void config_format_compatibility_handler(void)
 	adjust_url_urlelist();
 	adjust_ddns_config();
 	adjust_access_restrict_config();
+	adjust_dns_ping_list();
 #if defined(RTCONFIG_VPN_FUSION)
 	adjust_vpnc_config();
 #if defined(RTCONFIG_MULTILAN_CFG)
@@ -27054,12 +27125,6 @@ logmessage("ATE", "boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),
 #if defined(RTCONFIG_AI_SERVICE)
 			renew_ai_key(ROUTER_PRIVATE_KEY, ROUTER_PUBLIC_KEY, ROUTER_PUBLIC_KEY);
 #endif
-#if defined(RTBE88U) || defined(BQ16_PRO) || defined(BQ16)
-			_dprintf("%s(%d): move init_switch_pre() here.\n", __func__, getpid());
-			init_switch_pre();
-			_dprintf("%s(%d): end of init_switch_pre() here.\n", __func__, getpid());
-#endif
-
 #ifdef CONFIG_BCMWL5
 			slabdbg();
 			if (restore_defaults_g)

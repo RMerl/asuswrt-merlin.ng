@@ -1,0 +1,5 @@
+ip6tables-translate -t nat -A postrouting -m hl --hl-gt 3
+nft 'add rule ip6 nat postrouting ip6 hoplimit gt 3 counter'
+
+ip6tables-translate -t nat -A postrouting -m hl ! --hl-eq 3
+nft 'add rule ip6 nat postrouting ip6 hoplimit != 3 counter'

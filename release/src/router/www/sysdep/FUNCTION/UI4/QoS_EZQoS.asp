@@ -33,7 +33,7 @@
 .QISform_wireless{
 	width:600px;
 	font-size:12px;
-	color:#FFFFFF;
+	color:var(--wrt-text-color,#FFFFFF);
 	margin-top:10px;
 	*margin-left:10px;
 }
@@ -43,7 +43,7 @@
 	*padding-left:30px;
 	font-size:12px;
 	font-weight:bolder;
-	color: #FFFFFF;
+	color: var(--wrt-text-color,#FFFFFF);
 	text-align:left;
 }
 
@@ -56,8 +56,8 @@
 	-moz-border-radius: 5px;
 	border-radius: 5px;
 	z-index:200;
-	background-color:#2B373B;
-	box-shadow: 3px 3px 10px #000;
+	background-color:var(--surface-panel, #2B373B);
+	box-shadow: var(--wrt-card-shadow, 3px 3px 10px #000);
 	display:none;
 	/*behavior: url(/PIE.htc);*/
 }
@@ -68,7 +68,7 @@
 	padding-left:5px;
 	font-weight:bold;
 	line-height:140%;
-	color:#ffffff;
+	color:var(--wrt-text-color,#FFFFFF);
 }
 
 #category_list {
@@ -92,8 +92,8 @@
 }
 
 #category_list div:hover{
-	background-color:#66B3FF;
-	color:#000;
+	background-color:var(--surface-hover, #66B3FF);
+	color:var(--wrt-text-color, #000);
 	cursor:pointer;
 	cursor:hand;
 }
@@ -102,7 +102,7 @@
 	text-align:center;
 	font-size:16px;
 	font-weight:bold;
-	color:#FC0;
+	color:var(--wrt-badge-warning-color,#FFCC00);
 }
 
 .priority_highest{
@@ -250,8 +250,8 @@
 	color: #393;
 }
 .all_disable{
-	border: 1px solid #999;
-	color: #999;
+	border: 1px solid var(--border-default, #999);
+	color: var(--wrt-text-muted-color, #999);
 }
 </style>
 <script>
@@ -347,31 +347,17 @@ function show_up_down(value){
 	}
 }
 
-var GN_with_BandwidthLimeter = false;
-if(wl_info.band2g_support != '-1'){
-	var gn_array_2g_length = gn_array_2g.length;
-	for(var i=0;i<gn_array_2g_length;i++){
-		if(gn_array_2g[i][18] == "1"){	//GN with Bandwidth Limiter
-			GN_with_BandwidthLimeter = true;
-		}
-	}
-}
-if(wl_info.band5g_support != '-1'){
-	var gn_array_5g_length = gn_array_5g.length;
-	for(var j=0;j<gn_array_5g_length;j++){
-		if(gn_array_5g[j][18] == "1"){	//GN with Bandwidth Limiter
-			GN_with_BandwidthLimeter = true;
-		}
-	}
-}
-if(wl_info.band5g_2_support != '-1' || wl_info.band6g_support != '-1'){
-	var gn_array_5g_2_length = gn_array_5g_2.length;
-	for(var k=0;k<gn_array_5g_2_length;k++){
-		if(gn_array_5g_2[k][18] == "1"){	//GN with Bandwidth Limiter
-			GN_with_BandwidthLimeter = true;
-		}
-	}
-}
+var GN_with_BandwidthLimeter = [
+	{supported: wl_info.band2g_support, arr: gn_array_2g},
+	{supported: wl_info.band5g_support, arr: gn_array_5g},
+	{supported: wl_info.band5g_2_support || wl_info.band6g_support, arr: gn_array_5g_2},
+	{supported: wl_info.band6g_2_support || wl_info.band60g_support, arr: gn_array_60g},
+].some(function (band) {
+	return band.supported && band.arr.some(function (gn) {
+		return gn[0] == "1" && gn[18] == "1";	//GN with Bandwidth Limiter
+	});
+});
+
 var GN_with_Amazon_WSS_enabled = (amazon_wss_support && ((httpApi.amazon_wss.getStatue(0, 2) == "1") ? true : false));
 
 if(pm_support) {
@@ -1477,8 +1463,8 @@ function genMain_table(){
 	code += '<img id="pull_arrow" src="/images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_client#>">';
 	code += '<div id="ClientList_Block_PC" class="clientlist_dropdown"></div>';
 	code += '</div></td>';
-	code += '<td style="border-bottom:0;text-align:right;"><input type="text" id="download_rate" class="input_6_table" maxlength="6" onkeypress="return validator.bandwidth_code(this, event);" onkeyup="check_field();"><span style="margin: 0 5px;color:#262626;">Mb/s</span></td>';
-	code += '<td style="border-bottom:0;text-align:right;"><input type="text" id="upload_rate" class="input_6_table" maxlength="6" onkeypress="return validator.bandwidth_code(this, event);" onkeyup="check_field();"><span style="margin: 0 5px;color:#262626;">Mb/s</span></td>';
+	code += '<td style="border-bottom:0;text-align:right;"><input type="text" id="download_rate" class="input_6_table" maxlength="6" onkeypress="return validator.bandwidth_code(this, event);" onkeyup="check_field();"><span style="margin: 0 5px;color:var(--wrt-text-color,#262626);">Mb/s</span></td>';
+	code += '<td style="border-bottom:0;text-align:right;"><input type="text" id="upload_rate" class="input_6_table" maxlength="6" onkeypress="return validator.bandwidth_code(this, event);" onkeyup="check_field();"><span style="margin: 0 5px;color:var(--wrt-text-color,#262626);">Mb/s</span></td>';
 	code += '<td style="border-bottom:0;"><div id="add_delete" class="add_btn_disabled" style="margin:0 auto" onclick="addRow_main(this, 32)"></div></td>';
 	code += '</tr>';
 
@@ -1508,7 +1494,7 @@ function genMain_table(){
 				code += '<td style="">';
 				code += '<div><div id="'+k+'" class="check" style="width:22px;height:22px;margin:0 auto" onclick="enable_check(this);"><div style="width:16px;height:16px;margin: 3px auto" class="icon_check"></div></div></div>';
 			}else{
-				code += '<tr style="color:#4d4d4d">';
+				code += '<tr style="color:var(--wrt-text-color,#4d4d4d)">';
 				code += '<td style="">';
 				code += '<div><div id="'+k+'" class="cancel" style="width:22px;height:22px;margin:0 auto" onclick="enable_check(this)"><div style="width:16px;height:16px;margin: 3px auto" class="icon_cancel"></div></div></div>';
 			}
@@ -1633,7 +1619,7 @@ function generate_group_list(){
 		code += '<a id="'+ group_index +'" title="'+ group_description +'"><div onclick="setGroup(\''+ group_name +'\');"><strong>'+ group_name +'</strong></div></a>';
 	}
 
-	code += '<a><div onclick="" style="text-align:right;text-decoration:underline;color:#A0A0A0;"><strong style="cursor:pointer;" onclick="location.href=\'PermissionManagement_DeviceGroups.asp\'">Generate Device Group</strong></div></a>';
+	code += '<a><div onclick="" style="text-align:right;text-decoration:underline;color:var(--wrt-text-muted-color,#A0A0A0);"><strong style="cursor:pointer;" onclick="location.href=\'PermissionManagement_DeviceGroups.asp\'">Generate Device Group</strong></div></a>';
 
 	$("#ClientList_Block_PC").html(code);
 }
@@ -1865,7 +1851,7 @@ function setGroup(name){
 															 }
 														);
 													</script>
-												<div id="qos_enable_hint" style="color:#FC0;margin:5px 0px 0px 100px;display:none"><#QzQoS_note#></div>
+												<div id="qos_enable_hint" style="color:var(--wrt-badge-warning-color,#FFCC00);margin:5px 0px 0px 100px;display:none"><#QzQoS_note#></div>
 											</td>
 										</tr>
 										<tr id="qos_type_tr" style="display:none">

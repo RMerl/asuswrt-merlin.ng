@@ -19,7 +19,7 @@ html::-webkit-scrollbar{
     padding: 2px;
 }
 html::-webkit-scrollbar-thumb{
-    background-color: #248DFF !important;   
+    background-color: #248DFF !important;
     border-radius: 50px;
 }
 html::-webkit-scrollbar-track{
@@ -32,7 +32,7 @@ body{
 	background:url(images/New_ui/login_bg.png) #f5f5f5 no-repeat;
 	background-size: cover;
 	background-position: center 0%;
-	margin: 0px; 
+	margin: 0px;
 	/* background:#283437\9; */
 }
 .header_login{
@@ -151,7 +151,7 @@ input.form_input:focus{
 }
 
 .error_hint1{
-	margin:40px 0px -10px 78px; 
+	margin:40px 0px -10px 78px;
 	font-size: 24px;
 	line-height:32px;
 	width: 580px;
@@ -249,7 +249,7 @@ input.form_input:focus{
 	.login_img{
 		background-size: 75%;
 	}
-	.form_input{	
+	.form_input{
 		width: 100%;
 		font-size:16px;
 	}
@@ -264,7 +264,7 @@ input.form_input:focus{
 		width: 100%; */
 		font-size: 14pt;
 		/* text-align: center; */
-		float:right; 
+		float:right;
 		/* margin: 25px -22px 40px 15px; */
 		/* line-height:50px;
 		padding-left: 7px; */
@@ -281,7 +281,7 @@ input.form_input:focus{
 		justify-content: center;
 	}
 	.error_hint{
-		margin-left:10px; 
+		margin-left:10px;
 	}
 	.error_hint1{
 		width: 100%;
@@ -313,7 +313,7 @@ input.form_input:focus{
 	}
 	.warming_desc{
 		margin: 10px 15px;
-		width: 100%; 
+		width: 100%;
 	}
 	.captcha_field{
 		width: 380px;
@@ -351,7 +351,7 @@ input.form_input:focus{
 		outline: 1px solid #006ce1;
 		box-shadow: 0px 0px 4px 4px #CCE4FF;
 	}
-	
+
 
 	#reCaptcha{
 		/* margin-top: 35px; */
@@ -448,8 +448,8 @@ var htmlEnDeCode = (function() {
 })();
 
 var login_info =  tryParseJSON('<% login_error_info(); %>');
-var isIE8 = navigator.userAgent.search("MSIE 8") > -1; 
-var isIE9 = navigator.userAgent.search("MSIE 9") > -1; 
+var isIE8 = navigator.userAgent.search("MSIE 8") > -1;
+var isIE9 = navigator.userAgent.search("MSIE 9") > -1;
 var remaining_time = login_info.lock_time;
 var remaining_time_min;
 var remaining_time_sec;
@@ -748,8 +748,8 @@ function login(id, nonce){
 				else if (isNaN(chr3)) {
 					enc4 = 64;
 				}
-				output = output + 
-				keyStr.charAt(enc1) + keyStr.charAt(enc2) + 
+				output = output +
+				keyStr.charAt(enc1) + keyStr.charAt(enc2) +
 				keyStr.charAt(enc3) + keyStr.charAt(enc4);
 			}
 			return output;
@@ -765,11 +765,11 @@ function login(id, nonce){
 	document.form.captcha_text.disabled = true;
 
 	try{
-		if(redirect_page == "" 
-			|| redirect_page == "Logout.asp" 
-			|| redirect_page == "Main_Login.asp" 
-			|| redirect_page.indexOf(" ") != -1 
-			|| redirect_page.indexOf("//") != -1 
+		if(redirect_page == ""
+			|| redirect_page == "Logout.asp"
+			|| redirect_page == "Main_Login.asp"
+			|| redirect_page.indexOf(" ") != -1
+			|| redirect_page.indexOf("//") != -1
 			|| redirect_page.indexOf("http") != -1
 			|| (redirect_page.indexOf(".asp") == -1 && redirect_page.indexOf(".htm") == -1 && redirect_page != "send_IFTTTPincode.cgi" && redirect_page != "cfg_onboarding.cgi" && redirect_page != "ig_s2s_link.cgi")
 		){
@@ -851,10 +851,10 @@ const sha256 = function a(b){function c(a,b){return a>>>b|a<<32-b}for(var d,e,f=
 					<div class="login_img"></div>
 				</div>
 				<div class="div_td signin_hint"><#CTL_signin#></div>
-			</div>	
+			</div>
 			<div class="prod_madelName"><#Web_Title2#></div>
 		</div>
-		
+
 
 		<!-- Login field -->
 		<div id="login_filed" class="login_filed">

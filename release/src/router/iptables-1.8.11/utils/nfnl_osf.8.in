@@ -1,0 +1,67 @@
+.TH NFNL_OSF 8 "" "@PACKAGE_STRING@" "@PACKAGE_STRING@"
+
+.SH NAME
+nfnl_osf \(em OS fingerprint loader utility
+.SH SYNOPSIS
+
+.ad l
+.in +8
+.ti -8
+.B nfnl_osf
+.BI -f " fingerprints"
+[
+.B -d
+]
+
+.SH DESCRIPTION
+The
+.B nfnl_osf
+utility allows one to load a set of operating system signatures into the kernel for
+later matching against using iptables'
+.B osf
+match.
+
+.SH OPTIONS
+
+.TP
+.BI -f " fingerprints"
+Read signatures from file
+.IR fingerprints .
+
+.TP
+.B -d
+Instead of adding the signatures from
+.I fingerprints
+into the kernel, remove them.
+
+.SH EXIT STATUS
+Exit status is 0 if command succeeded, otherwise a negative return code
+indicates the type of error which happened:
+
+.TP
+.B -1
+Illegal arguments passed, fingerprints file not readable or failure in netlink
+communication.
+
+.TP
+.B -ENOENT
+Fingerprints file not specified.
+
+.TP
+.B -EINVAL
+Netlink handle initialization failed or fingerprints file format invalid.
+
+.SH FILES
+
+An up to date set of operating system signatures can be downloaded from
+http://www.openbsd.org/cgi-bin/cvsweb/src/etc/pf.os .
+
+.SH SEE ALSO
+
+The description of
+.B osf
+match in
+.BR iptables-extensions (8)
+contains further information about the topic as well as example
+.B nfnl_osf
+invocations.

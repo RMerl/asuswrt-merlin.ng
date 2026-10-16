@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+[[ $XT_MULTI == *xtables-nft-multi ]] || { echo "skip $XT_MULTI"; exit 0; }
+
+$XT_MULTI iptables -A INPUT -p tcp --dport 53 ! -s 192.168.0.1 -j ACCEPT
+$XT_MULTI ip6tables -A INPUT -p tcp --dport 53 ! -s feed:babe::1 -j ACCEPT
+$XT_MULTI ebtables -A INPUT -p IPv4 --ip-src 10.0.0.1 ! -i lo -j ACCEPT
+

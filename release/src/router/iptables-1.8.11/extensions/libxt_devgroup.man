@@ -1,0 +1,7 @@
+Match device group of a packet's incoming/outgoing interface.
+.TP
+[\fB!\fP] \fB\-\-src\-group\fP \fIname\fP
+Match device group of incoming device
+.TP
+[\fB!\fP] \fB\-\-dst\-group\fP \fIname\fP
+Match device group of outgoing device

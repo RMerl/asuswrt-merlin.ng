@@ -1,0 +1,362 @@
+.TH ARPTABLES 8  "March 2019"
+.\"
+.\" Man page originally written by Jochen Friedrich <jochen@scram.de>,
+.\" maintained by Bart De Schuymer.
+.\" It is based on the iptables man page.
+.\"
+.\" Iptables page by Herve Eychenne March 2000.
+.\"
+.\"     This program is free software; you can redistribute it and/or modify
+.\"     it under the terms of the GNU General Public License as published by
+.\"     the Free Software Foundation; either version 2 of the License, or
+.\"     (at your option) any later version.
+.\"
+.\"     This program is distributed in the hope that it will be useful,
+.\"     but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"     GNU General Public License for more details.
+.\"
+.\"     You should have received a copy of the GNU General Public License
+.\"     along with this program; if not, write to the Free Software
+.\"     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.\"
+.\"
+.SH NAME
+arptables \(em ARP table administration (nft-based)
+.SH SYNOPSIS
+\fBarptables\fP [\fB\-t\fP \fItable\fP] {\fB\-A|\-D\fP} \fIchain\fP
+\fIrule-specification\fP [options...]
+.PP
+\fBarptables\fP [\fB\-t\fP \fItable\fP] \fB\-I\fP \fIchain\fP [\fIrulenum\fP]
+\fIrule-specification\fP
+.PP
+\fBarptables\fP [\fB\-t\fP \fItable\fP] \fB\-R\fP \fIchain rulenum
+rule-specification\fP
+.PP
+\fBarptables\fP [\fB\-t\fP \fItable\fP] \fB\-D\fP \fIchain rulenum\fP
+.PP
+\fBarptables\fP [\fB\-t\fP \fItable\fP] {\fB\-F\fP|\fB\-L\fP|\fB\-Z\fP}
+[\fIchain\fP [\fIrulenum\fP]] [\fIoptions...\fP]
+.PP
+\fBarptables\fP [\fB\-t\fP \fItable\fP] \fB\-N\fP \fIchain\fP
+.PP
+\fBarptables\fP [\fB\-t\fP \fItable\fP] \fB\-X\fP [\fIchain\fP]
+.PP
+\fBarptables\fP [\fB\-t\fP \fItable\fP] \fB\-P\fP \fIchain policy\fP
+.PP
+\fBarptables\fP [\fB\-t\fP \fItable\fP] \fB\-E\fP \fIold-chain-name
+new-chain-name\fP
+.PP
+rule-specification := [matches...] [target]
+.PP
+match := \fB\-m\fP \fImatchname\fP [per-match-options]
+.PP
+target := \fB\-j\fP \fItargetname\fP [per-target-options]
+.SH DESCRIPTION
+.B arptables
+is a user space tool, it is used to set up and maintain the
+tables of ARP rules in the Linux kernel. These rules inspect
+the ARP frames which they see.
+.B arptables
+is analogous to the
+.B iptables
+user space tool, but
+.B arptables
+is less complicated.
+
+.SS CHAINS
+The kernel table is used to divide functionality into
+different sets of rules. Each set of rules is called a chain.
+Each chain is an ordered list of rules that can match ARP frames. If a
+rule matches an ARP frame, then a processing specification tells
+what to do with that matching frame. The processing specification is
+called a 'target'. However, if the frame does not match the current
+rule in the chain, then the next rule in the chain is examined and so forth.
+The user can create new (user-defined) chains which can be used as the 'target' of a rule.
+
+.SS TARGETS
+A firewall rule specifies criteria for an ARP frame and a frame
+processing specification called a target.  When a frame matches a rule,
+then the next action performed by the kernel is specified by the target.
+The target can be one of these values:
+.IR ACCEPT ,
+.IR DROP ,
+.IR CONTINUE ,
+.IR RETURN ,
+an 'extension' (see below) or a user-defined chain.
+.PP
+.I ACCEPT
+means to let the frame through.
+.I DROP
+means the frame has to be dropped.
+.I CONTINUE
+means the next rule has to be checked. This can be handy to know how many
+frames pass a certain point in the chain or to log those frames.
+.I RETURN
+means stop traversing this chain and resume at the next rule in the
+previous (calling) chain.
+For the extension targets please see the
+.B "TARGET EXTENSIONS"
+section of this man page.
+.SS TABLES
+There is only one ARP table in the Linux
+kernel.  The table is
+.BR filter.
+You can drop the '\-t filter' argument to the arptables command.
+The \-t argument must be the
+first argument on the arptables command line, if used.
+.TP
+.B "\-t, \-\-table"
+.br
+.BR filter ,
+is the only table and contains two built-in chains:
+.B INPUT 
+(for frames destined for the host) and
+.B OUTPUT 
+(for locally-generated frames).
+.br
+.br
+.SH ARPTABLES COMMAND LINE ARGUMENTS
+After the initial arptables command line argument, the remaining
+arguments can be divided into several different groups.  These groups
+are commands, miscellaneous commands, rule-specifications, match-extensions,
+and watcher-extensions.
+.SS COMMANDS
+The arptables command arguments specify the actions to perform on the table
+defined with the \-t argument. If you do not use the \-t argument to name
+a table, the commands apply to the default filter table.
+With the exception of the
+.B "\-Z"
+command, only one command may be used on the command line at a time.
+.TP
+.B "\-A, \-\-append"
+Append a rule to the end of the selected chain.
+.TP
+.B "\-D, \-\-delete"
+Delete the specified rule from the selected chain. There are two ways to
+use this command. The first is by specifying an interval of rule numbers
+to delete, syntax: start_nr[:end_nr]. Using negative numbers is allowed, for more
+details about using negative numbers, see the \-I command. The second usage is by
+specifying the complete rule as it would have been specified when it was added.
+.TP
+.B "\-I, \-\-insert"
+Insert the specified rule into the selected chain at the specified rule number.
+If the current number of rules equals N, then the specified number can be
+between \-N and N+1. For a positive number i, it holds that i and i\-N\-1 specify the
+same place in the chain where the rule should be inserted. The number 0 specifies
+the place past the last rule in the chain and using this number is therefore
+equivalent with using the \-A command.
+.TP
+.B "\-R, \-\-replace"
+Replaces the specified rule into the selected chain at the specified rule number.
+If the current number of rules equals N, then the specified number can be
+between 1 and N. i specifies the place in the chain where the rule should be replaced.
+.TP
+.B "\-P, \-\-policy"
+Set the policy for the chain to the given target. The policy can be
+.BR ACCEPT ", " DROP " or " RETURN .
+.TP
+.B "\-F, \-\-flush"
+Flush the selected chain. If no chain is selected, then every chain will be
+flushed. Flushing the chain does not change the policy of the
+chain, however.
+.TP
+.B "\-Z, \-\-zero"
+Set the counters of the selected chain to zero. If no chain is selected, all the counters
+are set to zero. The
+.B "\-Z"
+command can be used in conjunction with the 
+.B "\-L"
+command.
+When both the
+.B "\-Z"
+and
+.B "\-L"
+commands are used together in this way, the rule counters are printed on the screen
+before they are set to zero.
+.TP
+.B "\-L, \-\-list"
+List all rules in the selected chain. If no chain is selected, all chains
+are listed.
+.TP
+.B "\-N, \-\-new-chain"
+Create a new user-defined chain with the given name. The number of
+user-defined chains is unlimited. A user-defined chain name has maximum
+length of 31 characters.
+.TP
+.B "\-X, \-\-delete-chain"
+Delete the specified user-defined chain. There must be no remaining references
+to the specified chain, otherwise
+.B arptables
+will refuse to delete it. If no chain is specified, all user-defined
+chains that aren't referenced will be removed.
+.TP
+.B "\-E, \-\-rename\-chain"
+Rename the specified chain to a new name.  Besides renaming a user-defined
+chain, you may rename a standard chain name to a name that suits your
+taste. For example, if you like PREBRIDGING more than PREROUTING,
+then you can use the \-E command to rename the PREROUTING chain. If you do
+rename one of the standard
+.B arptables
+chain names, please be sure to mention
+this fact should you post a question on the
+.B arptables
+mailing lists.
+It would be wise to use the standard name in your post. Renaming a standard
+.B arptables
+chain in this fashion has no effect on the structure or function
+of the
+.B arptables
+kernel table.
+
+.SS MISCELLANEOUS COMMANDS
+.TP
+.B "\-V, \-\-version"
+Show the version of the arptables userspace program.
+.TP
+.B "\-h, \-\-help"
+Give a brief description of the command syntax.
+.TP
+.BR "\-j, \-\-jump " "\fItarget\fP"
+The target of the rule. This is one of the following values:
+.BR ACCEPT ,
+.BR DROP ,
+.BR CONTINUE ,
+.BR RETURN ,
+a target extension (see
+.BR "TARGET EXTENSIONS" ")"
+or a user-defined chain name.
+.TP
+.BI "\-c, \-\-set-counters " "PKTS BYTES"
+This enables the administrator to initialize the packet and byte
+counters of a rule (during
+.B INSERT,
+.B APPEND,
+.B REPLACE
+operations).
+
+.SS RULE-SPECIFICATIONS
+The following command line arguments make up a rule specification (as used 
+in the add and delete commands). A "!" option before the specification 
+inverts the test for that specification. Apart from these standard rule 
+specifications there are some other command line arguments of interest.
+.TP
+.BR "\-s, \-\-source\-ip " "[!] \fIaddress\fP[/\fImask]\fP"
+The Source IP specification.
+.TP 
+.BR "\-d, \-\-destination\-ip " "[!] \fIaddress\fP[/\fImask]\fP"
+The Destination IP specification.
+.TP 
+.BR "\-\-source\-mac " "[!] \fIaddress\fP[/\fImask\fP]"
+The source mac address. Both mask and address are written as 6 hexadecimal
+numbers separated by colons.
+.TP
+.BR "\-\-destination\-mac " "[!] \fIaddress\fP[/\fImask\fP]"
+The destination mac address. Both mask and address are written as 6 hexadecimal
+numbers separated by colons.
+.TP 
+.BR "\-i, \-\-in\-interface " "[!] \fIname\fP"
+The interface via which a frame is received (for the
+.B INPUT
+chain). The flag
+.B \-\-in\-if
+is an alias for this option.
+.TP
+.BR "\-o, \-\-out-interface " "[!] \fIname\fP"
+The interface via which a frame is going to be sent (for the
+.B OUTPUT
+chain). The flag
+.B \-\-out\-if
+is an alias for this option.
+.TP
+.BR "\-l, \-\-h\-length " "\fIlength\fP[/\fImask\fP]"
+The hardware length (nr of bytes)
+.TP
+.BR "\-\-opcode " "\fIcode\fP[/\fImask\fP]
+The operation code (2 bytes). Available values are:
+.BR 1 = Request
+.BR 2 = Reply
+.BR 3 = Request_Reverse
+.BR 4 = Reply_Reverse
+.BR 5 = DRARP_Request
+.BR 6 = DRARP_Reply
+.BR 7 = DRARP_Error
+.BR 8 = InARP_Request
+.BR 9 = ARP_NAK .
+.TP
+.BR "\-\-h\-type " "\fItype\fP[/\fImask\fP]"
+The hardware type (2 bytes, hexadecimal). Available values are:
+.BR 1 = Ethernet .
+.TP
+.BR "\-\-proto\-type " "\fItype\fP[/\fImask\fP]"
+The protocol type (2 bytes). Available values are:
+.BR 0x800 = IPv4 .
+
+.SS TARGET-EXTENSIONS
+.B arptables
+extensions are precompiled into the userspace tool. So there is no need
+to explicitly load them with a \-m option like in
+.BR iptables .
+However, these
+extensions deal with functionality supported by supplemental kernel modules.
+.SS mangle
+.TP
+.BR "\-\-mangle\-ip\-s IP address"
+Mangles Source IP Address to given value.
+.TP
+.BR "\-\-mangle\-ip\-d IP address"
+Mangles Destination IP Address to given value.
+.TP
+.BR "\-\-mangle\-mac\-s MAC address"
+Mangles Source MAC Address to given value.
+.TP
+.BR "\-\-mangle\-mac\-d MAC address"
+Mangles Destination MAC Address to given value.
+.TP
+.BR "\-\-mangle\-target target "
+Target of ARP mangle operation
+.BR "" ( DROP ", " CONTINUE " or " ACCEPT " \(em default is " ACCEPT ).
+.SS CLASSIFY
+This module allows you to set the skb\->priority value (and thus
+classify the packet into a specific CBQ class).
+
+.TP
+.BR "\-\-set\-class major:minor"
+
+Set the major and minor  class  value.  The  values  are  always
+interpreted as hexadecimal even if no 0x prefix is given.
+
+.SS MARK
+This  module  allows you to set the skb\->mark value (and thus classify
+the packet by the mark in u32)
+
+.TP
+.BR "\-\-set\-mark mark"
+Set the mark value. The  values  are  always
+interpreted as hexadecimal even if no 0x prefix is given
+
+.TP
+.BR "\-\-and\-mark mark"
+Binary AND the mark with bits.
+
+.TP
+.BR "\-\-or\-mark mark"
+Binary OR the mark with bits.
+
+.SH NOTES
+In this nft-based version of
+.BR arptables ,
+support for
+.B FORWARD
+chain has not been implemented. Since ARP packets are "forwarded" only by Linux
+bridges, the same may be achieved using
+.B FORWARD
+chain in
+.BR ebtables .
+
+.SH MAILINGLISTS
+.BR "" "See " http://netfilter.org/mailinglists.html
+.SH SEE ALSO
+.BR xtables\-nft "(8), " iptables "(8), " ebtables "(8), " ip (8)
+.PP
+.BR "" "See " https://wiki.nftables.org

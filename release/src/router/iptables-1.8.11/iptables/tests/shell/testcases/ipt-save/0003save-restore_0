@@ -1,0 +1,47 @@
+#!/bin/bash
+
+tmpfile=""
+tmpfile1=""
+set -x
+
+clean_tmpfile()
+{
+	if [ ! -z "$tmpfile" ];then
+		rm -f "$tmpfile"
+	fi
+	if [ ! -z "$tmpfile1" ];then
+                rm -f "$tmpfile1"
+	fi
+}
+
+trap clean_tmpfile EXIT
+
+tmpfile=$(mktemp) || exit 1
+tmpfile1=$(mktemp) || exit 1
+
+do_diff()
+{
+	diff -u "$1" "$2"
+	if [ $? -ne 0 ]; then
+		echo "iptables configuration is not restored" 1>&2
+		exit 1
+	else
+		exit 0
+	fi
+}
+
+$XT_MULTI iptables -N FOO || exit 1
+$XT_MULTI iptables -I INPUT || exit 1
+$XT_MULTI iptables -I FOO || exit 1
+$XT_MULTI iptables -I FOO || exit 1
+
+$XT_MULTI iptables-save | grep -v "^#" > "$tmpfile" || exit 1
+$XT_MULTI iptables-restore < "$tmpfile" || exit 1
+
+$XT_MULTI iptables -N BAR || exit 1
+$XT_MULTI iptables -A BAR || exit 1
+
+$XT_MULTI iptables-restore  < "$tmpfile" || exit 1
+$XT_MULTI iptables-save | grep -v "^#" > "$tmpfile1" || exit 1
+
+do_diff $tmpfile1 "$tmpfile"

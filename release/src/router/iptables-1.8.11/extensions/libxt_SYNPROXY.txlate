@@ -1,0 +1,2 @@
+iptables-translate -t mangle -A INPUT -i iifname -p tcp -m tcp --dport 80 -m state --state INVALID,UNTRACKED -j SYNPROXY --sack-perm --timestamp --wscale 7 --mss 1460
+nft 'add rule ip mangle INPUT iifname "iifname" tcp dport 80 ct state invalid,untracked counter synproxy sack-perm timestamp wscale 7 mss 1460'

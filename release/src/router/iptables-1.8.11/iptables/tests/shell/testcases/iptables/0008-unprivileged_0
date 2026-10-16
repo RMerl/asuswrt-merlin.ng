@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# iptables may print match/target specific help texts
+# help output should work for unprivileged users
+
+run() {
+	echo "running: $*" >&2
+	runuser -u nobody -- "$@"
+}
+
+grep_or_rc() {
+	declare -g rc
+	grep -q "$*" && return 0
+	echo "missing in output: $*" >&2
+	return 1
+}
+
+out=$(run $XT_MULTI iptables --help)
+let "rc+=$?"
+grep_or_rc "iptables -h (print this help information)" <<< "$out"
+let "rc+=$?"
+
+out=$(run $XT_MULTI iptables -m limit --help)
+let "rc+=$?"
+grep_or_rc "limit match options:" <<< "$out"
+let "rc+=$?"
+
+out=$(run $XT_MULTI iptables -p tcp --help)
+let "rc+=$?"
+grep_or_rc "tcp match options:" <<< "$out"
+let "rc+=$?"
+
+out=$(run $XT_MULTI iptables -j DNAT --help)
+let "rc+=$?"
+grep_or_rc "DNAT target options:" <<< "$out"
+let "rc+=$?"
+
+# TEE has no revision 0
+out=$(run $XT_MULTI iptables -j TEE --help)
+let "rc+=$?"
+grep_or_rc "TEE target options:" <<< "$out"
+let "rc+=$?"
+
+out=$(run $XT_MULTI iptables -p tcp -j DNAT --help)
+let "rc+=$?"
+grep_or_rc "tcp match options:" <<< "$out"
+let "rc+=$?"
+out=$(run $XT_MULTI iptables -p tcp -j DNAT --help)
+let "rc+=$?"
+grep_or_rc "DNAT target options:" <<< "$out"
+let "rc+=$?"
+
+
+run $XT_MULTI iptables -L 2>&1 | \
+	grep_or_rc "Permission denied"
+let "rc+=$?"
+
+run $XT_MULTI iptables -A FORWARD -p tcp --dport 123 2>&1 | \
+	grep_or_rc "Permission denied"
+let "rc+=$?"
+
+run $XT_MULTI iptables -A FORWARD -j DNAT --to-destination 1.2.3.4 2>&1 | \
+	grep_or_rc "Permission denied"
+let "rc+=$?"
+
+exit $rc

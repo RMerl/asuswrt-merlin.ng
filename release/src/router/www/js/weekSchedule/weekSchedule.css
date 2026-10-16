@@ -29,7 +29,7 @@
 	display: none;
 }
 .timezone_hint_div .timezone_hint{
-	color: #FFCC00;
+	color: var(--wrt-badge-warning-color,#FFCC00);
 	text-decoration: underline;
 	cursor: pointer;
 }
@@ -433,7 +433,7 @@
 .popup_edit_weekSchedule .edit_time_error{
 	position: absolute;
 	width: 142%;
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	line-height: 100%;
 	font-size: 12px;
 	margin-top: 5px;
@@ -536,7 +536,7 @@
 	text-decoration: underline;
 }
 .popup_edit_weekSchedule span.valid_hint{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	position: absolute;
 	font-size: 12px;
 	width: 150%;
@@ -545,7 +545,7 @@
 	margin-top: 5px;
 }
 .popup_edit_weekSchedule div.valid_hint_bg{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	font-size: 12px;
 	width: 95%;
 	line-height: 110%;
@@ -556,7 +556,7 @@
 	display: none;
 }
 .popup_edit_weekSchedule .change_mode_hint{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	position: relative;
 	margin-left: 30px;
 }
@@ -566,7 +566,7 @@
 	width: 24px;
 	height: 24px;
 	border-radius: 50%;
-	background-color: #FC0;
+	background-color: var(--wrt-badge-warning-color,#FC0);
 	color: #000;
 	font-family: fantasy;
 	display: flex;
@@ -796,7 +796,7 @@
 	position: relative;
 }
 .PC_SCHED .offtime_schedule_header .title.offline, .WL_SCHED .offtime_schedule_header .title.offline{
-	color: #FFCC00;
+	color: var(--wrt-badge-warning-color,#FFCC00);
 	cursor: pointer;
 }
 .PC_SCHED .offtime_schedule_header .title.offline:hover, .WL_SCHED .offtime_schedule_header .title.offline:hover{

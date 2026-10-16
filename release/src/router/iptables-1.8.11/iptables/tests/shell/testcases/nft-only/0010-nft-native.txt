@@ -1,0 +1,41 @@
+table ip filter {
+	chain INPUT {
+		type filter hook input priority filter; policy accept;
+
+		ip saddr 1.2.3.4 tcp dport 23 accept
+		ip saddr 1.2.3.0/24 ip daddr 0.0.0.0 udp dport 67-69 drop
+
+		ip saddr 1.0.0.0/8 ip daddr 0.0.0.0 tcp sport 1024-65535 tcp dport 443 tcp flags syn / syn,ack accept
+		tcp dport 443 tcp flags syn comment "checks if SYN bit is set"
+		tcp flags syn / syn,rst,ack,fin comment "same as iptables --syn"
+		tcp flags & syn == syn
+		tcp flags & (syn | ack) != (syn | ack )
+
+		ip daddr 0.0.0.0/1 ip ttl 1 drop
+		ip daddr 0.0.0.0/2 ip ttl > 2 accept
+		ip daddr 0.0.0.0/3 ip ttl < 254 accept
+		ip daddr 0.0.0.0/4 ip ttl != 255 drop
+
+		ip daddr 8.0.0.0/5 icmp type 1 accept
+		ip daddr 8.0.0.0/6 icmp type 2 icmp code port-unreachable accept
+		ip daddr 10.0.0.0/7 icmp type echo-request accept
+
+		meta pkttype broadcast accept
+		meta pkttype != host drop
+
+		ip saddr 0.0.0.0/0 ip protocol tcp
+		ip daddr 0.0.0.0/1 ip protocol udp
+	}
+
+	chain FORWARD {
+		type filter hook forward priority filter;
+		limit rate 10/day counter
+		udp dport 42 counter
+
+		# FIXME: can't dissect plain syslog
+		# meta iif "lo" log prefix "just doing a log" level alert flags tcp sequence,options
+
+		# iif, not iifname, and wildcard
+		meta iif "lo" oifname "lo*" log group 1 prefix "should use NFLOG" queue-threshold 42 snaplen 123
+	}
+}

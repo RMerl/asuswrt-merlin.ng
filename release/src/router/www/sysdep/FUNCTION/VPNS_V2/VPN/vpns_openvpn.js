@@ -670,7 +670,7 @@ function Get_Component_Keys_Cert(_obj){
 	var $content_container = $("<div>").addClass("popup_content_container profile_setting").appendTo($container);
 
 	var edit_keys_desc = "<div><#vpn_openvpn_KC_Edit1#></div>";
-	edit_keys_desc += "<div><span style='color:#FC0;'>----- BEGIN xxx -----</span> / <span style='color:#FC0;'>----- END xxx -----</span>";
+	edit_keys_desc += "<div><span style='color:var(--wrt-badge-warning-color,#FC0);'>----- BEGIN xxx -----</span> / <span style='color:var(--wrt-badge-warning-color,#FC0);'>----- END xxx -----</span>";
 	edit_keys_desc += " <#vpn_openvpn_KC_Edit2#></div>";
 	edit_keys_desc += "<div><#vpn_openvpn_KC_Limit#></div>";
 	$("<div>").addClass("profile_title_item edit_keys_desc").html(edit_keys_desc).appendTo($content_container);

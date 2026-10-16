@@ -24,10 +24,10 @@
 	font-family: Lucida Console;
 	text-decoration: underline;
 	margin-top: initial;
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 }
 .feature_desc_container .hyperlink a{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 }
 .feature_desc_container .horizontal_line{
 	width: 100%;

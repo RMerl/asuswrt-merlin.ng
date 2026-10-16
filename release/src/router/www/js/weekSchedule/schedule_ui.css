@@ -19,7 +19,7 @@
 	cursor: pointer;
 }
 .schedule_header_container .offline > .title{
-	color: #FFCC00;
+	color: var(--wrt-badge-warning-color,#FFCC00);
 }
 .schedule_header_container .offline:hover > .title{
 	color: #FFEA97;
@@ -232,7 +232,7 @@
 }
 .schedule_timeset_container .valid_hint_component,
 .accesstime_container .valid_hint_component{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	font-size: 12px;
 	width: 90%;
 	line-height: 110%;
@@ -701,7 +701,7 @@
 .warning_desc{
 	margin-top: 12px;
 	margin-left: 6px;
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	line-height: 150%;
 }
 @media (min-width: 992px) {

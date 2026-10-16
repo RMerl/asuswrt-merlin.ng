@@ -90,7 +90,7 @@ class AuraScheduler {
 				.icon-circle-mask {
 					display: inline-block;
 					border-radius: 50%;
-					background: #43525D;
+					background: var(--wrt-icon-default-color ,#43525D);
 					height: 30px;
 					width: 30px;
 					display: flex;
@@ -436,7 +436,7 @@ class AuraScheduler {
 						</div>`;
 				}
 
-				const hintColor = theme === 'WHITE' ? "#006CE1;" : "#FC0;";
+				const hintColor = theme === 'WHITE' ? "#006CE1;" : "var(--wrt-badge-warning-color,#FC0);";
 				hint += `<div style="height: 12px;"></div>
 					<div style="display:flex; gap:6px;">
 						<div class="icon-check-circle" aria-hidden="true"></div>
@@ -559,7 +559,7 @@ class AuraScheduler {
 						</div>`;
 				}
 
-				const hintColor = isSupport("UI4") ? "#006CE1;" : theme === 'WHITE' ? "#006CE1;" : "#FC0;";
+				const hintColor = isSupport("UI4") ? "#006CE1;" : theme === 'WHITE' ? "#006CE1;" : "var(--wrt-badge-warning-color,#FC0);";
 				hint += `<div style="height: 12px;"></div>
 					<div style="display:flex; gap:6px;">
 						<div class="icon-check-circle" aria-hidden="true"></div>
@@ -1092,7 +1092,7 @@ class LedScheduler extends AuraScheduler {
 						</div>`;
 				}
 
-				const hintColor = isSupport("UI4") ? "#006CE1;" : theme === 'WHITE' ? "#006CE1;" : "#FC0;";
+				const hintColor = isSupport("UI4") ? "#006CE1;" : theme === 'WHITE' ? "#006CE1;" : "var(--wrt-badge-warning-color,#FC0);";
 				hint += `<div style="height: 12px;"></div>
 					<div style="display:flex; gap:6px;">
 						<div class="icon-check-circle" aria-hidden="true"></div>
@@ -1187,7 +1187,7 @@ class LedScheduler extends AuraScheduler {
 				hint += `
 						</div>
 					</div>`;
-				const hintColor = theme === 'WHITE' ? "#006CE1;" : "#FC0;";
+				const hintColor = theme === 'WHITE' ? "#006CE1;" : "var(--wrt-badge-warning-color,#FC0);";
 				hint += `<div style="height: 12px;"></div>
 					<div style="display:flex; gap:6px;">
 						<div class="icon-check-circle" aria-hidden="true"></div>
@@ -1237,13 +1237,6 @@ class LedScheduler extends AuraScheduler {
 
 const ASUS_LEDSCHEDUER = {
 	popupDivStyle: `<style>
-		:root {
-			--color-primary: #006CE1;
-			--primary-blue-5000: #248DFF;
-			--tuf-color-primary: #FFAA32;
-			--rog-color-primary: #FF3535;
-		}
-
 		.popup_bg {
 			font-family: Roboto-Regular, "Microsoft JhengHei";
 			position: fixed;
@@ -1290,7 +1283,7 @@ const ASUS_LEDSCHEDUER = {
 			-webkit-mask-repeat: no-repeat;
 			-webkit-mask-position: center;
 			-webkit-mask-size: contain;
-			background-color: var(--icon-color);
+			background-color: var(--icon-normal-color, #666666);
 			cursor: pointer;
 		}
 
@@ -1359,7 +1352,7 @@ const ASUS_LEDSCHEDUER = {
 		}
 
 		.modal-title {
-			color: #000000;
+			color: var(--wrt-text-color, #000000);
 			font-weight: bold;
 			font-size: 16px;
 			margin: 0;
@@ -1368,8 +1361,8 @@ const ASUS_LEDSCHEDUER = {
 		}
 
 		.modal-body {
-			color: #000000;
-			background: #FFFFFF;
+			color: var(--wrt-text-color, #000000);
+			background: var(--wrt-modal-bg, #FFFFFF);
 			box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 5px 0px rgba(0, 0, 0, 0.08), 0px 3px 1px 0px rgba(0, 0, 0, 0.06);
 			border-radius: 10px;
 			position: relative;
@@ -1408,80 +1401,14 @@ const ASUS_LEDSCHEDUER = {
 			-webkit-mask-position: center;
 			-webkit-mask-size: contain;
 			display: block;
-			background-color: var(--icon-color);
+			background-color: var(--wrt-icon-default-color, #666666);
 			width: 24px;
 			height: 24px;
 			margin-right: 2%;
 			cursor: pointer;
 			padding: initial;
 		}
-		</style>`,
-
-	ModalTheme: {
-		RT: `<style>
-			.modal-title, .modal-body {
-				color: #FFFFFF;
-			}
-			.modal-body {
-				color: #FFFFFF;
-				background: #444F53;
-			}
-			:root,
-			:host{
-				--icon-color: #B9C5D4;
-			}
-		</style>`,
-
-		ROG: `<style>
-			.popup_bg {
-				background: rgba(0, 0, 0, 0.5);
-				backdrop-filter: blur(4px);
-				-webkit-backdrop-filter: blur(6px);
-			}
-			.modal-body {
-				background-color: #1C1C1E;
-				border: 0;
-				border-radius: 0;
-			}
-			.modal-title {
-				color: #FFF;
-			}
-			:root,
-			:host{
-				--icon-color: #B9C5D4;
-			}
-		</style>`,
-
-		TUF: `<style>
-			.popup_bg {
-				background: rgba(0, 0, 0, 0.5);
-				backdrop-filter: blur(4px);
-				-webkit-backdrop-filter: blur(6px);
-			}
-			.modal-body {
-				background-color: #1C1C1E;
-				border: 0;
-				border-radius: 0;
-			}
-			.modal-title {
-				color: #FFF;
-			}
-			:root,
-			:host{
-				--icon-color: #B9C5D4;
-			}
-		</style>`,
-
-		WHITE: `<style>
-			:root,
-			:host{
-				--icon-color: #4D4D4D;
-			}
-			.popup_bg {
-				background: rgba(255, 255, 255);
-			}
 		</style>`
-	},
 }
 
 class popupLedScheduler extends HTMLElement {
@@ -1503,8 +1430,6 @@ class popupLedScheduler extends HTMLElement {
 		this.setAttribute('data-asuswrt-style', this.asuswrtStyle);
 
 		this.attachShadow({mode: 'open'});
-		let modalTheme = '';
-		modalTheme = ASUS_LEDSCHEDUER.ModalTheme[theme.toUpperCase()];
 		const template = document.createElement('template');
 		template.innerHTML = `
 			${ASUS_LEDSCHEDUER.popupDivStyle}
@@ -1526,7 +1451,6 @@ class popupLedScheduler extends HTMLElement {
 					</div>
 				</div>
 			</div>
-			 ${modalTheme}
 		`;
 		this.shadowRoot.appendChild(template.content.cloneNode(true));
 		this.shadowRoot.querySelector('.close_btn').addEventListener('click', this.handleModalClose.bind(this));
@@ -1559,6 +1483,14 @@ class popupLedScheduler extends HTMLElement {
 
 	show = () => {
 		if (top.document.getElementById('ledscheduler_mode') == null) {
+			['/css/color-table.css', '/css/wrt-ui-alias-tokens.css'].forEach(href => {
+				if (!top.document.querySelector(`link[href="${href}"]`)) {
+					const link = top.document.createElement('link');
+					link.rel = 'stylesheet';
+					link.href = href;
+					top.document.head.appendChild(link);
+				}
+			});
 			top.document.body.style.overflow = 'hidden';
 			const modal = document.createElement('div');
 			modal.id = 'ledscheduler_mode';

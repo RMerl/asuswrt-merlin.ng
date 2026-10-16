@@ -65,7 +65,7 @@ function initial(){
 	if('<% nvram_get("tm_device_name"); %>' != '')
 		document.getElementById("tmPath").innerHTML = '/mnt/<% nvram_get("tm_device_name"); %>';
 	else
-		document.getElementById("tmPath").innerHTML = '<div style="margin-left:5px;color:#FC0"><#DM_Install_partition#></div>';
+		document.getElementById("tmPath").innerHTML = '<div style="margin-left:5px;color:var(--wrt-badge-warning-color,#FFCC00)"><#DM_Install_partition#></div>';
 	
 	if(document.form.timemachine_enable.value == "0"){
 		document.getElementById("backupPath_tr").style.display = "none";
@@ -129,7 +129,7 @@ function show_partition(){
 						htmlcode += '<tr style="cursor:pointer;" onclick="setPart(\''+ usbDevicesList[i].partition[j].partName +'\', \''+ all_accessable_size +'\', \''+ all_total_size +'\');"><td class="app_table_radius_left"><div class="iconUSBdisk"></div></td><td class="app_table_radius_right" style="width:250px;">\n';
 					else
 						htmlcode += '<tr><td class="app_table_radius_left"><div class="iconUSBdisk_noquota"></div></td><td class="app_table_radius_right" style="width:250px;">\n';
-					htmlcode += '<div class="app_desc"><b>'+ usbDevicesList[i].partition[j].partName + ' <span style="color:#FC0;">(active)</span></b></div>';
+					htmlcode += '<div class="app_desc"><b>'+ usbDevicesList[i].partition[j].partName + ' <span style="color:var(--wrt-badge-warning-color,#FFCC00);">(active)</span></b></div>';
 				}
 				else{
 					if(all_accessable_size > 1)
@@ -142,7 +142,7 @@ function show_partition(){
 				if(all_accessable_size > 1)
 					htmlcode += '<div class="app_desc"><#Availablespace#>: <b>'+ all_accessable_size+" GB" + '</b></div>'; 
 				else
-					htmlcode += '<div class="app_desc"><#Availablespace#>: <b>'+ all_accessable_size+" GB <span style=\'color:#FFCC00\'>(Disk quota can not less than 1GB)" + '</span></b></div>'; 
+					htmlcode += '<div class="app_desc"><#Availablespace#>: <b>'+ all_accessable_size+" GB <span style=\'color:var(--wrt-badge-warning-color,#FFCC00)\'>(Disk quota can not less than 1GB)" + '</span></b></div>'; 
 
 				htmlcode += '<div class="app_desc"><#Totalspace#>: <b>'+ all_total_size+" GB" + '</b></div>'; 
 				htmlcode += '</div><br/><br/></td></tr>\n';

@@ -329,7 +329,9 @@ static int erp_check_arp_stat(int model)
 
 	/* check ipv6 client for IPv6 */
 	eval("mkdir", "-p", ERP_FOLDER);
-	doSystem("ip -f inet6 neigh show dev %s > %s", nvram_safe_get("lan_ifname"), ERP_IPV6_ARP);
+	/* Use safe_do_system_to_file(): tokenized argv via _eval(), no shell,
+	 * so lan_ifname cannot be used for command injection. */
+	safe_do_system_to_file(ERP_IPV6_ARP, 0, "ip -f inet6 neigh show dev %s", nvram_safe_get("lan_ifname"));
 
 	if ((fp = fopen(ERP_IPV6_ARP, "r")) != NULL)
 	{
@@ -353,7 +355,9 @@ static int erp_check_arp_stat(int model)
 
 #if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 	/* check ipv4 client for IPv4 */
-	doSystem("ip -f inet neigh show dev %s > %s", nvram_safe_get("lan_ifname"), ERP_IPV4_ARP);
+	/* Use safe_do_system_to_file(): tokenized argv via _eval(), no shell,
+	 * so lan_ifname cannot be used for command injection. */
+	safe_do_system_to_file(ERP_IPV4_ARP, 0, "ip -f inet neigh show dev %s", nvram_safe_get("lan_ifname"));
 	if ((fp = fopen(ERP_IPV4_ARP, "r")) != NULL)
 	{
 		// while loop

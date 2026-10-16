@@ -116,7 +116,7 @@ static int ip6tunnel_parse_opt(struct link_util *lu, int argc, char **argv,
 	FILE *fp = NULL;
 	struct __ip6_tnl_fmr *fmr = NULL;
 	struct rtattr *nest, *nest_rule;
-	int i, fmr_cnt, ip6_prefix_len, ip4_prefix_len, offset, ea_len;
+	int i, fmr_cnt = 0, ip6_prefix_len, ip4_prefix_len, offset, ea_len;
 	long int sz;
 	char *b, *p, str[256], ip6_prefix[256], ip4_prefix[16];
 	int debug = 0;

@@ -1,0 +1,11 @@
+iptables-translate -A INPUT -p icmp -m length --length 86:0xffff -j DROP
+nft 'add rule ip filter INPUT ip protocol icmp meta length 86-65535 counter drop'
+
+iptables-translate -A INPUT -p udp -m length --length :400
+nft 'add rule ip filter INPUT ip protocol udp meta length 0-400 counter'
+
+iptables-translate -A INPUT -p udp -m length --length 40
+nft 'add rule ip filter INPUT ip protocol udp meta length 40 counter'
+
+iptables-translate -A INPUT -p udp -m length ! --length 40
+nft 'add rule ip filter INPUT ip protocol udp meta length != 40 counter'

@@ -511,7 +511,7 @@ extern char url[128];
 extern char referer_url[128];
 extern unsigned int login_ip; // the logined ip
 extern unsigned int app_login_ip; // the app logined ip
-extern char cookies_buf[4096];
+extern char cookies_buf[10000];
 extern unsigned int login_ip_tmp; /* IPv6 compat */
 extern uaddr login_uip;
 extern uaddr login_uip_tmp;
@@ -520,6 +520,7 @@ extern time_t login_timestamp_cache;
 extern int hook_get_json;
 extern char wl_band_list[8][8];
 extern int check_user_agent(char* user_agent);
+extern void http_logout(uaddr *uip, char *cookies, int fromapp_flag);
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)
 extern void add_ifttt_flag(void);
 #endif
@@ -560,7 +561,7 @@ extern int lock_flag;
 extern int max_lock_time;
 extern int login_error_status;
 extern char cache_object[];
-extern char cache_long_object[];
+extern char no_cache[];
 extern char* ipisdomain(char* hostname, char* str);
 #ifdef RTCONFIG_AMAS
 extern char* iscap(char* str);
@@ -585,7 +586,7 @@ extern int change_location(char *lang);
 extern void wtfast_gen_partnercode(char *str, size_t size);
 #endif
 extern void update_wlan_log_sig(int sig);
-extern void system_cmd_test(char *system_cmd, char *SystemCmd, int len);
+extern int check_apply_nvram_lan_only(const char *name);
 extern void do_feedback_mail_cgi(char *url, FILE *stream);
 extern void do_dfb_log_file(char *url, FILE *stream);
 extern int is_amas_support(void);

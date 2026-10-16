@@ -1,0 +1,11 @@
+ip6tables-translate -t nat -A postrouting -o eth0 -p tcp -j SNAT --to [fec0::1234]:80
+nft 'add rule ip6 nat postrouting oifname "eth0" meta l4proto tcp counter snat to [fec0::1234]:80'
+
+ip6tables-translate -t nat -A postrouting -o eth0 -p tcp -j SNAT --to [fec0::1234]:1-20
+nft 'add rule ip6 nat postrouting oifname "eth0" meta l4proto tcp counter snat to [fec0::1234]:1-20'
+
+ip6tables-translate -t nat -A postrouting -o eth0 -p tcp -j SNAT --to [fec0::1234]:123 --random
+nft 'add rule ip6 nat postrouting oifname "eth0" meta l4proto tcp counter snat to [fec0::1234]:123 random'
+
+ip6tables-translate -t nat -A postrouting -o eth0 -p tcp -j SNAT --to [fec0::1234]:123 --random-fully --persistent
+nft 'add rule ip6 nat postrouting oifname "eth0" meta l4proto tcp counter snat to [fec0::1234]:123 fully-random,persistent'

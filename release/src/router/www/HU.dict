@@ -26,9 +26,9 @@ AiMesh_Node_desc2=Nyissa meg a meglévő router AiMesh-beállításait tartalmaz
 AiMesh_Notice1=A vezeték nélküli beállítások változtatásai befolyásolják a hálót!
 AiMesh_Add_Another_Node_confirm=Szeretne hozzáadni egy másik csomópontot?
 AiMesh_Add_Another_Node=Másik csomópont hozzáadása
-AiMesh_Adding_Node=Adding the AiMesh node...
-AiMesh_Node_joining=The node is joining the network...
-AiMesh_Node_activating=Activating your mesh network...
+AiMesh_Adding_Node=Az AiMesh csomópont hozzáadása...
+AiMesh_Node_joining=A csomópont csatlakozik a hálózathoz...
+AiMesh_Node_activating=A mesh hálózat aktiválása...
 AiMesh_backhaul_band_5GHz-2_desc1=is now used as dedicated WiFi backhaul under AiMesh mode.
 AiMesh_backhaul_band_5GHz-2_desc11=%@ mostantól dedikált WiFi visszacsatolásként van használva AiMesh módban.
 AiMesh_backhaul_band_5GHz-2_desc2=Ugorjon az <span class="faq-link" onclick="parent.location.href=\'/Advanced_Wireless_Content.asp\'">itt</span> hivatkozás által megadott helyre vezeték nélküli beállítások esetén.
@@ -83,6 +83,8 @@ AiMesh_Topology_Line_Wired_Great=Vezetékes csatlakozás kitűnő minőségű cs
 AiMesh_Topology_Line_Wired_Normal=Vezetékes csatlakozás normál minőségű csatlakozással
 AiMesh_Topology_FAQ_old=Az új AiMesh felhasználói felületről részletesebb információt ebben a GYIK-ben talál.
 AiMesh_Topology_FAQ=Az új AiMesh felhasználói felületről részletesebb információt ebben a <a id="Intro_AiMesh">GYIK-ben</a> talál.
+AiMesh_Topology_inst_FAQ_old=Az AiMesh rendszer beállításával kapcsolatos útmutatásért tekintse meg ezt a GYIK oldalt.
+AiMesh_Topology_inst_FAQ=Az AiMesh rendszer beállításával kapcsolatos útmutatásért tekintse meg ezt a <a id='connect_line_info_faq'>GYIK</a> oldalt.
 AiMesh_OB_hint=Az optimális teljesítmény érdekében javasoljuk, hogy újabb modellt használjon a csomópontjához. A régi eszközök használata korlátozhatja az AiMesh hálózat általános stabilitását és sebességét.
 AiMesh_Add_Anyway=Mégis hozzáadás
 AiMesh_Proceed_Anyway=Mégis folytatás
@@ -102,7 +104,7 @@ APSurvey_msg_connect_open_wlan=Nem biztonságos hálózathoz kísérel meg csatl
 APSurvey_msg_connected=Már kapcsolódott ehhez az AP-hoz.
 APSurvey_msg_non_support_Auth=A hitelesítési módszer nem támogatott.
 APSurvey_msg_waiting_to_connect=Várjon. A ZVMODELVZ a következőhöz csatlakozik
-ASUS_Registration=Legyen ASUS tag és kapja meg a legújabb termékinformációkat. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Iratkozzon be most!</a>
+ASUS_Registration=Legyen ASUS tag és kapja meg a legújabb termékinformációkat. <a style='color:var(--wrt-badge-warning-color,#FC0)' target='_blank' href='https://account.asus.com'>Iratkozzon be most!</a>
 ASUS_Notice=AZ ASUS KÖZLEMÉNYE
 ASUS_privacy_desc=Kérjük jegyezze meg, hogy a felhasználóknak bele kell egyezniük hogy megosszák a saját információikat mielőtt a DDSN, Távoli csatlakozás (ASUS Router alkalmazás, Lyra APP, AiCloud, AiDisk), AiProtection, Traffic Analyzer (Adatátvitel elemzés), Apps Analyzer (Alkalmazás elemzés), Adaptive QoS (Adaptív QoS), Game Boost és Web history (Webelőzmények) funkciókat használják. A felhaszálók bármikor rákereshetnek a tartalomjegyzékben a feltételekre ezen az oldalon és leállíthathják a saját információik megosztását más féllel, ha a <a style="font-weight: bolder;">Visszavonom</a> opciót választják.
 ASUS_eula_desc0=Üdvözli Önt a DDNS/ távoli csatlakozás (ASUS Router alkalmazás/Lyra alkalmazás/AiCloud/AiDisk)! Kérjük, olvassa el figyelmesen az alábbi információkat:
@@ -127,7 +129,7 @@ ASUS_eula_withdraw_content2=Ha le akarja tiltani adatainak az ASUS routerrel val
 ASUS_eula_withdraw_content3=* Kérjük, hogy ne feledje: Azt okozhatja a „Visszavonás” gombra kattintás, hogy nem tud a legújabb firmware verzióra frissíteni és nem kapja meg az ASUS routere legújabb védelmét; Azonban a routere biztonsága védelme és a törvényeknek való megfelelés érdekében azonban egyes biztonsági problémával vagy a jogi/szabályozási követelményeknek való megfeleléssel kapcsolatos magasabb verzióra frissítések letöltése és telepítése még megtörténik.
 ASUS_eula_withdraw_desc1=Kérjük, vegye figyelembe, hogy az ASUS a fenti funkciókon keresztül gyűjti az információkat, többek között a termék típusának nevét, a firmware verziószámát, az internet állapotát, az IP-címet, a MAC-címet és a DDNS-nevet.
 ASUS_eula_withdraw_desc1_2=Ha azt szeretné, hogy az információk ne legyenek megosztva az ASUS vállalattal a fenti funkciókon keresztül, kattintson az alábbi <span style="font-weight: bold;">[Visszavonás]</span> lehetőségre. Azt mindenképpen vegye figyelembe, hogy ha nem osztja meg az információkat az ASUS vállalattal, akkor elképzelhető, hogy ezek a szolgáltatások és funkciók nem fognak működni.
-ASUS_eula_withdraw_desc2=Miután a <span style="font-weight: bold;">[<Visszavonás]</span> lehetőségre kattintott, az alábbi módosításokra kerül sor.:
+ASUS_eula_withdraw_desc2=Miután a <span style="font-weight: bold;">[Visszavonás]</span> lehetőségre kattintott, az alábbi módosításokra kerül sor.:
 ASUS_eula_withdraw_desc2_1=Az aktuálisan használt DDNS-név nem lesz megőrizve a routeren.
 ASUS_eula_withdraw_desc2_2=Az ASUS Router alkalmazás, a Lyra alkalmazás, az AiCloud és az AiDisk LAN-kapcsolaton keresztül használható, távoli csatlakozási módban viszont nem lehet őket használni.
 ASUS_eula_withdraw_desc2_Alexa=Ha a későbbiekben engedélyezni szeretné az Alexa™ funkcióit, meg kell adnia egy új aktiválási kódot az Alexa™ weboldalán.
@@ -186,8 +188,8 @@ ASUS_EULA_Law_12=Irányadó jog és joghatóság
 ASUS_EULA_Law_12_Desc=Minden ajánlatra, megrendelés-visszaigazolásra, a jelen EULA-ra, valamint az Ön és az ASUS közötti értékesítési kapcsolatra az ASUS székhelye szerinti jogszabályok vonatkoznak, és azt a kollíziós jog elveire tekintet nélkül azok szerint kell értelmezni. Minden vitát, véleménykülönbséget vagy nézeteltérést, amely a jelen EULA-ban részes felek között a jelen EULA-ból, azzal kapcsolatban vagy azzal összefüggésben előállhat, a felek közötti baráti egyeztetés révén kell rendezni. Ha a vita, véleménykülönbség vagy nézeteltérés rendezése nem sikerül, mindkét fél vállalja, hogy aláveti magát az ASUS székhelye szerinti bíróság joghatóságának.
 ASUS_EULA_Info=A ASUS hálózati termékek használatával Ön kötelezettséget vállal a Végfelhasználói licencszerződés-ban leírt feltételek és kikötések betartására.
 ASUS_POLICY_Age_Check=16 évesnél idősebb vagyok.
-ASUS_POLICY_QIS_Desc=Hálózati termék használata előtt olvassa el a jelen feltételeket. A(z) „Elfogadom” gombra kattintva Ön kötelezőként fogadja el a feltételeket. ​
-ASUS_POLICY_QIS_Desc_v5=Hálózati termék használata előtt olvassa el a jelen feltételeket. A(z) „%@” gombra kattintva Ön kötelezőként fogadja el a feltételeket. ​
+ASUS_POLICY_QIS_Desc=Hálózati termék használata előtt olvassa el a jelen feltételeket. A(z) „Elfogadom” gombra kattintva Ön kötelezőként fogadja el a feltételeket.
+ASUS_POLICY_QIS_Desc_v5=Hálózati termék használata előtt olvassa el a jelen feltételeket. A(z) „%@” gombra kattintva Ön kötelezőként fogadja el a feltételeket.
 ASUS_POLICY_Update_Notice=Kedves felhasználók, köszönjük, hogy folyamatosan támogatják ezt a terméket! A különböző országok adatvédelmi előírásainak való megfelelés és az Ön adatainak további védelme érdekében frissítettük az ASUS Adatvédelmi Közleményét. Kérjük, tanulmányozza át az ASUS hálózati termékeinek használata előtt.
 ASUS_POLICY_Read_Again=Olvassa el újból.
 ASUS_POLICY_Know_Risk=Megértettem a kockázatot.
@@ -370,7 +372,7 @@ CTL_UpgradeNight=Frissítés éjszaka
 CTL_UpgradeNow=Upgrade Now
 default_passwd_checkbox=Alapértelmezett helyi bejelentkezési jelszó használata
 default_passwd_desc=Az alapértelmezett, titkosított helyi bejelentkezési jelszó biztonságos bejelentkezést tesz lehetővé, amikor helyben csatlakozik ehhez az ASUS hálózati eszközhöz.
-defaultHint=A további részletekért látogasson el a <a style="font-weight: bolder;text-decoration: underline;color:#000000;" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a> oldalra.
+defaultHint=A további részletekért látogasson el a <a style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#000000);" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a> oldalra.
 Detect_consume_warning1=* A minimális ping csomag intervallumonként kb. 128 bájtot fogyaszt, ezért a ping érzékelőhavonta
 Detect_consume_warning2=MByte havonta
 Disconnected=Leválasztva
@@ -409,7 +411,7 @@ OpenDNS_Home=OpenDNS Home
 OpenDNS_Family=OpenDNS Family
 Yandex_Safe=Yandex Safe
 Yandex_Family=Yandex Family
-Dnsfilter_Hint_Dnspriv=A <a style="text-decoration:underline; color:#FFCC00;" href="DNSFilter.asp">DNSFilter</a> engedélyezve van – minden, ami ott nem Nincs szűrés vagy Router kategóriába van sorolva, meg fogja kerülni a DNS Privacy szervereket.
+Dnsfilter_Hint_Dnspriv=A <a style="text-decoration:underline; color:var(--wrt-badge-warning-color,#FFCC00);" href="DNSFilter.asp">DNSFilter</a> engedélyezve van – minden, ami ott nem Nincs szűrés vagy Router kategóriába van sorolva, meg fogja kerülni a DNS Privacy szervereket.
 Enable_user_target=Felhasználó által megadott cél engedélyezése
 Enable_Login_Captcha=Bejelentkezési captcha engedélyezése
 Encrypted_field=Titkosított mező.
@@ -616,7 +618,7 @@ Offline_desc2=Az IP-cím vagy portszám módosult. Az Ön és a(z) ZVMODELVZ kö
 Offline_desc3=A(z) ZVMODELVZ beállításainak eléréséhez csatlakozzon újra a vezeték nélküli hálózathoz és használja a frissített IP-címet és portszámot.
 OP_AP_desc=Hozzáférési pont (AP) módban a ZVMODELVZ Ethernet kábelen csatlakozik a vezeték nélküli routerhez, hogy kibővítse a vezeték nélkül lefedettséget más hálózati kliensek irányában. Ebben a módban a tűzfal-, IP-megosztás és NAT funkciók alapértelmezésképpen letiltásra kerülnek.
 AiMesh_AP_desc=Hozzáférési pont módban az AiMesh routerek egy vezeték nélküli routerhez csatlakoznak Ethernet-kábelen keresztül, hogy kibővítsék a vezeték nélküli jelet más hálózati kliensek irányába. Ebben a módban a tűzfal-, IP-megosztás és NAT funkciók alapértelmezés szerint le vannak tiltva.
-OP_AP_hint=Igény szerint ellátogathat a <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">http://findasus.local</a> webhelyre, ahol megkeresheti az eszközkonfigurációs oldalt, és megadhatja a konfigurációt.
+OP_AP_hint=Igény szerint ellátogathat a <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">http://findasus.local</a> webhelyre, ahol megkeresheti az eszközkonfigurációs oldalt, és megadhatja a konfigurációt.
 OP_AP_item=Hozzáférési pont (AP – Access point) üzemmód
 AiMesh_AP_item=Hozzáférési pont (AP) mód / AiMesh router AP módban
 OP_Choose=Choose operation mode
@@ -635,7 +637,7 @@ OP_MB_desc4=Konfiguráljon egy ZVMODELVZ eszközt mint router és egy másik ZVM
 OP_MB_desc5=Váltson Media Bridge módra, hogy egyidejű WiFi kapcsolatot biztosítson médiaeszközei számára.
 OP_MB_desc6=Média áthidaló módban csak a vezeték nélküli eszközök csatlakoznak a P-AP-hez. A kliens eszközöket hálózati kábellel kell csatlakoztatni a média áthidalóhoz.
 OP_MB_desc7=ZVMODELVZ média áthidaló módban. Az IP-cím megváltozott.
-OP_MB_desc8=Kérjük töltse le a <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:#FC0;'>Device Discovery Utility</a> segédprogramot a média áthidaló IP-cím azonosításához.
+OP_MB_desc8=Kérjük töltse le a <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>Device Discovery Utility</a> segédprogramot a média áthidaló IP-cím azonosításához.
 OP_MB_desc9=Kérjük ellenőrízze, hogy kihúzta a hálózati kábelt a WAN portból.
 OP_RE_desc=Jelerősítő módban a ZVMODELVZ vezeték nélkül csatlakozik egy meglévő vezeték nélküli hálózathoz a vezeték nélküli lefedettség bővítése érdekében. Ebben a módban a tűzfal-, IP-megosztás és NAT funkciók letiltásra kerülnek.
 OP_RE_desc1=A LAN IP-címe a ZVMODELVZ készüléknek megváltozhatott.
@@ -685,7 +687,7 @@ QIS_adminpass_confirm0=Az új jelszó megegyezik a rendszer alapértelmezett jel
 QIS_adminpass_confirm1=Ha az alapértelmezett jelszót (admin) változatlanul hagyja, a router biztonsági fenyegetéseknek lesz kitéve, és mások könnyedén kitalálhatják a bejelentkezési jelszavát. Biztos benne, hogy megtartja ezt a nem biztonságos jelszót?
 [###MODEL_DEP###][PL-AC56][PL-N12]QIS_adminpass_confirm1=Ha az alapértelmezett jelszót (admin) változatlanul hagyja, a PLC biztonsági fenyegetéseknek lesz kitéve, és mások könnyedén kitalálhatják a bejelentkezési jelszavát. Biztos benne, hogy megtartja ezt a nem biztonságos jelszót?
 QIS_apextended_usedefault=Alapértelmezett beállítások használata (ugyanazok, mint a bővítendő hálózaté)
-QIS_AP_connect_hint=Once the new SSID is connected, you can go to %1$@ for more advanced settings.
+QIS_AP_connect_hint=Miután az új SSID csatlakozott, a %1$@ oldalon további speciális beállításokat érhet el.
 QIS_auto_ip_conn_Setup=IP-kapcsolat automatikus beállítása
 QIS_autoMAC_desc1=A számítógép MAC-címének klónozása folyik a routerre.
 QIS_autoMAC_desc2=Várjon...
@@ -817,7 +819,7 @@ qis_simple_wls_recmd=(Ajánlott)
 QIS_SmartConn_ISPDesc=Szolgáltatója valószínűleg a szerződésben vagy egy kártyán megadta a felhasználó nevét és jelszavát. *Ez csak egy példa, hogyan is nézhet ki.
 QIS_SmartConn_ISPDesc2=Adja meg felhasználó nevét és jelszavát az Internet kapcsolatához. Ezeket az adatok az Internet szolgáltatójától kell megkapnia.
 QIS_SmartConn_ISPDesc3=Adja meg az internetszolgáltatója (ISP) által biztosított PPPoE felhasználónevet és jelszót az internetkapcsolatához.
-QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:#FC0;">xxxxxxxx@hinet.net</span>
+QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:var(--wrt-badge-warning-color,#FC0);">xxxxxxxx@hinet.net</span>
 QIS_SmartConn_Scen1=Egyik esetben
 QIS_SmartConn_Scen2=Másik esetben
 QIS_SmartConn_StaticDesc=Szolgáltatója valószínűleg megadta az alábbi információkat: IP, subnet mask, gateway, DNS beállítások. Ha nem kérjük lépjen kapcsolatba szolgáltatójával.
@@ -999,10 +1001,10 @@ QKSet_ISP_desc=Kérjük, szerezze be az internetkapcsolathoz szükséges inform�
 QKSet_ISP_desc2=Sikertelen statikus IP csatlakozás.
 QKSet_ISP_desc3=Sikertelen automatikus IP csatlakozás. A beállításokat itt manuálisan konfigurálhatja.
 QKSet_ISP_head=ISP információ beállítás
-QKset_restore_0=Kattintson a <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Beállítás visszaállítása</label></a> elemre a mentett konfiguráció betöltéséhez.
-QKset_restore_1=Kattintson a <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Beállítás visszaállítása</label></a> elemre azon mentett konfiguráció betöltéséhez, amelyet a router alaphelyzetbe állítása előtt mentett.
-QKset_setup_manual_0=Kattintson a <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Kézi beállítás</label></a> elemre a vezeték nélküli hálózat kézi beállításához, amennyiben ismeri az ISP-kapcsolat típusát.
-QKset_setup_manual_1=Kattintson a <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Kézi beállítás</label></a> elemre a speciális router beállítások kézi elvégzéséhez, hogy a ZVMODELVZ eszközt
+QKset_restore_0=Kattintson a <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Beállítás visszaállítása</label></a> elemre a mentett konfiguráció betöltéséhez.
+QKset_restore_1=Kattintson a <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Beállítás visszaállítása</label></a> elemre azon mentett konfiguráció betöltéséhez, amelyet a router alaphelyzetbe állítása előtt mentett.
+QKset_setup_manual_0=Kattintson a <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Kézi beállítás</label></a> elemre a vezeték nélküli hálózat kézi beállításához, amennyiben ismeri az ISP-kapcsolat típusát.
+QKset_setup_manual_1=Kattintson a <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Kézi beállítás</label></a> elemre a speciális router beállítások kézi elvégzéséhez, hogy a ZVMODELVZ eszközt
 QKset_skip_setup=Vezeték nélküli hálózati varázslónak tartja magát és mellőzni kívánja az internetes beállító varázslót?
 QKSet_type_desc=Kérjük, válassza ki az internetszolgáltató által biztosított internetkapcsolat típusát.
 QKSet_type_head=Internet WAN-kapcsolat típusa
@@ -1026,13 +1028,13 @@ Select_ISPfile=ISP profil választása
 Select_menu_default=Kérjük, válasszon
 Sign_in_title=Jelentkezzen be ASUS router-fiókjával
 [###MODEL_DEP###][RP-AC87][RP-AC68U][RP-AC66U][RP-AC55][RP-AC53][RP-AC52][RP-AC51][RP-AC92]Sign_in_title=Jelentkezzen be ASUS Jelerősítő-fiókjával
-SLM_Ask=Ask Router Assistant...
-SLM_Loading=Loading...
-SLM_Thinking=Thinking...
-SLM_not_installed=Please double check that the router assistant is running in Portainer and that the port (8090) is not overlapping with other services. Also, ensure that slm-asus is running in Portainer. If the problem persists, try restoring AiBoard.
-SLM_no_response=Service is activating. Please try again in about 3 minutes.
-SLM_low_percent=Sorry, unable to answer the question.
-SLM_disclaimer=Router Assistant might not always be accurate. This feature is currently available in English only. Please verify important information yourself.
+SLM_Ask=Kérdezze meg a Router Assistantot...
+SLM_Loading=Betöltés…
+SLM_Thinking=Gondolkodik...
+SLM_not_installed=Ellenőrizze, hogy a Router Assistant fut-e a Portainerben, és hogy a (8090) port nem ütközik más szolgáltatásokkal. Győződjön meg arról is, hogy a slm-asus fut a Portainerben. Ha a probléma továbbra is fennáll, próbálja meg visszaállítani az AiBoardot.
+SLM_no_response=A szolgáltatás aktiválása folyamatban van. Kérjük, próbálja újra körülbelül 3 perc múlva.
+SLM_low_percent=Sajnáljuk, nem sikerült megválaszolni a kérdést.
+SLM_disclaimer=A Router Assistant nem mindig pontos. Ez a funkció jelenleg csak angol nyelven érhető el. Kérjük, ellenőrizze a fontos információkat saját maga.
 SLM_not_installed_CN=请确认路由助手在Portainer中运行且端口（8092）未与其他服务重叠，确认slm-asus-cn也在Portainer中运行。若问题仍然存在，请恢复AiBoard。
 SLM_no_response_CN=服务正在激活中，请约3分钟后重试。
 SLM_low_percent_CN=对不起，无法回答该问题.
@@ -1053,6 +1055,7 @@ Status_RAM=RAM
 Status_Used=Felhasznált
 Status_Free=Szabad
 Status_Total=Összesen
+Status_LoggingIn=Bejelentkezés…
 statusTitle_AP=Hozzáférési pont állapota
 statusTitle_System=ASUS ZVMODELVZ
 System_act_connections=Aktív kapcsolatok
@@ -1077,7 +1080,7 @@ TBVLAN_UPort=Címke nélküli port
 TBVLAN_TPort=Címkézett port
 TBVLAN_WirelessInf=Vezeték nélküli csatlakozás
 TBVLAN_EditSubnetProfile=Alhálózati profil szerkesztése
-TBVLAN_Subnet_desc=Jelölje ki a létrehozott alhálózatot, vagy jelölje ki az „Új alhálózat” lehetőséget, és hozzon létre egy új alhálózatot a VLAN-hoz. Ha további DHCP-konfigurációkra van szüksége, konfigurálja őket a <a style='color:#FFF; text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP-kiszolgálón</a>.
+TBVLAN_Subnet_desc=Jelölje ki a létrehozott alhálózatot, vagy jelölje ki az „Új alhálózat” lehetőséget, és hozzon létre egy új alhálózatot a VLAN-hoz. Ha további DHCP-konfigurációkra van szüksége, konfigurálja őket a <a style='color:var(--wrt-text-color,#FFF); text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP-kiszolgálón</a>.
 TBVLAN_BindingInf=Kötési csatlakozó
 TBVLAN_NoBindingInf=Nem áll rendelkezésre kötési csatlakozó.
 TBVLAN_BindingInf_Hint=Kérjük, adjon meg egy kötési csatlakozót.
@@ -1108,20 +1111,20 @@ WANPPPAuthText=PPP Authentication
 WAN_type_detected=WAN type detected
 WAN_auto_detected=WAN automatikus felismerés
 web_redirect_case1_suggestion1=Győződjön meg, hogy a kábel csatlakoztatva van a ZVMODELVZ WAN porthoz és a modemhez.
-web_redirect_case1_suggestion2=Ellenőrizze, hogy a <a style='color:#FFF' href='/Advanced_OperationMode_Content.asp'>Üzemmód<a> megváltoztatása szükséges-e.
-web_redirect_case2_suggestion1=Helytelen PPPoE fiók vagy jelszó, kérjük ellenőrizze <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>check</a>.
+web_redirect_case1_suggestion2=Ellenőrizze, hogy a <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_OperationMode_Content.asp'>Üzemmód<a> megváltoztatása szükséges-e.
+web_redirect_case2_suggestion1=Helytelen PPPoE fiók vagy jelszó, kérjük ellenőrizze <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>check</a>.
 web_redirect_case2_title1=PPPoE hitelesítési hiba
 web_redirect_case3_button=Változtassa meg a WAN típust.
-web_redirect_case3_suggestion1=Győződjön meg, hogy a <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>Connection Settings (Internetkapcsolat beállításai)<a>helyesek.
-web_redirect_case5_suggestion1=Engedélyezze a <a style='color:#FFF' href='/'>WAN Connection (WAN kapcsolat)<a>-ot
+web_redirect_case3_suggestion1=Győződjön meg, hogy a <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>Connection Settings (Internetkapcsolat beállításai)<a>helyesek.
+web_redirect_case5_suggestion1=Engedélyezze a <a style='color:var(--wrt-text-color,#FFF)' href='/'>WAN Connection (WAN kapcsolat)<a>-ot
 web_redirect_case5_suggestion2=Győződjön meg, hogy az USB modem be van kapcsolva.
-web_redirect_case5_suggestion3=Változtasson az <a style='color:#FFF' href='/Advanced_Modem_Content.asp'>USB Modem Settings (USB modem beállítások)<a>-on.
+web_redirect_case5_suggestion3=Változtasson az <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_Modem_Content.asp'>USB Modem Settings (USB modem beállítások)<a>-on.
 web_redirect_case5_title1=A WAN kapcsolata nincs engedélyezve.
 web_redirect_case5_title2=Az USB modem nem csatlakozik.
 web_redirect_case6_desc1=Kattintson a [Következő] elemre a következő IP-cím használatához:
 web_redirect_case6_desc2=Győződjön meg, hogy minden fontos szolgáltatás az új IP-címet használja (pl. Port továbbítás, DMZ, stb.)
 web_redirect_case8_suggestion1=Ellenőrizze, hogy a fő AP csatlakozik az internethez.
-web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>Változtassa meg az internetkapcsolat beállításait.<a>
+web_redirect_case8_suggestion2=<a style='color:var(--wrt-text-color,#FFF)' href='/QIS_wizard.htm?flag=manual'>Változtassa meg az internetkapcsolat beállításait.<a>
 web_redirect_case8_title=Nem lehet a fő AP-hez kapcsolódni.
 web_redirect_case9_suggestion1=Győződjön meg, hogy az AiMesh router be van kapcsolva.
 web_redirect_case9_suggestion2=Indítsa újra az AiMesh routert és próbálja meg újra.
@@ -1171,6 +1174,11 @@ Web_Title=ASUS vezeték nélküli útválasztó ZVMODELVZ
 [###MODEL_DEP###][YY]Web_Title=ASUS ZVMODELVZ hozzáférési pont
 Web_Title2=ZVMODELVZ
 Web_DOMAIN_NAME=ZVDOMAIN_NAMEVZ
+WiFi_MLO_connect_confirmTitle=MLO-kapcsolat használata
+WiFi_MLO_same_model_desc=Az MLO (Multi-Link Operation) jelenleg csak azonos ASUS routermodellek között támogatott. Ha a modellek eltérőek, a kapcsolat sikertelen lehet.
+WiFi_MLO_connect_try=Kapcsolódási kísérlet MLO használatával.
+WiFi_MLO_connect_veto=Használjon helyette szabványos egysávos kapcsolatot.
+WiFi_MLO_connect_confirm=Szeretné használni az MLO-kapcsolatot?
 wireless_configured=Konfigurálva
 Wireless_name=Vezeték nélküli név
 wireless_router=Vezeték nélküli router
@@ -1253,6 +1261,7 @@ ADSL_FW_note=Megjegyzés:
 adsl_fw_ver_itemname=DSL illesztőprogram verzió
 adsl_link_sts_itemname=DSL kapcsolat állapota
 adv_wl_desc=Állítsa be az alábbi vezeték nélküli információkat.
+AiBoard_rescue_fail=Az AI Board helyreállítása sikertelen
 AiCloud_account_status=Fiók állapota
 AiCloud_account_unlock=Kiold
 aicloud_bandwidth1=A legjobb megtekintési és zenehallgatási élményhez szélessávú internetkapcsolat szükséges. Olvassa el az alábbi javaslatokat:
@@ -1365,12 +1374,12 @@ AiMesh_FindNode_confirm=Nem találom az AiMesh csomópontomat?
 AiMesh_FindNode_confirm_WPS=WPS engedélyezett lesz AiMesh csomópont keresésekor.
 AiMesh_FindNode_Desc=Keressen elérhető AiMesh csomópontokat a közelben, amelyekhez csatlakoztathatja AiMesh rendszerét.
 AiMesh_FindNode_Not=Nem sikerül AiMesh csomópontot találni a közelben.
-AiMesh_FindNode_Not_advA=Ha ezt az eszközt <span style='color:#569AC7;'> AiMesh router </span> eszközként rendelték hozzá, ellenőrizze a következőket és próbálja meg újra.
+AiMesh_FindNode_Not_advA=Ha ezt az eszközt <span style='color:var(--wrt-link-color,#569AC7);'> AiMesh router </span> eszközként rendelték hozzá, ellenőrizze a következőket és próbálja meg újra.
 AiMesh_FindNode_Not_advA1=AiMesh csomópontja be van kapcsolva
 AiMesh_FindNode_Not_advA2=AiMesh csomópontja a legfrissebb firmware-rel rendelkezik
 AiMesh_FindNode_Not_advA3=AiMesh csomópontját alaphelyzetbe állították vissza
 AiMesh_FindNode_Not_advA4=Helyezze AiMesh csomópontját az AiMesh routerhez közelebbre
-AiMesh_FindNode_Not_advB=Ha ezt az eszközt <span style='color:#569AC7;'>AiMesh node</span> eszközként rendelték hozzá, ellenőrizze a következőket és próbálja meg újra.
+AiMesh_FindNode_Not_advB=Ha ezt az eszközt <span style='color:var(--wrt-link-color,#569AC7);'>AiMesh node</span> eszközként rendelték hozzá, ellenőrizze a következőket és próbálja meg újra.
 AiMesh_FindNode_Not_advB1=Nyomja meg az eszközön lévő alaphelyzet gombot, majd várjon egy ideig.
 AiMesh_FindNode_Not_advB2=Jelentkezzen be AiMesh routere GUI felületére, majd kattintson az AiMesh ikonra.
 AiMesh_FindNode_Not_advB3=Frissítse AiMesh routere frmware-ét, ha nem találja az AiMesh ikont a router GUI felületén.
@@ -1447,7 +1456,7 @@ AiMesh_NodeLocation25=Garázs
 AiMesh_NodeLocation26=Első emelet
 AiMesh_NodeLocation27=Játékszoba
 AiMesh_NodeLocation28=Edzőterem
-AiMesh_NodeLocation29=Outdoor
+AiMesh_NodeLocation29=Kültéri
 AiMesh_OfflineTips=Offline tanácsok
 AiMesh_OfflineTips1=Győződjön meg arról, hogy AiMesh csomópontja be van kapcsolva.
 AiMesh_OfflineTips2=Indítsa újra AiMesh csomópontját és próbálja meg újra.
@@ -1661,7 +1670,7 @@ AiProtection_sites_block_desc=Korlátozza a hozzáférést a Trend Micro mindig 
 [###MODEL_DEP###][GT-AC5300]AiProtection_sites_block_desc=A rosszindulatú webhelyek blokkolásával korlátozhatja a hozzáférést az ismert rosszindulatú webhelyekhez, és megakadályozhatja, hogy a kártevő, adathalász, kéretlen vagy reklámprogramok, illetve hekker- és zsarolóprogramok megtámadják a hálózathoz csatlakozó készülékét.
 AiProtection_sites_blocking=Rosszindulatú Oldalak Blokkolása
 AiProtection_ARK_Malicious_Site_blocking=Rosszindulatú webhelyek és fertőzött eszközök blokkolása
-AiProtection_ARK_Malicious_Site_blocking_desc=Korlátozza a hozzáférést az ismert rosszindulatú webhelyekhez, hogy megvédje hálózatát a rosszindulatú programoktól, adathalász támadásoktól, spamektől, reklámprogramoktól, hekkerektől és zsarolóvírusoktól.
+AiProtection_ARK_Malicious_Site_blocking_desc=Korlátozza a hozzáférést az ismert rosszindulatú webhelyekhez, hogy megvédje hálózatát a kártevőktől, adathalászattól, spamtől, hackeléstől és zsarolóvírus-támadásoktól.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]AiProtection_sites_blocking=Rosszindulatú webhelyek blokkolása
 AiProtection_sites_trust=Megbízható tartomány hozzáadása és feloldása az AiProtection segítségével
 AiProtection_sites_trust_add=Tartomány hozzáadása a fehérlistához
@@ -1670,7 +1679,7 @@ AiProtection_title_BandwidthUtil=Sávszélesség használata
 AiProtection_title_BandwidthUtil_desc1=Kérjük, adja meg az internet feltöltési és letöltési sávszélességét.
 AiProtection_title_BandwidthUtil_desc2=A ROG ZVMODELVZ a sávszélességgel kapcsolatos információk alapján optimális forgalmat biztosít a játékokhoz használt készülékek számára.
 AiProtection_title_Dashboard=Irányítópult a játékokhoz
-AiProtection_title_Dashboard_add_card=Add card
+AiProtection_title_Dashboard_add_card=Kártya hozzáadása
 AiProtection_title_Dashboard_desc=A ROG ZVMODELVZ Dashboard lehetővé teszi, hogy a játékhálózathoz konfigurálja az optimális beállításokat, és valós idejűmegfigyelést végezzen.
 AiProtection_title_Dashboard_title=Irányítópult
 AiProtection_title_GameWiFi=Kifejezetten játékokhoz rendelkezésre álló WiFi
@@ -1704,18 +1713,19 @@ AiProtection_TrackerBlocking=Nyomkövető blokkolás
 AiProtection_TrackerBlocking_Desc=A nyomkövető blokkolás segít felismerni és blokkolni a webhelyek, hirdetők vagy harmadik fél elemzőplatformjai által küldött nyomkövetési kéréseket, ezzel védve a magánéletét, csökkentve az adatvesztést és gyorsítva a weboldalak betöltését.
 AiProtection_AdvertisementBlocking_Desc=A hirdetésblokkolás segít blokkolni a gyakori hirdetési forrásokat a zavarások csökkentése, a böngészés javítása és a biztonsági kockázatok csökkentése érdekében. Engedélyezheti az AdGuard DNS-t is a további védelem érdekében.
 AiProtection_AdvertisementBlocking_Enabled=Hirdetésblokkolás engedélyezve
-AiProtection_AdvertisementBlocking_edserv=Edge Server
-AiProtection_AdvertisementBlocking_edserv_desc=A self-hosted edge server on router. Provides detailed network insights, advanced control, and enhanced home privacy.
-AiProtection_AdvertisementBlocking_cloudserv=Cloud Server
-AiProtection_AdvertisementBlocking_cloudserv_desc=Extends protection across multiple sites via the cloud.
-AiProtection_AdvertisementBlocking_filter=Triple level content filter
-AiProtection_AdvertisementBlocking_trigger=Blocks ads with one click.
+AiProtection_AdvertisementBlocking_edserv=Élperem szerver
+AiProtection_AdvertisementBlocking_edserv_desc=Egy önállóan hosztolt edge szerver a routeren. Részletes hálózati betekintést, fejlett vezérlést és fokozott otthoni adatvédelmet biztosít.
+AiProtection_AdvertisementBlocking_cloudserv=Felhő szerver
+AiProtection_AdvertisementBlocking_cloudserv_desc=Kiterjeszti a védelmet több helyszínre a felhőn keresztül.
+AiProtection_AdvertisementBlocking_filter=Háromszintű tartalomszűrő
+AiProtection_AdvertisementBlocking_trigger=Egy kattintással blokkolja a hirdetéseket.
 AiProtection_TrackerBlocking_Enabled=Követésblokkolás engedélyezve
 AiProtection_select_device=Válasszon egy eszközt, vagy adjon meg egy érvényes MAC- vagy IP-címet
 AiProtection_rule_exist=Ehhez az eszközhöz már van szabály. Kérjük, távolítsa el azt, mielőtt újat hozna létre.
 ArkMigrationNote=Tájékoztatás
 ArkMigrationNote_1=A magánélet védelme és a rendszeroptimalizálás miatt a %@ mostantól helyi észlelést használ. A meglévő profil szabályokat manuálisan kell újrakonfigurálni.
 ArkMigrationNote_2=Ezek a funkciók nem kompatibilisek a korábbi firmware-ekkel; a visszalépés gyári visszaállítást igényel.
+ArkAiProtectionInfo=Egyes webhelyeket érinthet a hirdetés- vagy követésblokkolás, mivel ezek reklám- vagy követési szolgáltatásokat használnak. Ha problémái vannak egy weboldal elérésével, próbálja meg kikapcsolni a fenti funkciókat, majd frissítse az oldalt.
 FamilyContentBlock=Családi tartalmak blokkolása
 BwLimiter_Switch=Sávszélességkorlátozó kapcsoló
 BwLimiter_Download=Letöltési sávszélesség
@@ -1724,6 +1734,7 @@ BwLimiter_NewDevice=Új eszköz
 BwLimiter_Status=Állapot
 BwLimiter_Delete=Törlés
 SearchDevice_By_Name_Mac_Ip=Eszköznév, MAC vagy IP keresése
+SearchDevice_By_Name_Mac_Ip_Subnet=Keresés eszköznév, MAC, IP vagy alhálózat alapján
 BwLimiter_Target=Cél
 BwLimiter_enter_bandwidth=Adjon meg egy sávszélesség-értéket.
 BwLimiter_max=A sávszélesség-korlátozási szabályok elérték a maximumot (32).
@@ -1874,7 +1885,7 @@ Bandwidth_Setting=Bandwidth Setting
 BasicConfig_EnableDHCPFilter_itemname=DHCP-szűrő engedélyezése
 BasicConfig_EnableDownloadMachine_itemname=Engedélyezi a Download Mastert?
 BasicConfig_EnableDownloadShare_itemname=Engedélyezi a Download Share-t?
-BasicConfig_EnableiTunesServer_itemname=Engedélyezi az iTunes szervert?
+BasicConfig_EnableiTunesServer_itemname=Engedélyezi az iTunes szervert
 BasicConfig_EnableMediaServer_itemname=UPnP engedélyezése
 BlackList=Feketelista
 Block=Tiltás
@@ -1965,7 +1976,9 @@ btn_go=UGRÁS
 btn_goSetting=Ugrás a Beállításokra
 btn_remove=Eltávolítás
 btn_send=Küldés
+btn_resend=Újraküldés
 btn_to_WAN=WAN beállításokra
+btn_verify=Ellenőrzés
 Capability=Képesség
 Captcha=Képen megjelenített karakterek
 Captcha_note=Kérjük, adja meg a képen megjelenített karaktereket.
@@ -1976,7 +1989,7 @@ ChooseOthers_Hint=Válasszon más beállításokat, majd próbálja meg újból.
 collect_no_info_SWISS=Nem gyűjt információkat a felhasználókról, és a svájci adatvédelmi törvény hatálya alatt áll.
 Client_Name=Kliens neve
 Client_Icon=Ikon
-Client_Icon_change=Change Icon
+Client_Icon_change=Ikon módosítása
 Client_Icon_overload=Túllépte az ügyfél ikon feltöltési korlátot, távolítson el legalább egy ügyfél ikont, majd próbálja meg újból.
 Clientlist_block_internet=Internet-hozzáférés blokkolása
 Clientlist_block_internet_max=16 ügyfél jelenti a korlátot. Ellenőrizze az Időzítésen az ügyféllistát.
@@ -2111,7 +2124,7 @@ CTL_finished=Befejezve
 CTL_format=Formátum
 CTL_Generate=Generálás
 CTL_help=Súgó
-CTL_later=Later
+CTL_later=Később
 CTL_link=Kapcsolat
 CTL_localdevice=Helyi eszköz
 CTL_login=Bejelentkezés
@@ -2122,15 +2135,16 @@ CTL_reconnection=Auto. újracsatlakozás
 CTL_refresh=Frissítés
 CTL_Reset_OOB=Alaphelyzet
 CTL_restore=Visszaállítás
+CTL_restore_again=Visszaállítás újra
 CTL_scan=Keresés
 CTL_search=Keresés
 CTL_secure=Router biztosítása
 CTL_upgrade=Firmware frissítés
 CTL_upload=feltöltése
-CTL_upload_img=Upload image
+CTL_upload_img=Kép feltöltése
 CTL_initialize=Initialize
 Current=Kapcsolat állapota
-Current_peak=Peak
+Current_peak=Csúcs
 Current_band=Jelenlegi frekvencia
 current_settings=Jelenlegi beállítások
 Custom=Egyedi
@@ -2158,6 +2172,9 @@ DDNS_https_cert_alert=Helyes SSL-tanúsítvány fájlt válasszon ki.
 DDNS_ipv6_update=IPv6-frissítés
 DDNS_ipv6_update_desc=Ha az ügyfél hálózati környezete IPv6 hálózati címet használ, akkor a funkció engedélyezésekor távoli eszköz elérése esetén a tartományt először IPv6 hálózati címre oldja fel a rendszer.
 DDNS_ssl_cert=SSL tanúsítvány
+DDNS_status=DDNS állapota
+DDNS_reg_result=DDNS regisztráció eredménye
+DDNS_root_ca=Gyökértanúsítvány/Köztes tanúsítvány
 DDNS_termofservice_Title=Értesítés a használati feltételekről
 DDNS_transfer=Transfer ASUS DDNS name
 DDNS_verification_enable=WAN IP és állomásnév ellenőrzés
@@ -2179,10 +2196,10 @@ Device_type_03_AP=Hozzáférési pont
 Device_type_04_NS=NAS
 Device_type_05_IC=IP-kamera
 Device_type_06_OD=Egyéb eszközök
-deviceDiscorvy2=Jelerősítő üzemmód a DHCP által kiadott IP-cím módosul. Telepítse és használja a <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a>-ot a vezeték nélküli router új IP-címének lekéréséhez.
-deviceDiscorvy3=Access Point (AP - Hozzáférési pont) módban a DHCP által kiadott IP-cím módosul. Telepítse és használja a <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery segédprogram</a>-ot a vezeték nélküli router IP-címének felderítéséhez.
-AiMesh_deviceDiscorvy3=Ha az AiMesh routerek hozzáférési pont módban vannak, a DHCP által hozzárendelt IP-cím megváltozik. A vezeték nélküli router IP-címének észleléséhez telepítse és kezdje el használni a <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a>.
-deviceDiscorvy4=Médiahíd módban a DHCP által kiadott IP-cím módosul. Telepítse és használja a <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a>-ot a vezeték nélküli router új IP-címének lekéréséhez.
+deviceDiscorvy2=Jelerősítő üzemmód a DHCP által kiadott IP-cím módosul. Telepítse és használja a <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a>-ot a vezeték nélküli router új IP-címének lekéréséhez.
+deviceDiscorvy3=Access Point (AP - Hozzáférési pont) módban a DHCP által kiadott IP-cím módosul. Telepítse és használja a <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery segédprogram</a>-ot a vezeték nélküli router IP-címének felderítéséhez.
+AiMesh_deviceDiscorvy3=Ha az AiMesh routerek hozzáférési pont módban vannak, a DHCP által hozzárendelt IP-cím megváltozik. A vezeték nélküli router IP-címének észleléséhez telepítse és kezdje el használni a <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a>.
+deviceDiscorvy4=Médiahíd módban a DHCP által kiadott IP-cím módosul. Telepítse és használja a <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a>-ot a vezeték nélküli router új IP-címének lekéréséhez.
 DeviceSecurity11a_display1_sectiondesc=A vezeték nélküli MAC-szűrő lehetővé teszi az adott MAC-címmel rendelkező eszközök adatcsomagjainak szabályozását a vezeték nélküli LAN-on.
 DHCP_query_freq=DHCP lekérdezési frekvencia
 DHCPaggressive=Agresszív mód
@@ -2359,13 +2376,16 @@ Enable_ncb_Non_Block=Ne blokkolja
 Enable_ncb_Limited_Block=Korlátolt blokkolás
 Enable_ncb_All_Block=Teljes blokkolás
 Encap_mode_help=A ZVMODELVZ két módot kínál a LAN és WAN protokollok beágyazásához és szállításához ATM-en keresztül. Kérjük, válassza ki a megfelelő Beágyazási módot.
+Energy_Saving_conflict_hint1=A tényleges működés eltérhet a fő funkció és az energiatakarékos beállítások közötti kölcsönhatások miatt.
+Energy_Saving_conflict_hint2=Az egységes működés biztosítása érdekében a fő funkció és az energiatakarékosság között a jelenlegi beállítások kerülnek elsőbbségre.
+Energy_Saving_affected_setting=Érintett beállítások: (%@)
 Ethernet_wan=Ethernet WAN
 Excute=Telepítés
 Excute_processing=Telepítés...
 External=Csak külső
 Extend_TTL_Value=A TTL érték kiterjesztése
 EZQoS=EZQoS sávszélesség-kezelés
-EzQoS_bandwidth_note1=A sávszélesség információkat megszerezheti az internet szolgáltatójától vagy látogasson el a <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:#FC0;">http://speedtest.net</a> oldalra.
+EzQoS_bandwidth_note1=A sávszélesség információkat megszerezheti az internet szolgáltatójától vagy látogasson el a <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);">http://speedtest.net</a> oldalra.
 EzQoS_bandwidth_note2=Az alapértelmezett érték a 0, ami korlátlan sávszélességet jelent.
 EzQoS_desc=A Quality of Service (QoS) sávszélességet biztosít a kiemelt feladatoknak.
 EzQoS_desc_Adaptive=<span style="font-weight:bolder;font-size:14px;">Adaptív QoS</span> biztosítja a ki és bemeneti sávszélességet mind a vezetékes mind a vezeték nélküli kapcsolaton a applikációknak és előre drag-and-drop kiválasztással beállított feladatoknak: játék, média streamelés, VoIP, általános böngészés és file továbbítás.
@@ -2432,11 +2452,11 @@ feedback_email_alert=Az e-mail cím formátuma nem érvényes.
 feedback_email_confirm=Az E-mail cím mező üres. Biztosan folytatja?
 feedback_extra_info=Plusz információk hibakereséshez
 feedback_fail0=A visszajelzés elküldése nem sikerült. Kérjük, ellenőrizze az internetkapcsolatát, és próbálja újra.
-feedback_fail1=<span style="color:#FC0;">A rendszer nem tudott csatlakozni a főkiszolgálóhoz.</span> Küldjön üzenetet közvetlenül a következő címre
+feedback_fail1=<span style="color:var(--wrt-badge-warning-color,#FC0);">A rendszer nem tudott csatlakozni a főkiszolgálóhoz.</span> Küldjön üzenetet közvetlenül a következő címre
 feedback_fail2=Egyszerűen csak másolja ki az alábbi tartalmat, és illessze be az e-mail üzenet tartalmába.
 feedback_fail3=Töltse le az alábbi javító fájlokat és adja hozzá mint e-mail csatolmányt:
 feedback_fail0_new=A rendszer nem tudott csatlakozni a visszajelző szerverhez.
-feedback_fail1_new=<span>Ha használati problémája van, vagy technikai támogatásra van szüksége, először vegye fel a kapcsolatot az ASUS Ügyfélszolgálati Központtal&nbsp;<a class="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Hivatalos támogatás | ASUS Global)</a>.</span>
+feedback_fail1_new=<span>Ha használati problémája van, vagy technikai támogatásra van szüksége, először vegye fel a kapcsolatot az ASUS Ügyfélszolgálati Központtal&nbsp;<a class="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Hivatalos támogatás | ASUS Global)</a>.</span>
 feedback_fail2_new=A következő észlelt hibafájlt is elküldheti a router_feedback@asus.com címre, hogy javaslatokat tegyen a fejlesztő csapatnak. Köszönjük.
 feedback_fail_BindGoogle=Vagy <a id="bind_google">hozzácsatolhatja a Google fiókját</a> a visszajelzés e-mailen való elküldéséhez.
 feedback_format_alert=The format is not valid.
@@ -2458,7 +2478,7 @@ feedback_note3=Visszajelzésének elküldésével egyetért azzal, hogy az ASUS 
 [###MODEL_DEP###][DSL-AX82U][DSL-AC68U][DSL-N55U][DSL-N55U-B]feedback_note3=Visszajelzésének elküldésével egyetért azzal, hogy az ASUS felhasználhatja visszajelzését xDSL modem router termékeinek tökéletesítésére.
 feedback_note4=Amennyiben sürgős kérdései vannak, forduljon a műszaki támogatást nyújtó helyi képviselethez.
 feedback_note5=A visszajelzés folyamatban van. Az újraindítás a program leállását okozhatja, és a visszajelzés nem fejeződhet be. Kérjük, indítsa újra később.
-feedback_note6=<span>Ez a rendszer nem nyújt egyéni válaszokat. Ha használati problémája van, vagy technikai támogatásra van szüksége, kérjük, vegye fel a kapcsolatot az ASUS Ügyfélszolgálati Központtal</span>&nbsp;<a id="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Hivatalos támogatás | ASUS Global)</a>.
+feedback_note6=<span>Ez a rendszer nem nyújt egyéni válaszokat. Ha használati problémája van, vagy technikai támogatásra van szüksége, kérjük, vegye fel a kapcsolatot az ASUS Ügyfélszolgálati Központtal</span>&nbsp;<a id="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Hivatalos támogatás | ASUS Global)</a>.
 feedback_note7=Professzionális csapatunk elkötelezett az Ön szolgálatában. Köszönjük.
 feedback_Occasion_interrupt=Alkalomszerű megszakítások
 feedback_optional=* Opcionális
@@ -2619,7 +2639,7 @@ FW_auto_upgrade_desc=A letöltésük után éjszaka automatikusan elvégzi a ren
 FW_auto_upgrade_desc1=Egyes frissítések, amelyek alapvető biztonsági problémákat oldanak meg, vagy jogi/szabályozási követelményeknek felelnek meg, továbbra is automatikusan telepítésre kerülnek, még akkor is, ha az automatikus firmware-frissítés ki van kapcsolva.
 FW_auto_upgrade_note=Ha engedélyezve van, az útválasztó automatikusan telepíti az új firmware-t az Ön által megadott időpontban.
 FW_beta_check=Szeretném letölteni a béta firmware-t.
-FW_desc0=Szerezd be a legújabb firmware-verziót az <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/" target="_blank">ASUS támogatási webhelyéről</a>
+FW_desc0=Szerezd be a legújabb firmware-verziót az <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/" target="_blank">ASUS támogatási webhelyéről</a>
 FW_desc1=Nézze meg az ASUS támogatási honlapot a https://www.asus.com/support/ címen a legújabb firmware beszerzését illetően.
 fw_downloading=Firmware letöltése
 FW_item1=Termékazonosító
@@ -2628,9 +2648,9 @@ FW_item2_aiboard=AI Board firmware verzió
 FW_item5=Új firmware-fájl
 FW_manual_update=Kézi firmware frissítés
 FW_n0=A legújabb firmware-verzió az előző verzióból származó frissítéseket tartalmaz.
-FW_n2=Sikertelen frissítés esetén a ZVMODELVZ automatikusan vészhelyzeti módba lép. Ha ez előfordul, akkor ezt a ZVMODELVZ elülső részén található LED-jelek jelzik.Kérjük, hogy az ASUS Firmware Restoration segédprogram letöltéséhez látogass el az <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS letöltési központba</a>.
-FW_n3=Check on <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="" target="_blank">FAQ</a> for more instructions.
-FW_n4=Check on <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: #FFCC00;\" href=\"\" target=\"_blank\">FAQ</a> for more instructions.
+FW_n2=Sikertelen frissítés esetén a ZVMODELVZ automatikusan vészhelyzeti módba lép. Ha ez előfordul, akkor ezt a ZVMODELVZ elülső részén található LED-jelek jelzik.Kérjük, hogy az ASUS Firmware Restoration segédprogram letöltéséhez látogass el az <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS letöltési központba</a>.
+FW_n3=További utasításokért tekintse meg a <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="" target="_blank">GYIK</a> oldalt.
+FW_n4=További utasításokért tekintse meg a <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: var(--wrt-badge-warning-color,#FFCC00);\" href=\"\" target=\"_blank\">GYIK</a> oldalt.
 FW_n5=A firmware/biztonsági magasabb verzióra frissítések számára szolgáló adatgyűjtést illetően az ASUS ADATVÉDELMI KÖZLEMÉNY (firmware/biztonsági magasabb verzióra frissítések) című részt nézze meg az „Adminisztráció-> Adatvédelem” oldalon.
 FW_note=Megjegyzés:
 FW_note_AiMesh=Az AiMesh rendszer használata esetén kézi frissítéskor csak a kijelölt AiMesh routerek/csomópontok fognak frissülni. Figyeljen, hogy mindegyik router / csomóponthoz a megfelelő AiMesh firmware verziót töltse fel.
@@ -2690,6 +2710,7 @@ Gear_Accelerator=Sebességgyorsító
 Gear_Accelerator_desc=Játékeszközök prioritása
 Gear_Accelerator_desc1=Rendeljen prioritást a játékeszközeihez a legjobb játékélmény érdekében.
 Gear_Accelerator_List=Játékeszköz lista
+Gear_Accelerator_confirm=A %@ engedélyezéséhez a hardveres gyorsítás le lesz tiltva, ami csökkentheti a hálózati sebességet. Folytatja?
 Game_Ark_Devices_identification=Játékeszközök azonosítása
 Game_Ark_Devices_identification_desc=A játékeszközök azonosítása intelligensen priorizálja a hálózati forgalmat a csatlakoztatott eszközök számára.
 Game_Ark_First_desc=A GameFirst V a ROG alaplapokkal, laptopokkal és asztali gépekkel érkezik, hogy optimalizálja a hálózati forgalmat az online PC-játékhoz.
@@ -2706,12 +2727,12 @@ GB_account_type2=Router speciális fiók
 GB_ended_date=Befejezési dátum
 GB_ended_date_desc=A WTFast minden új felhasználónak 14 napra szóló próbaidőszakot biztosít, amely kizárólag azokra a speciális fiókokra érvényes, amelyekhez több proxyszerver-lehetőség áll rendelkezésre. Miután a próbaidőszak letelt, továbbra is élvezheti a teljes élettartamra szóló előfizetés előnyeit a fiók alapvető funkcióival, ami ingyenes, és amelyre forgalomkorlátozások vonatkoznak.
 GB_ended_date_type0=Ön most az ingyenes router-alapfiókot használja.
-GB_management_note1=A WTFast által működtetett Game Boost használatával Ön elfogadja a WTFast <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:#008DE5;">használati feltételeit</a></span> és <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:#008DE5;">adatvédelmi szabályzatát</a></span>.
-GB_management_note2=Ahogy ez a termékbemutató oldalon lévő felelősségkizáró nyilatkozatban is szerepel, a WTFast még mindig azon dolgozik, hogy támogatást nyújtson a játékkonzolokhoz. A jelenleg támogatott játékokat <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:#008DE5;">ezen a listán</a> tekintheti meg. (a lista rendszeresen frissül)
+GB_management_note1=A WTFast által működtetett Game Boost használatával Ön elfogadja a WTFast <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">használati feltételeit</a></span> és <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">adatvédelmi szabályzatát</a></span>.
+GB_management_note2=Ahogy ez a termékbemutató oldalon lévő felelősségkizáró nyilatkozatban is szerepel, a WTFast még mindig azon dolgozik, hogy támogatást nyújtson a játékkonzolokhoz. A jelenleg támogatott játékokat <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">ezen a listán</a> tekintheti meg. (a lista rendszeresen frissül)
 GB_management_note3=A GPN teljesítménye az adott internetszolgáltatótól vagy régiótól függően eltérő. Kérjük, győződjön meg arról, hogy a firmware mindig naprakész.
-GB_management_note4=Hogyan választhatok ki egy megfelelő GPN-szervert? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:#008DE5;">Itt</a></span> Hogyan lehet részem a legjobb játékélményben? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:#008DE5;">Itt</a></span>
-GB_management_note5=Hogyan használhatom a WTFastot az ASUS routeren? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:#008DE5;">Itt</a></span>
-GB_mobile=Mobile Game Mode
+GB_management_note4=Hogyan választhatok ki egy megfelelő GPN-szervert? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Itt</a></span> Hogyan lehet részem a legjobb játékélményben? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Itt</a></span>
+GB_management_note5=Hogyan használhatom a WTFastot az ASUS routeren? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Itt</a></span>
+GB_mobile=Mobiljáték mód
 GB_mobile_desc=Dobja fel a mobilon játszott játékokat
 GB_mobile_desc1=Töltse le és telepítse az ASUS Router alkalmazást. Engedélyezze a mobil játékmódot az alkalmazásban a legjobb mobil játékélmény érdekében.
 GB_mobile_desc_short=Töltse le és telepítse az ASUS Router alkalmazást.
@@ -2832,7 +2853,7 @@ HSDPAConfig_hsdpa_enable_hint2=Ha módosítani akarja a kapcsolat típusát, lé
 HSDPAConfig_hsdpa_enable_itemname=USB modem engedélyezése
 HSDPAConfig_hsdpa_mode_itemname=USB modem mód
 HSDPAConfig_hsdpa_mode_itemdesc=Az USB adapter csatlakoztatásával a ZVMODELVZ mobil útválasztóvá válik.
-HSDPAConfig_hsdpa_mode_status=USB Modem Status
+HSDPAConfig_hsdpa_mode_status=USB modem állapota
 HSDPAConfig_isp_itemdesc=Kérjük, válassza ki internetszolgáltatóját (ISP).
 HSDPAConfig_ISP_itemname=ISP
 HSDPAConfig_password_itemdesc=Kérjük, adja meg jelszavát.
@@ -3014,7 +3035,7 @@ IPv6_xpass=Xpass
 isp_br_gvt_note=Ha GVT felhasználó, gépelje be a felhasználónevet <b>turbonet@turbonet</b> és jelszót <b>gvt25</b>. Ellenkező esetben gépelje be az ISP által megadott felhasználónevet és jelszót.
 isp_profile=Válaszon ISP-profilt a speciális ISP-beállítások konfigurálásához.
 iTunesServer=iTunes Server
-iTunesServer_itemname=iTunes Server Name
+iTunesServer_itemname=iTunes szerver neve
 Jitter=Jitter
 JS_access_type=Please select at least one Access Type.
 JS_badconnection=A ZVMODELVZ eszközhöz nem sikerült csatlakozni. Kattintson az OK gombra az új kapcsolódási kéréshez, illetve a Mégsem gombra a leállításhoz.
@@ -3113,7 +3134,7 @@ LANHostConfig_x_DDNS_retrieve_IP_note=[Belső] Regisztráljon egy domainnevet a 
 LANHostConfig_x_DDNS_update_confirm=Az IP-cím, a kiszolgáló és a gazdagép neve az utolsó frissítés óta nem változott. Ha frissíteni szeretne, kattintson az [Igen] gombra.
 LANHostConfig_x_DDNSEnable_itemname=DDNS
 LANHostConfig_x_DDNSEnable_sectiondesc=A DDNS (Dynamic Domain Name System) egy szolgáltatás, amely lehetővé tezi, hogy a hálózati kliensek még dinamikus nyilvános IP-címmel is a vezeték nélküli routerhez kapcsolódhassanak a regisztrált tartománynve segítségével.
-LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:#FFFFFF;">További részletekért kérjük, olvassa el <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">ezt a GYIK-et</a>.
+LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:var(--wrt-text-color,#FFFFFF);">További részletekért kérjük, olvassa el <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">ezt a GYIK-et</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc3=Az állomásnév regisztrációja sikeresen megtörtént. A "[hostname].asuscomm.com" használatával elérheti a szolgáltatást az otthoni hálózaton a WAN-ról. A "[hostname].asuscomm.com" használatával elérheti a szolgáltatást a hálózatán.<p>Lépjen a Speciális beállítások > WAN elemre a porttovábbítás vagy DMZ beállítások konfigurálásához, hogy más WAN kliensek távolról elérhessék az Ön hálózatát.<p> Ha távolról kívánja konfigurálni a vezeték nélküli routert, lépjen <a href="/Advanced_System_Content.asp?af=misc_http_x" target="_blank" style="text-decoration: underline; font-family:Lucida Console;">ide</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc4=Magánhálózati IP-címet használ a jelenlegi router.
 LANHostConfig_x_DDNSEnable_faq1=Dinamikus tartománynévrendszer bevezetése és beállítása
@@ -3340,7 +3361,7 @@ month=hónap
 MoreConfig=Több konfiguráció
 MPPE_Encryp=MPPE titkosítás
 mssid_time_remaining=Maradék idő
-multiservice_WAN=Multi-Service WAN
+multiservice_WAN=Többszolgáltatásos WAN
 NAT_Acceleration=NAT-gyorsítás
 NAT_AccelerationDesc=Ha a NAT-gyorsítás engedélyezve van, a switch önmagában képes kezelni a hálózati csomagokat, és megkerüli a CPU-t. Ez megnövelheti a NAT átviteli sebességét, de egyes funkciók, például az időzítés, a hagyományos QoS és a vendéghálózaton futó sávszélesség-korlátozó stb. pontossága romolhat. Ha a NAT-gyorsítást automatikusra állítja, akkor ezek engedélyezésénél a NAT-gyorsítás automatikusan letiltódik.
 NAT_Acceleration_ctf_disable=A NAT-forgalmat a processzor dolgozza fel.
@@ -3355,7 +3376,7 @@ NAT_IPSec_Passthrough=IPSec áthaladás
 NAT_L2TP_Passthrough=L2TP áthaladás
 NAT_lacp=Összekapcsolás / Kapcsolat-összevonás
 NAT_lacpDesc=Ennek az elemnek különféle nevei voltak: Portösszekötés/Összekapcsolás/Csoportosítás/Kapcsolat-összevonás/802.3ad
-NAT_lacp_disable_note=Change IPTV/ VOIP port settings to LAN5/ LAN6 will disable Bonding/ Link aggregation function. Are you sure to do it?
+NAT_lacp_disable_note=Az IPTV/ VOIP portbeállítások LAN5/ LAN6 értékre módosítása letiltja a Bonding/ Link aggregation funkciót. Biztosan folytatja?
 NAT_lacp_note=Kérjük engedélyezze a Kötés (802.3ad) támogatását a vezetékes kliensen és csatlakoztassa a router LAN1 és LAN2 portjához.
 NAT_passthrough_desc=A NAT áthaladás engedélyezése lehetővé teszi egy Virtuális magánhálózati (VPN) kapcsolat számára az áthaladást a routeren a hálózati kliensekhez.
 NAT_PPTP_Passthrough=PPTP áthaladás
@@ -3415,8 +3436,8 @@ note_hide_SSID_WPS=Ha engedélyezni kívánja a WPS-t, előbb le kell tiltania a
 note_up_to_date=Note: New patch will be updated regularly, please keep your firmware stay up to date.
 Notice=Értesítés
 Notification_Item=Értesítési elem
-Notification_security_update=Security Update Notification
-Notification_security_desc=Monitor this log to stay informed about system security changes that may affect your network.
+Notification_security_update=Biztonsági frissítési értesítés
+Notification_security_desc=Figyelje ezt a naplót, hogy értesüljön a rendszerbiztonsági változásokról, amelyek hatással lehetnek a hálózatára.
 Now=Most
 number_of_client=Kliensek száma
 NSlookup_help=Ugorjon a <a href="https://iplookup.asus.com/nslookup.php" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">https://iplookup.asus.com/nslookup.php</a> elemre statikus cím kereséséhez, amelyet az ASUS DDNS szolgáltatással használhat.
@@ -3440,7 +3461,7 @@ ParentalCtrl_default=Az internetelérés alapértelmezésképpen időintervallum
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_default=Az internetelérés alapértelmezésképpen időintervallumok szerint korlátozott.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]ParentalCtrl_default=A szülői felügyelet funkcióhoz hozzáadott készülékek internet-hozzáférése alapértelmezés szerint korlátozva van.
 ParentalCtrl_deny=Tiltás
-ParentalCtrl_disable_NAT=Tiltsa le a <a id="disable_NAT" style="color:#FC0;text-decoration: underline;" href="" target="_blank">NAT-gyorsítás</a> funkciót a pontosabb időzítés érdekében.
+ParentalCtrl_disable_NAT=Tiltsa le a <a id="disable_NAT" style="color:var(--wrt-badge-warning-color,#FC0);text-decoration: underline;" href="" target="_blank">NAT-gyorsítás</a> funkciót a pontosabb időzítés érdekében.
 ParentalCtrl_Enable=Szülői felügyelet engedélyezése
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_Enable=Eszköz hozzáférési vezérlés engedélyezése
 ParentalCtrl_Enable_TS=Időütemezés engedélyezése
@@ -3749,6 +3770,7 @@ select_service=Válassza ki a szolgáltatás nevét.
 select_usb_device=USB-eszköz kijelölése
 select_usb_mode=USB Mode
 select_wireless_MAC=Válassza ki a vezeték nélküli kliens MAC-címét.
+Sending_str=Küldés…
 Send_mail=Üzenet küldése
 Serial_Number=Sorozatszám
 Servers_Center=Szerverközpont
@@ -3773,7 +3795,8 @@ Setting_initialize_desc_ai=A fő router rendszerének visszaállítása a gyári
 Setting_lock_main_unit=Fő egység zárolása
 Setting_lock_main_unit_desc1=Engedélyezés esetén ez az eszköz a fő egység szerepére korlátozódik, és nem csatlakozhat más hálózathoz csomópontként.
 Setting_lock_main_unit_desc2=Megjegyzés: Ennek az állapotnak a módosítása gyári visszaállítást indít és újrakonfigurálást igényel.
-Setting_lock_main_unit_confirm=A „Fő egység zárolása” állapot módosítása gyári visszaállítást igényel. Ez törli az összes jelenlegi hálózati beállítást.
+Setting_lock_main_unit_desc3=Ha aktív mesh hálózata van, amelyhez Nodes csomópontok kapcsolódnak ezen a CAP eszközön keresztül, akkor ezeket a Nodes csomópontokat a CAP gyári visszaállítása után manuálisan is vissza kell állítani.
+Setting_lock_main_unit_confirm=A „Fő egység zárolása” állapot módosítása „gyári visszaállítást igényel”. Ez törli az összes jelenlegi hálózati beállítást.
 Setting_save_itemdesc=Kattintson a [Mentés] gombra, hogy a ZVMODELVZ konfigurációs beállításait egy fájlba mentse. MEGJEGYZÉS: ez a konfigurációs fájl biztonsági mentésként szolgál, és lehetővé teszi a router konfigurációs beállításainak visszaállítását.
 Setting_save_itemdesc_ai=A beállítások mentése nem tartalmazza az AI Board rendszer konfigurációit vagy adatait.
 Setting_save_itemname=Beállítás mentése
@@ -3782,7 +3805,7 @@ Setting_upload_hint=Érvénytelen fájlformátum vagy útvonal.
 Setting_upload_itemdesc=Adja meg a beállításfájl elérési útvonalát és nevét, majd kattintson az [Upload] gombra, hogy a fájlt a ZVMODELVZ eszközre írja. Kérjük, várjon 60 másodpercig, amíg a ZVMODELVZ újraindul.
 [###MODEL_DEP###][RT-N65U]Setting_upload_itemdesc=Adja meg a beállításfájl elérési útvonalát és nevét, majd kattintson az Upload (Feltöltés) gombra. Kérjük, várjon kb. 90 másodpercig, amíg a ZVMODELVZ újraindul.
 Setting_upload_itemname=Beállítás visszaállítása
-Setting_remove_passwd=Click on this checkbox if you want to share the config file for debugging. Since the original password in the config file will be removed, please do not import the file into your router.
+Setting_remove_passwd=Jelölje be ezt a jelölőnégyzetet, ha meg szeretné osztani a konfigurációs fájlt hibakeresés céljából. Mivel az eredeti jelszó törlésre kerül a fájlból, kérjük, ne importálja a fájlt a routerébe.
 Setting_ai_board=AI Board beállítások
 Setting_ai_board_fw_ver=AI Board firmware verzió
 Setting_ai_dk_Apps=Docker alkalmazások
@@ -3819,8 +3842,11 @@ Setting_rescue_ai_FWUpload=Firmware feltöltése
 Setting_rescue_ai_FWInstall=Firmware telepítése
 Setting_rescue_ai_appInstall=APP telepítése
 Setting_rescue_ai_complete=AI Board helyreállítása befejeződött.
+Setting_rescue_ai_Interrupted=Az AI Board visszaállítása megszakadt
+Setting_rescue_ai_Interrupted_desc1=A visszaállítási folyamat váratlan megszakítás vagy áramkimaradás miatt meghiúsult.
+Setting_rescue_ai_Interrupted_desc2=Kérjük, biztosítson stabil tápellátást, majd próbálja újra.
 Setting_prog_ai_currStep=Jelenlegi lépés:
-Setting_prog_ai_Note=Megjegyzés: A rendszer normálisan működik. Ne szakítsa meg a műveletet.
+Setting_prog_ai_Note=Megjegyzés: A rendszer normálisan működik. Kérjük, ne szakítsa meg a folyamatot, és biztosítson stabil tápellátást és internetkapcsolatot.
 Setting_prog_ai_serveralTime=Ez a folyamat néhány percet vehet igénybe.
 Settings=Beállítások
 Setup_note=Kattintson <a id="redirect_to_setup">ide</a> a módosításhoz. Bővebb részletekért lásd ezt a <a id="redirect_to_FAQ">GYIK-et</a>.
@@ -3876,7 +3902,7 @@ smart_connect_STA=STA-kiválasztási irányelv
 smart_connect_STA_counts=Számláló
 smart_connect_STA_dwell=Élettartam
 smart_connect_STA_window=Ablakidő
-smart_connect_status=Smart Connect Status
+smart_connect_status=Smart Connect állapota
 smart_connect_Steering=Kormányzásaktiváló feltétel
 smart_connect_Bandwidth=Sávszélesség használata
 smart_sync=AiCloud Sync
@@ -3987,10 +4013,33 @@ SDN_Scenarios_desc=Egy további vezeték nélküli hálózatot akar speciális c
 SDN_MainFH_for_clients=MLO Fronthaul kliensek számára
 SDN_MainFH_keep_Hint=At least one main network must be retained.
 SDN_MainFH_Smart_Connect_Hint=Mivel a Smart Connect szabály létrejött, válasszon egyetlen WiFi sávot.
+SDN_mlo_switch_fh_hint1=Csak egy aktív MLO fronthaul engedélyezett.
+SDN_mlo_switch_fh_hint2=Szeretné kikapcsolni %1$@ MLO Fronthaul kapcsolatát, és aktiválni %2$@ kapcsolatát?
 SDN_Sync_To_All_Node=Szinkronizálás az összes AiMesh csomópontra
 SDN_Sync_To_All_Node_Hint=Ha az AiMesh-csomópontjai régebbi modellek, vagy a WiFi elérte a maximális kapacitást, nem lesz lehetséges az összes AiMesh-csomópont szinkronizálása. Kérjük, válassza ki a szinkronizálni kívánt csomópontokat az alábbi menüből.
 SDN_Sync_limitation_Hint=Régebbi AiMesh-csomópontok esetén korlátozások vannak az összes sáv szinkronizálására.
 SDN_MainFH_WiFi_conflict=%1$@ WiFi sáv(ok) lettek használva. Az ütköző %2$@ (%3$@) hálózatok törlődnek a beállítások alkalmazása után.
+SDN_Auth_WPA3_only_subtext1=A legmagasabb biztonsági szint, csak WPA3 kapcsolatokkal.
+SDN_Auth_WPA3_only_subtext2=(Megjegyzés: A WPA3-at nem támogató régebbi eszközök nem biztos, hogy csatlakoznak.)
+SDN_Auth_WPA3_dual=A szabványos kétmódú biztonsági lehetőség.
+SDN_Auth_WPA3_dual_desc=A modern eszközök WPA3-at, a régebbiek WPA2-t használnak.
+SDN_Auth_WPA3_dual_mode=Kompatibilitási mód
+SDN_Auth_WPA3_dual_mode_subtext1=Fejlett kétmódú biztonsági lehetőség régebbi eszközökhöz RSN felülbírálással.
+SDN_Auth_WPA3_dual_mode_subtext2=Biztosítja, hogy a régebbi eszközök kapcsolódva maradjanak, míg az újak WPA3-at használnak.
+SDN_Auth_WPA3_dual_mode_subtext3=(Megjegyzés: Egyes középkategóriás eszközök WPA2-t használhatnak.)
+SDN_Auth_WPA3_subtext=Továbbfejlesztett biztonsági beállítás, amely RSN overriding használatával a régebbi eszközökhöz van optimalizálva. Maximális biztonságot nyújt a modern eszközöknek, miközben stabil kapcsolatot biztosít a nem modern kliensek számára.
+SDN_WiFi_Mode_Only6G_Hint=A globális WiFi-szabványoknak való megfelelés érdekében a 6 GHz-es sáv összes hálózatának ugyanazt a WiFi generációt kell használnia.
+SDN_WiFi_Mode_24G_Hint=A 2,4 GHz a WiFi mód beállításainak megfelelően működik.
+SDN_Compatibility_Mode_Off=A kompatibilitási mód ki van kapcsolva.
+SDN_Compatibility_Mode_24=2,4 GHz kompatibilitási mód
+SDN_Balance_Mode=Kiegyensúlyozott
+SDN_Balance_Mode_desc=Optimális egyensúly a teljesítmény és az eszközkompatibilitás között.
+SDN_Balance_Mode_desc1=A 2,4 GHz WiFi 6 módban működik.
+SDN_Ultra_Compatibility_Mode=Maximális kompatibilitás
+SDN_Ultra_Compatibility_Mode_desc=Stabil kapcsolatot biztosít régebbi vagy korábbi IoT-eszközök számára.
+SDN_Ultra_Compatibility_Mode_desc1=A 2,4 GHz WiFi 4 módban működik.
+SDN_IPv6_FreeWiFi_Hint=Megjegyzés: A Free WiFi nem támogatja a kizárólag IPv6-os környezeteket. Győződjön meg arról, hogy az IPv4 vagy a Dual-Stack engedélyezve van az ügyfél átirányításához.
+SDN_IPv6_MessageBoard_Hint=Megjegyzés: A Message Board nem támogatja a kizárólag IPv6-os környezeteket. Győződjön meg arról, hogy az IPv4 vagy a Dual-Stack engedélyezve van az ügyfél számára.
 t2BC=Egyszerű konfiguráció
 t2LAN=LAN
 t2Misc=Vegyes
@@ -4066,7 +4115,9 @@ TZ02=Midway-sziget, Szamoa
 TZ03=Hawaii
 TZ04=Alaszka
 TZ05=Csendes-óceáni idő (USA, Kanada)
+TZ05_1=Vancouver, Whitehorse
 TZ06=Hegyvidéki idő (USA, Kanada)
+TZ06_1=Edmonton, Yellowknife
 TZ07=Arizona
 TZ08=Mazatlan
 TZ10=Saskatchewan
@@ -4222,7 +4273,7 @@ usb_tls_conflict=Az anonim bejelentkezés engedélyezése ütközik a TLS-beáll
 usb_tls_conflict_WANacc=WAN-hozzáférés engedélyezése ütközik a TLS-beállításokkal.
 usb_uninstalling=Az alkalmazás eltávolítása az USB-tárolóeszközről...
 usb_unmount=Az USB-funkció le van tiltva.
-use_DevDiscoveryUtil=Telepítse és használja a <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery segédprogram</a>-ot a vezeték nélküli router IP-címének felderítéséhez.
+use_DevDiscoveryUtil=Telepítse és használja a <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery segédprogram</a>-ot a vezeték nélküli router IP-címének felderítéséhez.
 Username=Felhasználónév
 Username_Pwd=Felhasználónév és jelszó
 UserQoS_desc=A Felhasználó által megadott QoS legördülő listán ötszintű elsőbbséget adhat hálózati alkalmazásoknak vagy eszközöknek. Az elsőbbségi szinttől függően a QoS az alábbi módszereket használja adatcsomagok küldésére::<ul><li>módosítja az internetre küldött hálózati csomagok sorrendjét.</li><li>Az alacsonyabb elsőbbségi szintű csomagok mellőzésre kerülnek a magasabb prioritási szintű csomagok átvitelének biztosítása érdekében. A magasabb elsőbbségi szintű upstream csomagok a magasabb downstream csomagok mellőzését okozzák.</li><li>Ha nincsenek magas prioritású alkalmazásokból küldött csomagok, az internetkapcsolat teljes átviteli sebessége alacsony prioritású csomagok részére áll rendelkezésre.</li></ul>
@@ -4232,6 +4283,7 @@ UserQoS_transferred_hint=Az 'Átvitt oszlopban' beállíthatja a hálózati forg
 UserQoSRule_desc_zero=Engedélyezze a QoS szolgáltatást, majd állítsa be a felhasználó által megadott szabályokat.
 UserQoSRule_desc_one=Alapértelmezésképpen a fel- és letöltési sávszélesség elsőbbsége "alacsony". Amennyiben nincs sávszélesség elsőbbségi szabály beállítva, a fel- és letöltési sávszélesség elsőbbsége "alacsony".
 Utility=Segédprogram
+Verifying_str=Ellenőrzés folyamatban…
 Video_Find=Bemutató videók keresése
 Video_Link1=Kattintson az elemre az okatató videó megnyitásához.
 View_List=Lista megtekintése
@@ -4330,7 +4382,7 @@ vpn_openvpn_required_acc_pwd=Felhasználónév és jelszó szükséges az aktuá
 vpn_openvpnc_importCA=CA fájl importálása
 vpn_openvpnc_importovpn=.ovpn fájl importálása
 vpn_openvpnc_manual=Importálja a CA fájlt vagy szerkessze manuálisan az .ovpn fájlt.
-vpn_privateIP_hint=A vezeték nélküli router jelenleg egy privát WAN IP-címét használja (192.168.x.x, 10.x.x.x vagy 172.16.x.x). Kérjük, tekintse meg a <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:#FC0;'>GYIK</a> részt, és állítsa be a porttovábbítást.
+vpn_privateIP_hint=A vezeték nélküli router jelenleg egy privát WAN IP-címét használja (192.168.x.x, 10.x.x.x vagy 172.16.x.x). Kérjük, tekintse meg a <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>GYIK</a> részt, és állítsa be a porttovábbítást.
 vpn_preshared_key=Pre-shared Key (Secret)
 vpn_preshared_key_hint=Enter Pre-shared Key
 vpn_switch_confirm=Az ASUSWRT egyszerre csak egy VPN-kiszolgálói kapcsolat használatát támogatja. Ha engedélyezi a \"OpenVPN-kiszolgálót\", a \"PPTP-kiszolgálót\" automatikusan letiltja a rendszer. Biztosan engedélyezi a VPN-kiszolgálót?
@@ -4401,6 +4453,16 @@ vpn_wireguard_client_faq=Hogyan állítsuk be a WireGuard® klienst a VPN Fusion
 vpn_wireguard_client_config=Please use the following configuration to set up your WireGuard client.
 vpn_wireguard_qr_desc=Please download WireGuard App from Google Play or Apple Store, then use the APP to scan the QR Code to connect to this server.
 vpn_wireguard_qr_foriOS=For iOS users, you must assign a specific DNS server to WireGuard app before accessing the internet through WireGuard Server.
+vpn_wireguard_ep_mode=Endpoint mód
+vpn_wireguard_ep_src=Gazdagépnév forrása
+vpn_wireguard_ep_system_ddns=Rendszer DDNS
+vpn_wireguard_ep_custom=Egyéni gazdagépnév
+vpn_wireguard_ep_desc=Az Auto mód automatikusan meghatározza az Endpointot az aktuális hálózati állapot alapján. DDNS módban kiválaszthat egy, a rendszerbeállításokban konfigurált DDNS-t, vagy megadhat egy egyéni gazdagépnevet.
+vpn_wireguard_ep_custom_desc=Az egyéni gazdagépnév független a rendszerbeállítások DDNS beállításaitól. A sikeres csatlakozás érdekében győződjön meg arról, hogy az egyéni gazdagépnév helyesen feloldható a router IP-címére.
+vpn_wireguard_ep_ddns_hint=A DDNS nincs engedélyezve. A beállítás befejezéséhez lépjen a "Beállítások > WAN > DDNS" menüpontra. Ellenkező esetben ez az Endpoint nem fog megfelelően működni.
+vpn_wireguard_ep_ddns_disable_confirm=A DDNS letiltása után előfordulhat, hogy az ezt a DDNS-t használó VPN-profilok nem tudnak kapcsolatot létrehozni. Folytatja?
+vpn_wireguard_ep_custom_blank=Adjon meg egy egyéni gazdanevet.
+vpn_wireguard_ep_custom_invalid=Érvénytelen állomásnév-formátum. Adjon meg egy érvényes FQDN-t, például: vpn.example.com. Ne adja meg a következőket: http://, https://, portszám vagy URL-útvonal.
 vpnc_auth=VPN-hitelesítés
 vpnc_auth_for_clients=VPN-hitelesítés VPN-ügyfelek esetén
 vpnc_Client_Cert=Ügyféltanúsítvány
@@ -4426,6 +4488,32 @@ vpnc_profile_assignALL=Alkalmazás az összes eszközön
 vpnc_profile_assignDevice=Eszközök hozzárendelése ehhez a profilhoz
 vpnc_profile_del=Profil törlése
 vpnc_profile_select_suggest=Kérjük, válasszon egy másik VPN-profilt a alapértelmezett internetes WAN törléséhez.
+vpnc_ssk_login=Jelentkezzen be Surfshark-fiókjába
+vpnc_ssk_login_note=Kérjük, adja meg a fiókot és a jelszót.
+vpnc_ssk_invalid_long=A fiók vagy a jelszó túl hosszú (legfeljebb 128 karakter).
+vpnc_ssk_invalid_char=A fiók vagy a jelszó érvénytelen karaktereket tartalmaz.
+vpnc_ssk_invalid_format=Érvénytelen fiók- vagy jelszóformátum.
+vpnc_ssk_login_AuthCode=Adja meg az e-mailben elküldött vagy az Authenticator alkalmazás által létrehozott 6 számjegyű ellenőrző kódot.
+vpnc_ssk_login_AuthCode_enter=Adja meg a 6 számjegyű ellenőrző kódot.
+vpnc_ssk_login_AuthCode_confirm=Nem kapta meg az ellenőrző kódot? Kattintson fent az „Újraküldés” gombra, és új ellenőrző kódot küldünk.
+vpnc_ssk_login_AuthCode_resender=Újraküldés elérhető %1$@ mp múlva
+vpnc_ssk_login_ErrMsg1=Helytelen fiók vagy jelszó.
+vpnc_ssk_login_ErrMsg2=A Surfshark szerver nem érhető el. Kérjük, próbálja újra később.
+vpnc_ssk_login_ErrMsg4=Konfigurációs hiba. Ellenőrizze a beállításokat.
+vpnc_ssk_login_ErrMsg41=Konfigurációs hiba.
+vpnc_ssk_login_ErrMsg5=Hálózati hiba. Nem érhető el a Surfshark.
+vpnc_ssk_login_ErrMsgDef=A bejelentkezés sikertelen. Kérjük, próbálja újra.
+vpnc_ssk_login_success=Sikeres Surfshark-bejelentkezés.
+vpnc_ssk_login_success_note=Close this notice and complete your VPN settings.
+vpnc_ssk_logout_confirm=Biztosan ki szeretne jelentkezni a fiókjából?
+vpnc_ssk_Failed_resend=A kód újraküldése nem sikerült. Kérjük, próbálja újra.
+vpnc_ssk_Failed_verification=Érvénytelen ellenőrző kód. Kérjük, próbálja újra.
+vpnc_ssk_KeyPair_max=Surfshark-fiókja elérte a VPN-kulcspárok maximális számát (50). Új VPN-kapcsolat létrehozásához távolítsa el a nem használt kulcspárokat Surfshark-fiókjából, majd próbálja újra.
+vpnc_ssk_Missing_credent=Hiányzó hitelesítő adatok. Zárja be az alkalmazást, majd jelentkezzen be újra.
+vpnc_ssk_Timeout_login=A bejelentkezési kérelem időtúllépés miatt megszakadt. Kérjük, próbálja újra.
+vpnc_ssk_Timeout_resend=Az újraküldés időtúllépés miatt megszakadt. Kérjük, próbálja újra.
+vpnc_ssk_Timeout_verification=Az ellenőrzési kérelem időtúllépés miatt megszakadt. Kérjük, próbálja újra.
+vpnc_ssk_Timeout_network=Hálózati hiba. Kérjük, próbálja újra.
 vpnc_step=VPN csatlakozás indításához közesse az alábbi lépéseket:
 vpnc_step1=Profil hozáadása
 vpnc_step2=Válasszon VPN csatlakozás típust
@@ -4433,6 +4521,7 @@ vpnc_step3=Adja meg a VPN hitelesítési információt amelyet a VPN szolgáltat
 vpnc_title=VPN-kliens
 vpnc_peer=Peer
 vpnc_pppoe_dis_nat_confirm=Amikor Ön egy  VPN klienst használ egy PPPoE csatlakozáshoz, a router automatikusan újraindul, hogy letiltsa a NAT gyorsítást- Biztosan akarja folytatni?
+vpnc_kill_switch_desc=If enabled, this feature blocks all internet traffic instantly if the VPN drops to prevent IP and data leaks. Connection will be suspended until the VPN successfully reconnects or the feature is disabled.
 WAN_barrier=Korlát
 WAN_Cfg_Ethernet_WAN=Konfigurálja a ZVMODELVZ Ethernet WAN-beállításait.
 WAN_default_route=Alapértelmezett útvonal
@@ -4497,7 +4586,7 @@ WANTCPMSSOptionText=TCP MSS opció
 WANTCPMSSOptionComm1Text=bájt
 WANVLANIDText=VLAN ID
 WANAggregation=WAN-összefogás
-WANAggregation_desc=A WAN Aggregation két hálózati kapcsolatot egyesít, így a WAN sebessége akár 2Gb/s-ra is nőhet. Csatlakoztassa az útválasztó #WAN portját és LAN 4-es portját a modem LAN portjaihoz (győződjön meg arról, hogy egyforma specifikációval rendelkező kábeleket használ). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN Aggregation GYIK</a>
+WANAggregation_desc=A WAN Aggregation két hálózati kapcsolatot egyesít, így a WAN sebessége akár 2Gb/s-ra is nőhet. Csatlakoztassa az útválasztó #WAN portját és LAN 4-es portját a modem LAN portjaihoz (győződjön meg arról, hogy egyforma specifikációval rendelkező kábeleket használ). <a id="wanAgg_faq" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">WAN Aggregation GYIK</a>
 WANAggregation_enable=WAN-aggregáció engedélyezése
 WANAggregation_disable_dualwan=Az útválasztón engedélyezett a kettős WAN. A WAN Aggregation engedélyezése letiltja a kettős WAN funkciót. Biztosan folytatja?
 WANAggregation_disable_WANAggregation=Az útválasztón engedélyezett a WAN Aggregation. A kettős WAN engedélyezése letiltja a WAN Aggregation funkciót. Biztosan folytatja?
@@ -4506,13 +4595,13 @@ WANAggregation_PortConflict_hint2=Az IPTV az útválasztó LAN 4-es portját has
 WANAggregation_disable_IPTVDualWAN=Az útválasztón engedélyezett a kettős WAN és az IPTV. A WAN Aggregation engedélyezése letiltja a kettős WAN és IPTV funkciót , hogy elkerülhető legyen a portütközés. Biztosan folytatja?
 WANAggregation_help_WAN=Győződjön meg arról, hogy az útválasztó #WAN portja és a modem LAN portja két egyforma specifikációval rendelkező kábelellel van csatlakoztatva.
 WANAggregation_help_LAN=Győződjön meg arról, hogy az útválasztó LAN 4-es portja és a modem LAN portja két egyforma specifikációval rendelkező kábelellel van csatlakoztatva.
-WANAggregation_goto_WAN=A WAN Aggregation engedélyezéséhez lépjen a <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-Internet csatlakoztatás című oldalra</a>.
+WANAggregation_goto_WAN=A WAN Aggregation engedélyezéséhez lépjen a <a href="Advanced_WAN_Content.asp" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">WAN-Internet csatlakoztatás című oldalra</a>.
 WANAggregation_help_desc=Ha a WAN aggregáció nem sikeres, kérjük kövesse az alábbi lépéseket az újrapróbáláshoz.
 WANAggregation_help_step1=Győződjön meg róla, hogy a modem LAN portjai már csatlakoznak – kábellel – a router #WAN és LAN 4 portjaihoz.
 WANAggregation_help_step2=Győződjön meg hogy a modemen engedélyezve van a 802.3ad szabvány
 WANAggregation_help_step3=Ellenőrizze, hogy a két kábel azonos tulajdonságú (vagy gigabit & gigabit vagy 10/100 & 10/100 Mbps)
 WANAggregation_help_step4=Indítsa újra aroutert
-WANAggregation_help_final=Ha a fenti lépések sikertelenek, kérjük jelezze a problémát az <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>ASUS támogatási oldalon</a>.
+WANAggregation_help_final=Ha a fenti lépések sikertelenek, kérjük jelezze a problémát az <a href='https://www.asus.com/support/' target='_blank' style='color:var(--wrt-text-color,#000);text-decoration:underline;'>ASUS támogatási oldalon</a>.
 WANAggregation_wanType_hint=A WAN aggregáció nem támogatja az olyan WAN típusokat, mint PPPoE, PPTP és L2TP. Ha a WAN típusa PPPoE, PPTP vagy L2TP típusra vált, a WAN aggregáció automatikusan kikapcsol. Biztosan akarja folytatni?
 WebGUI_issue=Nem nyitható meg a firmware oldala
 wechat=WeChat
@@ -4627,8 +4716,8 @@ WLANConfig11b_display31_sectiondesc=Válassza a [WDS Only] vagy [Hybrid] módot 
 WLANConfig11b_display32_sectiondesc=Győződjön meg arról, hogy a vezeték nélküli router és az AP, amelyhez csatlakozni akar ugyanazt a csatornát használják.
 WLANConfig11b_display33_sectiondesc=Billentyűzze be a távoli AP MAC-címét a távoli AP-listába és nyissa meg a távoli AP WDS kezelőfelületét, majd billentyűzze be a router MAC-címét.
 WLANConfig11b_display34_sectiondesc=A legjobb teljesítmény érdekében lépje az Speciális beállítások > Vezeték nélküli > Általános elemre, és a hálózaton lévő összes router esetében ugyanazt a csatorna sávszélességet, kontroll csatornát és bővítő csatornát rendelje hozzá.
-WLANConfig11b_display41_sectiondesc=Jelenleg az Auto csatorna sávszélesség. Kattintson <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">ide</a> a módosításához.
-WLANConfig11b_display42_sectiondesc=Jelenleg az Auto csatornát használja. Kattintson <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">ide</a> a módosításához.
+WLANConfig11b_display41_sectiondesc=Jelenleg az Auto csatorna sávszélesség. Kattintson <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">ide</a> a módosításához.
+WLANConfig11b_display42_sectiondesc=Jelenleg az Auto csatornát használja. Kattintson <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">ide</a> a módosításához.
 WLANConfig11b_display5_sectiondesc=A Wireless Professional beállítás lehetővé teszi a vezeték nélküli hálózat egyéb paramétereinek beállítását. Az alapértelmezett értékek használata ajánlott.
 WLANConfig11b_display6_sectiondesc=A WPS (WiFi Protected Setup) lehetővé teszi a biztonságos és védett vezeték nélküli hálózat egyszerű beállítását. A WPS funkciót a PIN-kóddal vagy a WPS-gombbal konfigurálhatja itt.
 WLANConfig11b_EChannel_acs_ch13=Auto select channel including channel 12, 13
@@ -4686,6 +4775,7 @@ WLANConfig11b_x_APMode_option2=Hybrid
 WLANConfig11b_x_APSD_itemdesc=Lehetővé teszi a WMM APSD (Automatic Power Save Delivery) funkció engedélyezését vagy letiltását.
 WLANConfig11b_x_APSD_itemname=WMM APSD engedélyezése
 WLANConfig11b_x_Airtime_Fairness=Adásidő-méltányosság
+WLANConfig11b_x_ApplyAllBands_hint=Ez a módosítás minden sávi beállításra érvényes lesz.
 WLANConfig11b_x_Airtime_Fairness_itemdesc=Provide Airtime Fairness between multiple links
 WLANConfig11b_x_Auto=A vezeték nélküli módot „Automatikus” értékre kell állítani.
 WLANConfig11b_x_Beacon_itemdesc=A Hibajelző üzenet ismétlődő küldési intervalluma az egy jelzés és a következő közötti időtartam. Az alapértelmezett érték 100 (a mértékegysége milliszekundum vagy 1/1000 másodperc). Instabil környezetben vagy barangoló kliensek esetén csökkentse a hibajelző üzenet ismétlődő küldési intervallumának értékét, azonban ez nagyobb energiafogyasztással jár.
@@ -4782,11 +4872,11 @@ WLANConfig11b_x_WPSMode_itemdesc=Biztonságos vezeték nélküli kapcsolat léte
 WLANConfig11b_x_WPSMode_itemname=WPS módszer:
 WLANConfig11b_x_WPSPIN_itemdesc=Billentyűzze be a nyolc számjegyű kliens PIN-kódot.<p>
 WLANConfig11b_x_WPSPIN_itemname=Kliens PIN-kód
-WLANConfig11n_Auto_note=Az [Auto.] nem kompatibilis az aktuális vendéghálózat ahitelesítési módszerrel (TKIP vagy WEP). Kérjük, lépjen a <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Vendéghálózat </a>-ra és változtassa meg a hitelesítési módot.
+WLANConfig11n_Auto_note=Az [Auto.] nem kompatibilis az aktuális vendéghálózat ahitelesítési módszerrel (TKIP vagy WEP). Kérjük, lépjen a <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Vendéghálózat </a>-ra és változtassa meg a hitelesítési módot.
 WLANConfig11n_automode_limition_hint=Auto móban és WEP vagy TKIP titkosítás mellett a ZVMODELVZ maximálisan 54 Mbps átviteli sebességet támogat.
 WLANConfig11n_automode_limition_hint1=Kérjük, váltson át a WPA2-Personal használatára.
-WLANConfig11n_NAC_note=Az [N+AC] nem kompatibilis az aktuális vendéghálózat ahitelesítési módszerrel (TKIP vagy WEP). Kérjük, lépjen a <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Vendéghálózat </a>-ra és változtassa meg a hitelesítési módot.
-WLANConfig11n_NOnly_note=Az [N Only] nem kompatibilis az aktuális vendéghálózat ahitelesítési módszerrel (TKIP vagy WEP). Kérjük, lépjen a <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Vendéghálózat </a>-ra és változtassa meg a hitelesítési módot.
+WLANConfig11n_NAC_note=Az [N+AC] nem kompatibilis az aktuális vendéghálózat ahitelesítési módszerrel (TKIP vagy WEP). Kérjük, lépjen a <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Vendéghálózat </a>-ra és változtassa meg a hitelesítési módot.
+WLANConfig11n_NOnly_note=Az [N Only] nem kompatibilis az aktuális vendéghálózat ahitelesítési módszerrel (TKIP vagy WEP). Kérjük, lépjen a <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Vendéghálózat </a>-ra és változtassa meg a hitelesítési módot.
 WLANConfig11ax_AXOnly_note=By enabling AX only mode, if devices do not support 802.11ax(WiFi 6), will not able to connect to this band.
 WLANConfig11n_PremblesType_itemdesc=Az Előtagtípus meghatározza a CRC (Cyclic Redundancy Check) blokk hosszát, ami a vezeték nélküli eszközök közötti adatátvitel hibáinak észlelésére szolgáló módszer. Javasoljuk, hogy az összes vezeték nélküli eszközökön ugyanazt az előtagtípust konfigurálja. Rövid előtagot használjon a nagy hálózati forgalmú helyen működő vezeték nélküli eszközökön. Hosszú előtagot használjon a régebbi vezeték nélküli eszközökön.
 WLANConfig11n_PremblesType_itemname=802.11b mode
@@ -4904,11 +4994,21 @@ Captive_Portal_Above=felette
 Captive_Portal_Selected_Color=Kijelölt szín
 Captive_Portal_Local=Helyi
 Configuration=Konfiguráció
-Configuration_dark_mode=Dark
-Configuration_light_mode=Light
-Configuration_theme=Theme
-Configuration_fancy_theme=Fancy
+Configuration_dark_mode=Sötét
+Configuration_light_mode=Világos
+Configuration_theme=Téma
+Configuration_fancy_theme=Stílusos
+Configuration_flat_theme=Lapos
 Continuous_Mode=folyamatos üzemmódban
+View_Details=Részletek megtekintése
+NetworkMap_Clients=Kliensek
+NetworkMap_Guest_Clients=Vendég kliensek
+NetworkMap_Add_AiMesh_Hint=Adjon hozzá további AiMesh csomópontokat a WiFi lefedettség bővítéséhez.
+Dashboard_Show_more=Továbbiak megjelenítése
+Dashboard_Show_less=Kevesebb megjelenítése
+Dashboard_Expand=Kibontás
+Dashboard_Refreshing=Frissítés folyamatban
+Dashboard_Last_updated=Utoljára frissítve
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Hozzáférési házirend
 FreeWiFi_AccountSetting_desc1=A Fiókbeállítás egy egyszerű vendégfiók-konfiguráció, amely lehetővé teszi, hogy a vendégfiókok adatbázisát felügyelje a vendéghálózat biztonsága érdekében. A kapcsolódó kliensnek meg kell adnia a következő fióknevet és jelszót a bejelentkezéshez, mielőtt kapcsolódhatna az internethez.
@@ -4992,7 +5092,7 @@ menu_privacy=Szabályzat
 ASUS_Notice_Privacy=ASUS MEGJEGYZÉS (biztonságról)
 Distributing_IP=IP elosztása...
 LED_Brightness=LED fényerő
-LED_disabled_hint=This change will disable the special LED effect for the %1$@.
+LED_disabled_hint=Ez a módosítás letiltja a(z) %1$@ speciális LED effektusát.
 WiFi_Network_List=WiFi-hálózat lista
 Searching_WiFi_Network=Közeli WiFi hálózat keresése...
 BoostKey=Boost gomb
@@ -5162,7 +5262,7 @@ Notice_Message_3=Elolvastam, ne jelenjen meg újra.
 CTL_Decline=Elutasít
 Outdoor_desc_title=Warning
 Outdoor_active_desc_1=A kültéri mód engedélyezésével az AiMesh korlátozva lesz, és előfordulhat, hogy megszakad a csomópont kapcsolat.
-Outdoor_active_desc_2=A szabályozások betartása érdekében a rendszer körülbelül 1 percig vizsgálja a csatornákat, hogy elkerülje a meteorológiai radar interferenciáját. <span style="color:#FC0">Ha radarjelet észlel, átvált 2.4GHz-re, ami rövid megszakítást okoz. Az érintett csatorna 30 percre le lesz tiltva.</span>
+Outdoor_active_desc_2=A szabályozások betartása érdekében a rendszer körülbelül 1 percig vizsgálja a csatornákat, hogy elkerülje a meteorológiai radar interferenciáját. <span style="color:var(--wrt-badge-warning-color,#FC0)">Ha radarjelet észlel, átvált 2.4GHz-re, ami rövid megszakítást okoz. Az érintett csatorna 30 percre le lesz tiltva.</span>
 Outdoor_active_desc_3=A kültéri mód csak az útválasztó és AP módokat támogatja.
 Outdoor_active_desc_4=Az elérhető kültéri csatornák országonként/régiónként eltérőek.
 Outdoor_inactive_desc_1=Ennek a módnak a letiltása röviden újraindítja a vezeték nélküli kapcsolatot, és megszakítja az összes eszköz kapcsolatát.
@@ -5193,6 +5293,7 @@ WiFi_DFS_REENTRY=DFS-ÚJRA CSATLAKOZÁS
 WiFi_ch_conflict=Csatornaütközés
 WiFi_Regulatory=Szabályozási
 WiFi_OFF=WiFi Kikapcsolva
+WiFi8_6G_enable_hint=A 6 GHz jelenleg WiFi 7 módban működik. A WiFi 8 engedélyezéséhez kapcsolja be a „WiFi 8” lehetőséget a 6 GHz Wireless Professional beállításaiban.
 Vendor=Gyártó
 Connected_AP=Csatlakoztatott AP
 Network_SDN=Hálózat (SDN)

@@ -22,9 +22,9 @@
 <style>
 
 .eula_withdraw{
-	border: 1px solid #A9A9A9;
+	border: 1px solid var(--border-default, #A9A9A9);
 	font-family: Arial, Helvetica, sans-serif;
-	color: #FFF;
+	color: var(--wrt-text-color,#FFFFFF);
 	margin: auto 10px 20px 10px;
 }
 
@@ -69,7 +69,7 @@ function initial(){
                     'value': `<#withdraw_str#>`
                 });
                 $("#pp").find('.eula_withdraw_content').append($('<div>').html(`<div><#ASUS_eula_withdraw_content1#> <#ASUS_eula_withdraw_content2#></div>`));
-                $("#pp").find('.eula_withdraw_content').append($('<div>').html(`<a style="cursor: pointer; color: #006ce1; text-decoration: underline;" onclick="show_policy('PP')"><#ASUS_PP_Title#></a>`));
+                $("#pp").find('.eula_withdraw_content').append($('<div>').html(`<a style="cursor: pointer; color: var(--brand-primary, #006ce1); text-decoration: underline;" onclick="show_policy('PP')"><#ASUS_PP_Title#></a>`));
                 $("#pp").find('.eula_withdraw_content').append($('<div>').html(`<div style="margin-top: 1em;"><#ASUS_eula_withdraw_content3#></div>`));
             } else {
                 //Read PP

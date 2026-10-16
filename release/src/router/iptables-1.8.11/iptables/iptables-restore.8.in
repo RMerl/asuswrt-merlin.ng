@@ -1,0 +1,89 @@
+.TH IPTABLES-RESTORE 8 "" "@PACKAGE_STRING@" "@PACKAGE_STRING@"
+.\"
+.\" Man page written by Harald Welte <laforge@gnumonks.org>
+.\" It is based on the iptables man page.
+.\"
+.\"	This program is free software; you can redistribute it and/or modify
+.\"	it under the terms of the GNU General Public License as published by
+.\"	the Free Software Foundation; either version 2 of the License, or
+.\"	(at your option) any later version.
+.\"
+.\"	This program is distributed in the hope that it will be useful,
+.\"	but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"	GNU General Public License for more details.
+.\"
+.\"	You should have received a copy of the GNU General Public License
+.\"	along with this program; if not, write to the Free Software
+.\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.\"
+.\"
+.SH NAME
+iptables-restore \(em Restore IP Tables
+.P
+ip6tables-restore \(em Restore IPv6 Tables
+.SH SYNOPSIS
+\fBiptables\-restore\fP [\fB\-chntvV\fP] [\fB\-w\fP \fIseconds\fP]
+[\fB\-M\fP \fImodprobe\fP] [\fB\-T\fP \fIname\fP]
+[\fIfile\fP]
+.P
+\fBip6tables\-restore\fP [\fB\-chntvV\fP] [\fB\-w\fP \fIseconds\fP]
+[\fB\-M\fP \fImodprobe\fP] [\fB\-T\fP \fIname\fP]
+[\fIfile\fP]
+.SH DESCRIPTION
+.PP
+.B iptables-restore
+and
+.B ip6tables-restore
+are used to restore IP and IPv6 Tables from data specified on STDIN or in
+\fIfile\fP. Use I/O redirection provided by your shell to read from a file or
+specify \fIfile\fP as an argument.
+.TP
+\fB\-c\fR, \fB\-\-counters\fR
+Restore the values of all packet and byte counters.
+.TP
+\fB\-h\fP, \fB\-\-help\fP
+Print a short option summary.
+.TP
+\fB\-n\fR, \fB\-\-noflush\fR
+Don't flush the previous contents of the table. If not specified,
+both commands flush (delete) all previous contents of the respective table.
+.TP
+\fB\-t\fP, \fB\-\-test\fP
+Only parse and construct the ruleset, but do not commit it.
+.TP
+\fB\-v\fP, \fB\-\-verbose\fP
+Print additional debug info during ruleset processing.
+Specify multiple times to increase debug level.
+.TP
+\fB\-V\fP, \fB\-\-version\fP
+Print the program version number.
+.TP
+\fB\-w\fP, \fB\-\-wait\fP [\fIseconds\fP]
+Wait for the xtables lock.
+To prevent multiple instances of the program from running concurrently,
+an attempt will be made to obtain an exclusive lock at launch.  By default,
+the program will exit if the lock cannot be obtained.  This option will
+make the program wait (indefinitely or for optional \fIseconds\fP) until
+the exclusive lock can be obtained.
+.TP
+\fB\-M\fP, \fB\-\-modprobe\fP \fImodprobe\fP
+Specify the path to the modprobe(8) program. By default,
+iptables-restore will inspect \fI/proc/sys/kernel/modprobe\fP to
+determine the executable's path.
+.TP
+\fB\-T\fP, \fB\-\-table\fP \fIname\fP
+Restore only the named table even if the input stream contains other ones.
+.SH BUGS
+None known as of iptables-1.2.1 release
+.SH AUTHORS
+Harald Welte <laforge@gnumonks.org> wrote iptables-restore based on code
+from Rusty Russell.
+.br
+Andras Kis-Szabo <kisza@sch.bme.hu> contributed ip6tables-restore.
+.SH SEE ALSO
+\fBiptables\-apply\fP(8), \fBiptables\-save\fP(8), \fBiptables\fP(8)
+.PP
+The iptables-HOWTO, which details more iptables usage, the NAT-HOWTO,
+which details NAT, and the netfilter-hacking-HOWTO which details the
+internals.

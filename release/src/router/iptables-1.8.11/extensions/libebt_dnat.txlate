@@ -1,0 +1,8 @@
+ebtables-translate -t nat -A PREROUTING -i someport -j dnat --to-dst de:ad:00:be:ee:ff
+nft 'add rule bridge nat PREROUTING iifname "someport" counter ether daddr set de:ad:0:be:ee:ff accept'
+
+ebtables-translate -t nat -A PREROUTING -i someport -j dnat --to-dst de:ad:00:be:ee:ff --dnat-target ACCEPT
+nft 'add rule bridge nat PREROUTING iifname "someport" counter ether daddr set de:ad:0:be:ee:ff accept'
+
+ebtables-translate -t nat -A PREROUTING -i someport -j dnat --to-dst de:ad:00:be:ee:ff --dnat-target CONTINUE
+nft 'add rule bridge nat PREROUTING iifname "someport" counter ether daddr set de:ad:0:be:ee:ff continue'

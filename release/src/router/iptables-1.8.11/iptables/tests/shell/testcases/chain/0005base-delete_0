@@ -1,0 +1,34 @@
+#!/bin/bash -x
+
+$XT_MULTI iptables -N foo || exit 1
+$XT_MULTI iptables -P FORWARD DROP || exit 1
+$XT_MULTI iptables -X || exit 1
+$XT_MULTI iptables -X foo && exit 1
+
+# indefinite -X fails if a non-empty user-defined chain exists
+$XT_MULTI iptables -N foo
+$XT_MULTI iptables -N bar
+$XT_MULTI iptables -A bar -j ACCEPT
+$XT_MULTI iptables -X && exit 1
+$XT_MULTI iptables -D bar -j ACCEPT
+$XT_MULTI iptables -X || exit 1
+
+# make sure OUTPUT chain is created by iptables-nft
+$XT_MULTI iptables -A OUTPUT -j ACCEPT || exit 1
+$XT_MULTI iptables -D OUTPUT -j ACCEPT || exit 1
+
+case $XT_MULTI in
+*xtables-nft-multi)
+	# must not delete chain FORWARD, its policy is not ACCEPT
+	$XT_MULTI iptables -X FORWARD && exit 1
+	nft list chain ip filter FORWARD || exit 1
+	# this should evict chain OUTPUT
+	$XT_MULTI iptables -X OUTPUT || exit 1
+	nft list chain ip filter OUTPUT && exit 1
+	;;
+*)
+	$XT_MULTI iptables -X FORWARD && exit 1
+	$XT_MULTI iptables -X OUTPUT && exit 1
+	;;
+esac
+exit 0

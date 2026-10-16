@@ -1,0 +1,12 @@
+#!/bin/bash
+
+[[ $XT_MULTI == *xtables-nft-multi ]] || { echo "skip $XT_MULTI"; exit 0; }
+
+set -e
+
+rule="-p tcp -m tcp --dport 27374 -c 23 42 -j TPROXY --on-port 50080"
+for cmd in iptables ip6tables; do
+	$XT_MULTI $cmd -t mangle -A PREROUTING $rule
+	$XT_MULTI $cmd -t mangle -Z
+	$XT_MULTI $cmd -t mangle -v -S | grep -q -- "${rule/23 42/0 0}"
+done

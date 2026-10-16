@@ -1,0 +1,73 @@
+.TH IPTABLES-SAVE 8 "" "@PACKAGE_STRING@" "@PACKAGE_STRING@"
+.\"
+.\" Man page written by Harald Welte <laforge@gnumonks.org>
+.\" It is based on the iptables man page.
+.\"
+.\"	This program is free software; you can redistribute it and/or modify
+.\"	it under the terms of the GNU General Public License as published by
+.\"	the Free Software Foundation; either version 2 of the License, or
+.\"	(at your option) any later version.
+.\"
+.\"	This program is distributed in the hope that it will be useful,
+.\"	but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"	GNU General Public License for more details.
+.\"
+.\"	You should have received a copy of the GNU General Public License
+.\"	along with this program; if not, write to the Free Software
+.\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.\"
+.\"
+.SH NAME
+iptables-save \(em dump iptables rules
+.P
+ip6tables-save \(em dump iptables rules
+.SH SYNOPSIS
+\fBiptables\-save\fP [\fB\-M\fP \fImodprobe\fP] [\fB\-c\fP]
+[\fB\-t\fP \fItable\fP] [\fB\-f\fP \fIfilename\fP]
+.P
+\fBip6tables\-save\fP [\fB\-M\fP \fImodprobe\fP] [\fB\-c\fP]
+[\fB\-t\fP \fItable\fP] [\fB\-f\fP \fIfilename\fP]
+.SH DESCRIPTION
+.PP
+.B iptables-save
+and
+.B ip6tables-save
+are used to dump the contents of IP or IPv6 Table in easily parseable format
+either to STDOUT or to a specified file.
+.TP
+\fB\-M\fR, \fB\-\-modprobe\fR \fImodprobe\fP
+Specify the path to the modprobe(8) program. By default,
+iptables-save will inspect \fI/proc/sys/kernel/modprobe\fP to determine
+the executable's path.
+.TP
+\fB\-f\fR, \fB\-\-file\fR \fIfilename\fP
+Specify a filename to log the output to. If not specified, iptables-save
+will log to STDOUT.
+.TP
+\fB\-c\fR, \fB\-\-counters\fR
+Include the current values of all packet and byte counters in the output.
+.TP
+\fB\-t\fR, \fB\-\-table\fR \fItablename\fP
+Restrict output to only one table. If the kernel is configured with automatic
+module loading, an attempt will be made to load the appropriate module for
+that table if it is not already there.
+.br
+If not specified, output includes all available tables. No module loading takes
+place, so in order to include a specific table in the output, the respective
+module (something like \fBiptable_mangle\fP or \fBip6table_raw\fP) must be
+loaded first.
+.SH BUGS
+None known as of iptables-1.2.1 release
+.SH AUTHORS
+Harald Welte <laforge@gnumonks.org>
+.br
+Rusty Russell <rusty@rustcorp.com.au>
+.br
+Andras Kis-Szabo <kisza@sch.bme.hu> contributed ip6tables-save.
+.SH SEE ALSO
+\fBiptables\-apply\fP(8), \fBiptables\-restore\fP(8), \fBiptables\fP(8)
+.PP
+The iptables-HOWTO, which details more iptables usage, the NAT-HOWTO,
+which details NAT, and the netfilter-hacking-HOWTO which details the
+internals.

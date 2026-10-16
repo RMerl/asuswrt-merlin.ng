@@ -427,6 +427,15 @@ endif
 OBJS := rc.o init.o interface.o lan.o wireless.o $(if $(RTCONFIG_SOFTWIRE46), s46comm.o) wan.o pppd.o auth.o services.o
 OBJS += firewall.o ppp.o services.o common.o conn_diag_log.o
 OBJS += watchdog.o check_watchdog.o fwupg_flashing.o ntp.o udhcpc.o ate.o
+ifeq ($(RTCONFIG_HINET_MESH_SNOOPER),y)
+OBJS += mod_snooper.o
+endif
+ifeq ($(RTCONFIG_ETHMON),y)
+OBJS += ethmon.o
+endif
+ifeq ($(RTCONFIG_IP808AR),y)
+OBJS += poemon.o
+endif
 ifeq ($(RTCONFIG_MULTIWAN_IF),y)
 OBJS += qos_multi_wan_if.o
 else ifeq ($(RTCONFIG_MULTIWAN_CFG),y)
@@ -556,11 +565,20 @@ OBJS += $(if $(wildcard sysdeps/lantiq/obd-lantiq.c),obd-lantiq.o,prebuild/obd-l
 endif
 endif
 
+ifeq ($(or $(RTCONFIG_NETDEV_PER_PORT),$(RTCONFIG_EXT_SWITCH_LAN),$(RTCONFIG_EXT_SWITCH_ALL)),y)
+OBJS += ipvlan.o
+CFLAGS += -DIPVLAN3
+endif
+
 OBJS += $(if $(wildcard private.c),private.o,prebuild/private.o)
 
 # TODO, speedtest
 ifeq ($(RTCONFIG_SPEEDTEST),y)
 OBJS += $(if $(wildcard speedtest.c),speedtest.o,prebuild/speedtest.o)
+endif
+
+ifneq ($(filter y,$(RTCONFIG_OOKLA) $(RTCONFIG_OOKLA_LITE)),)
+OBJS += ookla_quota_mon.o
 endif
 
 OBJS += wanduck.o
@@ -831,6 +849,7 @@ endif
 
 ifeq ($(RTCONFIG_GTBOOSTER),y)
 OBJS += ark.o
+OBJS += ark_sig.o
 endif
 
 ifeq ($(RTCONFIG_BWDPI),y)
@@ -1249,6 +1268,7 @@ endif
 ifeq ($(RTCONFIG_MXL_826XX),y)
 OBJS += mxlmonitor.o
 endif
+OBJS += cdmonitor.o
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT7 GS7_PRO_MAX))
 OBJS += ext84991.o
 endif
@@ -1434,6 +1454,9 @@ endif
 #	@cd $(INSTALLDIR)/sbin && ln -sf rc ots
 	@cd $(INSTALLDIR)/sbin && ln -sf rc watchdog
 	@cd $(INSTALLDIR)/sbin && ln -sf rc check_watchdog
+ifeq ($(RTCONFIG_HINET_MESH_SNOOPER),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc mod_snooper
+endif
 ifeq ($(RTCONFIG_AI_SERVICE),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ai_response_check
 endif
@@ -1583,6 +1606,7 @@ endif
 ifeq ($(RTCONFIG_MXL_826XX),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc mxlmonitor
 endif
+	@cd $(INSTALLDIR)/sbin && ln -sf rc cdmonitor
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT7 GS7_PRO_MAX))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ext84991
 endif
@@ -1819,6 +1843,9 @@ endif
 ifeq ($(or $(RTCONFIG_BWDPI),$(RTCONFIG_HNS)),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rsasign_sig_check
 endif
+ifeq ($(RTCONFIG_GTBOOSTER),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc rsasign_sigArk_check
+endif
 ifeq ($(RTCONFIG_BWDPI),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc bwdpi
 	@cd $(INSTALLDIR)/sbin && ln -sf rc bwdpi_check
@@ -1834,6 +1861,9 @@ endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc hour_monitor
 ifeq ($(RTCONFIG_SPEEDTEST),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc speedtest
+endif
+ifneq ($(filter y,$(RTCONFIG_OOKLA) $(RTCONFIG_OOKLA_LITE)),)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc ookla_quota_mon
 endif
 ifeq ($(RTCONFIG_USB_MODEM),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc write_3g_ppp_conf
@@ -2683,6 +2713,10 @@ ifeq ($(RTCONFIG_GTBOOSTER),y)
 ifneq ($(wildcard ./prebuild/ark.o),)
 ark.o:
 	@-cp -f ./prebuild/ark.o .
+endif
+ifneq ($(wildcard ./prebuild/ark_sig.o),)
+ark_sig.o:
+	@-cp -f ./prebuild/ark_sig.o .
 endif
 endif
 

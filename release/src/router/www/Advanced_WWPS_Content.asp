@@ -521,17 +521,17 @@ function show_wsc_status(wps_infos){
 	const isBand5G = bandObj ? ["5G", "5G1", "5G2"].includes(bandObj.band) : false;
 	const wlRadio = nvram[`wl${bandObj ? bandObj.unit : ""}_radio`];
 	if(isBand2G && wlRadio != "1") {	//2.4GHz
-		document.getElementById("wps_enable_hint").innerHTML = "* <#note_turn_wifi_on_WPS#> <a style='color:#FC0; text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_advanced_unit_status(" + htmlEnDeCode.htmlEncode(wps_infos[12]?.firstChild?.nodeValue) + ");\"><#btn_go#></a>"
+		document.getElementById("wps_enable_hint").innerHTML = "* <#note_turn_wifi_on_WPS#> <a style='color:var(--wrt-badge-warning-color,#FFCC00); text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_advanced_unit_status(" + htmlEnDeCode.htmlEncode(wps_infos[12]?.firstChild?.nodeValue) + ");\"><#btn_go#></a>"
 		controlDisplayItem();
 		return;
 	}
 	else if(isBand5G == 1 && wlRadio != "1") {	//5GHz
-		document.getElementById("wps_enable_hint").innerHTML = "* <#note_turn_wifi_on_WPS#> <a style='color:#FC0; text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_advanced_unit_status(" + htmlEnDeCode.htmlEncode(wps_infos[12]?.firstChild?.nodeValue) + ");\"><#btn_go#></a>"
+		document.getElementById("wps_enable_hint").innerHTML = "* <#note_turn_wifi_on_WPS#> <a style='color:var(--wrt-badge-warning-color,#FFCC00); text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_advanced_unit_status(" + htmlEnDeCode.htmlEncode(wps_infos[12]?.firstChild?.nodeValue) + ");\"><#btn_go#></a>"
 		controlDisplayItem();
 		return;
 	}
 	else if (reject_wps(wps_infos[11]?.firstChild?.nodeValue, wep)){ // Second filter the authentication method
-		document.getElementById("wps_enable_hint").innerHTML = "<#WPS_weptkip_hint#><br><#wsc_mode_hint1#> <a style='color:#FC0; text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_unit_status(" + htmlEnDeCode.htmlEncode(wps_infos[12]?.firstChild?.nodeValue) + ");\"><#menu5_1_1#></a> <#wsc_mode_hint2#>"
+		document.getElementById("wps_enable_hint").innerHTML = "<#WPS_weptkip_hint#><br><#wsc_mode_hint1#> <a style='color:var(--wrt-badge-warning-color,#FFCC00); text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_unit_status(" + htmlEnDeCode.htmlEncode(wps_infos[12]?.firstChild?.nodeValue) + ");\"><#menu5_1_1#></a> <#wsc_mode_hint2#>"
 		controlDisplayItem();
 
 		return;
@@ -646,10 +646,10 @@ function show_wsc_status2(wps_infos0, wps_infos1){
 	var band_link = "";
 	if(radio_2 !== "1" || radio_5 !== "1") {	// First filter whether turn on Wi-Fi or not
 		if(radio_2 !== "1") {
-			band_link += " <a style='color:#FC0; text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_advanced_unit_status(0);\"><#btn_go#> " + get_band_str(wps_infos0[12]?.firstChild?.nodeValue) + "</a>"
+			band_link += " <a style='color:var(--wrt-badge-warning-color,#FFCC00); text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_advanced_unit_status(0);\"><#btn_go#> " + get_band_str(wps_infos0[12]?.firstChild?.nodeValue) + "</a>"
 		}
 		if(radio_5 !== "1") {
-			band_link += " <a style='color:#FC0; text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_advanced_unit_status(1);\"><#btn_go#> " + get_band_str(wps_infos1[12]?.firstChild?.nodeValue) + "</a>"
+			band_link += " <a style='color:var(--wrt-badge-warning-color,#FFCC00); text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_advanced_unit_status(1);\"><#btn_go#> " + get_band_str(wps_infos1[12]?.firstChild?.nodeValue) + "</a>"
 		}
 
 		document.getElementById("wps_enable_hint").innerHTML = "* <#note_turn_wifi_on_WPS#>" + band_link + "";
@@ -663,9 +663,9 @@ function show_wsc_status2(wps_infos0, wps_infos1){
 	}	
 	else if(rej0 || rej1){	// Second filter the authentication method
 		if(rej0)
-			band_link += "<a style='color:#FC0; text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_unit_status(0);\"><#menu5_1_1#> " + get_band_str(wps_infos0[12]?.firstChild?.nodeValue) + "</a> ";
+			band_link += "<a style='color:var(--wrt-badge-warning-color,#FFCC00); text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_unit_status(0);\"><#menu5_1_1#> " + get_band_str(wps_infos0[12]?.firstChild?.nodeValue) + "</a> ";
 		if(rej1)
-			band_link += "<a style='color:#FC0; text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_unit_status(1);\"><#menu5_1_1#> " + get_band_str(wps_infos1[12]?.firstChild?.nodeValue) + "</a> ";
+			band_link += "<a style='color:var(--wrt-badge-warning-color,#FFCC00); text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_unit_status(1);\"><#menu5_1_1#> " + get_band_str(wps_infos1[12]?.firstChild?.nodeValue) + "</a> ";
 
 		document.getElementById("wps_enable_hint").innerHTML = "<#WPS_weptkip_hint#><br><#wsc_mode_hint1#> " + band_link + " <#wsc_mode_hint2#>";
 
@@ -921,15 +921,15 @@ function get_mainfh_by_wl_unit(_wl_unit){
 		  <div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 		  <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 		  <div class="formfontdesc"><#WLANConfig11b_display6_sectiondesc#></div>
-		  <div id="lantiq_ready" style="display:none;color:#FC0;margin-left:5px;font-size:13px;">Wireless is setting...</div>
-		  <div id="WPS_hideSSID_hint" class="hint-color formfontdesc" style="display:none;color:#FFCC00;"></div>		  
+		  <div id="lantiq_ready" style="display:none;color:var(--wrt-badge-warning-color,#FFCC00);margin-left:5px;font-size:13px;">Wireless is setting...</div>
+		  <div id="WPS_hideSSID_hint" class="hint-color formfontdesc" style="display:none;color:var(--wrt-badge-warning-color,#FFCC00);"></div>		  
 
 		<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0"  class="FormTable">
 			<tr>
 			  	<th width="30%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(13,1);"><#WLANConfig11b_x_WPS_itemname#></a></th>
 			  	<td>
 			    	<div id="wps_enable_block" style="display:none;">
-			    		<span style="color:#FFF;" id="wps_enable_word">&nbsp;&nbsp;</span>
+			    		<span style="color:var(--wrt-text-color,#FFFFFF);" id="wps_enable_word">&nbsp;&nbsp;</span>
 			    		<input type="button" name="enableWPSbtn" id="enableWPSbtn" value="" class="button_gen" onClick="enableWPS();">
 			    		<br>
 			    	</div>
@@ -1049,7 +1049,7 @@ function get_mainfh_by_wl_unit(_wl_unit){
 				<th width="30%"><a class="hintstyle" href="javascript:void(0);" onclick="openHint(13,5);"><#Current_band#></th>
 				
 				<td id="wps_switch">
-						<span class="devicepin" style="color:#FFF;" id="wps_band_word"></span>&nbsp;&nbsp;
+						<div class="devicepin" style="display: inline-block;" id="wps_band_word"></div>
 						<input type="button" class="button_gen" name="switchWPSbtn" id="switchWPSbtn" value="<#Switch_band#>" class="button" onClick="SwitchBand();">
 						<br><span id="wps_band_hint"></span>
 		  	</td>
@@ -1076,7 +1076,7 @@ function get_mainfh_by_wl_unit(_wl_unit){
 					<div style="margin-left:-10px">
 						<table ><tr>
 							<td style="border:0px;" >
-								<div class="devicepin" style="color:#FFF;" id="wps_config_td"></div>
+								<div class="devicepin" style="color:var(--wrt-text-color,#FFFFFF);" id="wps_config_td"></div>
 							</td>
 							<td style="border:0px">
 								<input class="btn_subusage button_gen" type="button" onClick="resetWPS();" id="Reset_OOB" name="Reset_OOB" value="<#CTL_Reset_OOB#>" style="padding:0 0.3em 0 0.3em;" >
@@ -1112,7 +1112,7 @@ function get_mainfh_by_wl_unit(_wl_unit){
 					<label><input type="radio" name="wps_method" onclick="changemethod(1);" value="1"><#WLANConfig11b_x_WPSPIN_itemname#></label>
 					<input type="text" name="wps_sta_pin" id="wps_sta_pin" value="" size="9" maxlength="9" class="input_15_table" autocorrect="off" autocapitalize="off">
 					<div id="starBtn" style="margin-top:10px;"><input class="button_gen" type="button" style="margin-left:5px;" onClick="configCommand();" id="addEnrolleebtn_client" name="addEnrolleebtn"  value="<#wps_start_btn#>"></div>
-					<div style="color:#FC0;display:none" id="wpa3_not_support_hint"></div>
+					<div style="color:var(--wrt-badge-warning-color,#FFCC00);display:none" id="wpa3_not_support_hint"></div>
 				</td>
 			</tr>
 

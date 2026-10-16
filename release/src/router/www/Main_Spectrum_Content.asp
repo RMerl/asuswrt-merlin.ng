@@ -117,7 +117,7 @@ function refresh_signals(){
 									  <div class="formfonttitle"><#Menu_TrafficManager#> - <#Spectrum_title#></div>
 									  <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									  <div class="formfontdesc"><#Spectrum_desc#></div>
-										<span id="signals_update" style="margin-left:5px;margin-top:10px;color:#FFCC00;display:none;"></span>
+										<span id="signals_update" style="margin-left:5px;margin-top:10px;color:var(--wrt-badge-warning-color,#FFCC00);display:none;"></span>
 									</td>
 								</tr>
 								

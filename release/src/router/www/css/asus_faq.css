@@ -72,7 +72,7 @@
 	position: relative;
 }
 .popup_faq_bg .notice_text.hint{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	font-size: 14px;
 }
 .popup_faq_bg .notice_text_blue{

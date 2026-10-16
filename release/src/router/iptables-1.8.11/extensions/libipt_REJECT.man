@@ -1,0 +1,53 @@
+This is used to send back an error packet in response to the matched
+packet: otherwise it is equivalent to
+.B DROP
+so it is a terminating TARGET, ending rule traversal.
+This target is only valid in the
+.BR INPUT ,
+.B FORWARD
+and
+.B OUTPUT
+chains, and user-defined chains which are only called from those
+chains.  The following option controls the nature of the error packet
+returned:
+.TP
+\fB\-\-reject\-with\fP \fItype\fP
+The type given can be
+\fBicmp\-net\-unreachable\fP,
+\fBicmp\-host\-unreachable\fP,
+\fBicmp\-port\-unreachable\fP,
+\fBicmp\-proto\-unreachable\fP,
+\fBicmp\-net\-prohibited\fP,
+\fBicmp\-host\-prohibited\fP, or
+\fBicmp\-admin\-prohibited\fP (*),
+which return the appropriate ICMP error message (\fBicmp\-port\-unreachable\fP is
+the default).  The option
+\fBtcp\-reset\fP
+can be used on rules which only match the TCP protocol: this causes a
+TCP RST packet to be sent back.  This is mainly useful for blocking 
+.I ident
+(113/tcp) probes which frequently occur when sending mail to broken mail
+hosts (which won't accept your mail otherwise).
+.IP
+(*) Using icmp\-admin\-prohibited with kernels that do not support it will result in a plain DROP instead of REJECT
+.PP
+\fIWarning:\fP You should not indiscriminately apply the REJECT target to
+packets whose connection state is classified as INVALID; instead, you should
+only DROP these.
+.PP
+Consider a source host transmitting a packet P, with P experiencing so much
+delay along its path that the source host issues a retransmission, P_2, with
+P_2 being successful in reaching its destination and advancing the connection
+state normally. It is conceivable that the late-arriving P may be considered
+not to be associated with any connection tracking entry. Generating a reject
+response for a packet so classed would then terminate the healthy connection.
+.PP
+So, instead of:
+.PP
+\-A INPUT ... \-j REJECT
+.PP
+do consider using:
+.PP
+\-A INPUT ... \-m conntrack \-\-ctstate INVALID \-j DROP
+.br
+\-A INPUT ... \-j REJECT

@@ -1,0 +1,14 @@
+iptables-translate -A OUTPUT -m connbytes --connbytes 200 --connbytes-dir original --connbytes-mode packets
+nft 'add rule ip filter OUTPUT ct original packets ge 200 counter'
+
+iptables-translate -A OUTPUT -m connbytes ! --connbytes 200 --connbytes-dir reply --connbytes-mode packets
+nft 'add rule ip filter OUTPUT ct reply packets lt 200 counter'
+
+iptables-translate -A OUTPUT -m connbytes --connbytes 200:600 --connbytes-dir both --connbytes-mode bytes
+nft 'add rule ip filter OUTPUT ct bytes 200-600 counter'
+
+iptables-translate -A OUTPUT -m connbytes ! --connbytes 200:600 --connbytes-dir both --connbytes-mode bytes
+nft 'add rule ip filter OUTPUT ct bytes != 200-600 counter'
+
+iptables-translate -A OUTPUT -m connbytes --connbytes 200:200 --connbytes-dir both --connbytes-mode avgpkt
+nft 'add rule ip filter OUTPUT ct avgpkt 200 counter'

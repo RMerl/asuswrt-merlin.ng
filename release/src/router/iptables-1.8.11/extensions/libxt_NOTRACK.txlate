@@ -1,0 +1,2 @@
+iptables-translate -A PREROUTING -t raw -j NOTRACK
+nft 'add rule ip raw PREROUTING counter notrack'

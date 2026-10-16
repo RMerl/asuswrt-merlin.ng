@@ -1,0 +1,14 @@
+iptables-translate -A INPUT -m connmark --mark 2 -j ACCEPT
+nft 'add rule ip filter INPUT ct mark 0x2 counter accept'
+
+iptables-translate -A INPUT -m connmark ! --mark 2 -j ACCEPT
+nft 'add rule ip filter INPUT ct mark != 0x2 counter accept'
+
+iptables-translate -A INPUT -m connmark --mark 10/10 -j ACCEPT
+nft 'add rule ip filter INPUT ct mark and 0xa == 0xa counter accept'
+
+iptables-translate -A INPUT -m connmark ! --mark 10/10 -j ACCEPT
+nft 'add rule ip filter INPUT ct mark and 0xa != 0xa counter accept'
+
+iptables-translate -t mangle -A PREROUTING -p tcp --dport 40 -m connmark --mark 0x40
+nft 'add rule ip mangle PREROUTING tcp dport 40 ct mark 0x40 counter'

@@ -296,7 +296,7 @@ function show_partition(){
 				if(all_accessable_size > 1)
 					htmlcode += '<div class="app_desc"><#Availablespace#>: <b>'+ all_accessable_size+" GB" + '</b></div>'; 
 				else
-					htmlcode += '<div class="app_desc"><#Availablespace#>: <b>'+ all_accessable_size+" GB <span style=\'color:#FFCC00\'>(Disk quota can not less than 1GB)" + '</span></b></div>'; 
+					htmlcode += '<div class="app_desc"><#Availablespace#>: <b>'+ all_accessable_size+" GB <span style=\'color:var(--wrt-badge-warning-color,#FFCC00)\'>(Disk quota can not less than 1GB)" + '</span></b></div>'; 
 
 				htmlcode += '<div class="app_desc"><#Totalspace#>: <b>'+ all_total_size+" GB" + '</b></div>'; 
 				htmlcode += '</div><br/><br/></td></tr>\n';
@@ -703,7 +703,7 @@ function update_applist(e){
    												<td><div class="formfontdesc" id="usbHint"><#AiCloud_maintext_note#></div></td> 
   										</tr>
 											<tr>
-   												<td><div class="formfontdesc" id="usbHint2"><#Learn_more#> : <a href="https://www.asus.com/search/results.aspx?SearchKey=AiCloud&SearchType=FAQ&IsSupport=True&Page=1" target="_blank" style="color:#FC0;text-decoration: underline; font-family:Lucida Console;">GO</a></div></td> 
+   												<td><div class="formfontdesc" id="usbHint2"><#Learn_more#> : <a href="https://www.asus.com/search/results.aspx?SearchKey=AiCloud&SearchType=FAQ&IsSupport=True&Page=1" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration: underline; font-family:Lucida Console;">GO</a></div></td> 
   										</tr>  	   
   										<tr>
    												<td align="center" width="740px" height="60px">
@@ -755,7 +755,7 @@ function update_applist(e){
 														</tr>
 													</table>
 												</div>
-												<div id="privateIP_notes" class="formfontdesc" style="display:none; color:#FFCC00; padding:10px;"></div>
+												<div id="privateIP_notes" class="formfontdesc" style="display:none; color:var(--wrt-badge-warning-color,#FFCC00); padding:10px;"></div>
 											</td>
 										</tr>
 

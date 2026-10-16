@@ -57,6 +57,136 @@ int rtkswitch_testmode(int val, int val2, int val3);
 int rtkswitch_regop(int val, int val2, int val3, int val4, int val5);
 #endif
 
+#if defined(RTCONFIG_BCM_EXT_SWITCH_RTK)
+struct rtk_ifname_phyport {
+	const char *ifname;  /* e.g. "eth2" */
+	int phy_port;        /* e.g. 3 => mask bit 3 => 0x8 */
+};
+
+static const struct rtk_ifname_phyport g_rtk_if_phy_table[] = {
+#if defined(RTBE58U)
+	{ "eth1", 4 },
+	{ "eth2", 3 },
+	{ "eth3", 2 },
+	{ "eth4", 1 }
+#endif
+};
+
+static const struct rtk_ifname_phyport *
+find_rtk_phy_if_entry(const char *ifname)
+{
+	size_t i;
+
+	if (!ifname || !*ifname)
+		return NULL;
+
+	for (i = 0; i < (sizeof(g_rtk_if_phy_table) / sizeof(g_rtk_if_phy_table[0])); i++) {
+		if (strcmp(g_rtk_if_phy_table[i].ifname, ifname) == 0)
+			return &g_rtk_if_phy_table[i];
+	}
+	return NULL;
+}
+
+int is_rtk_ifname(const char *ifname)
+{
+	return (find_rtk_phy_if_entry(ifname) != NULL);
+}
+
+const char *
+rtk_ifname_from_phy_port(int phy_port)
+{
+	size_t i;
+
+	for (i = 0; i < (sizeof(g_rtk_if_phy_table) / sizeof(g_rtk_if_phy_table[0])); i++) {
+		if (g_rtk_if_phy_table[i].phy_port == phy_port)
+			return g_rtk_if_phy_table[i].ifname;
+	}
+	return NULL;
+}
+
+int rtk_ifname_apply_vid_and_portmask(const char *ifname, int vid)
+{
+	const struct rtk_ifname_phyport *e;
+	uint32_t mask;
+	char portmask[16]; 
+
+	e = find_rtk_phy_if_entry(ifname);
+	if (!e)
+		return 0;
+
+	mask = (1U << (uint32_t)e->phy_port);
+	(void)snprintf(portmask, sizeof(portmask), "0x%X", mask);
+
+	safe_do_system("rtkswitch 36 %d", vid);
+	safe_do_system("rtkswitch 3905 %s", portmask);
+
+	return 1;
+}
+#endif
+
+typedef struct {
+	unsigned char mac[6];
+	int port;
+} mac_query_t;
+
+int rtkswitch_find_mac_port(const char *mac_str)
+{
+	int fd, i;
+	mac_query_t q;
+	unsigned int m[6];
+
+	if (sscanf(mac_str, "%x:%x:%x:%x:%x:%x", &m[0], &m[1], &m[2], &m[3], &m[4], &m[5]) != 6) {
+		printf("Invalid MAC format. Use XX:XX:XX:XX:XX:XX\n");
+		return -1;
+	}
+	
+	for (i = 0; i < 6; i++)
+		q.mac[i] = (unsigned char)m[i];
+	
+	q.port = -1;
+
+	fd = open(RTKSWITCH_DEV, O_RDONLY);
+	if (fd < 0) {
+		perror(RTKSWITCH_DEV);
+		return -1;
+	}
+
+	if (ioctl(fd, RTKSWITCH_IOCTL(771), &q) < 0) {
+		perror("rtkswitch ioctl 771");
+		close(fd);
+		return -1;
+	}
+
+	if (q.port >= 0)
+		printf("%d\n", q.port);
+	else
+		printf("-1\n");
+
+	close(fd);
+	return (q.port >= 0) ? q.port : -1;
+}
+
+int rtkswitch_phy_port_link_status(int phy_port)
+{
+	int fd;
+	int status = phy_port;
+
+	fd = open(RTKSWITCH_DEV, O_RDONLY);
+	if (fd < 0) {
+		perror(RTKSWITCH_DEV);
+		return -1;
+	}
+
+	if (ioctl(fd, RTKSWITCH_IOCTL(31), &status) < 0) {
+		perror("rtkswitch ioctl 31");
+		close(fd);
+		return -1;
+	}
+
+	close(fd);
+	return status; 
+}
+
 int rtkswitch_ioctl(int val, int val2, int val3, int val4, int val5)
 {
 	int fd;
@@ -100,6 +230,7 @@ int rtkswitch_ioctl(int val, int val2, int val3, int val4, int val5)
 #endif
 	case 2:		/* Dump MAC status of specified LAN port */
 	case 3:		/* Get link status of the specified LAN port */
+	case 31:	/* Get link status of the specified PHY port */
 	case 4:		/* Get link status of LAN ports */
 	case 9:		/* LAN / WAN partition */
 	case 10:	/* power up LAN1 */
@@ -163,6 +294,7 @@ int rtkswitch_ioctl(int val, int val2, int val3, int val4, int val5)
 	//case 64:	/* Set port(iso port) isolation EFID */
 	case 701:       /* Set specified TxDelay */
 	case 702:       /* Set specified RxDelay */
+	//case 771:	/* Find the utp lan port of target mac*/
 	case 900:       /* Set phy x in testmode */
 	case 901:       /* Set phy testmode x(1, 4) */
 
@@ -239,7 +371,7 @@ int rtkswitch_ioctl(int val, int val2, int val3, int val4, int val5)
 		return 0;
 	}
 
-	if (ioctl(fd, val, p) < 0) {
+	if (ioctl(fd, RTKSWITCH_IOCTL(val), p) < 0) {
 		perror("rtkswitch ioctl");
 		close(fd);
 		return -1;
@@ -283,6 +415,11 @@ int config_rtkswitch(int argc, char *argv[])
 		cmd5 = argv[5];
 
 	val = (int) strtol(cmd, NULL, 0);
+
+	if (val == 771 && cmd2) {
+		return rtkswitch_find_mac_port(cmd2);
+	}
+
 	if (cmd2)
 		val2 = (int) strtol(cmd2, NULL, 0);
 	if (cmd3)
@@ -307,7 +444,7 @@ unsigned int rtkswitch_lanPorts_phyStatus(void)
 		return -1;
 	}
 
-	if (ioctl(fd, 4, &value) < 0) {
+	if (ioctl(fd, RTKSWITCH_IOCTL(4), &value) < 0) {
 		perror("ioctl");
 		value = -1;
 	}
@@ -342,7 +479,7 @@ unsigned int rtkswitch_serdes_status(void)
 		return -1;
 	}
 
-	if (ioctl(fd, 48, &value) < 0) {
+	if (ioctl(fd, RTKSWITCH_IOCTL(48), &value) < 0) {
 		perror("ioctl");
 		value = -1;
 	}
@@ -377,7 +514,7 @@ int rtkswitch_port_speed(int port)
 		perror("/dev/rtkswitch");
 	} else {
 		memset(&pS, 0, sizeof(pS));
-		if (ioctl(fd, 0, &pS) < 0) {
+		if (ioctl(fd, RTKSWITCH_IOCTL(0), &pS) < 0) {
 			perror("rtkswitch ioctl");
 			close(fd);
 		}
@@ -422,7 +559,7 @@ int rtkswitch_testmode(int val, int val2, int val3)
 		memset(&tm, 0, sizeof(tm));
 		tm.port = val2;
 		tm.mode = val3;
-		if (ioctl(fd, val, &tm) < 0) {
+		if (ioctl(fd, RTKSWITCH_IOCTL(val), &tm) < 0) {
 			perror("rtkswitch ioctl");
 			close(fd);
 		}
@@ -448,7 +585,7 @@ int rtkswitch_regop(int val, int val2, int val3, int val4, int val5)
                 ro.pm2 = val3;
                 ro.pm3 = val4;
                 ro.pm4 = val5;
-                if (ioctl(fd, val, &ro) < 0) {
+                if (ioctl(fd, RTKSWITCH_IOCTL(val), &ro) < 0) {
                         perror("rtkswitch ioctl");
                         close(fd);
                 }
@@ -470,7 +607,7 @@ int rtkswitch_port_duplex(int port)
 		perror("/dev/rtkswitch");
 	} else {
 		memset(&pS, 0, sizeof(pS));
-		if (ioctl(fd, 0, &pS) < 0) {
+		if (ioctl(fd, RTKSWITCH_IOCTL(0), &pS) < 0) {
 			perror("rtkswitch ioctl");
 			close(fd);
 		}
@@ -853,7 +990,7 @@ int rtkswitch_port_stat(int port)
 #else
 		*p = port;
 #endif
-		if (ioctl(fd, 1, &Port_cntrs) < 0) {
+		if (ioctl(fd, RTKSWITCH_IOCTL(1), &Port_cntrs) < 0) {
 			perror("rtkswitch ioctl");
 			close(fd);
 		} else
@@ -897,7 +1034,7 @@ int rtkswitch_port_mactable(int port)
 #else
 		*p = port;
 #endif
-		if (ioctl(fd, 7, &Port_mactable) < 0) {
+		if (ioctl(fd, RTKSWITCH_IOCTL(7), &Port_mactable) < 0) {
 			perror("rtkswitch ioctl");
 			close(fd);
 		} else

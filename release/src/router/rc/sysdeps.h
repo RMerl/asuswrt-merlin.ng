@@ -62,6 +62,12 @@ extern void set_wan_tag(char *interface);
 
 extern int wlcconnect_core(void);
 extern int wlcscan_core(char *ofile, char *wif);
+#if (defined(RTCONFIG_WIFI8) || defined(WIFI7_SDK_20250506)) && defined(RTCONFIG_MLO)
+extern void wlcscan_reset_mlo_groups(void);
+extern void wlcscan_build_mlo_groups(int ap_count);
+extern void wlcscan_print_mlo_groups(void);
+extern void wlcscan_write_mlo_multilink_file(void);
+#endif
 extern void wps_oob_both(void);
 extern void start_wsc(void);
 extern const char *get_wifname(int band);

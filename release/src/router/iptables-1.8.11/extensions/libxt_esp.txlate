@@ -1,0 +1,23 @@
+iptables-translate -A FORWARD -p esp -j ACCEPT
+nft 'add rule ip filter FORWARD ip protocol esp counter accept'
+
+iptables-translate -A INPUT  --in-interface  wan --protocol esp -j ACCEPT
+nft 'add rule ip filter INPUT iifname "wan" ip protocol esp counter accept'
+
+iptables-translate -A INPUT -p 50 -m esp --espspi 500 -j DROP
+nft 'add rule ip filter INPUT esp spi 500 counter drop'
+
+iptables-translate -A INPUT -p 50 -m esp --espspi 500:600 -j DROP
+nft 'add rule ip filter INPUT esp spi 500-600 counter drop'
+
+iptables-translate -A INPUT -p 50 -m esp --espspi 0:4294967295 -j DROP
+nft 'add rule ip filter INPUT meta l4proto esp counter drop'
+
+iptables-translate -A INPUT -p 50 -m esp ! --espspi 0:4294967295 -j DROP
+nft 'add rule ip filter INPUT esp spi != 0-4294967295 counter drop'
+
+ip6tables-translate -A INPUT -p 50 -m esp --espspi 0:4294967295 -j DROP
+nft 'add rule ip6 filter INPUT exthdr esp exists counter drop'
+
+ip6tables-translate -A INPUT -p 50 -m esp ! --espspi 0:4294967295 -j DROP
+nft 'add rule ip6 filter INPUT esp spi != 0-4294967295 counter drop'

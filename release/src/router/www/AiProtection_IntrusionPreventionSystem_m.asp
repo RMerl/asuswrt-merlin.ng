@@ -23,14 +23,14 @@
 	width:650px;
 	height:200px;
 	position:absolute;
-	background: #293438;
+	background: var(--surface-panel, #293438);
 	z-index:10;
 	margin: 0 0 0 300px;
 	border-radius:10px;
 	display: none;
 }
 .confirm-button{
-	background: linear-gradient(#233438 0%, #0F1011 100%);
+	background: var(--surface-panel, linear-gradient(#233438 0%, #0F1011 100%));
 	border-radius: 8px;
 	height:33px;
 	cursor: pointer;

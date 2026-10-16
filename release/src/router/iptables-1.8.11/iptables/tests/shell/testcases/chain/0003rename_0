@@ -1,0 +1,40 @@
+#!/bin/bash -x
+
+die() {
+	echo "E: $@"
+	exit 1
+}
+
+cmds="iptables ip6tables"
+[[ $XT_MULTI == *xtables-nft-multi ]] && cmds+=" arptables ebtables"
+
+declare -A invnames
+invnames["existing"]="c2"
+invnames["spaced"]="foo bar"
+invnames["dashed"]="-foo"
+invnames["negated"]="!foo"
+# XXX: ebtables-nft accepts 255 chars
+#invnames["overlong"]="thisisquitealongnameforachain"
+invnames["standard target"]="ACCEPT"
+invnames["extension target"]="DNAT"
+
+for cmd in $cmds; do
+	$XT_MULTI $cmd -N c1 || die "$cmd: can't add chain c1"
+	$XT_MULTI $cmd -N c2 || die "$cmd: can't add chain c2"
+	for key in "${!invnames[@]}"; do
+		val="${invnames[$key]}"
+		if [[ $key == "extension target" ]]; then
+			if [[ $cmd == "arptables" ]]; then
+				val="mangle"
+			elif [[ $cmd == "ebtables" ]]; then
+				val="dnat"
+			fi
+		fi
+		$XT_MULTI $cmd -N "$val" && \
+			die "$cmd: added chain with $key name"
+		$XT_MULTI $cmd -E c1 "$val" && \
+			die "$cmd: renamed to $key name"
+	done
+done
+
+exit 0

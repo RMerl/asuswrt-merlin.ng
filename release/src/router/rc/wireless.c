@@ -373,6 +373,11 @@ int wlcscan_main(void)
 
 	/* Starting scanning */
 	i = 0;
+#if (defined(RTCONFIG_WIFI8) || defined(WIFI7_SDK_20250506)) && defined(RTCONFIG_MLO)
+	/* one MLO AP's links are split across the separate per-radio scans below;
+	 * start a fresh accumulation so they all land in the same summary. */
+	wlcscan_reset_mlo_groups();
+#endif
 #if defined(RTCONFIG_CONCURRENTREPEATER) && defined(RTCONFIG_MTK_REP)
 	if (nvram_match("wps_cli_state", "1")) {
 		if (nvram_match("wlc_express", "1"))
@@ -413,6 +418,14 @@ int wlcscan_main(void)
 
 		i++;
 	}
+
+#if (defined(RTCONFIG_WIFI8) || defined(WIFI7_SDK_20250506)) && defined(RTCONFIG_MLO)
+	/* all radios/bands for this wlcscan run are done; print the combined
+	 * cross-band MLO summary once, instead of one incomplete table per radio */
+	wlcscan_print_mlo_groups();
+	/* also hand the same result to httpd, via ej_get_ap_mlo_multilink() (web.c) */
+	wlcscan_write_mlo_multilink_file();
+#endif
 
 #if defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
 	apscan_merge();

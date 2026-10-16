@@ -75,6 +75,7 @@ function show_mlo_profilelist(){
 	}
 	else{
 		$(".profile_setting_container").empty().append(Get_Component_MLO_Introduce());
+		resize_iframe_height();
 	}
 	clearInterval(interval_AccTime);
 	let $AccTime_list = $("#profile_list_content").find("[data-container=AccTime][access_time=true]");

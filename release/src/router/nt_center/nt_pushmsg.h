@@ -29,9 +29,9 @@ struct pnsInfo mapPushInfo[] =
 	{SYS_ALL_WIFI_TURN_OFF_EVENT                 ,"All your WiFi is turned off"                             ,"" },
 	{SYS_SCY_UNCONN_NOTICE_EVENT                 ,"Security Notice"                                         ,"" },
 	{SYS_SCY_CONN_NOTICE_EVENT                   ,"Security Notice"                                         ,"" },
-	{SYS_FW_UPGRADE_OK_EVENT                     ,"Firmware upgrade successed"                              ,"" },
+	{SYS_FW_UPGRADE_OK_EVENT                     ,"Firmware upgrade succeeded"                              ,"" },
 	{SYS_FW_UPGRADE_NOK_EVENT                    ,"Firmware upgrade failed"                                 ,"" },
-	{SYS_REBOOT_OK_EVENT                         ,"Device reboot successed"                                 ,"" },
+	{SYS_REBOOT_OK_EVENT                         ,"Device reboot succeeded"                                 ,"" },
 	{SYS_REBOOT_NOK_EVENT                        ,"Device reboot failed"                                    ,"" },
 	{SYS_LAN_PORT_IN_EVENT                       ,"LAN port plug-in"                                        ,"" },
 	{SYS_LAN_PORT_OUT_EVENT                      ,"LAN port plug-out"                                       ,"" },
@@ -41,7 +41,7 @@ struct pnsInfo mapPushInfo[] =
 	/* ------------------------------
 	   ### Administration ###
 	---------------------------------*/
-	{ADMIN_REMOTE_LOGIN_EVENT                    ,"Login successed"                                         ,"" },
+	{ADMIN_REMOTE_LOGIN_EVENT                    ,"Login succeeded"                                         ,"" },
 	{ADMIN_BOUND_DEV_EVENT                       ,"Device Bound"                                            ,"" },
 	{ADMIN_UNBOUND_DEV_EVENT                     ,"Device Unbound"                                          ,"" },
 	{ADMIN_LOGIN_FAIL_SSH_EVENT                  ,"Unusual Router Sign-In"                                  ,"" },

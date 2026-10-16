@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=Edge">
@@ -110,7 +110,7 @@ function checkCmdRet(){
 			if(response.search("XU6J03M6") != -1){
 				document.getElementById("loadingIcon").style.display = "none";
 				_cmdBtn.disabled = false;
-				_cmdBtn.style.color = "#FFF";
+				_cmdBtn.style.color = "var(--wrt-btn-outline-primary-color,#FFF)";
 				retArea.value = response.replace("XU6J03M6", " ");
 				retArea.scrollTop = retArea.scrollHeight;
 				return false;
@@ -124,7 +124,7 @@ function checkCmdRet(){
 			if(noChange > waitLimit){
 				document.getElementById("loadingIcon").style.display = "none";
 				_cmdBtn.disabled = false;
-				_cmdBtn.style.color = "#FFF";
+				_cmdBtn.style.color = "var(--wrt-btn-outline-primary-color,#FFF)";
 				setTimeout("checkCmdRet();", 1000);
 			}
 			else{

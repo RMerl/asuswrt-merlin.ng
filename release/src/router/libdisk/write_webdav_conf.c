@@ -68,6 +68,24 @@ struct partition_info{
 #endif
 
 
+/*
+ * tmp_aft/folder_list[n] are embedded directly into a lighttpd
+ * $HTTP["url"]=~"..." *regex*, not a literal string match. A folder name
+ * containing regex metacharacters (".", "*", "|", "(", "[", ...) is
+ * otherwise interpreted as regex syntax, letting a folder named e.g. ".*"
+ * make its per-folder deny/read-only rule match unrelated WebDAV URLs.
+ * Backslash-escape those metacharacters so the value is matched literally.
+ */
+static void fprint_webdav_url_regex_escaped(FILE *const fp, const char *const name){
+	const char *p;
+
+	for(p = name; *p != '\0'; ++p){
+		if(strchr(".^$|()[]{}*+?\\", *p) != NULL)
+			fputc('\\', fp);
+		fputc(*p, fp);
+	}
+}
+
 #define WEBDAV_CONF "/tmp/lighttpd.conf"
 #if 0
 #define PRODUCTID "productid"
@@ -471,12 +489,20 @@ int main(int argc, char *argv[]) {
 	//printf("[webdav] (%d,%d) : right=%d, account=%s, folder=%s, mount=%s, tmp_aft=%s\n", n, i, right, account_list[i], folder_list[n], follow_partition->mount_point, tmp_aft);
 						if(right == 0){
 							/* forbid to access the folder */
-							fprintf(fp, "	$HTTP[\"url\"]=~\"^/webdav/%s/%s($|/)\"{\n", tmp_aft, folder_list[n]);
+							fprintf(fp, "	$HTTP[\"url\"]=~\"^/webdav/");
+							fprint_webdav_url_regex_escaped(fp, tmp_aft);
+							fprintf(fp, "/");
+							fprint_webdav_url_regex_escaped(fp, folder_list[n]);
+							fprintf(fp, "($|/)\"{\n");
 							fprintf(fp, "		url.access-deny=(\"\")\n"); 
 							fprintf(fp, "	}\n");
 						}
 						else if (right == 1){
-							fprintf(fp, "	$HTTP[\"url\"]=~\"^/webdav/%s/%s($|/)\"{\n", tmp_aft, folder_list[n]);
+							fprintf(fp, "	$HTTP[\"url\"]=~\"^/webdav/");
+							fprint_webdav_url_regex_escaped(fp, tmp_aft);
+							fprintf(fp, "/");
+							fprint_webdav_url_regex_escaped(fp, folder_list[n]);
+							fprintf(fp, "($|/)\"{\n");
 							fprintf(fp, "		webdav.is-readonly=\"enable\"\n");
 							fprintf(fp, "	}\n");
 						}
@@ -644,12 +670,20 @@ WEBDAV_SETTING:
 	fprintf(stderr,"[webdav] (%d,%d) : right=%d, account=%s, folder=%s, mount=%s, tmp_aft=%s\n", n, i, right, account_list[i], folder_list[n], follow_partition->mount_point, tmp_aft);
 						if(right == 0){
 							/* forbid to access the folder */
-							fprintf(fp, "	$HTTP[\"url\"]=~\"^/webdav/%s/%s($|/)\"{\n", tmp_aft, folder_list[n]);
+							fprintf(fp, "	$HTTP[\"url\"]=~\"^/webdav/");
+							fprint_webdav_url_regex_escaped(fp, tmp_aft);
+							fprintf(fp, "/");
+							fprint_webdav_url_regex_escaped(fp, folder_list[n]);
+							fprintf(fp, "($|/)\"{\n");
 							fprintf(fp, "		url.access-deny=(\"\")\n"); 
 							fprintf(fp, "	}\n");
 						}
 						else if (right == 1){
-						fprintf(fp, "	$HTTP[\"url\"]=~\"^/webdav/%s/%s($|/)\"{\n", tmp_aft, folder_list[n]);
+						fprintf(fp, "	$HTTP[\"url\"]=~\"^/webdav/");
+							fprint_webdav_url_regex_escaped(fp, tmp_aft);
+							fprintf(fp, "/");
+							fprint_webdav_url_regex_escaped(fp, folder_list[n]);
+							fprintf(fp, "($|/)\"{\n");
 							fprintf(fp, "		webdav.is-readonly=\"enable\"\n");
 							fprintf(fp, "	}\n");
 						}

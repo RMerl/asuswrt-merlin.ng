@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Make sure ip6tables-restore simply ignores
+# rules starting with -4
+
+set -e
+
+# show rules, drop uninteresting policy settings
+ipt_show() {
+	$XT_MULTI ip6tables -S | grep -v '^-P'
+}
+
+# issue reproducer for ip6tables-restore
+
+$XT_MULTI ip6tables-restore <<EOF
+*filter
+-A FORWARD -m comment --comment any -j ACCEPT
+-4 -A FORWARD -m comment --comment ipv4 -j ACCEPT
+-6 -A FORWARD -m comment --comment ipv6 -j ACCEPT
+COMMIT
+EOF
+
+EXPECT='-A FORWARD -m comment --comment any -j ACCEPT
+-A FORWARD -m comment --comment ipv6 -j ACCEPT'
+
+diff -u -Z <(echo -e "$EXPECT") <(ipt_show)

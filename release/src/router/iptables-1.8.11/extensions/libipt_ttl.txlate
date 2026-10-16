@@ -1,0 +1,5 @@
+iptables-translate -A INPUT -m ttl --ttl-eq 3 -j ACCEPT
+nft 'add rule ip filter INPUT ip ttl 3 counter accept'
+
+iptables-translate -A INPUT -m ttl --ttl-gt 5 -j ACCEPT
+nft 'add rule ip filter INPUT ip ttl gt 5 counter accept'

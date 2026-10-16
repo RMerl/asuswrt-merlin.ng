@@ -1,0 +1,29 @@
+#!/bin/bash
+
+[[ $XT_MULTI == *xtables-nft-multi ]] || { echo "skip $XT_MULTI"; exit 0; }
+
+# make sure none of the commands invoking nft_xt_builtin_init() override
+# non-default chain policies via needless chain add.
+
+RC=0
+
+do_test() {
+	$XT_MULTI $@
+	$XT_MULTI iptables -S | grep -q -- '-P FORWARD DROP' && return
+
+	echo "command '$@' kills chain policies"
+	$XT_MULTI iptables -P FORWARD DROP
+	RC=1
+}
+
+$XT_MULTI iptables -P FORWARD DROP
+
+do_test iptables -A OUTPUT -j ACCEPT
+do_test iptables -F
+do_test iptables -N foo
+do_test iptables -E foo foo2
+do_test iptables -I OUTPUT -j ACCEPT
+do_test iptables -nL
+do_test iptables -S
+
+exit $RC

@@ -1,0 +1,93 @@
+#!/bin/sh
+
+case "$XT_MULTI" in
+*xtables-nft-multi)
+	;;
+*)
+	echo "skip $XT_MULTI"
+	exit 0
+	;;
+esac
+
+get_entries_count() { # (chain)
+	$XT_MULTI ebtables -L $1 | sed -n 's/.*entries: \([0-9]*\).*/\1/p'
+}
+
+set -x
+
+for t in filter nat broute; do
+	$XT_MULTI ebtables -t $t -L || exit 1
+	$XT_MULTI ebtables -t $t -X || exit 1
+	$XT_MULTI ebtables -t $t -F || exit 1
+done
+
+for t in foobar; do
+	$XT_MULTI ebtables -t $t -L &&
+	$XT_MULTI ebtables -t $t -X &&
+	$XT_MULTI ebtables -t $t -F
+	if [ $? -eq 0 ]; then
+		echo "Expect nonzero return for unsupported table"
+		exit 1
+	fi
+done
+
+
+$XT_MULTI ebtables -t filter -N FOO || exit 1
+$XT_MULTI ebtables -t filter -N FOO
+if [ $? -eq 0 ]; then
+	echo "Duplicate chain FOO"
+	$XT_MULTI ebtables -t filter -L
+	exit 1
+fi
+
+entries=$(get_entries_count FOO)
+if [ $entries -ne 0 ]; then
+	echo "Unexpected entries count in empty unreferenced chain (expected 0, have $entries)"
+	$XT_MULTI ebtables -L
+	exit 1
+fi
+
+$XT_MULTI ebtables -A FORWARD -j FOO
+entries=$(get_entries_count FORWARD)
+if [ $entries -ne 1 ]; then
+	echo "Unexpected entries count in FORWARD chain (expected 1, have $entries)"
+	$XT_MULTI ebtables -L
+	exit 1
+fi
+
+entries=$(get_entries_count FOO)
+if [ $entries -ne 0 ]; then
+	echo "Unexpected entries count in empty referenced chain (expected 0, have $entries)"
+	$XT_MULTI ebtables -L
+	exit 1
+fi
+
+$XT_MULTI ebtables -A FOO -j ACCEPT
+entries=$(get_entries_count FOO)
+if [ $entries -ne 1 ]; then
+	echo "Unexpected entries count in non-empty referenced chain (expected 1, have $entries)"
+	$XT_MULTI ebtables -L
+	exit 1
+fi
+
+$XT_MULTI ebtables -t filter -N BAR || exit 1
+$XT_MULTI ebtables -t filter -N BAZ || exit 1
+
+$XT_MULTI ebtables -t filter -L | grep -q FOO || exit 1
+$XT_MULTI ebtables -t filter -L | grep -q BAR || exit 1
+$XT_MULTI ebtables -t filter -L | grep -q BAZ || exit 1
+
+$XT_MULTI ebtables -t filter -L BAZ || exit 1
+$XT_MULTI ebtables -t filter -X BAZ || exit 1
+$XT_MULTI ebtables -t filter -L BAZ | grep -q BAZ
+if [ $? -eq 0 ]; then
+	echo "Deleted chain -L BAZ ok, expected failure"
+	$XT_MULTI ebtables -t filter -L
+	exit 1
+fi
+
+$XT_MULTI ebtables -t filter -E FOO BAZ || exit 1
+$XT_MULTI ebtables -t filter -L | grep -q FOO && exit 1
+$XT_MULTI ebtables -t filter -L | grep -q BAZ || exit 1
+
+$XT_MULTI ebtables -t $t -F || exit 0

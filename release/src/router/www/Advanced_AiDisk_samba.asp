@@ -95,13 +95,13 @@ function initial(){
 		document.getElementById("radio_anonymous_enable_tr").style.display = "none";
 	}
 
-	if(!WebDav_support)
-		document.getElementById("clouddiskstr").style.display = "none";
-		
-	if (!ntfs_sparse_support)
-		document.getElementById('ntfs_sparse_files').style.display = "none";
-	else
-		document.getElementById('ntfs_sparse_files').style.display = "";		
+	var clouddiskstrObj = document.getElementById("clouddiskstr");
+	if(!WebDav_support && clouddiskstrObj)
+		clouddiskstrObj.style.display = "none";
+
+	var ntfsSparseObj = document.getElementById('ntfs_sparse_files');
+	if(ntfsSparseObj)
+		ntfsSparseObj.style.display = ntfs_sparse_support ? "" : "none";
 	
 	// show accounts
 	showAccountGroupMenu(select_flag);
@@ -899,7 +899,7 @@ function switchUserType(flag){
 									 }
 								);
 							</script>			
-							<span id="loginMethod" style="color:#FC0"></span>
+							<span id="loginMethod" style="color:var(--wrt-badge-warning-color,#FFCC00)"></span>
 						</div>
 					</td>
 				</tr>
@@ -909,7 +909,7 @@ function switchUserType(flag){
 					</th>
 					<td>
 						<div><input type="text" name="computer_name" id="computer_name" class="input_20_table charToUpperCase" maxlength="15" value="<% nvram_get("computer_name"); %>" autocorrect="off" autocapitalize="on"><br/>
-						<span id="alert_msg1" style="color:#FC0;"></span></div>
+						<span id="alert_msg1" style="color:var(--wrt-badge-warning-color,#FFCC00);"></span></div>
 					</td>
 				</tr>
 				<tr>
@@ -987,7 +987,7 @@ function switchUserType(flag){
 		    <tr>
 			  <!-- The action buttons of accounts. -->
     	      <!-- <td width="300" height="25" valign="bottom">	 -->
-    	        <td width="25%" style="border: 1px solid #222;">	
+    	        <td width="25%" style="border: 1px solid var(--border-default, #222);">	
 		        	<table align="right">
 						<tr id="trAccount" style="display:none;">
 							<td><div id="createAccountBtn" title="<#AddAccountTitle#>"></div></td>
@@ -1045,7 +1045,7 @@ function switchUserType(flag){
 			  <!-- the tree of folders -->
 			  <div id="e0" style="font-size:10pt; margin-top:2px;"></div>
 			  
-			  <div style="text-align:center; margin:10px auto; border-top:1px dotted #CCC; width:95%; padding:2px;">
+			  <div style="text-align:center; margin:10px auto; border-top:1px dotted var(--border-default, #CCC); width:95%; padding:2px;">
 				<input name="changePermissionBtn" id="changePermissionBtn" type="button" value="<#CTL_onlysave#>" class="button_gen_dis" disabled="disabled">
 			  </div>
 		    </td>

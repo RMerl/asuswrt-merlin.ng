@@ -1,0 +1,64 @@
+#!/bin/bash
+
+set -e
+
+$XT_MULTI ip6tables -N foo
+$XT_MULTI ip6tables -A FORWARD -i eth23 -o eth42 -j ACCEPT -c 23 42
+$XT_MULTI ip6tables -A FORWARD -i eth42 -o eth23 -g foo
+$XT_MULTI ip6tables -t nat -A OUTPUT -o eth123 -m mark --mark 0x42 -j ACCEPT
+
+EXPECT='-P INPUT ACCEPT
+-P FORWARD ACCEPT
+-P OUTPUT ACCEPT
+-N foo
+-A FORWARD -i eth23 -o eth42 -j ACCEPT
+-A FORWARD -i eth42 -o eth23 -g foo'
+
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI ip6tables -S)
+
+EXPECT='-P INPUT ACCEPT -c 0 0
+-P FORWARD ACCEPT -c 0 0
+-P OUTPUT ACCEPT -c 0 0
+-N foo
+-A FORWARD -i eth23 -o eth42 -c 23 42 -j ACCEPT
+-A FORWARD -i eth42 -o eth23 -c 0 0 -g foo'
+
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI ip6tables -v -S)
+
+EXPECT='-P FORWARD ACCEPT
+-A FORWARD -i eth23 -o eth42 -j ACCEPT
+-A FORWARD -i eth42 -o eth23 -g foo'
+
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI ip6tables -S FORWARD)
+
+EXPECT='-P FORWARD ACCEPT -c 0 0
+-A FORWARD -i eth23 -o eth42 -c 23 42 -j ACCEPT
+-A FORWARD -i eth42 -o eth23 -c 0 0 -g foo'
+
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI ip6tables -v -S FORWARD)
+
+EXPECT='-P OUTPUT ACCEPT
+-A OUTPUT -o eth123 -m mark --mark 0x42 -j ACCEPT'
+
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI ip6tables -t nat -S OUTPUT)
+
+EXPECT='-P OUTPUT ACCEPT -c 0 0
+-A OUTPUT -o eth123 -m mark --mark 0x42 -c 0 0 -j ACCEPT'
+
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI ip6tables -v -t nat -S OUTPUT)
+
+# some of the following commands are supposed to fail
+set +e
+
+$XT_MULTI ip6tables -S nonexistent && {
+	echo "list-rules in non-existent chain should fail"
+	exit 1
+}
+$XT_MULTI ip6tables -S nonexistent 23 && {
+	echo "list-rules in non-existent chain with given rule number should fail"
+	exit 1
+}
+$XT_MULTI ip6tables -S FORWARD 234 || {
+	echo "list-rules in existent chain with invalid rule number should succeed"
+	exit 1
+}

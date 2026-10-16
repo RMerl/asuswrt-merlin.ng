@@ -629,11 +629,11 @@
 	background-position: 50%;
 }
 .btn_item .status_text{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	margin-top: 6px;
 }
 .btn_item .pure_text{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 }
 .btn_item .pure_text.loadingicon{
 	position: relative;
@@ -989,7 +989,7 @@
 	background-size: cover;
 }
 .action_container_hint{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 	width: 90%;
 	margin: auto;
 	font-size: 16px;
@@ -1392,7 +1392,7 @@
 	letter-spacing: 0.1px;
 }
 .vpn_type_maxi_hint, .item_hint, .text_yellow{
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 }
 .profile_setting_item.client_IP_hint .item_hint{
 	min-height: initial;
@@ -1417,7 +1417,7 @@
 }
 .client_list_content_container .client_container.no_data{
 	height: 40px;
-	color: #FC0;
+	color: var(--wrt-badge-warning-color,#FC0);
 }
 .client_list_content_container .client_container:before{
 	position: absolute;

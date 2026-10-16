@@ -1,0 +1,26 @@
+ebtables-translate -A FORWARD -p ip ! --ip-src 192.168.0.0/24 -j ACCEPT
+nft 'add rule bridge filter FORWARD ip saddr != 192.168.0.0/24 counter accept'
+
+ebtables-translate -I FORWARD -p ip --ip-dst 10.0.0.1
+nft 'insert rule bridge filter FORWARD ip daddr 10.0.0.1 counter'
+
+ebtables-translate -I OUTPUT -p ip -o eth0 --ip-tos 0xff
+nft 'insert rule bridge filter OUTPUT oifname "eth0" ether type ip @nh,8,8 0xff counter'
+
+ebtables-translate -A FORWARD -p ip --ip-proto tcp --ip-dport 22
+nft 'add rule bridge filter FORWARD ether type ip tcp dport 22 counter'
+
+ebtables-translate -A FORWARD -p ip --ip-proto udp --ip-sport 1024:65535
+nft 'add rule bridge filter FORWARD ether type ip udp sport 1024-65535 counter'
+
+ebtables-translate -A FORWARD -p ip --ip-proto 253
+nft 'add rule bridge filter FORWARD ip protocol 253 counter'
+
+ebtables-translate -A FORWARD -p ip --ip-protocol icmp --ip-icmp-type "echo-request"
+nft 'add rule bridge filter FORWARD icmp type 8 counter'
+
+ebtables-translate -A FORWARD -p ip --ip-proto icmp --ip-icmp-type 1/1
+nft 'add rule bridge filter FORWARD icmp type 1 icmp code 1 counter'
+
+ebtables-translate -A FORWARD -p ip --ip-protocol icmp ! --ip-icmp-type 1:10
+nft 'add rule bridge filter FORWARD icmp type != 1-10 counter'

@@ -1,0 +1,11 @@
+iptables-translate -t filter -A INPUT -m icmp --icmp-type echo-reply -j ACCEPT
+nft 'add rule ip filter INPUT icmp type echo-reply counter accept'
+
+iptables-translate -t filter -A INPUT -m icmp --icmp-type 3 -j ACCEPT
+nft 'add rule ip filter INPUT icmp type destination-unreachable counter accept'
+
+iptables-translate -t filter -A INPUT -m icmp ! --icmp-type 3 -j ACCEPT
+nft 'add rule ip filter INPUT icmp type != destination-unreachable counter accept'
+
+iptables-translate -t filter -A INPUT -m icmp --icmp-type any -j ACCEPT
+nft 'add rule ip filter INPUT ip protocol icmp counter accept'

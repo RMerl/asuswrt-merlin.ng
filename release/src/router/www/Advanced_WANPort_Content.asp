@@ -62,9 +62,9 @@
 	z-index:20000;
 	margin-left: 40%;
 	margin-top:10%;
-	background-color:#232629;
+	background-color:var(--surface-panel, #232629);
 	width:400px;
-	box-shadow: 3px 3px 10px #000;
+	box-shadow: var(--wrt-card-shadow, 3px 3px 10px #000);
 	font:13px Arial, Helvetica, sans-serif;
 }
 </style>
@@ -422,16 +422,6 @@ function is_eth_wan(wan){
 	});
 
 	return found;
-}
-
-function get_eth_wan_number(){
-	var num = 0;
-
-	$.each(eth_wan_list, function(key) {
-		num++;
-	});
-
-	return num;
 }
 
 function get_ethwan_setting(){
@@ -902,7 +892,7 @@ function applyRule(){
 			document.form.wans_dualwan.value = primary_val +" "+ secondary_val;
 		}
 
-		if(!dsl_support && based_modelid != "BRT-AC828" && (document.form.wans_dualwan.value == "usb lan" || document.form.wans_dualwan.value == "lan usb") && get_eth_wan_number() <= 1){
+		if(!dsl_support && based_modelid != "BRT-AC828" && (document.form.wans_dualwan.value == "usb lan" || document.form.wans_dualwan.value == "lan usb")){
 			alert("WAN port should be selected in Dual WAN.");
 			document.form.wans_primary.focus();
 			return;
@@ -1043,7 +1033,7 @@ function applyRule(){
 		document.form.wans_lanport.value = document.form.wans_lanport1.value;
 	else if(document.form.wans_second.value =="lan")
 		document.form.wans_lanport.value = document.form.wans_lanport2.value;
-	else if(get_eth_wan_number() <= 1){
+	else if(document.form.wans_dualwan.value.indexOf("lan") == -1){
 		document.form.wans_lanport.disabled = true;
 	}
 
@@ -2112,7 +2102,7 @@ function remain_origins(){
 									<div class="formfonttitle"><#menu5_3#> - <#dualwan#></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc"><#dualwan_desc#><a id="dualwan_faq" href="" target="_blank" style="margin-left:5px; text-decoration: underline;"><#dualwan#> FAQ</a></div>
-									<div id="wan_aggre_desc" class="formfontdesc" style="color:#FFCC00; display:none;"><#WANAggregation_goto_WAN#></div>
+									<div id="wan_aggre_desc" class="formfontdesc" style="color:var(--wrt-badge-warning-color,#FFCC00); display:none;"><#WANAggregation_goto_WAN#></div>
 
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 										
@@ -2255,8 +2245,8 @@ function remain_origins(){
 										  				document.getElementById("wandog_fb_count_tr").style.display = (this.checked == true ? "" : "none");
 										  			}
 										  		</script>
-												<div id="lb_note" style="color:#FFCC00; display:none;"><#dualwan_lb_note#></div>
-												<div id="lb_note2" style="color:#FFCC00; display:none;"><#dualwan_lb_note2#></div>
+												<div id="lb_note" style="color:var(--wrt-badge-warning-color,#FFCC00); display:none;"><#dualwan_lb_note#></div>
+												<div id="lb_note2" style="color:var(--wrt-badge-warning-color,#FFCC00); display:none;"><#dualwan_lb_note2#></div>
 											</td>
 									  	</tr>
 

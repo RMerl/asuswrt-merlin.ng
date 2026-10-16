@@ -721,7 +721,7 @@ function newProfileOK(){
 
 				<!-- Content field -->
 				<div class="description-container"><#OpenNAT_desc#></div>
-				<div class="description-container" id="v6plus_port_range_note" style="color:#FFCC00;display:none;">* When using v6plus, the number of available assigned ports is limited. Kindly understand that this may result in an interruption of this services and functions.</div>		<!-- Untranslated -->
+				<div class="description-container" id="v6plus_port_range_note" style="color:var(--wrt-badge-warning-color, #FFCC00);display:none;">* When using v6plus, the number of available assigned ports is limited. Kindly understand that this may result in an interruption of this services and functions.</div>		<!-- Untranslated -->
 				<div class="world-map">
 					<div class="map-connection-line"></div>
 					<div class="location-indicator location-US3"></div>

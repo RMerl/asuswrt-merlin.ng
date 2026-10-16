@@ -4,71 +4,882 @@
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0,  user-scalable=no" />
+        <style>
+            /* Settings shell layout */
+            .settings-shell-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                margin: 16px 0 12px;
+                flex-wrap: wrap;
+            }
+            .settings-breadcrumb {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 13px;
+                color: var(--text-secondary, #666);
+            }
+            .settings-breadcrumb .crumb { color: var(--text-secondary, #666); }
+            .settings-breadcrumb .crumb.current {
+                color: var(--brand-primary, #006CE1);
+                font-weight: 600;
+            }
+            .settings-breadcrumb .crumb-sep { opacity: 0.55; font-size: 12px; }
+
+            .settings-shell {
+                display: grid;
+                grid-template-columns: 220px minmax(0, 1fr);
+                gap: 16px;
+                align-items: start;
+            }
+            /* Tablet & mobile: collapse to a single column */
+            @media (max-width: 900px) {
+                .settings-shell { grid-template-columns: 1fr; }
+            }
+
+            /* Left sub-nav — height fits content; sticks in place while
+               the right-hand iframe content scrolls. */
+            .settings-subnav {
+                background: var(--wrt-sidenav-bg, var(--surface-card, #fff));
+                border: 1px solid var(--wrt-card-border, var(--border-subtle, rgba(0,0,0,0.08)));
+                border-radius: var(--wrt-card-radius, 10px);
+                padding: 8px;
+                box-shadow: var(--wrt-card-shadow, 0 1px 2px rgba(0,0,0,0.04));
+                position: sticky;
+                top: 16px;
+                align-self: start;
+                max-height: calc(100vh - 32px);
+                overflow-y: auto;
+            }
+            /* Tablet (641–900px): all categories as wrapping pill chips —
+               everything visible at once, no horizontal scroll.
+               Styled as the design system's Toggle Button (類 chip). */
+            @media (max-width: 900px) {
+                .settings-subnav {
+                    position: static;
+                    max-height: none;
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                    padding: 10px;
+                }
+                .settings-subnav-item {
+                    margin: 0;
+                    border: 1px solid transparent;
+                    border-radius: var(--wrt-toggle-btn-radius, 999px);
+                    padding: 8px 14px;
+                    background: rgba(var(--brand-primary-rgb, 0, 108, 225), .08);
+                    color: var(--brand-primary, #006CE1);
+                }
+                /* Icon / bullet inherit the brand tint while inactive. */
+                .settings-subnav-item .settings-subnav-icon,
+                .settings-subnav-item .settings-subnav-bullet {
+                    background-color: var(--brand-primary, #006CE1);
+                    opacity: 1;
+                }
+                .settings-subnav-item:hover {
+                    background: rgba(var(--brand-primary-rgb, 0, 108, 225), .16);
+                }
+                .settings-subnav-item.active {
+                    background: var(--brand-primary, #006CE1);
+                    color: var(--primary-btn-text-color, #fff);
+                    border-color: var(--brand-primary, #006CE1);
+                }
+            }
+            .settings-subnav-item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 10px 12px;
+                margin: 2px 0;
+                border-radius: var(--wrt-card-radius, 8px);
+                font-size: 13px;
+                color: var(--wrt-sidenav-link-color, var(--text-primary, #222));
+                cursor: pointer;
+                user-select: none;
+                transition: background-color .15s ease, color .15s ease;
+            }
+            .settings-subnav-item:hover {
+                background: var(--wrt-sidenav-hover-bg, rgba(var(--brand-primary-rgb), .06));
+            }
+            .settings-subnav-item.active {
+                background: var(--brand-primary, #006CE1);
+                color: var(--primary-btn-text-color, #fff);
+                font-weight: 600;
+            }
+            .settings-subnav-icon {
+                width: 20px; height: 20px;
+                flex: 0 0 20px;
+                display: inline-block;
+                background-color: var(--text-secondary, #6b7280);
+                opacity: 0.85;
+            }
+            .settings-subnav-item:hover .settings-subnav-icon {
+                background-color: var(--brand-primary, #006CE1);
+                opacity: 1;
+            }
+            .settings-subnav-item.active .settings-subnav-icon {
+                background-color: var(--primary-btn-text-color, #fff);
+                opacity: 1;
+            }
+            /* Bullet fallback for items without a matched icon */
+            .settings-subnav-bullet {
+                width: 6px; height: 6px;
+                flex: 0 0 6px;
+                margin: 0 7px;
+                border-radius: 50%;
+                background-color: var(--text-secondary, #6b7280);
+                opacity: 0.6;
+                display: inline-block;
+            }
+            .settings-subnav-item.active .settings-subnav-bullet { background-color: var(--primary-btn-text-color, #fff); opacity: 1; }
+
+            /* Right content card */
+            .settings-content-card {
+                background: var(--wrt-card-bg, var(--surface-card, #fff));
+                border: 1px solid var(--wrt-card-border, var(--border-subtle, rgba(0,0,0,0.08)));
+                border-radius: var(--wrt-card-radius, 10px);
+                box-shadow: var(--wrt-card-shadow, 0 1px 2px rgba(0,0,0,0.04));
+                display: flex;
+                flex-direction: column;
+                min-height: 80vh;
+                overflow: hidden;
+                margin-bottom: 1rem;
+            }
+
+            /* Top tab strip (→ Tabs / .nav-tabs tokens)
+               MD3-style scrollable tabs: the wrap owns the bottom border and the
+               ‹ › overflow arrows; the strip itself scrolls horizontally with
+               edge-fade masks hinting that more tabs exist off-screen. The
+               scrollbar is kept but lives in its own lane (padding-bottom below
+               the active-tab underline) so the two never overlap. */
+            .settings-tabstrip-wrap {
+                display: flex;
+                align-items: stretch;
+                border-bottom: var(--wrt-nav-tabs-border-width, 1px) solid var(--wrt-nav-tabs-border-color, var(--border-subtle, #e5e7eb));
+                background: var(--wrt-card-bg, var(--surface-card, #fff));
+            }
+            .settings-tab-arrow {
+                display: none;
+                flex: 0 0 28px;
+                align-items: center;
+                justify-content: center;
+                border: 0;
+                padding: 0;
+                background: transparent;
+                color: var(--text-secondary, #6b7280);
+                font-size: 20px;
+                line-height: 1;
+                cursor: pointer;
+                user-select: none;
+            }
+            .settings-tab-arrow:hover { color: var(--brand-primary, #006CE1); }
+            .settings-tab-arrow.show { display: flex; }
+            .settings-tabstrip {
+                flex: 1;
+                min-width: 0;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 16px 6px;   /* 6px bottom = dedicated scrollbar lane */
+                overflow-x: auto;
+                overflow-y: hidden;   /* single row — never scroll vertically */
+            }
+            /* Edge fade: gradient mask hints "more tabs this way". Classes are
+               toggled from JS based on scroll position. */
+            .settings-tabstrip.fade-r {
+                -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent 100%);
+                mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent 100%);
+            }
+            .settings-tabstrip.fade-l {
+                -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 48px), transparent 100%);
+                mask-image: linear-gradient(to left, #000 calc(100% - 48px), transparent 100%);
+            }
+            .settings-tabstrip.fade-l.fade-r {
+                -webkit-mask-image: linear-gradient(to right, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);
+                mask-image: linear-gradient(to right, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);
+            }
+            /* Show a (themed) scrollbar when the tabs overflow horizontally — the
+               global ::-webkit-scrollbar zeroes width, so re-enable it here, matching
+               architecture.css article.main-content. Only the horizontal bar (height);
+               width stays 0 so there's no vertical scrollbar. */
+            .settings-tabstrip::-webkit-scrollbar {
+                width: 0;
+                height: var(--wrt-scrollbar-height, 5px);
+            }
+            .settings-tabstrip::-webkit-scrollbar-track { background: transparent; }
+            .settings-tabstrip::-webkit-scrollbar-thumb {
+                background: var(--wrt-scrollbar-thumb-color, rgba(0,0,0,0.28));
+                border-radius: var(--wrt-scrollbar-radius, 20px);
+            }
+            .settings-tabstrip::-webkit-scrollbar-thumb:hover {
+                background: var(--wrt-scrollbar-thumb-hover-color, rgba(0,0,0,0.45));
+            }
+            .settings-tab-item {
+                padding: 10px 14px 12px;
+                font-size: 13px;
+                color: var(--wrt-nav-tabs-link-color, var(--text-secondary, #555));
+                cursor: pointer;
+                white-space: nowrap;
+                border-bottom: 2px solid transparent;
+                transition: color .15s ease, border-color .15s ease;
+            }
+            .settings-tab-item:hover { color: var(--brand-primary, #006CE1); }
+            .settings-tab-item.active {
+                color: var(--wrt-nav-tabs-link-active-color, var(--brand-primary, #006CE1));
+                border-bottom-color: var(--wrt-nav-tabs-link-active-border-color, var(--brand-primary, #006CE1));
+                font-weight: 600;
+            }
+
+            /* Iframe wrapper */
+            .settings-iframe-wrapper { flex: 1; min-height: 600px; }
+            #settingsWindow {
+                width: 100%;
+                height: 100%;
+                min-height: 600px;
+                border: 0;
+                display: block;
+                padding: 0 0.75rem;
+            }
+
+            /* Top-level blocking overlay for iframe pages (e.g. the manual
+               firmware-upgrade "please wait" popup in
+               Advanced_FirmwareUpgrade_Content.asp). An overlay that lives
+               inside the iframe is clipped to the iframe box, so instead the
+               iframe asks the shell to render this full-viewport overlay in the
+               index document — the original index framework (topbar / sub-nav /
+               content card) stays untouched underneath, dimmed by the backdrop.
+               z-index sits above the app topbar (1200) and shadow-bg / modal
+               layers (1300/1301). */
+            .settings-upgrade-overlay {
+                position: fixed;
+                inset: 0;
+                z-index: 2000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 16px;
+                box-sizing: border-box;
+                background: var(--wrt-modal-backdrop-bg, rgba(0, 0, 0, 0.5));
+            }
+            .settings-upgrade-overlay__card {
+                min-width: 260px;
+                max-width: min(90vw, 460px);
+                padding: 28px 32px;
+                border-radius: var(--wrt-card-radius, 10px);
+                background: var(--surface-card, #fff);
+                color: var(--text-primary, #222);
+                box-shadow: var(--wrt-card-shadow, 0 8px 24px rgba(0, 0, 0, 0.25));
+                text-align: center;
+                font-size: 14px;
+                line-height: 1.5;
+            }
+            .settings-upgrade-overlay__msg { margin-bottom: 14px; }
+            .settings-upgrade-overlay__bar {
+                height: 8px;
+                border-radius: 999px;
+                overflow: hidden;
+                background: var(--border-subtle, rgba(0, 0, 0, 0.1));
+            }
+            .settings-upgrade-overlay__fill {
+                height: 100%;
+                width: 0;
+                border-radius: 999px;
+                background: var(--brand-primary, #006CE1);
+                transition: width .3s linear;
+            }
+            /* Indeterminate (the brief "applying" stage before burning starts). */
+            .settings-upgrade-overlay__bar.is-indeterminate .settings-upgrade-overlay__fill {
+                width: 40%;
+                transition: none;
+                animation: settings-upgrade-indeterminate 1.2s ease-in-out infinite;
+            }
+            @keyframes settings-upgrade-indeterminate {
+                0%   { margin-left: -40%; }
+                100% { margin-left: 100%; }
+            }
+            .settings-upgrade-overlay__pct {
+                margin-top: 10px;
+                font-size: 13px;
+                font-weight: 600;
+                min-height: 16px;
+                color: var(--brand-primary, #006CE1);
+            }
+            .settings-upgrade-overlay__note {
+                margin-top: 10px;
+                font-size: 12px;
+                color: var(--text-secondary, #666);
+            }
+
+            /* Toggle button is unused in the chip / dropdown responsive scheme. */
+            .settings-subnav-toggle { display: none !important; }
+
+            /* Mobile (≤640px): native <select> picker — most compact, always
+               shows the current category, touch-friendly native control.
+               The whole control is brand-blue to highlight the active category. */
+            .settings-subnav-select {
+                display: none;
+                width: 100%;
+                box-sizing: border-box;
+                margin: 0;
+                padding: 12px 40px 12px 14px;
+                font-size: 15px;
+                font-weight: 600;
+                line-height: 1.2;
+                color: var(--primary-btn-text-color, #fff);
+                background-color: var(--brand-primary, #006CE1);
+                border: 1px solid var(--brand-primary, #006CE1);
+                border-radius: 10px;
+                box-shadow: var(--wrt-card-shadow, 0 1px 2px rgba(0,0,0,0.06));
+                cursor: pointer;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'><path fill='white' d='M4 6l4 4 4-4z'/></svg>");
+                background-repeat: no-repeat;
+                background-position: right 14px center;
+            }
+            /* Native option list stays light/legible regardless of the blue control. */
+            .settings-subnav-select option {
+                color: var(--wrt-dropdown-item-color, var(--text-primary, #222));
+                background: var(--wrt-dropdown-bg, var(--surface-card, #fff));
+                font-weight: 400;
+            }
+            @media (max-width: 640px) {
+                .settings-subnav { display: none; }
+                .settings-subnav-select { display: block; }
+            }
+        </style>
     </head>
 
     <body>
-        <div class="d-flex align-items-center mb-3">
-            <div class="page-title"><#Settings#></div>
+        <!-- Header: page title (left) + breadcrumbs (right) -->
+        <div class="settings-shell-header">
+            <div class="page-title" id="settings_page_title"><#Settings#></div>
+            <nav class="settings-breadcrumb" id="settings_breadcrumb" aria-label="breadcrumb"></nav>
         </div>
-		<div class="row">
-            <div class="col-12 mb-3">
-				<div class="card card-cut-none pt-2 h-100">
-					<iframe id="settingsWindow" style="width: 100%; height: 100vh;" src="/Advanced_Default_Content.asp"></iframe>
-				</div>
-			</div>
+
+        <!-- Two-column shell: left sub-nav + right content card -->
+        <div class="settings-shell">
+            <aside class="settings-subnav" id="settings_subnav"></aside>
+            <select class="settings-subnav-select" id="settings_subnav_select" aria-label="<#Settings#>"></select>
+
+            <section class="settings-content-card">
+                <div class="settings-tabstrip-wrap">
+                    <button type="button" class="settings-tab-arrow" id="settings_tab_arrow_l" aria-label="scroll tabs left">‹</button>
+                    <div class="settings-tabstrip" id="settings_tabstrip"></div>
+                    <button type="button" class="settings-tab-arrow" id="settings_tab_arrow_r" aria-label="scroll tabs right">›</button>
+                </div>
+                <div class="settings-iframe-wrapper">
+                    <iframe id="settingsWindow" src=""></iframe>
+                </div>
+            </section>
         </div>
 	</body>
 
 	<script>
-		var webWrapper = true;
-		var targetPage = urlParameter.get("tab");
-		if (targetPage === "" || targetPage === undefined || targetPage == null) {
-			let lastPage = Session.get("lastPage") || "";
-			if(lastPage == "index.html" || !lastPage.split(".")[1]) lastPage = "";
+		(async () => {
+		window.webWrapper = true;
 
-			if (lastPage !== "" && lastPage !== undefined) {
-				targetPage = lastPage;
-			} else {
-				targetPage = "Tools_Sysinfo.asp";
-			}
-		} else {
-			Session.set("lastPage", targetPage);
-            const state = null;
-            const title = "";
-            const newUrl = "index.html";
-            history.replaceState(state, title, newUrl);
-		}
+        // Polyfills for standalone navigation (when not loaded via SPA shell / index.html).
+        if (!window.urlParameter) window.urlParameter = new URLSearchParams(window.location.search);
+        if (!window.theme) window.theme = "WHITE";
+        if (!window.top.Session) {
+            var __store = {};
+            window.top.Session = {
+                get: function(k){ return __store[k]; },
+                set: function(k,v){ __store[k] = v; },
+                clear: function(){ __store = {}; }
+            };
+        }
+        // isSupport / isSwMode — reuse the canonical implementations from
+        // utils.module.js (they read the server-rendered ui_support / operation-mode
+        // tables). Exposed globally so the state.js flag statements and menuTree
+        // (whose exclude.menus()/tabs() call both) resolve through the same functions.
+        if (typeof window.isSupport !== "function" || typeof window.isSwMode !== "function") {
+            try {
+                const utils = await import("/js/utils.module.js");
+                if (typeof window.isSupport !== "function") window.isSupport = utils.isSupport;
+                if (typeof window.isSwMode  !== "function") window.isSwMode  = utils.isSwMode;
+            } catch (e) {
+                console.warn("utils.module import failed:", e.message);
+                if (typeof window.isSupport !== "function") window.isSupport = function(){ return 0; };
+                if (typeof window.isSwMode  !== "function") window.isSwMode  = function(m){ return String(m).toLowerCase() === "rt"; };
+            }
+        }
 
-		var currentPage = $('#settingsWindow').attr('src').replace("/", "");
-		if (currentPage != targetPage) $('#settingsWindow').attr({'src': "/" + targetPage})
+        // menuTree.js reads bare *_support globals (cloudsync_support, usb_support, …).
+        // state.js is what normally defines them (var X = isSupport("token")), with an
+        // irregular token map and computed flags (dualWAN_support, nt_center_support…).
+        // So run state.js's flag-assignment statements here — BEFORE menuTree — using
+        // our real isSupport. We execute ONLY the `var X = …isSupport…;` lines (not
+        // state.js's DOM / redirect / banner code, which would throw outside a full
+        // page), each in its own try/catch so one undefined ref can't drop the rest.
+        if (!window.__stateFlagsLoaded) {
+            try {
+                const __st = await fetch("/state.js").then(r => r.text());
+                if (typeof window.wlc_band === "undefined") window.wlc_band = ""; // dualWAN_support ref
+                const __stmts = __st.match(/\bvar\s+[A-Za-z_$][\w$]*\s*=\s*[^;]*\bisSupport\b[^;]*;/g) || [];
+                __stmts.forEach(s => { try { (0, eval)(s); } catch (e) {} });
+            } catch (e) { console.warn("state.js flags failed:", e.message); }
+            window.__stateFlagsLoaded = true;
+        }
+        // ---------- Menu data ----------
+        // `ui_lang` / `settingsMenus` are mutable: changing the UI language
+        // rebuilds the menu in place (see "Live language switching" below).
+        let ui_lang = (httpApi?.nvramGet?.(["preferred_lang"], false)?.preferred_lang || "EN").toUpperCase();
 
+        // Helper: load menuTree.js (AMD module) by faking a `define` shim.
+        async function loadMenuTree() {
+            const cached = top.Session.get("menuList." + ui_lang);
+            if (Array.isArray(cached) && cached.length) {
+                return { list: cached, excludeMenus: top.Session.get("menuExclude")?.menus || [], excludeTabs: top.Session.get("menuExclude")?.tabs || [] };
+            }
+            const src = await fetch("/require/modules/menuTree.js").then(r => r.text());
+            let captured;
+            // menuTree.js references many feature-flag globals (WebDav_support, sdn_mwl, …).
+            // Scan the source for unique bare identifiers that look like feature flags and
+            // assign each a truthy value on a plain object that we expose via `with`.
+            const knownIds = new Set([
+                "define", "isSupport", "isSwMode", "Guest_Network_naming"
+            ]);
+            const idRegex = /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\b/g;
+            const reserved = new Set([
+                "var","let","const","function","return","if","else","for","while","do","switch","case",
+                "default","break","continue","typeof","new","delete","void","in","of","this","null",
+                "true","false","undefined","try","catch","finally","throw","instanceof","yield","async",
+                "await","class","extends","super","arguments","menuTree","list","tab","menuName","index",
+                "url","tabName","exclude","menus","tabs","filter","includes","push","concat","length",
+                "Array","Object","String","Number","JSON","Math","map","slice","forEach","find","every",
+                "some","indexOf","split","substr","substring","toLowerCase","toUpperCase","replace",
+                "console","window","top","httpApi","nvramGet","hookGet","decodeURIComponent","factory"
+            ]);
+            const detected = new Set();
+            let m;
+            while ((m = idRegex.exec(src))) {
+                const id = m[1];
+                if (reserved.has(id) || /^\d/.test(id)) continue;
+                if (knownIds.has(id)) continue;
+                if (typeof window[id] !== "undefined") continue;
+                detected.add(id);
+            }
+            // Feature flags that state.js already defined (above) are skipped by the
+            // detection loop, keeping their real isSupport() values. Anything still
+            // undefined here is an identifier state.js doesn't set — default it truthy
+            // so menuTree's factory body still runs.
+            detected.forEach(id => { if (typeof window[id] === "undefined") window[id] = 1; });
+            window.define = function(factory){
+                captured = (typeof factory === "function") ? factory() : factory;
+            };
+            if (typeof window.Guest_Network_naming === "undefined") window.Guest_Network_naming = "Guest Network";
+
+            try {
+                (0, eval)(src);   // run at global scope so factory sees window.* globals
+            } catch (e) {
+                console.warn("menuTree eval failed:", e.message);
+            } finally {
+                delete window.define;
+            }
+            const list = captured?.list || [];
+            let exMenus = [], exTabs = [];
+            try { exMenus = captured?.exclude?.menus?.() || []; } catch(e) { console.warn("exclude.menus failed:", e.message); }
+            try { exTabs = captured?.exclude?.tabs?.() || []; } catch(e) { console.warn("exclude.tabs failed:", e.message); }
+            top.Session.set("menuList." + ui_lang, list);
+            top.Session.set("menuExclude", { menus: exMenus, tabs: exTabs });
+            return { list, excludeMenus: exMenus, excludeTabs: exTabs };
+        }
+
+        // ---------- Menu visibility ----------
+        // (1) Base set comes from menuTree's own logic (`exclude.menus()` / `exclude.tabs()`).
+        // (2) `SETTINGS_EXTRA_FILTER` below adds an explicit second pass — items SETTINGS
+        //     ALWAYS hides regardless of menuTree, e.g. pages we expose via a different
+        //     entry point or that are mirrored away in the legacy iframe DOM.
+        //     Edit this list to tweak the SPA shell sub-nav without touching menuTree.
+        const SETTINGS_EXTRA_FILTER = {
+            // Hide entire menu entries by menuTree `index`.
+            // These features are surfaced as their own top-level SPA pages
+            // (pages/aiprotection.html, aimesh.html, sdn.html, vpn.html,
+            // trafficanalyzer.html, …), so they are removed from the settings
+            // shell. This mirrors the legacy left-nav, where each top-level menu
+            // element had id `<firstTabUrl>_menu` and was removed wholesale — so
+            // the equivalent here is a MENU-level exclude, not a per-tab one
+            // (a per-tab exclude leaves the menu visible whenever it still has
+            // any other tab, which is why e.g. menu_TrafficAnalyzer used to leak).
+            menus: [
+                "menu_QIS",            // #QIS_wizard_menu — setup wizard
+                "menu_Split",          // divider rows have no real content
+                "menu_Index",          // #index_menu — legacy "Network Map" landing
+                "menu_GuestNetwork",   // #SDN_menu / #Guest_network_menu → pages/sdn.html
+                "menu_AiMesh",         // #AiMesh_menu → pages/aimesh.html
+                "menu_AiCloud",        // #cloud_main_menu
+                "menu_AiProtection",   // #AiProtection_HomeProtection_menu → pages/aiprotection.html
+//                "menu_TrafficAnalyzer",// #TrafficAnalyzer_Statistic_menu → pages/trafficanalyzer.html
+                "menu_Alexa_IFTTT",    // #Advanced_Smart_Home_Alexa_menu
+                "menu_VPN"             // #Advanced_VPNServer_Content_menu → pages/vpn.html / vpns.html / vpnc.html
+            ],
+            // Hide individual tab URLs within a menu that is otherwise kept.
+            // (Empty for now — the entries above are all whole-menu removals.)
+            tabs: []
+        };
+
+        const { list: allMenus, excludeMenus, excludeTabs } = await loadMenuTree();
+        const excludedMenus = new Set([...excludeMenus, ...SETTINGS_EXTRA_FILTER.menus]);
+        const excludedTabs  = new Set([...excludeTabs,  ...SETTINGS_EXTRA_FILTER.tabs]);
+        // Drop excluded menus up front so `menuList` only ever holds shown-able menus.
+        const menuList = allMenus.filter(m => m && !excludedMenus.has(m.index));
+
+        function isShownTab(t) {
+            return t && t.url && t.url !== "NULL" &&
+                   t.tabName !== "__HIDE__" &&
+                   !excludedTabs.has(t.url);
+        }
+        function isShownMenu(m) {
+            if (!m || excludedMenus.has(m.index)) return false;
+            // must have at least one visible tab
+            return (m.tab || []).some(isShownTab);
+        }
+        function visibleTabs(m) { return (m?.tab || []).filter(isShownTab); }
+        function stripTag(s) { return (s || "").replace(/<[^>]+>/g, "").trim(); }
+
+        let settingsMenus = menuList.filter(isShownMenu);
+
+        // ---------- Resolve initial target ----------
+        var targetPage = urlParameter.get("tab");
+        if (!targetPage) {
+            const lastSettingsPage = top.Session.get("settings-lastPage") || "";
+            const validUrls = new Set(settingsMenus.flatMap(m => visibleTabs(m).map(t => t.url)));
+            const isValid = lastSettingsPage && lastSettingsPage !== "index.html" &&
+                            lastSettingsPage.includes(".") && validUrls.has(lastSettingsPage);
+            targetPage = isValid
+                ? lastSettingsPage
+                : (validUrls.has("Tools_Sysinfo.asp") ? "Tools_Sysinfo.asp" :
+                   (validUrls.size > 0 ? validUrls.values().next().value : "Advanced_System_Content.asp"));
+        } else {
+            history.replaceState(null, "", "index.html");
+        }
+
+        function findMenuFor(url) {
+            for (const m of settingsMenus) {
+                const tabs = visibleTabs(m);
+                if (tabs.some(t => t.url === url)) return { menu: m, tabs };
+            }
+            return null;
+        }
+
+        // Menu index → icon class (icon definitions live in css/svg-icon.css).
+        // Items not in this map render a small bullet instead.
+        const SUBNAV_ICON_MAP = {
+            menu_Wireless:           "icon-menu-network",
+            menu_LAN:                "icon-lan",
+            menu_WAN:                "icon-web",
+            menu_GuestNetwork:       "icon-menu-network",
+            menu_AiProtection:       "icon-menu-aiprotection",
+            menu_ParentalControl:    "icon-menu-parental",
+            menu_BandwidthMonitor:   "icon-menu-adaptive-qos",
+            menu_QoS:                "icon-menu-adaptive-qos",
+            menu_UU:                 "icon-menu-uu-booster",
+            menu_TrafficAnalyzer:    "icon-menu-traffic-analyzer",
+            menu_GameBoost:          "icon-menu-game-boost",
+            menu_OpenNAT:            "icon-menu-open-nat",
+            menu_TencentAcceleration:"icon-menu-tencent-booster",
+            menu_APP:                "icon-menu-usb",
+            menu_AiCloud:            "icon-menu-aicloud",
+            menu_SMS:                "icon-menu-sms",
+            menu_Alexa_IFTTT:        "icon-menu-alexa-ifttt",
+            menu_IPv6:               "icon-menu-ipv6",
+            menu_VPN:                "icon-menu-vpn",
+            menu_Firewall:           "icon-menu-firewall",
+            menu_Setting:            "icon-menu-system-admin",
+            menu_Log:                "icon-menu-system-log",
+            menu_NekworkTool:        "icon-menu-network-tools",
+            menu_SiteManager:        "icon-menu-site-manager"
+        };
+
+        // ---------- Render left sub-nav ----------
+        function renderSubnav(activeUrl) {
+            const $nav = $("#settings_subnav").empty();
+            settingsMenus.forEach(m => {
+                const tabs = visibleTabs(m);
+                if (tabs.length === 0) return;
+                const isActive = tabs.some(t => t.url === activeUrl);
+                const firstUrl = tabs[0].url;
+                const label = stripTag(m.menuName);
+                const iconCls = SUBNAV_ICON_MAP[m.index];
+                const iconHtml = iconCls
+                    ? `<span role="icon" class="settings-subnav-icon ${iconCls}"></span>`
+                    : `<span class="settings-subnav-bullet"></span>`;
+                const $item = $(`
+                    <div class="settings-subnav-item${isActive ? " active" : ""}"
+                         data-menu-index="${m.index}" data-target="${firstUrl}">
+                        ${iconHtml}
+                        <span class="settings-subnav-label">${label}</span>
+                    </div>
+                `);
+                $item.on("click", () => navigate(firstUrl));
+                $nav.append($item);
+            });
+        }
+
+        // ---------- Render mobile <select> picker ----------
+        // Mirrors the sub-nav: one option per visible menu category, value = its
+        // first tab URL. The active menu is selected so the control shows where we are.
+        function renderSelect(activeUrl) {
+            const $sel = $("#settings_subnav_select").empty();
+            let activeFirstUrl = "";
+            settingsMenus.forEach(m => {
+                const tabs = visibleTabs(m);
+                if (tabs.length === 0) return;
+                const firstUrl = tabs[0].url;
+                const label = stripTag(m.menuName);
+                if (tabs.some(t => t.url === activeUrl)) activeFirstUrl = firstUrl;
+                $sel.append($(`<option value="${firstUrl}">${label}</option>`));
+            });
+            if (activeFirstUrl) $sel.val(activeFirstUrl);
+        }
+
+        // ---------- Tab strip overflow helpers (MD3 scrollable tabs) ----------
+        // Native smooth scrolling and rAF are unreliable in this embedded
+        // environment, so animation is a plain setInterval tween.
+        let tabTweenTimer = null;
+        function tweenStripTo(strip, target) {
+            const max = strip.scrollWidth - strip.clientWidth;
+            target = Math.max(0, Math.min(max, target));
+            if (tabTweenTimer) clearInterval(tabTweenTimer);
+            const from = strip.scrollLeft;
+            const delta = target - from;
+            if (Math.abs(delta) < 1) { strip.scrollLeft = target; return; }
+            // Progress is wall-clock based (not per-tick) so the tween still
+            // lands on target even when timers are throttled (this environment
+            // throttles setInterval and breaks rAF / native smooth scrolling).
+            const duration = 250, stepMs = 16;
+            const startTs = Date.now();
+            tabTweenTimer = setInterval(() => {
+                const p = Math.min(1, (Date.now() - startTs) / duration);
+                const eased = 1 - Math.pow(1 - p, 3);   // easeOutCubic
+                strip.scrollLeft = from + delta * eased;
+                if (p >= 1) { clearInterval(tabTweenTimer); tabTweenTimer = null; updateTabstripOverflow(); }
+            }, stepMs);
+        }
+
+        // Arrows appear only on overflow; ‹ hides at the far left, › at the far
+        // right. Fade masks mirror the same state.
+        function updateTabstripOverflow() {
+            const strip = document.getElementById("settings_tabstrip");
+            if (!strip) return;
+            const overflowing = strip.scrollWidth > strip.clientWidth + 1;
+            const atStart = strip.scrollLeft <= 1;
+            const atEnd = strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 1;
+            document.getElementById("settings_tab_arrow_l").classList.toggle("show", overflowing && !atStart);
+            document.getElementById("settings_tab_arrow_r").classList.toggle("show", overflowing && !atEnd);
+            strip.classList.toggle("fade-l", overflowing && !atStart);
+            strip.classList.toggle("fade-r", overflowing && !atEnd);
+        }
+
+        // Slide a tab (even a fully hidden one) into the center of the viewport.
+        function centerTab(tabEl) {
+            const strip = document.getElementById("settings_tabstrip");
+            if (!strip || !tabEl) return;
+            tweenStripTo(strip, tabEl.offsetLeft - (strip.clientWidth - tabEl.offsetWidth) / 2);
+        }
+
+        (function initTabstripControls() {
+            const strip = document.getElementById("settings_tabstrip");
+            const page = () => strip.clientWidth * 0.7;
+            document.getElementById("settings_tab_arrow_l").addEventListener("click", () => tweenStripTo(strip, strip.scrollLeft - page()));
+            document.getElementById("settings_tab_arrow_r").addEventListener("click", () => tweenStripTo(strip, strip.scrollLeft + page()));
+            strip.addEventListener("scroll", updateTabstripOverflow);
+            window.addEventListener("resize", updateTabstripOverflow);
+        })();
+
+        // ---------- Render top tab strip ----------
+        function renderTabs(activeUrl) {
+            const ctx = findMenuFor(activeUrl);
+            const $strip = $("#settings_tabstrip");
+            $strip.find(".settings-tab-item").remove();
+            if (!ctx) { updateTabstripOverflow(); return; }
+            ctx.tabs.forEach(t => {
+                const name = stripTag(t.tabName);
+                if (!name || name === "__INHERIT__") return;
+                const isActive = t.url === activeUrl;
+                const $tab = $(`
+                    <span class="settings-tab-item${isActive ? " active" : ""}" data-target="${t.url}">${name}</span>
+                `);
+                $tab.on("click", () => navigate(t.url));
+                $strip.append($tab);
+            });
+            updateTabstripOverflow();
+            centerTab($strip.find(".settings-tab-item.active")[0]);
+        }
+
+        // ---------- Breadcrumbs ----------
+        function renderBreadcrumb(activeUrl) {
+            const ctx = findMenuFor(activeUrl);
+            const $bc = $("#settings_breadcrumb").empty();
+            if (!ctx) return;
+            const menuName = stripTag(ctx.menu.menuName);
+            const tabName = stripTag(ctx.tabs.find(t => t.url === activeUrl)?.tabName || "");
+            $bc.append(`<span class="crumb">${menuName}</span>`);
+            if (tabName && tabName !== menuName && tabName !== "__INHERIT__") {
+                $bc.append(`<span class="crumb-sep">›</span><span class="crumb current">${tabName}</span>`);
+            } else {
+                $bc.find(".crumb").addClass("current");
+            }
+        }
+
+        // ---------- Frame source aliases ----------
+        // A menu entry keeps its identity (menuTree url, Session lastPage, ?tab=… deep
+        // link, active tab matching) while the frame loads a different document.
+        //
+        // MLO: MLO.asp is a legacy wrapper whose only content is an iframe pointing at
+        // SDN/mlo.html — a self-contained RWD page. Inside this shell that wrapper buys
+        // nothing and costs a second full document: 31 requests / ~469KB, 24 of them
+        // resources already loaded here (jquery, state.js, httpApi, popup, help,
+        // require, asus_policy, business-white, fonts) plus repeated appGet.cgi and
+        // privacy-policy calls, and it delays setting the inner src by a further
+        // 1000ms on https. It also put the height behind two nested ResizeObservers,
+        // which is what WebKit reports unreliably. Load the real page directly; MLO.asp
+        // stays for the legacy standalone UI, which still needs its menu chrome.
+        // WHITE is the theme MLO.asp itself picks in wrapper mode.
+        const FRAME_SRC_ALIAS = {
+            "MLO.asp": { src: "SDN/mlo.html?current_theme=WHITE" }
+        };
+        const FRAME_ALIAS_BY_SRC = Object.fromEntries(
+            Object.entries(FRAME_SRC_ALIAS).map(([url, alias]) => [alias.src, { url, ...alias }])
+        );
+
+        function frameSrcFor(url) {
+            const alias = FRAME_SRC_ALIAS[url];
+            return alias ? alias.src : url;
+        }
+
+        function frameAliasForSrc(src) {
+            return FRAME_ALIAS_BY_SRC[(src || "").replace(/^\//, "")] || null;
+        }
+
+        // Frame src → menu url, so the menu still recognises an aliased page.
+        function frameUrlFromSrc(src) {
+            const alias = frameAliasForSrc(src);
+            return alias ? alias.url : (src || "").replace(/^\//, "");
+        }
+
+        // ---------- Navigation ----------
+        function navigate(url) {
+            if (!url) return;
+            const src = frameSrcFor(url);
+            const current = ($('#settingsWindow').attr('src') || "").replace(/^\//, "");
+            if (current !== src) $('#settingsWindow').attr('src', "/" + src);
+            top.Session.set("settings-lastPage", url);
+            renderSubnav(url);
+            renderSelect(url);
+            renderTabs(url);
+            renderBreadcrumb(url);
+        }
+
+        // Mobile dropdown — picking a category navigates to its first tab.
+        $("#settings_subnav_select").on("change", function(){ navigate(this.value); });
+
+        // ---------- Initial load ----------
+        navigate(targetPage);
+
+        // ---------- Live language switching ----------
+        // Menu labels (menuName / tabName) are <#KEY#> tokens that the server
+        // translates when it serves menuTree.js, keyed by the preferred_lang
+        // NVRAM value. So when the language changes we must (1) make sure the
+        // server has the new language, (2) re-fetch the tree, (3) re-render.
+        // `httpApi.nvramGet` can return a stale preload snapshot, so we read the
+        // current language straight from the server instead.
+        async function fetchServerLang() {
+            try {
+                const r = await fetch("/appGet.cgi?hook=nvram_get(preferred_lang)").then(x => x.json());
+                return r && r.preferred_lang ? String(r.preferred_lang).toUpperCase() : null;
+            } catch (e) { return null; }
+        }
+
+        let langReloading = false;
+        async function applyLanguage(newLang) {
+            newLang = (newLang || "").toString().toUpperCase();
+            if (!newLang) newLang = (await fetchServerLang()) || ui_lang;
+            if (langReloading || newLang === ui_lang) return;
+            langReloading = true;
+            try {
+                // Push the new language to the server so it serves menuTree.js
+                // (and every .asp) translated. Harmless if already set.
+                try {
+                    await fetch("/applyapp.cgi", {
+                        method: "POST",
+                        // Mirror httpApi.nvramSet's wire format (urlencoded body whose
+                        // sole key is the encoded JSON) so the server parses it.
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: encodeURIComponent(JSON.stringify({
+                            preferred_lang: newLang, flag: "set_language", action_mode: "apply"
+                        }))
+                    });
+                } catch (e) { /* mock may ignore */ }
+
+                ui_lang = newLang;
+                top.Session.set("menuList." + ui_lang, null); // force a fresh translation
+                const { list } = await loadMenuTree();
+                settingsMenus = list.filter(isShownMenu);
+
+                // Re-render the current page (fall back to the first valid tab).
+                let cur = frameUrlFromSrc($("#settingsWindow").attr("src"));
+                if (!findMenuFor(cur)) {
+                    cur = settingsMenus.length ? (visibleTabs(settingsMenus[0])[0]?.url || cur) : cur;
+                }
+                renderSubnav(cur);
+                renderSelect(cur);
+                renderTabs(cur);
+                renderBreadcrumb(cur);
+            } finally {
+                langReloading = false;
+            }
+        }
+
+        // Pull: detect a change made elsewhere (topbar / a settings page) and react.
+        async function detectLanguageChange() {
+            const l = await fetchServerLang();
+            if (l && l !== ui_lang) applyLanguage(l);
+        }
+
+        // Push: explicit, instant trigger for the language switcher to call.
+        //   top.reloadSettingsMenu("TW")   — or dispatch one of the events below.
+        window.reloadSettingsMenu = applyLanguage;
+        try { window.top.reloadSettingsMenu = applyLanguage; } catch (e) {}
+        ["preferred_lang_change", "languagechange", "asus-language-change"].forEach(evt => {
+            const h = e => applyLanguage(e?.detail?.lang);
+            window.addEventListener(evt, h);
+            try { if (window.top !== window) window.top.addEventListener(evt, h); } catch (e2) {}
+        });
+
+        // Auto-detect on the moments a language change is likely to have landed.
+        window.addEventListener("focus", detectLanguageChange);
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") detectLanguageChange();
+        });
+
+        // ---------- iframe internal cleanup (hide its own menus since we're showing them externally) ----------
 		var findColorAndReplace = function(styleSheet, oldColor, newColor){
 			function hexToRgb(hex) {
 				var result;
-
 				result = /([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 				var retData = result ? [
 					parseInt(result[1], 16),
 					parseInt(result[2], 16),
 					parseInt(result[3], 16)
 				] : null;
-
 				return retData ? retData.join(", ") : false;
 			}
-
 			$("#settingsWindow").contents().find('*').filter(function(){
 				var getElement = $(this).css(styleSheet) || "";
-
 				if(getElement.indexOf(hexToRgb(oldColor)) != -1){
 					var targetStyleSheet = (oldColor == "FFCC00") ? {"font-size": "13px"} : {}
 					var originStyle = $(this).css(styleSheet);
-
 					if(originStyle){
 						targetStyleSheet[styleSheet] = (newColor != "transparent") ? originStyle.replace(hexToRgb(oldColor), hexToRgb(newColor)) : "transparent";
 					}
-
 					$(this).css(targetStyleSheet)
-
 				}
 			})
 		}
@@ -78,130 +889,475 @@
 
 			var iframe = $("#settingsWindow").contents();
 			iframe.find(".formfonttitle").parent().addClass("p-0 m-0");
+			iframe.find(".formfonttitle").remove();
 
-			// top banner
-			iframe.find("#TopBanner").hide()
+			// Hide the iframe's own chrome — we provide it externally now.
+			// Important: only hide the menu's TD (not the outer table.content, which also
+			// contains the right-hand content TD).
+            iframe.find("#tabMenu").remove();
+            iframe.find("#TopBanner").hide();
+			iframe.find("#mainMenu").closest("td").remove();
+            // tabMenu shares its TD with the form content — only hide the menu's own table.
+			iframe.find("#tabMenu").closest("table").not(iframe.find("table.content")).remove();
+			if (iframe.find("#tabMenu").closest("table").is(iframe.find("table.content"))) {
+				iframe.find("#tabMenu").remove();
+			}
+			iframe.find(".submenuBlock").remove();
+			iframe.find(".menu_Split").remove();
 
-			// menutree
-			iframe.find(".menu_Split").hide();
-			iframe.find(".menu_Split").first().show();
-			iframe.find("#mainMenu").parent().addClass("bg-shadow-right");
-			iframe.find("#tabMenu").parent().addClass("p-tabMenu");
+			// Force the content wrapper to fill the iframe width.
+			iframe.find("#whiteThemeWrapper").css({display: "block", width: "100%"});
+			iframe.find("#whiteThemeWrapper").parents("td,tr,tbody,table").css({width: "100%"});
+			iframe.find("#whiteThemeWrapper > table").css({width: "100%"});
 
-			// iframe.find(".menu_Split")[0].show()
-			iframe.find("#QIS_wizard_menu").remove()
-			iframe.find("#index_menu").remove()
-			iframe.find("#index_menu").remove()
-			iframe.find("#SDN_menu").remove()
-			iframe.find("#AiMesh_menu").remove()
-			iframe.find("#cloud_main_menu").remove()
-			iframe.find("#AiProtection_HomeProtection_menu").remove()
-//			iframe.find("#TrafficAnalyzer_Statistic_menu").remove()
-			iframe.find("#Guest_network_menu").remove()
-			iframe.find("#Advanced_Smart_Home_Alexa_menu").remove()
-			iframe.find("#Advanced_VPNServer_Content_menu").remove()
-			// submenu
-			iframe.find("#tabMenu").parent().css({"text-align": "center"})
-			iframe.find("#tabMenu table").css({
-				"width": "100%",
-				"border-spacing": "0px"
-			})
-			iframe.find(".tab").parent().css({"border-bottom": "solid 4px #dcdcdc"})
-			iframe.find(".tabClicked").parent().css({"border-bottom": "solid 4px var(--primary-70)"})
-			iframe.find("#FormTitle").attr({"width": "100%"})
+			// Log-style pages use a fixed-width <textarea id="textarea"> (cols-based).
+			// Stretch it to match the content frame; border-box keeps its border inside.
+			iframe.find("#textarea").css({width: "100%", "box-sizing": "border-box"}).removeAttr("cols");
+            iframe.find("#wl_log").css({width: "100%", "box-sizing": "border-box"}).removeAttr("cols");
+            iframe.find(".textarea_ssh_table").css({width: "100%", "box-sizing": "border-box"}).removeAttr("cols");
+
+			// (The iframe's own per-entry menu nodes — #SDN_menu, #AiMesh_menu, … —
+			// used to be removed here, but the whole iframe menu column is hidden
+			// above and the visible sub-nav is filtered by SETTINGS_EXTRA_FILTER.tabs,
+			// so those removals were redundant and have been dropped.)
+
+			iframe.find("#FormTitle").attr({"width": "100%"});
 			iframe.find('#whiteThemeWrapper table').attr('width', '100%');
 			iframe.find('td[width="17"]').remove();
 			iframe.find('td[width="20"]').remove();
 			iframe.find('td[width="10"]').remove();
-			iframe.find(".formfonttitle").hide()
-			iframe.find(".splitLine").hide()
-			iframe.find(".button_gen_dis").removeClass("button_gen_dis").addClass("button_gen")
-			iframe.find(".hint-color").removeClass("hint-color").addClass("warning_desc")
+			iframe.find(".splitLine").remove();
+			iframe.find(".button_gen_dis").removeClass("button_gen_dis").addClass("button_gen");
+			iframe.find(".hint-color").removeClass("hint-color").addClass("warning_desc");
 
-			// footer
-			iframe.find("#footer").hide();
-			iframe.find('.bg-shadow-right').on('click', function(){
-				if($(this).css('position') == "absolute") $(this).hide();
-			});
+			iframe.find("#footer").remove();
 		}
 
-		function setupBusinessUI(){
+		window.setupBusinessUI = function(){
 			var iframe = $("#settingsWindow").contents();
-
-			findColorAndReplace("color", "FFFFFF", "006CE1");
-			findColorAndReplace("color", "FFCC00", "006CE1");
-			setTimeout(function(){findColorAndReplace("color", "FFCC00", "e10000");}, 500);
-
-			findColorAndReplace("background-color", "475A5F", "transparent");
-			findColorAndReplace("background-color", "4D595D", "transparent");
 
 			if(theme.toLocaleUpperCase() == "WHITE"){
 				iframe.find('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_' + theme.toLocaleUpperCase() + '.css">');
 			}
 
+			// The iframe's scrollbar is owned by its own document, and the legacy
+			// pages don't load the design tokens — so resolve the main app's
+			// scrollbar styling from THIS document (architecture.css's
+			// article.main-content uses the same --wrt-scrollbar-* tokens) and
+			// inject the resolved literal values into the iframe for an identical look.
+			if (iframe.find("#wrt-iframe-scrollbar").length === 0) {
+				var rs = getComputedStyle(document.documentElement);
+				var sbW = rs.getPropertyValue("--wrt-scrollbar-width").trim() || "5px";
+				var sbH = rs.getPropertyValue("--wrt-scrollbar-height").trim() || "5px";
+				var sbR = rs.getPropertyValue("--wrt-scrollbar-radius").trim() || "20px";
+				// Resolve a token that may be a solid color OR a gradient, via a probe.
+				var resolveBg = function(value){
+					var probe = document.createElement("span");
+					probe.style.background = value;
+					document.body.appendChild(probe);
+					var cs = getComputedStyle(probe);
+					var out = (cs.backgroundImage && cs.backgroundImage !== "none")
+						? cs.backgroundImage : cs.backgroundColor;
+					probe.remove();
+					return out;
+				};
+				var sbThumb = resolveBg("var(--wrt-scrollbar-thumb-color, rgba(0,0,0,0.28))");
+				var sbHover = resolveBg("var(--wrt-scrollbar-thumb-hover-color, rgba(0,0,0,0.45))");
+				iframe.find("head").append(
+					'<style id="wrt-iframe-scrollbar">'
+					+ '::-webkit-scrollbar{width:' + sbW + ';height:' + sbH + ';}'
+					+ '::-webkit-scrollbar-track{background:transparent;}'
+					+ '::-webkit-scrollbar-thumb{background:' + sbThumb + ';border-radius:' + sbR + ';}'
+					+ '::-webkit-scrollbar-thumb:hover{background:' + sbHover + ';}'
+					+ '</style>'
+				);
+			}
+
 			iframe.find("#FormTitle").parent().parent().parent().parent()
-				.wrap( "<div id='whiteThemeWrapper'></div>")
+				.wrap("<div id='whiteThemeWrapper'></div>");
 
 			setupWrapper();
 			setTimeout(function(){
 				iframe.find("body").hide().css("visibility", "visible").fadeIn();
+                iframe.find("iframe").each(function(){
+					var revealNested = function(frame){
+						try{
+							var doc = frame.contentDocument;
+							if(!doc || !doc.body) return;
+							doc.body.style.visibility = "visible";
+							$(doc).find("iframe").each(function(){ revealNested(this); });
+						}catch(e){}
+					};
+					var self = this;
+					revealNested(self);
+					$(self).on("load", function(){ revealNested(self); });
+				});
 			}, 1);
 
 			iframe.find("body").addClass("scaleBody");
-
-			iframe.find("#tabMenu table:first tr:first").prepend(`
-				<td id="menu_setting">
-					<div class="tabClicked">
-						<div id="tabMoreIcon"></div>
-					</div>
-				</td>
-			`);
-
-			iframe.find("#menu_setting").on('click', function(){
-				var settingsMenu = $("#settingsWindow").contents().find('.bg-shadow-right');
-
-				if (settingsMenu.is(':visible')) {
-					settingsMenu.hide();
-					$("#settingsWindow").contents().find('.tab').hide();
-				} else {
-					settingsMenu.show()
-					$("#settingsWindow").contents().find('.tab').show();
-					$("#settingsWindow").contents().find(".bg-shadow-right").css({
-						"top": `${$("#settingsWindow").contents().find(".submenuBlock").height()+10}px`
-					});
-				}
-			});
 		}
 
-		document.getElementById('settingsWindow').onload = function () {
-			if (top.loader) {
-                if(top.loader.isShow()) {
-                    top.loader.hide();
-                    top.loader = null;
+		// Full-viewport blocking overlay in THIS (index) document so an iframe
+		// page's firmware-upgrade UI can cover the whole screen without touching
+		// the index framework. Two modes:
+		//   showSettingsUpgradeOverlay()        -> MIRROR mode: reflect the iframe's
+		//        live #drword text (real download/status the .asp's isDownloading
+		//        writes), indeterminate bar. Used by the online / revert flows.
+		//   showSettingsUpgradeOverlay(seconds) -> BURN mode: determinate countdown
+		//        (100/seconds, one tick/1000ms — same as the .asp's LoadingProgress)
+		//        -> "完成" -> HOLD (no request, no redirect: during a real reboot the
+		//        httpd is down, so navigating to "/" would land on the browser's
+		//        "can't reach this site" page). Used by manual / modem (no real
+		//        progress source).
+		//   startSettingsUpgradeBurn(seconds)   -> switch a mirror-mode overlay into
+		//        BURN mode; called from the iframe's showLoadingBar hook when the
+		//        real flash phase begins.
+		// Strings are the real localized dict values (quote-safe hidden text nodes).
+		window.showSettingsUpgradeOverlay = function(seconds){
+			if(document.getElementById('settings-upgrade-overlay')) return;
+			var overlay = document.createElement('div');
+			overlay.id = 'settings-upgrade-overlay';
+			overlay.className = 'settings-upgrade-overlay';
+			overlay.innerHTML =
+				'<div class="settings-upgrade-overlay__card">'
+				+ '<div class="settings-upgrade-overlay__msg"></div>'
+				+ '<div class="settings-upgrade-overlay__bar is-indeterminate"><div class="settings-upgrade-overlay__fill"></div></div>'
+				+ '<div class="settings-upgrade-overlay__pct"></div>'
+				+ '<div class="settings-upgrade-overlay__note"></div>'
+				+ '<div class="settings-upgrade-overlay__i18n" style="display:none">'
+				+   '<i data-k="applying"><#Main_alert_proceeding_desc4#>&nbsp;<#Main_alert_proceeding_desc1#>...</i>'
+				+   '<i data-k="burning"><#FIRM_ok_desc#></i>'
+				+   '<i data-k="note"><#Main_alert_proceeding_desc5#></i>'
+				+   '<i data-k="done"><#Main_alert_proceeding_desc3#></i>'
+				+   '<i data-k="rebootManual"><#FIRM_reboot_manually#></i>'
+				+ '</div>';
+			document.body.appendChild(overlay);
+
+			var msg  = overlay.querySelector('.settings-upgrade-overlay__msg');
+			var bar  = overlay.querySelector('.settings-upgrade-overlay__bar');
+			var fill = overlay.querySelector('.settings-upgrade-overlay__fill');
+			var pct  = overlay.querySelector('.settings-upgrade-overlay__pct');
+			var note = overlay.querySelector('.settings-upgrade-overlay__note');
+			var dict = function(k){ var el = overlay.querySelector('.settings-upgrade-overlay__i18n [data-k="'+k+'"]'); return el ? el.innerHTML : ''; };
+
+			var timers = [];
+			overlay._timers = timers;
+			var later = function(fn, ms){ var id = setTimeout(fn, ms); timers.push(id); return id; };
+			var mirrorId = null;
+			var burning = false;
+
+			function iframeDrword(){
+				try {
+					var ifr = document.getElementById('settingsWindow');
+					var dw = ifr && ifr.contentDocument && ifr.contentDocument.getElementById('drword');
+					return dw ? dw.innerHTML : '';
+				} catch(e){ return ''; }
+			}
+
+			// MIRROR: reflect the real #drword the iframe's isDownloading updates.
+			function beginMirror(){
+				bar.classList.add('is-indeterminate');
+				pct.textContent = '';
+				note.textContent = '';
+				var sync = function(){ var t = iframeDrword(); msg.innerHTML = (t && t.trim()) ? t : dict('applying'); };
+				sync();
+				mirrorId = setInterval(sync, 300);
+				timers.push(mirrorId);
+			}
+
+			// BURN: determinate flash countdown -> 完成 -> hold.
+			function beginBurn(sec){
+				if(burning) return;
+				burning = true;
+				if(mirrorId){ clearInterval(mirrorId); mirrorId = null; }
+				var total = (typeof sec === 'number' && sec > 0) ? Math.round(sec) : 270;
+				msg.innerHTML  = dict('burning');
+				note.innerHTML = dict('note');
+				bar.classList.remove('is-indeterminate');
+				var progress = 100 / total, y = 0;
+				var tick = function(n){
+					if(n > 0){
+						y += progress;
+						var r = Math.round(y);
+						fill.style.width = r + '%';
+						pct.textContent = r + '%';
+						later(function(){ tick(n - 1); }, 1000);
+					} else {
+						fill.style.width = '100%';
+						pct.textContent = '';
+						note.textContent = '';
+						msg.innerHTML = dict('done'); // 完成
+						detectHttpdThenGoHome();
+					}
+				};
+				tick(total);
+			}
+
+			// Like the real page's detect_httpd(): after the flash countdown, poll
+			// httpd and navigate home only once it responds — so a real reboot
+			// (httpd down) keeps waiting instead of dropping the user on the
+			// browser's "can't reach this site" page. window is the index/shell
+			// window, so this navigates the whole app (not the iframe) to "/".
+			// The mock's httpd_check.xml is always 200, so it redirects shortly
+			// after "完成".
+			function detectHttpdThenGoHome(){
+				var tries = 0;
+				var detect = function(){
+					fetch('/httpd_check.xml', { cache: 'no-store' })
+						.then(function(r){ if(r && r.ok){ window.location.href = '/'; } else { retry(); } })
+						.catch(retry);
+				};
+				var retry = function(){ if(++tries > 30){ msg.innerHTML = dict('rebootManual'); return; } later(detect, 1000); };
+				later(detect, 1000);
+			}
+
+			overlay._beginBurn = beginBurn;
+
+			if(typeof seconds === 'number' && seconds > 0) beginBurn(seconds); // manual/modem
+			else beginMirror();                                                 // online/revert
+		};
+
+		// Called from the iframe (showLoadingBar hook) when the real flash begins.
+		window.startSettingsUpgradeBurn = function(seconds){
+			var overlay = document.getElementById('settings-upgrade-overlay');
+			if(overlay && typeof overlay._beginBurn === 'function') overlay._beginBurn(seconds);
+		};
+
+		window.hideSettingsUpgradeOverlay = function(){
+			var overlay = document.getElementById('settings-upgrade-overlay');
+			if(!overlay) return;
+			(overlay._timers || []).forEach(function(id){ clearTimeout(id); clearInterval(id); });
+			overlay.remove();
+		};
+
+		var iframeHandler = {
+			element: document.getElementById('settingsWindow'),
+			defaultPage: "/Advanced_Wireless_Content.asp",
+			onLoad: function() {
+                // state.js injects business-white.css via document.write() when
+				// isWebWrapper is true. Guard against the edge case where that runs
+				// before window.webWrapper is set in the parent (first-load timing or
+				// rapid navigate-back scenarios): inject the CSS here if absent.
+				try {
+					var iframeDoc = this.contentDocument || this.contentWindow.document;
+					if (iframeDoc && iframeDoc.head) {
+						if (!iframeDoc.querySelector('link[href$="business-white.css"]')) {
+							var bwLink = iframeDoc.createElement('link');
+							bwLink.rel = 'stylesheet';
+							bwLink.type = 'text/css';
+							bwLink.href = '/css/business-white.css';
+							iframeDoc.head.appendChild(bwLink);
+						}
+					}
+				} catch(e) {}
+				if (top.loader?.isShow?.()) {
+					top.loader.hide();
+					top.loader = null;
+				}
+				// A settings page may have changed the UI language before reloading
+				// the iframe — re-sync the menu language if so.
+				detectLanguageChange();
+			},
+			onError: function() {
+				httpApi.log("SETTING_WINDOW LOAD ERROR", this.src);
+				this.src = iframeHandler.defaultPage;
+			},
+			checkContent: function() {
+				try {
+					var doc = this.contentDocument || this.contentWindow.document;
+					if (doc?.readyState === 'complete') {
+						var title = doc.title.toLowerCase();
+						if (/404|not found|error/.test(title)) {
+							httpApi.log("SETTING_WINDOW LOAD ERROR", this.src);
+							this.src = iframeHandler.defaultPage;
+						}
+					}
+				} catch (e) {
+                    httpApi.log("SETTING_WINDOW LOAD ERROR", this.src, e);
                 }
+			},
+			init: function() {
+				this.element.onload = this.onLoad;
+				this.element.onerror = this.onError;
+				this.element.addEventListener('load', this.checkContent);
+				this.element.addEventListener('load', onFrameLoaded);
+			}
+		};
+
+		// Height a page shorter than the card should fill. The card is the canvas and
+		// is at least min-height (80vh) tall, so that — not the leftover viewport — is
+		// what the frame fills: at mobile widths the sub-nav stacks above the card and
+		// the shell legitimately scrolls, while the old estimate (header + padding +
+		// page title + tab strip constants) overshot the real space by 7px at desktop
+		// widths and 72px at mobile, so MLO.asp — the only page shorter than the
+		// viewport — scrolled the shell into empty space.
+		// Everything is read from the layout, so no constant can drift out of sync.
+		function availableFrameHeight(iframe) {
+			const card = iframe.closest('.settings-content-card');
+			const wrapper = iframe.parentElement;
+			if (!card || !wrapper) return 0;
+
+			const cs = getComputedStyle(card);
+			const box = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0)
+				+ (parseFloat(cs.borderTopWidth) || 0) + (parseFloat(cs.borderBottomWidth) || 0);
+
+			// Card chrome above/below the frame: the tab strip, and anything else the
+			// card grows in future.
+			const siblings = Array.from(card.children)
+				.filter(el => el !== wrapper)
+				.reduce((sum, el) => sum + el.getBoundingClientRect().height, 0);
+
+			return (parseFloat(cs.minHeight) || 0) - box - siblings;
+		}
+
+		function frameFooterHeight() {
+			return (navigator.userAgent.match(/ASUSMultiSiteManager/) || navigator.userAgent.match(/ASUSExpertSiteManager/)) ? 100 : 20;
+		}
+
+		// Height the embedded page needs, measured from the page itself. The shell used
+		// to rely purely on the page's resize message, which travels
+		// mlo.html ResizeObserver -> resize_iframe_height -> .rwd_iframe -> MLO.asp
+		// show_footer ResizeObserver -> postMessage. WebKit fires ResizeObserver
+		// unreliably for growth driven by descendants (see the notes in SDN/mlo.html and
+		// MLO.asp), so in Safari the message can arrive too small or not at all — and
+		// business-white.css gives .scaleBody `overflow-y: hidden` plus
+		// `height: 100vh !important` below 1400px, so a frame left too short does not
+		// scroll, it cuts the page off. Measuring here gives the shell its own recovery.
+		// The boxes that actually hold the page's content: the legacy .asp content table,
+		// or — for a plain RWD page such as SDN/mlo.html — the containers it grows,
+		// which are the same ones that page watches itself.
+		function contentBoxes(doc) {
+			const legacy = doc.querySelector('table.content');
+			if (legacy) return [legacy];
+
+			const modern = doc.querySelectorAll('.container, .popup_container');
+			return modern.length ? Array.from(modern) : Array.from(doc.body.children);
+		}
+
+		function measuredContentHeight(iframe) {
+			try {
+				const doc = iframe.contentDocument;
+				if (!doc || !doc.body) return 0;
+
+				// Pages are not scaled today, but a page that is (a `zoom` on its body)
+				// reports layout heights in unscaled px while rects come back scaled.
+				const zoom = parseFloat(getComputedStyle(doc.body).zoom) || 1;
+				const scrollTop = doc.documentElement.scrollTop || 0;
+				// .scaleBody pins the body to 100vh, so the body box says nothing about
+				// the content: measure the real content boxes instead.
+				const boxes = contentBoxes(doc);
+
+				let height = 0;
+				boxes.forEach(el => {
+					const rect = el.getBoundingClientRect();
+					if (!rect.height) return;
+					// Taking whichever is larger means an engine difference in how a
+					// scaled page is reflected can only leave the frame too tall (blank
+					// space), never too short (clipped content).
+					height = Math.max(height, rect.bottom + scrollTop, el.scrollHeight * zoom);
+				});
+
+				return Math.ceil(height);
+			} catch (e) {
+				return 0;
 			}
 		}
-		
+
+		function fitSettingsWindow() {
+			const iframe = document.getElementById('settingsWindow');
+			if (!iframe) return 0;
+
+			const measured = measuredContentHeight(iframe);
+			const wanted = Math.max(measured ? measured + frameFooterHeight() : 0, reportedContentHeight);
+			// Space left for the frame, measured rather than summed from
+			// header/padding/page-title/tabstrip constants: that estimate
+			// overshot the real space (7px at desktop widths, 72px at mobile),
+			// so a page shorter than the viewport — MLO.asp is the only one —
+			// filled to more than the shell has and scrolled into empty space.
+			const windowHeight = availableFrameHeight(iframe);
+
+			iframe.style.height = `${Math.max(wanted, windowHeight)}px`;
+
+			return windowHeight;
+		}
+
+		// The page keeps settling after its load event — MLO.asp only starts loading
+		// SDN/mlo.html then, and re-reports up to 1200ms later — so re-measure past the
+		// end of that ladder instead of trusting one reading.
+		const FRAME_SETTLE_DELAYS = [200, 600, 1200, 2500];
+		let reportedContentHeight = 0;
+		let frameObserver = null;
+
+		// business-white.css — injected above, and by state.js itself in wrapper mode —
+		// hides the body until the page has been dressed. Legacy .asp pages reveal it at
+		// the end of setupBusinessUI, and frames nested inside them were revealed by its
+		// walk over child iframes. A modern page loaded directly into the shell
+		// (SDN/mlo.html) has no legacy chrome to strip, never calls setupBusinessUI, and
+		// would otherwise stay invisible: laid out, populated, and unpainted.
+		function revealModernPage(doc) {
+			try {
+				if (!doc || !doc.body) return;
+				// Legacy layout: leave it to setupBusinessUI, which reveals it only after
+				// removing the page's own menus and title.
+				if (doc.querySelector('#FormTitle, table.content')) return;
+				if (getComputedStyle(doc.body).visibility === 'hidden') {
+					doc.body.style.visibility = 'visible';
+				}
+			} catch (e) {}
+		}
+
+		function onFrameLoaded() {
+			reportedContentHeight = 0;
+			revealModernPage(this.contentDocument);
+
+
+			if (frameObserver) {
+				frameObserver.disconnect();
+				frameObserver = null;
+			}
+
+			// Set a pixel height right away: the CSS fallback is `height: 100%` of a
+			// flex item with no definite height, which WebKit resolves to auto and
+			// leaves the frame collapsed.
+			const iframe = this;
+			const settle = () => {
+				// A page that paints its own loading overlay can re-hide the body while
+				// it fetches, so keep checking alongside the height.
+				revealModernPage(iframe.contentDocument);
+				fitSettingsWindow();
+			};
+
+			settle();
+			FRAME_SETTLE_DELAYS.forEach(delay => setTimeout(settle, delay));
+
+			try {
+				const doc = this.contentDocument;
+				if (doc && doc.body && typeof ResizeObserver !== "undefined") {
+					frameObserver = new ResizeObserver(() => fitSettingsWindow());
+					contentBoxes(doc).forEach(box => frameObserver.observe(box));
+				}
+			} catch (e) {}
+		}
+
+		iframeHandler.init();
+
+		window.addEventListener('resize', fitSettingsWindow);
+
 		window.addEventListener('message', event => {
 			if (event.data.type === 'resize') {
 				const iframe = document.getElementById('settingsWindow');
 				if (iframe) {
-                    const footer = (navigator.userAgent.match(/ASUSMultiSiteManager/) || navigator.userAgent.match(/ASUSExpertSiteManager/)) ? 100 : 20;
-                    const iframeHeight = event.data.height + footer;
-					const remHeight = 16;
-					const headerHeight = document.querySelector('header').scrollHeight;
-					const paddinHeight = remHeight * 2;
-					const pageTitleHeight = document.querySelector('.page-title').scrollHeight;
-					const footerHeight = remHeight / 2;
+					// Latest report, not a running maximum: the measurement above is the
+					// safety net for a report that is too small, so this can still follow
+					// a page that genuinely shrinks instead of keeping blank space.
+					reportedContentHeight = event.data.height + frameFooterHeight();
 
-                    const windowHeight = top.window.innerHeight - headerHeight - paddinHeight - pageTitleHeight - footerHeight;
-                    iframe.style.height = `${Math.max(iframeHeight, windowHeight)}px`;
+					const windowHeight = fitSettingsWindow();
 
 					if($("#settingsWindow").contents().find(".textarea_ssh_table")) {
 						const logMenuHeight = $("#settingsWindow").contents().find(".submenuBlock").height();
 						const logAreaHeight = $("#settingsWindow").contents().find(".FormTitle").height();
 						var logCurrentHeight = logAreaHeight + logMenuHeight;
-
 						if($("#settingsWindow").height() > logCurrentHeight){
 							$("#settingsWindow").contents().find(".textarea_ssh_table").css({
 								"height": `${$("#settingsWindow").contents().find(".textarea_ssh_table").height() + windowHeight - logCurrentHeight}px`
@@ -211,5 +1367,6 @@
 				}
 			}
 		});
+		})();
 	</script>
 </html>

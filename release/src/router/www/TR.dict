@@ -26,9 +26,9 @@ AiMesh_Node_desc2=Bir AiMesh düğümü eklemek için lütfen var olan yönlendi
 AiMesh_Notice1=Kablosuz ayarlarınızda yapılan değişiklikler ağınızın içeriğini etkileyecektir!
 AiMesh_Add_Another_Node_confirm=Başka bir düğüm eklemek ister misiniz?
 AiMesh_Add_Another_Node=Başka bir düğüm ekle
-AiMesh_Adding_Node=Adding the AiMesh node...
-AiMesh_Node_joining=The node is joining the network...
-AiMesh_Node_activating=Activating your mesh network...
+AiMesh_Adding_Node=AiMesh düğümü ekleniyor...
+AiMesh_Node_joining=Düğüm ağa katılıyor...
+AiMesh_Node_activating=Mesh ağınız etkinleştiriliyor...
 AiMesh_backhaul_band_5GHz-2_desc1=is now used as dedicated WiFi backhaul under AiMesh mode.
 AiMesh_backhaul_band_5GHz-2_desc11=%@ artık AiMesh modunda özel WiFi backhaul olarak kullanılmaktadır.
 AiMesh_backhaul_band_5GHz-2_desc2=Kablosuz ayarlarına dair ayrıntılar için lütfen <span class="faq-link" onclick="parent.location.href=\'/Advanced_Wireless_Content.asp\'">buraya</span> gidin.
@@ -83,6 +83,8 @@ AiMesh_Topology_Line_Wired_Great=Sinyal kalitesi çok iyi olan kablolu bağlant�
 AiMesh_Topology_Line_Wired_Normal=Sinyal kalitesi normal olan kablolu bağlantı
 AiMesh_Topology_FAQ_old=Yeni AiMesh GUI hakkında daha ayrıntılı bilgi için, lütfen bu SSS bölümüne bakın.
 AiMesh_Topology_FAQ=Yeni AiMesh GUI hakkında daha ayrıntılı bilgi için, lütfen bu <a id="Intro_AiMesh">SSS bölümüne</a> bakın.
+AiMesh_Topology_inst_FAQ_old=AiMesh sisteminin kurulumu için lütfen bu SSS'ye başvurun.
+AiMesh_Topology_inst_FAQ=AiMesh sisteminin kurulumu için lütfen bu <a id='connect_line_info_faq'>SSS</a>'ye başvurun.
 AiMesh_OB_hint=En iyi performans için düğümünüzde daha yeni bir model kullanmanızı öneririz. Eski cihazların kullanılması AiMesh ağınızın genel kararlılığını ve hızını sınırlayabilir.
 AiMesh_Add_Anyway=Yine de ekle
 AiMesh_Proceed_Anyway=Yine de devam et
@@ -102,7 +104,7 @@ APSurvey_msg_connect_open_wlan=Güvenli olmayan bir ağa bağlanmaya çalışıy
 APSurvey_msg_connected=Bu erişim noktasına zaten bağlısınız.
 APSurvey_msg_non_support_Auth=Kimlik doğrulama yöntemi desteklenmiyor.
 APSurvey_msg_waiting_to_connect=Lütfen bekleyin, ZVMODELVZ bağlanıyor
-ASUS_Registration=ASUS Üyesi olun ve en son ürün bilgilerini alın. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Hemen Kaydol!</a>
+ASUS_Registration=ASUS Üyesi olun ve en son ürün bilgilerini alın. <a style='color:var(--wrt-badge-warning-color,#FC0)' target='_blank' href='https://account.asus.com'>Hemen Kaydol!</a>
 ASUS_Notice=ASUS BİLDİRİMİ
 ASUS_privacy_desc=Kullanıcıların DDNS, Uzak Bağlantı (ASUS Router APP、 Lyra APP、 AiCloud、 AiDisk), AiProtection, Trafik Çözümleyici, Apps Analyzer, Adaptive QoS, Game Boost ve Web geçmişini kullanmadan önce bilgilerini paylaşmaları gerektiğini lütfen unutmayın. Kullanıcılar <a style="font-weight: bolder;">Çekil</a> seçeneğini belirleyerek, diledikleri zaman koşulların içeriğini bu sayfada arayabilir veya kişisel bilgilerini başka taraflarla paylaşmayı durdurabilir.
 ASUS_eula_desc0=DDNS/ Uzak bağlantı(ASUS Yönlendirici Uygulaması/Lyra Uygulaması/ AiCloud/AiDisk) kullanımına hoş geldiniz. Lütfen aşağıdaki bilgileri dikkatlice okuyun:
@@ -186,8 +188,8 @@ ASUS_EULA_Law_12=Geçerli Yasa ve Yargı Yetkisi
 ASUS_EULA_Law_12_Desc=Tüm teklifler, siparişlerin onaylanması, bu EULA ve sizinle ASUS arasındaki satış ilişkisi, yasalar çatışması ilkelerine bakılmaksızın ASUS'un bulunduğu yerdeki yasalara tabi olacak ve bu yasalara göre yorumlanacaktır. İşbu EULA ile ilgili veya bağlantılı olarak taraflar arasında ortaya çıkabilecek tüm anlaşmazlıklar, ihtilaflar veya farklılıklar taraflar arasında dostane istişareler yoluyla çözülecektir. Anlaşmazlık, ihtilaf veya farklılık çözülemezse her iki taraf da ASUS'un bulunduğu yerdeki mahkemenin yargı yetkisine başvurmayı kabul eder.
 ASUS_EULA_Info=ASUS ürünlerini kullanarak, Son Kullanıcı Lisans Sözleşmesi'de belirtilen şartlar ve koşullara bağlı olacağınızı kabul edersiniz.
 ASUS_POLICY_Age_Check=16 yaşından büyüğüm.
-ASUS_POLICY_QIS_Desc=Bir ağ ürününü kullanmadan önce bu şartları okumak önemlidir. "Kabul Et" düğmesine tıkladığınızda şartlara bağlı kalmayı kabul etmiş olursunuz. ​
-ASUS_POLICY_QIS_Desc_v5=Bir ağ ürününü kullanmadan önce bu şartları okumak önemlidir. "%@" düğmesine tıkladığınızda şartlara bağlı kalmayı kabul etmiş olursunuz. ​
+ASUS_POLICY_QIS_Desc=Bir ağ ürününü kullanmadan önce bu şartları okumak önemlidir. "Kabul Et" düğmesine tıkladığınızda şartlara bağlı kalmayı kabul etmiş olursunuz.
+ASUS_POLICY_QIS_Desc_v5=Bir ağ ürününü kullanmadan önce bu şartları okumak önemlidir. "%@" düğmesine tıkladığınızda şartlara bağlı kalmayı kabul etmiş olursunuz.
 ASUS_POLICY_Update_Notice=Değerli kullanıcılarımız, bu ürüne verdiğiniz destek için teşekkür ederiz. Çeşitli ülkelerdeki gizlilik düzenlemelerine uymak ve verilerinizi daha fazla korumak için ASUS Gizlilik Bildirimini güncelledik. ASUS ağ ürünlerini kullanmadan önce lütfen bildirimin güncel halini okuyun.
 ASUS_POLICY_Read_Again=Tekrar oku
 ASUS_POLICY_Know_Risk=Riski kabul ediyorum
@@ -370,7 +372,7 @@ CTL_UpgradeNight=Geceleyin Yükseltin
 CTL_UpgradeNow=Upgrade Now
 default_passwd_checkbox=Varsayılan Yerel Oturum Açma Parolasını kullanın
 default_passwd_desc=Varsayılan şifreli Yerel Oturum Açma Parolası, bu ASUS ağ cihazına yerel olarak bağlandığınızda güvenli bir oturum açma işlemi sağlar.
-defaultHint=Daha fazla ayrıntı için, lütfen <a style="font-weight: bolder;text-decoration: underline;color:#000000;" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a> adresini ziyaret edin
+defaultHint=Daha fazla ayrıntı için, lütfen <a style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#000000);" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a> adresini ziyaret edin
 Detect_consume_warning1=* En küçük ping paketi, aralık başına yaklaşık 128 byte kullanır. Bundan dolayı, ping algılayıcıay başına
 Detect_consume_warning2=MByte tüketir
 Disconnected=Bağlantı Kesildi
@@ -409,7 +411,7 @@ OpenDNS_Home=OpenDNS Home
 OpenDNS_Family=OpenDNS Family
 Yandex_Safe=Yandex Safe
 Yandex_Family=Yandex Family
-Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:#FFCC00;" href="DNSFilter.asp">DNSFilter</a> etkinleştirildi - Filtreleme Yok veya Yönlendirici dışında yapılandırılan başka bir ayar, DNS Gizlilik sunucularını atlayacaktır.
+Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:var(--wrt-badge-warning-color,#FFCC00);" href="DNSFilter.asp">DNSFilter</a> etkinleştirildi - Filtreleme Yok veya Yönlendirici dışında yapılandırılan başka bir ayar, DNS Gizlilik sunucularını atlayacaktır.
 Enable_user_target=Kullanıcı Tanımlı Hedefi Etkinleştir
 Enable_Login_Captcha=Oturum Açma Güvenlik Kodunu Etkinleştir
 Encrypted_field=Şifrelenmiş alan.
@@ -616,7 +618,7 @@ Offline_desc2=IP adresinde veya port numarasında değişiklikler yapıldı. Art
 Offline_desc3=ZVMODELVZ ayarlarına erişmek için, kablosuz ağa yeniden bağlanın ve güncellenen IP adresini ve port numarasını kullanın.
 OP_AP_desc=Erişim Noktası (AP) modunda, ZVMODELVZ kablosuz sinyal kapsamını başka bir ağ istemcisine genişletmek için Ethernet kablosu aracılığıyla bir kablosuz yönlendiriciye bağlanır. Bu modda, güvenlik duvarı, IP paylaşımı ve NAT fonksiyonları varsayılan olarak devre dışı bırakılır.
 AiMesh_AP_desc=Erişim Noktası modundaki AiMesh Yönlendiriciler, kablosuz sinyalini diğer ağ istemcilerine uzatmak için Ethernet kablosu aracılığıyla bir kablosuz yönlendiriciye bağlanır. Bu modda güvenlik duvarı, IP paylaşımı ve NAT işlevleri varsayılan olarak devre dışı bırakılır.
-OP_AP_hint=Arama yapmak ve aygıt yapılandırma sayfasına girmek için <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">http://findasus.local</a> adresine de gidebilirsiniz.
+OP_AP_hint=Arama yapmak ve aygıt yapılandırma sayfasına girmek için <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">http://findasus.local</a> adresine de gidebilirsiniz.
 OP_AP_item=Erişim Noktası (AP) modu
 AiMesh_AP_item=Erişim Noktası modu / Erişim Noktası modunda AiMesh Yönlendirici
 OP_Choose=Choose operation mode
@@ -635,7 +637,7 @@ OP_MB_desc4=Bilgisayar, Akıllı TV, oyun konsolu, DVR veya Ethernet kablosu yol
 OP_MB_desc5=Ortam aygıtlarınız için eşzamanlı WiFi bağlantısı sağlamak için Media Bridge (Ortam Köprüsü) modunu değiştirin.
 OP_MB_desc6=Medya köprüsü modunda, P-AP'ye yalnızca kablosuz aygıtlar bağlanır. İstemci aygıtların bir ağ kablosuyla medya köprüsüne bağlanması gerekir.
 OP_MB_desc7=Medya köprüsü modunda ZVMODELVZ. IP adresi değiştirilmişse.
-OP_MB_desc8=Medya köprüsü IP adresini belirlemek için lütfen <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:#FC0;'>Device Discovery Utility</a>'nı indirin.
+OP_MB_desc8=Medya köprüsü IP adresini belirlemek için lütfen <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>Device Discovery Utility</a>'nı indirin.
 OP_MB_desc9=Ağ kablosunu WAN bağlantı noktasından çıkarıp çıkarmadığınızı kontrol edin.
 OP_RE_desc=Yineleyici modunda ZVMODELVZ mevcut bir kablosuz sinyale bağlanır ve daha geniş bir kablosuz kapsama alanına ve daha iyi kablosuz sinyal kalitesine sahip olmak için bu sinyali genişletir.
 OP_RE_desc1=ZVMODELVZ aygıtının LAN IP adresi değiştirilmiş olabilir.
@@ -685,7 +687,7 @@ QIS_adminpass_confirm0=Yeni şifre, sistem varsayılanı şifreyle aynı. Daha k
 QIS_adminpass_confirm1=admin şeklindeki varsayılan şifreyi değiştirmezseniz, yönlendiriciniz güvenlik tehditlerine açık hale gelir ve başka kişiler oturum açma şifresini kolayca tahmin edebilir. Güvenli olmayan bu şifreyi tutmak istediğinize emin misiniz?
 [###MODEL_DEP###][PL-AC56][PL-N12]QIS_adminpass_confirm1=admin şeklindeki varsayılan şifreyi değiştirmezseniz, PLC güvenlik tehditlerine açık hale gelir ve başka kişiler oturum açma şifresini kolayca tahmin edebilir. Güvenli olmayan bu şifreyi tutmak istediğinize emin misiniz?
 QIS_apextended_usedefault=Varsayılan ayar kullanın (Ana AP’niz ile aynı parolayı kullanın)
-QIS_AP_connect_hint=Once the new SSID is connected, you can go to %1$@ for more advanced settings.
+QIS_AP_connect_hint=Yeni SSID bağlandıktan sonra, daha gelişmiş ayarlar için %1$@ adresine gidebilirsiniz.
 QIS_auto_ip_conn_Setup=Otomatik IP bağlantısı kurulumu
 QIS_autoMAC_desc1=Bilgisayarın MAC adresini yönlendiriciye klonlamaya başlıyor
 QIS_autoMAC_desc2=Lütfen bir süre bekleyin ...
@@ -817,7 +819,7 @@ qis_simple_wls_recmd=(Önerilen)
 QIS_SmartConn_ISPDesc=İnternet sağlayıcınız kullanıcı adı ve şifrenizi içeren bir kart veya dökümanı size sağlamalıdır, örnekte gösterildiği gibi
 QIS_SmartConn_ISPDesc2=İnternet bağlantınız için gerekli kullanıcı adı ve şifre bilgilerini giriniz. Bu bilgiler İnternet sağlayıcınız tarafından size verilir.
 QIS_SmartConn_ISPDesc3=İnternet bağlantınız için İnternet Servis Sağlayıcınız (ISP) tarafından sağlanan PPPoE kullanıcı adını ve şifresini girin.
-QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:#FC0;">xxxxxxxx@hinet.net</span>
+QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:var(--wrt-badge-warning-color,#FC0);">xxxxxxxx@hinet.net</span>
 QIS_SmartConn_Scen1=Bağlantı senaryosu 1
 QIS_SmartConn_Scen2=Bağlantı senaryosu 2
 QIS_SmartConn_StaticDesc=İnternet sağlayıcınız IP, subnet mask, gateway ve DNS adresi bilgilerini size sağlamalıdır, aksi takdirde internet sağlayıcınız ile bağlantıya geçiniz.
@@ -999,10 +1001,10 @@ QKSet_ISP_desc=Lütfen ISS ayarınıza bakın ve ilgili bilgileri girin.
 QKSet_ISP_desc2=Statik IP bağlantısı başarısız.
 QKSet_ISP_desc3=Otomatik IP bağlantısı başarısız. Burada el ile yapılandırabilirsiniz.
 QKSet_ISP_head=ISS Bilgileri Ayarı
-QKset_restore_0=Kaydedilmiş yapılandırma ayarlarını yüklemek için <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Ayarı geri yükle</label></a> öğesine tıklayın.
-QKset_restore_1=Yönlendiriciyi sıfırlamadan önce yapılandırma ayarlarını yedeklediyseniz, yapılandırmayı geri yüklemek için <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Ayarı geri yükle</label></a> öğesine tıklayın.
-QKset_setup_manual_0=ISS bağlantı türünüzü biliyorsanız, kablosuz ağınızı elle ayarlamak için <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Manüel Ayar</label></a> öğesine tıklayın.
-QKset_setup_manual_1=Gelişmiş yönlendirici ayarlarını elle yapmak için <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Manüel Ayar</label></a> öğesine tıklayın veya ZVMODELVZ aygıtını
+QKset_restore_0=Kaydedilmiş yapılandırma ayarlarını yüklemek için <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Ayarı geri yükle</label></a> öğesine tıklayın.
+QKset_restore_1=Yönlendiriciyi sıfırlamadan önce yapılandırma ayarlarını yedeklediyseniz, yapılandırmayı geri yüklemek için <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Ayarı geri yükle</label></a> öğesine tıklayın.
+QKset_setup_manual_0=ISS bağlantı türünüzü biliyorsanız, kablosuz ağınızı elle ayarlamak için <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Manüel Ayar</label></a> öğesine tıklayın.
+QKset_setup_manual_1=Gelişmiş yönlendirici ayarlarını elle yapmak için <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Manüel Ayar</label></a> öğesine tıklayın veya ZVMODELVZ aygıtını
 QKset_skip_setup=Bir kablosuz ağ iletişimi uzmanısınız ve Internet kurulum sihirbazını atlamak mı istiyorsunuz?
 QKSet_type_desc=Lütfen ISP'nizin sağladığı Internet bağlantısı türünü seçin.
 QKSet_type_head=Internet WAN bağlantısı türü
@@ -1026,13 +1028,13 @@ Select_ISPfile=ISP Profilini Seçin
 Select_menu_default=Lütfen öğesini seçin
 Sign_in_title=ASUS yönlendirici hesabınızla oturum açın
 [###MODEL_DEP###][RP-AC87][RP-AC68U][RP-AC66U][RP-AC55][RP-AC53][RP-AC52][RP-AC51][RP-AC92]Sign_in_title=ASUS Yineleyici hesabınızla oturum açın
-SLM_Ask=Ask Router Assistant...
-SLM_Loading=Loading...
-SLM_Thinking=Thinking...
-SLM_not_installed=Please double check that the router assistant is running in Portainer and that the port (8090) is not overlapping with other services. Also, ensure that slm-asus is running in Portainer. If the problem persists, try restoring AiBoard.
-SLM_no_response=Service is activating. Please try again in about 3 minutes.
-SLM_low_percent=Sorry, unable to answer the question.
-SLM_disclaimer=Router Assistant might not always be accurate. This feature is currently available in English only. Please verify important information yourself.
+SLM_Ask=Router Assistant'a sor...
+SLM_Loading=Yükleniyor…
+SLM_Thinking=Düşünüyor...
+SLM_not_installed=Lütfen Router Assistant'ın Portainer üzerinde çalıştığını ve (8090) portunun diğer hizmetlerle çakışmadığını kontrol edin. Ayrıca slm-asus'un Portainer üzerinde çalıştığından emin olun. Sorun devam ederse AiBoard'u geri yüklemeyi deneyin.
+SLM_no_response=Hizmet etkinleştiriliyor. Lütfen yaklaşık 3 dakika sonra tekrar deneyin.
+SLM_low_percent=Üzgünüz, soruya yanıt verilemiyor.
+SLM_disclaimer=Router Assistant her zaman doğru olmayabilir. Bu özellik şu anda yalnızca İngilizce olarak mevcuttur. Lütfen önemli bilgileri kendiniz doğrulayın.
 SLM_not_installed_CN=请确认路由助手在Portainer中运行且端口（8092）未与其他服务重叠，确认slm-asus-cn也在Portainer中运行。若问题仍然存在，请恢复AiBoard。
 SLM_no_response_CN=服务正在激活中，请约3分钟后重试。
 SLM_low_percent_CN=对不起，无法回答该问题.
@@ -1053,6 +1055,7 @@ Status_RAM=Bellek
 Status_Used=Kullanılan
 Status_Free=Boş
 Status_Total=Toplam
+Status_LoggingIn=Oturum açılıyor…
 statusTitle_AP=Erişim Noktası durumu
 statusTitle_System=ASUS ZVMODELVZ
 System_act_connections=Etkin Bağlantılar
@@ -1077,7 +1080,7 @@ TBVLAN_UPort=Etiketsiz Bağlantı Noktası
 TBVLAN_TPort=Etiketli Bağlantı Noktası
 TBVLAN_WirelessInf=Kablosuz Arabirimi
 TBVLAN_EditSubnetProfile=Alt Ağ Profilini Düzenle
-TBVLAN_Subnet_desc=Oluşturduğunuz alt ağı veya VLAN için yeni bir alt ağ oluşturmak amacıyla &quot;Yeni Alt Ağ&quot; öğesini seçin. Daha fazla DHCP yapılandırmasına gereksiniminiz varsa lütfen <a style='color:#FFF; text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'>LAN >> DHCP sunucusu</a> kısmında yapılandırın.
+TBVLAN_Subnet_desc=Oluşturduğunuz alt ağı veya VLAN için yeni bir alt ağ oluşturmak amacıyla &quot;Yeni Alt Ağ&quot; öğesini seçin. Daha fazla DHCP yapılandırmasına gereksiniminiz varsa lütfen <a style='color:var(--wrt-text-color,#FFF); text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'>LAN >> DHCP sunucusu</a> kısmında yapılandırın.
 TBVLAN_BindingInf=İlişkilendirme Arabirimi
 TBVLAN_NoBindingInf=Hiç ilişkilendirme arabirimi yok.
 TBVLAN_BindingInf_Hint=Lütfen bir ilişkilendirme arabirimi ekleyin.
@@ -1108,20 +1111,20 @@ WANPPPAuthText=PPP Kimlik Doğrulama
 WAN_type_detected=WAN type detected
 WAN_auto_detected=WAN Otomatik Algılama
 web_redirect_case1_suggestion1=Kablonuzun ZVMODELVZ WAN bağlantı noktasına ve modeminize bağlandığından emin olun.
-web_redirect_case1_suggestion2=<a style='color:#FFF' href='/Advanced_OperationMode_Content.asp'>İşlem Modu</a> değiştirilmesi gerekip gerekmediğini kontrol edin.
-web_redirect_case2_suggestion1=Yanlış PPPoE hesabı veya parolası, lütfen <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>kontrol edin</a>.
+web_redirect_case1_suggestion2=<a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_OperationMode_Content.asp'>İşlem Modu</a> değiştirilmesi gerekip gerekmediğini kontrol edin.
+web_redirect_case2_suggestion1=Yanlış PPPoE hesabı veya parolası, lütfen <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>kontrol edin</a>.
 web_redirect_case2_title1=PPPoE Kimlik Doğrulama Hatası
 web_redirect_case3_button=WAN türünüzü değiştirin
-web_redirect_case3_suggestion1=<a style='color:#FFF' href='/Advanced_WAN_Content.asp'>Bağlantı Ayarlarınızın</a>doğru olduğundan emin olun.
-web_redirect_case5_suggestion1=<a style='color:#FFF' href='/'>WAN Bağlantınızı etkinleştirin</a>
+web_redirect_case3_suggestion1=<a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>Bağlantı Ayarlarınızın</a>doğru olduğundan emin olun.
+web_redirect_case5_suggestion1=<a style='color:var(--wrt-text-color,#FFF)' href='/'>WAN Bağlantınızı etkinleştirin</a>
 web_redirect_case5_suggestion2=USB modeminizin açık olduğundan emin olun.
-web_redirect_case5_suggestion3=<a style='color:#FFF' href='/Advanced_Modem_Content.asp'>USB Modem Ayarlarınızı değiştirin</a>.
+web_redirect_case5_suggestion3=<a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_Modem_Content.asp'>USB Modem Ayarlarınızı değiştirin</a>.
 web_redirect_case5_title1=WAN bağlantınız devre dışı bırakıldı.
 web_redirect_case5_title2=USB modeminiz bağlı değil.
 web_redirect_case6_desc1=Aşağıdaki IP adresini kullanmak için [İleri] üzerine tıklayın:
 web_redirect_case6_desc2=İlgili tüm hizmetlerin yeni IP adresinizi kullandığından emin olun (örn. Bağlantı Noktası Yönlendirme, DMZ vb.)
 web_redirect_case8_suggestion1=Ana AP'nizin internete bağlanabildiğini onaylayın.
-web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>Bağlantı ayarlarını değiştir</a>.
+web_redirect_case8_suggestion2=<a style='color:var(--wrt-text-color,#FFF)' href='/QIS_wizard.htm?flag=manual'>Bağlantı ayarlarını değiştir</a>.
 web_redirect_case8_title=Ana AP'ye bağlanamıyor.
 web_redirect_case9_suggestion1=AiMesh yönlendiricinizin açık olduğundan emin olun.
 web_redirect_case9_suggestion2=AiMesh yönlendiricinizi yeniden başlatın ve tekrar deneyin.
@@ -1171,6 +1174,11 @@ Web_Title=ASUS Kablosuz Router ZVMODELVZ
 [###MODEL_DEP###][YY]Web_Title=ASUS ZVMODELVZ Erişim Noktası
 Web_Title2=ZVMODELVZ
 Web_DOMAIN_NAME=ZVDOMAIN_NAMEVZ
+WiFi_MLO_connect_confirmTitle=MLO bağlantısını kullan
+WiFi_MLO_same_model_desc=MLO (Multi-Link Operation) şu anda yalnızca aynı model ASUS router'lar arasında desteklenmektedir. Modeller farklıysa bağlantı başarısız olabilir.
+WiFi_MLO_connect_try=MLO kullanarak bağlanmayı dene.
+WiFi_MLO_connect_veto=Bunun yerine standart tek bantlı bağlantıyı kullan.
+WiFi_MLO_connect_confirm=MLO bağlantısını kullanmak istiyor musunuz?
 wireless_configured=Yapılandırılmış
 Wireless_name=Kablosuz adı
 wireless_router=Kablosuz Yönlendirici
@@ -1253,6 +1261,7 @@ ADSL_FW_note=Not:
 adsl_fw_ver_itemname=DSL Sürücü Sürümü
 adsl_link_sts_itemname=DSL Link Durumu
 adv_wl_desc=Kablosuz ile ilgili aşağıdaki bilgileri belirleyin.
+AiBoard_rescue_fail=AI Board kurtarma başarısız oldu
 AiCloud_account_status=Hesap Durumu
 AiCloud_account_unlock=Kilidi aç
 aicloud_bandwidth1=En iyi görüntüleme ve dinleme deneyimi için bir geniş bant internet bağlantısına ihtiyacınız vardır. Aşağıdaki önerilere bakınız :
@@ -1365,12 +1374,12 @@ AiMesh_FindNode_confirm=AiMesh düğümümü bulamıyorum
 AiMesh_FindNode_confirm_WPS=Bir AiMesh düğümü aranırken WPS etkinleştirilecektir.
 AiMesh_FindNode_Desc=AiMesh sisteminize bağlamak için yakınlardaki kullanılabilir AiMesh düğümlerini arayın.
 AiMesh_FindNode_Not=Yakınlarda herhangi bir AiMesh düğümü bulunamıyor.
-AiMesh_FindNode_Not_advA=Bu aygıt bir <span style='color:#569AC7;'>AiMesh yönlendirici</span> olarak atanırsa lütfen aşağıdakileri denetleyip tekrar deneyin.
+AiMesh_FindNode_Not_advA=Bu aygıt bir <span style='color:var(--wrt-link-color,#569AC7);'>AiMesh yönlendirici</span> olarak atanırsa lütfen aşağıdakileri denetleyip tekrar deneyin.
 AiMesh_FindNode_Not_advA1=AiMesh düğümünüz açık
 AiMesh_FindNode_Not_advA2=AiMesh düğümünüz en son aygıt yazılımına sahip
 AiMesh_FindNode_Not_advA3=AiMesh düğümünüz varsayılana sıfırlanmış
 AiMesh_FindNode_Not_advA4=AiMesh düğümünüzü AiMesh yönlendiriciye yaklaştırın
-AiMesh_FindNode_Not_advB=Bu aygıt bir <span style='color:#569AC7;'>AiMesh düğümü</span> olarak atanırsa lütfen aşağıdakileri denetleyip tekrar deneyin.
+AiMesh_FindNode_Not_advB=Bu aygıt bir <span style='color:var(--wrt-link-color,#569AC7);'>AiMesh düğümü</span> olarak atanırsa lütfen aşağıdakileri denetleyip tekrar deneyin.
 AiMesh_FindNode_Not_advB1=Bu aygıtta sıfırlama düğmesine basıp bekleyin.
 AiMesh_FindNode_Not_advB2=AiMesh yönlendiricinizin kullanıcı arayüzünde oturum açıp AiMesh simgesine tıklayın.
 AiMesh_FindNode_Not_advB3=Yönlendiricinin kullanıcı arayüzünde AiMesh simgesini bulamazsanız AiMesh yönlendiricinizin aygıt yazılımını yükseltin.
@@ -1447,7 +1456,7 @@ AiMesh_NodeLocation25=Garaj
 AiMesh_NodeLocation26=Birinci Kat
 AiMesh_NodeLocation27=Oyun Odası
 AiMesh_NodeLocation28=Spor
-AiMesh_NodeLocation29=Outdoor
+AiMesh_NodeLocation29=Dış Mekan
 AiMesh_OfflineTips=Çevrimdışı ipuçları
 AiMesh_OfflineTips1=AiMesh düğümünüzün açık olduğundan emin olun.
 AiMesh_OfflineTips2=AiMesh düğümünüzü yeniden başlatıp tekrar deneyin.
@@ -1661,7 +1670,7 @@ AiProtection_sites_block_desc=Korumanızın daima güncel kalmasını sağlamak 
 [###MODEL_DEP###][GT-AC5300]AiProtection_sites_block_desc=Kötü AmaçlıSiteleri Engelleme, ağaygıtınızıkötü amaçlıyazılım, kimlik hırsızlığı, istenmeyen posta, reklam destekli yazılım, bilgisayar korsanlığıveya fidye yazılım saldırılarına karşıkorumak için bilinen kötü amaçlıweb sitelerine erişimi kısıtlar.
 AiProtection_sites_blocking=Zararlı Sitelerin Engellenmesi
 AiProtection_ARK_Malicious_Site_blocking=Zararlı siteler ve enfekte cihazların engellenmesi
-AiProtection_ARK_Malicious_Site_blocking_desc=Ağınızı kötü amaçlı yazılım, kimlik avı, spam, reklam yazılımı, korsanlık ve fidye yazılımı saldırılarına karşı korumak için bilinen kötü amaçlı web sitelerine erişimi kısıtlayın.
+AiProtection_ARK_Malicious_Site_blocking_desc=Ağınızı kötü amaçlı yazılım, kimlik avı, spam, saldırı ve fidye yazılımı saldırılarından korumak için bilinen zararlı web sitelerine erişimi kısıtlayın.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]AiProtection_sites_blocking=Kötü Amaçlı Siteleri Engelle
 AiProtection_sites_trust=Güvendiğiniz bir etki alanı ekleyin ve AiProtection ile kilidini açın
 AiProtection_sites_trust_add=Beyaz listeye bir etki alanı ekleyin
@@ -1670,7 +1679,7 @@ AiProtection_title_BandwidthUtil=Bant Genişliği Kullanımı
 AiProtection_title_BandwidthUtil_desc1=Lütfen Internet bağlantınızın karşıya yükleme ve indirme bant genişliğini girin.
 AiProtection_title_BandwidthUtil_desc2=ROG ZVMODELVZ, oyun aygıtlarınıza yönelik en iyi trafiği düzenlemek için bu bant genişliği bilgisini kullanır.
 AiProtection_title_Dashboard=Oyun Panosu
-AiProtection_title_Dashboard_add_card=Add card
+AiProtection_title_Dashboard_add_card=Kart ekle
 AiProtection_title_Dashboard_desc=ROG ZVMODELVZ Panosu, en iyi ayarlarıyapılandırmanızıve oyun ağınız için gerçek zamanlıizleme gerçekleştirmenizi sağlar.
 AiProtection_title_Dashboard_title=Oyun Panosu
 AiProtection_title_GameWiFi=Özel Oyun WiFi
@@ -1704,18 +1713,19 @@ AiProtection_TrackerBlocking=İzleyici Engelleme
 AiProtection_TrackerBlocking_Desc=İzleyici engelleme, web sitelerinden, reklamverenlerden veya üçüncü taraf analiz platformlarından gelen izleme isteklerini tespit etmeye ve engellemeye yardımcı olur, gizliliğinizi korur, veri sızıntılarını azaltır ve sayfa yükleme süresini hızlandırır.
 AiProtection_AdvertisementBlocking_Desc=Reklam engelleme, parazitleri azaltmak, gezinmeyi iyileştirmek ve güvenlik risklerini azaltmak için yaygın reklam kaynaklarını engellemeye yardımcı olur. Ek koruma sağlamak için AdGuard DNS’yi de etkinleştirebilirsiniz.
 AiProtection_AdvertisementBlocking_Enabled=Reklam engelleme etkin
-AiProtection_AdvertisementBlocking_edserv=Edge Server
-AiProtection_AdvertisementBlocking_edserv_desc=A self-hosted edge server on router. Provides detailed network insights, advanced control, and enhanced home privacy.
-AiProtection_AdvertisementBlocking_cloudserv=Cloud Server
-AiProtection_AdvertisementBlocking_cloudserv_desc=Extends protection across multiple sites via the cloud.
-AiProtection_AdvertisementBlocking_filter=Triple level content filter
-AiProtection_AdvertisementBlocking_trigger=Blocks ads with one click.
+AiProtection_AdvertisementBlocking_edserv=Edge Sunucu
+AiProtection_AdvertisementBlocking_edserv_desc=Yönlendiricide barındırılan self-hosted edge sunucu. Ayrıntılı ağ içgörüleri, gelişmiş kontrol ve gelişmiş ev gizliliği sağlar.
+AiProtection_AdvertisementBlocking_cloudserv=Bulut Sunucu
+AiProtection_AdvertisementBlocking_cloudserv_desc=Koruma kapsamını bulut üzerinden birden fazla siteye genişletir.
+AiProtection_AdvertisementBlocking_filter=Üç seviyeli içerik filtresi
+AiProtection_AdvertisementBlocking_trigger=Reklamları tek tıklamayla engeller.
 AiProtection_TrackerBlocking_Enabled=İzleyici engelleme etkin
 AiProtection_select_device=Bir cihaz seçin veya geçerli bir MAC ya da IP girin
 AiProtection_rule_exist=Bu cihaz için zaten bir kural var. Yeni bir kural oluşturmadan önce mevcut olanı kaldırın.
 ArkMigrationNote=Not
 ArkMigrationNote_1=Gizlilik ve sistem optimizasyonları nedeniyle %@ artık yerel algılama kullanıyor. Mevcut profil kuralları manuel olarak yeniden yapılandırılmalıdır.
 ArkMigrationNote_2=Bu özellikler önceki firmware ile uyumlu değildir; sürüm düşürme fabrika ayarlarına sıfırlama gerektirir.
+ArkAiProtectionInfo=Bazı web siteleri reklam veya izleyici hizmetleri kullandığından Reklam Engelleme veya Takip Engelleme tarafından etkilenebilir. Web sitesine erişim sorunu yaşarsanız yukarıdaki özellikleri devre dışı bırakıp sayfayı yeniden yükleyin.
 FamilyContentBlock=Aile İçeriği Engelleme
 BwLimiter_Switch=Bant genişliği sınırlayıcı anahtarı
 BwLimiter_Download=İndirme bant genişliği
@@ -1724,6 +1734,7 @@ BwLimiter_NewDevice=Yeni Cihaz
 BwLimiter_Status=Durum
 BwLimiter_Delete=Sil
 SearchDevice_By_Name_Mac_Ip=Cihaz adı, MAC veya IP ara
+SearchDevice_By_Name_Mac_Ip_Subnet=Cihaz Adı, MAC, IP veya Alt Ağı Arayın
 BwLimiter_Target=Hedef
 BwLimiter_enter_bandwidth=Bir bant genişliği değeri girin.
 BwLimiter_max=Bant genişliği sınırı kuralları maksimuma ulaştı (32).
@@ -1874,7 +1885,7 @@ Bandwidth_Setting=Limit Ayarlama
 BasicConfig_EnableDHCPFilter_itemname=DHCP Filtresini Etkinleştir
 BasicConfig_EnableDownloadMachine_itemname=Download Master etkinleştirilsin mi?
 BasicConfig_EnableDownloadShare_itemname=Download Share etkinleştirilsin mi?
-BasicConfig_EnableiTunesServer_itemname=iTunes Server etkinleştirilsin mi?
+BasicConfig_EnableiTunesServer_itemname=iTunes sunucu etkinleştirilsin mi
 BasicConfig_EnableMediaServer_itemname=UPnP etkinleştirilsin mi
 BlackList=Kara Liste
 Block=Engelle
@@ -1965,7 +1976,9 @@ btn_go=GİT
 btn_goSetting=Ayarlara Git
 btn_remove=Kaldır
 btn_send=Gönder
+btn_resend=Yeniden gönder
 btn_to_WAN=WAN ayarına
+btn_verify=Doğrula
 Capability=Kapasite
 Captcha=Güvenlik kodu
 Captcha_note=Lütfen güvenlik kodunu girin.
@@ -1976,7 +1989,7 @@ ChooseOthers_Hint=Lütfen diğer seçenekleri belirleyip tekrar deneyin.
 collect_no_info_SWISS=Kullanıcılarla ilgili bilgi toplamaz ve İsviçre gizlilik yasalarına tabidir.
 Client_Name=İstemci Adı
 Client_Icon=Ikon
-Client_Icon_change=Change Icon
+Client_Icon_change=Simgesini değiştir
 Client_Icon_overload=İstemci simgesi yüklemeyi sınırının üzerinde, lütfen en az bir istemci simgesini kaldırın ve tekrar yüklemeyi deneyin.
 Clientlist_block_internet=İnternet Erişimini Engelle
 Clientlist_block_internet_max=Maksimum sınır 16 istemcidir. Lütfen zaman planlamasındaki istemci listenizi kontrol edin.
@@ -2111,7 +2124,7 @@ CTL_finished=Bitti
 CTL_format=Biçimlendir
 CTL_Generate=Oluştur
 CTL_help=Yardım
-CTL_later=Later
+CTL_later=Daha Sonra
 CTL_link=Bağlantı
 CTL_localdevice=Yerel Aygıt
 CTL_login=Oturum Aç
@@ -2122,15 +2135,16 @@ CTL_reconnection=Otomatik yeniden bağlantı
 CTL_refresh=Yenile
 CTL_Reset_OOB=Sıfırla
 CTL_restore=Geri yükle
+CTL_restore_again=Tekrar geri yükle
 CTL_scan=Tara
 CTL_search=Ara
 CTL_secure=önlendiricinizi Güvende Tutun
 CTL_upgrade=Yükseltme
 CTL_upload=Karşıya Yükle
-CTL_upload_img=Upload image
+CTL_upload_img=Resim yükle
 CTL_initialize=Initialize
 Current=güncel
-Current_peak=Peak
+Current_peak=Zirve
 Current_band=Geçerli frekansı
 current_settings=Mevcut Ayarlar
 Custom=Özel
@@ -2158,6 +2172,9 @@ DDNS_https_cert_alert=Lütfen doğru SSL sertifika dosyasını seçin.
 DDNS_ipv6_update=IPv6 Güncellemesi
 DDNS_ipv6_update_desc=İstemcinin ağ ortamında IPv6 ağ adresi kullanılıyorsa, bu özelliği etkinleştirmek uzak cihaz erişimi olduğunda bir IPv6 ağ adresine giden etki alanını çözecektir.
 DDNS_ssl_cert=SSL Sertifikası
+DDNS_status=DDNS Durumu
+DDNS_reg_result=DDNS Kayıt Sonucu
+DDNS_root_ca=Kök Sertifika/Ara Sertifika
 DDNS_termofservice_Title=Kullanım Şartları Bildirgesi
 DDNS_transfer=Transfer ASUS DDNS name
 DDNS_verification_enable=WAN IP ve ana bilgisayar adı doğrulama
@@ -2179,10 +2196,10 @@ Device_type_03_AP=Erişim Noktası
 Device_type_04_NS=NAS
 Device_type_05_IC=IP Kamera
 Device_type_06_OD=Başka Aygıt
-deviceDiscorvy2=Yineleyici modunda, DHCP tarafından atanmış IP adresi değişir. Kablosuz yönlendiricinin yeni IP adresini almak için <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> kurup kullanın.
-deviceDiscorvy3=Access Point (Erişim Noktası) (AP) modunda, DHCP atanan IP adresi değişir. Kablosuz yönlendiricinin IP adresini algılamak için <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> (Aygıt Bulama Programı) yükleyin ve kullanın.
-AiMesh_deviceDiscorvy3=AiMesh Yönlendiriciler Erişim Noktası modundayken, DHCP tarafından atanan IP adresi değişir. Kablosuz yönlendiricinin IP adresini algılamak için <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> yükleyip kullanın.
-deviceDiscorvy4=Medya köprüsü modunda, DHCP tarafından atanmış IP adresi değişir. Kablosuz yönlendiricinin yeni IP adresini almak için <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> kurup kullanın.
+deviceDiscorvy2=Yineleyici modunda, DHCP tarafından atanmış IP adresi değişir. Kablosuz yönlendiricinin yeni IP adresini almak için <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> kurup kullanın.
+deviceDiscorvy3=Access Point (Erişim Noktası) (AP) modunda, DHCP atanan IP adresi değişir. Kablosuz yönlendiricinin IP adresini algılamak için <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> (Aygıt Bulama Programı) yükleyin ve kullanın.
+AiMesh_deviceDiscorvy3=AiMesh Yönlendiriciler Erişim Noktası modundayken, DHCP tarafından atanan IP adresi değişir. Kablosuz yönlendiricinin IP adresini algılamak için <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> yükleyip kullanın.
+deviceDiscorvy4=Medya köprüsü modunda, DHCP tarafından atanmış IP adresi değişir. Kablosuz yönlendiricinin yeni IP adresini almak için <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> kurup kullanın.
 DeviceSecurity11a_display1_sectiondesc=Kablosuz MAC filtresi, Kablosuz Yerel Ağınızda belirtilen MAC adresine sahip aygıtlardan gelen paketleri denetlemenizi sağlar.
 DHCP_query_freq=DHCP sorgu sıklığı
 DHCPaggressive=Agresif Mod
@@ -2359,13 +2376,16 @@ Enable_ncb_Non_Block=Engelleme
 Enable_ncb_Limited_Block=Sınırlı engel
 Enable_ncb_All_Block=Tamamen engelli
 Encap_mode_help=ZVMODELVZ, LAN ve WAN protokollerini ATM aracılığıyla kapsülleyerek veya taşıyarak iki mod sağlar. Lütfen uygun Kapsülleme Modunu seçin.
+Energy_Saving_conflict_hint1=Ana özellik ile Enerji Tasarrufu ayarları arasındaki etkileşimler nedeniyle gerçek davranış farklılık gösterebilir.
+Energy_Saving_conflict_hint2=Ana özellik ile Enerji Tasarrufu arasında tutarlı davranışı sağlamak için mevcut ayarlar öncelikli olarak uygulanacaktır.
+Energy_Saving_affected_setting=Etkilenen ayarlar: (%@)
 Ethernet_wan=Ethernet WAN
 Excute=Yerleştirmek
 Excute_processing=Kurmak
 External=Yalnız harici
 Extend_TTL_Value=TTL değerini genişlet
 EZQoS=EZQoS Bant Genişliği Yönetimi
-EzQoS_bandwidth_note1=Bant genişliği bilgilerini İSS\'nizden alın veya bant genişliğini kontrol etmek için <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:#FC0;">http://speedtest.net</a> adresine gidin.
+EzQoS_bandwidth_note1=Bant genişliği bilgilerini İSS\'nizden alın veya bant genişliğini kontrol etmek için <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);">http://speedtest.net</a> adresine gidin.
 EzQoS_bandwidth_note2=Varsayılan değer, sınırsız bant genişliği anlamına gelen 0şeklindedir.
 EzQoS_desc=Quality of Service (QoS), öncelik tanınan görev ve uygulamalara bant genişliği atanmasını sağlar.
 EzQoS_desc_Adaptive=<span style="font-weight:bolder;font-size:14px;">Uyarlanabilir QoS</span>, ön tanımlı, sürükle-bırak tipi ön ayarlar aracılığıyla öncelik tanınan görev ve uygulamalar (oyun, medya akışı, VoIP, web'de gezinme, dosya aktarımı) için hem kablolu hem de kablosuz bağlantılara gelen ve giden bant genişliği atanmasını sağlar.
@@ -2432,11 +2452,11 @@ feedback_email_alert=E-posta adresi biçimi geçerli değil.
 feedback_email_confirm=E-posta adresi alanı boş. Devam etmek istediğinizden emin misiniz?
 feedback_extra_info=Hata ayıklama için ek bilgi
 feedback_fail0=Geri bildiriminiz gönderilemedi. Lütfen Internet bağlantınızıkontrol edip tekrar deneyin.
-feedback_fail1=<span style="color:#FC0;">Sistem, posta sunucusuna bağlanamadı.</span> Doğrudan adresine bir e-posta gönderebilirsiniz.
+feedback_fail1=<span style="color:var(--wrt-badge-warning-color,#FC0);">Sistem, posta sunucusuna bağlanamadı.</span> Doğrudan adresine bir e-posta gönderebilirsiniz.
 feedback_fail2=Aşağıdaki içerikleri kopyalayıp, e-posta içeriğiniz olarak yapıştırmanız yeterlidir.
 feedback_fail3=Aşağıdaki hata ayıklama dosyalarını indirin ve bunları bir e-posta eki olarak ekleyin:
 feedback_fail0_new=Sistem Geri Bildirim sunucusuna bağlanamadı.
-feedback_fail1_new=<span>Kullanımla ilgili bir sorun yaşarsanız veya teknik desteğe ihtiyaç duyarsanız lütfen önce ASUS Müşteri Hizmetleri Merkezi ile iletişime geçin&nbsp;<a class="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Resmi Destek | ASUS Global)</a>.</span>
+feedback_fail1_new=<span>Kullanımla ilgili bir sorun yaşarsanız veya teknik desteğe ihtiyaç duyarsanız lütfen önce ASUS Müşteri Hizmetleri Merkezi ile iletişime geçin&nbsp;<a class="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Resmi Destek | ASUS Global)</a>.</span>
 feedback_fail2_new=Geliştirme ekibine iyileştirme önerilerinde bulunmak için aşağıdaki tespit edilen hata dosyasını router_feedback@asus.com adresine gönderebilirsiniz. Teşekkür ederiz.
 feedback_fail_BindGoogle=Veya e-posta üzerinden geribildirim göndermek için <a id="bind_google">Google hesabınızı bağlayabilirsiniz</a>.
 feedback_format_alert=The format is not valid.
@@ -2458,7 +2478,7 @@ feedback_note3=Geri bildiriminizi göndererek, ASUS’un ağ ve kablosuz ürünl
 [###MODEL_DEP###][DSL-AX82U][DSL-AC68U][DSL-N55U][DSL-N55U-B]feedback_note3=Geri bildiriminizi göndererek, ASUS’un xDSL modem yönlendirici ürünlerini iyileştirmek için geri bildiriminizi kullanabileceğini kabul edersiniz.
 feedback_note4=Acil sorunlarınız varsa lütfen yerel teknik destek isteyin.
 feedback_note5=Geri bildirim devam ediyor. Yeniden başlatma, programın sonlanmasına ve geri bildirimin tamamlanamamasına neden olabilir. Lütfen daha sonra yeniden başlatın.
-feedback_note6=<span>Bu sistem bireysel yanıt sağlamaz. Kullanımla ilgili bir sorununuz varsa veya teknik desteğe ihtiyacınız varsa ASUS Müşteri Hizmetleri Merkezi ile iletişime geçin</span>&nbsp;<a id="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Resmi Destek | ASUS Global)</a>.
+feedback_note6=<span>Bu sistem bireysel yanıt sağlamaz. Kullanımla ilgili bir sorununuz varsa veya teknik desteğe ihtiyacınız varsa ASUS Müşteri Hizmetleri Merkezi ile iletişime geçin</span>&nbsp;<a id="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Resmi Destek | ASUS Global)</a>.
 feedback_note7=Profesyonel ekibimiz size hizmet vermekten memnuniyet duyacaktır. Teşekkür ederiz.
 feedback_Occasion_interrupt=Nadiren kesintiler
 feedback_optional=* İsteğe bağlı
@@ -2619,7 +2639,7 @@ FW_auto_upgrade_desc=Sistem güncellemelerini, indirildikten sonra bir gecede ot
 FW_auto_upgrade_desc1=Bazı güncellemeler, önemli güvenlik sorunlarını ele aldığı veya yasal/düzenleyici gereksinimleri karşıladığı için, Otomatik Ürün Yazılımı Güncellemesi kapalı olsa bile otomatik olarak yüklenecektir.
 FW_auto_upgrade_note=Etkinleştirildiğinde, yönlendirici yeni ürün yazılımını tercih ettiğiniz saatte otomatik olarak yükler.
 FW_beta_check=Beta ürün yazılımını yeniden edinmek istiyorum.
-FW_desc0=<a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/" target="_blank">ASUS Destek sitesinden</a> en son üretici yazılımı sürümünü edinin
+FW_desc0=<a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/" target="_blank">ASUS Destek sitesinden</a> en son üretici yazılımı sürümünü edinin
 FW_desc1=Güncel aygıt yazılımını almak için lütfen ASUS destek sitesini https://www.asus.com/support/ ziyaret edin.
 fw_downloading=Firma Yazılımını indirin
 FW_item1=Ürün Kimliği
@@ -2628,9 +2648,9 @@ FW_item2_aiboard=AI Board Ürün Yazılımı Sürümü
 FW_item5=Yeni Donanım Yazılımı Dosyası
 FW_manual_update=Elle aygıt yazılımı güncelleme
 FW_n0=En son ürün yazılımı sürümü, önceki sürümdeki güncellemeleri içerir.
-FW_n2=Yükseltme işleminin başarısız olması durumunda, ZVMODELVZ acil durum moduna otomatik olarak girer. ZVMODELVZ'in önündeki LED sinyalleri böyle bir durumu gösterecektir.Lütfen <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS İndirme Merkezini</a> ziyaret ederek ASUS Firmware Restoration yardımcı programını indirin.
-FW_n3=Check on <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="" target="_blank">FAQ</a> for more instructions.
-FW_n4=Check on <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: #FFCC00;\" href=\"\" target=\"_blank\">FAQ</a> for more instructions.
+FW_n2=Yükseltme işleminin başarısız olması durumunda, ZVMODELVZ acil durum moduna otomatik olarak girer. ZVMODELVZ'in önündeki LED sinyalleri böyle bir durumu gösterecektir.Lütfen <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS İndirme Merkezini</a> ziyaret ederek ASUS Firmware Restoration yardımcı programını indirin.
+FW_n3=Daha fazla talimat için <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="" target="_blank">SSS</a>'ye göz atın.
+FW_n4=Daha fazla talimat için <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: var(--wrt-badge-warning-color,#FFCC00);\" href=\"\" target=\"_blank\">SSS</a>'ye göz atın.
 FW_n5=Ürün yazılımı/güvenlik güncellemeleri için veri toplamayla ilgili olarak lütfen “Yönetim -> Gizlilik” sayfasındaki “ASUS GİZLİLİK BİLDİRİMİNE (ürün yazılımı/güvenlik güncellemeleri için) başvurun.
 FW_note=Not:
 FW_note_AiMesh=AiMesh sistemi kullanılırken, elle aygıt yazılımı güncelleme yalnızca seçilen AiMesh yönlendiricilerini/düğümlerini güncelleyecektir. Lütfen uygulanabilir her bir yönlendiriciye/düğüme, doğru AiMesh aygıt yazılımı sürümünü karşıya yüklediğinizden emin olun.
@@ -2690,6 +2710,7 @@ Gear_Accelerator=Çark Hızlandırıcı
 Gear_Accelerator_desc=Oyun Cihazı Önceliklendirme
 Gear_Accelerator_desc1=En iyi oyun deneyimi için oyun cihazlarını önceliklendirme.
 Gear_Accelerator_List=Oyun Cihazı Listesi
+Gear_Accelerator_confirm=%@ özelliğini etkinleştirmek için donanım hızlandırma devre dışı bırakılacaktır; bu durum ağ hızını düşürebilir. Devam etmek istiyor musunuz?
 Game_Ark_Devices_identification=Oyun Cihazlarını Tanıma
 Game_Ark_Devices_identification_desc=Oyun cihazlarını tanıma, bağlı cihazlarınızın ağ trafiğini akıllıca önceliklendirir.
 Game_Ark_First_desc=GameFirst V, çevrimiçi PC oyunları için ağ trafiğini optimize etmek amacıyla ROG anakartlar, dizüstü bilgisayarlar ve masaüstü bilgisayarlarla birlikte gelir.
@@ -2706,12 +2727,12 @@ GB_account_type2=Yönlendiricili Gelişmiş Hesap
 GB_ended_date=Bitiş Tarihi
 GB_ended_date_desc=WTFast, her yeni kullanıcıya, yalnızca daha fazla vekil sunucu seçeneklerine sahip Gelişmiş hesapla ilgili olan 14 günlük gelişmiş deneme süresi sağlar. Deneme süresi sona erdiğinde, ücretsiz ve trafik sınırlamaları olan temel hesap özellikleriyle ömür boyu aboneliğin keyfini çıkarmaya devam edebilirsiniz.
 GB_ended_date_type0=Şu anda yönlendiricisiz temel hesap kullanıyorsunuz.
-GB_management_note1=WTFast destekli Oyun Hızlandırma kullandığınızda, WTFast <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:#008DE5;">Kullanım Hükümlerini</a></span> ve <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:#008DE5;">Gizlilik İlkesini</a></span> kabul edersiniz.
-GB_management_note2=Ürün sayfamızdaki sorumluluk reddinde belirtildiği gibi, WTFast hâlâ oyun konsolu desteğinin geliştirilmesi üzerinde çalışmaktadır. Desteklenmekte olan oyunları görmek için lütfen <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:#008DE5;">bu listeye başvurun</a>. (Düzenli olarak güncellenir.)
+GB_management_note1=WTFast destekli Oyun Hızlandırma kullandığınızda, WTFast <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Kullanım Hükümlerini</a></span> ve <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Gizlilik İlkesini</a></span> kabul edersiniz.
+GB_management_note2=Ürün sayfamızdaki sorumluluk reddinde belirtildiği gibi, WTFast hâlâ oyun konsolu desteğinin geliştirilmesi üzerinde çalışmaktadır. Desteklenmekte olan oyunları görmek için lütfen <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">bu listeye başvurun</a>. (Düzenli olarak güncellenir.)
 GB_management_note3=GPN performansı, Internet hizmeti sağlayıcınız veya konumunuz temelinde değişiklik gösterir. Lütfen aygıt yazılımının her zaman güncel olduğundan emin olun.
-GB_management_note4=İyi bir GPN sunucusunu nasıl seçerim? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:#008DE5;">Burada</a></span> En iyi oyun deneyimini nasıl elde ederim? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:#008DE5;">Burada</a></span>
-GB_management_note5=ASUS yönlendiricide nasıl WTFast kullanırım? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:#008DE5;">Burada</a></span>
-GB_mobile=Mobile Game Mode
+GB_management_note4=İyi bir GPN sunucusunu nasıl seçerim? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Burada</a></span> En iyi oyun deneyimini nasıl elde ederim? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Burada</a></span>
+GB_management_note5=ASUS yönlendiricide nasıl WTFast kullanırım? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Burada</a></span>
+GB_mobile=Mobil Oyun Modu
 GB_mobile_desc=Mobil Oyun Deneyiminizi Yükseltin
 GB_mobile_desc1=ASUS Router uygulamasını indirin ve kurun. En iyi mobil oyun deneyimlerini garantilemek için uygulama içi mobil oyun modunu etkinleştirin.
 GB_mobile_desc_short=ASUS Router uygulamasını indirin ve kurun.
@@ -2832,7 +2853,7 @@ HSDPAConfig_hsdpa_enable_hint2=Bağlantı türünü değiştirmek isterseniz, l�
 HSDPAConfig_hsdpa_enable_itemname=USB Modem etkinleştirilsin mi
 HSDPAConfig_hsdpa_mode_itemname=USB Modem modu
 HSDPAConfig_hsdpa_mode_itemdesc=USB adaptörünü ZVMODELVZ aygıtına takıp mobil yönlendirici haline getirin.
-HSDPAConfig_hsdpa_mode_status=USB Modem Status
+HSDPAConfig_hsdpa_mode_status=USB Modem Durumu
 HSDPAConfig_isp_itemdesc=Lütfen İnternet Servis Sağlayıcınızı (ISP) seçiniz.
 HSDPAConfig_ISP_itemname=ISP
 HSDPAConfig_password_itemdesc=Lütfen şifrenizi giriniz.
@@ -3013,8 +3034,8 @@ IPv6_WAN_Selection=WAN Seçimi
 IPv6_xpass=Xpass
 isp_br_gvt_note=Eğer bir GVT kullanıcısı iseniz, lütfen <b>turbonet@turbonet</b> kullanıcı adını ve <b>gvt25</b> parolasını girin. Aksi halde, ISP'niz tarafından verilen kullanıcı adını ve parolayı girin.
 isp_profile=Özel ISP ayarlarını yapılandırmak için ISP Profilini seçin.
-iTunesServer=iTunes Server
-iTunesServer_itemname=iTunes Server Name
+iTunesServer=iTunes sunucu
+iTunesServer_itemname=iTunes sunucu adı
 Jitter=Jitter
 JS_access_type=Please select at least one Access Type.
 JS_badconnection=ZVMODELVZ bağlantısı başarısız. İstek göndermek için Tamam\'ı veya durdurmak için İptal\'i tıklatın.
@@ -3113,7 +3134,7 @@ LANHostConfig_x_DDNS_retrieve_IP_note=[Dâhilî] Dönüştürücünüzün IP/WAN
 LANHostConfig_x_DDNS_update_confirm=Son güncellemeden bu yana IP adresi, sunucu ve ana bilgisayar adıdeğiştirilmedi. Güncellemek isterseniz lütfen [Evet] düğmesine tıklayın.
 LANHostConfig_x_DDNSEnable_itemname=DDNS
 LANHostConfig_x_DDNSEnable_sectiondesc=DDNS [Dynamic Domain Name System (Dinamik Etki Alanı Adı Sistemi)] ağ istemcilerinin kayıtlı etki alanı adı ile bir dinamik genel IP adresi ile bile kablosuz yönlendiricilere bağlanmalarını sağlayan bir hizmettir.
-LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:#FFFFFF;">Daha fazla detay için lütfen <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">bu SSS</a>’ye göz atın.
+LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:var(--wrt-text-color,#FFFFFF);">Daha fazla detay için lütfen <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">bu SSS</a>’ye göz atın.
 LANHostConfig_x_DDNSEnable_sectiondesc3=Ana bilgisayar adı başarılı bir şekilde kaydedildi. Ev ağında WAN'dan hizmete erişmek için "[hostname (anabilgisayaradi)].asuscomm.com" kullanabilirsiniz. Ağınıza uzaktan erişmek için "[hostname (anabilgisayaradi)].asuscomm.com" kullanın.<p>Diğer WAN istemcilerini ağınıza uzaktan erişimini sağlamak amacıyla Port yönlendirmeyi veya DMZ ayarlarını yapılandırmak için Advanced Setting (Gelişmiş Ayarlar)>WAN yoluyla gidin.<p>Kablosuz yönlendiriciyi uzaktan yapılandırmak isterseniz <a href="/Advanced_System_Content.asp?af=misc_http_x" target="_blank" style="text-decoration: underline; font-family:Lucida Console;">burada</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc4=Güncel yönlendirici Gizli IP kullanıyor.
 LANHostConfig_x_DDNSEnable_faq1=DDNS tanıtımı ve kurulumu
@@ -3340,7 +3361,7 @@ month=ay
 MoreConfig=Başka Yapılandırmalar
 MPPE_Encryp=MPPE Şifrelemeyi
 mssid_time_remaining=Kalan Süre
-multiservice_WAN=Multi-Service WAN
+multiservice_WAN=Çok hizmetli WAN
 NAT_Acceleration=NAT Hızlandırma
 NAT_AccelerationDesc=NAT Hızlandırma etkinleştirildiğinde, anahtar ağ paketlerini kendi başına işleyebilir ve CPU’yu atlayabilir. NAT performansını artırabilir, ancak zaman planlama, geleneksel QoS ve konuk ağda bant genişliği sınırlayıcı vb. gibi bazı özellikler tam olarak çalışmayabilir. NAT hızlandırmayı otomatik olarak ayarlarsanız, bu özellikler etkinleştirildiğinde otomatik olarak devre dışı bırakılacaktır.
 NAT_Acceleration_ctf_disable=NAT trafiği işlemci tarafından işlenir.
@@ -3355,7 +3376,7 @@ NAT_IPSec_Passthrough=IPSec Düz geçiş
 NAT_L2TP_Passthrough=L2TP Düz geçiş
 NAT_lacp=Bağlama/Bağlantı toplama
 NAT_lacpDesc=Bu öğede çeşitli adlar var: Port Kümeleme/Bağlama/Ekip Oluşturma/Bağlantı Toplama/802.3ad
-NAT_lacp_disable_note=Change IPTV/ VOIP port settings to LAN5/ LAN6 will disable Bonding/ Link aggregation function. Are you sure to do it?
+NAT_lacp_disable_note=IPTV/ VOIP port ayarlarını LAN5/ LAN6 olarak değiştirmek Bonding/ Link aggregation işlevini devre dışı bırakacaktır. Bunu yapmak istediğinizden emin misiniz?
 NAT_lacp_note=Kablolu istemciniz için Bonding (802.3ad) desteğini etkinleştirin ve ardından Yönlendiricinizin LAN1 ve LAN2 bağlantı noktasına bağlayın.
 NAT_passthrough_desc=Sanal Özel Ağ (VPN) bağlantısının yönlendiriciden doğrudan ağ istemcilerine geçmesi için NAT Düz Geçiş'i etkinleştirin.
 NAT_PPTP_Passthrough=PPTP Düz geçiş
@@ -3415,8 +3436,8 @@ note_hide_SSID_WPS=WPS’i etkinleştirmek istiyorsanız, ilk olarak SSID gizlem
 note_up_to_date=Note: New patch will be updated regularly, please keep your firmware stay up to date.
 Notice=Bildirim
 Notification_Item=Bildirim Öğesi
-Notification_security_update=Security Update Notification
-Notification_security_desc=Monitor this log to stay informed about system security changes that may affect your network.
+Notification_security_update=Güvenlik güncelleme bildirimi
+Notification_security_desc=Ağınızı etkileyebilecek sistem güvenliği değişiklikleri hakkında bilgi sahibi olmak için bu günlüğü izleyin.
 Now=Şimdi
 number_of_client=İstemci sayısı
 NSlookup_help=ASUS DDNS hizmetini kullanmak amacıyla bir statik adres aramak için <a href="https//iplookup.asus.com/nslookup.php" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">https://iplookup.asus.com/nslookup.php</a> adresine gidin.
@@ -3440,7 +3461,7 @@ ParentalCtrl_default=Varsayılan olarak, Internet erişimi zaman aralıklarıyla
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_default=Varsayılan olarak, Internet erişimi zaman aralıklarıyla sınırlıdır.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]ParentalCtrl_default=Ebeveyn Denetimlerine eklenen aygıtların Internet erişimi varsayılan olarak kısıtlanacaktır.
 ParentalCtrl_deny=Reddet
-ParentalCtrl_disable_NAT=Daha doğru planlama kontrolü için <a id="disable_NAT" style="color:#FC0;text-decoration: underline;" href="" target="_blank">NAT Hızlandırma</a> devre dışı bırakın.
+ParentalCtrl_disable_NAT=Daha doğru planlama kontrolü için <a id="disable_NAT" style="color:var(--wrt-badge-warning-color,#FC0);text-decoration: underline;" href="" target="_blank">NAT Hızlandırma</a> devre dışı bırakın.
 ParentalCtrl_Enable=Ebeveyn denetimini etkinleştir
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_Enable=Cihaz erişim kontrolü etkinleştir
 ParentalCtrl_Enable_TS=Zaman Programlamayı Etkinleştir
@@ -3749,6 +3770,7 @@ select_service=Hizmet adını seçin.
 select_usb_device=USB AygıtıSeç
 select_usb_mode=USB Mode
 select_wireless_MAC=Kablosuz istemcinin MAC adresini seçin.
+Sending_str=Gönderiliyor…
 Send_mail=Posta gönder
 Serial_Number=Seri numarası
 Servers_Center=Sunucu Merkezi
@@ -3773,7 +3795,8 @@ Setting_initialize_desc_ai=Ana yönlendirici sisteminin fabrika ayarlarına sıf
 Setting_lock_main_unit=Ana Birimi Kilitle
 Setting_lock_main_unit_desc1=Etkinleştirildiğinde, bu cihaz Ana Birim rolüyle sınırlıdır ve başka bir ağa düğüm olarak katılamaz.
 Setting_lock_main_unit_desc2=Not: Bu durumun değiştirilmesi fabrika ayarlarına sıfırlamayı tetikler ve yeniden yapılandırma gerektirir.
-Setting_lock_main_unit_confirm=Ana Birimi Kilitle durumunun değiştirilmesi fabrika ayarlarına sıfırlama gerektirir. Bu, tüm mevcut ağ ayarlarını silecektir.
+Setting_lock_main_unit_desc3=Bu CAP'e bağlı Nodes bulunan etkin bir mesh ağınız varsa, CAP fabrika ayarlarına sıfırlandıktan sonra bu Nodes öğelerinin de manuel olarak sıfırlanması gerekir.
+Setting_lock_main_unit_confirm="Ana Birimi Kilitle" durumunun değiştirilmesi "fabrika ayarlarına sıfırlama" gerektirir. Bu, tüm mevcut ağ ayarlarını silecektir.
 Setting_save_itemdesc=ZVMODELVZ yönlendiricisinin o anki ayarlarını bir dosyaya kaydetmek için [Kaydet]'i tıklatın. (Not: O anki ayarlar dosyaya kaydedilirken, aynı zamanda anlık belleğe de kaydedilir.)
 Setting_save_itemdesc_ai=Ayarların kaydedilmesi AI Board sisteminin yapılandırma veya verilerini içermez.
 Setting_save_itemname=Ayarları kaydet
@@ -3782,7 +3805,7 @@ Setting_upload_hint=Dosya biçimi veya yol geçersiz!
 Setting_upload_itemdesc=Ayar dosyasının yol ve adını belirtin. Dosyayı ZVMODELVZ yönlendiricisine yazmak için [Karşıya Yükle]'yi tıklatın. Lütfen ZVMODELVZ yeniden başlatılıncaya kadar 60 saniye bekleyin.
 [###MODEL_DEP###][RT-N65U]Setting_upload_itemdesc=Ayar dosyasının yol ve adını belirtin. Dosyayı ZVMODELVZ yönlendiricisine yazmak için [Karşıya Yükle]'yi tıklatın. Lütfen ZVMODELVZ yeniden başlatılıncaya kadar 90 saniye bekleyin.
 Setting_upload_itemname=Ayarları geri yükle
-Setting_remove_passwd=Click on this checkbox if you want to share the config file for debugging. Since the original password in the config file will be removed, please do not import the file into your router.
+Setting_remove_passwd=Hata ayıklama için yapılandırma dosyasını paylaşmak istiyorsanız bu onay kutusunu işaretleyin. Dosyadaki orijinal parola kaldırılacağından, dosyayı yönlendiricinize aktarmayın.
 Setting_ai_board=AI Board Ayarları
 Setting_ai_board_fw_ver=AI Board Ürün Yazılımı Sürümü
 Setting_ai_dk_Apps=Docker Uygulamaları
@@ -3819,8 +3842,11 @@ Setting_rescue_ai_FWUpload=Ürün Yazılımını Yükle
 Setting_rescue_ai_FWInstall=Ürün Yazılımını Kur
 Setting_rescue_ai_appInstall=APP Kur
 Setting_rescue_ai_complete=AI Kartı kurtarma tamamlandı.
+Setting_rescue_ai_Interrupted=AI Board Geri Yükleme Kesintiye Uğradı
+Setting_rescue_ai_Interrupted_desc1=Geri yükleme işlemi beklenmeyen bir kesinti veya güç kaybı nedeniyle başarısız oldu.
+Setting_rescue_ai_Interrupted_desc2=Lütfen kararlı bir güç bağlantısı sağladığınızdan emin olun ve tekrar deneyin.
 Setting_prog_ai_currStep=Mevcut adım:
-Setting_prog_ai_Note=Not: Sistem normal şekilde çalışıyor. İşlemi kesmeyin.
+Setting_prog_ai_Note=Not: Sistem normal şekilde çalışıyor. Lütfen işlemi kesintiye uğratmayın ve kararlı bir güç kaynağı ile internet bağlantısı sağladığınızdan emin olun.
 Setting_prog_ai_serveralTime=Bu işlem birkaç dakika sürebilir.
 Settings=Ayarlar
 Setup_note=Değiştirmek için <a id="redirect_to_setup">Buraya</a> tıklayın. Daha fazla bilgi için lütfen bu <a id="redirect_to_FAQ">SSS bölümüne</a> bakın.
@@ -3876,7 +3902,7 @@ smart_connect_STA=STA Seçimi İlkesi
 smart_connect_STA_counts=Sayı
 smart_connect_STA_dwell=Bekleme Süresi
 smart_connect_STA_window=Pencere Süresi
-smart_connect_status=Smart Connect Status
+smart_connect_status=Smart Connect Durumu
 smart_connect_Steering=Döndürme Tetikleyici Koşulu
 smart_connect_Bandwidth=Bant Genişliği Kullanımı
 smart_sync=AiCloud Sync
@@ -3987,10 +4013,33 @@ SDN_Scenarios_desc=Özel kullanım için ek kablosuz ağ eklemek ister misiniz?
 SDN_MainFH_for_clients=Müşteriler için MLO Fronthaul
 SDN_MainFH_keep_Hint=At least one main network must be retained.
 SDN_MainFH_Smart_Connect_Hint=Smart Connect kuralı oluşturulduğundan, lütfen tek bir WiFi bandı seçin.
+SDN_mlo_switch_fh_hint1=Yalnızca bir etkin MLO fronthaul'a izin verilir.
+SDN_mlo_switch_fh_hint2=%1$@ için MLO Fronthaul'u devre dışı bırakıp %2$@ öğesini etkinleştirmek istiyor musunuz?
 SDN_Sync_To_All_Node=Tüm AiMesh düğümlerine senkronize et
 SDN_Sync_To_All_Node_Hint=AiMesh düğümleriniz eski modelse veya WiFi maksimum kapasitesine ulaşmışsa, tüm AiMesh düğümleri senkronize edilemez. Lütfen aşağıdaki menüden senkronize edilecek düğümleri seçin.
 SDN_Sync_limitation_Hint=Daha eski AiMesh düğümleri için tüm bantların senkronizasyonunda sınırlamalar vardır.
 SDN_MainFH_WiFi_conflict=%1$@ WiFi bandı kullanıldı. Çakışan %2$@ (%3$@) ağlar, ayarlar uygulandıktan sonra kaldırılacaktır.
+SDN_Auth_WPA3_only_subtext1=Yalnızca WPA3 bağlantılarıyla en yüksek güvenlik seçeneği.
+SDN_Auth_WPA3_only_subtext2=(Not: WPA3 desteği olmayan eski cihazlar bağlanamayabilir.)
+SDN_Auth_WPA3_dual=Standart çift modlu güvenlik seçeneği.
+SDN_Auth_WPA3_dual_desc=Modern cihazlar WPA3, eski cihazlar ise WPA2 kullanır.
+SDN_Auth_WPA3_dual_mode=Uyumluluk Modu
+SDN_Auth_WPA3_dual_mode_subtext1=RSN geçersiz kılma kullanan eski cihazlar için optimize edilmiş gelişmiş çift modlu güvenlik seçeneği.
+SDN_Auth_WPA3_dual_mode_subtext2=Eski cihazların bağlı kalmasını sağlarken modern cihazları WPA3 üzerinde tutar.
+SDN_Auth_WPA3_dual_mode_subtext3=(Not: Bazı orta nesil cihazlar WPA2 kullanabilir.)
+SDN_Auth_WPA3_subtext=RSN overriding kullanılarak eski cihazlar için optimize edilmiş gelişmiş bir güvenlik seçeneğidir. Modern cihazlara maksimum güvenlik sağlarken modern olmayan istemciler için kararlı bağlantıları korur.
+SDN_WiFi_Mode_Only6G_Hint=Küresel WiFi standartlarına uymak için 6 GHz bandındaki tüm ağlar aynı WiFi neslini kullanmalıdır.
+SDN_WiFi_Mode_24G_Hint=2,4 GHz, WiFi modu ayarlarınıza göre çalışır.
+SDN_Compatibility_Mode_Off=Uyumluluk modu kapalı.
+SDN_Compatibility_Mode_24=2,4 GHz Uyumluluk Modu
+SDN_Balance_Mode=Dengeli
+SDN_Balance_Mode_desc=Performans ve cihaz uyumluluğu arasında optimum denge.
+SDN_Balance_Mode_desc1=2,4 GHz, WiFi 6 modunda çalışır.
+SDN_Ultra_Compatibility_Mode=Maksimum Uyumluluk
+SDN_Ultra_Compatibility_Mode_desc=Eski veya önceki nesil IoT cihazları için kararlı bağlantı sağlar.
+SDN_Ultra_Compatibility_Mode_desc1=2,4 GHz, WiFi 4 modunda çalışır.
+SDN_IPv6_FreeWiFi_Hint=Not: Free WiFi yalnızca IPv6 kullanılan ortamları desteklemez. İstemci yönlendirmesi için IPv4 veya Dual-Stack'in etkin olduğundan emin olun.
+SDN_IPv6_MessageBoard_Hint=Not: Message Board yalnızca IPv6 kullanılan ortamları desteklemez. İstemci için IPv4 veya Dual-Stack'in etkin olduğundan emin olun.
 t2BC=Temel Yapılandırma
 t2LAN=Yerel Ağ
 t2Misc=Çeşitli
@@ -4066,7 +4115,9 @@ TZ02=Midway Adası, Samoa
 TZ03=Hawaii
 TZ04=Alaska
 TZ05=Pasifik Zamanı (ABD, Kanada)
+TZ05_1=Vancouver, Whitehorse
 TZ06=Dağ Zamanı (ABD, Kanada)
+TZ06_1=Edmonton, Yellowknife
 TZ07=Arizona
 TZ08=Mazatlan
 TZ10=Saskatchewan
@@ -4222,7 +4273,7 @@ usb_tls_conflict=Anonim oturum açmalara izin ver seçeneği, TLS ayarlarıyla u
 usb_tls_conflict_WANacc=WAN erişimi seçeneği, TLS ayarlarıyla uyuşmuyor.
 usb_uninstalling=Uygulamanın yüklemesi USB depolama aygıtından kaldırılıyor...
 usb_unmount=USB işlevi engellendi
-use_DevDiscoveryUtil=Kablosuz yönlendiricinin IP adresini algılamak için <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> (Aygıt Bulama Programı) yükleyin ve kullanın.
+use_DevDiscoveryUtil=Kablosuz yönlendiricinin IP adresini algılamak için <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> (Aygıt Bulama Programı) yükleyin ve kullanın.
 Username=Kullanıcı Adı
 Username_Pwd=Kullanıcı Adı ve Prola
 UserQoS_desc=Kullanıcı tarafından belirlenen Hizmet Kalitesi kuralları aşağıya doğru açılan listeden ağ uygulamalarını veya cihazlarını beş seviyede önceliklendirebilirsiniz. Öncelik seviyesine bağlı olarak, Hizmet Kalitesi veri paketlerini göndermekte aşağıdaki yöntemleri kullanır:<ul><li>Paketlerin İnternete gönderildiği sırayı ifade eden aboneden yukarı akış ağ paketlerinin sırasını değiştirin.</li><li>Yüksek öncelikli paketlerin aktarımını sağlamak için düşük öncelikli paketler göz ardı edilir. Daha yüksek öncelikli yukarı akım paketi daha yüksek öncelikli aşağı akım paketine neden olacaktır.</li><li>Yüksek öncelikli uygulamalardan gönderilen hiçbir paket yoksa İnternet Bağlantısının tam aktarım hızı düşük öncelikli paketler için uygundur.</li></ul>
@@ -4232,6 +4283,7 @@ UserQoS_transferred_hint=[Aktarılan] sütunda, özel bir porta atanan hizmet i�
 UserQoSRule_desc_zero=QoS'i etkinleştirin, ardından kullanıcı tanımlı kuralları ayarlayın.
 UserQoSRule_desc_one=Varsayılan olarak, karşıya yükleme ve indirme bant genişliğine yönelik öncelik "Düşük" şeklindedir. Herhangi bir bant genişliği önceliği kuralı yoksa, hem karşıya yükleme hem de indirme bant genişliği için öncelik "Düşük" şeklindedir.
 Utility=Yardımcı Program
+Verifying_str=Doğrulanıyor…
 Video_Find=Öğretici videolar bul
 Video_Link1=Öğretici videoyu açmak için tıklatın.
 View_List=Listeyi Görüntüle
@@ -4330,7 +4382,7 @@ vpn_openvpn_required_acc_pwd=Mevcut .ovpn dosyası için kullanıcı adı ve şi
 vpn_openvpnc_importCA=CA dosyası al
 vpn_openvpnc_importovpn=.ovpn dosyası al
 vpn_openvpnc_manual=CA dosyası alın ya da .ovpn dosyasını elle düzenleyin.
-vpn_privateIP_hint=Kablosuz yönlendirici şu anda bir özel WAN IP adresi kullanıyor (192.168.x.x, 10.x.x.x veya 172.16.x.x). Lütfen <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:#FC0;'>SSS</a> kısmına başvurun ve bağlantı noktası yönlendirmeyi ayarlayın.
+vpn_privateIP_hint=Kablosuz yönlendirici şu anda bir özel WAN IP adresi kullanıyor (192.168.x.x, 10.x.x.x veya 172.16.x.x). Lütfen <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>SSS</a> kısmına başvurun ve bağlantı noktası yönlendirmeyi ayarlayın.
 vpn_preshared_key=Pre-shared Key (Secret)
 vpn_preshared_key_hint=Enter Pre-shared Key
 vpn_switch_confirm=ASUSWRT aynı anda yalnızca bir VPN sunucusu bağlantısını destekler. \"OpenVPN sunucusunu\" etkinleştirirseniz \"PPTP sunucusu\" otomatik olarak devre dışı bırakılır. VPN sunucusunu etkinleştirmek istediğinizden emin misiniz?
@@ -4401,6 +4453,16 @@ vpn_wireguard_client_faq=VPN Fusion'da WireGuard® sunucusu nasıl kurulur?
 vpn_wireguard_client_config=Please use the following configuration to set up your WireGuard client.
 vpn_wireguard_qr_desc=Please download WireGuard App from Google Play or Apple Store, then use the APP to scan the QR Code to connect to this server.
 vpn_wireguard_qr_foriOS=For iOS users, you must assign a specific DNS server to WireGuard app before accessing the internet through WireGuard Server.
+vpn_wireguard_ep_mode=Endpoint Modu
+vpn_wireguard_ep_src=Ana bilgisayar adı kaynağı
+vpn_wireguard_ep_system_ddns=Sistem DDNS
+vpn_wireguard_ep_custom=Özel Ana Bilgisayar Adı
+vpn_wireguard_ep_desc=Auto modu, geçerli ağ durumuna göre Endpoint'i otomatik olarak belirler. DDNS modunda, sistem ayarlarında yapılandırılmış bir DDNS seçebilir veya özel bir ana bilgisayar adı girebilirsiniz.
+vpn_wireguard_ep_custom_desc=Özel Ana Bilgisayar Adı, sistem ayarlarındaki DDNS ayarlarından bağımsızdır. Başarılı bir bağlantı sağlamak için Özel Ana Bilgisayar Adının yönlendiricinin IP adresine doğru şekilde çözümlenebildiğinden emin olun.
+vpn_wireguard_ep_ddns_hint=DDNS etkinleştirilmemiş. Kurulumu tamamlamak için lütfen "Ayarlar > WAN > DDNS" bölümüne gidin. Aksi takdirde bu Endpoint düzgün çalışmayacaktır.
+vpn_wireguard_ep_ddns_disable_confirm=DDNS devre dışı bırakıldıktan sonra, bu DDNS'yi kullanan VPN Profilleri bağlantı kuramayabilir. Devam etmek istiyor musunuz?
+vpn_wireguard_ep_custom_blank=Lütfen Özel Ana Bilgisayar Adı girin.
+vpn_wireguard_ep_custom_invalid=Geçersiz ana bilgisayar adı biçimi. Lütfen vpn.example.com gibi geçerli bir FQDN girin. http://, https://, bir port numarası veya URL yolu eklemeyin.
 vpnc_auth=VPN kimlik doğrulama
 vpnc_auth_for_clients=VPN istemcileri için VPN doğrulaması
 vpnc_Client_Cert=Müşteri Sertifikası
@@ -4426,6 +4488,32 @@ vpnc_profile_assignALL=Tüm cihazlara uygula
 vpnc_profile_assignDevice=Cihazları bu profile ata
 vpnc_profile_del=Profili Sil
 vpnc_profile_select_suggest=Lütfen varsayılan internet geniş alan ağını iptal etmek için başka bir VPN profili seçin.
+vpnc_ssk_login=Surfshark hesabınızda oturum açın
+vpnc_ssk_login_note=Lütfen hem hesabı hem de parolayı girin.
+vpnc_ssk_invalid_long=Hesap veya parola çok uzun (en fazla 128 karakter).
+vpnc_ssk_invalid_char=Hesap veya parola geçersiz karakterler içeriyor.
+vpnc_ssk_invalid_format=Geçersiz hesap veya parola biçimi.
+vpnc_ssk_login_AuthCode=E-postanıza gönderilen veya Authenticator uygulaması tarafından oluşturulan 6 haneli doğrulama kodunu girin.
+vpnc_ssk_login_AuthCode_enter=Lütfen 6 haneli doğrulama kodunu girin.
+vpnc_ssk_login_AuthCode_confirm=Doğrulama kodunu almadınız mı? Yukarıdaki "Yeniden gönder" seçeneğine tıklayın, size yeni bir doğrulama kodu gönderelim.
+vpnc_ssk_login_AuthCode_resender=%1$@ sn içinde yeniden gönderilebilir
+vpnc_ssk_login_ErrMsg1=Hatalı hesap veya parola.
+vpnc_ssk_login_ErrMsg2=Surfshark sunucusu kullanılamıyor. Lütfen daha sonra tekrar deneyin.
+vpnc_ssk_login_ErrMsg4=Yapılandırma hatası. Lütfen ayarlarınızı kontrol edin.
+vpnc_ssk_login_ErrMsg41=Yapılandırma hatası.
+vpnc_ssk_login_ErrMsg5=Ağ hatası. Surfshark'a ulaşılamıyor.
+vpnc_ssk_login_ErrMsgDef=Oturum açılamadı. Lütfen tekrar deneyin.
+vpnc_ssk_login_success=Surfshark oturumu başarıyla açıldı.
+vpnc_ssk_login_success_note=Close this notice and complete your VPN settings.
+vpnc_ssk_logout_confirm=Hesabınızdan çıkış yapmak istediğinizden emin misiniz?
+vpnc_ssk_Failed_resend=Kod yeniden gönderilemedi. Lütfen tekrar deneyin.
+vpnc_ssk_Failed_verification=Geçersiz doğrulama kodu. Lütfen tekrar deneyin.
+vpnc_ssk_KeyPair_max=Surfshark hesabınız maksimum VPN anahtar çifti sayısına (50) ulaştı. Yeni bir VPN bağlantısı oluşturmak için lütfen kullanılmayan anahtar çiftlerini Surfshark hesabınızdan kaldırın ve tekrar deneyin.
+vpnc_ssk_Missing_credent=Kimlik bilgileri eksik. Lütfen uygulamayı kapatıp tekrar oturum açın.
+vpnc_ssk_Timeout_login=Oturum açma isteğinin süresi doldu. Lütfen tekrar deneyin.
+vpnc_ssk_Timeout_resend=Yeniden gönderme zaman aşımına uğradı. Lütfen tekrar deneyin.
+vpnc_ssk_Timeout_verification=Doğrulama isteğinin süresi doldu. Lütfen tekrar deneyin.
+vpnc_ssk_Timeout_network=Ağ hatası. Lütfen tekrar deneyin.
 vpnc_step=Bir VPN bağlantısı başlatmak için lütfen aşağıdaki adımları izleyin:
 vpnc_step1=Profil ekleyin
 vpnc_step2=Bir VPN bağlantısı türü seçin
@@ -4433,6 +4521,7 @@ vpnc_step3=VPN sağlayıcınız tarafından verilen VPN kimlik doğrulama bilgil
 vpnc_title=VPN İstemcisi
 vpnc_peer=Eş
 vpnc_pppoe_dis_nat_confirm=Bir PPPoE bağlantısı olan bir VPN istemcisini kullanırken, NAT Hızlandırmayı devre dışı bırakmak için yönlendiriciniz otomatik olarak yeniden başlayacaktır. Devam etmek istediğine emin misin?
+vpnc_kill_switch_desc=If enabled, this feature blocks all internet traffic instantly if the VPN drops to prevent IP and data leaks. Connection will be suspended until the VPN successfully reconnects or the feature is disabled.
 WAN_barrier=Engel
 WAN_Cfg_Ethernet_WAN=ZVMODELVZ Ethernet WAN ayarlarınıyapılandırın.
 WAN_default_route=Varsayılan Yol
@@ -4497,7 +4586,7 @@ WANTCPMSSOptionText=TCP MSS Seçeneği
 WANTCPMSSOptionComm1Text=byte
 WANVLANIDText=VLAN ID
 WANAggregation=WAN birleştirme
-WANAggregation_desc=WAN Toplama, WAN hızınızı 2 Gbps'ye kadar artırmak için iki ağ bağlantısını birleştirir. Yönlendiricinizin #WAN bağlantı noktasını ve LAN 4 bağlantı noktasını modeminizin LAN bağlantı noktasına bağlayın (aynı özelliklerde iki kablo kullandığınızdan emin olun). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN Toplama SSS</a>
+WANAggregation_desc=WAN Toplama, WAN hızınızı 2 Gbps'ye kadar artırmak için iki ağ bağlantısını birleştirir. Yönlendiricinizin #WAN bağlantı noktasını ve LAN 4 bağlantı noktasını modeminizin LAN bağlantı noktasına bağlayın (aynı özelliklerde iki kablo kullandığınızdan emin olun). <a id="wanAgg_faq" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">WAN Toplama SSS</a>
 WANAggregation_enable=WAN Toplamasını Etkinleştir
 WANAggregation_disable_dualwan=Yönlendiricinizde Çift WAN etkin. WAN Toplamasını etkinleştirmek Dual WAN'ı devre dışı bırakacaktır. Devam etmek istediğine emin misin?
 WANAggregation_disable_WANAggregation=Yönlendiricinizde WAN Toplama etkin. Çift WAN'ın etkinleştirilmesi WAN Toplamayı devre dışı bırakacaktır. Devam etmek istediğine emin misin?
@@ -4506,13 +4595,13 @@ WANAggregation_PortConflict_hint2=IPTV, yönlendiricinizin LAN 4 bağlantı nokt
 WANAggregation_disable_IPTVDualWAN=Yönlendiricinizde hem Çift WAN hem de IPTV etkindir. WAN Toplamayı etkinleştirmek, bağlantı noktası karmaşasını önlemek için Çift WAN ve IPTV'yi devre dışı bırakacaktır. Devam etmek istediğine emin misin?
 WANAggregation_help_WAN=Yönelticinizin #WAN bağlantı noktasının ve modeminizin LAN bağlantı noktasının aynı özelliklere sahip iki kabloyla bağlandığından emin olun.
 WANAggregation_help_LAN=Yönelticinizin LAN 4 bağlantı noktasının ve modeminizin LAN bağlantı noktasının aynı özelliklere sahip iki kabloyla bağlandığından emin olun.
-WANAggregation_goto_WAN=WAN Toplamasını etkinleştirmek için <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-İnternet</a> Bağlantısı sayfasına gidin.
+WANAggregation_goto_WAN=WAN Toplamasını etkinleştirmek için <a href="Advanced_WAN_Content.asp" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">WAN-İnternet</a> Bağlantısı sayfasına gidin.
 WANAggregation_help_desc=WAN Birleştirme kurulumu başarılı olmazsa, lütfen tekrar denemek için aşağıdaki adımları izleyin.
 WANAggregation_help_step1=Modeminizin LAN portlarının yönlendiricinizin #WAN ve LAN 4 konumuna kablo ile bağlanmış olduğundan emin olun.
 WANAggregation_help_step2=Modeminizin 802.3ad’i etkinleştirdiğinden emin olun
 WANAggregation_help_step3=Aynı özellikte iki kablo kullandığınızı doğrulayın (gigabit & gigabit veya 10/100& 10/100Mbps)
 WANAggregation_help_step4=Yönlendiricinizi yeniden başlatın
-WANAggregation_help_final=Yukarıdaki adımlar başarısız olursa, lütfen bu sorunu <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>ASUS Destek Sitesinde</a> bildirin.
+WANAggregation_help_final=Yukarıdaki adımlar başarısız olursa, lütfen bu sorunu <a href='https://www.asus.com/support/' target='_blank' style='color:var(--wrt-text-color,#000);text-decoration:underline;'>ASUS Destek Sitesinde</a> bildirin.
 WANAggregation_wanType_hint=WAN Toplaması PPPoE, PPTP ve L2TP gibi WAN türlerini desteklemez. WAN türünüz PPPoE, PPTP veya L2TP olarak değişirse, WAN toplaması otomatik olarak devre dışı bırakılır. Devam etmek istediğinize emin misiniz?
 WebGUI_issue=Üretici yazılımı sayfasına erişilemiyor
 wechat=WeChat
@@ -4627,8 +4716,8 @@ WLANConfig11b_display31_sectiondesc=[WDS Only(Sadece)] veya [Hybrid (Karma )] mo
 WLANConfig11b_display32_sectiondesc=Bağlanmak istediğiniz bu kablosuz yönlendiricinin ve AP'nin aynı kanalı kullandığından emin olun.
 WLANConfig11b_display33_sectiondesc=AP'nin WDS yönetim ara yüzünde AP Listesindeki AP MAC adresini ve kablosuz yönlendiricinin MAC adresini girin.
 WLANConfig11b_display34_sectiondesc=En iyi performansı almak için lütfen Gelişmiş Ayarlar> Kablosuz > Genel kısmına gidin ve ağdaki her yönlendiriciye aynı kanal bant genişliğini, kontrol kanalını ve genişletme kanalını atayın.
-WLANConfig11b_display41_sectiondesc=Şu an Otomatik kanal bant genişliğiı kullanıyorsunuz. Değiştirmek için <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">buraya</a> tıklayın.
-WLANConfig11b_display42_sectiondesc=Şu an Otomatik kanalı kullanıyorsunuz. Değiştirmek için <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">buraya</a> tıklayın.
+WLANConfig11b_display41_sectiondesc=Şu an Otomatik kanal bant genişliğiı kullanıyorsunuz. Değiştirmek için <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">buraya</a> tıklayın.
+WLANConfig11b_display42_sectiondesc=Şu an Otomatik kanalı kullanıyorsunuz. Değiştirmek için <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">buraya</a> tıklayın.
 WLANConfig11b_display5_sectiondesc=Kablosuz Profesyonel Ayarı, kablsosuz için ek parametreler ayarlamanızı sağlar. Ancak, varsayılan değerler önerilir.
 WLANConfig11b_display6_sectiondesc=WPS (WiFi Korumalı Kurulum) bir kablosuz ağın kolay ve güvenli bir şekilde kurulmasını sağlar. WPS'yi burada PIN kodu veya WPS düğmesi aracılığıyla yapılandırabilirsiniz.
 WLANConfig11b_EChannel_acs_ch13=Auto select channel including channel 12, 13
@@ -4686,6 +4775,7 @@ WLANConfig11b_x_APMode_option2=Hybrid
 WLANConfig11b_x_APSD_itemdesc=WMM APSD (Otomatik Güç Tasarruflu Dağıtımı) Etkinleştir veya Devre Dışı Bırak.
 WLANConfig11b_x_APSD_itemname=WMM APSD Etkinleştirilsin mi
 WLANConfig11b_x_Airtime_Fairness=Yayın Süresi Eşitliği
+WLANConfig11b_x_ApplyAllBands_hint=Bu ayar tüm bant ayarlarına uygulanacaktır.
 WLANConfig11b_x_Airtime_Fairness_itemdesc=Provide Airtime Fairness between multiple links
 WLANConfig11b_x_Auto=Kablosuz Modu, Otomatik olarak ayarlanmalıdır.
 WLANConfig11b_x_Beacon_itemdesc=İşaret Aralığı, bir işaretle diğeri arasındaki süre demektir. Varsayılan deper 100'dür (birim milisaniye veya 1/1000 saniyedir). Kararsız ortamda ya da dolaşan istemciler için iletişim performansını artırmak üzere İşaret Aralığını azaltın, ancak fazla güç tüketecektir.
@@ -4782,11 +4872,11 @@ WLANConfig11b_x_WPSMode_itemdesc=PIN (Kişisel Bilgi Numarası) seçildiğinde, 
 WLANConfig11b_x_WPSMode_itemname=WPS Yöntemi:
 WLANConfig11b_x_WPSPIN_itemdesc=Müşteri PIN kodu için alt rakamlı bir sayı girin.<p>
 WLANConfig11b_x_WPSPIN_itemname=İstemci PIN Kodu
-WLANConfig11n_Auto_note=[otomatik], geçerli misafir ağ kimlik doğrulama yöntemiyle (TKIP ya da WEP) uyumlu değil. Lütfen <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Misafir Ağ</a>’a gidin ve kimlik doğrulama yöntemini değiştirin.
+WLANConfig11n_Auto_note=[otomatik], geçerli misafir ağ kimlik doğrulama yöntemiyle (TKIP ya da WEP) uyumlu değil. Lütfen <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Misafir Ağ</a>’a gidin ve kimlik doğrulama yöntemini değiştirin.
 WLANConfig11n_automode_limition_hint=WEP veya TKIP şifrelemesine sahip otomatik Mod altında, ZVMODELVZ 54Mbps'lik maksimum aktarım hızını desteklemektedir.
 WLANConfig11n_automode_limition_hint1=Lütfen WPA2-Kişisel olarak değiştirin.
-WLANConfig11n_NAC_note=[N+AC], geçerli misafir ağ kimlik doğrulama yöntemiyle (TKIP ya da WEP) uyumlu değil. Lütfen <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Misafir Ağ</a>’a gidin ve kimlik doğrulama yöntemini değiştirin.
-WLANConfig11n_NOnly_note=[N Only], geçerli misafir ağ kimlik doğrulama yöntemiyle (TKIP ya da WEP) uyumlu değil. Lütfen <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Misafir Ağ</a>’a gidin ve kimlik doğrulama yöntemini değiştirin.
+WLANConfig11n_NAC_note=[N+AC], geçerli misafir ağ kimlik doğrulama yöntemiyle (TKIP ya da WEP) uyumlu değil. Lütfen <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Misafir Ağ</a>’a gidin ve kimlik doğrulama yöntemini değiştirin.
+WLANConfig11n_NOnly_note=[N Only], geçerli misafir ağ kimlik doğrulama yöntemiyle (TKIP ya da WEP) uyumlu değil. Lütfen <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Misafir Ağ</a>’a gidin ve kimlik doğrulama yöntemini değiştirin.
 WLANConfig11ax_AXOnly_note=By enabling AX only mode, if devices do not support 802.11ax(WiFi 6), will not able to connect to this band.
 WLANConfig11n_PremblesType_itemdesc=Başlama eki türü kablosuz aygıtlar arasında veri aktarım hatalarını algılama tekniği olan CRC (Çevrimsel Hata Denetimi) engelinin uzunluğunu tanımlamaktadır. Bütün kablosuz aygıtları aynı başlama eki türünde yapılandırmanızı öneririz. Yüksek ağ trafiğik alanlarında kablosuz aygıtlar için kısa başlama eki kullanın. Daha eski kablosuz aygıtlar için uzun başlama eki kullanın.
 WLANConfig11n_PremblesType_itemname=802.11b mode
@@ -4904,11 +4994,21 @@ Captive_Portal_Above=üstü
 Captive_Portal_Selected_Color=Seçilen Renk
 Captive_Portal_Local=Yerel
 Configuration=Yapılandırması
-Configuration_dark_mode=Dark
-Configuration_light_mode=Light
-Configuration_theme=Theme
-Configuration_fancy_theme=Fancy
+Configuration_dark_mode=Koyu
+Configuration_light_mode=Açık
+Configuration_theme=Tema
+Configuration_fancy_theme=Şık
+Configuration_flat_theme=Düz
 Continuous_Mode=sürekli mod
+View_Details=Ayrıntıları Görüntüle
+NetworkMap_Clients=İstemciler
+NetworkMap_Guest_Clients=Misafir İstemciler
+NetworkMap_Add_AiMesh_Hint=WiFi kapsama alanınızı genişletmek için daha fazla AiMesh düğümü ekleyin.
+Dashboard_Show_more=Daha fazla göster
+Dashboard_Show_less=Daha az göster
+Dashboard_Expand=Genişlet
+Dashboard_Refreshing=Yenileniyor
+Dashboard_Last_updated=Son güncelleme
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Erişim İlkesi
 FreeWiFi_AccountSetting_desc1=Hesap Ayarı, misafir ağınızı güvenli kılmak için misafir hesabı veritabanını iyi durumda tutmanızı sağlayan kolay bir misafir hesabı yapılandırmasıdır. İlişkili istemci, Internet'e erişmeden önce oturum açmak için aşağıdaki hesabı ve şifreyi girmek zorundadır.
@@ -4992,7 +5092,7 @@ menu_privacy=Politika
 ASUS_Notice_Privacy=ASUS BİLDİRİMİ( gizlilik için)
 Distributing_IP=IP dağıtılıyor...
 LED_Brightness=LED Parlaklığı
-LED_disabled_hint=This change will disable the special LED effect for the %1$@.
+LED_disabled_hint=Bu değişiklik %1$@ için özel LED efektini devre dışı bırakacaktır.
 WiFi_Network_List=WiFi ağ listesi
 Searching_WiFi_Network=Yakındaki WiFi ağı için arıyor...
 BoostKey=Destek Anahtarı
@@ -5162,7 +5262,7 @@ Notice_Message_3=Okudum, bir daha gösterme.
 CTL_Decline=Reddet
 Outdoor_desc_title=Warning
 Outdoor_active_desc_1=Açık hava modu etkinleştirildiğinde AiMesh sınırlanır ve mesh düğümünün bağlantısı kesilebilir.
-Outdoor_active_desc_2=Yönetmeliklere uygun olarak sistem, hava radarı parazitini önlemek için yaklaşık 1 dakika boyunca kanalları tarayacaktır. <span style="color:#FC0">Radar sinyalleri tespit edilirse 2.4GHz’e geçerek kısa bir bağlantı kesintisine neden olur. Etkilenen kanal 30 dakika boyunca engellenecektir.</span>
+Outdoor_active_desc_2=Yönetmeliklere uygun olarak sistem, hava radarı parazitini önlemek için yaklaşık 1 dakika boyunca kanalları tarayacaktır. <span style="color:var(--wrt-badge-warning-color,#FC0)">Radar sinyalleri tespit edilirse 2.4GHz’e geçerek kısa bir bağlantı kesintisine neden olur. Etkilenen kanal 30 dakika boyunca engellenecektir.</span>
 Outdoor_active_desc_3=Dış mekan modu yalnızca Yönlendirici ve AP modlarını destekler.
 Outdoor_active_desc_4=Kullanılabilir dış mekan kanalları ülkeye/bölgeye göre değişiklik gösterir.
 Outdoor_inactive_desc_1=Bu modu devre dışı bırakmak, kablosuz bağlantıyı kısa bir süreliğine yeniden başlatır ve tüm cihazların bağlantısını keser.
@@ -5193,6 +5293,7 @@ WiFi_DFS_REENTRY=DFS-YENİDEN GİRİŞ
 WiFi_ch_conflict=Kanal çakışması
 WiFi_Regulatory=Düzenleyici
 WiFi_OFF=WiFi Kapalı
+WiFi8_6G_enable_hint=6GHz şu anda WiFi 7 modunda çalışıyor. WiFi 8'i etkinleştirmek için 6GHz Wireless Professional Ayarları'nda "WiFi 8" seçeneğini açın.
 Vendor=Üretici
 Connected_AP=Bağlı AP
 Network_SDN=Ağ(SDN)

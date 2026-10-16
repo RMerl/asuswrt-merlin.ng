@@ -64,6 +64,9 @@
 #include "kernel_netlink_ipsec.h"
 #include "kernel_netlink_shared.h"
 #include "kernel_netlink_xfrmi.h"
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+#include "kernel_netlink_xfrm64.h"
+#endif
 
 #include <daemon.h>
 #include <utils/debug.h>
@@ -1355,7 +1358,11 @@ static status_t get_spi_internal(private_kernel_netlink_ipsec_t *this,
 {
 	netlink_buf_t request;
 	struct nlmsghdr *hdr, *out;
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	struct xfrm_userspi_info userspi_tmp, *userspi;
+#else
 	struct xfrm_userspi_info *userspi;
+#endif
 	uint32_t received_spi = 0;
 	size_t len;
 
@@ -1364,9 +1371,18 @@ static status_t get_spi_internal(private_kernel_netlink_ipsec_t *this,
 	hdr = &request.hdr;
 	hdr->nlmsg_flags = NLM_F_REQUEST;
 	hdr->nlmsg_type = XFRM_MSG_ALLOCSPI;
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	hdr->nlmsg_len = NLMSG_LENGTH(XFRM_WIRE_SZ_USERSPI_INFO);
+#else
 	hdr->nlmsg_len = NLMSG_LENGTH(sizeof(struct xfrm_userspi_info));
+#endif
 
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	userspi = &userspi_tmp;
+	memset(userspi, 0, sizeof(*userspi));
+#else
 	userspi = NLMSG_DATA(hdr);
+#endif
 	host2xfrm(src, &userspi->info.saddr);
 	host2xfrm(dst, &userspi->info.id.daddr);
 	userspi->info.id.proto = proto;
@@ -1374,6 +1390,9 @@ static status_t get_spi_internal(private_kernel_netlink_ipsec_t *this,
 	userspi->info.family = src->get_family(src);
 	userspi->min = min;
 	userspi->max = max;
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	xfrm64_marshal_userspi_info(NLMSG_DATA(hdr), userspi);
+#endif
 
 	if (this->sa_dir &&
 		!add_uint8(hdr, sizeof(request), XFRMA_SA_DIR, XFRM_SA_DIR_IN))
@@ -1741,7 +1760,11 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 	const char *alg_name;
 	char markstr[32] = "";
 	struct nlmsghdr *hdr;
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	struct xfrm_usersa_info sa_tmp, *sa;
+#else
 	struct xfrm_usersa_info *sa;
+#endif
 	struct xfrm_user_offload *offload = NULL;
 	uint16_t icv_size = 64, ipcomp = data->ipcomp;
 	ipsec_mode_t mode = data->mode, original_mode = data->mode;
@@ -1791,9 +1814,18 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 	hdr = &request.hdr;
 	hdr->nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
 	hdr->nlmsg_type = data->update ? XFRM_MSG_UPDSA : XFRM_MSG_NEWSA;
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	hdr->nlmsg_len = NLMSG_LENGTH(XFRM_WIRE_SZ_USERSA_INFO);
+#else
 	hdr->nlmsg_len = NLMSG_LENGTH(sizeof(struct xfrm_usersa_info));
+#endif
 
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	sa = &sa_tmp;
+	memset(sa, 0, sizeof(*sa));
+#else
 	sa = NLMSG_DATA(hdr);
+#endif
 	host2xfrm(id->src, &sa->saddr);
 	host2xfrm(id->dst, &sa->id.daddr);
 	sa->id.spi = id->spi;
@@ -2247,6 +2279,12 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 		}
 	}
 
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	/* Serialise all SA fields (including late ones like flags/replay_window)
+	 * into the netlink buffer in 64-bit wire layout just before sending. */
+	xfrm64_marshal_usersa_info(NLMSG_DATA(hdr), sa);
+#endif
+
 	status = this->socket_xfrm->send_ack(this->socket_xfrm, hdr);
 
 	if (status != SUCCESS && offload && data->hw_offload == HW_OFFLOAD_AUTO)
@@ -2424,7 +2462,11 @@ METHOD(kernel_ipsec_t, query_sa, status_t,
 	hdr = &request.hdr;
 	hdr->nlmsg_flags = NLM_F_REQUEST;
 	hdr->nlmsg_type = XFRM_MSG_GETSA;
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	hdr->nlmsg_len = NLMSG_LENGTH(XFRM_WIRE_SZ_USERSA_ID);
+#else
 	hdr->nlmsg_len = NLMSG_LENGTH(sizeof(struct xfrm_usersa_id));
+#endif
 
 	sa_id = NLMSG_DATA(hdr);
 	host2xfrm(id->dst, &sa_id->daddr);
@@ -2537,7 +2579,11 @@ METHOD(kernel_ipsec_t, del_sa, status_t,
 	hdr = &request.hdr;
 	hdr->nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
 	hdr->nlmsg_type = XFRM_MSG_DELSA;
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	hdr->nlmsg_len = NLMSG_LENGTH(XFRM_WIRE_SZ_USERSA_ID);
+#else
 	hdr->nlmsg_len = NLMSG_LENGTH(sizeof(struct xfrm_usersa_id));
+#endif
 
 	sa_id = NLMSG_DATA(hdr);
 	host2xfrm(id->dst, &sa_id->daddr);
@@ -2619,7 +2665,11 @@ METHOD(kernel_ipsec_t, update_sa, status_t,
 	hdr = &request.hdr;
 	hdr->nlmsg_flags = NLM_F_REQUEST;
 	hdr->nlmsg_type = XFRM_MSG_GETSA;
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	hdr->nlmsg_len = NLMSG_LENGTH(XFRM_WIRE_SZ_USERSA_ID);
+#else
 	hdr->nlmsg_len = NLMSG_LENGTH(sizeof(struct xfrm_usersa_id));
+#endif
 
 	sa_id = NLMSG_DATA(hdr);
 	host2xfrm(id->dst, &sa_id->daddr);
@@ -2686,9 +2736,17 @@ METHOD(kernel_ipsec_t, update_sa, status_t,
 	hdr = &request.hdr;
 	hdr->nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
 	hdr->nlmsg_type = XFRM_MSG_NEWSA;
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	hdr->nlmsg_len = NLMSG_LENGTH(XFRM_WIRE_SZ_USERSA_INFO);
+#else
 	hdr->nlmsg_len = NLMSG_LENGTH(sizeof(struct xfrm_usersa_info));
+#endif
 	sa = NLMSG_DATA(hdr);
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	memcpy(sa, NLMSG_DATA(out_hdr), XFRM_WIRE_SZ_USERSA_INFO);
+#else
 	memcpy(sa, NLMSG_DATA(out_hdr), sizeof(struct xfrm_usersa_info));
+#endif
 	sa->family = data->new_dst->get_family(data->new_dst);
 	if (data->new_reqid)
 	{
@@ -2720,8 +2778,13 @@ METHOD(kernel_ipsec_t, update_sa, status_t,
 		DESTROY_IF(ts);
 	}
 
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	rta = (struct rtattr *)(NLMSG_DATA(out_hdr) + NLMSG_ALIGN(XFRM64_USERSA_INFO_SIZE));
+	rtasize = NLMSG_PAYLOAD(out_hdr, XFRM64_USERSA_INFO_SIZE);
+#else
 	rta = XFRM_RTA(out_hdr, struct xfrm_usersa_info);
 	rtasize = XFRM_PAYLOAD(out_hdr, struct xfrm_usersa_info);
+#endif
 	while (RTA_OK(rta, rtasize))
 	{
 		/* copy all attributes, but not XFRMA_ENCAP if we are disabling it */
@@ -3035,7 +3098,11 @@ static status_t add_policy_internal(private_kernel_netlink_ipsec_t *this,
 	netlink_buf_t request;
 	policy_entry_t clone;
 	ipsec_sa_t *ipsec = mapping->sa;
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	struct xfrm_userpolicy_info policy_info_tmp, *policy_info;
+#else
 	struct xfrm_userpolicy_info *policy_info;
+#endif
 	struct xfrm_user_offload *offload = NULL;
 	struct nlmsghdr *hdr;
 	status_t status;
@@ -3048,9 +3115,18 @@ static status_t add_policy_internal(private_kernel_netlink_ipsec_t *this,
 	hdr = &request.hdr;
 	hdr->nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
 	hdr->nlmsg_type = update ? XFRM_MSG_UPDPOLICY : XFRM_MSG_NEWPOLICY;
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	hdr->nlmsg_len = NLMSG_LENGTH(XFRM_WIRE_SZ_USERPOLICY_INFO);
+#else
 	hdr->nlmsg_len = NLMSG_LENGTH(sizeof(struct xfrm_userpolicy_info));
+#endif
 
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	policy_info = &policy_info_tmp;
+	memset(policy_info, 0, sizeof(*policy_info));
+#else
 	policy_info = NLMSG_DATA(hdr);
+#endif
 	policy_info->sel = policy->sel;
 	policy_info->dir = policy->direction;
 
@@ -3074,6 +3150,10 @@ static status_t add_policy_internal(private_kernel_netlink_ipsec_t *this,
 	policy_info->lft.hard_add_expires_seconds = 0;
 	policy_info->lft.soft_use_expires_seconds = 0;
 	policy_info->lft.hard_use_expires_seconds = 0;
+
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	xfrm64_marshal_userpolicy_info(NLMSG_DATA(hdr), policy_info);
+#endif
 
 	if (mapping->type == POLICY_IPSEC && ipsec->cfg.reqid)
 	{
@@ -3361,7 +3441,11 @@ METHOD(kernel_ipsec_t, query_policy, status_t,
 	hdr = &request.hdr;
 	hdr->nlmsg_flags = NLM_F_REQUEST;
 	hdr->nlmsg_type = XFRM_MSG_GETPOLICY;
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	hdr->nlmsg_len = NLMSG_LENGTH(XFRM_WIRE_SZ_USERPOLICY_ID);
+#else
 	hdr->nlmsg_len = NLMSG_LENGTH(sizeof(struct xfrm_userpolicy_id));
+#endif
 
 	policy_id = NLMSG_DATA(hdr);
 	policy_id->sel = ts2selector(id->src_ts, id->dst_ts, id->interface);
@@ -3553,7 +3637,11 @@ METHOD(kernel_ipsec_t, del_policy, status_t,
 	hdr = &request.hdr;
 	hdr->nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
 	hdr->nlmsg_type = XFRM_MSG_DELPOLICY;
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+	hdr->nlmsg_len = NLMSG_LENGTH(XFRM_WIRE_SZ_USERPOLICY_ID);
+#else
 	hdr->nlmsg_len = NLMSG_LENGTH(sizeof(struct xfrm_userpolicy_id));
+#endif
 
 	policy_id = NLMSG_DATA(hdr);
 	policy_id->sel = current->sel;
@@ -3753,7 +3841,11 @@ static bool manage_bypass(private_kernel_netlink_ipsec_t *this,
 	{
 		struct xfrm_userpolicy_info *policy;
 
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+		hdr->nlmsg_len = NLMSG_LENGTH(XFRM_WIRE_SZ_USERPOLICY_INFO);
+#else
 		hdr->nlmsg_len = NLMSG_LENGTH(sizeof(struct xfrm_userpolicy_info));
+#endif
 
 		policy = NLMSG_DATA(hdr);
 		policy->dir = dir;
@@ -3779,7 +3871,11 @@ static bool manage_bypass(private_kernel_netlink_ipsec_t *this,
 	{
 		struct xfrm_userpolicy_id *policy;
 
+#ifdef XFRM_FORCE_64BIT_LAYOUT
+		hdr->nlmsg_len = NLMSG_LENGTH(XFRM_WIRE_SZ_USERPOLICY_ID);
+#else
 		hdr->nlmsg_len = NLMSG_LENGTH(sizeof(struct xfrm_userpolicy_id));
+#endif
 
 		policy = NLMSG_DATA(hdr);
 		policy->dir = dir;

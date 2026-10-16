@@ -23,7 +23,7 @@
 	position: absolute;
 	width: 230px;
 	height: 260px;
-	background-color: #444f53;
+	background-color: var(--wrt-card-surface-2-bg, #444f53);
 	padding: 3px 3px;
 	margin-top: -40px;
 }
@@ -196,13 +196,13 @@ function hideQRCode(){
 						<tr>
 							<th>Private Key</th>
 							<td>
-								<div id="wgs_priv" name="wgs_priv" style="color:#FFFFFF;margin-left:8px;"><% nvram_get("wgs_priv"); %></div>
+								<div id="wgs_priv" name="wgs_priv" style="color:var(--wrt-text-color,#FFFFFF);margin-left:8px;"><% nvram_get("wgs_priv"); %></div>
 							</td>
 						</tr>
 						<tr>
 							<th>Public Key</th>
 							<td>
-								<div id="wgs_pub" name="wgs_pub" style="color:#FFFFFF;margin-left:8px;"><% nvram_get("wgs_pub"); %></div>
+								<div id="wgs_pub" name="wgs_pub" style="color:var(--wrt-text-color,#FFFFFF);margin-left:8px;"><% nvram_get("wgs_pub"); %></div>
 							</td>
 						</tr>
 						<tr>
@@ -258,7 +258,7 @@ function hideQRCode(){
 						<tr>
 							<th>Preshared Key (Optional)</th>
 							<td>
-								<div id="wgsc_psk" name="wgsc_psk" style="color:#FFFFFF;margin-left:8px;"><% nvram_get("wgsc_psk"); %></div>
+								<div id="wgsc_psk" name="wgsc_psk" style="color:var(--wrt-text-color,#FFFFFF);margin-left:8px;"><% nvram_get("wgsc_psk"); %></div>
 							</td>
 						</tr>
 						<tr>

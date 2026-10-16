@@ -80,7 +80,7 @@ function cleanTask(){
 	<tr>
 		<td style="padding:5px 10px 5px 15px;">
 			<p class="formfonttitle_nwm"><#PrinterStatus_x_PrinterModel_itemname#></p>
-			<p style="padding-left:10px; margin-top:3px; background-color:#444f53; line-height:20px;" id="printerModel"></p>
+			<p style="padding-left:10px; margin-top:3px; background-color:var(--wrt-card-surface-2-bg, #444f53); line-height:20px;" id="printerModel"></p>
 			<div style="margin-top:5px;" class="line_horizontal"></div>
 		</td>
 	</tr>  
@@ -88,7 +88,7 @@ function cleanTask(){
 	<tr>
 		<td style="padding:5px 10px 5px 15px;">
 			<p class="formfonttitle_nwm"><#Printing_status#></p>
-			<p style="padding-left:10px; margin-top:3px; background-color:#444f53; line-height:20px;" id="printerStatus"></p>
+			<p style="padding-left:10px; margin-top:3px; background-color:var(--wrt-card-surface-2-bg, #444f53); line-height:20px;" id="printerStatus"></p>
 			<div style="margin-top:5px;" class="line_horizontal"></div>
 		</td>
 	</tr>  
@@ -97,19 +97,19 @@ function cleanTask(){
 		<td style="padding:5px 10px 5px 15px;">
 			<p class="formfonttitle_nwm" id="monoP" style="width:138px;"><#Printing_button_item#></p>
 			<input id="monoBtn" type="button" class="button_gen" value="<#WLANConfig11b_WirelessCtrl_button1name#>" onclick="cleanTask();">
-			<p id="monoDesc" style="padding-left:10px; margin-top:3px; background-color:#444f53; line-height:20px;"><% nvram_get("mfp_ip_monopoly"); %></p>
+			<p id="monoDesc" style="padding-left:10px; margin-top:3px; background-color:var(--wrt-card-surface-2-bg, #444f53); line-height:20px;"><% nvram_get("mfp_ip_monopoly"); %></p>
 			<div style="margin-top:5px;" class="line_horizontal"></div>
 		</td>
 	</tr>  
 </table>
 
 <div id="button_descrition" style="display:none;padding:5px 0px 5px 25px;">
-<ul style="font-size:11px; font-family:Arial; color:#FFF; padding:0px; margin:0px; list-style:outside; line-height:150%;">
+<ul style="font-size:11px; font-family:Arial; color:var(--wrt-text-color,#FFFFFF); padding:0px; margin:0px; list-style:outside; line-height:150%;">
 	<li><#PrinterStatus_x_Monopoly_itemdesc#> <a id="faq" href="" target="_blank" style="text-decoration:underline;">FAQ</a></li>
 	<li>
 		<a id="faq1" href="" target="_blank" style="text-decoration:underline;"><#asus_ez_print_share#> FAQ</a>
 		<br>
-		<a href="http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Printer.zip" style="text-decoration:underline;font-weight:bolder;color:#FC0"><#Download_now#></a>
+		<a href="http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Printer.zip" style="text-decoration:underline;font-weight:bolder;color:var(--wrt-badge-warning-color,#FFCC00)"><#Download_now#></a>
 	</li>
 	<li>
 		<a id="faq2" href="" target="_blank" style="text-decoration:underline;"><#LPR_print_share#> FAQ (Windows)</a>

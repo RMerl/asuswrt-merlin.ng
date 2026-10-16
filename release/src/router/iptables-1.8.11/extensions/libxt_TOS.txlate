@@ -1,0 +1,26 @@
+ip6tables-translate -A INPUT -j TOS --set-tos 0x1f
+nft 'add rule ip6 filter INPUT counter ip6 dscp set 0x07'
+
+ip6tables-translate -A INPUT -j TOS --set-tos 0xff
+nft 'add rule ip6 filter INPUT counter ip6 dscp set 0x3f'
+
+ip6tables-translate -A INPUT -j TOS --set-tos Minimize-Delay
+nft 'add rule ip6 filter INPUT counter ip6 dscp set 0x04'
+
+ip6tables-translate -A INPUT -j TOS --set-tos Minimize-Cost
+nft 'add rule ip6 filter INPUT counter ip6 dscp set 0x00'
+
+ip6tables-translate -A INPUT -j TOS --set-tos Normal-Service
+nft 'add rule ip6 filter INPUT counter ip6 dscp set 0x00'
+
+ip6tables-translate -A INPUT -j TOS --and-tos 0x12
+nft 'add rule ip6 filter INPUT counter ip6 dscp set ip6 dscp and 0x04'
+
+ip6tables-translate -A INPUT -j TOS --or-tos 0x12
+nft 'add rule ip6 filter INPUT counter ip6 dscp set ip6 dscp or 0x04'
+
+ip6tables-translate -A INPUT -j TOS --xor-tos 0x12
+nft 'add rule ip6 filter INPUT counter ip6 dscp set ip6 dscp xor 0x04'
+
+ip6tables-translate -A INPUT -j TOS --set-tos 0x12/0x34
+nft 'add rule ip6 filter INPUT counter ip6 dscp set ip6 dscp and 0x32 xor 0x04'

@@ -1,0 +1,11 @@
+ebtables-translate -A INPUT -j mark --mark-set 42
+nft 'add rule bridge filter INPUT counter meta mark set 0x2a accept'
+
+ebtables-translate -A INPUT -j mark --mark-or 42 --mark-target RETURN
+nft 'add rule bridge filter INPUT counter meta mark set meta mark or 0x2a return'
+
+ebtables-translate -A INPUT -j mark --mark-and 42 --mark-target ACCEPT
+nft 'add rule bridge filter INPUT counter meta mark set meta mark and 0x2a accept'
+
+ebtables-translate -A INPUT -j mark --mark-xor 42 --mark-target DROP
+nft 'add rule bridge filter INPUT counter meta mark set meta mark xor 0x2a drop'

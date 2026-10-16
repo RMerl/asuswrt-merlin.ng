@@ -35,7 +35,7 @@
 	background-repeat:no-repeat;
 	background-position:50% 45%;
 	background-size:100%;
-	border: 2px solid #282E30;
+	border: 2px solid var(--border-default, #282E30);
 	border-radius:7px;
 	margin-left:45px;
 }
@@ -92,7 +92,7 @@
 	border-radius: 15%;
 	margin-top: -21px;
 	margin-left: 25px;
-	color: #ffffff_INHTML;
+	color: var(--wrt-text-color,#FFFFFF);
 	font-size: 9px;
 	-webkit-transform: scale(0.75);
 	background: #FF4848; /* Old browsers */
@@ -108,8 +108,8 @@
 	background-image:url('images/New_ui/speedmeter.svg');
 }
 .qos_tab{
-	background: #f5f5f5;
-	border: 1px solid #FFFFFF;	
+	background: var(--surface-panel, #f5f5f5);
+	border: 1px solid var(--border-default, #FFFFFF);
 	box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1), 0px 0px 1px rgba(0, 0, 0, 0.05);
 	cursor: pointer;
     width: 100px;
@@ -261,7 +261,7 @@ function initial(){
 		httpApi.updateClientList();
 		setTimeout(function(){
 			if(loop_count >= 60) {
-				$("#sortable").html("<div style='text-align:center;color:#FFCC00'><#IPConnection_VSList_Norule#></div>");
+				$("#sortable").html("<div style='text-align:center;color:var(--wrt-badge-warning-color,#FFCC00)'><#IPConnection_VSList_Norule#></div>");
 				return false;
 			}
 			if(totalClientNum.online != 0)
@@ -552,7 +552,7 @@ function show_clients(priority_type){
 		code += '<td><div><table>';
 		code += '<tr>';
 		code += '<td style="width:100%">';
-		code += '<div style="height:8px;background: #dcdcdc; box-shadow: 0px 2px 2px rgb(0 0 0 / 3%), -1px -1px 0px #ffffff, inset 2px 2px 6px rgb(0 47 113 / 5%);border-radius:10px;">';
+		code += '<div class="loading_bar_container" style="height:8px;background: var(--surface-hover, #dcdcdc); box-shadow: 0px 2px 2px rgb(0 0 0 / 3%), -1px -1px 0px #ffffff, inset 2px 2px 6px rgb(0 47 113 / 5%);border-radius:10px;">';
 		if(clientObj.wtfast && wtfast_support)
 			code += '<div id="'+clientObj.mac+'_upload_bar" class="traffic_bar transition_style traffic_bar_boost"></div>';
 		else
@@ -571,7 +571,7 @@ function show_clients(priority_type){
 		code += '</tr>';
 		code += '<tr>';
 		code += '<td>';
-		code +=	'<div style="height:8px;background: #dcdcdc; box-shadow: 0px 2px 2px rgb(0 0 0 / 3%), -1px -1px 0px #ffffff, inset 2px 2px 6px rgb(0 47 113 / 5%);border-radius:10px;">';
+		code +=	'<div class="loading_bar_container" style="height:8px;background: var(--surface-hover, #dcdcdc); box-shadow: 0px 2px 2px rgb(0 0 0 / 3%), -1px -1px 0px #ffffff, inset 2px 2px 6px rgb(0 47 113 / 5%);border-radius:10px;">';
 		if(clientObj.wtfast && wtfast_support)
 			code += '<div id="'+clientObj.mac+'_download_bar" class="traffic_bar transition_style traffic_bar_boost"></div>';
 		else
@@ -781,15 +781,15 @@ function render_apps(apps_array, obj_icon, apps_field){
         code += `
             <tr>
                 <td style="width:70px;">${iconCode}</td>
-                <td style="width:230px;border-top:1px dotted #333;">
+                <td style="width:230px;border-top:1px dotted var(--border-default, #333);">
                     <div id="${apps_array[i][0]}" style="font-family:monospace, Courier New, Courier">${apps_array[i][0]}</div>
                 </td>
-		        <td style="border-top:1px dotted #333;">
+		        <td style="border-top:1px dotted var(--border-default, #333);">
 		            <div style="margin-left:15px;">
                         <table>
                             <tr>
                                 <td style="width:305px">
-                                    <div style="height:6px;padding:3px;background-color: #dcdcdc;box-shadow: 0px 2px 2px rgb(0 0 0 / 3%), -1px -1px 0px #ffffff, inset 2px 2px 6px rgb(0 47 113 / 5%);border-radius:10px;">
+                                    <div class="loading_bar_container" style="height:6px;padding:3px;background-color: var(--surface-hover, #dcdcdc);box-shadow: 0px 2px 2px rgb(0 0 0 / 3%), -1px -1px 0px #ffffff, inset 2px 2px 6px rgb(0 47 113 / 5%);border-radius:10px;">
                                         <div id="${apps_array[i][0]}_upload_bar" style="width:0%;background:linear-gradient(270deg, #02CBFD 38.31%, #133ED4 100%);height:6px;black;border-radius:5px;"></div>
                                     </div>
                                 </td>
@@ -802,7 +802,7 @@ function render_apps(apps_array, obj_icon, apps_field){
                             </tr>
                             <tr>
                                 <td>
-                                    <div style="height:6px;padding:3px;background-color: #dcdcdc;box-shadow: 0px 2px 2px rgb(0 0 0 / 3%), -1px -1px 0px #ffffff, inset 2px 2px 6px rgb(0 47 113 / 5%);border-radius:10px;">
+                                    <div class="loading_bar_container" style="height:6px;padding:3px;background-color: var(--surface-hover, #dcdcdc);box-shadow: 0px 2px 2px rgb(0 0 0 / 3%), -1px -1px 0px #ffffff, inset 2px 2px 6px rgb(0 47 113 / 5%);border-radius:10px;">
                                         <div id="${apps_array[i][0]}_download_bar" style="width:0%;background:linear-gradient(270deg, #02CBFD 38.31%, #133ED4 100%);height:6px;black;border-radius:5px;"></div>
                                     </div>
                                 </td>
@@ -820,7 +820,7 @@ function render_apps(apps_array, obj_icon, apps_field){
 	}
 
 	if(code == ""){
-		code = `<tr><td colspan='3' style='text-align:center;color:#FFCC00'><div style='padding:5px 0px;border-top:solid 1px #333;'><#Bandwidth_monitor_noList#></div></td></tr>`;
+		code = `<tr><td colspan='3' style='text-align:center;color:var(--wrt-badge-warning-color,#FFCC00)'><div style='padding:5px 0px;border-top:solid 1px #333;'><#Bandwidth_monitor_noList#></div></td></tr>`;
 	}
 
 	$(apps_field).empty();
@@ -1803,7 +1803,7 @@ function getTrafficUnit(){
 									<div id="upload_unit" style="display: flex; flex-direction: row; align-items: center;">
 										<div style="display: flex; flex-direction: column;">
 											<div id="upload_speed" style="font-size:48px; line-height: 150%;">0.00</div>
-											<div style="margin:0px;font-size:16px; color: #006ce1;"><#upload_bandwidth#></div>
+											<div style="margin:0px;font-size:16px; color: var(--brand-primary, #006ce1);"><#upload_bandwidth#></div>
 										</div>
 										<div style="position:absolute;margin:12px 0px 0px 112px;font-size:16px;display:none;"></div>
 										<div style="position:absolute;margin:-8px 0px 0px 222px;font-size:16px;display:none;"></div>
@@ -1818,7 +1818,7 @@ function getTrafficUnit(){
 									<div id="download_unit" style="display: flex; flex-direction: row; align-items: center;">
 										<div style="display: flex; flex-direction: column;">
 											<div id="download_speed" style="font-size:48px; line-height: 150%;">0.00</div>
-											<div style="margin:0px;font-size:16px; color: #006ce1;"><#download_bandwidth#></div>
+											<div style="margin:0px;font-size:16px; color: var(--brand-primary, #006ce1);"><#download_bandwidth#></div>
 										</div>
 										<div style="position:absolute;margin:12px 0px 0px 88px;font-size:16px;display:none;"></div>
 										<div style="position:absolute;margin:-6px 0px 0px 203px;font-size:16px;display:none;"></div>

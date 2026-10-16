@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# test case for bug fixed in
+# commit 873c5d5d293991ee3c06aed2b1dfc5764872582f (HEAD -> master)
+# xtables: avoid bogus 'is incompatible' warning
+
+case "$XT_MULTI" in
+*xtables-nft-multi)
+	;;
+*)
+	echo skip $XT_MULTI
+	exit 0
+	;;
+esac
+
+nft -v >/dev/null || exit 0
+nft 'add table ip nft-test; add chain ip nft-test foobar { type filter hook forward priority 42;  }' || exit 1
+nft 'add table ip6 nft-test; add chain ip6 nft-test foobar { type filter hook forward priority 42;  }' || exit 1
+
+$XT_MULTI iptables -L -t filter || exit 1
+$XT_MULTI ip6tables -L -t filter || exit 1
+exit 0

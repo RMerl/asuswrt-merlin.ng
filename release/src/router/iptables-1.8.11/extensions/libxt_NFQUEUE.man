@@ -1,0 +1,36 @@
+This target passes the packet to userspace using the
+\fBnfnetlink_queue\fP handler.  The packet is put into the queue
+identified by its 16-bit queue number.  Userspace can inspect
+and modify the packet if desired. Userspace must then drop or
+reinject the packet into the kernel.  Please see libnetfilter_queue
+for details.
+.B
+nfnetlink_queue
+was added in Linux 2.6.14. The \fBqueue\-balance\fP option was added in Linux
+2.6.31,
+\fBqueue\-bypass\fP in 2.6.39.
+.TP
+\fB\-\-queue\-num\fP \fIvalue\fP
+This specifies the QUEUE number to use. Valid queue numbers are 0 to 65535. The default value is 0.
+.PP
+.TP
+\fB\-\-queue\-balance\fP \fIvalue\fP\fB:\fP\fIvalue\fP
+This specifies a range of queues to use. Packets are then balanced across the given queues.
+This is useful for multicore systems: start multiple instances of the userspace program on
+queues x, x+1, .. x+n and use "\-\-queue\-balance \fIx\fP\fB:\fP\fIx+n\fP".
+Packets belonging to the same connection are put into the same nfqueue.
+Due to implementation details, a lower range value of 0 limits the higher range
+value to 65534, i.e. one can only balance between at most 65535 queues.
+.PP
+.TP
+\fB\-\-queue\-bypass\fP
+By default, if no userspace program is listening on an NFQUEUE, then all packets that are to be queued
+are dropped.  When this option is used, the NFQUEUE rule behaves like ACCEPT instead, and the packet
+will move on to the next table.
+.PP
+.TP
+\fB\-\-queue\-cpu\-fanout\fP
+Available starting Linux kernel 3.10. When used together with
+\fB\-\-queue\-balance\fP this will use the CPU ID as an index to map packets to
+the queues. The idea is that you can improve performance if there's a queue
+per CPU. This requires \fB\-\-queue\-balance\fP to be specified.

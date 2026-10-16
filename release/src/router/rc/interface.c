@@ -322,6 +322,84 @@ int _ifconfig(const char *name, int flags, const char *addr, const char *netmask
 		enable_jumbo_frame();
 	}
 #endif
+
+#ifdef RTCONFIG_HND_ROUTER_AX
+	/* Set pause mode to 2. The interface-to-port mapping is parsed from
+	 * "ethctl phy-map" output, e.g.
+	 *   "eth0      : Up ... IntSw:P6 ..." => eth0 maps to switch port 6.
+	 */
+	if ((flags & IFUP) && (strncmp(name, "eth", 3) == 0)) {
+		char pause_buf[256];
+		FILE *pause_fp;
+		size_t name_len = strlen(name);
+		int port = -1;
+		int pause_fd;
+		pid_t pause_pid;
+
+		/* Look up the internal switch port of this interface */
+		pause_fp = NULL;
+		if ((pause_fd = safe_popen("ethctl phy-map", &pause_pid)) != -1) {
+			if ((pause_fp = fdopen(pause_fd, "r")) == NULL)
+				close(pause_fd);
+		}
+		if (pause_fp != NULL) {
+			while (fgets(pause_buf, sizeof(pause_buf), pause_fp) != NULL) {
+				char *p;
+
+				/* Match exact interface name followed by whitespace,
+				 * so "eth1" does not match "eth10". */
+				if (strncmp(pause_buf, name, name_len) != 0 ||
+				    !isspace((unsigned char) pause_buf[name_len]))
+					continue;
+				if ((p = strstr(pause_buf, "IntSw:P")) != NULL)
+					port = atoi(p + strlen("IntSw:P"));
+				break;
+			}
+			fclose(pause_fp); /* also closes pause_fd */
+		}
+		if (pause_fd != -1)
+			safe_pclose(pause_pid, NULL);
+
+		if (port >= 0) {
+			char pause_cmd[64];
+			int pause_val = -1;
+
+			/* Read current pause mode first and skip setting if it
+			 * is already 2 (both Tx and Rx pause enabled).  Output
+			 * format differs by driver version, e.g.
+			 *   "The val8 = 2"
+			 *   "The pfc_ret = 2, pfc_resolution = 0"
+			 */
+			snprintf(pause_cmd, sizeof(pause_cmd), "ethswctl -c pause -p %d", port);
+			pause_fp = NULL;
+			if ((pause_fd = safe_popen(pause_cmd, &pause_pid)) != -1) {
+				if ((pause_fp = fdopen(pause_fd, "r")) == NULL)
+					close(pause_fd);
+			}
+			if (pause_fp != NULL) {
+				while (fgets(pause_buf, sizeof(pause_buf), pause_fp) != NULL) {
+					char *p;
+
+					if ((p = strstr(pause_buf, "The val8 =")) != NULL) {
+						pause_val = atoi(p + strlen("The val8 ="));
+						break;
+					}
+					if ((p = strstr(pause_buf, "The pfc_ret =")) != NULL) {
+						pause_val = atoi(p + strlen("The pfc_ret ="));
+						break;
+					}
+				}
+				fclose(pause_fp); /* also closes pause_fd */
+			}
+			if (pause_fd != -1)
+				safe_pclose(pause_pid, NULL);
+
+			if (pause_val != 2)
+				safe_do_system("ethswctl -c pause -p %d -v 2", port);
+		}
+	}
+#endif
+
 	close(s);
 
 //Andrew add
@@ -638,8 +716,6 @@ static void _mswan_stb_add()
 
 	for (i = 1; i < WAN_MULTISRV_MAX; i++) {
 		snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", get_ms_wan_unit(WAN_UNIT_FIRST, i));
-		if (nvram_pf_get_int(wan_prefix, "auto_stb"))
-			return;
 		if (nvram_pf_get_int(wan_prefix, "enable") && nvram_pf_match(wan_prefix, "proto", "bridge"))
 			bridge_enable = 1;
 	}

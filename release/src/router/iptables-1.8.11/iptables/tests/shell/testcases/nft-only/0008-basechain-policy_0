@@ -1,0 +1,29 @@
+#!/bin/bash
+
+[[ $XT_MULTI == *xtables-nft-multi ]] || { echo "skip $XT_MULTI"; exit 0; }
+set -e
+
+$XT_MULTI iptables -t raw -P OUTPUT DROP
+
+# make sure iptables-nft-restore can correctly handle basechain policies when
+# they aren't set with --noflush
+#
+$XT_MULTI iptables-restore --noflush <<EOF
+*raw
+:OUTPUT - [0:0]
+:PREROUTING - [0:0]
+:neutron-linuxbri-OUTPUT - [0:0]
+:neutron-linuxbri-PREROUTING - [0:0]
+-I OUTPUT 1 -j neutron-linuxbri-OUTPUT
+-I PREROUTING 1 -j neutron-linuxbri-PREROUTING
+-I neutron-linuxbri-PREROUTING 1 -m physdev --physdev-in brq7425e328-56 -j CT --zone 4097
+-I neutron-linuxbri-PREROUTING 2 -i brq7425e328-56 -j CT --zone 4097
+-I neutron-linuxbri-PREROUTING 3 -m physdev --physdev-in tap7f101a28-1d -j CT --zone 4097
+
+COMMIT
+EOF
+
+$XT_MULTI iptables-save | grep -C2 raw | grep OUTPUT | grep DROP
+if [ $? -ne 0 ]; then
+	exit 1
+fi

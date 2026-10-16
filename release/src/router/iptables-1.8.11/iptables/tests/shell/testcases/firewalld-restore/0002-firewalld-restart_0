@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# simulate restart after it went down, so first restore
+# the complete ruleset
+
+$XT_MULTI iptables-restore < $(dirname "$0")/dumps/ipt-save-completed.txt
+
+# add dummy rules to see if they get cleared or not.
+for table in raw mangle nat filter;do
+	$XT_MULTI iptables -t $table -N FOO$table || exit 1
+	$XT_MULTI iptables -t $table -A OUTPUT -m comment --comment '"dummy rule in table $table OUTPUT"' || exit 1
+	$XT_MULTI iptables -t $table -A FOO$table -m comment --comment '"dummy rule in table $table FOO$table"' || exit 1
+done
+
+# then run the other test script so it finds already-existing ruleset.
+
+exec $(dirname "$0")/0001-firewalld_0

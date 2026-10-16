@@ -1342,6 +1342,11 @@ config RTCONFIG_AUTODICT
 	bool "AUTO DICTIONARY TOOLS"
 	default n
 
+config RTCONFIG_FORCE_AUTODICT
+	bool "Force auto dictionary"
+	depends on RTCONFIG_AUTODICT
+	default n
+
 config RTCONFIG_AUTOLIVEUPDATE_ZIP
 	bool "AUTO Live update with ZIP method"
 	default n
@@ -3417,3 +3422,27 @@ config RTCONFIG_SINGLE_LED_NIGHT_MODE
  	bool "BRCM Wifi7 vlanctl support"
  	depends on RTCONFIG_HND_ROUTER_BE_4916
  	default n
+
+config RTCONFIG_NETDEV_PER_PORT
+	bool "iptv(ip link) support of dut having independent netdev port per utp port"
+	default n
+
+config RTCONFIG_EXT_SWITCH_LAN
+	bool "iptv(ip link) support of dut w/ soc-wan and ext-lan"
+	default n
+
+config RTCONFIG_EXT_SWITCH_ALL
+	bool "iptv(ip link) support of dut w/ all ext ports"
+	default n
+
+config RTCONFIG_ZASSOC_B4ACS
+	bool "Zero maxassoc before auto channel select"
+	depends on RTCONFIG_HND_ROUTER_AX
+	default n
+
+config RTCONFIG_HINET_MESH_SNOOPER
+	bool "hinet_mesh snooper support"
+
+config RTCONFIG_HINET_MESH_BRIDGE
+	bool "Generic hinet mesh support"
+	default n

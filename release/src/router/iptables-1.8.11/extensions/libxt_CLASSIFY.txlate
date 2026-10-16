@@ -1,0 +1,8 @@
+iptables-translate -A OUTPUT -j CLASSIFY --set-class 0:0
+nft 'add rule ip filter OUTPUT counter meta priority set none'
+
+iptables-translate -A OUTPUT -j CLASSIFY --set-class ffff:ffff
+nft 'add rule ip filter OUTPUT counter meta priority set root'
+
+iptables-translate -A OUTPUT -j CLASSIFY --set-class 1:234
+nft 'add rule ip filter OUTPUT counter meta priority set 1:234'

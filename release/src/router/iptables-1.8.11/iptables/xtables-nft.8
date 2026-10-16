@@ -1,0 +1,208 @@
+.\"
+.\" (C) Copyright 2016-2017, Arturo Borrero Gonzalez <arturo@netfilter.org>
+.\"
+.\" %%%LICENSE_START(GPLv2+_DOC_FULL)
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, see
+.\" <http://www.gnu.org/licenses/>.
+.\" %%%LICENSE_END
+.\"
+.TH XTABLES-NFT 8 "June 2018"
+
+.SH NAME
+xtables-nft \(em iptables using nftables kernel api
+
+.SH DESCRIPTION
+\fBxtables-nft\fP are versions of iptables that use the nftables API.
+This is a set of tools to help the system administrator migrate the
+ruleset from \fBiptables(8)\fP, \fBip6tables(8)\fP, \fBarptables(8)\fP, and
+\fBebtables(8)\fP to \fBnftables(8)\fP.
+
+The \fBxtables-nft\fP set is composed of several commands:
+.IP \[bu] 2
+iptables\-nft
+.IP \[bu]
+iptables\-nft\-save
+.IP \[bu]
+iptables\-nft\-restore
+.IP \[bu]
+ip6tables\-nft
+.IP \[bu]
+ip6tables\-nft\-save
+.IP \[bu]
+ip6tables\-nft\-restore
+.IP \[bu]
+arptables\-nft
+.IP \[bu]
+ebtables\-nft
+
+These tools use the libxtables framework extensions and hook to the nf_tables
+kernel subsystem using the \fBnft_compat\fP module.
+
+.SH USAGE
+The xtables-nft tools allow you to manage the nf_tables backend using the
+native syntax of \fBiptables(8)\fP, \fBip6tables(8)\fP, \fBarptables(8)\fP, and
+\fBebtables(8)\fP.
+
+You should use the xtables-nft tools exactly the same way as you would use the
+corresponding original tools.
+
+Adding a rule will result in that rule being added to the nf_tables kernel
+subsystem instead.
+Listing the ruleset will use the nf_tables backend as well.
+
+When these tools were designed, the main idea was to replace each legacy binary
+with a symlink to the xtables-nft program, for example:
+
+.nf
+	/sbin/iptables -> /usr/sbin/iptables\-nft\-multi
+	/sbin/ip6tables -> /usr/sbin/ip6tables\-nft\-multi
+	/sbin/arptables -> /usr/sbin/arptables\-nft\-multi
+	/sbin/ebtables -> /usr/sbin/ebtables\-nft\-multi
+.fi
+
+The iptables version string will indicate whether the legacy API (get/setsockopt) or
+the new nf_tables api is used:
+.nf
+	iptables \-V
+	iptables v1.7 (nf_tables)
+.fi
+
+.SH DIFFERENCES TO LEGACY IPTABLES
+
+Because the xtables-nft tools use the nf_tables kernel API, rule additions
+and deletions are always atomic.  Unlike iptables-legacy, iptables-nft \-A ..
+will NOT need to retrieve the current ruleset from the kernel, change it, and
+re-load the altered ruleset.  Instead, iptables-nft will tell the kernel to add
+one rule.  For this reason, the iptables-legacy \-\-wait option is a no-op in
+iptables-nft.
+
+Use of the xtables-nft tools allow monitoring ruleset changes using the
+.B xtables\-monitor(8)
+command.
+
+When using \-j TRACE to debug packet traversal to the ruleset, note that you will need to use
+.B xtables\-monitor(8)
+in \-\-trace mode to obtain monitoring trace events.
+
+.SH EXAMPLES
+One basic example is creating the skeleton ruleset in nf_tables from the
+xtables-nft tools, in a fresh machine:
+
+.nf
+	root@machine:\(ti# iptables\-nft \-L
+	[...]
+	root@machine:\(ti# ip6tables\-nft \-L
+	[...]
+	root@machine:\(ti# arptables\-nft \-L
+	[...]
+	root@machine:\(ti# ebtables\-nft \-L
+	[...]
+	root@machine:\(ti# nft list ruleset
+	table ip filter {
+		chain INPUT {
+			type filter hook input priority 0; policy accept;
+		}
+
+		chain FORWARD {
+			type filter hook forward priority 0; policy accept;
+		}
+
+		chain OUTPUT {
+			type filter hook output priority 0; policy accept;
+		}
+	}
+	table ip6 filter {
+		chain INPUT {
+			type filter hook input priority 0; policy accept;
+		}
+
+		chain FORWARD {
+			type filter hook forward priority 0; policy accept;
+		}
+
+		chain OUTPUT {
+			type filter hook output priority 0; policy accept;
+		}
+	}
+	table bridge filter {
+		chain INPUT {
+			type filter hook input priority \-200; policy accept;
+		}
+
+		chain FORWARD {
+			type filter hook forward priority \-200; policy accept;
+		}
+
+		chain OUTPUT {
+			type filter hook output priority \-200; policy accept;
+		}
+	}
+	table arp filter {
+		chain INPUT {
+			type filter hook input priority 0; policy accept;
+		}
+
+		chain FORWARD {
+			type filter hook forward priority 0; policy accept;
+		}
+
+		chain OUTPUT {
+			type filter hook output priority 0; policy accept;
+		}
+	}
+.fi
+
+(please note that in fresh machines, listing the ruleset for the first time
+results in all tables an chain being created).
+
+To migrate your complete filter ruleset, in the case of \fBiptables(8)\fP,
+you would use:
+
+.nf
+	root@machine:\(ti# iptables\-legacy\-save > myruleset # reads from x_tables
+	root@machine:\(ti# iptables\-nft\-restore myruleset   # writes to nf_tables
+.fi
+or
+.nf
+	root@machine:\(ti# iptables\-legacy\-save | iptables\-translate\-restore | less
+.fi
+
+to see how rules would look like in the nft
+\fBnft(8)\fP
+syntax.
+
+.SH LIMITATIONS
+You should use \fBLinux kernel >= 4.17\fP.
+
+The CLUSTERIP target is not supported.
+
+To get up-to-date information about this, please head to
+\fBhttp://wiki.nftables.org/\fP.
+
+.SH SEE ALSO
+\fBnft(8)\fP, \fBxtables\-translate(8)\fP, \fBxtables\-monitor(8)\fP
+
+.SH AUTHORS
+The nftables framework is written by the Netfilter project
+(https://www.netfilter.org).
+
+This manual page was written by Arturo Borrero Gonzalez
+<arturo@debian.org> for the Debian project, but may be used by others.
+
+This documentation is free/libre under the terms of the GPLv2+.

@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -e
+
+# there is no legacy backend to test
+[[ $XT_MULTI == *xtables-nft-multi ]] || { echo "skip $XT_MULTI"; exit 0; }
+
+# arptables-restore reuses preloaded targets and matches, make sure defaults
+# apply to consecutive rules using the same target/match as a previous one
+
+DUMP='*filter
+:OUTPUT ACCEPT
+-A OUTPUT -j mangle --mangle-ip-s 10.0.0.1
+-A OUTPUT -j mangle --mangle-ip-d 10.0.0.2'
+
+# note how mangle-ip-s is unset in second rule
+
+EXPECT='*filter
+:INPUT ACCEPT
+:OUTPUT ACCEPT
+-A OUTPUT -j mangle --mangle-ip-s 10.0.0.1
+-A OUTPUT -j mangle --mangle-ip-d 10.0.0.2'
+
+$XT_MULTI arptables -F
+$XT_MULTI arptables-restore <<<$DUMP
+diff -u <(echo -e "$EXPECT") <($XT_MULTI arptables-save | grep -v '^#')

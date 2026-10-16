@@ -25,6 +25,29 @@ body{
     margin: 0;
     color: #FFFFFF;
 }
+
+.uu-enable-offset{
+	margin: 12px 0 12px 56px !important;
+}
+
+.uu-switch-busy{
+	pointer-events: none;
+	opacity: 0.5;
+}
+
+.uu-go-action{
+	position: relative;
+	display: inline-block;
+}
+
+.uu-go-mask{
+	position: absolute;
+	inset: 0;
+	background-color: #000000;
+	opacity: 0.5;
+	border-radius: 999px;
+	z-index: 2;
+}
 </style>
 <script>
 var ctf_disable = '<% nvram_get("ctf_disable"); %>';
@@ -36,6 +59,7 @@ var outfox_code = httpApi.nvramGet(["outfox_code"], true).outfox_code;
 var outfox_site = 'https://getoutfox.com/asus?code='+ outfox_code +'&utm_source=asus&utm_medium=affiliate&utm_campaign=' + support_site_modelid + '&utm_content=router_cta';
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=110";
 var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=153";
+var uuplugin_enable = httpApi.nvramGet(["uuplugin_enable"]).uuplugin_enable;
 
 function initial(){
 	show_menu();
@@ -51,6 +75,8 @@ function initial(){
 	if(uu_support){
 		$('#last_line').show();
 		$('#uu_field').show();
+		document.getElementById("uu_enable").checked = (uuplugin_enable == "1");
+		updateUuSwitchState();
 	}
 
 	if(outfox_support)
@@ -156,6 +182,33 @@ function redirectSite(url){
 function uuRegister(mac){
 	var _mac = mac.toLowerCase();
 	window.open('https://router.uu.163.com/asus/pc.html#/acce?gwSn=' + _mac + '&type=asuswrt', '_blank');
+}
+
+function updateUuSwitchState(){
+	if(document.getElementById("uu_enable").checked)
+		$("#uu_go_mask").hide();
+	else
+		$("#uu_go_mask").show();
+}
+
+function applyUuPluginState(){
+	var uuEnable = document.getElementById("uu_enable");
+	var uuSwitchContainer = $("#uu_field .switch-button-container");
+	var enabled = uuEnable.checked;
+
+	updateUuSwitchState();
+	uuSwitchContainer.addClass("uu-switch-busy");
+	showLoading();
+
+	httpApi.nvramSet({
+		action_mode: "apply",
+		rc_service: "restart_uuplugin",
+		uuplugin_enable: enabled ? "1" : "0"
+	}, function(){
+		uuplugin_enable = enabled ? "1" : "0";
+		hideLoading();
+		uuSwitchContainer.removeClass("uu-switch-busy");
+	});
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -418,11 +471,22 @@ function showThirdPartyPolicy(party){
 								<div id="thirdparty_uu_pp" class="content-desc"></div>
 							</div>
 							<div class="content-divide-line"></div>
-							<div class="content-action-container" onclick="uuRegister(label_mac);">
-								<div class="button-container button-container-sm">
-									<div class="button-icon icon-go"></div>
-									<div class="button-text"><#btn_go#></div>
-								</div>
+								<div class="content-action-container">
+									<div class="gameBoost-enable-desc"><#WLANConfig11b_WirelessCtrl_button1name#> <#UU_Accelerator#></div>
+									<div class="switch-button-container uu-enable-offset">
+										<label for="uu_enable">
+											<input type="checkbox" id="uu_enable" class="switch-button" onchange="applyUuPluginState();">
+											<div class="switch-button-bg"></div>
+											<div class="switch-button-circle"></div>
+										</label>
+									</div>
+									<div class="uu-go-action">
+										<div class="button-container button-container-sm" onclick="uuRegister(label_mac);">
+											<div class="button-icon icon-go"></div>
+											<div class="button-text"><#btn_go#></div>
+										</div>
+										<div id="uu_go_mask" class="uu-go-mask"></div>
+									</div>
 							</div>
 						</div>
 					</div>

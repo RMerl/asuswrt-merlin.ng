@@ -1052,7 +1052,7 @@ function handle_value(){
 							</div>
 							<div style="display:table-row;">
 								<div style="display:table-cell;width:200px;"></div>
-								<div id="timezone_hint" style="font-size:14px;display:table-cell;margin-left:70px;color:#FC0;visibility:hidden"><#General_x_SystemTime_dst#></div>
+								<div id="timezone_hint" style="font-size:14px;display:table-cell;margin-left:70px;color:var(--wrt-badge-warning-color,#FFCC00);visibility:hidden"><#General_x_SystemTime_dst#></div>
 							</div>
 						</div>			
 <!--outside border-->	

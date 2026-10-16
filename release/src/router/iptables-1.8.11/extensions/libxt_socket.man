@@ -1,0 +1,36 @@
+This matches if an open TCP/UDP socket can be found by doing a socket lookup on the
+packet. It matches if there is an established or non\-zero bound listening
+socket (possibly with a non\-local address). The lookup is performed using
+the \fBpacket\fP tuple of TCP/UDP packets, or the original TCP/UDP header
+\fBembedded\fP in an ICMP/ICPMv6 error packet.
+.TP
+\fB\-\-transparent\fP
+Ignore non-transparent sockets.
+.TP
+\fB\-\-nowildcard\fP
+Do not ignore sockets bound to 'any' address.
+The socket match won't accept zero\-bound listeners by default, since
+then local services could intercept traffic that would otherwise be forwarded.
+This option therefore has security implications when used to match traffic being
+forwarded to redirect such packets to local machine with policy routing.
+When using the socket match to implement fully transparent
+proxies bound to non\-local addresses it is recommended to use the \-\-transparent
+option instead.
+.PP
+Example (assuming packets with mark 1 are delivered locally):
+.IP
+\-t mangle \-A PREROUTING \-m socket \-\-transparent \-j MARK \-\-set\-mark 1
+.TP
+\fB\-\-restore\-skmark\fP
+Set the packet mark to the matching socket's mark. Can be combined with the
+\fB\-\-transparent\fP and \fB\-\-nowildcard\fP options to restrict the sockets
+to be matched when restoring the packet mark.
+.PP
+Example: An application opens 2 transparent (\fBIP_TRANSPARENT\fP) sockets and
+sets a mark on them with \fBSO_MARK\fP socket option. We can filter matching packets:
+.IP
+\-t mangle \-I PREROUTING \-m socket \-\-transparent \-\-restore\-skmark \-j action
+.IP
+\-t mangle \-A action \-m mark \-\-mark 10 \-j action2
+.IP
+\-t mangle \-A action \-m mark \-\-mark 11 \-j action3

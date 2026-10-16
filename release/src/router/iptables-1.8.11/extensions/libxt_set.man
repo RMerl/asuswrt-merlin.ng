@@ -1,0 +1,65 @@
+This module matches IP sets which can be defined by ipset(8).
+.TP
+[\fB!\fP] \fB\-\-match\-set\fP \fIsetname\fP \fIflag\fP[\fB,\fP\fIflag\fP]...
+where flags are the comma separated list of
+.BR "src"
+and/or
+.BR "dst" 
+specifications and there can be no more than six of them. Hence the command
+.IP
+ iptables \-A FORWARD \-m set \-\-match\-set test src,dst
+.IP
+will match packets, for which (if the set type is ipportmap) the source
+address and destination port pair can be found in the specified set. If
+the set type of the specified set is single dimension (for example ipmap),
+then the command will match packets for which the source address can be
+found in the specified set. 
+.TP
+\fB\-\-return\-nomatch\fP
+If the \fB\-\-return\-nomatch\fP option is specified and the set type
+supports the \fBnomatch\fP flag, then the matching is reversed: a match
+with an element flagged with \fBnomatch\fP returns \fBtrue\fP, while a
+match with a plain element returns \fBfalse\fP.
+.TP
+\fB!\fP \fB\-\-update\-counters\fP
+If the \fB\-\-update\-counters\fP flag is negated, then the packet and
+byte counters of the matching element in the set won't be updated. Default
+the packet and byte counters are updated.
+.TP
+\fB!\fP \fB\-\-update\-subcounters\fP
+If the \fB\-\-update\-subcounters\fP flag is negated, then the packet and
+byte counters of the matching element in the member set of a list type of
+set won't be updated. Default the packet and byte counters are updated.
+.TP
+[\fB!\fP] \fB\-\-packets\-eq\fP \fIvalue\fP
+If the packet is matched an element in the set, match only if the
+packet counter of the element matches the given value too.
+.TP
+\fB\-\-packets\-lt\fP \fIvalue\fP
+If the packet is matched an element in the set, match only if the
+packet counter of the element is less than the given value as well.
+.TP
+\fB\-\-packets\-gt\fP \fIvalue\fP
+If the packet is matched an element in the set, match only if the
+packet counter of the element is greater than the given value as well.
+.TP
+[\fB!\fP] \fB\-\-bytes\-eq\fP \fIvalue\fP
+If the packet is matched an element in the set, match only if the
+byte counter of the element matches the given value too.
+.TP
+\fB\-\-bytes\-lt\fP \fIvalue\fP
+If the packet is matched an element in the set, match only if the
+byte counter of the element is less than the given value as well.
+.TP
+\fB\-\-bytes\-gt\fP \fIvalue\fP
+If the packet is matched an element in the set, match only if the
+byte counter of the element is greater than the given value as well.
+.PP
+The packet and byte counters related options and flags are ignored
+when the set was defined without counter support.
+.PP
+The option \fB\-\-match\-set\fP can be replaced by \fB\-\-set\fP if that does 
+not clash with an option of other extensions.
+.PP
+Use of \-m set requires that ipset kernel support is provided, which, for
+standard kernels, is the case since Linux 2.6.39.

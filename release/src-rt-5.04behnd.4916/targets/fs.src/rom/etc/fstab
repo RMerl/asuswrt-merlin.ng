@@ -1,6 +1,11 @@
 # fstab file - used to mount file systems
+# /mnt is a symlink to tmp/mnt, so the kernel records this mount point as
+# "/tmp/mnt" in /proc/mounts. busybox "mount -a" compares the fstab mount
+# point with /proc/mounts as a plain string, so spelling it "/mnt" here makes
+# every later "mount -a" (hndmfg.sh) believe it is not mounted yet and stack
+# another tmpfs on top of it. Use the resolved path so the check matches.
 proc		/proc	proc	defaults			0	0
 tmpfs		/var	tmpfs	defaults			0       0
-tmpfs		/mnt	tmpfs	size=128k,mode=0755		0       0
+tmpfs		/tmp/mnt	tmpfs	size=128k,mode=0755	0       0
 sysfs		/sys	sysfs	defaults			0	0
 

@@ -1,0 +1,8 @@
+iptables-translate -t nat -A OUTPUT -p tcp --dport 80 -m owner --uid-owner root -j ACCEPT
+nft 'add rule ip nat OUTPUT tcp dport 80 skuid 0 counter accept'
+
+iptables-translate -t nat -A OUTPUT -p tcp --dport 80 -m owner --gid-owner 0-10 -j ACCEPT
+nft 'add rule ip nat OUTPUT tcp dport 80 skgid 0-10 counter accept'
+
+iptables-translate -t nat -A OUTPUT -p tcp --dport 80 -m owner ! --uid-owner 1000 -j ACCEPT
+nft 'add rule ip nat OUTPUT tcp dport 80 skuid != 1000 counter accept'

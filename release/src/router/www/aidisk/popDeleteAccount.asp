@@ -42,7 +42,7 @@ function clickevent(){
   <table width="80%" class="popTable" border="0" align="center" cellpadding="0" cellspacing="0">
   <thead>
     <tr>
-      <td><span style="color:#FFF"><#DelAccountTitle#>: </span><span style="color:#FFF" id="selected_account"></span><img src="../images/button-close.gif" onClick="parent.hidePop('OverlayMask');"></td>
+      <td><span style="color:var(--wrt-text-color,#FFFFFF)"><#DelAccountTitle#>: </span><span style="color:var(--wrt-text-color,#FFFFFF)" id="selected_account"></span><img src="../images/button-close.gif" onClick="parent.hidePop('OverlayMask');"></td>
     </tr>
   </thead>
   <tbody>

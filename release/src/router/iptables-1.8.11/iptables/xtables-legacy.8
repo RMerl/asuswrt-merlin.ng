@@ -1,0 +1,77 @@
+.\"
+.\" (C) Copyright 2016-2017, Arturo Borrero Gonzalez <arturo@netfilter.org>
+.\"
+.\" %%%LICENSE_START(GPLv2+_DOC_FULL)
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, see
+.\" <http://www.gnu.org/licenses/>.
+.\" %%%LICENSE_END
+.\"
+.TH XTABLES-LEGACY 8 "June 2018"
+
+.SH NAME
+xtables-legacy \(em iptables using old getsockopt/setsockopt-based kernel api
+
+.SH DESCRIPTION
+\fBxtables-legacy\fP are the original versions of iptables that use
+old getsockopt/setsockopt-based kernel interface.
+This kernel interface has some limitations, therefore iptables can also
+be used with the newer nf_tables based API.
+See
+.B xtables\-nft(8)
+for information about the xtables-nft variants of iptables.
+
+.SH USAGE
+The xtables-legacy-multi binary can be linked to the traditional names:
+
+.nf
+	/sbin/iptables -> /sbin/iptables\-legacy\-multi
+	/sbin/ip6tables -> /sbin/ip6tables\-legacy\-multi
+	/sbin/iptables\-save -> /sbin/ip6tables\-legacy\-multi
+	/sbin/iptables\-restore -> /sbin/ip6tables\-legacy\-multi
+.fi
+
+The iptables version string will indicate whether the legacy API (get/setsockopt) or
+the new nf_tables API is used:
+.nf
+	iptables \-V
+	iptables v1.7 (legacy)
+.fi
+
+.SH LIMITATIONS
+
+When inserting a rule using
+iptables \-A or iptables \-I, iptables first needs to retrieve the current active
+ruleset, change it to include the new rule, and then commit back the result.
+This means that if two instances of iptables are running concurrently, one of the
+updates might be lost.  This can be worked around partially with the \-\-wait option.
+
+There is also no method to monitor changes to the ruleset, except periodically calling
+iptables-legacy-save and checking for any differences in output.
+.B xtables\-monitor(8)
+will need the
+.B xtables\-nft(8)
+versions to work, it cannot display changes made using the
+.B iptables-legacy
+tools.
+
+.SH SEE ALSO
+\fBxtables\-nft(8)\fP, \fBxtables\-translate(8)\fP
+
+.SH AUTHORS
+Rusty Russell originally wrote iptables, in early consultation with Michael Neuling.

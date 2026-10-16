@@ -1206,7 +1206,7 @@ function detect_fb_state(){
 	</td>
 	</tr>
 <tr>
-<th><#feedback_email#> <span style="color:#FFCC00;">*</span></th>
+<th><#feedback_email#> <span style="color:var(--wrt-badge-warning-color,#FFCC00);">*</span></th>
 <td>
 	<input type="text" name="fb_email" maxlength="50" class="input_25_table" value="" autocorrect="off" autocapitalize="off">	
 </td>
@@ -1360,10 +1360,10 @@ function detect_fb_state(){
 </tr>
 
 <tr style="display:none;">
-<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(34,2);"><#ASUS_Service_No#></a> <span style="color:#FFCC00;">*</span></th>
+<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(34,2);"><#ASUS_Service_No#></a> <span style="color:var(--wrt-badge-warning-color,#FFCC00);">*</span></th>
 <td>
 	<input type="text" name="fb_serviceno" maxlength="32" class="input_20_table" placeholder="ex. N2406021655-0002" value="" autocorrect="off" autocapitalize="off">
-	<span style="color:#FFCC00;">Please enter the order number.</span>
+	<span style="color:var(--wrt-badge-warning-color,#FFCC00);">Please enter the order number.</span>
 </td>
 </tr>
 

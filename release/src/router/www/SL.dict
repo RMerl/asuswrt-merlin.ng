@@ -26,9 +26,9 @@ AiMesh_Node_desc2=Odprite stran z nastavitvami obstoječega usmerjevalnika AiMes
 AiMesh_Notice1=Spremembe vaših brezžičnih nastavitev bodo vplivale na vaše mrežno omrežje!
 AiMesh_Add_Another_Node_confirm=Ali želite dodati drugo vozlišče?
 AiMesh_Add_Another_Node=Dodaj drugo vozlišče
-AiMesh_Adding_Node=Adding the AiMesh node...
-AiMesh_Node_joining=The node is joining the network...
-AiMesh_Node_activating=Activating your mesh network...
+AiMesh_Adding_Node=Dodajanje vozlišča AiMesh...
+AiMesh_Node_joining=Vozlišče se pridružuje omrežju...
+AiMesh_Node_activating=Aktivacija vašega mesh omrežja...
 AiMesh_backhaul_band_5GHz-2_desc1=is now used as dedicated WiFi backhaul under AiMesh mode.
 AiMesh_backhaul_band_5GHz-2_desc11=%@ se zdaj uporablja kot namenski WiFi backhaul v načinu AiMesh.
 AiMesh_backhaul_band_5GHz-2_desc2=Podrobne nastavitve brezžičnega omrežja najdete <span class="faq-link" onclick="parent.location.href=\'/Advanced_Wireless_Content.asp\'">tukaj</span>.
@@ -83,6 +83,8 @@ AiMesh_Topology_Line_Wired_Great=Brezžična povezava z odlično kakovostjo pove
 AiMesh_Topology_Line_Wired_Normal=Brezžična povezava z običajno kakovostjo povezave
 AiMesh_Topology_FAQ_old=Za podrobnejše informacije o novem grafičnem uporabniškem vmesniku sistema AiMesh si oglejte ta pogosta vprašanja.
 AiMesh_Topology_FAQ=Za podrobnejše informacije o novem grafičnem uporabniškem vmesniku sistema AiMesh si oglejte <a id="Intro_AiMesh">ta pogosta vprašanja</a>.
+AiMesh_Topology_inst_FAQ_old=Za navodila za nastavitev sistema AiMesh si oglejte ta FAQ.
+AiMesh_Topology_inst_FAQ=Za navodila za nastavitev sistema AiMesh si oglejte ta <a id='connect_line_info_faq'>FAQ</a>.
 AiMesh_OB_hint=Za optimalno delovanje priporočamo uporabo novejšega modela za vaše vozlišče. Uporaba starejših naprav lahko omeji splošno stabilnost in hitrost vašega AiMesh omrežja.
 AiMesh_Add_Anyway=Vseeno dodaj
 AiMesh_Proceed_Anyway=Vseeno nadaljuj
@@ -102,7 +104,7 @@ APSurvey_msg_connect_open_wlan=Povezavo poskušate vzpostaviti z nezaščitenim 
 APSurvey_msg_connected=Povezavo s to dostopno točko ste že vzpostavili.
 APSurvey_msg_non_support_Auth=Način preverjanja pristnosti ni podprt.
 APSurvey_msg_waiting_to_connect=Počakajte. Usmerjevalnik ZVMODELVZ vzpostavlja povezavo s/z
-ASUS_Registration=Postanite član podjetja ASUS, da boste prejemali najnovejše informacije o izdelkih. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Prijavite se zdaj</a>
+ASUS_Registration=Postanite član podjetja ASUS, da boste prejemali najnovejše informacije o izdelkih. <a style='color:var(--wrt-badge-warning-color,#FC0)' target='_blank' href='https://account.asus.com'>Prijavite se zdaj</a>
 ASUS_Notice=OBVESTILO PODJETJA ASUS
 ASUS_privacy_desc=Uporabniki se morajo strinjati s posredovanjem svojih podatkov, da lahko začnejo uporabljati DDNS, oddaljeno povezavo (aplikacijo ASUS, aplikacijo Lyra, AiCloud in AiDisk), AiProtection, analizatorja prometa, analizatorja aplikacij, prilagodljivo kakovost storitve, način za izboljšanje delovanja iger in spletno zgodovino. Uporabniki si lahko kadar koli ogledajo vsebino pogojev na tej strani ali prekinejo skupno rabo svojih podatkov z drugimi strankami tako, da izberejo <a style="font-weight: bolder;">Umakni</a>.
 ASUS_eula_desc0=Vabljeni k uporabi funkcij DDNS/oddaljene povezave (aplikacija usmerjevalnika ASUS/aplikacija Lyra/AiCloud/AiDisk). Prosimo, da pozorno preberete naslednje podatke:
@@ -186,8 +188,8 @@ ASUS_EULA_Law_12=Veljavna zakonodaja in sodna pristojnost
 ASUS_EULA_Law_12_Desc=Vse navedbe, potrditve naročil, to pogodbo EULA in prodajno razmerje med vami in družbo ASUS ureja zakonodaja lokacije družbe ASUS in se tudi interpretira v skladu z njo ne glede na kolizijska načela. Vse spore, polemike ali razlike, ki lahko nastanejo med pogodbenima strankama ali v povezavi s to pogodbo EULA, bomo razrešili s prijateljskimi posvetovanji med pogodbenima strankama. Če se glede spora, polemike ali razlike ni mogoče dogovoriti, se obe pogodbeni stranki strinjata s pristojnostjo sodišča na lokaciji družbe ASUS.
 ASUS_EULA_Info=S tem, ko uporabljate izdelke ASUS za omrežja, se strinjate, da ste vezani na pogoje in določila, opisana v Licenčna pogodba za končnega uporabnika.
 ASUS_POLICY_Age_Check=Imam več kot 16 let.
-ASUS_POLICY_QIS_Desc=Preden uporabite omrežni izdelek, je pomembno, da preberete ta pogoj. Če kliknete gumb »Soglašam«, soglašate, da vas zavezujejo pogoji. ​
-ASUS_POLICY_QIS_Desc_v5=Preden uporabite omrežni izdelek, je pomembno, da preberete ta pogoj. Če kliknete gumb »%@«, soglašate, da vas zavezujejo pogoji. ​
+ASUS_POLICY_QIS_Desc=Preden uporabite omrežni izdelek, je pomembno, da preberete ta pogoj. Če kliknete gumb »Soglašam«, soglašate, da vas zavezujejo pogoji.
+ASUS_POLICY_QIS_Desc_v5=Preden uporabite omrežni izdelek, je pomembno, da preberete ta pogoj. Če kliknete gumb »%@«, soglašate, da vas zavezujejo pogoji.
 ASUS_POLICY_Update_Notice=Spoštovani uporabniki, hvala, ker nenehno podpirate ta izdelek. Da bi lahko zagotovili skladnost s predpisi glede zasebnosti v različnih državah in še boljše zaščitili vaše podatke, smo posodobili obvestilo o zasebnosti ASUS. Posodobite ga, preden uporabite omrežne izdelke ASUS.
 ASUS_POLICY_Read_Again=Preberite znova
 ASUS_POLICY_Know_Risk=Razumem tveganje
@@ -370,7 +372,7 @@ CTL_UpgradeNight=Nadgradnja ponoči
 CTL_UpgradeNow=Upgrade Now
 default_passwd_checkbox=Uporabi privzeto geslo lokalne prijave
 default_passwd_desc=Privzeto šifrirano geslo lokalne prijave omogoča varen postopek prijave, če se s to omrežno napravo ASUS povezujete lokalno.
-defaultHint=Dodatne podrobnosti najdete na spletnem mestu <a style="font-weight: bolder;text-decoration: underline;color:#000000;" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
+defaultHint=Dodatne podrobnosti najdete na spletnem mestu <a style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#000000);" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
 Detect_consume_warning1=*Najmanjši paket za preverjanje dosegljivosti porabi približno 128 bajtov na interval. Detektor za preverjanje dosegljivosti bo zato porabil
 Detect_consume_warning2=MB na mesec
 Disconnected=Povezava ni vzpostavljena
@@ -409,7 +411,7 @@ OpenDNS_Home=OpenDNS Home
 OpenDNS_Family=OpenDNS Family
 Yandex_Safe=Yandex Safe
 Yandex_Family=Yandex Family
-Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:#FFCC00;" href="DNSFilter.asp">DNSFilter</a> je omogočen – vsaka možnost, ki je konfigurirana tukaj, in ni »Brez filtriranja« ali »Usmerjevalnik«, zaobide strežnike za zaščito zasebnosti DNS.
+Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:var(--wrt-badge-warning-color,#FFCC00);" href="DNSFilter.asp">DNSFilter</a> je omogočen – vsaka možnost, ki je konfigurirana tukaj, in ni »Brez filtriranja« ali »Usmerjevalnik«, zaobide strežnike za zaščito zasebnosti DNS.
 Enable_user_target=Omogoči uporabniško določen cilj
 Enable_Login_Captcha=Omogoči prijavni captcha
 Encrypted_field=Šifrirano polje.
@@ -616,7 +618,7 @@ Offline_desc2=Naslov IP ali številka vrat je spremenjena. Povezava z usmerjeval
 Offline_desc3=Če želite odpreti nastavitve usmerjevalnika ZVMODELVZ, znova vzpostavite povezavo z brezžičnim omrežjem ter uporabite posodobljen naslov IP in številko vrat.
 OP_AP_desc=Usmerjevalnik ZVMODELVZ v načinu dostopne točke vzpostavi povezavo z brezžičnim usmerjevalnikom prek ethernetnega kabla, da poveča pokritost s signalom brezžičnega omrežja za druge omrežne odjemalce. V tem načinu so požarni zid, skupna raba naslovov IP in funkcije prevajanja omrežnega naslova privzeto onemogočeni.
 AiMesh_AP_desc=Usmerjevalniki AiMesh v načinu dostopne točke vzpostavijo povezavo z brezžičnim usmerjevalnikom prek ethernetnega kabla, da povečajo pokritost s signalom brezžičnega omrežja za druge omrežne odjemalce. V tem načinu so požarni zid, skupna raba naslovov IP in funkcije prevajanja omrežnega naslova privzeto onemogočeni.
-OP_AP_hint=Obiščite lahko tudi spletno mesto <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">http://findasus.local</a>, da poiščete in odprete stran s konfiguracijo naprave.
+OP_AP_hint=Obiščite lahko tudi spletno mesto <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">http://findasus.local</a>, da poiščete in odprete stran s konfiguracijo naprave.
 OP_AP_item=Način dostopne točke (AP)
 AiMesh_AP_item=Način dostopne točke / Usmerjevalnik AiMesh v načinu dostopne točke
 OP_Choose=Choose operation mode
@@ -635,7 +637,7 @@ OP_MB_desc4=En usmerjevalnik ZVMODELVZ konfigurirajte kot usmerjevalnik, drug us
 OP_MB_desc5=Preklopite na predstavnostni most, da zagotovite povezavo WiFi za več predstavnostnih naprav hkrati.
 OP_MB_desc6=V načinu predstavnostnega mosta povezavo z dostopno točko P-AP vzpostavljajo samo brezžične naprave. Odjemalske naprave morajo biti na predstavnostni most priključene z omrežnim kablom.
 OP_MB_desc7=ZVMODELVZ v načinu predstavnostnega mosta. Naslov IP je spremenjen.
-OP_MB_desc8=Prenesite <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:#FC0;'>Pripomoček za odkrivanje naprav</a>, da boste lahko prepoznali naslov IP predstavnostnega mostu.
+OP_MB_desc8=Prenesite <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>Pripomoček za odkrivanje naprav</a>, da boste lahko prepoznali naslov IP predstavnostnega mostu.
 OP_MB_desc9=Preverite, ali ste iz priključka WAN izključili omrežni kabel.
 OP_RE_desc=Usmerjevalnik ZVMODELVZ v načinu ponavljalnika vzpostavi povezavo z obstoječim brezžičnim omrežjem, da poveča pokritost z brezžičnim signalom. V tem načinu so požarni zid, skupna raba naslovov IP in funkcije NAT onemogočeni.
 OP_RE_desc1=Naslov IP lokalnega omrežja usmerjevalnika ZVMODELVZ je morda spremenjen.
@@ -685,7 +687,7 @@ QIS_adminpass_confirm0=Novo geslo je enako kot privzeto geslo sistema. Priporoč
 QIS_adminpass_confirm1=Če ne boste spremenili privzetega gesla (admin), bo usmerjevalnik izpostavljen varnostnim grožnjam, drugi uporabniki pa bodo lahko preprosto uganili geslo za prijavo. Ali res želite obdržati geslo, ki ni varno?
 [###MODEL_DEP###][PL-AC56][PL-N12]QIS_adminpass_confirm1=Če ne boste spremenili privzetega gesla (admin), bo PLC izpostavljen varnostnim grožnjam, drugi uporabniki pa bodo lahko preprosto uganili geslo za prijavo. Ali res želite obdržati geslo, ki ni varno?
 QIS_apextended_usedefault=Uporabi privzete nastavitve (iste nastavitve kot omrežje, ki ga želite razširiti)
-QIS_AP_connect_hint=Once the new SSID is connected, you can go to %1$@ for more advanced settings.
+QIS_AP_connect_hint=Ko je novi SSID povezan, lahko obiščete %1$@ za naprednejše nastavitve.
 QIS_auto_ip_conn_Setup=Samodejna nastavitev povezave IP
 QIS_autoMAC_desc1=Začenja se postopek podvajanja naslova MAC računalnika v usmerjevalnik.
 QIS_autoMAC_desc2=Počakajte …
@@ -817,7 +819,7 @@ qis_simple_wls_recmd=(priporočeno)
 QIS_SmartConn_ISPDesc=Ponudnik internetnih storitev bi vam moral poslati kartico ali dokument z uporabniškim imenom in geslom. *Ta vzorčni dokument je primer, uporabljen v informativni namen.
 QIS_SmartConn_ISPDesc2=Vnesite uporabniško ime in geslo za vrsto internetne povezave. Te nastavitve vam je zagotovil vaš ponudnik internetnih storitev (ISP).
 QIS_SmartConn_ISPDesc3=Vnesite uporabniško ime in geslo PPPoE, ki vam ga je dodelil ponudnik internetnih storitev (ISP), za vašo internetno povezavo.
-QIS_SmartConn_ISPDesc_TW=Odjemalska številka uporabnika storitve HiNet je <span style="color:#FC0;">xxxxxxxx@hinet.net</span>
+QIS_SmartConn_ISPDesc_TW=Odjemalska številka uporabnika storitve HiNet je <span style="color:var(--wrt-badge-warning-color,#FC0);">xxxxxxxx@hinet.net</span>
 QIS_SmartConn_Scen1=Primer povezave 1
 QIS_SmartConn_Scen2=Primer povezave 2
 QIS_SmartConn_StaticDesc=Ponudnik internetnih storitev bi vam moral poslati informacije o naslovu IP, maski podmrežja, prehodu in naslovu DNS. Če vam jih ni, se obrnite na ponudnika internetnih storitev.
@@ -999,10 +1001,10 @@ QKSet_ISP_desc=Oglejte si nastavitev ponudnika internetnih storitev in vnesite u
 QKSet_ISP_desc2=Povezave s statičnim naslovom IP ni bilo mogoče vzpostaviti.
 QKSet_ISP_desc3=Povezave s samodejno pridobitvijo naslova IP ni bilo mogoče vzpostaviti. Povezavo lahko ročno konfigurirate tukaj.
 QKSet_ISP_head=Nastavitev podatkov ponudnika internetnih storitev
-QKset_restore_0=Kliknite <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Obnovi nastavitev</label></a>, da naložite shranjene konfiguracijske nastavitve.
-QKset_restore_1=Kliknite <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Obnovi nastavitev</label></a>, da obnovite konfiguracijo, če ste pred ponastavitvijo usmerjevalnika varnostno kopirali konfiguracijske nastavitve.
-QKset_setup_manual_0=Kliknite <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Ročna nastavitev</label></a>, da ročno nastavite brezžično omrežje, če poznate vrsto povezave ponudnika internetnih storitev.
-QKset_setup_manual_1=Kliknite <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Ročna nastavitev</label></a>, da ročno nastavite dodatne nastavitve usmerjevalnika ali da nastavite delovanje usmerjevalnika ZVMODELVZ v načinu
+QKset_restore_0=Kliknite <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Obnovi nastavitev</label></a>, da naložite shranjene konfiguracijske nastavitve.
+QKset_restore_1=Kliknite <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Obnovi nastavitev</label></a>, da obnovite konfiguracijo, če ste pred ponastavitvijo usmerjevalnika varnostno kopirali konfiguracijske nastavitve.
+QKset_setup_manual_0=Kliknite <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Ročna nastavitev</label></a>, da ročno nastavite brezžično omrežje, če poznate vrsto povezave ponudnika internetnih storitev.
+QKset_setup_manual_1=Kliknite <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Ročna nastavitev</label></a>, da ročno nastavite dodatne nastavitve usmerjevalnika ali da nastavite delovanje usmerjevalnika ZVMODELVZ v načinu
 QKset_skip_setup=Ali ste strokovnjak za brezžično omrežje in želite preskočiti čarovnika za nastavitev internetne povezave?
 QKSet_type_desc=Izberite vrsto internetne povezave, ki vam jo je posredoval ponudnik internetnih storitev.
 QKSet_type_head=Vrste internetne povezave WAN
@@ -1026,13 +1028,13 @@ Select_ISPfile=Izberite profil ponudnika internetnih storitev
 Select_menu_default=Izberite
 Sign_in_title=Vpišite se svojim računom za usmerjevalnik ASUS
 [###MODEL_DEP###][RP-AC87][RP-AC68U][RP-AC66U][RP-AC55][RP-AC53][RP-AC52][RP-AC51][RP-AC92]Sign_in_title=Vpišite se svojim računom za ponavljalnik ASUS
-SLM_Ask=Ask Router Assistant...
-SLM_Loading=Loading...
-SLM_Thinking=Thinking...
-SLM_not_installed=Please double check that the router assistant is running in Portainer and that the port (8090) is not overlapping with other services. Also, ensure that slm-asus is running in Portainer. If the problem persists, try restoring AiBoard.
-SLM_no_response=Service is activating. Please try again in about 3 minutes.
-SLM_low_percent=Sorry, unable to answer the question.
-SLM_disclaimer=Router Assistant might not always be accurate. This feature is currently available in English only. Please verify important information yourself.
+SLM_Ask=Vprašaj Router Assistant...
+SLM_Loading=Nalaganje…
+SLM_Thinking=Razmišljanje...
+SLM_not_installed=Prosimo, preverite, ali Router Assistant deluje v Portainerju in da vrata (8090) niso v konfliktu z drugimi storitvami. Prav tako preverite, ali slm-asus deluje v Portainerju. Če težava še vedno obstaja, poskusite obnoviti AiBoard.
+SLM_no_response=Storitev se aktivira. Poskusite znova čez približno 3 minute.
+SLM_low_percent=Oprostite, na vprašanje ni mogoče odgovoriti.
+SLM_disclaimer=Router Assistant morda ni vedno natančen. Ta funkcija je trenutno na voljo samo v angleščini. Prosimo, pomembne informacije preverite sami.
 SLM_not_installed_CN=请确认路由助手在Portainer中运行且端口（8092）未与其他服务重叠，确认slm-asus-cn也在Portainer中运行。若问题仍然存在，请恢复AiBoard。
 SLM_no_response_CN=服务正在激活中，请约3分钟后重试。
 SLM_low_percent_CN=对不起，无法回答该问题.
@@ -1053,6 +1055,7 @@ Status_RAM=pomnilniški modul
 Status_Used=Uporabljen
 Status_Free=Nezaseden
 Status_Total=Skupaj
+Status_LoggingIn=Prijava…
 statusTitle_AP=Stanje dostopne točke
 statusTitle_System=ASUS ZVMODELVZ
 System_act_connections=Aktivne povezave
@@ -1077,7 +1080,7 @@ TBVLAN_UPort=Untagged Port (Vrata brez oznake)
 TBVLAN_TPort=Tagged Port (Vrata z oznako)
 TBVLAN_WirelessInf=Wireless Interface (Brezžični vmesnik)
 TBVLAN_EditSubnetProfile=Edit Subnet Profile (Uredi profil podomrežja)
-TBVLAN_Subnet_desc=Izberite podomrežje, ki ste ga ustvarili ali izberite možnost »New Subnet« (Novo podomrežje), da boste ustvarili novo podomrežje za VLAN. Če potrebujete dodatne konfiguracije DHCP, pojdite na<a style='color:#FFF; text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP server</a>.
+TBVLAN_Subnet_desc=Izberite podomrežje, ki ste ga ustvarili ali izberite možnost »New Subnet« (Novo podomrežje), da boste ustvarili novo podomrežje za VLAN. Če potrebujete dodatne konfiguracije DHCP, pojdite na<a style='color:var(--wrt-text-color,#FFF); text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP server</a>.
 TBVLAN_BindingInf=Binding Interface (Povezovalni vmesnik )
 TBVLAN_NoBindingInf=Na voljo ni povezovalnega vmesnika.
 TBVLAN_BindingInf_Hint=Dodajte povezovalni vmesnik.
@@ -1108,20 +1111,20 @@ WANPPPAuthText=PPP Authentication
 WAN_type_detected=WAN type detected
 WAN_auto_detected=Samodejno zaznavanje WAN
 web_redirect_case1_suggestion1=Prepričajte se, da ste kabel priključili v vrata ZVMODELVZ WAN in modem.
-web_redirect_case1_suggestion2=Preverite, ali je treba spremeniti <a style='color:#FFF' href='/Advanced_OperationMode_Content.asp'>Način delovanja</a>.
-web_redirect_case2_suggestion1=Nepravilni račun ali geslo PPPoE. <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>Preverite</a>.
+web_redirect_case1_suggestion2=Preverite, ali je treba spremeniti <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_OperationMode_Content.asp'>Način delovanja</a>.
+web_redirect_case2_suggestion1=Nepravilni račun ali geslo PPPoE. <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>Preverite</a>.
 web_redirect_case2_title1=Napaka pri preverjanju pristnosti PPPoE
 web_redirect_case3_button=Spreminjanje vrste omrežja WAN
-web_redirect_case3_suggestion1=Prepričajte se, da so vaše <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>nastavitve povezave</a>pravilne.
-web_redirect_case5_suggestion1=Omogočite <a style='color:#FFF' href='/'>povezavo WAN</a>
+web_redirect_case3_suggestion1=Prepričajte se, da so vaše <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>nastavitve povezave</a>pravilne.
+web_redirect_case5_suggestion1=Omogočite <a style='color:var(--wrt-text-color,#FFF)' href='/'>povezavo WAN</a>
 web_redirect_case5_suggestion2=Prepričajte se, da ste vključili modem USB.
-web_redirect_case5_suggestion3=Spremenite <a style='color:#FFF' href='/Advanced_Modem_Content.asp'>nastavitve za modem USB</a>.
+web_redirect_case5_suggestion3=Spremenite <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_Modem_Content.asp'>nastavitve za modem USB</a>.
 web_redirect_case5_title1=Povezava WAN je onemogočena.
 web_redirect_case5_title2=Vaš modem USB ni povezan.
 web_redirect_case6_desc1=Kliknite [Naprej], da uporabite ta naslov IP:
 web_redirect_case6_desc2=Zagotovite, da vse ustrezne storitve uporabljajo novi naslov IP (npr. posredovanje vrat, DMZ itd.).
 web_redirect_case8_suggestion1=Prepričajte se, ali nadrejena dostopna točka lahko vzpostavi povezavo z internetom.
-web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>Spremenite nastavitve povezave</a>.
+web_redirect_case8_suggestion2=<a style='color:var(--wrt-text-color,#FFF)' href='/QIS_wizard.htm?flag=manual'>Spremenite nastavitve povezave</a>.
 web_redirect_case8_title=Povezave z nadrejeno dostopno točko ni mogoče vzpostaviti.
 web_redirect_case9_suggestion1=Prepričajte se, da ste vključili usmerjevalnik AiMesh.
 web_redirect_case9_suggestion2=Znova zaženite usmerjevalnik AiMesh in poskusite ponovno.
@@ -1171,6 +1174,11 @@ Web_Title=Brezžični usmerjevalnik ASUS ZVMODELVZ
 [###MODEL_DEP###][YY]Web_Title=Dostopna točka ASUS ZVMODELVZ
 Web_Title2=ZVMODELVZ
 Web_DOMAIN_NAME=ZVDOMAIN_NAMEVZ
+WiFi_MLO_connect_confirmTitle=Uporabi povezavo MLO
+WiFi_MLO_same_model_desc=MLO (Multi-Link Operation) je trenutno podprt samo med usmerjevalniki ASUS istega modela. Če se modeli razlikujejo, povezava morda ne bo uspela.
+WiFi_MLO_connect_try=Poskusi vzpostaviti povezavo z MLO.
+WiFi_MLO_connect_veto=Namesto tega uporabi standardno enopasovno povezavo.
+WiFi_MLO_connect_confirm=Ali želite uporabiti povezavo MLO?
 wireless_configured=Konfigurirano
 Wireless_name=Ime brezžičnega omrežja
 wireless_router=brezžični router
@@ -1253,6 +1261,7 @@ ADSL_FW_note=Opomba:
 adsl_fw_ver_itemname=Različica gonilnika DSL
 adsl_link_sts_itemname=Stanje povezave DSL
 adv_wl_desc=Spodaj vnesite podatke o brezžičnem omrežju.
+AiBoard_rescue_fail=Obnovitev AI Board ni uspela
 AiCloud_account_status=Stanje računa
 AiCloud_account_unlock=Odkleni
 aicloud_bandwidth1=Izkušnja gledanja in poslušanja bo najboljša, če uporabljate širokopasovno internetno povezavo. Oglejte si spodnja priporočila:
@@ -1365,12 +1374,12 @@ AiMesh_FindNode_confirm=Ne najdem svojega vozlišča AiMesh
 AiMesh_FindNode_confirm_WPS=Med iskanjem vozlišča AiMesh bo WPS omogočen.
 AiMesh_FindNode_Desc=Poiščite razpoložljiva vozlišča AiMesh v bližini in jih pridružite svojemu sistemu AiMesh.
 AiMesh_FindNode_Not=Ni mogoče najti nobenega vozlišča AiMesh v bližini.
-AiMesh_FindNode_Not_advA=Če je naprava dodeljena kot <span style='color:#569AC7;'>usmerjevalnik AiMesh</span>, preverite naslednje in poskusite znova.
+AiMesh_FindNode_Not_advA=Če je naprava dodeljena kot <span style='color:var(--wrt-link-color,#569AC7);'>usmerjevalnik AiMesh</span>, preverite naslednje in poskusite znova.
 AiMesh_FindNode_Not_advA1=Vaše vozlišče AiMesh je vklopljeno
 AiMesh_FindNode_Not_advA2=V vašem vozlišču AiMesh je nameščena najnovejša vdelana programska oprema
 AiMesh_FindNode_Not_advA3=Vaše vozlišče AiMesh je bilo ponastavljeno na privzete nastavitve
 AiMesh_FindNode_Not_advA4=Vozlišče AiMesh premaknite bližje usmerjevalniku AiMesh
-AiMesh_FindNode_Not_advB=Če je naprava dodeljena kot <span style='color:#569AC7;'>vozlišče AiMesh</span>, preverite naslednje in poskusite znova.
+AiMesh_FindNode_Not_advB=Če je naprava dodeljena kot <span style='color:var(--wrt-link-color,#569AC7);'>vozlišče AiMesh</span>, preverite naslednje in poskusite znova.
 AiMesh_FindNode_Not_advB1=Pritisnite gumb za ponastavitev na tej napravi in počakajte.
 AiMesh_FindNode_Not_advB2=Prijavite se v grafični uporabniški vmesnik usmerjevalnika AiMesh in kliknite ikono AiMesh.
 AiMesh_FindNode_Not_advB3=Če v grafičnem uporabniškem vmesniku usmerjevalnika ne najdete ikone AiMesh, nadgradite vdelano programsko opremo usmerjevalnika AiMesh.
@@ -1447,7 +1456,7 @@ AiMesh_NodeLocation25=Garaža
 AiMesh_NodeLocation26=Prvo nadstropje
 AiMesh_NodeLocation27=Soba za igranje
 AiMesh_NodeLocation28=Telovadnica
-AiMesh_NodeLocation29=Outdoor
+AiMesh_NodeLocation29=Zunaj
 AiMesh_OfflineTips=Namigi za uporabo brez povezave
 AiMesh_OfflineTips1=Prepričajte se, da je vaše vozlišče AiMesh vklopljeno.
 AiMesh_OfflineTips2=Znova zaženite vozlišče AiMesh in poskusite znova.
@@ -1661,7 +1670,7 @@ AiProtection_sites_block_desc=Prepreči dostop do znanih zlonamernih spletnih me
 [###MODEL_DEP###][GT-AC5300]AiProtection_sites_block_desc=Funkcija za blokiranje zlonamernih spletnih mest omejuje dostop do znanih zlonamernih spletnih mest, da zlonamerni programski opremi, spletnim mestom z lažno identiteto, oglaševalski programski opremi, hekerjem ali izsiljevalski programski opremi prepreči napad na vašo omrežno napravo.
 AiProtection_sites_blocking=Blokiranje zlonamernih spletnih mest
 AiProtection_ARK_Malicious_Site_blocking=Blokiranje zlonamernih spletnih mest in okuženih naprav
-AiProtection_ARK_Malicious_Site_blocking_desc=Omejite dostop do znanih zlonamernih spletnih mest, da zaščitite svoje omrežje pred zlonamerno programsko opremo, ribarjenjem, neželeno pošto, oglaševalsko programsko opremo, hekanjem in izsiljevalskimi napadi.
+AiProtection_ARK_Malicious_Site_blocking_desc=Omejite dostop do znanih zlonamernih spletnih mest, da zaščitite svoje omrežje pred zlonamerno programsko opremo, lažnim predstavljanjem, neželeno pošto, hekerskimi napadi in izsiljevalsko programsko opremo.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]AiProtection_sites_blocking=Block Malicious Sites (Blokiraj zlonamerna spletna mesta)
 AiProtection_sites_trust=Dodajte domeno, ki ji zaupate, in jo odklenite s funkcijo AiProtection
 AiProtection_sites_trust_add=Dodaj domeno na seznam dovoljenih
@@ -1670,7 +1679,7 @@ AiProtection_title_BandwidthUtil=Uporaba pasovne širine
 AiProtection_title_BandwidthUtil_desc1=Vnesite pasovno širino internetne povezave za nalaganje in prenos.
 AiProtection_title_BandwidthUtil_desc2=ROG ZVMODELVZ s temi informacijami o pasovni širini razporedi najboljši promet za igralne naprave.
 AiProtection_title_Dashboard=Nadzorna plošča za igre
-AiProtection_title_Dashboard_add_card=Add card
+AiProtection_title_Dashboard_add_card=Dodaj kartico
 AiProtection_title_Dashboard_desc=Na nadzorni plošči usmerjevalnika ROG ZVMODELVZ lahko konfigurirate najboljše nastavitve in sproti spremljate omrežje za igranje iger.
 AiProtection_title_Dashboard_title=Nadzorna plošča
 AiProtection_title_GameWiFi=Namensko omrežje WiFi za igranje iger
@@ -1704,18 +1713,19 @@ AiProtection_TrackerBlocking=Blokiranje sledilcev
 AiProtection_TrackerBlocking_Desc=Blokiranje sledilcev pomaga zaznati in blokirati zahteve za sledenje s spletnih mest, oglaševalcev ali analiznih platform tretjih oseb, zaščiti vašo zasebnost, zmanjša uhajanje podatkov in pospeši nalaganje strani.
 AiProtection_AdvertisementBlocking_Desc=Blokiranje oglasov pomaga blokirati pogoste vire oglasov za zmanjšanje motenj, izboljšanje brskanja in zmanjšanje varnostnih tveganj. Omogočite lahko tudi AdGuard DNS za dodatno zaščito.
 AiProtection_AdvertisementBlocking_Enabled=Blokiranje oglasov omogočeno
-AiProtection_AdvertisementBlocking_edserv=Edge Server
-AiProtection_AdvertisementBlocking_edserv_desc=A self-hosted edge server on router. Provides detailed network insights, advanced control, and enhanced home privacy.
-AiProtection_AdvertisementBlocking_cloudserv=Cloud Server
-AiProtection_AdvertisementBlocking_cloudserv_desc=Extends protection across multiple sites via the cloud.
-AiProtection_AdvertisementBlocking_filter=Triple level content filter
-AiProtection_AdvertisementBlocking_trigger=Blocks ads with one click.
+AiProtection_AdvertisementBlocking_edserv=Robni strežnik
+AiProtection_AdvertisementBlocking_edserv_desc=Samostojno gostovan robni strežnik na usmerjevalniku. Ponuja podrobne vpoglede v omrežje, napreden nadzor in izboljšano zasebnost doma.
+AiProtection_AdvertisementBlocking_cloudserv=Strežnik v oblaku
+AiProtection_AdvertisementBlocking_cloudserv_desc=Razširi zaščito na več lokacij prek oblaka.
+AiProtection_AdvertisementBlocking_filter=Trojni filter vsebine
+AiProtection_AdvertisementBlocking_trigger=Blokira oglase z enim klikom.
 AiProtection_TrackerBlocking_Enabled=Blokiranje sledilnikov omogočeno
 AiProtection_select_device=Izberite napravo ali vnesite veljaven MAC ali IP naslov
 AiProtection_rule_exist=Ta naprava že ima pravilo. Odstranite ga, preden ustvarite novega.
 ArkMigrationNote=Opomba
 ArkMigrationNote_1=Zaradi zasebnosti in optimizacij sistema %@ zdaj uporablja lokalno zaznavanje. Obstoječa pravila profila je treba ročno ponovno nastaviti.
 ArkMigrationNote_2=Te funkcije niso združljive s prejšnjimi vdelanimi programi; za znižanje bo potreben ponastavitev na tovarniške nastavitve.
+ArkAiProtectionInfo=Nekatera spletna mesta so lahko prizadeta zaradi blokiranja oglasov ali sledenja zaradi uporabe teh storitev. Če imate težave z dostopom, onemogočite zgoraj navedene funkcije in znova naložite stran.
 FamilyContentBlock=Blokiranje družinske vsebine
 BwLimiter_Switch=Stikalo za omejitev pasovne širine
 BwLimiter_Download=Pasovna širina prenosa
@@ -1724,6 +1734,7 @@ BwLimiter_NewDevice=Nova naprava
 BwLimiter_Status=Status
 BwLimiter_Delete=Izbriši
 SearchDevice_By_Name_Mac_Ip=Išči ime naprave, MAC ali IP
+SearchDevice_By_Name_Mac_Ip_Subnet=Išči ime naprave, MAC, IP ali podomrežje
 BwLimiter_Target=Cilj
 BwLimiter_enter_bandwidth=Vnesite vrednost pasovne širine.
 BwLimiter_max=Pravila za omejitev pasovne širine so dosegla največje število (32).
@@ -1874,7 +1885,7 @@ Bandwidth_Setting=Nastavitev pasovne širine
 BasicConfig_EnableDHCPFilter_itemname=Omogoči filter DHCP
 BasicConfig_EnableDownloadMachine_itemname=Ali želite omogočiti nadzornika prenosov?
 BasicConfig_EnableDownloadShare_itemname=Ali želite omogočiti skupno rabo prenosov?
-BasicConfig_EnableiTunesServer_itemname=Želite omogočiti strežnik iTunes?
+BasicConfig_EnableiTunesServer_itemname=Želite omogočiti strežnik iTunes
 BasicConfig_EnableMediaServer_itemname=Omogoči UPnP
 BlackList=Seznam nedovoljenih
 Block=Blokiraj
@@ -1965,7 +1976,9 @@ btn_go=POJDI
 btn_goSetting=Pojdi na nastavitev
 btn_remove=Odstrani
 btn_send=Pošlji
+btn_resend=Pošlji znova
 btn_to_WAN=Nastavitev omrežja WAN
+btn_verify=Potrdi
 Capability=Zmogljivost
 Captcha=Captcha
 Captcha_note=Vnesite znake, prikazane na sliki Captcha.
@@ -1976,7 +1989,7 @@ ChooseOthers_Hint=Izberite druge možnosti in poskusite znova.
 collect_no_info_SWISS=Ne zbira podatkov o uporabnikih in jo ureja švicarska zakonodaja o zasebnosti.
 Client_Name=Ime odjemalca
 Client_Icon=Ikono
-Client_Icon_change=Change Icon
+Client_Icon_change=Spremeni ikono
 Client_Icon_overload=Omejitev nalaganja ikon odjemalcev je bila presežena. Odstranite vsaj eno ikono odjemalca, nato pa ponovite nalaganje.
 Clientlist_block_internet=Blokiraj dostop do interneta
 Clientlist_block_internet_max=Največja omejitev je 16 odjemalcev. Preverite seznam odjemalcev v časovnem razporedu.
@@ -2111,7 +2124,7 @@ CTL_finished=Dokončano
 CTL_format=Oblika zapisa
 CTL_Generate=Ustvari
 CTL_help=Pomoč
-CTL_later=Later
+CTL_later=Pozneje
 CTL_link=Povezava
 CTL_localdevice=Lokalna naprava
 CTL_login=Prijava
@@ -2122,15 +2135,16 @@ CTL_reconnection=Samodejna ponovna vzpostavitev povezave
 CTL_refresh=Osveži
 CTL_Reset_OOB=Ponastavitev
 CTL_restore=Obnovi
+CTL_restore_again=Obnovi znova
 CTL_scan=Preglej
 CTL_search=Poišči
 CTL_secure=Zaščitite usmerjevalnik
 CTL_upgrade=Nadgradnja vdelane programske opreme
 CTL_upload=Naloži
-CTL_upload_img=Upload image
+CTL_upload_img=Naloži sliko
 CTL_initialize=Initialize
 Current=Trenutno
-Current_peak=Peak
+Current_peak=Vrhunec
 Current_band=Trenutna frekvenca
 current_settings=Trenutne nastavitve
 Custom=Po meri
@@ -2158,6 +2172,9 @@ DDNS_https_cert_alert=Izberite pravilno datoteko potrdila SSL.
 DDNS_ipv6_update=Posodobitev IPv6
 DDNS_ipv6_update_desc=Če omrežno okolje odjemalca uporablja omrežni naslov IPv6, boste pri oddaljenem dostopanju do naprave z omogočenjem te funkcije najprej razrešili domeno v omrežni naslov IPv6.
 DDNS_ssl_cert=Potrdilo SSL
+DDNS_status=Stanje omrežja DDNS
+DDNS_reg_result=Rezultat registracije DDNS
+DDNS_root_ca=Korensko potrdilo/Vmesno potrdilo
 DDNS_termofservice_Title=Obvestilo o pogojih uporabe
 DDNS_transfer=Transfer ASUS DDNS name
 DDNS_verification_enable=Preverjanje naslova IP omrežja WAN in imena gostitelja
@@ -2179,10 +2196,10 @@ Device_type_03_AP=Dostopna točka
 Device_type_04_NS=Strežnik mrežnega dostopa
 Device_type_05_IC=Kamera IP
 Device_type_06_OD=Druga naprava
-deviceDiscorvy2=Naslov IP, ki ga dodeli strežnik DHCP, se v načinu ponavljalnika spremeni. Namestite in uporabite <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">pripomoček Odkrivanje naprav</a>, da pridobite novi naslov IP usmerjevalnika.
-deviceDiscorvy3=Naslov IP, ki ga dodeli strežnik DHCP, se v načinu dostopne točke spremeni. Namestite in uporabite <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">pripomoček Odkrivanje naprav</a>, da zaznate naslov IP brezžičnega usmerjevalnika.
-AiMesh_deviceDiscorvy3=Ko so usmerjevalniki AiMesh v načinu dostopne točke, se naslov IP, ki ga dodeli strežnik DHCP, spremeni. Namestite in uporabite pripomoček <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a>, da zaznate naslov IP brezžičnega usmerjevalnika.
-deviceDiscorvy4=Naslov IP, ki ga dodeli strežnik DHCP, se v načinu predstavnostnega mostu spremeni. Namestite in uporabite <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">pripomoček Odkrivanje naprav</a>, da pridobite novi naslov IP usmerjevalnika.
+deviceDiscorvy2=Naslov IP, ki ga dodeli strežnik DHCP, se v načinu ponavljalnika spremeni. Namestite in uporabite <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">pripomoček Odkrivanje naprav</a>, da pridobite novi naslov IP usmerjevalnika.
+deviceDiscorvy3=Naslov IP, ki ga dodeli strežnik DHCP, se v načinu dostopne točke spremeni. Namestite in uporabite <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">pripomoček Odkrivanje naprav</a>, da zaznate naslov IP brezžičnega usmerjevalnika.
+AiMesh_deviceDiscorvy3=Ko so usmerjevalniki AiMesh v načinu dostopne točke, se naslov IP, ki ga dodeli strežnik DHCP, spremeni. Namestite in uporabite pripomoček <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a>, da zaznate naslov IP brezžičnega usmerjevalnika.
+deviceDiscorvy4=Naslov IP, ki ga dodeli strežnik DHCP, se v načinu predstavnostnega mostu spremeni. Namestite in uporabite <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">pripomoček Odkrivanje naprav</a>, da pridobite novi naslov IP usmerjevalnika.
 DeviceSecurity11a_display1_sectiondesc=S filtrom naslovov MAC v brezžičnem omrežju lahko nadzirate pakete iz naprav z navedenim naslovom MAC v svojem brezžičnem lokalnem omrežju.
 DHCP_query_freq=Frekvenca poizvedbe DHCP
 DHCPaggressive=Agresivni način
@@ -2359,13 +2376,16 @@ Enable_ncb_Non_Block=Ne blokiraj
 Enable_ncb_Limited_Block=Omejena blokada
 Enable_ncb_All_Block=Popolna blokada
 Encap_mode_help=V usmerjevalniku ZVMODELVZ sta na voljo dva načina za enkapsuliranje ali prenašanje protokolov omrežij LAN in WAN prek načina ATM. Izberite ustrezen način enkapsuliranja
+Energy_Saving_conflict_hint1=Dejansko delovanje se lahko razlikuje zaradi interakcij med glavno funkcijo in nastavitvami varčevanja z energijo.
+Energy_Saving_conflict_hint2=Za zagotovitev doslednega delovanja med glavno funkcijo in varčevanjem z energijo bodo trenutne nastavitve uporabljene kot prednostne.
+Energy_Saving_affected_setting=Prizadete nastavitve: (%@)
 Ethernet_wan=Ethernetni WAN
 Excute=Namestite
 Excute_processing=Nameščanje...
 External=Samo zunanji
 Extend_TTL_Value=Razširi vrednost TTL
 EZQoS=Upravljanje pasovne širine EZQoS
-EzQoS_bandwidth_note1=Informacije o pasovni širini dobite pri ponudniku internetnih storitev ali na spletnem mestu <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:#FC0;">http://speedtest.net</a>, kjer lahko preverite pasovno širino.
+EzQoS_bandwidth_note1=Informacije o pasovni širini dobite pri ponudniku internetnih storitev ali na spletnem mestu <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);">http://speedtest.net</a>, kjer lahko preverite pasovno širino.
 EzQoS_bandwidth_note2=Privzeta vrednost je 0, kar pomeni neomejeno pasovno širino.
 EzQoS_desc=Kakovost storitve (QoS) zagotavlja pasovno širino za prednostna opravila in aplikacije.
 EzQoS_desc_Adaptive=<span style="font-weight:bolder;font-size:14px;">Prilagodljiva kakovost storitve</span> zagotavlja dohodno in odhodno pasovno širino v žičnih in brezžičnih povezavah za prednostne aplikacije in opravila prek vnaprej določenih nastavitev, ki jih povlečete in spustite: igre, pretočni prenos predstavnosti, VoIP, brskanje po spletu in prenos datotek.
@@ -2432,11 +2452,11 @@ feedback_email_alert=Oblika zapisa e-poštnega naslova ni pravilna.
 feedback_email_confirm=Polje z -poštnim naslovom je prazno. Ali res želite nadaljevati?
 feedback_extra_info=Dodatne informacije za iskanje in odpravljanje napak
 feedback_fail0=Povratnih informacij ni bilo mogoče poslati. Preverite internetno povezavo in poskusite znova.
-feedback_fail1=<span style="color:#FC0;">Sistem ni mogel vzpostaviti povezave z e-poštnim strežnikom.</span> E-poštno sporočilo lahko pošljete neposredno na naslov
+feedback_fail1=<span style="color:var(--wrt-badge-warning-color,#FC0);">Sistem ni mogel vzpostaviti povezave z e-poštnim strežnikom.</span> E-poštno sporočilo lahko pošljete neposredno na naslov
 feedback_fail2=Preprosto kopirajte spodnjo vsebino in jo prilepite kot vsebino e-poštnega sporočila.
 feedback_fail3=Prenesite naslednje datoteke za iskanje in odpravljanje napak in jih dodajte kot prilogo e-poštnega sporočila:
 feedback_fail0_new=Sistemu ni uspelo povezati se s strežnikom za povratne informacije.
-feedback_fail1_new=<span>Če imate težave pri uporabi ali potrebujete tehnično podporo, najprej stopite v stik z ASUS-ovim centrom za podporo strankam&nbsp;<a class="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Uradna Podpora | ASUS Global)</a>.</span>
+feedback_fail1_new=<span>Če imate težave pri uporabi ali potrebujete tehnično podporo, najprej stopite v stik z ASUS-ovim centrom za podporo strankam&nbsp;<a class="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Uradna Podpora | ASUS Global)</a>.</span>
 feedback_fail2_new=Prav tako lahko pošljete zaznano datoteko napake na router_feedback@asus.com, da podate predloge za izboljšave razvojni ekipi. Hvala.
 feedback_fail_BindGoogle=ali pa <a id="bind_google">povežite svoj račun Google</a> in pošljite povratne informacije prek e-pošte.
 feedback_format_alert=The format is not valid.
@@ -2458,7 +2478,7 @@ feedback_note3=Če pošljete te povratne informacije, se strinjate, da lahko ASU
 [###MODEL_DEP###][DSL-AX82U][DSL-AC68U][DSL-N55U][DSL-N55U-B]feedback_note3=Če pošljete te povratne informacije, se strinjate, da lahko ASUS poslane povratne informacije uporabi za izboljšanje usmerjevalnika modema xDSL ASUS.
 feedback_note4=Za nujne primere se obrnite na lokalno tehnično podporo.
 feedback_note5=Povratne informacije so v teku. Ponovni zagon lahko povzroči prekinitev programa in povratne informacije ne bodo dokončane. Prosimo, ponovno zaženite kasneje.
-feedback_note6=<span>Ta sistem ne nudi individualnih odgovorov. Če imate težave pri uporabi ali potrebujete tehnično podporo, se obrnite na ASUS-ov center za podporo strankam</span>&nbsp;<a id="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Uradna Podpora | ASUS Global)</a>.
+feedback_note6=<span>Ta sistem ne nudi individualnih odgovorov. Če imate težave pri uporabi ali potrebujete tehnično podporo, se obrnite na ASUS-ov center za podporo strankam</span>&nbsp;<a id="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Uradna Podpora | ASUS Global)</a>.
 feedback_note7=Naša strokovna ekipa bo posvečena vašemu servisiranju. Hvala.
 feedback_Occasion_interrupt=Občasne prekinitve
 feedback_optional=* Izbirno
@@ -2619,7 +2639,7 @@ FW_auto_upgrade_desc=Ponoči samodejno namestite posodobitve sistema, potem ko s
 FW_auto_upgrade_desc1=Nekatere nadgradnje, ki odpravljajo bistvene varnostne težave ali izpolnjujejo zakonske/regulativne zahteve, bodo še vedno nameščene samodejno, tudi če je samodejna nadgradnja programske opreme onemogočena.
 FW_auto_upgrade_note=Ko je omogočeno, usmerjevalnik samodejno namesti novo strojno programsko opremo ob želenem času.
 FW_beta_check=Želim pridobiti vdelano programsko opremo različice beta.
-FW_desc0=Najnovejšo različico vdelane programske opreme prenesite na <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/" target="_blank">strani za podporo družbe ASUS</a>
+FW_desc0=Najnovejšo različico vdelane programske opreme prenesite na <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/" target="_blank">strani za podporo družbe ASUS</a>
 FW_desc1=Najnovejšo različico vdelane programske opreme lahko prenesete s spletnega mesta za podporo družbe ASUS na naslovu https://www.asus.com/support/.
 fw_downloading=Prenesi vdelano programsko opremo
 FW_item1=ID izdelka
@@ -2628,9 +2648,9 @@ FW_item2_aiboard=Različica vdelane programske opreme AI Board
 FW_item5=Datoteka z novo vdelano programsko opremo
 FW_manual_update=Ročna posodobitev vdelane programske opreme
 FW_n0=Najnovejša vdelana programska oprema vključuje posodobitve prejšnjih različic.
-FW_n2=Če nadgradnje ni mogoče dokončati, ZVMODELVZ samodejno preklopi v način v sili. Lučka LED na sprednji strani naprave ZVMODELVZ ponazarja takšno stanje. Obiščite <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/Download-Center/" target="_blank">središče za prenose družbe ASUS</a> in prenesite pripomoček za ASUS Firmware Restoration.
-FW_n3=Check on <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="" target="_blank">FAQ</a> for more instructions.
-FW_n4=Check on <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: #FFCC00;\" href=\"\" target=\"_blank\">FAQ</a> for more instructions.
+FW_n2=Če nadgradnje ni mogoče dokončati, ZVMODELVZ samodejno preklopi v način v sili. Lučka LED na sprednji strani naprave ZVMODELVZ ponazarja takšno stanje. Obiščite <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/Download-Center/" target="_blank">središče za prenose družbe ASUS</a> in prenesite pripomoček za ASUS Firmware Restoration.
+FW_n3=Za dodatna navodila si oglejte <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="" target="_blank">FAQ</a>.
+FW_n4=Za dodatna navodila si oglejte <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: var(--wrt-badge-warning-color,#FFCC00);\" href=\"\" target=\"_blank\">FAQ</a>.
 FW_n5=Glede zbiranja podatkov za nadgradnje vdelane programske opreme/varnosti preglejte obvestilo o zasebnosti ASUS (za nadgradnje vdelane programske opreme/varnosti) na strani »Skrbništvo -> Zasebnost«.
 FW_note=Opomba:
 FW_note_AiMesh=Če uporabljate sistem AiMesh, boste z ročno posodobitvijo vdelane programske opreme posodobili samo določene usmerjevalnike/vozlišča AiMesh. Prepričajte se, da prenašate pravo različico vdelane programske opreme AiMesh za vsak usmerjevalnik/vozlišče.
@@ -2689,7 +2709,8 @@ Gaming_Server_Acceleration=Pospeševanje igralnega strežnika
 Gear_Accelerator=Pospeševalnik
 Gear_Accelerator_desc=Prednost naprav za igranje
 Gear_Accelerator_desc1=Določite prednost naprav za igranje, da si zagotovite najboljšo izkušnjo igranja.
-Gear_Accelerator_List=Lista dispozitivelor de joc
+Gear_Accelerator_List=Seznam igralnih naprav
+Gear_Accelerator_confirm=Če želite omogočiti %@, bo strojno pospeševanje onemogočeno, kar lahko zmanjša hitrost omrežja. Ali želite nadaljevati?
 Game_Ark_Devices_identification=Prepoznavanje igralnih naprav
 Game_Ark_Devices_identification_desc=Prepoznavanje igralnih naprav inteligentno daje prednost omrežnemu prometu za vaše povezane naprave.
 Game_Ark_First_desc=GameFirst V je priložen matičnim ploščam, prenosnikom in namiznim računalnikom ROG za optimizacijo omrežnega prometa pri spletnem igranju iger na PC-ju.
@@ -2706,12 +2727,12 @@ GB_account_type2=Napreden račun za usmerjevalnik
 GB_ended_date=Končni datum
 GB_ended_date_desc=WTFast vsakemu novemu uporabniku zagotavlja 14-dnevno napredno preskusno obdobje, ki naprednim računom zagotavlja več možnosti za strežnik proxy. Po poteku preskusnega obdobja lahko še vedno uporabljate doživljenjsko naročnino s funkcijami osnovnega računa, ki so brezplačne in vsebujejo omejitve prometa.
 GB_ended_date_type0=Zdaj uporabljate brezplačen osnovni račun za usmerjevalnik.
-GB_management_note1=Če uporabljate način za izboljšanje delovanja iger, ki uporablja tehnologijo WTFast, se strinjate s <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:#008DE5;">pogoji uporabe</a></span> in <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:#008DE5;">pravilnikom o zasebnosti</a></span> za WTFast.
-GB_management_note2=Kot je navedeno v naši izjavi o zavrnitvi odgovornosti, WTFast še vedno razvija podporo za igralne konzole. <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:#008DE5;">Na tem seznamu so navedene igre</a>, ki so trenutno podpret. (redno posodobljen)
+GB_management_note1=Če uporabljate način za izboljšanje delovanja iger, ki uporablja tehnologijo WTFast, se strinjate s <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">pogoji uporabe</a></span> in <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">pravilnikom o zasebnosti</a></span> za WTFast.
+GB_management_note2=Kot je navedeno v naši izjavi o zavrnitvi odgovornosti, WTFast še vedno razvija podporo za igralne konzole. <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Na tem seznamu so navedene igre</a>, ki so trenutno podpret. (redno posodobljen)
 GB_management_note3=Učinkovitost delovanja zasebnega omrežja za igralce iger se razlikuje glede na vašega ponudnika internetnih storitev ali lokacijo. Zagotovite, da je vdelana programska oprema vedno posodobljena.
-GB_management_note4=Kako izberem dober strežnik zasebnega omrežja za igralce iger? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:#008DE5;">Tukaj</a></span> Kako si zagotovim najboljšo izkušnjo z igranjem iger? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:#008DE5;">Tukaj</a></span>
-GB_management_note5=Kako uporabljam WTFast v usmerjevalniku ASUS? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:#008DE5;">Tukaj</a></span>
-GB_mobile=Mobile Game Mode
+GB_management_note4=Kako izberem dober strežnik zasebnega omrežja za igralce iger? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Tukaj</a></span> Kako si zagotovim najboljšo izkušnjo z igranjem iger? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Tukaj</a></span>
+GB_management_note5=Kako uporabljam WTFast v usmerjevalniku ASUS? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Tukaj</a></span>
+GB_mobile=Mobilni igralni način
 GB_mobile_desc=Pospešite igranje v mobilnih napravah
 GB_mobile_desc1=Prenesite in namestite aplikacijo »ASUS Router«. V aplikaciji omogočite način za mobilne igre, da si zagotovite najboljšo izkušnjo igranja v mobilnih napravah.
 GB_mobile_desc_short=Prenesite in namestite aplikacijo »ASUS Router«.
@@ -2832,7 +2853,7 @@ HSDPAConfig_hsdpa_enable_hint2=Če želite spremeniti vrsto povezave, izberite <
 HSDPAConfig_hsdpa_enable_itemname=Omogoči modem USB
 HSDPAConfig_hsdpa_mode_itemname=Način modema USB
 HSDPAConfig_hsdpa_mode_itemdesc=Če vmesnik USB priključite na usmerjevalnik ZVMODELVZ, ga spremenite v mobilni usmerjevalnik.
-HSDPAConfig_hsdpa_mode_status=USB Modem Status
+HSDPAConfig_hsdpa_mode_status=Stanje USB modema
 HSDPAConfig_isp_itemdesc=Izberite ponudnika internetnih storitev (ISP).
 HSDPAConfig_ISP_itemname=Ponudnik internetnih storitev
 HSDPAConfig_password_itemdesc=Vnesite svoje geslo.
@@ -3113,7 +3134,7 @@ LANHostConfig_x_DDNS_retrieve_IP_note=[Notranje] Registrirajte ime domene prek n
 LANHostConfig_x_DDNS_update_confirm=Naslov IP, strežnik in ime gostitelja se niso spremenili od zadnje posodobitve. Če jih želite posodobiti, kliknite [Da].
 LANHostConfig_x_DDNSEnable_itemname=DDNS
 LANHostConfig_x_DDNSEnable_sectiondesc=DDNS (dinamični sistem domenskih imen) je storitev, ki omrežnim odjemalcem omogoča, da prek svojega registriranega imena domene vzpostavijo povezavo z brezžičnim usmerjevalnikom tudi z dinamičnimi javnimi naslovi IP.
-LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:#FFFFFF;">Za dodatne podrobnosti glejte to <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">pogosto zastavljeno vprašanje</a>.
+LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:var(--wrt-text-color,#FFFFFF);">Za dodatne podrobnosti glejte to <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">pogosto zastavljeno vprašanje</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc3=Ime gostitelja je bilo uspešno registrirano. Za dostop do storitve v domačem omrežju iz omrežja WAN lahko uporabite »[ime_gostitelja].asuscomm.com«. Za oddaljen dostop do omrežja lahko uporabite »[ime_gostitelja].asuscomm.com«.<p>Go to Advanced Settings > WAN za konfiguracijo posredovanje vrat ali nastavitev DMZ, da drugim odjemalcem omrežja WLAN omogočite oddaljen dostop do svojega omrežja.<p> Če želite brezžični usmerjevalnik konfigurirati na daljavo, obiščite <a href="/Advanced_System_Content.asp?af=misc_http_x" target="_blank" style="text-decoration: underline; font-family:Lucida Console;">to stran</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc4=Trenutni usmerjevalnik uporablja zasebni naslov IP.
 LANHostConfig_x_DDNSEnable_faq1=Predstavitev in nastavitev storitve DDNS
@@ -3340,7 +3361,7 @@ month=mesec
 MoreConfig=Več konfiguracije
 MPPE_Encryp=Šifriranje MPPE
 mssid_time_remaining=Preostali čas
-multiservice_WAN=Multi-Service WAN
+multiservice_WAN=Večstoritveni WAN
 NAT_Acceleration=Pospeševanje NAT
 NAT_AccelerationDesc=Ko je omogočeno pospeševanje NAT, lahko stikalo samo obravnava omrežne pakete in zaobide CPE. Poveča lahko prepustnost NAT, toda nekatere funkcije morda ne bodo delovale pravilno, na primer časovni razpored, tradicionalni QoS, omejevalnik pasovne širine v gostujočem omrežju itd. Če nastavite samodejno pospeševanje NAT, se bo samodejno onemogočilo, ko omogočite te funkcije.
 NAT_Acceleration_ctf_disable=Promet NAT obdela CPE.
@@ -3355,7 +3376,7 @@ NAT_IPSec_Passthrough=Prepustnost IPSec
 NAT_L2TP_Passthrough=Prepustnost L2TP
 NAT_lacp=Povezovanje/združevanje povezav
 NAT_lacpDesc=Ta element je imel različna imena: združevanje vrat/povezovanje/vključevanje/združevanje povezav/802.3ad
-NAT_lacp_disable_note=Change IPTV/ VOIP port settings to LAN5/ LAN6 will disable Bonding/ Link aggregation function. Are you sure to do it?
+NAT_lacp_disable_note=Spreminjanje nastavitev vrat IPTV/ VOIP na LAN5/ LAN6 bo onemogočilo funkcijo Bonding/ Link aggregation. Ali ste prepričani, da želite to storiti?
 NAT_lacp_note=Omogočite podporo za povezovanje (802.3ad) za žičnega odjemalca ter ga priključite na priključka LAN1 in LAN2 na usmerjevalniku.
 NAT_passthrough_desc=Omogočite prepustnost NAT, da povezavi z navideznim zasebnim omrežjem (VPN) omogočite dostop do odjemalcev omrežja prek usmerjevalnika.
 NAT_PPTP_Passthrough=Prepustnost PPTP
@@ -3415,8 +3436,8 @@ note_hide_SSID_WPS=Če želite omogočiti WPS, morate najprej onemogočiti skrit
 note_up_to_date=Opomba: Novi popravek bo redno posodobljen. Redno posodabljajte vdelano programsko opremo.
 Notice=Obvestilo
 Notification_Item=Element obvestila
-Notification_security_update=Security Update Notification
-Notification_security_desc=Monitor this log to stay informed about system security changes that may affect your network.
+Notification_security_update=Obvestilo o varnostni posodobitvi
+Notification_security_desc=Spremljajte ta dnevnik, da boste obveščeni o spremembah varnosti sistema, ki lahko vplivajo na vaše omrežje.
 Now=Zdaj
 number_of_client=Številka odjemalca
 NSlookup_help=Če storitev ASUS DDNS ne morete uporabljati, obiščite spletno mesto <a href="https://iplookup.asus.com/nslookup.php" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">https://iplookup.asus.com/nslookup.php</a>, da odprete naslov IP interneta za uporabo te storitve.
@@ -3440,7 +3461,7 @@ ParentalCtrl_default=Odjemalcem, ki so dodani v starševski nadzor, bo dostop do
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_default=Odjemalcem, ki so dodani v Kontrola dostopa naprav, bo dostop do interneta privzeto onemogočen.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]ParentalCtrl_default=Za naprave, ki so dodane v možnost Parental Controls (Starševski nadzor), je dostop do interneta privzeto omejen.
 ParentalCtrl_deny=Zavrni
-ParentalCtrl_disable_NAT=Za natančnejši nadzor načrtovanja onemogočite <a id="disable_NAT" style="color:#FC0;text-decoration: underline;" href="" target="_blank">Pospeševanje NAT</a>.
+ParentalCtrl_disable_NAT=Za natančnejši nadzor načrtovanja onemogočite <a id="disable_NAT" style="color:var(--wrt-badge-warning-color,#FC0);text-decoration: underline;" href="" target="_blank">Pospeševanje NAT</a>.
 ParentalCtrl_Enable=Omogoči starševski nadzor
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_Enable=Omogoči kontrola dostopa naprav
 ParentalCtrl_Enable_TS=Omogoči časovni razpored
@@ -3749,6 +3770,7 @@ select_service=Izberite ime storitve.
 select_usb_device=Izberite napravo USB
 select_usb_mode=USB Mode
 select_wireless_MAC=Izberite naslov MAC brezžičnega odjemalca.
+Sending_str=Pošiljanje…
 Send_mail=Pošlji pošto
 Serial_Number=Serijska številka
 Servers_Center=Strežniško središče
@@ -3773,7 +3795,8 @@ Setting_initialize_desc_ai=Ponastavitev glavnega sistema usmerjevalnika na tovar
 Setting_lock_main_unit=Zakleni glavno enoto
 Setting_lock_main_unit_desc1=Ko je omogočeno, je ta naprava omejena na vlogo glavne enote in se ne more pridružiti drugemu omrežju kot vozlišče.
 Setting_lock_main_unit_desc2=Opomba: Sprememba tega stanja bo sprožila ponastavitev na tovarniške nastavitve in zahtevala ponovno konfiguracijo.
-Setting_lock_main_unit_confirm=Sprememba stanja »Zakleni glavno enoto« zahteva ponastavitev na tovarniške nastavitve. To bo izbrisalo vse trenutne nastavitve omrežja.
+Setting_lock_main_unit_desc3=Če imate aktivno mesh omrežje z vozlišči Nodes, povezanimi s to napravo CAP, je treba ta vozlišča Nodes po ponastavitvi naprave CAP na tovarniške nastavitve tudi ročno ponastaviti.
+Setting_lock_main_unit_confirm=Sprememba stanja »Zakleni glavno enoto« zahteva ponastavitev na »tovarniške nastavitve«. To bo izbrisalo vse trenutne nastavitve omrežja.
 Setting_save_itemdesc=Kliknite gumb [Shrani], da shranite trenutne nastavitve usmerjevalnika ZVMODELVZ v datoteko. (Opomba: Ko shranite trenutne nastavitve v datoteko, bodo shranjene tudi na bliskovni pogon.)
 Setting_save_itemdesc_ai=Shranjevanje nastavitev ne vključuje konfiguracij ali podatkov sistema AI Board.
 Setting_save_itemname=Shrani nastavitve
@@ -3782,7 +3805,7 @@ Setting_upload_hint=Oblika zapisa datoteke ali pot ni veljavna.
 Setting_upload_itemdesc=Navedite pot in ime datoteke z nastavitvami. Nato kliknite [Prenesi], da zapišete datoteko v usmerjevalnik ZVMODELVZ. Počakajte 60 sekund, da se usmerjevalnik ZVMODELVZ zažene znova.
 [###MODEL_DEP###][RT-N65U]Setting_upload_itemdesc=Navedite pot in ime datoteke z nastavitvami. Nato kliknite [Prenesi], da zapišete datoteko v usmerjevalnik ZVMODELVZ. Počakajte 90 sekund, da se usmerjevalnik ZVMODELVZ zažene znova.
 Setting_upload_itemname=Ponastavi nastavitve
-Setting_remove_passwd=Click on this checkbox if you want to share the config file for debugging. Since the original password in the config file will be removed, please do not import the file into your router.
+Setting_remove_passwd=Označite to polje, če želite deliti konfiguracijsko datoteko za odpravljanje napak. Ker bo izvirno geslo odstranjeno iz datoteke, datoteke ne uvažajte v usmerjevalnik.
 Setting_ai_board=Nastavitve AI Board
 Setting_ai_board_fw_ver=Različica vdelane programske opreme AI Board
 Setting_ai_dk_Apps=Docker aplikacije
@@ -3819,8 +3842,11 @@ Setting_rescue_ai_FWUpload=Naloži vdelano programsko opremo
 Setting_rescue_ai_FWInstall=Namesti vdelano programsko opremo
 Setting_rescue_ai_appInstall=Namesti APP
 Setting_rescue_ai_complete=Reševanje AI Board je zaključeno.
+Setting_rescue_ai_Interrupted=Obnovitev AI Board je bila prekinjena
+Setting_rescue_ai_Interrupted_desc1=Postopek obnovitve ni uspel zaradi nepričakovane prekinitve ali izpada napajanja.
+Setting_rescue_ai_Interrupted_desc2=Zagotovite stabilno napajanje in poskusite znova.
 Setting_prog_ai_currStep=Trenutni korak:
-Setting_prog_ai_Note=Opomba: Sistem deluje normalno. Ne prekinjajte postopka.
+Setting_prog_ai_Note=Opomba: Sistem deluje normalno. Ne prekinjajte postopka in zagotovite stabilno napajanje ter internetno povezavo.
 Setting_prog_ai_serveralTime=Ta postopek lahko traja nekaj minut.
 Settings=Nastavitve
 Setup_note=Kliknite <a id="redirect_to_setup">tukaj</a> da spremenite. Za več informacij si oglejte to <a id="redirect_to_FAQ">pogosto vprašanje</a>.
@@ -3876,7 +3902,7 @@ smart_connect_STA=Pravila izbire naprav - STA
 smart_connect_STA_counts=Števila
 smart_connect_STA_dwell=Čas mirovanja
 smart_connect_STA_window=Čas okna
-smart_connect_status=Smart Connect Status
+smart_connect_status=Stanje Smart Connect
 smart_connect_Steering=Pogoji za sproženje usmerjanja
 smart_connect_Bandwidth=Uporaba pasovne širine
 smart_sync=Pametna sinhronizacija
@@ -3987,10 +4013,33 @@ SDN_Scenarios_desc=Ali želite dodati dodatno brezžično omrežje za posebno up
 SDN_MainFH_for_clients=MLO Fronthaul za odjemalce
 SDN_MainFH_keep_Hint=At least one main network must be retained.
 SDN_MainFH_Smart_Connect_Hint=Ker je bilo ustvarjeno pravilo Smart Connect, izberite eno WiFi pasovno širino.
+SDN_mlo_switch_fh_hint1=Dovoljen je samo en aktiven MLO fronthaul.
+SDN_mlo_switch_fh_hint2=Ali želite deaktivirati MLO Fronthaul za %1$@ in aktivirati %2$@?
 SDN_Sync_To_All_Node=Sinhroniziraj z vsemi vozlišči AiMesh
 SDN_Sync_To_All_Node_Hint=Če so vaša vozlišča AiMesh starejši modeli ali je WiFi dosegel največjo kapaciteto, sinhronizacija vseh vozlišč AiMesh ne bo možna. Izberite vozlišča za sinhronizacijo iz spodnjega menija.
 SDN_Sync_limitation_Hint=Za starejša vozlišča AiMesh obstajajo omejitve pri sinhronizaciji vseh pasov.
 SDN_MainFH_WiFi_conflict=%1$@ frekvenčnih pasov WiFi je bilo uporabljenih. Konfliktna %2$@ (%3$@) omrežja bodo odstranjena po uporabi nastavitev.
+SDN_Auth_WPA3_only_subtext1=Najvišja raven varnosti samo z WPA3.
+SDN_Auth_WPA3_only_subtext2=(Opomba: Starejše naprave brez podpore WPA3 se morda ne bodo povezale.)
+SDN_Auth_WPA3_dual=Standardna dvonačinska varnostna možnost.
+SDN_Auth_WPA3_dual_desc=Sodobne naprave uporabljajo WPA3, starejše pa WPA2.
+SDN_Auth_WPA3_dual_mode=Način združljivosti
+SDN_Auth_WPA3_dual_mode_subtext1=Izboljšana dvonačinska varnostna možnost za starejše naprave z uporabo preglasitve RSN.
+SDN_Auth_WPA3_dual_mode_subtext2=Omogoča povezavo starejših naprav, medtem ko sodobne uporabljajo WPA3.
+SDN_Auth_WPA3_dual_mode_subtext3=(Opomba: Nekatere naprave srednje generacije lahko uporabljajo WPA2.)
+SDN_Auth_WPA3_subtext=Izboljšana varnostna možnost, optimizirana za starejše naprave z uporabo RSN overriding. Sodobnim napravam zagotavlja najvišjo raven varnosti, hkrati pa ohranja stabilne povezave za manj sodobne odjemalce.
+SDN_WiFi_Mode_Only6G_Hint=Za skladnost z globalnimi standardi WiFi morajo vsa omrežja v pasu 6 GHz uporabljati isto generacijo WiFi.
+SDN_WiFi_Mode_24G_Hint=Pas 2,4 GHz deluje v skladu z nastavitvami načina WiFi.
+SDN_Compatibility_Mode_Off=Način združljivosti je izklopljen.
+SDN_Compatibility_Mode_24=Način združljivosti 2,4 GHz
+SDN_Balance_Mode=Uravnoteženo
+SDN_Balance_Mode_desc=Optimalno ravnovesje med zmogljivostjo in združljivostjo naprav.
+SDN_Balance_Mode_desc1=2,4 GHz deluje v načinu WiFi 6.
+SDN_Ultra_Compatibility_Mode=Največja združljivost
+SDN_Ultra_Compatibility_Mode_desc=Zagotavlja stabilno povezljivost za starejše ali podedovane naprave IoT.
+SDN_Ultra_Compatibility_Mode_desc1=2,4 GHz deluje v načinu WiFi 4.
+SDN_IPv6_FreeWiFi_Hint=Opomba: Free WiFi ne podpira okolij samo z IPv6. Prepričajte se, da je za preusmeritev odjemalca omogočen IPv4 ali Dual-Stack.
+SDN_IPv6_MessageBoard_Hint=Opomba: Message Board ne podpira okolij samo z IPv6. Prepričajte se, da je za odjemalca omogočen IPv4 ali Dual-Stack.
 t2BC=Osnovna konfiguracija
 t2LAN=Lokalno omrežje
 t2Misc=Razno
@@ -4066,7 +4115,9 @@ TZ02=Otok Midway, Samoa
 TZ03=Havaji
 TZ04=Aljaska
 TZ05=Pacifiški čas (ZDA, Kanada)
+TZ05_1=Vancouver, Whitehorse
 TZ06=Gorski čas (ZDA, Kanada)
+TZ06_1=Edmonton, Yellowknife
 TZ07=Arizona
 TZ08=Mazatlan
 TZ10=Saskatchewan
@@ -4222,7 +4273,7 @@ usb_tls_conflict=Dovoljenje za anonimno prijavo ni v skladu z nastavitvami za TL
 usb_tls_conflict_WANacc=Dostop do WAN ni v skladu z nastavitvami TLS.
 usb_uninstalling=Odstranjevanje aplikacije iz naprave za shranjevanje USB ...
 usb_unmount=Funkcija USB je onemogočena.
-use_DevDiscoveryUtil=Namestite in uporabite <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">pripomoček Odkrivanje naprav</a>, da zaznate naslov IP brezžičnega usmerjevalnika.
+use_DevDiscoveryUtil=Namestite in uporabite <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">pripomoček Odkrivanje naprav</a>, da zaznate naslov IP brezžičnega usmerjevalnika.
 Username=Uporabniško ime
 Username_Pwd=Uporabniško ime in geslo
 UserQoS_desc=Na spustnem seznamu »Uporabniško določena pravila kakovosti storitve« lahko omrežne aplikacije ali naprave razvrstite v pet prednostnih ravni. Kakovost storitve na podlagi prednostne ravni uporablja te načine pri pošiljanju podatkovnih paketov:<ul><li>Spremenite vrstni red omrežnih paketov za nalaganje, kar se nanaša na vrstni red, v katerem so paketi poslani v internet.</li><li>Paketi z nizko prednostno ravnjo so prezrti, da je mogoče zagotoviti prenos paketov z visoko prednostno ravnjo. Paket za nalaganje z višjo prednostno ravnjo ima prednost pred paketom za prenos z višjo prednostno ravnjo.</li><li>Če aplikacije z visoko prednostno ravnjo ne pošiljajo nobenih paketov, je za pakete z nizko prednostno ravnjo na voljo polna hitrost prenosa, ki jo zagotavlja internetna povezava.</li></ul>
@@ -4232,6 +4283,7 @@ UserQoS_transferred_hint=V stolpcu »Preneseno« lahko nastavite omejitev za omr
 UserQoSRule_desc_zero=Omogočite kakovost storitve in nato nastavite uporabniško določena pravila.
 UserQoSRule_desc_one=Prednostna raven z pasovno širino za nalaganje in prenos je privzeto nastavljena na »nizko«. Če ni določeno nobeno pravilo za prednostno raven pasovne širine, je prednostna raven za pasovna širina za nalaganje in prenos nastavljena na »nizko«.
 Utility=Pripomoček
+Verifying_str=Potrjevanje…
 Video_Find=Poiščite videovadnice
 Video_Link1=Kliknite, če želite odpreti videovadnico.
 View_List=Prikaži seznam
@@ -4330,7 +4382,7 @@ vpn_openvpn_required_acc_pwd=Za trenutni .ovpn datoteko sta potrebna uporabnišk
 vpn_openvpnc_importCA=Uvozi datoteko CA
 vpn_openvpnc_importovpn=Uvozi datoteko .ovpn
 vpn_openvpnc_manual=Ročno uvozite datoteko CA ali uredite datoteko .ovpn.
-vpn_privateIP_hint=Brezžični usmerjevalnik trenutno uporablja zasebni naslov IP prostranega omrežja (192.168.x.x, 10.x.x.x ali 172.16.x.x). Nadaljujte z <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:#FC0;'>FAQ</a> in nastavite posredovanje vrat.
+vpn_privateIP_hint=Brezžični usmerjevalnik trenutno uporablja zasebni naslov IP prostranega omrežja (192.168.x.x, 10.x.x.x ali 172.16.x.x). Nadaljujte z <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>FAQ</a> in nastavite posredovanje vrat.
 vpn_preshared_key=Pre-shared Key (Secret)
 vpn_preshared_key_hint=Enter Pre-shared Key
 vpn_switch_confirm=Usmerjevalnik ASUSWRT podpira samo eno povezavo s strežnikom VPN hkrati. Če omogočite možnost »Strežnik OpenVPN«, je možnost »Strežnik PPTP« samodejno onemogočena. Ali res želite omogočiti strežnik VPN?
@@ -4401,6 +4453,16 @@ vpn_wireguard_client_faq=How to set up WireGuard® client in VPN Fusion?
 vpn_wireguard_client_config=Please use the following configuration to set up your WireGuard client.
 vpn_wireguard_qr_desc=Please download WireGuard App from Google Play or Apple Store, then use the APP to scan the QR Code to connect to this server.
 vpn_wireguard_qr_foriOS=For iOS users, you must assign a specific DNS server to WireGuard app before accessing the internet through WireGuard Server.
+vpn_wireguard_ep_mode=Način Endpoint
+vpn_wireguard_ep_src=Vir imena gostitelja
+vpn_wireguard_ep_system_ddns=Sistemski DDNS
+vpn_wireguard_ep_custom=Ime gostitelja po meri
+vpn_wireguard_ep_desc=Način Auto samodejno določi Endpoint glede na trenutno stanje omrežja. V načinu DDNS lahko izberete DDNS, ki je nastavljen v sistemskih nastavitvah, ali vnesete ime gostitelja po meri.
+vpn_wireguard_ep_custom_desc=Ime gostitelja po meri je neodvisno od nastavitev DDNS v sistemskih nastavitvah. Za uspešno povezavo se prepričajte, da je ime gostitelja po meri mogoče pravilno razrešiti v IP-naslov usmerjevalnika.
+vpn_wireguard_ep_ddns_hint=DDNS ni omogočen. Za dokončanje nastavitve odprite »Nastavitve > WAN > DDNS«. V nasprotnem primeru ta Endpoint ne bo deloval pravilno.
+vpn_wireguard_ep_ddns_disable_confirm=Ko je DDNS onemogočen, VPN-profili, ki uporabljajo ta DDNS, morda ne bodo mogli vzpostaviti povezave. Ali želite nadaljevati?
+vpn_wireguard_ep_custom_blank=Vnesite ime gostitelja po meri.
+vpn_wireguard_ep_custom_invalid=Neveljavna oblika imena gostitelja. Vnesite veljaven FQDN, na primer vpn.example.com. Ne vključite http://, https://, številke vrat ali poti URL.
 vpnc_auth=Preverjanje pristnosti VPN
 vpnc_auth_for_clients=Preverjanje pristnosti VPN za odjemalce VPN
 vpnc_Client_Cert=Potrdilo odjemalca
@@ -4426,6 +4488,32 @@ vpnc_profile_assignALL=Uporabi za vse naprave.
 vpnc_profile_assignDevice=Dodeli naprave temu profilu
 vpnc_profile_del=Izbriši profil
 vpnc_profile_select_suggest=Izberite drug profil VPN, da prekličete privzeti internetni WAN.
+vpnc_ssk_login=Prijavite se v svoj račun Surfshark
+vpnc_ssk_login_note=Vnesite račun in geslo.
+vpnc_ssk_invalid_long=Račun ali geslo je predolgo (največ 128 znakov).
+vpnc_ssk_invalid_char=Račun ali geslo vsebuje neveljavne znake.
+vpnc_ssk_invalid_format=Neveljavna oblika računa ali gesla.
+vpnc_ssk_login_AuthCode=Vnesite 6-mestno potrditveno kodo, poslano na vaš e-poštni naslov ali ustvarjeno z aplikacijo Authenticator.
+vpnc_ssk_login_AuthCode_enter=Vnesite 6-mestno potrditveno kodo.
+vpnc_ssk_login_AuthCode_confirm=Niste prejeli potrditvene kode? Kliknite »Pošlji znova« zgoraj in poslali vam bomo novo potrditveno kodo.
+vpnc_ssk_login_AuthCode_resender=Ponovno pošiljanje bo na voljo čez %1$@s
+vpnc_ssk_login_ErrMsg1=Napačen račun ali geslo.
+vpnc_ssk_login_ErrMsg2=Strežnik Surfshark ni na voljo. Poskusite znova pozneje.
+vpnc_ssk_login_ErrMsg4=Napaka konfiguracije. Preverite svoje nastavitve.
+vpnc_ssk_login_ErrMsg41=Napaka konfiguracije.
+vpnc_ssk_login_ErrMsg5=Napaka omrežja. Povezava s Surfshark ni mogoča.
+vpnc_ssk_login_ErrMsgDef=Prijava ni uspela. Poskusite znova.
+vpnc_ssk_login_success=Prijava v Surfshark je bila uspešna.
+vpnc_ssk_login_success_note=Close this notice and complete your VPN settings.
+vpnc_ssk_logout_confirm=Ali ste prepričani, da se želite odjaviti iz svojega računa?
+vpnc_ssk_Failed_resend=Ponovno pošiljanje kode ni uspelo. Poskusite znova.
+vpnc_ssk_Failed_verification=Neveljavna potrditvena koda. Poskusite znova.
+vpnc_ssk_KeyPair_max=Vaš račun Surfshark je dosegel največje dovoljeno število parov ključev VPN (50). Če želite ustvariti novo povezavo VPN, odstranite neuporabljene pare ključev iz svojega računa Surfshark in nato poskusite znova.
+vpnc_ssk_Missing_credent=Manjkajo poverilnice. Zaprite aplikacijo in se znova prijavite.
+vpnc_ssk_Timeout_login=Časovna omejitev zahteve za prijavo je potekla. Poskusite znova.
+vpnc_ssk_Timeout_resend=Časovna omejitev ponovnega pošiljanja je potekla. Poskusite znova.
+vpnc_ssk_Timeout_verification=Časovna omejitev zahteve za potrditev je potekla. Poskusite znova.
+vpnc_ssk_Timeout_network=Napaka omrežja. Poskusite znova.
 vpnc_step=Če želite ustvariti povezavo VPN, upoštevajte spodnja navodila:
 vpnc_step1=Dodajte profil
 vpnc_step2=Izberite vrsto povezave VPN
@@ -4433,6 +4521,7 @@ vpnc_step3=Vnesite podatke o preverjanju pristnosti omrežja VPN, ki vam jih je 
 vpnc_title=Odjemalec VPN
 vpnc_peer=Enakovreden
 vpnc_pppoe_dis_nat_confirm=Kadar uporabljate a odjemalca VPN s povezavo PPPoE, se bo vaš usmerjevalnik samodejno ponovno zagnal, da to onemogoči pospeševanje NAT. Ste prepričani, da želite nadaljevati?
+vpnc_kill_switch_desc=If enabled, this feature blocks all internet traffic instantly if the VPN drops to prevent IP and data leaks. Connection will be suspended until the VPN successfully reconnects or the feature is disabled.
 WAN_barrier=Ovira
 WAN_Cfg_Ethernet_WAN=Konfigurirajte nastavitve ethernetnega omrežja WAN usmerjevalnika ZVMODELVZ.
 WAN_default_route=Privzeta pot
@@ -4497,7 +4586,7 @@ WANTCPMSSOptionText=Možnost MSS za TCP
 WANTCPMSSOptionComm1Text=bajtov
 WANVLANIDText=ID omrežja VLAN
 WANAggregation=Združevanje omrežij WAN
-WANAggregation_desc=Združevanje omrežij WAN združi dve omrežni povezavi, da poveča hitrost omrežja WAN na 2 Gb/s. Priključek #WAN in priključek LAN 4 na usmerjevalniku priključite na priključka LAN na modemu (obvezno uporabite kabla z enakimi specifikacijami). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Pogosta vprašanja o združevanju omrežij WAN</a>
+WANAggregation_desc=Združevanje omrežij WAN združi dve omrežni povezavi, da poveča hitrost omrežja WAN na 2 Gb/s. Priključek #WAN in priključek LAN 4 na usmerjevalniku priključite na priključka LAN na modemu (obvezno uporabite kabla z enakimi specifikacijami). <a id="wanAgg_faq" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">Pogosta vprašanja o združevanju omrežij WAN</a>
 WANAggregation_enable=Omogoči združevanje WAN
 WANAggregation_disable_dualwan=V vašem usmerjevalniku je omogočen dvojni WAN. Če omogočite združevanje omrežij WAN, boste onemogočili dvojni WAN. Ali res želite nadaljevati?
 WANAggregation_disable_WANAggregation=V vašem usmerjevalniku je omogočeno združevanje omrežij WAN. Če omogočite dvojni WAN, boste onemogočili združevanje omrežij WAN. Ali res želite nadaljevati?
@@ -4506,13 +4595,13 @@ WANAggregation_PortConflict_hint2=IPTV uporablja priključek LAN 4 vašega usmer
 WANAggregation_disable_IPTVDualWAN=V vašem usmerjevalniku sta omogočena dvojni WAN in IPTV. Če omogočite združevanje omrežij WAN, bosta dvojni WAN in IPTV zaradi preprečitve spora na priključku onemogočena. Ali res želite nadaljevati?
 WANAggregation_help_WAN=Prepričajte se, da sta priključek #WAN na usmerjevalniku in priključek LAN na modemu priključena s kabloma z enakimi specifikacijami.
 WANAggregation_help_LAN=Prepričajte se, da sta priključek LAN 4 na usmerjevalniku in priključek LAN na modemu priključena s kabloma z enakimi specifikacijami.
-WANAggregation_goto_WAN=Če želite omogočiti združevanje omrežij WAN, odprite stran z <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">nastavitvami internetne povezave WAN</a>.
+WANAggregation_goto_WAN=Če želite omogočiti združevanje omrežij WAN, odprite stran z <a href="Advanced_WAN_Content.asp" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">nastavitvami internetne povezave WAN</a>.
 WANAggregation_help_desc=Če funkcije združevanja omrežja WAN ni mogoče nastaviti, upoštevajte ta navodila in poskusite znova.
 WANAggregation_help_step1=Prepričajte se, da so vrata LAN modema kabelsko že povezana z omrežjem #WAN in LAN 4 usmerjevalnika.
 WANAggregation_help_step2=Prepričajte se, da je za modem omogočena funkcija 802.3ad
 WANAggregation_help_step3=Preverite, ali uporabljate kabla z istimi specifikacijami (gigabitni in gigabitni oziroma 10/100 in 10/100 Mb/s)
 WANAggregation_help_step4=Ponovno zaženite usmerjevalnik
-WANAggregation_help_final=Če ste upoštevali ta navodila, a težave še vedno niste odpravili, jo sporočite osebju na <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>strani za podporo družbe ASUS</a>.
+WANAggregation_help_final=Če ste upoštevali ta navodila, a težave še vedno niste odpravili, jo sporočite osebju na <a href='https://www.asus.com/support/' target='_blank' style='color:var(--wrt-text-color,#000);text-decoration:underline;'>strani za podporo družbe ASUS</a>.
 WANAggregation_wanType_hint=Združevanje WAN ne podpira tipov WAN,  kot so PPPoE, PPTP in L2TP. Če se vaš tip WAN spremeni v PPPoE, PPTP ali L2TP, bo združevanje WAN samodejno onemogočeno. Ste prepričani, da želite nadaljevati?
 WebGUI_issue=Do strani z vdelano programsko opremo ni mogoče dostopiti
 wechat=WeChat
@@ -4627,8 +4716,8 @@ WLANConfig11b_display31_sectiondesc=Izberite način [Samo WDS] ali [Hibridno] in
 WLANConfig11b_display32_sectiondesc=Prepričajte se, da brezžični usmerjevalnik in dostopna točka, s katero želite vzpostaviti povezavo, uporabljata isti kanal.
 WLANConfig11b_display33_sectiondesc=Vnesite naslov MAC oddaljene dostopne točke na seznam oddaljenih dostopnih točk, odprite vmesnik za upravljanje sistema WDS oddaljene dostopne točke in vnesite naslov MAC tega usmerjevalnika.
 WLANConfig11b_display34_sectiondesc=če želite zagotoviti najboljšo učinkovitost delovanja, izberite »Dodatne nastavitve« > »Brezžično omrežje« > »Splošno« ter dodelite isto pasovno širino kanala, nadzorni kanal in razširitveni kanal vsem usmerjevalnikom v omrežju.
-WLANConfig11b_display41_sectiondesc=Trenutno uporabljate samodejno pasovno širino kanala. Kliknite <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">tukaj</a>, če jo želite spremeniti.
-WLANConfig11b_display42_sectiondesc=Trenutno uporabljate samodejni kanal. Kliknite <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">tukaj</a>, če ga želite spremeniti.
+WLANConfig11b_display41_sectiondesc=Trenutno uporabljate samodejno pasovno širino kanala. Kliknite <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">tukaj</a>, če jo želite spremeniti.
+WLANConfig11b_display42_sectiondesc=Trenutno uporabljate samodejni kanal. Kliknite <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">tukaj</a>, če ga želite spremeniti.
 WLANConfig11b_display5_sectiondesc=Profesionalna nastavitev brezžičnega omrežja vam omogoča, da nastavite dodatne parametre brezžičnega omrežja. Vendar pa vam priporočamo, da uporabite privzete vrednosti.
 WLANConfig11b_display6_sectiondesc=WPS (WiFi Protected Setup) zagotavlja preprost in varen način za nastavitev brezžičnega omrežja. Funkcijo WPS lahko konfigurirate tukaj s kodo PIN ali gumbom WPS.
 WLANConfig11b_EChannel_acs_ch13=Auto select channel including channel 12, 13
@@ -4686,6 +4775,7 @@ WLANConfig11b_x_APMode_option2=Hibridno
 WLANConfig11b_x_APSD_itemdesc=Omogočite ali onemogočite WMM APSD (dostava s samodejnim varčevanjem z energijo).
 WLANConfig11b_x_APSD_itemname=Omogoči WMM APSD
 WLANConfig11b_x_Airtime_Fairness=Zagotavljanje enake količine časa prenosa vsem odjemalcem
+WLANConfig11b_x_ApplyAllBands_hint=Ta prilagoditev bo uporabljena za vse nastavitve pasov.
 WLANConfig11b_x_Airtime_Fairness_itemdesc=Provide Airtime Fairness between multiple links
 WLANConfig11b_x_Auto=Brezžični način je treba nastaviti na »Samodejno«.
 WLANConfig11b_x_Beacon_itemdesc=Interval signala je obdobje med enim intervalom in naslednjim intervalom. Privzeta vrednost je 100 (enote je milisekunda ali 1/1000 sekunde). Zmanjšajte interval signala, da izboljšate učinkovitost prenosa v nestabilnem okolju ali za odjemalce, ki gostujejo, vendar boste s tem povečali porabo energije.
@@ -4782,11 +4872,11 @@ WLANConfig11b_x_WPSMode_itemdesc=Če izberete kodo PIN (osebna identifikacijska 
 WLANConfig11b_x_WPSMode_itemname=Način WPS:
 WLANConfig11b_x_WPSPIN_itemdesc=vnesite osemmestno številko za kodo PIN odjemalca.<p>
 WLANConfig11b_x_WPSPIN_itemname=Koda PIN odjemalca
-WLANConfig11n_Auto_note=Možnost [Samodejno] ni združljiva s trenutnim načinom preverjanja pristnosti omrežja za goste (TKIP ali WEP). Izberite <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Omrežje za goste</a> in spremenite način preverjanja pristnosti.
+WLANConfig11n_Auto_note=Možnost [Samodejno] ni združljiva s trenutnim načinom preverjanja pristnosti omrežja za goste (TKIP ali WEP). Izberite <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Omrežje za goste</a> in spremenite način preverjanja pristnosti.
 WLANConfig11n_automode_limition_hint=Usmerjevalnik ZVMODELVZ v načinu »Samodejno« s šifriranjem WEP ali TKIP podpira največjo hitrost prenosa 54 Mb/s.
 WLANConfig11n_automode_limition_hint1=Spremenite način preverjanja pristnosti na WPA2-Personal.
-WLANConfig11n_NAC_note=Možnost [N + AC] ni združljiva s trenutnim načinom preverjanja pristnosti omrežja za goste (TKIP ali WEP). Izberite <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Omrežje za goste</a> in spremenite način preverjanja pristnosti.
-WLANConfig11n_NOnly_note=Možnost [Samo N] ni združljiva s trenutnim načinom preverjanja pristnosti omrežja za goste (TKIP ali WEP). Izberite <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Omrežje za goste</a> in spremenite način preverjanja pristnosti.
+WLANConfig11n_NAC_note=Možnost [N + AC] ni združljiva s trenutnim načinom preverjanja pristnosti omrežja za goste (TKIP ali WEP). Izberite <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Omrežje za goste</a> in spremenite način preverjanja pristnosti.
+WLANConfig11n_NOnly_note=Možnost [Samo N] ni združljiva s trenutnim načinom preverjanja pristnosti omrežja za goste (TKIP ali WEP). Izberite <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Omrežje za goste</a> in spremenite način preverjanja pristnosti.
 WLANConfig11ax_AXOnly_note=By enabling AX only mode, if devices do not support 802.11ax(WiFi 6), will not able to connect to this band.
 WLANConfig11n_PremblesType_itemdesc=Trajanje preverjanja določa dolžino bloka CRC (ciklično preverjanje redundance), ki je tehnika za zaznavanje napak pri prenosu podatkov med brezžičnimi napravami. Priporočamo, da vse brezžične naprave konfigurirate z enakim trajanjem preverjanja. Kratko preverjanje uporabite za brezžične naprave na območjih z veliko omrežnega prometa. Dolgo preverjanje uporabite za starejše brezžične naprave.
 WLANConfig11n_PremblesType_itemname=802.11b mode
@@ -4904,11 +4994,21 @@ Captive_Portal_Above=zgoraj
 Captive_Portal_Selected_Color=Izbrana barva
 Captive_Portal_Local=Lokalno
 Configuration=Konfiguracija
-Configuration_dark_mode=Dark
-Configuration_light_mode=Light
-Configuration_theme=Theme
-Configuration_fancy_theme=Fancy
+Configuration_dark_mode=Temno
+Configuration_light_mode=Svetlo
+Configuration_theme=Tema
+Configuration_fancy_theme=Elegantno
+Configuration_flat_theme=Ploski
 Continuous_Mode=безперервний режим
+View_Details=Prikaži podrobnosti
+NetworkMap_Clients=Odjemalci
+NetworkMap_Guest_Clients=Gostujoči odjemalci
+NetworkMap_Add_AiMesh_Hint=Dodajte več vozlišč AiMesh za razširitev pokritosti z omrežjem WiFi.
+Dashboard_Show_more=Prikaži več
+Dashboard_Show_less=Prikaži manj
+Dashboard_Expand=Razširi
+Dashboard_Refreshing=Osveževanje
+Dashboard_Last_updated=Nazadnje posodobljeno
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Access Policy (Politika dostopa)
 FreeWiFi_AccountSetting_desc1=Nastavitev računa je enostavna konfiguracija gostujočega računa, ki vam omogoča ohranjanje baze podatkov gostov za zavarovanje omrežja gostov. Pridruženi odjemalec mora vnesti naslednja račun in geslo za prijavo, šele nato lahko dostopa do interneta.
@@ -4992,7 +5092,7 @@ menu_privacy=Pravilnik
 ASUS_Notice_Privacy=OBVESTILO DRUŽBE ASUS (o zasebnosti)
 Distributing_IP=Porazdelitev naslova IP ...
 LED_Brightness=Svetlost LED
-LED_disabled_hint=This change will disable the special LED effect for the %1$@.
+LED_disabled_hint=Ta sprememba bo onemogočila poseben LED učinek za %1$@.
 WiFi_Network_List=Seznam omrežij WiFi
 Searching_WiFi_Network=Iskanje omrežij WiFi v bližini ...
 BoostKey=Tipka za izboljšanje delovanja
@@ -5162,7 +5262,7 @@ Notice_Message_3=Prebral(a) sem, ne prikazuj več.
 CTL_Decline=Zavrni
 Outdoor_desc_title=Warning
 Outdoor_active_desc_1=Z omogočanjem zunanjega načina bo AiMesh omejen in lahko povzroči prekinitev povezave vozlišča.
-Outdoor_active_desc_2=Za skladnost s predpisi bo sistem približno 1 minuto pregledoval kanale, da bi se izognil motnjam vremenskega radarja. <span style="color:#FC0">Če bodo zaznani radarski signali, se bo preklopilo na 2.4GHz, kar bo povzročilo kratko prekinitev. Prizadeti kanal bo blokiran za 30 minut.</span>
+Outdoor_active_desc_2=Za skladnost s predpisi bo sistem približno 1 minuto pregledoval kanale, da bi se izognil motnjam vremenskega radarja. <span style="color:var(--wrt-badge-warning-color,#FC0)">Če bodo zaznani radarski signali, se bo preklopilo na 2.4GHz, kar bo povzročilo kratko prekinitev. Prizadeti kanal bo blokiran za 30 minut.</span>
 Outdoor_active_desc_3=Zunanji način podpira samo načina Usmerjevalnik in AP.
 Outdoor_active_desc_4=Razpoložljivi zunanji kanali se razlikujejo glede na državo/regijo.
 Outdoor_inactive_desc_1=Onemogočanje tega načina bo za kratek čas znova zagnalo brezžično povezavo in prekinilo vse naprave.
@@ -5193,6 +5293,7 @@ WiFi_DFS_REENTRY=DFS-PONOVNI VSTOP
 WiFi_ch_conflict=Spor kanalov
 WiFi_Regulatory=Regulativno
 WiFi_OFF=WiFi Izklopljen
+WiFi8_6G_enable_hint=Pas 6 GHz trenutno deluje v načinu WiFi 7. Če želite omogočiti WiFi 8, v nastavitvah Wireless Professional za 6 GHz vklopite »WiFi 8«.
 Vendor=Proizvajalec
 Connected_AP=Povezan AP
 Network_SDN=Omrežje(SDN)

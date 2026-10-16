@@ -91,7 +91,7 @@
 }
 .erHint{
 	text-align:center;
-	color:#FC0;
+	color:var(--wrt-badge-warning-color,#FC0);
 }
 .dots{
 	border-top:2px dotted #333;	

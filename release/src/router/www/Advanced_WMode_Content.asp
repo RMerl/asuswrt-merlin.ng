@@ -115,10 +115,10 @@ function initial(){
 	$("#redirect_to_setup")
 		.attr('target','_self')
 		.attr("href", "Advanced_Wireless_Content.asp")
-		.attr("style", "text-decoration:underline;color:#FFCC00;");
+		.attr("style", "text-decoration:underline;color:var(--wrt-badge-warning-color,#FFCC00);");
 	$("#redirect_to_FAQ")
 		.attr('target','_blank')
-		.attr("style", "text-decoration:underline;color:#FFCC00;cursor: pointer;");
+		.attr("style", "text-decoration:underline;color:var(--wrt-badge-warning-color,#FFCC00);cursor: pointer;");
 	document.getElementById("redirect_to_FAQ").href=faq_href;
 
 	wl_bwch_hint();
@@ -130,7 +130,7 @@ function show_wl_wdslist(){
 	var code = "";
 	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table" id="wl_wdslist_table">'; 
 	if(wl_wdslist_row.length == 1){
-		code +='<tr><td style="color:#FFCC00;"><#IPConnection_VSList_Norule#></td>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);"><#IPConnection_VSList_Norule#></td>';
 	}		
 	else{
 		for(var i = 1; i < wl_wdslist_row.length; i++){

@@ -27,14 +27,14 @@
 	width:650px;
 	height:200px;
 	position:absolute;
-	background: #293438;
+	background: var(--surface-panel, #293438);
 	z-index:10;
 	margin: 0 0 0 300px;
 	border-radius:10px;
 	display: none;
 }
 .confirm-button{
-	background: linear-gradient(#233438 0%, #0F1011 100%);
+	background: var(--surface-panel, linear-gradient(#233438 0%, #0F1011 100%));
 	border-radius: 8px;
 	height:33px;
 	cursor: pointer;
@@ -44,7 +44,7 @@
 	margin: 0 12px;
 }
 .detail-table{
-	background-color: #3C3C3C;
+	background-color: var(--wrt-card-surface-2-bg, #3C3C3C);
 	margin: 6px 3px;
 	padding: 6px 18px;
 	border-radius: 6px;
@@ -272,14 +272,14 @@ function generateBarTable(){
 				percent = 85;
 		}
 
-		code += '<div style="width:'+ percent +'%;background-color:#FC0;height:13px;border-radius:1px;display:inline-block;vertical-align:middle"></div>';
+		code += '<div style="width:'+ percent +'%;background-color:var(--wrt-badge-warning-color,#FC0);height:13px;border-radius:1px;display:inline-block;vertical-align:middle"></div>';
 		code += '<div style="display:inline-block;padding-left:5px;">'+ targetObj.hit +'</div>';
 		code += '</div>';
 		code += '</div>';
 	}
 
 	if(code == ''){
-		code += '<div style="font-size:16px;text-align:center;margin-top:70px;color:#FC0"><#AiProtection_eventnodetected#></div>';		
+		code += '<div style="font-size:16px;text-align:center;margin-top:70px;color:var(--wrt-badge-warning-color,#FFCC00)"><#AiProtection_eventnodetected#></div>';		
 	}
 
 	$("#vp_bar_table").html(code);
@@ -405,7 +405,7 @@ function TMEvent(){
 
 function generateDetailTable(dataObj){
 	var code = '';
-	code += '<div style="font-size:14px;font-weight:bold;border-bottom: 1px solid #797979">';
+	code += '<div style="font-size:14px;font-weight:bold;border-bottom: 1px solid var(--border-default, #797979)">';
 	code += '<div style="display:table-cell;width:180px;padding-right:5px;"><#diskUtility_time#></div>';
 	code += '<div style="display:table-cell;width:200px;padding-right:5px;"><#AiProtection_event_Threat#></div>';
 	code += '<div style="display:table-cell;width:150px;padding-right:5px;"><#AiProtection_event_Source#></div>';
@@ -413,11 +413,11 @@ function generateDetailTable(dataObj){
 	code += '</div>';
 
 	if(dataObj == ""){
-		code += '<div style="text-align:center;font-size:16px;color:#FC0;margin-top:90px;"><#IPConnection_VSList_Norule#></div>';
+		code += '<div style="text-align:center;font-size:16px;color:var(--wrt-badge-warning-color,#FFCC00);margin-top:90px;"><#IPConnection_VSList_Norule#></div>';
 	}
 	else{
 		for(i=0;i<Object.keys(dataObj).length;i++){
-			code += '<div style="word-break:break-all;border-bottom: 1px solid #797979">';
+			code += '<div style="word-break:break-all;border-bottom: 1px solid var(--border-default, #797979)">';
 			code += '<div style="display:table-cell;width:180px;height:30px;vertical-align:middle;padding-right:5px;">';
 			var eventID = Object.keys(dataObj)[i];
 			code += dataObj[eventID].time[0];
@@ -453,7 +453,7 @@ function showDetailEvent(obj, event){
 		temp.className = 'detail-table';
 		var code = '';
 		var data = dataObject[event];
-		code += '<div style="border-bottom: 1px solid #C0C0C0;">Count: <span style="color:#FC0;">'+ data.source.length +'</span></div>';
+		code += '<div style="border-bottom: 1px solid #C0C0C0;">Count: <span style="color:var(--wrt-badge-warning-color,#FFCC00);">'+ data.source.length +'</span></div>';
 		for(i=0; i<data.time.length; i++){
 			code += '<div style="display:flex;padding:2px 0;">';
 			code += '<div style="width: 150px;">'+ data.time[i] +'</div>';
@@ -661,7 +661,7 @@ var download = function(content, fileName, mimeType) {
 												<div style="display:table-row">
 													<div style="font-size:16px;margin:0 0 5px 5px;text-align:center"><#AiProtection_event#></div>
 												</div>
-												<div id="vulner_table" style="background-color:#444f53;width:350px;height:340px;border-radius: 10px;display:table-cell;position:relative;">
+												<div id="vulner_table" style="background-color:var(--wrt-card-surface-2-bg, #444f53);width:350px;height:340px;border-radius: 10px;display:table-cell;position:relative;">
 													<div id="bar_shade" style="position:absolute;width:330px;height:330px;background-color:#505050;opacity:0.6;margin:5px;display:none"></div>
 													<div>
 														<div style="display:table-cell;width:50px;padding: 10px;">
@@ -669,7 +669,7 @@ var download = function(content, fileName, mimeType) {
 
 														</div>	
 														<div style="display:table-cell;width:200px;padding: 10px;vertical-align:middle;text-align:center;">
-															<div id="cc_count" style="margin: 0 auto;font-size:26px;font-weight:bold;color:#FC0"></div>
+															<div id="cc_count" style="margin: 0 auto;font-size:26px;font-weight:bold;color:var(--wrt-badge-warning-color,#FFCC00)"></div>
 															<div id="cc_time" style="margin: 5px  auto 0;"></div>
 														</div>	
 														<div style="display:table-cell;width:50px;padding: 10px;">
@@ -687,7 +687,7 @@ var download = function(content, fileName, mimeType) {
 												<div style="font-size:16px;margin:0 0 5px 5px;text-align:center;"><#AiProtection_activity#></div>
 
 												<!-- Line Chart -Block-->
-												<div style="background-color:#444f53;width:350px;height:340px;border-radius: 10px;display:table-cell;padding-left:10px;position:relative">
+												<div style="background-color:var(--wrt-card-surface-2-bg, #444f53);width:350px;height:340px;border-radius: 10px;display:table-cell;padding-left:10px;position:relative">
 													<div id="chart_shade" style="position:absolute;width:350px;height:330px;background-color:#505050;opacity:0.6;margin:5px 0 5px -5px;display:none"></div>
 													<div>
 														<div style="display:inline-block;margin:5px 10px"><#AiProtection_scan_rHits#></div>		
@@ -720,10 +720,10 @@ var download = function(content, fileName, mimeType) {
 												</div>
 											</div>		
 										</div>
-										<div style="margin: 10px auto;width:720px;height:500px;background:#444f53;border-radius:10px;position:relative;overflow:auto">
+										<div style="margin: 10px auto;width:720px;height:500px;background:var(--wrt-card-surface-2-bg, #444f53);border-radius:10px;position:relative;overflow:auto">
 											<div id="info_shade" style="position:absolute;width:710px;height:490px;background-color:#505050;opacity:0.6;margin:5px;display:none"></div>
 											<div id="detail_info_table" style="padding: 10px 15px;">
-												<div style="font-size:14px;font-weight:bold;border-bottom: 1px solid #797979">
+												<div style="font-size:14px;font-weight:bold;border-bottom: 1px solid var(--border-default, #797979)">
 													<div style="display:table-cell;width:180px;padding-right:5px;"><#diskUtility_time#></div>
 													<div style="display:table-cell;width:200px;padding-right:5px;"><#AiProtection_event_Threat#></div>
 													<div style="display:table-cell;width:150px;padding-right:5px;"><#AiProtection_event_Source#></div>

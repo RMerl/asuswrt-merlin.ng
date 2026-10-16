@@ -138,7 +138,7 @@ function initial(){
 		$("#ftpPortConflict").show();
 		var text = httpApi.ftp_port_conflict_check.usb_ftp.hint;
 		text += "<br>";
-		text += "<a id='ftp_port_conflict_faq' href='' target='_blank' style='text-decoration:underline;color:#FC0;'><#FAQ_Find#></a>";
+		text += "<a id='ftp_port_conflict_faq' href='' target='_blank' style='text-decoration:underline;color:var(--wrt-badge-warning-color,#FFCC00);'><#FAQ_Find#></a>";
 		$("#ftpPortConflict").html(text);
 	}
 
@@ -917,7 +917,7 @@ function secure_check(flag){
 									}
 								);
 							</script>
-							<span id="loginMethod" style="color:#FC0"></span>
+							<span id="loginMethod" style="color:var(--wrt-badge-warning-color,#FFCC00)"></span>
 						</div>	
 					</td>
 				</tr>
@@ -926,7 +926,7 @@ function secure_check(flag){
 					<td>
 						<input type="radio" name="ftp_tls" class="input" value="1" <% nvram_match_x("", "ftp_tls", "1", "checked"); %> onChange="secure_check(1);"><#checkbox_Yes#>
 						<input type="radio" name="ftp_tls" class="input" value="0" <% nvram_match_x("", "ftp_tls", "0", "checked"); %> onChange="secure_check(0);"><#checkbox_No#>
-						<span id="TLS_disabled" style="color:#FC0;margin-left:10px;"></span>
+						<span id="TLS_disabled" style="color:var(--wrt-badge-warning-color,#FFCC00);margin-left:10px;"></span>
 					</td>
 				</tr>
 				<tr>
@@ -969,7 +969,7 @@ function secure_check(flag){
 		<table width="740px"  height="35" cellpadding="2" cellspacing="0" class="accountBar">
 			<tr>
 				<!-- The action buttons of accounts. -->
-				<td width="25%" style="border: 1px solid #222;">
+				<td width="25%" style="border: 1px solid var(--border-default, #222);">
 					<table align="right">
 						<tr id="trAccount" style="display:none;">
 							<td><div id="createAccountBtn" title="<#AddAccountTitle#>"></div></td>
@@ -1024,7 +1024,7 @@ function secure_check(flag){
 			  		</table>
 			 	 <!-- the tree of folders -->
   		      	<div id="e0" style="font-size:10pt; margin-top:2px;"></div>
-			  	<div style="text-align:center; margin:10px auto; border-top:1px dotted #CCC; width:95%; padding:2px;">
+			  	<div style="text-align:center; margin:10px auto; border-top:1px dotted var(--border-default, #CCC); width:95%; padding:2px;">
 					<input name="changePermissionBtn" id="changePermissionBtn" type="button" value="<#CTL_onlysave#>" class="button_gen_dis" disabled="disabled">
 			  	</div>
 		    		</td>

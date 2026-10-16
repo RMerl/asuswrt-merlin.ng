@@ -123,7 +123,7 @@ function gen_mainTable(){
 	code +='<td style="border-bottom:2px solid #000;"><input type="text" maxlength="17" class="input_macaddr_table" name="PC_mac" onKeyPress="return validator.isHWAddr(this,event)" autocorrect="off" autocapitalize="off"></td>';
 	code +='<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onClick="addRow_main(16)" value=""></td></tr>';
 	if(kg_devicename == "" && kg_mac == "")
-		code +='<tr><td style="color:#FFCC00;" colspan="4"><#IPConnection_VSList_Norule#></td>';
+		code +='<tr><td style="color:var(--wrt-badge-warning-color,#FFCC00);" colspan="4"><#IPConnection_VSList_Norule#></td>';
 	else{
 		for(var i=0; i<kg_devicename_row.length; i++){
 			code +='<tr id="row'+i+'">';
@@ -383,7 +383,7 @@ function show_wl_radio(){
 											</td>
 											<td>&nbsp;&nbsp;</td>
 											<td style="font-size: 14px;">
-												<span>Key Guard let you assign specific devices as keys to lock/unlock router's feature. <br>For example, if you are not in the home, the router is unnecessary to run at full speed to save power and you may also want to disable the internet connection for better security.</span><br><span style="font-style: italic;font-size: 12px;color: #FFCC00;">Note:If there are IOT devices such as IPCam or smart thermostat which require internet connection all the time, pleaes test this feature at home first to ensure the IOT devices work well when key devices do not connect to router.</span>
+												<span>Key Guard let you assign specific devices as keys to lock/unlock router's feature. <br>For example, if you are not in the home, the router is unnecessary to run at full speed to save power and you may also want to disable the internet connection for better security.</span><br><span style="font-style: italic;font-size: 12px;color: var(--wrt-badge-warning-color,#FFCC00);">Note:If there are IOT devices such as IPCam or smart thermostat which require internet connection all the time, pleaes test this feature at home first to ensure the IOT devices work well when key devices do not connect to router.</span>
 											</td>
 										</tr>
 									</table>

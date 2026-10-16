@@ -26,9 +26,9 @@ AiMesh_Node_desc2=Sila pergi ke halaman tetapan AiMesh penghala sedia ada anda u
 AiMesh_Notice1=Perubahan yang dilakukan pada tetapan wayarles anda akan menjejaskan rangkaian jejaring anda.
 AiMesh_Add_Another_Node_confirm=Adakah anda mahu menambah nod lain?
 AiMesh_Add_Another_Node=Tambah nod lain
-AiMesh_Adding_Node=Adding the AiMesh node...
-AiMesh_Node_joining=The node is joining the network...
-AiMesh_Node_activating=Activating your mesh network...
+AiMesh_Adding_Node=Adding the AiMesh node....
+AiMesh_Node_joining=The node is joining the network....
+AiMesh_Node_activating=Activating your mesh network....
 AiMesh_backhaul_band_5GHz-2_desc1=is now used as dedicated WiFi backhaul under AiMesh mode.
 AiMesh_backhaul_band_5GHz-2_desc11=%@ is now used as dedicated WiFi backhaul under AiMesh mode.
 AiMesh_backhaul_band_5GHz-2_desc2=Sila pergi ke <span class="faq-link" onclick="parent.location.href=\'/Advanced_Wireless_Content.asp\'">di sini</span> untuk tetapan wayarles terperinci.
@@ -83,6 +83,8 @@ AiMesh_Topology_Line_Wired_Great=Sambungan berwayar dengan kualiti sambungan heb
 AiMesh_Topology_Line_Wired_Normal=Sambungan berwayar dengan kualiti sambungan biasa
 AiMesh_Topology_FAQ_old=Untuk maklumat yang lebih terperinci berkenaan GUI AiMesh baharu, sila rujuk Soalan Lazim ini.
 AiMesh_Topology_FAQ=Untuk maklumat yang lebih terperinci berkenaan GUI AiMesh baharu, sila rujuk <a id="Intro_AiMesh">Soalan Lazim</a> ini.
+AiMesh_Topology_inst_FAQ_old=For instructions on setting up the AiMesh system, please refer to this FAQ.
+AiMesh_Topology_inst_FAQ=For instructions on setting up the AiMesh system, please refer to this <a id='connect_line_info_faq'>FAQ</a>
 AiMesh_OB_hint=For optimal performance, we recommend using a newer model for your node. Using legacy devices may limit your overall AiMesh network stability and speed.
 AiMesh_Add_Anyway=Add Anyway
 AiMesh_Proceed_Anyway=Proceed Anyway
@@ -102,7 +104,7 @@ APSurvey_msg_connect_open_wlan=Anda mencoba untuk terhubung ke jaringan yang tid
 APSurvey_msg_connected=Anda sudah bersambung kepada titik akses ini.
 APSurvey_msg_non_support_Auth=Kaedah pengesahan tidak disokong.
 APSurvey_msg_waiting_to_connect=Sila tunggu, ZVMODELVZ sedang menyambung kepada
-ASUS_Registration=Jadi Ahli ASUS dan terima maklumat produk terkini. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Daftar Sekarang!</a>
+ASUS_Registration=Jadi Ahli ASUS dan terima maklumat produk terkini. <a style='color:var(--wrt-badge-warning-color,#FC0)' target='_blank' href='https://account.asus.com'>Daftar Sekarang!</a>
 ASUS_Notice=NOTIS ASUS
 ASUS_privacy_desc=Sila ambil perhatian bahawa pengguna perlu bersetuju untuk berkongsi maklumat mereka sebelum menggunakan DDNS, Sambungan Jauh (APLIKASI Penghala ASUS、APLIKASI Lyra、AiCloud、AiDisk), AiProtection, Penganalisis Trafik, Penganalisis Aplikasi, QoS Mudah Suai, Rangsangan Permainan dan sejarah Web. Pada bila-bila masa, pengguna boleh mencari kandungan terma pada halaman ini atau berhenti berkongsi maklumat mereka bersama pihak lain dengan memilih <a style="font-weight: bolder;">Keluar</a>.
 ASUS_eula_desc0=Selamat datang untuk menggunakan sambungan DDNS/ Jauh  (APLIKASI Penghala ASUS/APLIKASI Lyra/AiCloud/AiDisk). Sila baca maklumat berikut dengan teliti:
@@ -186,8 +188,8 @@ ASUS_EULA_Law_12=Governing Law And Jurisdiction
 ASUS_EULA_Law_12_Desc=All quotations, confirmation of orders, this EULA and sales relationship between you and ASUS shall be governed by and construed in accordance with the laws of the location of ASUS, without regard to its conflicts of laws principles. All disputes, controversies or differences which may arise between the parties hereto, out of, in relation to or in connection with this EULA shall be settled through friendly consultations between the parties. If the dispute, controversy or difference cannot be settled, both parties agree to submit to the jurisdiction of the court where the ASUS is located.
 ASUS_EULA_Info=By using ASUS networking products, you agree to be bound by the terms and conditions outlined in the End User License Agreement.
 ASUS_POLICY_Age_Check=I am above the age of 16 years.
-ASUS_POLICY_QIS_Desc=It is important to read this term before utilizing a networking product. By clicking at “Agree” button, you agree to be bound by the terms. ​
-ASUS_POLICY_QIS_Desc_v5=It is important to read this term before utilizing a networking product. By clicking at “%@” button, you agree to be bound by the terms. ​
+ASUS_POLICY_QIS_Desc=It is important to read this term before utilizing a networking product. By clicking at “Agree” button, you agree to be bound by the terms.
+ASUS_POLICY_QIS_Desc_v5=It is important to read this term before utilizing a networking product. By clicking at “%@” button, you agree to be bound by the terms.
 ASUS_POLICY_Update_Notice=Dear users, thank you for your ongoing support of this product. In order to comply with privacy regulations in various countries and further protect your data, we have updated the ASUS Privacy Notice. Please update it before using ASUS networking products.
 ASUS_POLICY_Read_Again=Read again
 ASUS_POLICY_Know_Risk=I understood the risk
@@ -370,7 +372,7 @@ CTL_UpgradeNight=Naik Taraf Pada Malam
 CTL_UpgradeNow=Upgrade Now
 default_passwd_checkbox=Use default Local Login Password
 default_passwd_desc=The default encrypted Local Login Password provides a secure login process when you connect to this ASUS networking device locally.
-defaultHint=Untuk butiran lanjut, sila lawati <a style="font-weight: bolder;text-decoration: underline;color:#000000;" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
+defaultHint=Untuk butiran lanjut, sila lawati <a style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#000000);" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
 Detect_consume_warning1=* Paket ping minimum menggunakan lebih kurang 128 bait bagi satu selang. Oleh itu, pengesan ping akan menggunakan
 Detect_consume_warning2=MBait bagi sebulan
 Disconnected=Dinyahsambung
@@ -409,7 +411,7 @@ OpenDNS_Home=OpenDNS Home
 OpenDNS_Family=OpenDNS Family
 Yandex_Safe=Yandex Safe
 Yandex_Family=Yandex Family
-Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:#FFCC00;" href="DNSFilter.asp">DNSFilter</a> didayakan - apa-apa yang dikonfigurasikan di sana untuk sesuatu selain Tiada Penapisan atau Penghala akan memintas pelayan Privasi DNS.
+Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:var(--wrt-badge-warning-color,#FFCC00);" href="DNSFilter.asp">DNSFilter</a> didayakan - apa-apa yang dikonfigurasikan di sana untuk sesuatu selain Tiada Penapisan atau Penghala akan memintas pelayan Privasi DNS.
 Enable_user_target=Dayakan Sasaran Yang Ditetapkan oleh Pengguna
 Enable_Login_Captcha=Dayakan Captcha Log Masuk
 Encrypted_field=Encrypted field
@@ -616,7 +618,7 @@ Offline_desc2=Perubahan telah dibuat ke alamat IP atau nombor port. Anda sekaran
 Offline_desc3=Untuk mengakses tetapan ZVMODELVZ, sambung semula ke rangkaian wayarles dan gunakan alamat IP dan nombor port yang dikemas kini.
 OP_AP_desc=Dalam mod Pusat Akses(AP), ZVMODELVZ terhubung ke router nirkabel melalui kabel Ethernet untuk memperluas jangkauan sinyal nirkabel untuk klien jaringan lainnya. Dalam mode ini, firewall, IP sharing, dan NAT functions dinonaktifkan sesuai dengan pengaturan awal.
 AiMesh_AP_desc=Penghala AiMesh dalam mod AP bersambung ke penghala wayarles menerusi kabel Ethernet untuk meluaskan isyarat wayarles ke klien rangkaian lain. Dalam mod ini, firewall (tembok api), perkongsian IP dan fungsi NAT dinyahdayakan secara lalai.
-OP_AP_hint=Anda juga boleh pergi ke <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">http://findasus.local</a> untuk mencari dan memasuki halaman konfigurasi peranti.
+OP_AP_hint=Anda juga boleh pergi ke <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">http://findasus.local</a> untuk mencari dan memasuki halaman konfigurasi peranti.
 OP_AP_item=Mod Pusat Akses(AP)
 AiMesh_AP_item=Mod Titik Akses (AP) / Penghala AiMesh dalam mod AP
 OP_Choose=Choose operation mode
@@ -635,7 +637,7 @@ OP_MB_desc4=Mengkonfigurasi satu ZVMODELVZ sebagai router dan ZVMODELVZ lainnya 
 OP_MB_desc5=Merubah ke mode Media Bridge (Titi Media) untuk memberikan simultan koneksi WiFi untuk perangkat media Anda.
 OP_MB_desc6=Dalam mode Media Bridge, hanya perangkat nirkabel terhubung ke P-AP. Perangkat klien harus terhubung ke Media Bridge dengan kabel jaringan.
 OP_MB_desc7=ZVMODELVZ dalam mod jejambat media. Alamat IP telah ditukar.
-OP_MB_desc8=Sila muat turun <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:#FC0;'>Device Discovery Utility</a> untuk mengenal pasti alamat IP jejambat media.
+OP_MB_desc8=Sila muat turun <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>Device Discovery Utility</a> untuk mengenal pasti alamat IP jejambat media.
 OP_MB_desc9=Sila semak jika anda telah cabut palam kabel sambungan daripada port WAN.
 OP_RE_desc=Dalam mod Pengulang, ZVMODELVZ nirkabel terhubung ke jaringan nirkabel yang ada untuk memperluas jangkauan nirkabel. Dalam mode ini, firewall, IP sharing dan NAT functions di nonaktifkan.
 OP_RE_desc1=Alamat IP LAN bagi ZVMODELVZ mungkin telah ditukar.
@@ -817,7 +819,7 @@ qis_simple_wls_recmd=(lawatan)
 QIS_SmartConn_ISPDesc=ISP anda harus memberikan anda kad atau dokumen dengan ID pengguna dan kata laluan * Dokumen sampel adalah contoh untuk tujuan ilustrasi sahaja.
 QIS_SmartConn_ISPDesc2=Masukkan ID pengguna dan kata laluan untuk maklumat sambungan Internet anda. Maklumat ini diberikan oleh Pembekal Perkhidmatan Internet (ISP).
 QIS_SmartConn_ISPDesc3=Enter the PPPoE username and password provided by your Internet Service Provider (ISP) for your internet connection.
-QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:#FC0;">xxxxxxxx@hinet.net</span>
+QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:var(--wrt-badge-warning-color,#FC0);">xxxxxxxx@hinet.net</span>
 QIS_SmartConn_Scen1=Senario sambungan 1
 QIS_SmartConn_Scen2=Senario sambungan 2
 QIS_SmartConn_StaticDesc=ISP anda harus memberikan anda maklumat mengenai IP, subnet mask, gateway, dan alamat DNS. Jika tidak, sila hubungi ISP anda.
@@ -999,10 +1001,10 @@ QKSet_ISP_desc=Sila rujuk kepada seting ISP anda dan input maklumat berkaitan.
 QKSet_ISP_desc2=Sambungan IP statik gagal.
 QKSet_ISP_desc3=Sambungan IP automatik gagal. Anda boleh mengkonfigurasi di sini secara manual.
 QKSet_ISP_head=Seting Maklumat ISP
-QKset_restore_0=Klik <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Menyimpan semula seting</label></a> untuk memuat kembali pengaturan konfigurasi.
-QKset_restore_1=Klik <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Menyimpan semula seting</label></a> untuk mengembalikan konfigurasi jika Anda telah membuat cadangan pengaturan konfigurasi sebelum router di reset.
-QKset_setup_manual_0=Klik <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Tetapan Manual</label></a> secara manual mengatur jaringan nirkabel Anda jika Anda tahu jenis koneksi ISP Anda.
-QKset_setup_manual_1=Klik <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Tetapan Manual</label></a> secara manual mengatur pengaturan router lanjutan atau mengatur ZVMODELVZ untuk bekerja
+QKset_restore_0=Klik <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Menyimpan semula seting</label></a> untuk memuat kembali pengaturan konfigurasi.
+QKset_restore_1=Klik <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Menyimpan semula seting</label></a> untuk mengembalikan konfigurasi jika Anda telah membuat cadangan pengaturan konfigurasi sebelum router di reset.
+QKset_setup_manual_0=Klik <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Tetapan Manual</label></a> secara manual mengatur jaringan nirkabel Anda jika Anda tahu jenis koneksi ISP Anda.
+QKset_setup_manual_1=Klik <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Tetapan Manual</label></a> secara manual mengatur pengaturan router lanjutan atau mengatur ZVMODELVZ untuk bekerja
 QKset_skip_setup=Anda adalah seorang ahli jaringan nirkabel dan ingin melewatkan petunjuk penggunaan internet?
 QKSet_type_desc=Silakan pilih jenis koneksi Internet yang ISP Anda sediakan.
 QKSet_type_head=Jenis sambungan WAN Internet
@@ -1027,7 +1029,7 @@ Select_menu_default=Sila pilih
 Sign_in_title=Daftar masuk dengan akaun penghala ASUS anda
 [###MODEL_DEP###][RP-AC87][RP-AC68U][RP-AC66U][RP-AC55][RP-AC53][RP-AC52][RP-AC51][RP-AC92]Sign_in_title=Daftar masuk dengan akaun pengulang ASUS anda
 SLM_Ask=Ask Router Assistant...
-SLM_Loading=Loading...
+SLM_Loading=Loading…
 SLM_Thinking=Thinking...
 SLM_not_installed=Please double check that the router assistant is running in Portainer and that the port (8090) is not overlapping with other services. Also, ensure that slm-asus is running in Portainer. If the problem persists, try restoring AiBoard.
 SLM_no_response=Service is activating. Please try again in about 3 minutes.
@@ -1053,6 +1055,7 @@ Status_RAM=RAM
 Status_Used=Digunakan
 Status_Free=Kosong
 Status_Total=Jumlah
+Status_LoggingIn=Logging in…
 statusTitle_AP=Status Titik Akses
 statusTitle_System=ASUS ZVMODELVZ
 System_act_connections=Sambungan Aktif
@@ -1077,7 +1080,7 @@ TBVLAN_UPort=Port Tidak Bertag
 TBVLAN_TPort=Port Bertag
 TBVLAN_WirelessInf=Antara Muka Wayarles
 TBVLAN_EditSubnetProfile=Edit Profil Subnet
-TBVLAN_Subnet_desc=Pilih subnet yang anda cipta atau pilih &quot;Subnet Baharu&quot; bagi mencipta subnet baharu untuk VLAN. Jika anda memerlukan konfigurasi lanjut DHCP, sila konfigurasi pada<a style='color:#FFF; text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> pelayan DHCP</a>.
+TBVLAN_Subnet_desc=Pilih subnet yang anda cipta atau pilih &quot;Subnet Baharu&quot; bagi mencipta subnet baharu untuk VLAN. Jika anda memerlukan konfigurasi lanjut DHCP, sila konfigurasi pada<a style='color:var(--wrt-text-color,#FFF); text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> pelayan DHCP</a>.
 TBVLAN_BindingInf=Antara Muka Pengikatan
 TBVLAN_NoBindingInf=Tiada antara muka pengikatan yang tersedia.
 TBVLAN_BindingInf_Hint=Sila tambah antara muka pengikatan.
@@ -1108,20 +1111,20 @@ WANPPPAuthText=Pengesahan PPP
 WAN_type_detected=WAN type detected
 WAN_auto_detected=WAN Auto Detection
 web_redirect_case1_suggestion1=Pastikan bahawa kabel anda telah disambungkan ke port WAN ZVMODELVZ dan modem anda.
-web_redirect_case1_suggestion2=Semak jika <a style='color:#FFF' href='/Advanced_OperationMode_Content.asp'>Mod Operasi</a> anda perlu diubah.
-web_redirect_case2_suggestion1=Akaun atau kata laluan PPPoE salah, sila <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>semak</a>.
+web_redirect_case1_suggestion2=Semak jika <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_OperationMode_Content.asp'>Mod Operasi</a> anda perlu diubah.
+web_redirect_case2_suggestion1=Akaun atau kata laluan PPPoE salah, sila <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>semak</a>.
 web_redirect_case2_title1=Kegagalan Pengesahan PPPoE
 web_redirect_case3_button=Ubah jenis WAN anda
-web_redirect_case3_suggestion1=Pastikan bahawa <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>Tetapan Sambungan</a>anda adalah betul.
-web_redirect_case5_suggestion1=Dayakan <a style='color:#FFF' href='/'>Sambungan WAN</a> anda
+web_redirect_case3_suggestion1=Pastikan bahawa <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>Tetapan Sambungan</a>anda adalah betul.
+web_redirect_case5_suggestion1=Dayakan <a style='color:var(--wrt-text-color,#FFF)' href='/'>Sambungan WAN</a> anda
 web_redirect_case5_suggestion2=Pastikan bahawa modem USB anda telah dihidupkan.
-web_redirect_case5_suggestion3=Ubah <a style='color:#FFF' href='/Advanced_Modem_Content.asp'>Tetapan Modem USB</a> anda.
+web_redirect_case5_suggestion3=Ubah <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_Modem_Content.asp'>Tetapan Modem USB</a> anda.
 web_redirect_case5_title1=Sambungan WAN anda telah dinyahdayakan.
 web_redirect_case5_title2=Modem USB anda tidak bersambung.
 web_redirect_case6_desc1=Klik [Seterusnya] untuk menggunakan alamat IP berikut:
 web_redirect_case6_desc2=Pastikan bahawa semua perkhidmatan berkaitan menggunakan alamat IP baharu anda (cth. Pemajuan Port, DMZ dsb.)
 web_redirect_case8_suggestion1=Sahkan bahawa AP Induk anda boleh bersambung ke Internet.
-web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>Ubah tetapan sambungan</a>.
+web_redirect_case8_suggestion2=<a style='color:var(--wrt-text-color,#FFF)' href='/QIS_wizard.htm?flag=manual'>Ubah tetapan sambungan</a>.
 web_redirect_case8_title=Tidak dapat menyambung ke AP Induk.
 web_redirect_case9_suggestion1=Pastikan bahawa penghala AiMesh anda telah dihidupkan.
 web_redirect_case9_suggestion2=Mulakan semula penghala AiMesh anda dan cuba lagi.
@@ -1171,6 +1174,11 @@ Web_Title=Penghala Wayarles ASUS ZVMODELVZ
 [###MODEL_DEP###][YY]Web_Title=Titik Akses ASUS ZVMODELVZ
 Web_Title2=ZVMODELVZ
 Web_DOMAIN_NAME=ZVDOMAIN_NAMEVZ
+WiFi_MLO_connect_confirmTitle=Use MLO connection
+WiFi_MLO_same_model_desc=MLO (Multi-Link Operation) is currently supported only between the same ASUS router model. If the models are different, the connection may fail.
+WiFi_MLO_connect_try=Try to connect using MLO.
+WiFi_MLO_connect_veto=Use standard single-band connection instead.
+WiFi_MLO_connect_confirm=Do you want to use MLO connection?
 wireless_configured=Dikonfigurasikan
 Wireless_name=Nama wayarles
 wireless_router=Penghala Wayales
@@ -1253,6 +1261,7 @@ ADSL_FW_note=Perhatian:
 adsl_fw_ver_itemname=Versi Pemacu DSL
 adsl_link_sts_itemname=Status Pautan DSL
 adv_wl_desc=Susun atur maklumat berkaitan wayarles di bawah.
+AiBoard_rescue_fail=AI Board rescue failed
 AiCloud_account_status=Status Akaun
 AiCloud_account_unlock=Buka kunci
 aicloud_bandwidth1=Anda memerlukan sambungan Internet jalur lebar untuk pengalaman menonton dan mendengar terbaik. Rujuk kepada cadangan di bawah :
@@ -1365,12 +1374,12 @@ AiMesh_FindNode_confirm=Saya tidak menemui nod AiMesh saya?
 AiMesh_FindNode_confirm_WPS=WPS akan didayakan apabila mencari nod AiMesh.
 AiMesh_FindNode_Desc=Cari nod AiMesh tersedia yang berdekatan untuk menyertai sistem AiMesh anda.
 AiMesh_FindNode_Not=Tidak menemui sebarang nod AiMesh yang berdekatan.
-AiMesh_FindNode_Not_advA=Jika peranti ini ditugaskan sebagai <span style='color:#569AC7;'>penghala AiMesh</span>, sila semak perkara berikut dan cuba lagi.
+AiMesh_FindNode_Not_advA=Jika peranti ini ditugaskan sebagai <span style='color:var(--wrt-link-color,#569AC7);'>penghala AiMesh</span>, sila semak perkara berikut dan cuba lagi.
 AiMesh_FindNode_Not_advA1=Kuasa nod AiMesh anda dihidupkan
 AiMesh_FindNode_Not_advA2=Nod AiMesh anda mempunyai perisian tegar terkini
 AiMesh_FindNode_Not_advA3=Nod AiMesh anda telah ditetapkan semula ke lalai
 AiMesh_FindNode_Not_advA4=Alihkan nod AiMesh anda hampir dengan penghala AiMesh
-AiMesh_FindNode_Not_advB=Jika peranti ini ditugaskan sebagai <span style='color:#569AC7;'>nod AiMesh</span>, sila semak perkara berikut dan cuba lagi.
+AiMesh_FindNode_Not_advB=Jika peranti ini ditugaskan sebagai <span style='color:var(--wrt-link-color,#569AC7);'>nod AiMesh</span>, sila semak perkara berikut dan cuba lagi.
 AiMesh_FindNode_Not_advB1=Tolak butang tetapkan semula pada peranti ini dan kemudian, tunggu.
 AiMesh_FindNode_Not_advB2=Log masuk ke GUI penghala AiMesh anda dan klik pada ikon AiMesh.
 AiMesh_FindNode_Not_advB3=Naik taraf perisian tegar penghala AiMesh anda jika anda tidak menemui ikon AiMesh pada GUI penghala.
@@ -1661,7 +1670,7 @@ AiProtection_sites_block_desc=Mengehadkan akses kepada laman web hasad dalam pan
 [###MODEL_DEP###][GT-AC5300]AiProtection_sites_block_desc=Penyekatan Tapak Hasad menyekat akses kepada tapak web hasad yang diketahui untuk mencegah perisian hasad, spam, perisian iklan, menggodam atau perisian tebusan daripada menyerang peranti rangkaian anda.
 AiProtection_sites_blocking=Pemblokan Tapak Hasad
 AiProtection_ARK_Malicious_Site_blocking=Malicious Sites and Infected Device Blocking
-AiProtection_ARK_Malicious_Site_blocking_desc=Restrict access to known malicious websites to protect your network from malware, phishing, spam, adware, hacking, and ransomware attacks.
+AiProtection_ARK_Malicious_Site_blocking_desc=Restrict access to known malicious websites to protect your network from malware, phishing, spam, hacking, and ransomware attacks.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]AiProtection_sites_blocking=Sekat Laman Hasad
 AiProtection_sites_trust=Tambah domain yang anda percayai dan buka kunci ia dengan AiProtection
 AiProtection_sites_trust_add=Tambah domain ke senarai putih
@@ -1716,6 +1725,7 @@ AiProtection_rule_exist=This device already has a rule. Please remove it before 
 ArkMigrationNote=Note
 ArkMigrationNote_1=Due to privacy and system optimizations, %@ now utilize local detection. Existing profile rules must be re-configured manually.
 ArkMigrationNote_2=These features are not backward compatible with previous firmware; downgrading will require a factory reset.
+ArkAiProtectionInfo=Some websites may be affected by Advertisement Blocking or Tracker Blocking due to their use of advertising or tracking services. If you experience issues accessing a website, please try disabling the above features and reload the page.
 FamilyContentBlock=Family Content Block
 BwLimiter_Switch=Bandwidth Limiter Switch
 BwLimiter_Download=Download Bandwidth
@@ -1724,6 +1734,7 @@ BwLimiter_NewDevice=new device
 BwLimiter_Status=Status
 BwLimiter_Delete=Delete
 SearchDevice_By_Name_Mac_Ip=Search Device Name, MAC, or IP
+SearchDevice_By_Name_Mac_Ip_Subnet=Search Device Name, MAC, IP, or Subnet
 BwLimiter_Target=Target
 BwLimiter_enter_bandwidth=Enter a bandwidth value.
 BwLimiter_max=Bandwidth limit rules have reached the maximum (32).
@@ -1874,7 +1885,7 @@ Bandwidth_Setting=Bandwidth Setting
 BasicConfig_EnableDHCPFilter_itemname=Enable DHCP Filter
 BasicConfig_EnableDownloadMachine_itemname=Mendayakan Muat Turun Utama?
 BasicConfig_EnableDownloadShare_itemname=Mendayakan Muat Turun Perkongsian?
-BasicConfig_EnableiTunesServer_itemname=Mendayakan iTunes Server?
+BasicConfig_EnableiTunesServer_itemname=Mendayakan iTunes Server
 BasicConfig_EnableMediaServer_itemname=Mendayakan UPnP
 BlackList=Senarai Hitam
 Block=Sekat
@@ -1965,7 +1976,9 @@ btn_go=PERGI
 btn_goSetting=Go Setting
 btn_remove=Keluar
 btn_send=Menghantar
+btn_resend=Resend
 btn_to_WAN=tetapan WAN
+btn_verify=Verify
 Capability=Keupayaan
 Captcha=Captcha
 Captcha_note=Sila masukkan captcha.
@@ -2122,6 +2135,7 @@ CTL_reconnection=Autosambung semula
 CTL_refresh=Muat Semula
 CTL_Reset_OOB=Setkan Semula
 CTL_restore=Simpan Semula
+CTL_restore_again=Restore again
 CTL_scan=Imbas
 CTL_search=Cari
 CTL_secure=Selamat Router anda
@@ -2158,6 +2172,9 @@ DDNS_https_cert_alert=Please select correct SSL certificate file.
 DDNS_ipv6_update=kemas kini IPv6
 DDNS_ipv6_update_desc=Jika persekitaran rangkaian pelanggan menggunakan alamat rangkaian IPv6, menunjukkan ciri ini akan menyelesaikan domain ke alamat rangkaian IPv6 apabila peranti jauh mengakses.
 DDNS_ssl_cert=Sijil SSL
+DDNS_status=DDNS Status
+DDNS_reg_result=DDNS Registration Result
+DDNS_root_ca=Root Certificate/Intermediate Certificate
 DDNS_termofservice_Title=Terma perkhidmatan
 DDNS_transfer=Transfer ASUS DDNS name
 DDNS_verification_enable=Pengesahan IP WAN dan nama hos
@@ -2179,10 +2196,10 @@ Device_type_03_AP=Pusat Akses
 Device_type_04_NS=NAS
 Device_type_05_IC=Kamera IP
 Device_type_06_OD=Peranti Lain
-deviceDiscorvy2=Dalam Mod Pengulang, DHCP-penetapan alamat IP DHCP berubah. Menginstal dan menggunakan Perangkat <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> untuk mendapatkan alamat IP router nirkabel yang baru.
-deviceDiscorvy3=Dalam mod Titik Akses (Access Point), DHCP-penetapan alamat IP berubah. Menginstal dan menggunakan perangkat <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> untuk mendeteksi alamat IP router nirkabel.
-AiMesh_deviceDiscorvy3=Apabila Penghala AiMesh dalam mod AP, alamat IP yang diperuntukkan untuk DHCP berubah. Pasang dan gunakan <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> untuk mengesan alamat IP penghala wayarles.
-deviceDiscorvy4=Dalam Jambatan Media, alamat IP yang diberikan oleh DHCP akan berubah. Pasang dan gunakan <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a>  untuk mendapatkan alamat IP baharu penghala wayarles.
+deviceDiscorvy2=Dalam Mod Pengulang, DHCP-penetapan alamat IP DHCP berubah. Menginstal dan menggunakan Perangkat <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> untuk mendapatkan alamat IP router nirkabel yang baru.
+deviceDiscorvy3=Dalam mod Titik Akses (Access Point), DHCP-penetapan alamat IP berubah. Menginstal dan menggunakan perangkat <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> untuk mendeteksi alamat IP router nirkabel.
+AiMesh_deviceDiscorvy3=Apabila Penghala AiMesh dalam mod AP, alamat IP yang diperuntukkan untuk DHCP berubah. Pasang dan gunakan <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> untuk mengesan alamat IP penghala wayarles.
+deviceDiscorvy4=Dalam Jambatan Media, alamat IP yang diberikan oleh DHCP akan berubah. Pasang dan gunakan <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a>  untuk mendapatkan alamat IP baharu penghala wayarles.
 DeviceSecurity11a_display1_sectiondesc=Penapis MAC Wayarles membenarkan anda mengawal paket daripada peranti dengan alamat MAC ditentukan dalam LAN Wayarles anda.
 DHCP_query_freq=Kekerapan pertanyaan DHCP
 DHCPaggressive=Mod Agresif
@@ -2359,13 +2376,16 @@ Enable_ncb_Non_Block=Jangan sekat
 Enable_ncb_Limited_Block=Sekatan terhad
 Enable_ncb_All_Block=Sekat sepenuhnya
 Encap_mode_help=ZVMODELVZ provides two modes for encapsulating or transporting LAN and WAN protocols via ATM. Please select the appropriate Encapsulation Mode.
+Energy_Saving_conflict_hint1=Actual behavior may differ due to interactions between the main feature and Energy Saving settings.
+Energy_Saving_conflict_hint2=To ensure consistent behavior between the main feature and Energy Saving, the current settings will be applied as the priority.
+Energy_Saving_affected_setting=Affected settings: (%@)
 Ethernet_wan=Ethernet WAN
 Excute=Memasang
 Excute_processing=Memasang...
 External=Luaran sahaja
 Extend_TTL_Value=Lanjutkan nilai TTL
 EZQoS=Pengurusan Lebar Jalur EZQoS
-EzQoS_bandwidth_note1=Isikan muat naik dan muat turun Dapatkan maklumat jalur lebar daripada ISP atau pergi ke <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:#FC0;">http://speedtest.net</a> untuk memeriksa lebar jalur.
+EzQoS_bandwidth_note1=Isikan muat naik dan muat turun Dapatkan maklumat jalur lebar daripada ISP atau pergi ke <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);">http://speedtest.net</a> untuk memeriksa lebar jalur.
 EzQoS_bandwidth_note2=Lalai adalah 0, yang bermaksud lebar jalur tanpa had.
 EzQoS_desc=Kualiti Perkhidmatan (QoS) memastikan jalur lebar untuk tugasan utama dan aplikasi.
 EzQoS_desc_Adaptive=<span style="font-weight:bolder;font-size:14px;">QoS Mudah Suai</span> memastikan lebar jalur dalam dan luar pada kedua-dua sambungan wayarles dan tanpa wayar untuk aplikasi dan tugasan utama melalui pratetapan, pratetap seret dan jatuh;  permainan, penstriman media, VoIP, melayari internet dan memindahkan fail.
@@ -2432,11 +2452,11 @@ feedback_email_alert=Format alamat e-mel tidak sah.
 feedback_email_confirm=Medan alamat E-mel kosong. Anda pasti hendak meneruskan?
 feedback_extra_info=Maklumat tambahan untuk penyahpepijatan
 feedback_fail0=Gagal untuk menghantar maklum balas anda. Sila semak sambungan Internet anda dan cuba lagi.
-feedback_fail1=<span style="color:#FC0;">Sistem gagal untuk menyambung ke pelayan mel.</span> Anda boleh menghantar e-mel secara terus kepada
+feedback_fail1=<span style="color:var(--wrt-badge-warning-color,#FC0);">Sistem gagal untuk menyambung ke pelayan mel.</span> Anda boleh menghantar e-mel secara terus kepada
 feedback_fail2=Hanya salin kandungan di bawah dan tampalkannya sebagai kandungan e-mel anda.
 feedback_fail3=Muat turun fail nyahpepijat berikut dan tambahkannya sebagai lampiran e-mel.
 feedback_fail0_new=The system failed to connect to the Feedback server.
-feedback_fail1_new=<span>If you encounter any usage issues or need technical support, please contact ASUS Customer Service Center&nbsp;<a class="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Official Support | ASUS Global)</a> first.</span>
+feedback_fail1_new=<span>If you encounter any usage issues or need technical support, please contact ASUS Customer Service Center&nbsp;<a class="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Official Support | ASUS Global)</a> first.</span>
 feedback_fail2_new=You can also send the following detected error file to router_feedback@asus.com to provide suggestions for improvement to the development team. Thank you.
 feedback_fail_BindGoogle=Atau anda boleh <a id="bind_google">mengikat akaun Google anda</a> untuk menghantar maklum balas melalui e-mel.
 feedback_format_alert=The format is not valid.
@@ -2458,7 +2478,7 @@ feedback_note3=Dengan menyerahkan maklum balas anda, anda bersetuju bahawa ASUS 
 [###MODEL_DEP###][DSL-AX82U][DSL-AC68U][DSL-N55U][DSL-N55U-B]feedback_note3=Dengan menyerahkan maklum balas anda, anda bersetuju bahawa ASUS boleh menggunakan maklum balas anda bagi meningkatkan produk penghala model xDSLnya.
 feedback_note4=Jika anda mempunyai sebarang perkara mustahak, sila bertanya kepada sokongan teknikal tempatan.
 feedback_note5=Feedback is ongoing. Rebooting may cause the program to terminate and the feedback cannot be completed.Please reboot later.
-feedback_note6=<span>This system does not provide individual responses. If you have any usage issues or need technical support, please contact ASUS Customer Service Center</span>&nbsp;<a id="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Official Support | ASUS Global)</a>.
+feedback_note6=<span>This system does not provide individual responses. If you have any usage issues or need technical support, please contact ASUS Customer Service Center</span>&nbsp;<a id="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Official Support | ASUS Global)</a>.
 feedback_note7=Our professional team will be dedicated to serving you. Thank you.
 feedback_Occasion_interrupt=Gangguan sekali-sekala
 feedback_optional=* Tidak wajib
@@ -2619,7 +2639,7 @@ FW_auto_upgrade_desc=Automatically install system updates overnight after they h
 FW_auto_upgrade_desc1=Some upgrades addressing essential security issues or meeting legal/regulatory requirements will still be installed automatically, even if Auto Firmware Upgrade is turned off.
 FW_auto_upgrade_note=When enabled, the router automatically installs the new firmware at your preferred time.
 FW_beta_check=Saya ingin mendapatkan perisian tegar beta.
-FW_desc0=Dapatkan versi perisian tegar yang terkini dari <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/" target="_blank">laman Sokongan ASUS</a>
+FW_desc0=Dapatkan versi perisian tegar yang terkini dari <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/" target="_blank">laman Sokongan ASUS</a>
 FW_desc1=Sila kunjungi tapak sokongan ASUS https://www.asus.com/support/ untuk mendapatkan perisian tegar terkini.
 fw_downloading=Muat Turun Perisian Tegar
 FW_item1=ID Produk
@@ -2628,9 +2648,9 @@ FW_item2_aiboard=AI Board Firmware Version
 FW_item5=Fail Perisian Tegar Baru
 FW_manual_update=Kemas kini perisian tegar manual
 FW_n0=Versi perisian tegar terkini meliputi kemas kini daripada versi sebelumnya.
-FW_n2=Jika proses naik taraf gagal, ZVMODELVZ memasuki mod kecemasan secara automatik. Isyarat LED di bahagian hadapan ZVMODELVZ akan menunjukkan situasi sedemikian.Sila lawati <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/Download-Center/" target="_blank">Pusat Muat Turun ASUS</a> untuk memuat turun utiliti ASUS Firmware Restoration.
-FW_n3=Check on <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="" target="_blank">FAQ</a> for more instructions.
-FW_n4=Check on <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: #FFCC00;\" href=\"\" target=\"_blank\">FAQ</a> for more instructions.
+FW_n2=Jika proses naik taraf gagal, ZVMODELVZ memasuki mod kecemasan secara automatik. Isyarat LED di bahagian hadapan ZVMODELVZ akan menunjukkan situasi sedemikian.Sila lawati <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/Download-Center/" target="_blank">Pusat Muat Turun ASUS</a> untuk memuat turun utiliti ASUS Firmware Restoration.
+FW_n3=Check on <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="" target="_blank">FAQ</a> for more instructions.
+FW_n4=Check on <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: var(--wrt-badge-warning-color,#FFCC00);\" href=\"\" target=\"_blank\">FAQ</a> for more instructions.
 FW_n5=Regarding data collection for firmware/security upgrades, please refer to “ASUS PRIVACY NOTICE (for firmware/security upgrades) at “Administration -> Privacy” page.
 FW_note=Nota:
 FW_note_AiMesh=Kemas kini perisian tegar manual akan hanya mengemas kini penghala / nod AiMesh yang dipilih, apabila menggunakan sistem AiMesh. Sila pastikan anda memuat naik versi perisian tegar AiMesh yang betul ke setiap penghala / nod yang berkenaan.
@@ -2690,6 +2710,7 @@ Gear_Accelerator=Pemecut Peralatan
 Gear_Accelerator_desc=Pengutamaan Peranti Permainan
 Gear_Accelerator_desc1=Mengutamakan peranti permainan anda untuk pengalaman permainan terbaik.
 Gear_Accelerator_List=Game Device List
+Gear_Accelerator_confirm=To enable %@, hardware acceleration will be disabled, which may reduce network speeds. Do you want to continue?
 Game_Ark_Devices_identification=Gaming Devices Identification
 Game_Ark_Devices_identification_desc=Gaming devices identification intelligently prioritizes network traffic for your connected devices.
 Game_Ark_First_desc=GameFirst V comes with ROG motherboards, laptops, and desktops to optimize network traffic for online PC gaming.
@@ -2706,11 +2727,11 @@ GB_account_type2=Akaun Lanjutan Penghala
 GB_ended_date=Tarikh Ditamatkan
 GB_ended_date_desc=WTFast memberikan setiap pengguna baru tempoh percubaan lanjutan 14 hari, yang hanya melibatkan akaun Lanjutan dengan lebih banyak pilihan pelayan proksi. Apabila tempoh percubaan tamat, anda masih boleh menikmati langganan sepanjang hayat dengan ciri akaun asas, yang percuma dan dengan had trafik.
 GB_ended_date_type0=Anda kini menggunakan akaun asas percuma penghala.
-GB_management_note1=Apabila anda menggunakan Galakan Permainan yang dikuasakan WTFast, anda bersetuju dengan <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:#008DE5;">Terma Penggunaan</a></span> dan <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:#008DE5;">Dasar Privasi</a></span> WTFast.
-GB_management_note2=Sebagaimana yang dinyatakan dalam penafian pada halaman produk kami, WTFast masih sedang mengusahakan pembangunan sokongan konsol permainan. Untuk senarai permainan yang disokong buat masa ini, sila rujuk <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:#008DE5;">senarai ini</a>. (dikemas kini secara berkala)
+GB_management_note1=Apabila anda menggunakan Galakan Permainan yang dikuasakan WTFast, anda bersetuju dengan <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Terma Penggunaan</a></span> dan <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Dasar Privasi</a></span> WTFast.
+GB_management_note2=Sebagaimana yang dinyatakan dalam penafian pada halaman produk kami, WTFast masih sedang mengusahakan pembangunan sokongan konsol permainan. Untuk senarai permainan yang disokong buat masa ini, sila rujuk <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">senarai ini</a>. (dikemas kini secara berkala)
 GB_management_note3=Prestasi GPN berbeza berdasarkan ISP atau lokasi anda. Sila pastikan bahawa perisian tegar sentiasa dikemas kini.
-GB_management_note4=Bagaimanakah saya hendak memilih pelayan GPN yang baik? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:#008DE5;">Di sini</a></span> Bagaimanakah saya boleh mendapat pengalaman permainan yang terbaik? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:#008DE5;">Di sini</a></span>
-GB_management_note5=Bagaimanakah saya hendak menggunakan WTFast pada penghala ASUS? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:#008DE5;">Di sini</a></span>
+GB_management_note4=Bagaimanakah saya hendak memilih pelayan GPN yang baik? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Di sini</a></span> Bagaimanakah saya boleh mendapat pengalaman permainan yang terbaik? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Di sini</a></span>
+GB_management_note5=Bagaimanakah saya hendak menggunakan WTFast pada penghala ASUS? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Di sini</a></span>
 GB_mobile=Mobile Game Mode
 GB_mobile_desc=Galakkan Permainan Mudah Alih anda
 GB_mobile_desc1=Muat turun dan pasang Aplikasi ASUS Router. Dayakan mod permainan mudah alih dalam aplikasi untuk memastikan pengalaman permainan mudah alih terbaik.
@@ -3113,7 +3134,7 @@ LANHostConfig_x_DDNS_retrieve_IP_note=[Dalaman] Register a domain name through y
 LANHostConfig_x_DDNS_update_confirm=Alamat IP, pelayan dan nama hos tidak berubah sejak kemas kini terakhir. Jika anda ingin mengemas kini, sila klik [Ya].
 LANHostConfig_x_DDNSEnable_itemname=DDNS
 LANHostConfig_x_DDNSEnable_sectiondesc=DDNS (Sistem Nama Domain Dinamik) adalah perkhidmatan yang membenarkan klien untuk disambungkan ke penghala wayarles, walaupun dengan alamat IP awam dinamik, melalui nama domain berdaftarnya.
-LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:#FFFFFF;">For more details, please refer to <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">this FAQ</a>.
+LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:var(--wrt-text-color,#FFFFFF);">For more details, please refer to <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">this FAQ</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc3=Berjaya mendaftarkan nama hos. Anda boleh menggunakan "[namahos].asuscomm.com" untuk mengakses perkhidmatan dalam rangkaian utama daripada WAN. Gunakan "[namahos].asuscomm.com" untuk mengakses rangkaian anda dari jauh.<p>Pergi ke Advanced Setting (Tetapan Lanjutan) > WAN untuk menata rajah pemajuan port atau tetapan DMZ untuk membenarkan klien WAN yang lain untuk mengakses rangkaian anda dari jauh.<p>Jika anda mahu menata rajah penghala wayarles dari jauh, pergi ke <a href="/Advanced_System_Content.asp?af=misc_http_x" target="_blank" style="text-decoration: underline; font-family:Lucida Console;">di sini</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc4=The current router uses a Private IP.
 LANHostConfig_x_DDNSEnable_faq1=DDNS introduction and set up
@@ -3440,7 +3461,7 @@ ParentalCtrl_default=Secara lalai, akses Internet terhad pada selang masa.
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_default=Secara lalai, akses Internet terhad pada selang masa.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]ParentalCtrl_default=Akses Internet peranti yang ditambahkan ke Kawalan Ibu Bapa akan disekat secara lalai.
 ParentalCtrl_deny=Tidak Benarkan
-ParentalCtrl_disable_NAT=Sila nyahdaya <a id="disable_NAT" style="color:#FC0;text-decoration: underline;" href="" target="_blank">Pemecutan NAT</a> untuk kawalan penjadualan yang lebih tepat.
+ParentalCtrl_disable_NAT=Sila nyahdaya <a id="disable_NAT" style="color:var(--wrt-badge-warning-color,#FC0);text-decoration: underline;" href="" target="_blank">Pemecutan NAT</a> untuk kawalan penjadualan yang lebih tepat.
 ParentalCtrl_Enable=Dayakan kawalan ibu bapa
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_Enable=Dayakan Device Access Control
 ParentalCtrl_Enable_TS=Dayakan Penjadualan Waktu
@@ -3749,6 +3770,7 @@ select_service=Pilih nama perkhidmatan.
 select_usb_device=Pilih Peranti USB
 select_usb_mode=USB Mode
 select_wireless_MAC=Pilih alamat MAC pada klien wayarles.
+Sending_str=Sending…
 Send_mail=Hantar mel
 Serial_Number=Nombor siri
 Servers_Center=Pusat Pelayan
@@ -3773,7 +3795,8 @@ Setting_initialize_desc_ai=Restoring the main router system to factory settings 
 Setting_lock_main_unit=Lock Main Unit
 Setting_lock_main_unit_desc1=When enabled, this device is restricted to the Main Unit role and cannot join another network as a Node.
 Setting_lock_main_unit_desc2=Note: Changing this status will trigger a factory reset and require reconfiguration.
-Setting_lock_main_unit_confirm=Changing the 'Lock Main Unit' status requires a factory reset. This will erase all current network settings.
+Setting_lock_main_unit_desc3=If you have an active mesh network with Nodes connected to this CAP, please note that those Nodes must also be manually reset after the CAP is factory reset.
+Setting_lock_main_unit_confirm=Changing the 'Lock Main Unit' status requires a 'factory reset'. This will erase all current network settings.
 Setting_save_itemdesc=Klik butang [Simpan] untuk menyimpan seting ZVMODELVZ ke dalam fail. (Nota: Apabila anda menyimpan seting semasa kepada fail, ia juga akan disimpan pada denyar.)
 Setting_save_itemdesc_ai=Saving settings does not include AI Board system’s configurations or data.
 Setting_save_itemname=Simpan seting
@@ -3819,8 +3842,11 @@ Setting_rescue_ai_FWUpload=Upload Firmware
 Setting_rescue_ai_FWInstall=Install Firmware
 Setting_rescue_ai_appInstall=Install APP
 Setting_rescue_ai_complete=AI Board rescue completed.
+Setting_rescue_ai_Interrupted=AI Board Restore Interrupted
+Setting_rescue_ai_Interrupted_desc1=The restore process failed due to an unexpected interruption or power loss.
+Setting_rescue_ai_Interrupted_desc2=Please ensure a stable power connection and try again.
 Setting_prog_ai_currStep=Current step:
-Setting_prog_ai_Note=Note: The system is working normally. Please do not interrupt the operation.
+Setting_prog_ai_Note=Note: System is operating normally. Please do not interrupt and ensure a stable power supply and internet connection.
 Setting_prog_ai_serveralTime=This process may take several minutes.
 Settings=Tetapan
 Setup_note=Klik <a id="redirect_to_setup">Di Sini</a> untuk ubah suai. Sila rujuk <a id="redirect_to_FAQ">Soalan Lazim</a> ini untuk butiran lanjut.
@@ -3987,10 +4013,33 @@ SDN_Scenarios_desc=Do you want to add an additional wireless network for special
 SDN_MainFH_for_clients=MLO Fronthaul for Clients
 SDN_MainFH_keep_Hint=At least one main network must be retained.
 SDN_MainFH_Smart_Connect_Hint=Since the Smart Connect rule has been created, please choose single WiFi band.
+SDN_mlo_switch_fh_hint1=Only one active MLO fronthaul is allowed.
+SDN_mlo_switch_fh_hint2=Do you want to deactivate the MLO Fronthaul for %1$@ and activate %2$@?
 SDN_Sync_To_All_Node=Sync to all AiMesh node(s)
 SDN_Sync_To_All_Node_Hint=If your AiMesh node(s) are old models or the WiFi has reached its maximum, it will be unable to sync to all AiMesh node(s). Please select the node(s) to sync from the menu below.
 SDN_Sync_limitation_Hint=None
 SDN_MainFH_WiFi_conflict=%1$@ WiFi band(s) have been used. The conflicted %2$@ (%3$@) network(s) will be removed after applying the settings.
+SDN_Auth_WPA3_only_subtext1=The highest security option with WPA3-only connections.
+SDN_Auth_WPA3_only_subtext2=(Note: Older devices without WPA3 support may not connect.)
+SDN_Auth_WPA3_dual=The standard dual-mode security option.
+SDN_Auth_WPA3_dual_desc=Modern devices connect via WPA3, while older devices connect via WPA2.
+SDN_Auth_WPA3_dual_mode=Compatibility Mode
+SDN_Auth_WPA3_dual_mode_subtext1=An enhanced dual-mode security option optimized for older devices using RSN overriding.
+SDN_Auth_WPA3_dual_mode_subtext2=It ensures older devices stay connected while keeping modern devices on WPA3.
+SDN_Auth_WPA3_dual_mode_subtext3=(Note: Some mid-generation devices may use WPA2.)
+SDN_Auth_WPA3_subtext=An enhanced security option optimized for older devices using RSN overriding. It delivers maximum security to modern devices while maintaining stable connections for non-modern clients.
+SDN_WiFi_Mode_Only6G_Hint=To comply with global WiFi standards, all networks on the 6GHz band must run on the same WiFi generation
+SDN_WiFi_Mode_24G_Hint=2.4GHz operates according to your WiFi mode settings.
+SDN_Compatibility_Mode_Off=Compatibility mode is off.
+SDN_Compatibility_Mode_24=2.4GHz Compatibility Mode
+SDN_Balance_Mode=Balanced
+SDN_Balance_Mode_desc=Optimal balance of performance and device compatibility.
+SDN_Balance_Mode_desc1=2.4GHz operates in WiFi 6 mode.
+SDN_Ultra_Compatibility_Mode=Ultra Compatibility
+SDN_Ultra_Compatibility_Mode_desc=Ensure stable connectivity for legacy or older IoT devices.
+SDN_Ultra_Compatibility_Mode_desc1=2.4GHz operates in WiFi 4 mode.
+SDN_IPv6_FreeWiFi_Hint=Note: Free WiFi does not support IPv6-Only environments. Please ensure IPv4 or Dual-Stack is enabled for client redirection.
+SDN_IPv6_MessageBoard_Hint=Note: Message Board does not support IPv6-Only environments. Please ensure IPv4 or Dual-Stack is enabled for client
 t2BC=Konfigurasi Asas
 t2LAN=LAN
 t2Misc=Pelbagai
@@ -4066,7 +4115,9 @@ TZ02=Pulau Midway, Samoa
 TZ03=Hawaii
 TZ04=Alaska
 TZ05=Masa Pasifik (AS, Kanada)
+TZ05_1=Vancouver, Whitehorse
 TZ06=Masa Pergunungan (AS, Kanada)
+TZ06_1=Edmonton, Yellowknife
 TZ07=Arizona
 TZ08=Mazatlan
 TZ10=Saskatchewan
@@ -4222,7 +4273,7 @@ usb_tls_conflict=Benarkan log masuk awanama adalah bertentangan dengan tetapan T
 usb_tls_conflict_WANacc=Akses WAN bertentangan dengan tetapan TLS.
 usb_uninstalling=Menyahpasang aplikasi daripada peranti storan USB...
 usb_unmount=Fungsi USB dinyahdayakan
-use_DevDiscoveryUtil=Menginstal dan menggunakan <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> untuk mendeteksi alamat IP router nirkabel.
+use_DevDiscoveryUtil=Menginstal dan menggunakan <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> untuk mendeteksi alamat IP router nirkabel.
 Username=Nama Pengguna
 Username_Pwd=Nama pengguna dan Kata laluan
 UserQoS_desc=Daripada senarai jatuh turun Peraturan QoS bertakrif pengguna, anda boleh mengutamakan aplikasi atau peranti rankaian ke dalam lima tahap. Berdasarkan tahap keutamaan, QoS menggunakan kaedah berikut dalam menghantar bingkisan data:<ul><li>Ubah turutan bingkisan rangkaian huluan , yang merujuk kepada turutan bingkisan dihantar ke Internet.</li><li>Bingkisan keutamaan rendah diabaikan untuk memastikan penghantaran bingkisan keutamaan tinggi. Bingkisan huluan keutamaan lebih tinggi akan mengakibatkan bingkisan hiliran keutamaan lebih tinggi.</li><li>Jika tiada bingkisan dihantar daripada aplikasi keutamaan tinggi, kadar penghantaran penuh bagi sambungan Internet adalah tersedia untuk bingkisan keutamaan rendah.</li></ul>
@@ -4232,6 +4283,7 @@ UserQoS_transferred_hint=Dalam lajur [Dipindahkan], tetapkan had trafik rangkaia
 UserQoSRule_desc_zero=Dayakan QoS kemudian sediakan peraturan tetapan pengguna.
 UserQoSRule_desc_one=Secara lalai, keutamaan untuk jalur lebar muat naik dan muat turun ialah "Rendah". Jika tiada peraturan keutamaan jalur lebar, keutamaan untuk kedua-dua jalur lebar muat naik dan muat turun ialah "Rendah".
 Utility=Utiliti
+Verifying_str=Verifying…
 Video_Find=Cari video tutorial
 Video_Link1=Klik untuk buka video tutorial.
 View_List=Lihat Senarai
@@ -4330,7 +4382,7 @@ vpn_openvpn_required_acc_pwd=Username and password are required for current .ovp
 vpn_openvpnc_importCA=Import fail CA
 vpn_openvpnc_importovpn=Import fail .ovpn
 vpn_openvpnc_manual=Import fail CA atau edit fail .ovpn secara manual.
-vpn_privateIP_hint=Penghala wayarles kini menggunakan alamat IP WAN persendirian (192.168.x.x, 10.x.x.x or 172.16.x.x). Sila rujuk <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:#FC0;'>Soalan Lazim</a> dan sediakan pemajuan port.
+vpn_privateIP_hint=Penghala wayarles kini menggunakan alamat IP WAN persendirian (192.168.x.x, 10.x.x.x or 172.16.x.x). Sila rujuk <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>Soalan Lazim</a> dan sediakan pemajuan port.
 vpn_preshared_key=Pre-shared Key (Secret)
 vpn_preshared_key_hint=Enter Pre-shared Key
 vpn_switch_confirm=ASUSWRT hanya menyokong satu sambungan pelayan VPN pada satu-satu masa. Jika anda mendayakan \"Pelayan OpenVPN\", \"Pelayan PPTP\" dinyahdayakan secara automatik. Adakah anda pasti ingin mendayakan pelayan VPN?
@@ -4401,6 +4453,16 @@ vpn_wireguard_client_faq=How to set up WireGuard® client in VPN Fusion?
 vpn_wireguard_client_config=Please use the following configuration to set up your WireGuard client.
 vpn_wireguard_qr_desc=Please download WireGuard App from Google Play or Apple Store, then use the APP to scan the QR Code to connect to this server.
 vpn_wireguard_qr_foriOS=For iOS users, you must assign a specific DNS server to WireGuard app before accessing the internet through WireGuard Server.
+vpn_wireguard_ep_mode=Endpoint Mode
+vpn_wireguard_ep_src=Hostname Source
+vpn_wireguard_ep_system_ddns=System DDNS
+vpn_wireguard_ep_custom=Custom Hostname
+vpn_wireguard_ep_desc=Auto mode automatically determines the Endpoint based on the current network status. In DDNS mode, you can select a DDNS configured in the system settings or enter a Custom Hostname.
+vpn_wireguard_ep_custom_desc=Custom Hostname is independent of the DDNS settings in the system settings. To ensure a successful connection, make sure the Custom Hostname can correctly resolve to the Router's IP address.
+vpn_wireguard_ep_ddns_hint=DDNS is not enabled. Please go to "Settings > WAN > DDNS" to complete the setup. Otherwise, this Endpoint will not function properly.
+vpn_wireguard_ep_ddns_disable_confirm=After DDNS is disabled, VPN Profiles using this DDNS may not be able to establish a connection. Do you want to continue?
+vpn_wireguard_ep_custom_blank=Please enter a Custom Hostname.
+vpn_wireguard_ep_custom_invalid=Invalid hostname format. Please enter a valid FQDN, such as vpn.example.com. Do not include http://, https://, a port number, or a URL path.
 vpnc_auth=VPN authentication
 vpnc_auth_for_clients=VPN authentication for VPN clients
 vpnc_Client_Cert=Client Certificate
@@ -4426,6 +4488,32 @@ vpnc_profile_assignALL=Apply to all devices
 vpnc_profile_assignDevice=Assign devices to this profile
 vpnc_profile_del=Delete Profile
 vpnc_profile_select_suggest=Please select another VPN profile to cancel the internet default WAN.
+vpnc_ssk_login=Log in to your Surfshark account
+vpnc_ssk_login_note=Please enter both account and password.
+vpnc_ssk_invalid_long=Account or password is too long (max 128 characters).
+vpnc_ssk_invalid_char=Account or password contains invalid characters.
+vpnc_ssk_invalid_format=Invalid account or password format.
+vpnc_ssk_login_AuthCode=Enter the 6-digit verification code sent to your email, or generated by Authenticator app.
+vpnc_ssk_login_AuthCode_enter=Please enter the 6-digit verification code.
+vpnc_ssk_login_AuthCode_confirm=Did not get the verification code? Click "Resend" above, we will send a new verification code.
+vpnc_ssk_login_AuthCode_resender=Resend available in %1$@s
+vpnc_ssk_login_ErrMsg1=Incorrect account or password.
+vpnc_ssk_login_ErrMsg2=Surfshark server is unavailable. Please try again later.
+vpnc_ssk_login_ErrMsg4=Configuration error. Please check your settings.
+vpnc_ssk_login_ErrMsg41=Configuration error.
+vpnc_ssk_login_ErrMsg5=Network error. Cannot reach Surfshark.
+vpnc_ssk_login_ErrMsgDef=Login failed. Please try again.
+vpnc_ssk_login_success=Surfshark login successful.
+vpnc_ssk_login_success_note=Close this notice and complete your VPN settings.
+vpnc_ssk_logout_confirm=Are you sure you want to log out of your account?
+vpnc_ssk_Failed_resend=Failed to resend code. Please try again.
+vpnc_ssk_Failed_verification=Invalid verification code. Please try again.
+vpnc_ssk_KeyPair_max=Your Surfshark account has reached the maximum number of VPN key pairs (50). To create a new VPN connection, please remove unused key pairs from your Surfshark account, then try again.
+vpnc_ssk_Missing_credent=Missing credentials. Please close and login again.
+vpnc_ssk_Timeout_login=Login request timed out. Please try again.
+vpnc_ssk_Timeout_resend=Resend timed out. Please try again.
+vpnc_ssk_Timeout_verification=Verification request timed out. Please try again.
+vpnc_ssk_Timeout_network=Network error. Please try again.
 vpnc_step=Untuk memulakan sambungan VPN, sila ikuti langkah di bawah:
 vpnc_step1=Tambah profil
 vpnc_step2=Pilih jenis sambungan VPN
@@ -4433,6 +4521,7 @@ vpnc_step3=Masukkan maklumat pengesahan VPN yang diberikan oleh penyedia VPN and
 vpnc_title=Klien VPN
 vpnc_peer=Peer
 vpnc_pppoe_dis_nat_confirm=Apabila anda menggunakan klien VPN dengan sambungan PPPoE, penghala anda akan dibut semula secara automatik untuk menyahdayakan Pecutan NAT. Adakah anda pasti ingin teruskan?
+vpnc_kill_switch_desc=If enabled, this feature blocks all internet traffic instantly if the VPN drops to prevent IP and data leaks. Connection will be suspended until the VPN successfully reconnects or the feature is disabled.
 WAN_barrier=Sekatan
 WAN_Cfg_Ethernet_WAN=Konfigurasikan tetapan WAN Ethernet bagi ZVMODELVZ.
 WAN_default_route=Laluan Lalai
@@ -4497,7 +4586,7 @@ WANTCPMSSOptionText=Pilihan TCP MSS
 WANTCPMSSOptionComm1Text=bait
 WANVLANIDText=VLAN ID
 WANAggregation=WAN aggregation
-WANAggregation_desc=Pengagregatan WAN menggabungkan dua sambungan rangkaian untuk meningkatkan kelajuan WAN anda sehingga 2Gbps. Sambungkan port #WAN penghala anda dan port LAN 4 ke port LAN modem anda (pastikan anda menggunakan dua kabel yang mempunyai spesifikasi sama). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Soalan Lazim Pengagregatan WAN</a>
+WANAggregation_desc=Pengagregatan WAN menggabungkan dua sambungan rangkaian untuk meningkatkan kelajuan WAN anda sehingga 2Gbps. Sambungkan port #WAN penghala anda dan port LAN 4 ke port LAN modem anda (pastikan anda menggunakan dua kabel yang mempunyai spesifikasi sama). <a id="wanAgg_faq" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">Soalan Lazim Pengagregatan WAN</a>
 WANAggregation_enable=Dayakan Pengagregatan WAN
 WANAggregation_disable_dualwan=WAN Dual penghala anda telah didayakan. Mendayakan Pengagregatan WAN akan menyahdayakan WAN Dual. Adakah anda pasti ingin teruskan?
 WANAggregation_disable_WANAggregation=Pengagregatan WANN penghala anda telah didayakan. Mendayakan WAN Dual akan menyahdayakan Pengagregatan WAN. Adakah anda pasti ingin teruskan?
@@ -4506,13 +4595,13 @@ WANAggregation_PortConflict_hint2=IPTV menggunakan port LAN 4 penghala anda. Men
 WANAggregation_disable_IPTVDualWAN=Kedua-dua WAN Dual dan IPTV penghala anda telah didayakan. Mendayakan Pengagregatan WAN akan menyahdayakan WAN Dual dan IPTV bagi mengelak konflik port. Adakah anda pasti ingin teruskan?
 WANAggregation_help_WAN=Pastikan port #WAN penghala anda dan port LAN modem anda telah disambungkan menggunakan dua kabel yang mempunyai spesifikasi sama.
 WANAggregation_help_LAN=Pastikan port LAN 4 penghala anda dan port LAN modem anda telah disambungkan menggunakan dua kabel yang mempunyai spesifikasi sama.
-WANAggregation_goto_WAN=Untuk mendayakan Pengagregatan WAN, pergi ke <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">halaman Sambungan WAN-Internet</a>.
+WANAggregation_goto_WAN=Untuk mendayakan Pengagregatan WAN, pergi ke <a href="Advanced_WAN_Content.asp" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">halaman Sambungan WAN-Internet</a>.
 WANAggregation_help_desc=Jika penyediaan Pengagregatan WAN tidak berjaya, sila ikut langkah-langkah di bawah untuk mencuba semula.
 WANAggregation_help_step1=Pastikan port LAN modem anda sudah disambungkan ke #WAN penghala anda dan LAN 4 dengan kabel.
 WANAggregation_help_step2=Pastikan modem anda telah mendayakan 802.3ad
 WANAggregation_help_step3=Sahkan bahawa anda menggunakan dua kabel dengan spesifikasi yang sama (sama ada gigabit & gigabit atau 10/100& 10/100Mbps)
 WANAggregation_help_step4=But semula penghala anda
-WANAggregation_help_final=Jika langkah-langkah di atas tidak berjaya, sila laporkan isu ini di <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>Laman Sokongan ASUS</a>.
+WANAggregation_help_final=Jika langkah-langkah di atas tidak berjaya, sila laporkan isu ini di <a href='https://www.asus.com/support/' target='_blank' style='color:var(--wrt-text-color,#000);text-decoration:underline;'>Laman Sokongan ASUS</a>.
 WANAggregation_wanType_hint=Pengagregatan WAN tidak menyokong jenis WAN seperti PPPoE, PPTP dan L2TP. Jika jenis WAN anda berubah kepada PPPoE, PPTP atau L2TP, pengagregatan WAN akan dinyahdayakan secara automatik. Adakah anda pasti ingin teruskan?
 WebGUI_issue=Tidak dapat mengakses halaman perisian tegar
 wechat=WeChat
@@ -4627,8 +4716,8 @@ WLANConfig11b_display31_sectiondesc=Pilih[WDS Only] atau mod [Hybrid] dan tambah
 WLANConfig11b_display32_sectiondesc=Pastikan bahawa penghala wayarles ini dan AP yang ingin anda sambungkan menggunakan saluran yang sama.
 WLANConfig11b_display33_sectiondesc=Dalam antara muka pengurusan WDS AP, masukkan alamat AP MAC dalam senarai AP dan alamat MAC penghala wayarles.
 WLANConfig11b_display34_sectiondesc=Untuk mendapatkan prestasi terbaik, sila pergi ke Tetapan Lanjutan > Wayarles > Umum dan berikan jalur lebar saluran, saluran kawalan dan saluran pelanjutan yang sama pada setiap penghala dalam rangkaian.
-WLANConfig11b_display41_sectiondesc=Anda kini sedang menggunakan jalur lebar saluran Auto. Klik <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">Di sini</a> untuk mengubah suai.
-WLANConfig11b_display42_sectiondesc=Anda kini sedang menggunakan saluran Auto. Klik <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">Di sini</a> untuk mengubah suai.
+WLANConfig11b_display41_sectiondesc=Anda kini sedang menggunakan jalur lebar saluran Auto. Klik <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">Di sini</a> untuk mengubah suai.
+WLANConfig11b_display42_sectiondesc=Anda kini sedang menggunakan saluran Auto. Klik <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">Di sini</a> untuk mengubah suai.
 WLANConfig11b_display5_sectiondesc=Seting Profesional Wayarles membenarkan anda menyediakan parameter tambahan untuk wayarles. Tetapi nilai lalai disarankan.
 WLANConfig11b_display6_sectiondesc=WPS (WiFi Protected Setup) (Susun Atur Terlindung WiFi) memberikan rangkaian wayarles pembentukan yang mudah dan selamat. Anda boleh menata rajah WPS di sini melalui kod PIN atau butang WPS.
 WLANConfig11b_EChannel_acs_ch13=Auto select channel including channel 12, 13
@@ -4686,6 +4775,7 @@ WLANConfig11b_x_APMode_option2=Hybrid
 WLANConfig11b_x_APSD_itemdesc=Dayakan atau Tidak Mendayakan WMM APSD (Penghantaran Jimat Kuasa Automatik).
 WLANConfig11b_x_APSD_itemname=Dayakan WMM APSD
 WLANConfig11b_x_Airtime_Fairness=Keadilan Masa Siaran
+WLANConfig11b_x_ApplyAllBands_hint=This adjustment will be applied to all band settings.
 WLANConfig11b_x_Airtime_Fairness_itemdesc=Provide Airtime Fairness between multiple links
 WLANConfig11b_x_Auto=Mod Wayarles mesti ditetapkan kepada Auto.
 WLANConfig11b_x_Beacon_itemdesc=Jarak Waktu Isyarat bermaksud tempoh masa di antara satu isyarat dan yang seterusnya. Nilai lalai adalah 100 (unit adalah milisaat atau 1/1000 saat). Rendahkan Jarak Waktu Isyarat untuk mempertingkatkan prestasi penghantaran dalam persekitaran tidak stabil atau untuk perayauan klien tetapi ia akan menggunakan kuasa.
@@ -4782,11 +4872,11 @@ WLANConfig11b_x_WPSMode_itemdesc=Memilih PIN (Nombor Maklumat Peribadi) anda per
 WLANConfig11b_x_WPSMode_itemname=Kaedah WPS:
 WLANConfig11b_x_WPSPIN_itemdesc=Masukkan nombor lapan digit untuk kod PIN klien.<p>
 WLANConfig11b_x_WPSPIN_itemname=Kod PIN Klien
-WLANConfig11n_Auto_note=[auto] tidak serasi dengan kaedah pengesahan rangkaian tetamu semasa(TKIP atau WEP), Sila pergi ke <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Rangkaian Tetamu</a> dan tukar kaedah pengesahan.
+WLANConfig11n_Auto_note=[auto] tidak serasi dengan kaedah pengesahan rangkaian tetamu semasa(TKIP atau WEP), Sila pergi ke <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Rangkaian Tetamu</a> dan tukar kaedah pengesahan.
 WLANConfig11n_automode_limition_hint=Di bawah mod auto dengan penyulitan WEP atau TKIP, ZVMODELVZ menyokong kadar pemindahan maksimum sebanyak 54Mbps.
 WLANConfig11n_automode_limition_hint1=Sila ubah ke WPA2-Peribadi.
-WLANConfig11n_NAC_note=[N+AC] tidak serasi dengan kaedah pengesahan rangkaian tetamu semasa(TKIP atau WEP), Sila pergi ke <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Rangkaian Tetamu</a> dan tukar kaedah pengesahan.
-WLANConfig11n_NOnly_note=[N Only] tidak serasi dengan kaedah pengesahan rangkaian tetamu semasa(TKIP atau WEP), Sila pergi ke <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Rangkaian Tetamu</a> dan tukar kaedah pengesahan.
+WLANConfig11n_NAC_note=[N+AC] tidak serasi dengan kaedah pengesahan rangkaian tetamu semasa(TKIP atau WEP), Sila pergi ke <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Rangkaian Tetamu</a> dan tukar kaedah pengesahan.
+WLANConfig11n_NOnly_note=[N Only] tidak serasi dengan kaedah pengesahan rangkaian tetamu semasa(TKIP atau WEP), Sila pergi ke <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Rangkaian Tetamu</a> dan tukar kaedah pengesahan.
 WLANConfig11ax_AXOnly_note=By enabling AX only mode, if devices do not support 802.11ax(WiFi 6), will not able to connect to this band.
 WLANConfig11n_PremblesType_itemdesc=Jenis pendahuluan menentukan kepanjangan sekatan CRC (Pemeriksaan Perulangan Kitaran), yang merupakan teknik untuk mengesan ralat pemindahan data di antara peranti wayarles. Kami mencadangkan anda konfigurasi semua peranti wayarles ke jenis pendahuluan yang sama. Gunakan pendaluan pendek untuk peranti wayarles di kawasan trafik rangkaian tinggi. Gunakan pendahuluan panajng untuk peranti wayarles lama.
 WLANConfig11n_PremblesType_itemname=802.11b mode
@@ -4906,9 +4996,19 @@ Captive_Portal_Local=Tempatan
 Configuration=Konfigurasi
 Configuration_dark_mode=Dark
 Configuration_light_mode=Light
-Configuration_theme=Theme
+Configuration_theme=Tema
 Configuration_fancy_theme=Fancy
+Configuration_flat_theme=Flat
 Continuous_Mode=mod berterusan
+View_Details=View Details
+NetworkMap_Clients=Clients
+NetworkMap_Guest_Clients=Guest Clients
+NetworkMap_Add_AiMesh_Hint=Add more AiMesh nodes to expand your WiFi coverage.
+Dashboard_Show_more=Show more
+Dashboard_Show_less=Show less
+Dashboard_Expand=Expand
+Dashboard_Refreshing=Refreshing
+Dashboard_Last_updated=Last updated
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Dasar Akses
 FreeWiFi_AccountSetting_desc1=Tetapan Akaun ialah konfigurasi akaun tetamu mudah, yang membolehkan anda mengekalkan pangkalan data akaun tetamu untuk melindungi rangkaian tetamu anda. Klien yang berkaitan perlu memasukkan akaun dan kata laluan berikut untuk melog masuk sebelum mengakses Internet.
@@ -5162,7 +5262,7 @@ Notice_Message_3=I have read it, do not show it again
 CTL_Decline=Decline
 Outdoor_desc_title=Warning
 Outdoor_active_desc_1=By enabling outdoor mode, AiMesh will be limited and might cause mesh node disconnect.
-Outdoor_active_desc_2=In compliance with regulations, the system will scan channels for about 1 minute to avoid weather radar interference. <span style="color:#FC0">If radar signals are detected, it will switch to 2.4GHz, causing brief disconnection. The affected channel will be blocked for 30 minutes.</span>
+Outdoor_active_desc_2=In compliance with regulations, the system will scan channels for about 1 minute to avoid weather radar interference. <span style="color:var(--wrt-badge-warning-color,#FC0)">If radar signals are detected, it will switch to 2.4GHz, causing brief disconnection. The affected channel will be blocked for 30 minutes.</span>
 Outdoor_active_desc_3=Outdoor mode only supports Router and AP modes.
 Outdoor_active_desc_4=Available outdoor channels vary by country/region.
 Outdoor_inactive_desc_1=Disabling this mode will briefly restart the wireless and disconnect all devices.
@@ -5193,6 +5293,7 @@ WiFi_DFS_REENTRY=DFS-REENTRY
 WiFi_ch_conflict=Channel conflict
 WiFi_Regulatory=Regulatory
 WiFi_OFF=WiFi Off
+WiFi8_6G_enable_hint=6GHz is currently operating in WiFi 7 mode. To enable WiFi 8, turn on "WiFi 8" in 6GHz Wireless Professional Settings.
 Vendor=Vendor
 Connected_AP=Connected AP
 Network_SDN=Network(SDN)

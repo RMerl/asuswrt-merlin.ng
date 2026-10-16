@@ -1,0 +1,14 @@
+iptables-translate -A INPUT -p 51 -m ah --ahspi 500 -j DROP
+nft 'add rule ip filter INPUT ah spi 500 counter drop'
+
+iptables-translate -A INPUT -p 51 -m ah --ahspi 500:600 -j DROP
+nft 'add rule ip filter INPUT ah spi 500-600 counter drop'
+
+iptables-translate -A INPUT -p 51 -m ah ! --ahspi 50 -j DROP
+nft 'add rule ip filter INPUT ah spi != 50 counter drop'
+
+iptables-translate -A INPUT -p 51 -m ah --ahspi 0:4294967295 -j DROP
+nft 'add rule ip filter INPUT meta l4proto ah counter drop'
+
+iptables-translate -A INPUT -p 51 -m ah ! --ahspi 0:4294967295 -j DROP
+nft 'add rule ip filter INPUT ah spi != 0-4294967295 counter drop'

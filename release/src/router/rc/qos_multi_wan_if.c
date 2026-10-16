@@ -1060,6 +1060,7 @@ static int start_tqos(int wan_unit)
 	int val;
 
 	strlcpy(wan_ifname, get_wan_ifname(wan_unit), sizeof(wan_ifname));
+	if (!is_valid_ifname(wan_ifname)) return -1;
 	snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", wan_unit);
 	snprintf(imq_ifname, sizeof(imq_ifname), "imq%d", get_imq_unit(wan_unit));
 
@@ -1394,6 +1395,12 @@ static int add_bandwidth_limiter_rules(char *pcWANIF)
 	while (g) {
 		if ((p = strsep(&g, "<")) == NULL) break;
 		if ((vstrsep(p, ">", &enable, &addr, &dlc, &upc, &prio)) != 5) continue;
+		/* Security: dlc/upc (DL/UL-Ceil) are written verbatim into a
+		 * root-executed tc shell script; reject empty or non-decimal
+		 * values (e.g. an embedded newline) to prevent OS command
+		 * injection via qos_bw_rulelist. */
+		if (*dlc == '\0' || !isNumber(dlc) || *upc == '\0' || !isNumber(upc))
+			continue;
 		if (!strcmp(enable, "0")) continue;
 		memset(addr_new, 0, sizeof(addr_new));
 		address_format_checker(&addr_type, addr, addr_new, sizeof(addr_new));
@@ -1501,6 +1508,10 @@ static int start_bandwidth_limiter(int wan_unit)
 #endif
 
 	snprintf(fpath, sizeof(fpath), "%s.%d", TMP_QOS, wan_unit);
+	char wan_ifname[IFNAMSIZ];
+	strlcpy(wan_ifname, get_wan_ifname(wan_unit), sizeof(wan_ifname));
+	if (!is_valid_ifname(wan_ifname)) return -1;
+
 	if ((f = fopen(fpath, "w")) == NULL) return -2;
 	fprintf(f,
 		"#!/bin/sh\n"
@@ -1528,7 +1539,7 @@ static int start_bandwidth_limiter(int wan_unit)
 		"\t$TQAU root handle 2: htb\n"
 		"\t$TCAU parent 2: classid 2:1 htb rate 10240000kbit\n"
 		, qsched
-		, get_wan_ifname(wan_unit)
+		, wan_ifname
 		, lan_ifname
 	);
 	// access router : mark 9
@@ -1559,6 +1570,12 @@ static int start_bandwidth_limiter(int wan_unit)
 	while (g) {
 		if ((p = strsep(&g, "<")) == NULL) break;
 		if ((vstrsep(p, ">", &enable, &addr, &dlc, &upc, &prio)) != 5) continue;
+		/* Security: dlc/upc (DL/UL-Ceil) are written verbatim into a
+		 * root-executed tc shell script; reject empty or non-decimal
+		 * values (e.g. an embedded newline) to prevent OS command
+		 * injection via qos_bw_rulelist. */
+		if (*dlc == '\0' || !isNumber(dlc) || *upc == '\0' || !isNumber(upc))
+			continue;
 		if (!strcmp(enable, "0")) continue;
 
 		address_format_checker(&addr_type, addr, addr_new, sizeof(addr_new));
@@ -2104,9 +2121,9 @@ static int start_rog_qos(int wan_unit)
 	qsched = "sfq perturb 10";
 #endif
 
-	if((f = fopen(fpath, "w")) == NULL) return -2;
-
 	strlcpy(wan, get_wan_ifname(wan_unit), sizeof(wan));
+	if (!is_valid_ifname(wan)) return -1;
+	if((f = fopen(fpath, "w")) == NULL) return -2;
 
 	QOSDBG("[qos][unit %d] tc START!\n", wan_unit);
 

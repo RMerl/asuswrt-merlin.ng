@@ -203,6 +203,36 @@ struct apinfo
 };
 extern struct apinfo apinfos[MAX_NUMBER_OF_APINFO];
 
+#if (defined(RTCONFIG_WIFI8) || defined(WIFI7_SDK_20250506)) && defined(RTCONFIG_MLO)
+/* one physical link (a single scanned BSSID) belonging to an MLO-capable network */
+struct mlo_link_info
+{
+	char BSSID[18];
+};
+
+#define MAX_MLO_LINKS_PER_GROUP	4
+
+/* one MLO-capable network: all scanned BSSID entries that share the same MLD MAC Address.
+ * Groups with no visible SSID, or with only a single link (no actual multi-link found),
+ * are still collected here but are filtered out at print time - see wlcscan_print_mlo_groups(). */
+struct mlo_group_info
+{
+	struct ether_addr mld_addr;	/* grouping key: MLD MAC Address */
+	char mld_addr_str[18];
+	char SSID[33];			/* first non-empty SSID seen among this group's member links */
+	int link_count;
+	struct mlo_link_info links[MAX_MLO_LINKS_PER_GROUP];
+};
+
+/* mlo_groups[] now accumulates across every radio/band scanned within one
+ * wlcscan run (see wlcscan_reset_mlo_groups()), and in the worst case (no two
+ * scanned entries share an MLD) needs one slot per scanned BSSID, so size it
+ * the same as apinfos[] rather than a fraction of it. */
+#define MAX_NUMBER_OF_MLO_GROUP	MAX_NUMBER_OF_APINFO
+extern struct mlo_group_info mlo_groups[MAX_NUMBER_OF_MLO_GROUP];
+extern int mlo_group_count;
+#endif /* (RTCONFIG_WIFI8 || WIFI7_SDK_20250506) && RTCONFIG_MLO */
+
 #ifdef RTCONFIG_REALTEK
 /* [MUST] : must to modify */
 #define APINFO_MAX 64

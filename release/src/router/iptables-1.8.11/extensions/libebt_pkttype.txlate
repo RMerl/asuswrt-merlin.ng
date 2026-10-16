@@ -1,0 +1,20 @@
+ebtables-translate -A INPUT --pkttype-type host
+nft 'add rule bridge filter INPUT meta pkttype host counter'
+
+ebtables-translate -A INPUT ! --pkttype-type broadcast
+nft 'add rule bridge filter INPUT meta pkttype != broadcast counter'
+
+ebtables-translate -A INPUT --pkttype-type ! multicast
+nft 'add rule bridge filter INPUT meta pkttype != multicast counter'
+
+ebtables-translate -A INPUT --pkttype-type otherhost
+nft 'add rule bridge filter INPUT meta pkttype other counter'
+
+ebtables-translate -A INPUT --pkttype-type outgoing
+nft 'add rule bridge filter INPUT meta pkttype 4 counter'
+
+ebtables-translate -A INPUT --pkttype-type loopback
+nft 'add rule bridge filter INPUT meta pkttype 5 counter'
+
+ebtables-translate -A INPUT --pkttype-type fastroute
+nft 'add rule bridge filter INPUT meta pkttype 6 counter'

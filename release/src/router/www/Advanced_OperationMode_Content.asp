@@ -31,8 +31,8 @@
 	-moz-border-radius: 5px;
 	border-radius: 5px;
 	z-index:200;
-	background-color:#2B373B;
-	box-shadow: 3px 3px 10px #000;
+	background-color:var(--surface-panel, #2B373B);
+	box-shadow: var(--wrt-card-shadow, 3px 3px 10px #000);
 	display:none;
 	behavior: url(/PIE.htc);
 }
@@ -47,7 +47,7 @@
 .QISform_wireless{
 	width:600px;
 	font-size:12px;
-	color:#FFFFFF;
+	color:var(--wrt-text-color,#FFFFFF);
 	margin-top:10px;
 	*margin-left:10px;
 }
@@ -55,7 +55,7 @@
 .QISform_wireless thead{
 	font-size:15px;
 	line-height:20px;
-	color:#FFFFFF;	
+	color:var(--wrt-text-color,#FFFFFF);	
 }
 
 .QISform_wireless th{
@@ -63,7 +63,7 @@
 	*padding-left:30px;
 	font-size:12px;
 	font-weight:bolder;
-	color: #FFFFFF;
+	color: var(--wrt-text-color,#FFFFFF);
 	text-align:left; 
 }
                
@@ -85,7 +85,7 @@
 	padding-left:5px;
 	font-weight:bold;
 	line-height:140%;
-	color:#ffffff;	
+	color:var(--wrt-text-color,#FFFFFF);	
 }
 </style>
 <script>
@@ -564,17 +564,17 @@ function setScenerion(mode, express){
 		if(express == 1){	//Express Way 2.4 GHz
 			$("#sw_mode2_0_radio").prop('checked', true);
 			document.form.wlc_express.value = 1;
-			$("#mode_desc").html("<#OP_RE2G_desc#><br/><span style=\"color:#FC0\"><#deviceDiscorvy2#></span>");
+			$("#mode_desc").html("<#OP_RE2G_desc#><br/><span style=\"color:var(--wrt-badge-warning-color,#FFCC00)\"><#deviceDiscorvy2#></span>");
 		}
 		else if(express == 2){	//Express Way 5 GHz
 			$("#sw_mode2_1_radio").prop('checked', true);
 			document.form.wlc_express.value = 2;
-			$("#mode_desc").html("<#OP_RE5G_desc#><br/><span style=\"color:#FC0\"><#deviceDiscorvy2#></span>");
+			$("#mode_desc").html("<#OP_RE5G_desc#><br/><span style=\"color:var(--wrt-badge-warning-color,#FFCC00)\"><#deviceDiscorvy2#></span>");
 		}	
 		else{		// Repeater
 			$("#sw_mode2_radio").prop('checked', true);
 			document.form.wlc_express.value = 0;
-			$("#mode_desc").html("<#OP_RE_desc#><br/><span style=\"color:#FC0\"><#deviceDiscorvy2#></span>");
+			$("#mode_desc").html("<#OP_RE_desc#><br/><span style=\"color:var(--wrt-badge-warning-color,#FFCC00)\"><#deviceDiscorvy2#></span>");
 		}
 	}
 	else if(mode == '3'){		// AP mode
@@ -593,7 +593,7 @@ function setScenerion(mode, express){
 
 		$("#Senario").css({"height": height, "background": "url(" + url + ") center no-repeat", "margin": "auto", "margin-bottom": "30px"});
 		/*if(findasus_support){
-			$("#mode_desc").html("<#OP_AP_desc#><br/><span style=\"color:#FC0\"><#OP_AP_hint#></span>");
+			$("#mode_desc").html("<#OP_AP_desc#><br/><span style=\"color:var(--wrt-badge-warning-color,#FFCC00)\"><#OP_AP_hint#></span>");
 		}else{*/
 			var desc = "";
 			if(amesh_support && ameshRouter_support) {
@@ -601,10 +601,10 @@ function setScenerion(mode, express){
 				desc += "<br>";
 				desc += "<#AiMesh_Node_Add#>";
 				desc += "<br>";
-				desc += "<span style=\"color:#FC0\"><#AiMesh_deviceDiscorvy3#></span>";
+				desc += "<span style=\"color:var(--wrt-badge-warning-color,#FFCC00)\"><#AiMesh_deviceDiscorvy3#></span>";
 			}
 			else
-				desc = "<#OP_AP_desc#><br/><span style=\"color:#FC0\"><#deviceDiscorvy3#></span>";
+				desc = "<#OP_AP_desc#><br/><span style=\"color:var(--wrt-badge-warning-color,#FFCC00)\"><#deviceDiscorvy3#></span>";
 			$("#mode_desc").html(desc);
 		//}
 		clearTimeout(id_WANunplungHint);
@@ -620,7 +620,7 @@ function setScenerion(mode, express){
 			pstaDesc += "<#OP_MB_desc4#>";
 			pstaDesc += "<#OP_MB_desc5#>";
 			pstaDesc += "<br><#OP_MB_desc6#>";
-			pstaDesc += "<br/><span style=\"color:#FC0\"><#deviceDiscorvy4#></span>";
+			pstaDesc += "<br/><span style=\"color:var(--wrt-badge-warning-color,#FFCC00)\"><#deviceDiscorvy4#></span>";
 
 		var url = "/images/New_ui/mb.jpg";
 		var height = "305px";
@@ -905,7 +905,7 @@ function change_smart_con(v){
 			</td>
 		</tr>
 	</table>
-	<div style="margin-top:20px;text-align:center;background-color:#2B373B">
+	<div style="margin-top:20px;text-align:center;background-color:var(--surface-panel, #2B373B)">
 		<input type="button"  value="<#CTL_Cancel#>" class="button_gen" onclick="cancel_SSID_Block();">
 		<input type="button" id="btn_next_step" value="<#CTL_apply#>" class="button_gen" onclick="applyRule();">
 	</div>
@@ -956,7 +956,7 @@ function change_smart_con(v){
                  			<td>
                  				<div class="container">
 							    <div id="Senario" >
-								<div id="Unplug-hint" style="border:2px solid red; background-color:#FFF; padding:3px;margin:0px 0px 0px 150px;width:250px; position:absolute; display:block; display:none;"><#web_redirect_suggestion1#></div>
+								<div id="Unplug-hint" style="border:2px solid red; background-color:var(--wrt-card-bg, #FFF); padding:3px;margin:0px 0px 0px 150px;width:250px; position:absolute; display:block; display:none;"><#web_redirect_suggestion1#></div>
 						         	</div>	
 								<div class="apply_gen">
 									<input name="button" type="button" class="button_gen" onClick="saveMode();" value="<#CTL_onlysave#>">

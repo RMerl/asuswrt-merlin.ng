@@ -1,0 +1,17 @@
+ip6tables-translate -t nat -A POSTROUTING -j MASQUERADE
+nft 'add rule ip6 nat POSTROUTING counter masquerade'
+
+ip6tables-translate -t nat -A POSTROUTING -p tcp -j MASQUERADE --to-ports 10
+nft 'add rule ip6 nat POSTROUTING meta l4proto tcp counter masquerade to :10'
+
+ip6tables-translate -t nat -A POSTROUTING -p tcp -j MASQUERADE --to-ports 10-20 --random
+nft 'add rule ip6 nat POSTROUTING meta l4proto tcp counter masquerade to :10-20 random'
+
+ip6tables-translate -t nat -A POSTROUTING -p tcp -j MASQUERADE --random
+nft 'add rule ip6 nat POSTROUTING meta l4proto tcp counter masquerade random'
+
+ip6tables-translate -t nat -A POSTROUTING -p tcp -j MASQUERADE --random-fully
+nft 'add rule ip6 nat POSTROUTING meta l4proto tcp counter masquerade fully-random'
+
+ip6tables-translate -t nat -A POSTROUTING -p tcp -j MASQUERADE --random --random-fully
+nft 'add rule ip6 nat POSTROUTING meta l4proto tcp counter masquerade random,fully-random'

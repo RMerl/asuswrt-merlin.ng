@@ -1190,7 +1190,7 @@ power_table_desc = ["<#WLANConfig11b_TxPower1#>", "<#WLANConfig11b_TxPower2#>", 
 //power_table_desc = ["Power Saving", "Fair", "Balance", "Good", "Performance"];
 //power_table_desc = ["省電", "弱", "平衡", "強", "效能"];
 function register_event(){
-	
+
 	$(function() {
 		$( "#slider" ).slider({
 			orientation: "horizontal",
@@ -1204,7 +1204,7 @@ function register_event(){
 			stop:function(event, ui){
 				set_power(ui.value);	  
 			}
-		}); 
+		});
 	});
 
 	var array_temp = new Array(7);
@@ -1818,7 +1818,11 @@ function wifi7_mode(obj){
                 right_button: "<#btn_go#>",
                 right_button_callback: function () {
                     confirm_cancel();
-                    location.href = "/MLO.asp";
+                    if(typeof top.pageRedirect === "function"){
+                        top.pageRedirect("settings", "MLO.asp");
+                    } else {
+                        location.href = "/MLO.asp";
+                    }
                 },
                 right_button_args: {},
                 iframe: "",
@@ -1894,9 +1898,9 @@ function wifi7_mode(obj){
 		  			<div class="formfonttitle_help"><i onclick="show_feature_desc(`Professional options - Introduction`)" class="icon_help"></i></div>
 		  			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 		 				<div id="titl_desc" class="formfontdesc"><#WLANConfig11b_display5_sectiondesc#></div>
-		 				<div id="lantiq_ready" style="display:none;color:#FC0;margin-left:5px;font-size:13px;">Wireless is setting...</div>
-		 				<div id="svc_hint_div" style="display:none;margin-left:5px;"><span onClick="location.href='Advanced_System_Content.asp?af=ntp_server0'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"><#General_x_SystemTime_syncNTP#></span></div>
-		  			<div id="timezone_hint_div" style="margin-left:5px;display:none;"><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"></span></div>
+		 				<div id="lantiq_ready" style="display:none;color:var(--wrt-badge-warning-color, #FFCC00);margin-left:5px;font-size:13px;">Wireless is setting...</div>
+		 				<div id="svc_hint_div" style="display:none;margin-left:5px;"><span onClick="location.href='Advanced_System_Content.asp?af=ntp_server0'" style="color:var(--wrt-badge-warning-color, #FFCC00);text-decoration:underline;cursor:pointer;"><#General_x_SystemTime_syncNTP#></span></div>
+		  			<div id="timezone_hint_div" style="margin-left:5px;display:none;"><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" style="color:var(--wrt-badge-warning-color, #FFCC00);text-decoration:underline;cursor:pointer;"></span></div>
 
 
 					<div id="schedule_block" style="display:none">
@@ -2230,7 +2234,7 @@ function wifi7_mode(obj){
 									<option value="2" <% nvram_match("wl_ofdma", "2","selected"); %>>DL/UL OFDMA</option>
 									<option value="3" <% nvram_match("wl_ofdma", "3","selected"); %>>DL/UL OFDMA + MU-MIMO</option>
 								</select>
-								<span id="ofdma_hint" style="margin-left:4px;display:none">*Need to enable <a href="Advanced_Wireless_Content.asp" style="color:#FC0;text-decoration:underline;">802.11ax / WiFi 6 mode</a></span>
+								<span id="ofdma_hint" style="margin-left:4px;display:none">*Need to enable <a href="Advanced_Wireless_Content.asp" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">802.11ax / WiFi 6 mode</a></span>
 							</div>
 						</td>
 					</tr>

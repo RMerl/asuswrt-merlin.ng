@@ -61,6 +61,10 @@
 #define WPS_UI_PBC_SW			2
 #endif
 
+#ifdef RTCONFIG_BRCM_HOSTAPD
+#define HAPD_CMD_OUTFILE "/tmp/hapd_cmd_status"
+#endif
+
 #ifdef RTCONFIG_QTN
 #include "web-qtn.h"
 #endif
@@ -218,6 +222,10 @@ start_wps_method_ob(void)
 
 			wait_hapd = nvram_get_int("hapd_ob_timeout") ? nvram_get_int("hapd_ob_timeout") : HAPD_TIMEOUT;
 			snprintf(hapd_ctrl, sizeof(hapd_ctrl), "%s/%s", HAPD_DIR, nvram_safe_get(strcat_r(prefix, "_ifname", tmp)));
+			/* ifname is interpolated into a popen() shell command below;
+			 * reject unsafe names to prevent command injection. */
+			if (!is_valid_ifname(nvram_safe_get(strcat_r(prefix, "_ifname", tmp))))
+				break;
 			snprintf(cmd, sizeof(cmd), "hostapd_cli -i %s ping", nvram_safe_get(strcat_r(prefix, "_ifname", tmp)));
 			while(wait_hapd) {
 				sleep(1);
@@ -314,6 +322,10 @@ stop_wps_method_ob(void)
 
 				wait_hapd = nvram_get_int("hapd_ob_timeout") ? nvram_get_int("hapd_ob_timeout") : HAPD_TIMEOUT;
 				snprintf(hapd_ctrl, sizeof(hapd_ctrl), "%s/%s", HAPD_DIR, nvram_safe_get(strcat_r(prefix, "_ifname", tmp)));
+				/* ifname is interpolated into a popen() shell command below;
+				 * reject unsafe names to prevent command injection. */
+				if (!is_valid_ifname(nvram_safe_get(strcat_r(prefix, "_ifname", tmp))))
+					break;
 				snprintf(cmd, sizeof(cmd), "hostapd_cli -i %s ping", nvram_safe_get(strcat_r(prefix, "_ifname", tmp)));
 				while(wait_hapd) {
 					sleep(1);
@@ -478,7 +490,6 @@ start_wps_method(void)
 
 #ifdef RTCONFIG_BRCM_HOSTAPD
 	if (!HAPD_DISABLED()) {
-		char cmd[HAPD_CMD_BUF] = {0};
 		char sta_mac[32] = {0};
 
 		if (is_router_mode() && !nvram_get_int("w_Setting") && !strcmp(wps_sta_pin, "00000000")) {
@@ -495,41 +506,37 @@ start_wps_method(void)
 				if (band == WLC_BAND_6G)
 					continue;
 #endif
-				snprintf(cmd, sizeof(cmd), "hostapd_cli -p"
-					" %s -i %s wps_pbc", HAPD_DIR, word);
+				safe_do_system_to_file(HAPD_CMD_OUTFILE, 0,
+					"hostapd_cli -p %s -i %s wps_pbc", HAPD_DIR, word);
 
-				if (cmd[0] != '\0') {
-					if (hapd_cmd_chk_status(cmd)) {
-						wps_config_command = WPS_UI_CMD_START;
-						wl_wlif_update_wps_ui(WLIF_WPS_UI_FINDING_PBC_STA);
-					} else {
-						dbg("Err : %s failed to execute %s \n",
-							__FUNCTION__, cmd);
-						if(nvram_safe_get("wps_tmp_prefix"))
-							stop_wps_method_ob();
-					}
+				if (hapd_cmd_chk_status(HAPD_CMD_OUTFILE)) {
+					wps_config_command = WPS_UI_CMD_START;
+					wl_wlif_update_wps_ui(WLIF_WPS_UI_FINDING_PBC_STA);
+				} else {
+					dbg("Err : %s failed to execute hostapd_cli wps_pbc on %s\n",
+						__FUNCTION__, word);
+					if(nvram_safe_get("wps_tmp_prefix"))
+						stop_wps_method_ob();
 				}
 			}
 		} else {
 			if (strlen(wps_sta_pin) && strcmp(wps_sta_pin, "00000000") && (wl_wpsPincheck(wps_sta_pin) == 0)) {
 				char *ptr = sta_mac[0] != '\0' ? sta_mac : "";
-				snprintf(cmd, sizeof(cmd),
+				safe_do_system_to_file(HAPD_CMD_OUTFILE, 0,
 					"hostapd_cli -p %s -i %s wps_pin any %s %s",
 					HAPD_DIR, ifname, wps_sta_pin, ptr);
 			} else {
-				snprintf(cmd, sizeof(cmd), "hostapd_cli -p"
-					" %s -i %s wps_pbc", HAPD_DIR, ifname);
+				safe_do_system_to_file(HAPD_CMD_OUTFILE, 0,
+					"hostapd_cli -p %s -i %s wps_pbc", HAPD_DIR, ifname);
 			}
-			if (cmd[0] != '\0') {
-				if (hapd_cmd_chk_status(cmd)) {
-					wps_config_command = WPS_UI_CMD_START;
-					wl_wlif_update_wps_ui(WLIF_WPS_UI_FINDING_PBC_STA);
-				} else {
-					dbg("Err : %s failed to execute %s \n",
-						__FUNCTION__, cmd);
-					if(nvram_safe_get("wps_tmp_prefix"))
-						stop_wps_method_ob();
-				}
+			if (hapd_cmd_chk_status(HAPD_CMD_OUTFILE)) {
+				wps_config_command = WPS_UI_CMD_START;
+				wl_wlif_update_wps_ui(WLIF_WPS_UI_FINDING_PBC_STA);
+			} else {
+				dbg("Err : %s failed to execute hostapd_cli on %s\n",
+					__FUNCTION__, ifname);
+				if(nvram_safe_get("wps_tmp_prefix"))
+					stop_wps_method_ob();
 			}
 		}
 	} else
@@ -1042,35 +1049,27 @@ int is_wps_success(void)
 }
 
 #ifdef RTCONFIG_BRCM_HOSTAPD
-#define HAPD_CMD_WAIT 5
-int hapd_cmd_chk_status(char* cmd) {
+/* outfile is written by safe_do_system_to_file(), which runs the hostapd_cli
+ * command via _eval() (argv exec, no shell) and blocks until it exits; the
+ * file is therefore complete by the time we get here. */
+int hapd_cmd_chk_status(const char *outfile) {
 	FILE *fp = NULL;
 	char buf[128];
 	int success = 0;
-	int wait = HAPD_CMD_WAIT;
 
-	fp = popen(cmd, "r");
+	fp = fopen(outfile, "r");
 	if (fp) {
-		while(wait) {
-			if (wait != HAPD_CMD_WAIT)
-				sleep(1);
-
-			if ((--wait) == 0) {
-				_dprintf("hostapd command [%s] execute failed\n", cmd);
+		while (fgets(buf, sizeof(buf), fp) != NULL) {
+			if (strstr(buf, "OK") != NULL) {
+				success = 1;
 				break;
 			}
-			memset(buf, 0, sizeof(buf));
-			while(fgets(buf, sizeof(buf), fp) != NULL) {
-				if (strstr(buf, "OK") != NULL) {
-					success = 1;
-					break;
-				}
-			}
-			if(success)
-				break;
 		}
-		pclose(fp);
+		fclose(fp);
+	} else {
+		_dprintf("hostapd command output file [%s] missing\n", outfile);
 	}
+	unlink(outfile);
 	return success;
 }
 #endif

@@ -1,0 +1,1065 @@
+/*
+ * iperf, Copyright (c) 2014-2022, The Regents of the University of
+ * California, through Lawrence Berkeley National Laboratory (subject
+ * to receipt of any required approvals from the U.S. Dept. of
+ * Energy).  All rights reserved.
+ *
+ * If you have questions about your rights to use or distribute this
+ * software, please contact Berkeley Lab's Technology Transfer
+ * Department at TTD@lbl.gov.
+ *
+ * NOTICE.  This software is owned by the U.S. Department of Energy.
+ * As such, the U.S. Government has been granted for itself and others
+ * acting on its behalf a paid-up, nonexclusive, irrevocable,
+ * worldwide license in the Software to reproduce, prepare derivative
+ * works, and perform publicly and display publicly.  Beginning five
+ * (5) years after the date permission to assert copyright is obtained
+ * from the U.S. Department of Energy, and subject to any subsequent
+ * five (5) year renewals, the U.S. Government is granted for itself
+ * and others acting on its behalf a paid-up, nonexclusive,
+ * irrevocable, worldwide license in the Software to reproduce,
+ * prepare derivative works, distribute copies to the public, perform
+ * publicly and display publicly, and to permit others to do so.
+ *
+ * This code is distributed under a BSD style license, see the LICENSE
+ * file for complete information.
+ */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <unistd.h>
+#include <assert.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <sys/time.h>
+#include <sys/select.h>
+
+#include "iperf.h"
+#include "iperf_api.h"
+#include "iperf_util.h"
+#include "iperf_udp.h"
+#include "timer.h"
+#include "net.h"
+#include "cjson.h"
+
+#include "iperf_config.h"
+#include <netinet/in.h>
+#include <netdb.h>
+
+
+#ifdef CONFIG_BCM_SPDTEST
+#include "spdt_api.h"
+#endif
+
+/* iperf_udp_recv
+ *
+ * receives the data for UDP
+ */
+int
+iperf_udp_recv(struct iperf_stream *sp)
+{
+    uint32_t  sec, usec;
+    uint64_t  pcount;
+    int       r;
+    int       size = sp->settings->blksize;
+    int       first_packet = 0;
+    double    transit = 0, d = 0;
+    struct iperf_time sent_time, arrival_time, temp_time;
+    struct iperf_test *test = sp->test;	
+    int sock_opt = 0;
+
+#if defined(HAVE_MSG_TRUNC)
+    // UDP recv() with MSG_TRUNC reads only the size bytes, but return the length of the full packet
+    if (sp->test->settings->skip_rx_copy) {
+        sock_opt = MSG_TRUNC;
+        size = sizeof(sec) + sizeof(usec) + sizeof(pcount);
+    }
+#endif /* HAVE_MSG_TRUNC */
+
+    r = Nrecv_no_select(sp->socket, sp->buffer, size, Pudp, sock_opt);
+
+    /*
+     * If we got an error in the read, or if we didn't read anything
+     * because the underlying read(2) got a EAGAIN, then skip packet
+     * processing.
+     */
+    if (r <= 0)
+        return r;
+
+    /* Only count bytes received while we're in the correct state. */
+    if (test->state == TEST_RUNNING) {
+
+	/*
+	 * For jitter computation below, it's important to know if this
+	 * packet is the first packet received.
+	 */
+	if (sp->result->bytes_received == 0) {
+	    first_packet = 1;
+	}
+
+	sp->result->bytes_received += r;
+	sp->result->bytes_received_this_interval += r;
+
+	/* Dig the various counters out of the incoming UDP packet */
+	if (test->udp_counters_64bit) {
+	    memcpy(&sec, sp->buffer, sizeof(sec));
+	    memcpy(&usec, sp->buffer+4, sizeof(usec));
+	    memcpy(&pcount, sp->buffer+8, sizeof(pcount));
+	    sec = ntohl(sec);
+	    usec = ntohl(usec);
+	    pcount = be64toh(pcount);
+	    sent_time.secs = sec;
+	    sent_time.usecs = usec;
+	}
+	else {
+	    uint32_t pc;
+	    memcpy(&sec, sp->buffer, sizeof(sec));
+	    memcpy(&usec, sp->buffer+4, sizeof(usec));
+	    memcpy(&pc, sp->buffer+8, sizeof(pc));
+	    sec = ntohl(sec);
+	    usec = ntohl(usec);
+	    pcount = ntohl(pc);
+	    sent_time.secs = sec;
+	    sent_time.usecs = usec;
+	}
+
+	if (test->debug_level >= DEBUG_LEVEL_DEBUG)
+	    fprintf(stderr, "pcount %" PRIu64 " packet_count %" PRIu64 "\n", pcount, sp->packet_count);
+
+	/*
+	 * Try to handle out of order packets.  The way we do this
+	 * uses a constant amount of storage but might not be
+	 * correct in all cases.  In particular we seem to have the
+	 * assumption that packets can't be duplicated in the network,
+	 * because duplicate packets will possibly cause some problems here.
+	 *
+	 * First figure out if the sequence numbers are going forward.
+	 * Note that pcount is the sequence number read from the packet,
+	 * and sp->packet_count is the highest sequence number seen so
+	 * far (so we're expecting to see the packet with sequence number
+	 * sp->packet_count + 1 arrive next).
+	 */
+	if (pcount >= sp->packet_count + 1) {
+
+	    /* Forward, but is there a gap in sequence numbers? */
+	    if (pcount > sp->packet_count + 1) {
+		/* There's a gap so count that as a loss. */
+		sp->cnt_error += (pcount - 1) - sp->packet_count;
+                if (test->debug_level >= DEBUG_LEVEL_INFO)
+		    fprintf(stderr, "LOST %" PRIu64 " PACKETS - received packet %" PRIu64 " but expected sequence %" PRIu64 " on stream %d\n", (pcount - sp->packet_count + 1), pcount, sp->packet_count + 1, sp->socket);
+	    }
+	    /* Update the highest sequence number seen so far. */
+	    sp->packet_count = pcount;
+	} else {
+
+	    /*
+	     * Sequence number went backward (or was stationary?!?).
+	     * This counts as an out-of-order packet.
+	     */
+	    sp->outoforder_packets++;
+
+	    /*
+	     * If we have lost packets, then the fact that we are now
+	     * seeing an out-of-order packet offsets a prior sequence
+	     * number gap that was counted as a loss.  So we can take
+	     * away a loss.
+	     */
+	    if (sp->cnt_error > 0)
+		sp->cnt_error--;
+
+	    /* Log the out-of-order packet */
+	    if (test->debug_level >= DEBUG_LEVEL_INFO)
+		fprintf(stderr, "OUT OF ORDER - received packet %" PRIu64 " but expected sequence %" PRIu64 " on stream %d\n", pcount, sp->packet_count + 1, sp->socket);
+	}
+
+	/*
+	 * jitter measurement
+	 *
+	 * This computation is based on RFC 1889 (specifically
+	 * sections 6.3.1 and A.8).
+	 *
+	 * Note that synchronized clocks are not required since
+	 * the source packet delta times are known.  Also this
+	 * computation does not require knowing the round-trip
+	 * time.
+	 */
+	iperf_time_now(&arrival_time);
+
+	iperf_time_diff(&arrival_time, &sent_time, &temp_time);
+	transit = iperf_time_in_secs(&temp_time);
+
+	/* Hack to handle the first packet by initializing prev_transit. */
+	if (first_packet)
+	    sp->prev_transit = transit;
+
+	d = transit - sp->prev_transit;
+	if (d < 0)
+	    d = -d;
+	sp->prev_transit = transit;
+	sp->jitter += (d - sp->jitter) / 16.0;
+    }
+    else {
+	if (test->debug_level >= DEBUG_LEVEL_INFO)
+	    printf("Late receive, state = %d\n", test->state);
+    }
+
+    return r;
+}
+
+
+/* iperf_udp_send
+ *
+ * sends the data for UDP
+ */
+int
+iperf_udp_send(struct iperf_stream *sp)
+{
+    int r;
+    int       size = sp->settings->blksize;
+    struct iperf_time before;
+
+    iperf_time_now(&before);
+
+    ++sp->packet_count;
+
+    if (sp->test->udp_counters_64bit) {
+
+	uint32_t  sec, usec;
+	uint64_t  pcount;
+
+	sec = htonl(before.secs);
+	usec = htonl(before.usecs);
+	pcount = htobe64(sp->packet_count);
+
+	memcpy(sp->buffer, &sec, sizeof(sec));
+	memcpy(sp->buffer+4, &usec, sizeof(usec));
+	memcpy(sp->buffer+8, &pcount, sizeof(pcount));
+
+    }
+    else {
+
+	uint32_t  sec, usec, pcount;
+
+	sec = htonl(before.secs);
+	usec = htonl(before.usecs);
+	pcount = htonl(sp->packet_count);
+
+	memcpy(sp->buffer, &sec, sizeof(sec));
+	memcpy(sp->buffer+4, &usec, sizeof(usec));
+	memcpy(sp->buffer+8, &pcount, sizeof(pcount));
+
+    }
+
+    r = Nwrite(sp->socket, sp->buffer, size, Pudp);
+
+    if (r <= 0) {
+        --sp->packet_count;     /* Don't count messages that no data was sent from them.
+                                 * Allows "resending" a massage with the same numbering */
+        if (r < 0) {
+            if (r == NET_SOFTERROR && sp->test->debug_level >= DEBUG_LEVEL_INFO)
+                printf("UDP send failed on NET_SOFTERROR. errno=%s\n", strerror(errno));
+            return r;
+        }
+    }
+
+    sp->result->bytes_sent += r;
+    sp->result->bytes_sent_this_interval += r;
+
+    if (sp->test->debug_level >=  DEBUG_LEVEL_DEBUG)
+	printf("sent %d bytes of %d, total %" PRIu64 "\n", r, sp->settings->blksize, sp->result->bytes_sent);
+
+    return r;
+}
+
+
+/**************************************************************************/
+
+/*
+ * The following functions all have to do with managing UDP data sockets.
+ * UDP of course is connectionless, so there isn't really a concept of
+ * setting up a connection, although connect(2) can (and is) used to
+ * bind the remote end of sockets.  We need to simulate some of the
+ * connection management that is built-in to TCP so that each side of the
+ * connection knows about each other before the real data transfers begin.
+ */
+
+/*
+ * Set and verify socket buffer sizes.
+ * Return 0 if no error, -1 if an error, +1 if socket buffers are
+ * potentially too small to hold a message.
+ */
+int
+iperf_udp_buffercheck(struct iperf_test *test, int s)
+{
+    int rc = 0;
+    int sndbuf_actual, rcvbuf_actual;
+
+    /*
+     * Set socket buffer size if requested.  Do this for both sending and
+     * receiving so that we can cover both normal and --reverse operation.
+     */
+    int opt;
+    socklen_t optlen;
+
+    if ((opt = test->settings->socket_bufsize)) {
+        if (setsockopt(s, SOL_SOCKET, SO_RCVBUF, &opt, sizeof(opt)) < 0) {
+            i_errno = IESETBUF;
+            return -1;
+        }
+        if (setsockopt(s, SOL_SOCKET, SO_SNDBUF, &opt, sizeof(opt)) < 0) {
+            i_errno = IESETBUF;
+            return -1;
+        }
+    }
+
+    /* Read back and verify the sender socket buffer size */
+    optlen = sizeof(sndbuf_actual);
+    if (getsockopt(s, SOL_SOCKET, SO_SNDBUF, &sndbuf_actual, &optlen) < 0) {
+	i_errno = IESETBUF;
+	return -1;
+    }
+    if (test->debug) {
+	printf("SNDBUF is %u, expecting %u\n", sndbuf_actual, test->settings->socket_bufsize);
+    }
+    if (test->settings->socket_bufsize && test->settings->socket_bufsize > sndbuf_actual) {
+	i_errno = IESETBUF2;
+	return -1;
+    }
+    if (test->settings->blksize > sndbuf_actual) {
+	char str[WARN_STR_LEN];
+	snprintf(str, sizeof(str),
+		 "Block size %d > sending socket buffer size %d",
+		 test->settings->blksize, sndbuf_actual);
+	warning(str);
+	rc = 1;
+    }
+
+    /* Read back and verify the receiver socket buffer size */
+    optlen = sizeof(rcvbuf_actual);
+    if (getsockopt(s, SOL_SOCKET, SO_RCVBUF, &rcvbuf_actual, &optlen) < 0) {
+	i_errno = IESETBUF;
+	return -1;
+    }
+    if (test->debug) {
+	printf("RCVBUF is %u, expecting %u\n", rcvbuf_actual, test->settings->socket_bufsize);
+    }
+    if (test->settings->socket_bufsize && test->settings->socket_bufsize > rcvbuf_actual) {
+	i_errno = IESETBUF2;
+	return -1;
+    }
+    if (test->settings->blksize > rcvbuf_actual) {
+	char str[WARN_STR_LEN];
+	snprintf(str, sizeof(str),
+		 "Block size %d > receiving socket buffer size %d",
+		 test->settings->blksize, rcvbuf_actual);
+	warning(str);
+	rc = 1;
+    }
+
+    if (test->json_output) {
+    cJSON *sock_bufsize_item = cJSON_GetObjectItem(test->json_start, "sock_bufsize");
+    if (sock_bufsize_item == NULL) {
+    cJSON_AddNumberToObject(test->json_start, "sock_bufsize", test->settings->socket_bufsize);
+    }
+
+    cJSON *sndbuf_actual_item = cJSON_GetObjectItem(test->json_start, "sndbuf_actual");
+    if (sndbuf_actual_item == NULL) {
+	cJSON_AddNumberToObject(test->json_start, "sndbuf_actual", sndbuf_actual);
+    }
+        
+    cJSON *rcvbuf_actual_item = cJSON_GetObjectItem(test->json_start, "rcvbuf_actual");
+    if (rcvbuf_actual_item == NULL) {
+	cJSON_AddNumberToObject(test->json_start, "rcvbuf_actual", rcvbuf_actual);
+    }
+    }
+
+    return rc;
+}
+
+int8_t g_hw_fd = -1;
+int g_connected = 0;
+int g_fd_valid = 0;
+int g_srv_hw_fd_count = 0;
+/*
+ * iperf_udp_accept
+ *
+ * Accepts a new UDP "connection"
+ */
+int
+iperf_udp_accept(struct iperf_test *test)
+{
+    struct sockaddr_storage sa_peer;
+    unsigned int buf;
+    socklen_t len;
+    int       sz, s;
+    int	      rc;
+#ifdef CONFIG_BCM_SPDTEST
+    int8_t hw_fd = -1, connected_hw_fd;
+    spdt_conn_params_t params = {};
+    spdt_stream_options_t options = {};
+    struct addrinfo hints, *res;
+    char portstr[6];
+#endif
+
+    /*
+     * Get the current outstanding socket.  This socket will be used to handle
+     * data transfers and a new "listening" socket will be created.
+     */
+    s = test->prot_listener;
+
+    /*
+     * Grab the UDP packet sent by the client.  From that we can extract the
+     * client's address, and then use that information to bind the remote side
+     * of the socket to the client.
+     */
+    len = sizeof(sa_peer);
+    if ((sz = recvfrom(test->prot_listener, &buf, sizeof(buf), 0, (struct sockaddr *) &sa_peer, &len)) < 0) {
+        i_errno = IESTREAMACCEPT;
+        return -1;
+    }
+
+    if (connect(s, (struct sockaddr *) &sa_peer, len) < 0) {
+        i_errno = IESTREAMACCEPT;
+        return -1;
+    }
+
+    /* Check and set socket buffer sizes */
+    rc = iperf_udp_buffercheck(test, s);
+    if (rc < 0)
+	/* error */
+	return rc;
+    /*
+     * If the socket buffer was too small, but it was the default
+     * size, then try explicitly setting it to something larger.
+     */
+    if (rc > 0) {
+	if (test->settings->socket_bufsize == 0) {
+            char str[WARN_STR_LEN];
+	    int bufsize = test->settings->blksize + UDP_BUFFER_EXTRA;
+	    snprintf(str, sizeof(str), "Increasing socket buffer size to %d",
+	             bufsize);
+	    warning(str);
+	    test->settings->socket_bufsize = bufsize;
+	    rc = iperf_udp_buffercheck(test, s);
+	    if (rc < 0)
+		return rc;
+	}
+    }
+
+#if defined(HAVE_SO_MAX_PACING_RATE)
+    /* If socket pacing is specified, try it. */
+    if (test->settings->fqrate) {
+	/* Convert bits per second to bytes per second */
+	uint64_t fqrate = test->settings->fqrate / 8;
+	if (fqrate > 0) {
+	    if (test->debug) {
+		printf("Setting fair-queue socket pacing to %"PRIu64"\n", fqrate);
+	    }
+	    if (setsockopt(s, SOL_SOCKET, SO_MAX_PACING_RATE, &fqrate, sizeof(fqrate)) < 0) {
+		warning("Unable to set socket pacing");
+	    }
+	}
+    }
+#endif /* HAVE_SO_MAX_PACING_RATE */
+    {
+	unsigned int rate = test->settings->rate / 8;
+	if (rate > 0) {
+	    if (test->debug) {
+		printf("Setting application pacing to %u\n", rate);
+	    }
+	}
+    }
+
+#ifdef CONFIG_BCM_SPDTEST
+    if (!test->hwoffl)
+        goto start_listen;
+
+    if (g_srv_hw_fd_count > 4)
+        goto start_listen;
+
+    hw_fd = g_hw_fd;
+    g_hw_fd = -1;
+    options.proto.udp_options.has_sock_fd = 1;
+    options.proto.udp_options.sock_fd = s;
+    rc = spdt_set_options(hw_fd, &options);
+    if (rc)
+    {
+        g_fd_valid = 0;
+        spdt_uninit(hw_fd);
+        i_errno = IESTREAMCONNECT;
+        return -1;
+    }
+
+    memset(&params.server_addr, 0, sizeof(params.server_addr));
+    memcpy(&params.server_addr, &sa_peer, len);
+
+    rc = spdt_connect(hw_fd, test->mode == SENDER ? SPDT_DIR_TX: SPDT_DIR_RX, &params);
+    g_fd_valid = 0;
+    if (rc)
+    {
+        spdt_uninit(hw_fd);
+        i_errno = IESTREAMCONNECT;
+        return -1;
+    }
+
+    iperf_set_stream_socket(hw_fd, s);
+    connected_hw_fd = hw_fd;
+start_listen:
+#endif
+
+    /*
+     * Create a new "listening" socket to replace the one we were using before.
+     */
+    FD_CLR(test->prot_listener, &test->read_set); // No control messages from old listener
+    test->prot_listener = netannounce(test->settings->domain, Pudp, test->bind_address, test->bind_dev, test->server_port);
+    if (test->prot_listener < 0) {
+        i_errno = IESTREAMLISTEN;
+        return -1;
+    }
+
+    FD_SET(test->prot_listener, &test->read_set);
+    test->max_fd = (test->max_fd < test->prot_listener) ? test->prot_listener : test->max_fd;
+
+#ifdef CONFIG_BCM_SPDTEST
+    if (!test->hwoffl)
+    {
+        /* Let the client know we're ready "accept" another UDP "stream" */
+        buf = UDP_CONNECT_REPLY;
+        if (write(s, &buf, sizeof(buf)) < 0) {
+            i_errno = IESTREAMWRITE;
+            return -1;
+        }
+        return s;
+    }
+
+    if (g_srv_hw_fd_count == 4)
+        g_srv_hw_fd_count++;
+
+    if (g_srv_hw_fd_count > 4)
+        goto send_oob;
+
+    /* Prepare for the socket creation */
+    snprintf(portstr, 6, "%d", test->server_port);
+    memset(&hints, 0, sizeof(hints));
+
+    if (test->settings->domain == AF_UNSPEC && !test->bind_address)
+        hints.ai_family = AF_INET;
+    else
+        hints.ai_family = test->settings->domain;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_flags = AI_PASSIVE;
+    if ((gerror = getaddrinfo(test->bind_address, portstr, &hints, &res)) != 0)
+    {
+        i_errno = IESTREAMLISTEN;
+        return -1;
+    }
+
+    memcpy(&options.proto.udp_options.conn_params.local_addr, res->ai_addr, res->ai_addrlen);
+    freeaddrinfo(res);
+
+    /* If spdt_init fails it mean no more resources. Ignore the listen part. */
+    rc = spdt_init(SPDT_IPERF3_UDP, &hw_fd);
+    if (rc)
+    {
+        i_errno = IESTREAMCONNECT;
+        return -1;
+    }
+    iperf_set_stream_socket(hw_fd, HW_FD_CREATED);
+
+    g_hw_fd = hw_fd;
+    g_connected = 0;
+    g_fd_valid = 1;
+
+    if (test->settings->tos)
+        options.proto.udp_options.conn_params.tos = test->settings->tos;
+    options.proto.udp_options.has_sock_fd = 1;
+    options.proto.udp_options.has_srv_sock_fd = 1;
+    options.proto.udp_options.protocol = SPDT_IPERF3_UDP;
+    options.proto.udp_options.sock_fd = test->prot_listener;
+    options.proto.udp_options.dir = test->mode == SENDER ? SPDT_DIR_TX : SPDT_DIR_RX;
+    options.proto.udp_options.conn_params.force_swoffl_mode = (SW_OFFLOAD_MODE == test->hwoffl ? 1 : 0);
+    options.proto.udp_options.conn_params.priority = spdt_get_system_priority(0);
+    rc = spdt_set_options(hw_fd, &options);
+    if (rc)
+    {
+        spdt_uninit(hw_fd);
+        g_fd_valid = 0;
+        i_errno = IESTREAMCONNECT;
+        return -1;
+    }
+    g_srv_hw_fd_count++;
+
+send_oob:
+    /* Let the client know we're ready "accept" another UDP "stream" */
+    buf = 987654321;		/* this can be pretty much anything */
+    rc = spdt_msg_send(connected_hw_fd, (char *)&buf, sizeof(buf));
+    if (rc < 0)
+    {
+        printf("%s:%d Failed to send start indication to the server, rc = %d\n", __FUNCTION__, __LINE__, rc);
+        g_fd_valid = 0;
+        i_errno = IESTREAMWRITE;
+        spdt_uninit(hw_fd);
+        return -1;
+    }
+#else
+    /* Let the client know we're ready "accept" another UDP "stream" */
+    buf = UDP_CONNECT_REPLY;
+    if (write(s, &buf, sizeof(buf)) < 0) {
+        i_errno = IESTREAMWRITE;
+        return -1;
+    }
+#endif
+
+    return s;
+}
+
+
+/*
+ * iperf_udp_listen
+ *
+ * Start up a listener for UDP stream connections.  Unlike for TCP,
+ * there is no listen(2) for UDP.  This socket will however accept
+ * a UDP datagram from a client (indicating the client's presence).
+ */
+int
+iperf_udp_listen(struct iperf_test *test)
+{
+    int s;
+
+    if ((s = netannounce(test->settings->domain, Pudp, test->bind_address, test->bind_dev, test->server_port)) < 0) {
+        i_errno = IESTREAMLISTEN;
+        return -1;
+    }
+
+    /*
+     * The caller will put this value into test->prot_listener.
+     */
+#ifdef CONFIG_BCM_SPDTEST
+    if (test->hwoffl)
+    {
+        int rc;
+        int8_t hw_fd;
+        spdt_stream_options_t options = {};
+        struct addrinfo hints, *res;
+        char portstr[6];
+
+        snprintf(portstr, 6, "%d", test->server_port);
+        memset(&hints, 0, sizeof(hints));
+
+        if (test->settings->domain == AF_UNSPEC && !test->bind_address)
+            hints.ai_family = AF_INET;
+        else
+            hints.ai_family = test->settings->domain;
+        hints.ai_socktype = SOCK_DGRAM;
+        hints.ai_flags = AI_PASSIVE;
+        if ((gerror = getaddrinfo(test->bind_address, portstr, &hints, &res)) != 0)
+        {
+            i_errno = IESTREAMLISTEN;
+            return -1;
+        }
+
+        memcpy(&options.proto.udp_options.conn_params.local_addr, res->ai_addr, res->ai_addrlen);
+        freeaddrinfo(res);
+
+        g_srv_hw_fd_count = 0;
+        rc = spdt_init(SPDT_IPERF3_UDP, &hw_fd);
+        if (rc)
+        {
+            i_errno = IESTREAMCONNECT;
+            return -1;
+        }
+        iperf_set_stream_socket(hw_fd, HW_FD_CREATED);
+
+        g_hw_fd = hw_fd;
+        g_fd_valid = 1;
+        g_connected = 0;
+
+        if (test->settings->tos)
+            options.proto.udp_options.conn_params.tos = test->settings->tos;
+
+        options.proto.udp_options.has_sock_fd = 1;
+        options.proto.udp_options.has_srv_sock_fd = 1;
+        options.proto.udp_options.protocol = SPDT_IPERF3_UDP;
+        options.proto.udp_options.sock_fd = s;
+        options.proto.udp_options.dir = test->mode == SENDER ? SPDT_DIR_TX : SPDT_DIR_RX;
+        options.proto.udp_options.conn_params.force_swoffl_mode = (SW_OFFLOAD_MODE == test->hwoffl ? 1 : 0);
+        options.proto.udp_options.conn_params.priority = spdt_get_system_priority(0);
+        rc = spdt_set_options(hw_fd, &options);
+        if (rc)
+        {
+            spdt_uninit(hw_fd);
+            g_fd_valid = 0;
+            i_errno = IESTREAMCONNECT;
+            return -1;
+        }
+        g_srv_hw_fd_count++;
+    }
+#endif
+
+    return s;
+}
+
+
+/*
+ * iperf_udp_connect
+ *
+ * "Connect" to a UDP stream listener.
+ */
+int
+iperf_udp_connect(struct iperf_test *test)
+{
+    int s, sz;
+    unsigned int buf;
+#ifdef SO_RCVTIMEO
+    struct timeval tv;
+#endif
+    int rc;
+    int i, max_len_wait_for_reply;
+
+    /* Create and bind our local socket. */
+    if ((s = netdial(test->settings->domain, Pudp, test->bind_address, test->bind_dev, test->bind_port, test->server_hostname, test->server_port, -1)) < 0) {
+        i_errno = IESTREAMCONNECT;
+        return -1;
+    }
+
+    /* Check and set socket buffer sizes */
+    rc = iperf_udp_buffercheck(test, s);
+    if (rc < 0)
+	/* error */
+	return rc;
+    /*
+     * If the socket buffer was too small, but it was the default
+     * size, then try explicitly setting it to something larger.
+     */
+    if (rc > 0) {
+	if (test->settings->socket_bufsize == 0) {
+            char str[WARN_STR_LEN];
+	    int bufsize = test->settings->blksize + UDP_BUFFER_EXTRA;
+	    snprintf(str, sizeof(str), "Increasing socket buffer size to %d",
+	             bufsize);
+	    warning(str);
+	    test->settings->socket_bufsize = bufsize;
+	    rc = iperf_udp_buffercheck(test, s);
+	    if (rc < 0)
+		return rc;
+	}
+    }
+
+#if defined(HAVE_SO_MAX_PACING_RATE)
+    /* If socket pacing is available and not disabled, try it. */
+    if (test->settings->fqrate) {
+	/* Convert bits per second to bytes per second */
+	uint64_t fqrate = test->settings->fqrate / 8;
+	if (fqrate > 0) {
+	    if (test->debug) {
+		printf("Setting fair-queue socket pacing to %"PRIu64"\n", fqrate);
+	    }
+	    if (setsockopt(s, SOL_SOCKET, SO_MAX_PACING_RATE, &fqrate, sizeof(fqrate)) < 0) {
+		warning("Unable to set socket pacing");
+	    }
+	}
+    }
+#endif /* HAVE_SO_MAX_PACING_RATE */
+    {
+	unsigned int rate = test->settings->rate / 8;
+	if (rate > 0) {
+	    if (test->debug) {
+		printf("Setting application pacing to %u\n", rate);
+	    }
+	}
+    }
+
+    /* Set common socket options */
+    iperf_common_sockopts(test, s);
+
+#ifdef SO_RCVTIMEO
+    /* 30 sec timeout for a case when there is a network problem. */
+    tv.tv_sec = 30;
+    tv.tv_usec = 0;
+    setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&tv, sizeof(struct timeval));
+#endif
+
+    /*
+     * Write a datagram to the UDP stream to let the server know we're here.
+     * The server learns our address by obtaining its peer's address.
+     */
+    buf = UDP_CONNECT_MSG;
+    if (test->debug) {
+        printf("Sending Connect message to Socket %d\n", s);
+    }
+    if (write(s, &buf, sizeof(buf)) < 0) {
+        // XXX: Should this be changed to IESTREAMCONNECT?
+        i_errno = IESTREAMWRITE;
+        return -1;
+    }
+
+    /*
+     * Wait until the server replies back to us with the "accept" response.
+     */
+    i = 0;
+    max_len_wait_for_reply = sizeof(buf);
+    if (test->reverse) /* In reverse mode allow few packets to have the "accept" response - to handle out of order packets */
+        max_len_wait_for_reply += MAX_REVERSE_OUT_OF_ORDER_PACKETS * test->settings->blksize;
+    do {
+        if ((sz = recv(s, &buf, sizeof(buf), 0)) < 0) {
+            i_errno = IESTREAMREAD;
+            return -1;
+        }
+        if (test->debug) {
+            printf("Connect received for Socket %d, sz=%d, buf=%x, i=%d, max_len_wait_for_reply=%d\n", s, sz, buf, i, max_len_wait_for_reply);
+        }
+        i += sz;
+    } while (buf != UDP_CONNECT_REPLY && buf != LEGACY_UDP_CONNECT_REPLY && i < max_len_wait_for_reply);
+
+    if (buf != UDP_CONNECT_REPLY  && buf != LEGACY_UDP_CONNECT_REPLY) {
+        i_errno = IESTREAMREAD;
+        return -1;
+    }
+
+    return s;
+}
+
+
+/* iperf_udp_init
+ *
+ * initializer for UDP streams in TEST_START
+ */
+int
+iperf_udp_init(struct iperf_test *test)
+{
+    int rc = 0;
+ #ifdef CONFIG_BCM_SPDTEST
+    int8_t hw_fd = -1;
+    struct iperf_stream *sp;
+
+    if (!test->hwoffl)
+        return 0;
+
+    if ((test->mode == SENDER) && (test->role == 'c'))
+    {
+        return iperf_start_udp_hwoffl_sender(test);
+    }
+
+    SLIST_FOREACH(sp, &test->streams, streams) {
+        hw_fd = iperf_socket_to_stream(sp->socket);
+        if (test->mode != SENDER)
+        {
+            spdt_rx_params_t rx_params = {};
+
+            rc = spdt_recv_start(hw_fd, &rx_params);
+            if (rc)
+            {
+                printf("spdt_recv_start failed\n");
+                i_errno = IESTREAMCONNECT;
+                return rc;
+            }
+        }
+    }
+#endif
+
+    return rc;
+}
+
+#ifdef CONFIG_BCM_SPDTEST
+int 
+iperf_udp_hwoffl_recv(struct iperf_stream *sp)
+{
+    return 0;
+}
+
+int
+iperf_udp_hwoffl_send(struct iperf_stream *sp)
+{
+    return 0;
+}
+
+int
+iperf_udp_hwoffl_connect(struct iperf_test *test)
+{
+    int8_t hw_fd = -1;
+    spdt_conn_params_t params = {};
+    struct addrinfo hints, *local_res, *server_res;
+    char portstr[6];
+    int rc, connected = 0;
+    int buf;
+    uint32_t i, max_len_wait_for_reply, received;
+
+    memset(&hints, 0, sizeof(hints));
+
+    rc = spdt_init(SPDT_IPERF3_UDP, &hw_fd);
+    if (rc)
+    {
+        printf("spdt_init failed\n");
+        i_errno = IESTREAMCONNECT;
+        return -1;  
+    }
+    iperf_set_stream_socket(hw_fd, HW_FD_CREATED);
+
+    /* 
+     * Workaround:
+     * If the process terminates at this point, hw_fd (stream index) will not be freed. This
+     * causes a leak of index in the driver. Store the hw_fd here to release it in the surprise
+     * termination handler.
+     */
+    g_hw_fd = hw_fd;
+    g_connected = 0;
+    g_fd_valid = 1;
+
+    memset(&params.local_addr, 0, sizeof(params.local_addr));
+
+    if (test->bind_address) 
+    {
+        memset(&hints, 0, sizeof(hints));
+        hints.ai_family = test->settings->domain;
+        hints.ai_socktype = SOCK_DGRAM;
+        if (getaddrinfo(test->bind_address, NULL, &hints, &local_res) != 0) {
+            i_errno = IESTREAMCONNECT;
+            goto error;
+        }
+        /* convert to sockaddr_storage */
+
+        memcpy(&params.local_addr, local_res->ai_addr, local_res->ai_addrlen);
+
+        /*may free addrinfo now */
+        freeaddrinfo(local_res);
+    }
+
+    /* get server's address */
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = test->settings->domain;
+    hints.ai_socktype = SOCK_DGRAM;
+    snprintf(portstr, sizeof(portstr), "%d", test->server_port);
+    if (getaddrinfo(test->server_hostname, portstr, &hints, &server_res) != 0) {
+        i_errno = IESTREAMCONNECT;
+        goto error;
+    }
+
+     /* convert to sockaddr_storage */
+    memset(&params.server_addr, 0, sizeof(params.server_addr));
+    memcpy(&params.server_addr, server_res->ai_addr, server_res->ai_addrlen);
+
+    /*may free addrinfo now */
+    freeaddrinfo(server_res);
+
+    if (test->settings->tos)
+       params.tos = test->settings->tos;
+
+    /* For WLAN we use priority 0 since we want data to be in the BE ring which is queue 0 */
+    if (!memcmp(test->ifc_name, "wl", 2))
+        params.priority = 0;
+    else
+        params.priority = spdt_get_system_priority(0);
+
+    /* try to connect */
+    rc = spdt_connect(hw_fd, test->mode == SENDER ? SPDT_DIR_TX: SPDT_DIR_RX, &params);
+    if (rc)
+    {
+        printf("spdt_connect failed\n");
+        i_errno = IESTREAMCONNECT;
+        goto error;
+    }
+    connected = 1;
+    g_connected = 1;
+
+    /*
+     * Write multiple OOB packets. Mainly the OOB is intended for letting
+     * the server we are here. The server learns our address by obtaining 
+     * its peer's address. The extra packets are for givin the kernel CT
+     * the chance to establish the connection before we create the HW
+     * flows.
+     */
+    buf = 123456789;		/* this can be pretty much anything */
+    rc = spdt_msg_send(hw_fd, (char *)&buf, sizeof(buf));
+    if (rc < 0)
+    {
+        printf("%s:%d Failed to send start indication to the server (packet 1), rc = %d\n", __FUNCTION__, __LINE__, rc);
+        i_errno = IESTREAMWRITE;
+        goto error;
+    }
+
+    /*
+     * Wait until the server replies back to us with the "accept" response.
+     */
+    i = 0;
+    max_len_wait_for_reply = sizeof(buf);
+    /* In reverse mode allow few packets to have the "accept" response - to handle out of order packets */
+    if (test->reverse)
+        max_len_wait_for_reply += MAX_REVERSE_OUT_OF_ORDER_PACKETS * test->settings->blksize;
+
+    do
+    {
+        rc = spdt_msg_receive(hw_fd, (char *)&buf, sizeof(buf), &received);
+        if (rc)
+        {
+            i_errno = IESTREAMREAD;
+            goto error;
+        }
+        if (test->debug)
+        {
+            printf("Connect received for Socket %d, sz=%d, buf=%x, i=%d, max_len_wait_for_reply=%d\n",
+                hw_fd, received, buf, i, max_len_wait_for_reply);
+        }
+        i += received;
+    } while (buf != UDP_CONNECT_REPLY && buf != LEGACY_UDP_CONNECT_REPLY && i < max_len_wait_for_reply);
+
+    if (buf != UDP_CONNECT_REPLY  && buf != LEGACY_UDP_CONNECT_REPLY)
+    {
+        i_errno = IESTREAMREAD;
+        goto error;
+    }
+
+    /* 
+     * Workaround:
+     * At this state the fd will be returned and stored in the streams list. Which will close it
+     * if process terminates. So reset values here to prevent double free
+     */
+    g_fd_valid = 0;
+
+    return hw_fd;
+
+error:
+    g_fd_valid = 0;
+    if (connected)
+    {
+        if (hw_fd > -1)
+        {
+        iperf_set_stream_socket(hw_fd, -1);
+        iperf_hw_disconnect_sock(test, hw_fd);
+        }
+    }
+    if (hw_fd > -1)
+    spdt_uninit(hw_fd);
+
+    return -1;
+}
+
+int
+iperf_start_udp_hwoffl_sender(struct iperf_test *test)
+{
+    int8_t hw_fd = -1;
+    struct iperf_stream *sp;
+    int rc = 0;
+
+    SLIST_FOREACH(sp, &test->streams, streams) {
+        spdt_tx_params_t tx_params = {};
+        hw_fd = iperf_socket_to_stream(sp->socket);
+        tx_params.proto.udp.data_buf_len = test->settings->blksize;
+        tx_params.proto.udp.total_bytes_to_send = test->settings->bytes;
+        tx_params.proto.udp.kbps = (uint32_t)(test->settings->rate / 1000);
+        rc = spdt_send_start(hw_fd, &tx_params);
+        if (rc) {
+            printf("spdt_send_start failed\n");
+            i_errno = IESTREAMCONNECT;
+            return rc;
+        }
+    }
+
+    return rc;
+}
+#endif
+

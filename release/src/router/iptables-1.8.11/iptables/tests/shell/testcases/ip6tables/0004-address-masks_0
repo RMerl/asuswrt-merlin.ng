@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -e
+
+$XT_MULTI ip6tables-restore <<EOF
+*filter
+-A FORWARD -s feed:babe::/ffff::0
+-A FORWARD -s feed:babe::/ffff:ff00::0
+-A FORWARD -s feed:babe::/ffff:fff0::0
+-A FORWARD -s feed:babe::/ffff:ffff::0
+-A FORWARD -s feed:babe::/0:ffff::0
+-A FORWARD -s feed:c0ff::babe:f00/ffff::ffff:0
+COMMIT
+EOF
+
+EXPECT='-P FORWARD ACCEPT
+-A FORWARD -s feed::/16
+-A FORWARD -s feed:ba00::/24
+-A FORWARD -s feed:bab0::/28
+-A FORWARD -s feed:babe::/32
+-A FORWARD -s 0:babe::/0:ffff::
+-A FORWARD -s feed::babe:0/ffff::ffff:0'
+
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI ip6tables -S FORWARD)

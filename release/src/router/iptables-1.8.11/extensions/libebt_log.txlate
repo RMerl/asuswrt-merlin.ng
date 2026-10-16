@@ -1,0 +1,15 @@
+ebtables-translate -A INPUT --log
+nft 'add rule bridge filter INPUT log level notice flags ether counter'
+
+ebtables-translate -A INPUT --log-level 1
+nft 'add rule bridge filter INPUT log level alert flags ether counter'
+
+ebtables-translate -A INPUT --log-level crit
+nft 'add rule bridge filter INPUT log level crit flags ether counter'
+
+ebtables-translate -A INPUT --log-level emerg --log-ip --log-arp --log-ip6
+nft 'add rule bridge filter INPUT log level emerg flags ether counter'
+
+ebtables-translate -A INPUT --log-level crit --log-ip --log-arp --log-ip6 --log-prefix foo
+nft 'add rule bridge filter INPUT log prefix "foo" level crit flags ether counter'
+

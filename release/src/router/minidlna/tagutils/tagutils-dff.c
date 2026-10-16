@@ -36,6 +36,14 @@
 #define GET_DFF_INT16(p) ((((uint16_t)((p)[0])) << 8) |   \
 			  (((uint16_t)((p)[1]))))
 
+// Upper bound for chunk sizes read from the (untrusted) file before they are
+// used to size a stack VLA. Per the DSDIFF 1.5 spec, PROP/DIIN are metadata
+// containers (PROP < 1KB; DIIN a few KB even with many markers), unlike the
+// audio DSD/DST chunks. 16KB covers any realistic metadata while staying far
+// below the scanner thread's stack, preventing a malicious size from
+// overflowing it.
+#define MAX_DFF_CHUNK_SIZE 0x4000
+
 static int
 _get_dfffileinfo(char *file, struct song_metadata *psong)
 {
@@ -126,6 +134,13 @@ _get_dfffileinfo(char *file, struct song_metadata *psong)
 		{
 			propckDataSize = GET_DFF_INT64(ckbuf + 4);
 			totalcount += propckDataSize + 12;
+
+			if (propckDataSize < 4 || propckDataSize > MAX_DFF_CHUNK_SIZE)
+			{
+				DPRINTF(E_WARN, L_SCANNER, "Invalid Property chunk size in %s\n", file);
+				fclose(fp);
+				return -1;
+			}
 
 			unsigned char propckData[propckDataSize];
 
@@ -301,8 +316,16 @@ _get_dfffileinfo(char *file, struct song_metadata *psong)
 		{
 			//Edited Master Information chunk
 			diinckDataSize = GET_DFF_INT64(ckbuf + 4);
-			unsigned char diinckData[diinckDataSize];
 			totalcount += diinckDataSize + 12;
+
+			if (diinckDataSize < 4 || diinckDataSize > MAX_DFF_CHUNK_SIZE)
+			{
+				DPRINTF(E_WARN, L_SCANNER, "Invalid Edited Master Information chunk size in %s\n", file);
+				fclose(fp);
+				return -1;
+			}
+
+			unsigned char diinckData[diinckDataSize];
 
 			if (!(rt = fread(diinckData, diinckDataSize, 1, fp)))
 			{
@@ -331,29 +354,42 @@ _get_dfffileinfo(char *file, struct song_metadata *psong)
 					//Artist Chunk
 					icount += 4;
 					diarckDataSize = GET_DFF_INT64(diinckData + icount);
-					unsigned char arttext[diarckDataSize + 1 - 4];
-
 					icount += 12;
 
-					memset(arttext, 0x00, sizeof(arttext));
-					strncpy((char*)arttext, (char*)diinckData + icount, sizeof(arttext) - 1);
-					psong->contributor[ROLE_ARTIST] = strdup((char*)&arttext[0]);
+					if (diarckDataSize < 4 || icount > diinckDataSize ||
+					    diarckDataSize - 4 > diinckDataSize - icount)
+						break;
 
-					icount += diarckDataSize - 4;
+					size_t artlen = (size_t)(diarckDataSize - 4);
+					char *arttext = malloc(artlen + 1);
+					if (!arttext) { fclose(fp); return -1; }
+					memcpy(arttext, diinckData + icount, artlen);
+					arttext[artlen] = '\0';
+					psong->contributor[ROLE_ARTIST] = strdup(arttext);
+					free(arttext);
+
+					icount += artlen;
 				}
 				else if (!strncmp((char*)diinckData + icount, "DITI", 4))
 				{
 					//Title Chunk
 					icount += 4;
 					ditickDataSize = GET_DFF_INT64(diinckData + icount);
-					unsigned char titletext[ditickDataSize + 1 - 4];
-
 					icount += 12;
 
-					memset(titletext, 0x00, sizeof(titletext));
-					strncpy((char*)titletext, (char*)diinckData + icount, sizeof(titletext) - 1);
-					psong->title = strdup((char*)&titletext[0]);
-					icount += ditickDataSize - 4;
+					if (ditickDataSize < 4 || icount > diinckDataSize ||
+					    ditickDataSize - 4 > diinckDataSize - icount)
+						break;
+
+					size_t titlelen = (size_t)(ditickDataSize - 4);
+					char *titletext = malloc(titlelen + 1);
+					if (!titletext) { fclose(fp); return -1; }
+					memcpy(titletext, diinckData + icount, titlelen);
+					titletext[titlelen] = '\0';
+					psong->title = strdup(titletext);
+					free(titletext);
+
+					icount += titlelen;
 				}
 				else
 				{

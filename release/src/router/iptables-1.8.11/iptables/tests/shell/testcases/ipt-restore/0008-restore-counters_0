@@ -1,0 +1,29 @@
+#!/bin/bash
+
+set -e
+
+DUMP="*filter
+:foo - [23:42]
+[13:37] -A foo -j ACCEPT
+COMMIT
+"
+
+EXPECT=":foo - [0:0]
+[0:0] -A foo -j ACCEPT"
+
+$XT_MULTI iptables-restore <<< "$DUMP"
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI iptables-save --counters | grep foo)
+
+# iptables-*-restore ignores custom chain counters :(
+EXPECT=":foo - [0:0]
+[13:37] -A foo -j ACCEPT"
+
+$XT_MULTI iptables-restore --counters <<< "$DUMP"
+diff -u -Z <(echo -e "$EXPECT") <($XT_MULTI iptables-save --counters | grep foo)
+
+# if present, counters must be in proper format
+! $XT_MULTI iptables-restore <<EOF
+*filter
+:FORWARD ACCEPT bar
+COMMIT
+EOF

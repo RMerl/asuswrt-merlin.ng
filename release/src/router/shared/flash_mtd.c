@@ -80,7 +80,7 @@ static int get_mtd_info(const char *mtd_name, struct mtd_info *mi)
 	FILE *fp;
 	char line[128], mtd_dev[]="/dev/mtd1XXXXXX";
 	int i, ret = -3, sz, esz, r;
-	char nm[12], *p;
+	char nm[64], quote;
 	mtd_info_t m;
 
 	if (!mtd_name || *mtd_name == '\0' || !mi)
@@ -92,12 +92,11 @@ static int get_mtd_info(const char *mtd_name, struct mtd_info *mi)
 	memset(mi, 0, sizeof(struct mtd_info));
 	fgets(line, sizeof(line), fp); //skip the 1st line
 	while (ret < 0 && fgets(line, sizeof(line), fp)) {
-		if (sscanf(line, "mtd%d: %x %x \"%s\"", &i, &sz, &esz, nm) != 4)
+		/* Bounded name read; requiring the closing quote rejects truncated names. */
+		if (sscanf(line, "mtd%d: %x %x \"%63[^\"]%c", &i, &sz, &esz, nm, &quote) != 5
+		 || quote != '"')
 			continue;
 
-		/* strip tailed " character, if present. */
-		if ((p = strchr(nm, '"')) != NULL)
-			*p = '\0';
 		if (strcmp(mtd_name, nm))
 			continue;
 
@@ -129,21 +128,22 @@ int flash_mtd_init_info(void)
 	FILE *fp;
 	char line[128];
 	int i, sz, esz;
-	char nm[12];
+	char nm[64], quote;
 	int total_sz;
 
 	memset(info, 0, sizeof(info));
 	if ((fp = fopen("/proc/mtd", "r"))) {
 		fgets(line, sizeof(line), fp); //skip the 1st line
 		while (fgets(line, sizeof(line), fp)) {
-			if (sscanf(line, "mtd%d: %x %x \"%s\"", &i, &sz, &esz, nm)) {
-				if (i >= NUM_INFO)
+			/* Bounded name read; requiring the closing quote rejects truncated names. */
+			if (sscanf(line, "mtd%d: %x %x \"%63[^\"]%c", &i, &sz, &esz, nm, &quote) == 5
+			 && quote == '"') {
+				if (i < 0 || i >= NUM_INFO)
 					printf("please enlarge 'NUM_INFO'\n");
 				else {
 					snprintf(info[i].dev, sizeof(info[i].dev), "mtd%d", i);
 					info[i].size = sz;
 					info[i].erasesize = esz;
-					nm[strlen((char *)nm)-1] = '\0'; //FIXME: sscanf
 					snprintf(info[i].name, sizeof(info[i].name), "%s", nm);
 				}
 			}
@@ -156,7 +156,7 @@ int flash_mtd_init_info(void)
 	}
 
 	total_sz = 0;
-	for (i = 0; i < NUM_INFO+1; i++) {
+	for (i = 0; i < NUM_INFO; i++) {
 		total_sz += info[i].size;
 	}
 

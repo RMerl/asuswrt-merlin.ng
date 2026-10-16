@@ -22,6 +22,45 @@
 	<script language="JavaScript" type="text/javascript" src="/form.js"></script>
 	<script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <style>
+.confirm{
+	background-color:var(--surface-panel, #191919) !important;
+	box-shadow:0 0 10px #21333E !important;
+	border:1px solid var(--border-default, #444f53) !important;
+	color:var(--text-primary, #B8B8B8) !important;
+}
+.confirm_title{
+	color:var(--text-primary, #FFF) !important;
+}
+.confirm_contentA{
+	color:var(--text-secondary, #B8B8B8) !important;
+}
+.confirm_button_gen_long_left,
+.confirm_button_gen_long_left_rog,
+.confirm_button_gen_long_left_tuf,
+.confirm_button_gen_long_right,
+.confirm_button_gen_long_right_rog,
+.confirm_button_gen_long_right_tuf{
+	color:#FFFFFF !important;
+	border:0 !important;
+	border-radius:8px !important;
+	text-shadow:1px 1px 0px rgba(0,0,0,.35) !important;
+}
+.confirm_button_gen_long_left,
+.confirm_button_gen_long_right{
+	background:rgb(var(--color-bg-btn-confirm, 18, 28, 30)) !important;
+}
+.confirm_button_gen_long_left_rog,
+.confirm_button_gen_long_right_rog{
+	background:rgb(var(--color-bg-btn-confirm, 145, 7, 31)) !important;
+}
+.confirm_button_gen_long_left_tuf,
+.confirm_button_gen_long_right_tuf{
+	background:rgb(var(--color-bg-btn-confirm, 255, 165, 35)) !important;
+}
+.business_confirm_container{
+	margin-left:0 !important;
+	justify-content:center !important;
+}
 .ui-slider {
 	position: relative;
 	text-align: left;
@@ -176,6 +215,11 @@ if(
 var country_selection_array = new Array();
 var _AU1_support = false;
 var _AU2_support = false;
+
+if(ID_mode && tcode == "AA"){
+	country_array = ["AA"];
+	country_selection_list = [["AA", "Indonesia"]];
+}
 
 if(tcode == "GD"){
 	country_array = country_array.join("-").replace("-CN", "").split("-")
@@ -1348,22 +1392,26 @@ function check_mlo_status(obj){
 	})();
 	if(mloEnable == '1' && show_mlo_hint){
 		confirm_asus({
-				title: "MLO Hint",
-				contentA:
-				`<b><#WiFi7_mlo_adjust_hint#></b>`,
-				contentC: "",
-				left_button: "<#CTL_Cancel#>",
-				left_button_callback: function () {
-					confirm_cancel();
-					if(obj_name == "wl_radio") $('input:radio[name=wl_radio][value=1]').prop('checked', true).click();
-					else if(obj_name == "wl_timesched") $('input:radio[name=wl_timesched][value=0]').prop('checked', true).click();
-					return false;
+			title: "MLO Hint",
+			contentA:
+			`<b><#WiFi7_mlo_adjust_hint#></b>`,
+			contentC: "",
+			left_button: "<#CTL_Cancel#>",
+			left_button_callback: function () {
+				confirm_cancel();
+				if(obj_name == "wl_radio") $('input:radio[name=wl_radio][value=1]').prop('checked', true).click();
+				else if(obj_name == "wl_timesched") $('input:radio[name=wl_timesched][value=0]').prop('checked', true).click();
+				return false;
 			},
 			left_button_args: {},
 			right_button: "<#btn_go#>",
 			right_button_callback: function () {
-			confirm_cancel();
-				location.href = "/MLO.asp";
+				confirm_cancel();
+				if(typeof top.pageRedirect === "function"){
+					top.pageRedirect("settings", "MLO.asp");
+				} else {
+					location.href = "/MLO.asp";
+				}
 			},
 			right_button_args: {},
 			iframe: "",
@@ -1572,7 +1620,11 @@ function wifi7_mode(obj){
                 right_button: "<#btn_go#>",
                 right_button_callback: function () {
                     confirm_cancel();
-                    location.href = "/MLO.asp";
+                    if(typeof top.pageRedirect === "function"){
+                        top.pageRedirect("settings", "MLO.asp");
+                    } else {
+                        location.href = "/MLO.asp";
+                    }
                 },
                 right_button_args: {},
                 iframe: "",
@@ -1704,9 +1756,9 @@ function wl_disable11b(obj){
 		  			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 					<div id="title_bg">
 						<div id="titl_desc" class="formfontdesc"><#WLANConfig11b_display5_sectiondesc#></div>
-						<div id="lantiq_ready" style="display:none;color:#FC0;margin-left:5px;font-size:13px;">Wireless is setting...</div>
-						<div id="svc_hint_div" style="display:none;margin-left:5px;"><span onClick="location.href='Advanced_System_Content.asp?af=ntp_server0'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"><#General_x_SystemTime_syncNTP#></span></div>
-						<div id="timezone_hint_div" style="margin-left:5px;display:none;"><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"></span></div>
+						<div id="lantiq_ready" style="display:none;color:var(--wrt-badge-warning-color,#FFCC00);margin-left:5px;font-size:13px;">Wireless is setting...</div>
+						<div id="svc_hint_div" style="display:none;margin-left:5px;"><span onClick="location.href='Advanced_System_Content.asp?af=ntp_server0'" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;cursor:pointer;"><#General_x_SystemTime_syncNTP#></span></div>
+						<div id="timezone_hint_div" style="margin-left:5px;display:none;"><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;cursor:pointer;"></span></div>
 					</div>
 					<div id="schedule_block" style="display:none">
 						<div id="weekScheduleBg_WL"></div>
@@ -1764,7 +1816,7 @@ function wl_disable11b(obj){
 									<option value="1"><#WLANConfig11b_WirelessCtrl_button1name#></option>
 									<option value="0" <% nvram_match("wl_user_rssi", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
 								</select><br>
-								<span id="rssiDbm" style="color:#FFF">
+								<span id="rssiDbm" style="color:var(--wrt-text-color,#FFFFFF);">
 								<#Roaming_assistant_depart#>
 			  					<input type="text" maxlength="3" name="wl_user_rssi" class="short_input input_3_table" value="<% nvram_get("wl_user_rssi"); %>" autocorrect="off" autocapitalize="off"> dBm
 								</span>
@@ -1796,7 +1848,7 @@ function wl_disable11b(obj){
 							<span id="wl_NOnly_note" style="display:none;"></span>
 							<br>
 							<span id="wl_AXOnly_note" style="display:none;"><#WLANConfig11ax_AXOnly_note#></span>
-							<!-- [N + AC] is not compatible with current guest network authentication method(TKIP or WEP),  Please go to <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">guest network</a> and change the authentication method. -->
+							<!-- [N + AC] is not compatible with current guest network authentication method(TKIP or WEP),  Please go to <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">guest network</a> and change the authentication method. -->
 						</td>
 					</tr>
 					<tr id="he_mode_field">
@@ -2093,7 +2145,7 @@ function wl_disable11b(obj){
 									<!--option value="4" <% nvram_match("wl_ofdma", "4","selected"); %>>DL/UL OFDMA + DL MU-MIMO</option-->
 									<option value="3" <% nvram_match("wl_ofdma", "3","selected"); %>>DL/UL OFDMA + DL/UL MU-MIMO</option>
 								</select>
-								<span id="ofdma_hint" style="margin-left:4px;display:none">*Need to enable <a href="Advanced_Wireless_Content.asp" style="color:#FC0;text-decoration:underline;">802.11ax / WiFi 6 mode</a></span>
+								<span id="ofdma_hint" style="margin-left:4px;display:none">*Need to enable <a href="Advanced_Wireless_Content.asp" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">802.11ax / WiFi 6 mode</a></span>
 							</div>
 						</td>
 					</tr>

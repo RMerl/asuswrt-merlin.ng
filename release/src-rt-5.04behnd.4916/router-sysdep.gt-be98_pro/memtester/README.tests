@@ -1,0 +1,38 @@
+About the Tests
+---------------
+
+The following tests are from the original version, updated simply for speed
+and rewritten to fit the new framework of the program.  These tests will
+mainly catch memory errors due to bad bits which are permanently stuck high
+or low:
+  Random value
+  XOR comparison
+  SUB comparison
+  MUL comparison
+  DIV comparison
+  OR comparison
+  AND comparison
+  
+The following tests were implemented by me, and will do a slightly better job
+of catching flaky bits, which may or may not hold a true value:
+  Sequential Increment
+  Block Sequential
+  Solid Bits
+
+The remaining tests were also implemented by me, and are designed to catch
+bad bits which are dependent on the current values of surrounding bits in either
+the same word32, or in the preceding and succeeding word32s.
+  Bit Flip
+  Checkerboard
+  Walking Ones
+  Walking Zeroes
+  Bit Spread
+
+There is also a test (Stuck Address) which is run first.  It determines if the 
+memory locations the program attempts to access are addressed properly or not.  
+If this test reports errors, there is almost certainly a problem somewhere in 
+the memory subsystem.  Results from the rest of the tests cannot be considered 
+accurate if this test fails:
+  Stuck Address
+
+Usage information is summarized in the file README, and in the man page.

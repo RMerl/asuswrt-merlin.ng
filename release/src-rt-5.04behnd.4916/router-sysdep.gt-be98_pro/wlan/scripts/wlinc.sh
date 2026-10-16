@@ -382,7 +382,14 @@ setProcAffinity() {
     local proc_name=$2
     local pid=$3
     local affinity=$4
-    [[ $4 =~ ^[0-9]+$ ]] && affinity=`printf \%x $4`
+    # taskset expects a hex CPU mask; convert a decimal argument to hex.
+    # Use a POSIX all-digits test via case: /bin/bash is a busybox symlink on
+    # target firmware, and busybox ash's [[ ]] lacks the =~ regex operator
+    # (it errors with "[[: =~: unknown operand" and skips the conversion).
+    case "$4" in
+        ''|*[!0-9]*) ;;
+        *) affinity=`printf %x $4` ;;
+    esac
     echo "set $proc_name $pid to aff:$affinity"
     echo ""
     if [ ! -f "/bin/rtpolicy" ]; then
